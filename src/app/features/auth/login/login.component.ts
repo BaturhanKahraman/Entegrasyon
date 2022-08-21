@@ -31,7 +31,7 @@ export class LoginComponent implements OnInit {
     console.log(loginModel);
     this.authService.
     login(loginModel)
-    .subscribe((result)=>{
+    .subscribe((result: any)=>{
       console.log(result);
       
     }).add(()=>{
