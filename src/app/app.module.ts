@@ -7,6 +7,7 @@ import { MaterialModule } from './material.module';
 import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { CoreModule } from './core/core.module';
+import { SupportDeveloperComponent } from './features/support-developer/support-developer.component';
 @NgModule({
   declarations: [AppComponent],
   imports: [

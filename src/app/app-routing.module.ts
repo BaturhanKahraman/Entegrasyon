@@ -6,7 +6,8 @@ import { AuthGuard } from './shared/guards/auth.guard';
 
 const routes: Routes = [
   {path:'',component:PrimaryLayoutComponent,canActivate:[AuthGuard],children:[
-    {path:'',loadChildren:()=>import('./features/home/home.module').then(x=>x.HomeModule)}
+    {path:'',loadChildren:()=>import('./features/home/home.module').then(x=>x.HomeModule)},
+    {path:'support',loadChildren:()=>import('./features/support-developer/support-developer.module').then(x=>x.SupportDeveloperModule)},
   ]},
   {path:'auth',component:AuthLayoutComponent,children:[
     {path:'',loadChildren:()=>import('./features/auth/auth.module').then(x=>x.AuthModule)}

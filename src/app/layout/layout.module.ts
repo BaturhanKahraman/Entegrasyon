@@ -6,16 +6,17 @@ import { AuthLayoutComponent } from './auth-layout/auth-layout.component';
 import { PrimaryLayoutComponent } from './primary-layout/primary-layout.component';
 import { RouterModule } from "@angular/router";
 import { ProfileBarComponent } from "./navbar/components/profile-bar/profile-bar.component";
+import { NotificationsComponent } from './navbar/components/notifications/notifications.component';
+import { NavbarModule } from "./navbar/navbar.module";
 
 @NgModule({
   declarations: [
-    NavbarComponent,
     SidenavListComponent,
     AuthLayoutComponent,
-    PrimaryLayoutComponent,
-    ProfileBarComponent],
+    PrimaryLayoutComponent
+    ],
   imports: [
-    SharedModule,RouterModule
+    SharedModule,RouterModule,NavbarModule
   ],
   exports:[]
 })

@@ -12,7 +12,7 @@ import { LayoutModule } from 'src/app/layout/layout.module';
     HomeComponent
   ],
   imports: [
-    SharedModule,HomeRoutingModule,LayoutModule
+    SharedModule,HomeRoutingModule
   ]
 })
 export class HomeModule { }
