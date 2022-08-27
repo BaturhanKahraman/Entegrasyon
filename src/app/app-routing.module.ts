@@ -12,7 +12,7 @@ const routes: Routes = [
   ]},
   {path:'auth',component:AuthLayoutComponent,children:[
     {path:'',loadChildren:()=>import('./features/auth/auth.module').then(x=>x.AuthModule)}
-  ]}
+  ]},{path:"**",redirectTo:''}
 ];
 @NgModule({
   imports: [RouterModule.forRoot(routes,{preloadingStrategy:PreloadAllModules,anchorScrolling:"enabled",onSameUrlNavigation:"ignore"})],
