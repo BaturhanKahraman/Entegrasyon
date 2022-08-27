@@ -1,27 +1,20 @@
-<mat-nav-list role="navigation" fxLayout="column" fxLayoutAlign="start none"  >
+<mat-nav-list role="navigation" fxLayout="column" fxLayoutAlign="start none">
   <mat-list-item routerLink="/">
-    <a matLine >Anasayfa</a>
+    <a matLine>Anasayfa</a>
     <button mat-icon-button>
       <mat-icon>home</mat-icon>
     </button>
   </mat-list-item>
-  <mat-list-item>
-    <a matLine href="#">Kullanıcılar</a>
+  <mat-list-item routerLink="/user">
+    <a matLine>Kullanıcılar</a>
     <button mat-icon-button>
       <mat-icon>people</mat-icon>
     </button>
   </mat-list-item>
-  <mat-list-item>
-    <a matLine href="#">Deneme qweqwe</a>
+  <mat-list-item routerLink="/support">
+    <a matLine>Destek</a>
     <button mat-icon-button>
-      <mat-icon>info</mat-icon>
+      <mat-icon>help</mat-icon>
     </button>
   </mat-list-item>
-    <mat-list-item routerLink="/support">
-      <a matLine >Destek</a>
-      <button mat-icon-button>
-        <mat-icon>help</mat-icon>
-      </button>
-    </mat-list-item>
- 
 </mat-nav-list>

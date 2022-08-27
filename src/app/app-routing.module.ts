@@ -7,6 +7,7 @@ import { AuthGuard } from './shared/guards/auth.guard';
 const routes: Routes = [
   {path:'',component:PrimaryLayoutComponent,canActivate:[AuthGuard],children:[
     {path:'',loadChildren:()=>import('./features/home/home.module').then(x=>x.HomeModule)},
+    {path:'user',loadChildren:()=>import('./features/user/user.module').then(x=>x.UserModule)},
     {path:'support',loadChildren:()=>import('./features/support-developer/support-developer.module').then(x=>x.SupportDeveloperModule)},
   ]},
   {path:'auth',component:AuthLayoutComponent,children:[
