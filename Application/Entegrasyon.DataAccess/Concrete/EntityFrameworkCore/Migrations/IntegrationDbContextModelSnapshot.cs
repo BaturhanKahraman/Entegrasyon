@@ -813,7 +813,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("SaleItems");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Token.ApplicationJwtToken", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Token.RootJwtToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -845,7 +845,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("ApplicationJwtTokens");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationClaim", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -947,7 +947,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationLogin", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootLogin", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -961,7 +961,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("IPAddress")
+                    b.Property<string>("IpAddress")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
@@ -980,7 +980,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("ApplicationLogins");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationRole", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1011,7 +1011,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationUser", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1094,13 +1094,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("ApplicationClaimApplicationRole", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationClaim", null)
+                    b.HasOne("Entegrasyon.Entity.Users.RootClaim", null)
                         .WithMany()
                         .HasForeignKey("ApplicationClaimsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationRole", null)
+                    b.HasOne("Entegrasyon.Entity.Users.RootRole", null)
                         .WithMany()
                         .HasForeignKey("ApplicationRolesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1109,13 +1109,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("ApplicationRoleApplicationUser", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationUser", null)
+                    b.HasOne("Entegrasyon.Entity.Users.RootUser", null)
                         .WithMany()
                         .HasForeignKey("ApplicationUsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationRole", null)
+                    b.HasOne("Entegrasyon.Entity.Users.RootRole", null)
                         .WithMany()
                         .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1156,13 +1156,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Logs.ApplicationLog", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationUser", "ApplicationUser")
+                    b.HasOne("Entegrasyon.Entity.Users.RootUser", "RootUser")
                         .WithMany()
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ApplicationUser");
+                    b.Navigation("RootUser");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -1248,7 +1248,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.Sale", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationUser", "SalePerson")
+                    b.HasOne("Entegrasyon.Entity.Users.RootUser", "SalePerson")
                         .WithMany()
                         .HasForeignKey("SalePersonId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1270,29 +1270,29 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("ProductVariant");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Token.ApplicationJwtToken", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Token.RootJwtToken", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationUser", "ApplicationUser")
+                    b.HasOne("Entegrasyon.Entity.Users.RootUser", "RootUser")
                         .WithMany()
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ApplicationUser");
+                    b.Navigation("RootUser");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationLogin", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootLogin", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationUser", "ApplicationUser")
+                    b.HasOne("Entegrasyon.Entity.Users.RootUser", "RootUser")
                         .WithMany("Logins")
                         .HasForeignKey("ApplicationUserId");
 
-                    b.Navigation("ApplicationUser");
+                    b.Navigation("RootUser");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationUser", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootUser", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Users.ApplicationClaim", null)
+                    b.HasOne("Entegrasyon.Entity.Users.RootClaim", null)
                         .WithMany("Users")
                         .HasForeignKey("ApplicationClaimId");
 
@@ -1342,12 +1342,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("SaleItems");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationClaim", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootClaim", b =>
                 {
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Users.ApplicationUser", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Users.RootUser", b =>
                 {
                     b.Navigation("Logins");
                 });

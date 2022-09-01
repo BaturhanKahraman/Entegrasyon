@@ -4,6 +4,10 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>3828d6a3-d1e6-485f-98f9-79903c16f7cf</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+    <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,11 +17,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.8" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.6" />
+    <PackageReference Include="StackExchange.Redis" Version="2.6.48" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\HeadDatabase\MainDatabase.csproj" />
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
   </ItemGroup>
 

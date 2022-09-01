@@ -3,6 +3,7 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Users;
 using Microsoft.EntityFrameworkCore;
+using Shared.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
 

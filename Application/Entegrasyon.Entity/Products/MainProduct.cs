@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Entegrasyon.Entity.Categories;
-using Shared.Abstract.Entity;
+using Shared.Entity;
 
 namespace Entegrasyon.Entity.Products;
 

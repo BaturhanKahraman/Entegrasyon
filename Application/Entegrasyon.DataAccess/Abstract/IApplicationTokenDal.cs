@@ -1,8 +1,9 @@
 ﻿using Entegrasyon.Entity.Token;
-using Shared.Abstract;
+using Shared;
+using Shared.User.Token;
 
 namespace Entegrasyon.DataAccess.Abstract;
 
-public interface IApplicationTokenDal : IEntityRepository<ApplicationJwtToken>
+public interface IApplicationTokenDal : IEntityRepository<RootJwtToken>
 {
 }

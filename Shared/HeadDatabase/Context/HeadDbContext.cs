@@ -14,7 +14,7 @@ public class HeadDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         //optionsBuilder.UseSqlite("Data Source=Database/MainDatabase.db");
-        optionsBuilder.UseSqlite(_configuration.GetConnectionString("Main"));
+        optionsBuilder.UseNpgsql(_configuration.GetConnectionString("Main"));
 
         base.OnConfiguring(optionsBuilder);
     }

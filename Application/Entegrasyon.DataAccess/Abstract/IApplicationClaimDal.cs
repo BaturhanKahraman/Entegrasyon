@@ -1,5 +1,6 @@
 ﻿using Entegrasyon.Entity.Users;
-using Shared.Abstract;
+using Shared;
+using Shared.User;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

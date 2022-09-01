@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Entegrasyon.Entity.Users;
-using Shared.Abstract.Entity;
+using Shared.Entity;
 
 namespace Entegrasyon.Entity.Sales
 {

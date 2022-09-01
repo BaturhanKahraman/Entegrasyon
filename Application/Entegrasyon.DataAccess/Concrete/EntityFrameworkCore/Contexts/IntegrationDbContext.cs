@@ -9,6 +9,8 @@ using Entegrasyon.Entity.Sales;
 using Entegrasyon.Entity.Token;
 using Entegrasyon.Entity.Users;
 using Microsoft.EntityFrameworkCore;
+using Shared.User;
+using Shared.User.Token;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -25,8 +27,8 @@ public class IntegrationDbContext:DbContext
         modelBuilder.Entity<ProductVariant>().Property(x => x.CurrentStockQuantity)
             .HasComputedColumnSql("(\"Quantity\")-(\"SoldQuantity\")",true);
 
-        modelBuilder.Entity<ApplicationJwtToken>().HasIndex(x => x.JwtToken).IsUnique();
-        modelBuilder.Entity<ApplicationJwtToken>().HasIndex("Device","ApplicationUserId","CurrentlyUsing");
+        modelBuilder.Entity<RootJwtToken>().HasIndex(x => x.JwtToken).IsUnique();
+        modelBuilder.Entity<RootJwtToken>().HasIndex("Device","ApplicationUserId","CurrentlyUsing");
         modelBuilder.Seed();
         base.OnModelCreating(modelBuilder);
     }
@@ -47,7 +49,7 @@ public class IntegrationDbContext:DbContext
     public DbSet<SaleItem> SaleItems { get; set; }
     public DbSet<ApplicationClaim> ApplicationClaims { get; set; }
     public DbSet<ApplicationRole> ApplicationRoles { get; set; }
-    public DbSet<ApplicationJwtToken> ApplicationJwtTokens { get; set; }
+    public DbSet<RootJwtToken> ApplicationJwtTokens { get; set; }
     public DbSet<ApplicationLogin> ApplicationLogins { get; set; }
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     public DbSet<BranchOffice> BranchOffices { get; set; }

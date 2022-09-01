@@ -1,4 +1,4 @@
-﻿using Shared.Abstract.Entity;
+﻿using Shared.Entity;
 using System.ComponentModel.DataAnnotations;
 
 namespace Entegrasyon.Entity.Categories;

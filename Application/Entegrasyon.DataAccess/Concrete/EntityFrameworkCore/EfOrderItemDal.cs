@@ -1,7 +1,7 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Orders;
-using Shared.Abstract.EntityFrameworkCore;
+using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 

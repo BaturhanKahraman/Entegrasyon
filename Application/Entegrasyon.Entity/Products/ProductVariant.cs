@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.Categories;
-using Shared.Abstract.Entity;
+using Shared.Entity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

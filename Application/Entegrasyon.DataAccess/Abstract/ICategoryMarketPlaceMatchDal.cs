@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.Matches;
-using Shared.Abstract;
+using Shared;
 
 namespace Entegrasyon.DataAccess.Abstract;
 
