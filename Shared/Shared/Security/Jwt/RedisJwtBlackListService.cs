@@ -3,11 +3,11 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Shared.Security.Jwt;
 
-public class RedisJwtBlackList
+public class RedisJwtBlackListService: IJwtBlackListService
 {
     private const string CacheKey = "jwtblacklist {0}";
     private readonly IDistributedCache _distributedCache;
-    public RedisJwtBlackList(IDistributedCache distributedCache)
+    public RedisJwtBlackListService(IDistributedCache distributedCache)
     {
         _distributedCache = distributedCache;
     }

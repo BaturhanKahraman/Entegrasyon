@@ -1,14 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Shared.User.Token;
 
 namespace Shared.User;
 
-public class UserContext<T>:DbContext
-where T:RootUser,new()
+public class UserContext<TUser>:DbContext
+where TUser:RootUser,new()
 {
-    public RootClaim Claims { get; set; }
-    public RootLogin Logins { get; set; }
-    public RootRole Roles { get; set; }
-    public RootJwtToken Tokens { get; set; }
-    public T Users { get; set; }
+    public UserContext(DbContextOptions<UserContext<TUser>> opt):base(opt)
+    {
+        
+    }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<RootJwtToken>().HasIndex(x => x.JwtToken).IsUnique();
+        modelBuilder.Entity<RootJwtToken>().HasIndex("Device","ApplicationUserId","CurrentlyUsing");
+        base.OnModelCreating(modelBuilder);
+    }
+
+    public DbSet<RootClaim> Claims { get; set; }
+    public DbSet<RootLogin> Logins { get; set; }
+    public DbSet<RootRole> Roles { get; set; }
+    public DbSet<RootJwtToken> Tokens { get; set; }
+    public DbSet<TUser> Users { get; set; }
 }

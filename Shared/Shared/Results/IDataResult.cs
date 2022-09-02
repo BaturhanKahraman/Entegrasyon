@@ -1,6 +1,6 @@
 ﻿namespace Shared.Results
 {
-    public interface IApplicationDataResult<out T> : IApplicationResult
+    public interface IDataResult<out T> : IResult
     {
         public T Data { get; }
     }

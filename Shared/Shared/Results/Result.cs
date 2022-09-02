@@ -2,17 +2,17 @@
 
 namespace Shared.Results
 {
-    public class ApplicationResult : IApplicationResult
+    public class Result : IResult
     {
         public bool Success { get; }
         public string Message { get; }
 
-        public ApplicationResult(bool success)
+        public Result(bool success)
         {
             Success = success;
         }
 
-        public ApplicationResult(bool success,string message) : this(success)
+        public Result(bool success,string message) : this(success)
         {
             Message = message;
         }

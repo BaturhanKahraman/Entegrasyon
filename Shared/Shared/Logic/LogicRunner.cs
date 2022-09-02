@@ -8,7 +8,7 @@ namespace Shared.Logic
 {
     static class LogicRunner
     {
-        public static IApplicationResult Run(params IApplicationResult[] results)
+        public static IResult Run(params IResult[] results)
         {
             foreach(var result in results)
             {

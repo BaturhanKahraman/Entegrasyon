@@ -12,6 +12,8 @@ public class RootUser : GuidEntity
     public string Surname { get; set; }
     [Required, StringLength(maximumLength: 100)]
     public string Email { get; set; }
+    [StringLength(maximumLength: 100)]
+    public string NormalizedEmail { get; set; }
     public bool IsActive { get; set; } = true;
     public byte[] PasswordSalt { get; set; }
     public byte[] PasswordHash { get; set; }

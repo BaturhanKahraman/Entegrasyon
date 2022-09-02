@@ -1,5 +1,4 @@
-﻿using Entegrasyon.Entity.Users;
-using Shared.Entity;
+﻿using Shared.Entity;
 
 namespace Entegrasyon.Entity.Logs;
 
