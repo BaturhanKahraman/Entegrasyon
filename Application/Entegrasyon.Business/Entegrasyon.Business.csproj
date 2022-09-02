@@ -6,4 +6,13 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Concrete\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
+    <ProjectReference Include="..\Entegrasyon.Entity\Entegrasyon.Entity.csproj" />
+  </ItemGroup>
+
 </Project>

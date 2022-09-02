@@ -7,10 +7,17 @@ namespace Shared.User;
 public class UserContext<TUser>:DbContext
 where TUser:RootUser,new()
 {
-    public UserContext(DbContextOptions<UserContext<TUser>> opt):base(opt)
+    public UserContext(DbContextOptions opt):base(opt)
     {
         
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseLazyLoadingProxies();
+        base.OnConfiguring(optionsBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<RootJwtToken>().HasIndex(x => x.JwtToken).IsUnique();

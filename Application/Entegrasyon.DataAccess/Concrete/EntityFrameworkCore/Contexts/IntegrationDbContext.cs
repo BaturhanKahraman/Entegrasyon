@@ -1,5 +1,4 @@
-﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
-using Entegrasyon.Entity;
+﻿using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
@@ -8,14 +7,13 @@ using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using Shared.User;
-using Shared.User.Token;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
 public class IntegrationDbContext:UserContext<ApplicationUser>
 {
     
-    public IntegrationDbContext(DbContextOptions<UserContext<ApplicationUser>> options):base(options)
+    public IntegrationDbContext(DbContextOptions<IntegrationDbContext> options):base(options)
     {
         
     }

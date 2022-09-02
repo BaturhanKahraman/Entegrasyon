@@ -6,4 +6,10 @@ public static class StringExtension
     {
         return @this.Trim().Normalize().ToUpperInvariant();
     }
+
+    public static void ThrowIfNullOrEmpty(this string @this)
+    {
+        if(string.IsNullOrEmpty(@this))
+            throw new ArgumentNullException(nameof(@this));
+    }
 }

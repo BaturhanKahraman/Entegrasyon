@@ -11,8 +11,6 @@ public static class ServiceCollectionExtension
     {
         serviceCollection.AddSingleton<IRandomHelper, RandomHelper>();
         serviceCollection.AddSingleton<IJwtBlackListService, RedisJwtBlackListService>();
-
-        serviceCollection.AddScoped<IUserManager, UserManager>();
         return serviceCollection;
     }
 }

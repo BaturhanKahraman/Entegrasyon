@@ -12,6 +12,8 @@ public class RootUser : GuidEntity
     public string Surname { get; set; }
     [Required, StringLength(maximumLength: 100)]
     public string Email { get; set; }
+    [StringLength(30)]
+    public string UserName { get; set; }
     [StringLength(maximumLength: 100)]
     public string NormalizedEmail { get; set; }
     public bool IsActive { get; set; } = true;
@@ -23,9 +25,9 @@ public class RootUser : GuidEntity
     public bool NeedsTakeNewPassword { get; set; }
     [MaxLength(15)]
     public string TemporaryPassword { get; set; }
-    public List<RootLogin> Logins { get; set; }
-    public List<RootRole> Roles { get; set; }
-    public List<RootJwtToken> JwtTokens { get; set; }
+    public virtual List<RootLogin> Logins { get; set; }
+    public virtual List<RootRole> Roles { get; set; }
+    public virtual List<RootJwtToken> JwtTokens { get; set; }
     public override string ToString()
     {
         return $"{Name} {Surname} {Email}";

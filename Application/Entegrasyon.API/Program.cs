@@ -1,6 +1,8 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using MainDatabase.Context;
 using Microsoft.EntityFrameworkCore;
+using Shared.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,8 @@ builder.Services.AddDbContext<IntegrationDbContext>(opt =>
     opt.UseNpgsql("Server=db;Port=5432;Database=DemoDBB;User Id=postgres;Password=example;");
 });
 builder.Services.AddDbContext<HeadDbContext>();
+builder.Services.AddScoped<IUserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+
 
 builder.Services.AddStackExchangeRedisCache(opt =>
     {
