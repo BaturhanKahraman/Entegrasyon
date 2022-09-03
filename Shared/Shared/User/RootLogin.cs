@@ -1,7 +1,9 @@
-﻿using Shared.Entity;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Shared.Entity;
 
 namespace Shared.User;
 
+[Table("Logins")]
 public class RootLogin : LongEntity
 {
     public DateTimeOffset LoginTime { get; set; }

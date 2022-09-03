@@ -4,6 +4,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    partial class IntegrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220903155819_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -822,6 +824,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -831,16 +834,14 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsMultipleLoginActive")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsTwoFactorAuthActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("MobileJwtToken")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("MobileJwtTokenExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)");
 
@@ -861,6 +862,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Surname")
+                        .IsRequired()
                         .HasMaxLength(55)
                         .HasColumnType("character varying(55)");
 
@@ -872,12 +874,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
-                    b.Property<string>("WebJwtToken")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("WebJwtTokenExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("Id");
 
                     b.HasIndex("RootClaimId");
@@ -887,14 +883,47 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("RootUser");
                 });
 
+            modelBuilder.Entity("Shared.User.Token.RootJwtToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CurrentlyUsing")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Device")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("JwtToken")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JwtToken")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Tokens");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
                 {
                     b.HasBaseType("Shared.User.RootUser");
 
-                    b.Property<int?>("DefaultBranchOfficeId")
+                    b.Property<int>("BranchOfficeId")
                         .HasColumnType("integer");
 
-                    b.HasIndex("DefaultBranchOfficeId");
+                    b.HasIndex("BranchOfficeId");
 
                     b.ToTable("Users");
 
@@ -1097,13 +1126,26 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasForeignKey("RootClaimId");
                 });
 
+            modelBuilder.Entity("Shared.User.Token.RootJwtToken", b =>
+                {
+                    b.HasOne("Shared.User.RootUser", "User")
+                        .WithMany("JwtTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.BranchOffice", "DefaultBranchOffice")
+                    b.HasOne("Entegrasyon.Entity.BranchOffice", "BranchOffice")
                         .WithMany()
-                        .HasForeignKey("DefaultBranchOfficeId");
+                        .HasForeignKey("BranchOfficeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("DefaultBranchOffice");
+                    b.Navigation("BranchOffice");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
@@ -1150,6 +1192,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Shared.User.RootUser", b =>
                 {
+                    b.Navigation("JwtTokens");
+
                     b.Navigation("Logins");
                 });
 #pragma warning restore 612, 618

@@ -1,0 +1,18 @@
+﻿using System.Linq.Expressions;
+using Shared.Results;
+
+namespace Shared.User.Services;
+
+public interface IUserManager<TUser>
+    where TUser : RootUser, new()
+{
+    Task<TUser> GetByEmail(string email);
+    Task<IResult> CreateUserAsync(TUser user, string password);
+    Task DeactivateUserAsync(TUser user);
+    Task CreateTemporaryPasswordAsync(TUser user);
+    Task<TUser> GetByUserName(string userName);
+    Task<IResult> CreateUserAsync(TUser user);
+    Task CreateUserPassword(string password, string userId);
+    Task UpdateUser(TUser user);
+    Task<TUser> GetUser(Expression<Func<TUser, bool>> expr,bool isTracking);
+}

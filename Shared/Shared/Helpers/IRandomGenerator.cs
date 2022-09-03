@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Helpers
 {
-    public interface IRandomHelper 
+    public interface IRandomGenerator 
     {
         string GetRandomCode(int length);
     }

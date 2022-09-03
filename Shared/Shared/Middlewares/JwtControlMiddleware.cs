@@ -16,16 +16,21 @@ public class JwtControlMiddleware
 
     public async Task Invoke(HttpContext context,IJwtBlackListService blackListService)
     {
-        if(!context.Request.Headers.TryGetValue("Authorization",out var token))
-            await _next.Invoke(context);
-        string bearerToken = token.First().Replace("Bearer ", "");
-        if(await blackListService.CheckBlackListToken(context.User.FindFirst(x=>x.Type==ClaimTypes.NameIdentifier)!.Value,
-               bearerToken))
+        bool hasToken = context.Request.Headers.TryGetValue("Authorization", out var token);
+        if(!hasToken)
             await _next.Invoke(context);
         else
         {
-            context.Response.StatusCode = 401;
-            context.Response.Headers.Add("MustLogOut",new StringValues("true"));
+            string bearerToken = token.First().Replace("Bearer ","");
+            if(await blackListService.CheckBlackListToken(context.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)!.Value,
+                   bearerToken))
+                await _next.Invoke(context);
+            else
+            {
+                context.Response.StatusCode = 401;
+                context.Response.Headers.Add("MustLogOut",new StringValues("true"));
+            }
         }
+        
     }
 }

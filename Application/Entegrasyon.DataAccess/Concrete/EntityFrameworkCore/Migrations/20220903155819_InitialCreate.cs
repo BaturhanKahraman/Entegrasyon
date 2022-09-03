@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -31,22 +30,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ApplicationClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationClaims", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ApplicationCustomers",
                 columns: table => new
                 {
@@ -61,21 +44,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ApplicationCustomers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ApplicationRoles",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationRoles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -162,6 +130,22 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Claims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Claims", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DiscountVouchers",
                 columns: table => new
                 {
@@ -211,6 +195,21 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
@@ -234,66 +233,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         column: x => x.ShippingAddressId,
                         principalTable: "Address",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ApplicationClaimApplicationRole",
-                columns: table => new
-                {
-                    ApplicationClaimsId = table.Column<int>(type: "integer", nullable: false),
-                    ApplicationRolesId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationClaimApplicationRole", x => new { x.ApplicationClaimsId, x.ApplicationRolesId });
-                    table.ForeignKey(
-                        name: "FK_ApplicationClaimApplicationRole_ApplicationClaims_Applicati~",
-                        column: x => x.ApplicationClaimsId,
-                        principalTable: "ApplicationClaims",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ApplicationClaimApplicationRole_ApplicationRoles_Applicatio~",
-                        column: x => x.ApplicationRolesId,
-                        principalTable: "ApplicationRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ApplicationUsers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
-                    Surname = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
-                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: true),
-                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: true),
-                    IsMultipleLoginActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsTwoFactorAuthActive = table.Column<bool>(type: "boolean", nullable: false),
-                    NeedsTakeNewPassword = table.Column<bool>(type: "boolean", nullable: false),
-                    TemporaryPassword = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
-                    DefaultBranchOfficeId = table.Column<int>(type: "integer", nullable: false),
-                    ApplicationClaimId = table.Column<int>(type: "integer", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationUsers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ApplicationUsers_ApplicationClaims_ApplicationClaimId",
-                        column: x => x.ApplicationClaimId,
-                        principalTable: "ApplicationClaims",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ApplicationUsers_BranchOffices_DefaultBranchOfficeId",
-                        column: x => x.DefaultBranchOfficeId,
-                        principalTable: "BranchOffices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -353,114 +292,64 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ApplicationJwtTokens",
+                name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    JwtToken = table.Column<string>(type: "text", nullable: true),
-                    CurrentlyUsing = table.Column<bool>(type: "boolean", nullable: false),
-                    Device = table.Column<int>(type: "integer", nullable: false),
-                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationJwtTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ApplicationJwtTokens_ApplicationUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
-                        principalTable: "ApplicationUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ApplicationLogins",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    LoginTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    IPAddress = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
+                    Surname = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    UserName = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: true),
+                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: true),
+                    IsMultipleLoginActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsTwoFactorAuthActive = table.Column<bool>(type: "boolean", nullable: false),
+                    NeedsTakeNewPassword = table.Column<bool>(type: "boolean", nullable: false),
+                    TemporaryPassword = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
+                    Discriminator = table.Column<string>(type: "text", nullable: false),
+                    RootClaimId = table.Column<int>(type: "integer", nullable: true),
+                    BranchOfficeId = table.Column<int>(type: "integer", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ApplicationLogins", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ApplicationLogins_ApplicationUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
-                        principalTable: "ApplicationUsers",
+                        name: "FK_Users_BranchOffices_BranchOfficeId",
+                        column: x => x.BranchOfficeId,
+                        principalTable: "BranchOffices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Users_Claims_RootClaimId",
+                        column: x => x.RootClaimId,
+                        principalTable: "Claims",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "ApplicationRoleApplicationUser",
+                name: "RootClaimRootRole",
                 columns: table => new
                 {
-                    ApplicationUsersId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimsId = table.Column<int>(type: "integer", nullable: false),
                     RolesId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ApplicationRoleApplicationUser", x => new { x.ApplicationUsersId, x.RolesId });
+                    table.PrimaryKey("PK_RootClaimRootRole", x => new { x.ClaimsId, x.RolesId });
                     table.ForeignKey(
-                        name: "FK_ApplicationRoleApplicationUser_ApplicationRoles_RolesId",
+                        name: "FK_RootClaimRootRole_Claims_ClaimsId",
+                        column: x => x.ClaimsId,
+                        principalTable: "Claims",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RootClaimRootRole_Roles_RolesId",
                         column: x => x.RolesId,
-                        principalTable: "ApplicationRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ApplicationRoleApplicationUser_ApplicationUsers_Application~",
-                        column: x => x.ApplicationUsersId,
-                        principalTable: "ApplicationUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Logs",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Content = table.Column<string>(type: "text", nullable: true),
-                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LogType = table.Column<int>(type: "integer", nullable: false),
-                    LogAction = table.Column<int>(type: "integer", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Logs", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Logs_ApplicationUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
-                        principalTable: "ApplicationUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Sales",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    SalePersonId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Sales", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sales_ApplicationUsers_SalePersonId",
-                        column: x => x.SalePersonId,
-                        principalTable: "ApplicationUsers",
+                        principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -505,7 +394,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     SoldQuantity = table.Column<int>(type: "integer", nullable: false),
                     CurrentStockQuantity = table.Column<int>(type: "integer", nullable: false, computedColumnSql: "(\"Quantity\")-(\"SoldQuantity\")", stored: true),
                     BranchOfficeId = table.Column<int>(type: "integer", nullable: false),
-                    AttributeKeyValues = table.Column<List<AttributeKeyValue>>(type: "jsonb", nullable: true),
+                    AttributeKeyValues = table.Column<AttributeKeyValue[]>(type: "jsonb", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -522,6 +411,120 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_ProductVariants_MainProducts_ProductMainId",
                         column: x => x.ProductMainId,
                         principalTable: "MainProducts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Logins",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    LoginTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    IpAddress = table.Column<string>(type: "text", nullable: true),
+                    RootUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Logins", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Logins_Users_RootUserId",
+                        column: x => x.RootUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Logs",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Content = table.Column<string>(type: "text", nullable: true),
+                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LogType = table.Column<int>(type: "integer", nullable: false),
+                    LogAction = table.Column<int>(type: "integer", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Logs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Logs_Users_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RootRoleRootUser",
+                columns: table => new
+                {
+                    RolesId = table.Column<int>(type: "integer", nullable: false),
+                    UsersId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RootRoleRootUser", x => new { x.RolesId, x.UsersId });
+                    table.ForeignKey(
+                        name: "FK_RootRoleRootUser_Roles_RolesId",
+                        column: x => x.RolesId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RootRoleRootUser_Users_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SalePersonId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sales", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sales_Users_SalePersonId",
+                        column: x => x.SalePersonId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    JwtToken = table.Column<string>(type: "text", nullable: true),
+                    CurrentlyUsing = table.Column<bool>(type: "boolean", nullable: false),
+                    Device = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -631,70 +634,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         principalColumn: "Id");
                 });
 
-            migrationBuilder.InsertData(
-                table: "ApplicationClaims",
-                columns: new[] { "Id", "CreatedAt", "Description", "IsDeleted", "Name" },
-                values: new object[,]
-                {
-                    { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün ekleme yetkisi.", false, "Product.Add" },
-                    { 2, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün silme yetkisi.", false, "Product.Delete" },
-                    { 3, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün güncelleme yetkisi.", false, "Product.Update" },
-                    { 4, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün listeleme yetkisi.", false, "Product.List" },
-                    { 5, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış yapma yetkisi.", false, "Sale.Add" },
-                    { 6, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış düzenleme yetkisi.", false, "Sale.Update" },
-                    { 7, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube ekleme yetkisi.", false, "BranchOffice.Add" },
-                    { 8, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube düzenleme yetkisi.", false, "BranchOffice.Update" },
-                    { 9, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube silme yetkisi.", false, "BranchOffice.Delete" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "ApplicationRoles",
-                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
-                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Admin" });
-
-            migrationBuilder.InsertData(
-                table: "BranchOffices",
-                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
-                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Merkez Ofis" });
-
-            migrationBuilder.InsertData(
-                table: "Brands",
-                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
-                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "FirstBrand" });
-
-            migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "Id", "CategoryId", "CreatedAt", "IsDeleted", "Name", "SuperCategoryId" },
-                values: new object[,]
-                {
-                    { 1, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "supCategory", null },
-                    { 2, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "subCategory", null }
-                });
-
-            migrationBuilder.InsertData(
-                table: "ApplicationUsers",
-                columns: new[] { "Id", "ApplicationClaimId", "CreatedAt", "DefaultBranchOfficeId", "Email", "IsActive", "IsDeleted", "IsMultipleLoginActive", "IsTwoFactorAuthActive", "Name", "NeedsTakeNewPassword", "PasswordHash", "PasswordSalt", "Surname", "TemporaryPassword" },
-                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), null, new DateTimeOffset(new DateTime(2022, 8, 30, 21, 41, 11, 331, DateTimeKind.Unspecified).AddTicks(8352), new TimeSpan(0, 3, 0, 0, 0)), 1, "admin@entegrasyon.com", true, false, false, false, "Admin", true, null, null, "Admin", "Admin" });
-
-            migrationBuilder.InsertData(
-                table: "MainProducts",
-                columns: new[] { "Id", "Barcode", "BrandId", "CategoryId", "CreatedAt", "Header", "IsDeleted" },
-                values: new object[] { 1L, "123456798", 1, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün Başlığı", false });
-
-            migrationBuilder.InsertData(
-                table: "ProductVariants",
-                columns: new[] { "Id", "AttributeKeyValues", "BranchOfficeId", "CreatedAt", "CurrencyType", "Description", "DimensionalWeight", "IsDeleted", "ListPrice", "ProductMainId", "Quantity", "SalePrice", "SoldQuantity", "StockCode", "Title", "VatRate" },
-                values: new object[,]
-                {
-                    { 1L, null, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "₺", "Açıklama", null, false, 50m, 1L, 0, 54m, 0, "22qwe123456", "Başlık", 8m },
-                    { 2L, null, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "₺", "Açıklama 2", null, false, 50m, 1L, 0, 54m, 0, "22qwe123456", "Başlık 2", 8m }
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationClaimApplicationRole_ApplicationRolesId",
-                table: "ApplicationClaimApplicationRole",
-                column: "ApplicationRolesId");
-
             migrationBuilder.CreateIndex(
                 name: "IX_ApplicationCustomers_Identity",
                 table: "ApplicationCustomers",
@@ -706,42 +645,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 table: "ApplicationCustomers",
                 columns: new[] { "Name", "Surname" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationJwtTokens_ApplicationUserId",
-                table: "ApplicationJwtTokens",
-                column: "ApplicationUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationJwtTokens_Device_ApplicationUserId_CurrentlyUsing",
-                table: "ApplicationJwtTokens",
-                columns: new[] { "Device", "ApplicationUserId", "CurrentlyUsing" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationJwtTokens_JwtToken",
-                table: "ApplicationJwtTokens",
-                column: "JwtToken",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationLogins_ApplicationUserId",
-                table: "ApplicationLogins",
-                column: "ApplicationUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationRoleApplicationUser_RolesId",
-                table: "ApplicationRoleApplicationUser",
-                column: "RolesId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationUsers_ApplicationClaimId",
-                table: "ApplicationUsers",
-                column: "ApplicationClaimId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ApplicationUsers_DefaultBranchOfficeId",
-                table: "ApplicationUsers",
-                column: "DefaultBranchOfficeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_CategoryId",
@@ -762,6 +665,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_Images_ProductVariantId",
                 table: "Images",
                 column: "ProductVariantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logins_RootUserId",
+                table: "Logins",
+                column: "RootUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Logs_ApplicationUserId",
@@ -814,6 +722,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RootClaimRootRole_RolesId",
+                table: "RootClaimRootRole",
+                column: "RolesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RootRoleRootUser_UsersId",
+                table: "RootRoleRootUser",
+                column: "UsersId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SaleItems_ProductVariantId",
                 table: "SaleItems",
                 column: "ProductVariantId");
@@ -827,24 +745,33 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_Sales_SalePersonId",
                 table: "Sales",
                 column: "SalePersonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tokens_JwtToken",
+                table: "Tokens",
+                column: "JwtToken",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tokens_UserId",
+                table: "Tokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_BranchOfficeId",
+                table: "Users",
+                column: "BranchOfficeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_RootClaimId",
+                table: "Users",
+                column: "RootClaimId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ApplicationClaimApplicationRole");
-
-            migrationBuilder.DropTable(
                 name: "ApplicationCustomers");
-
-            migrationBuilder.DropTable(
-                name: "ApplicationJwtTokens");
-
-            migrationBuilder.DropTable(
-                name: "ApplicationLogins");
-
-            migrationBuilder.DropTable(
-                name: "ApplicationRoleApplicationUser");
 
             migrationBuilder.DropTable(
                 name: "CategoryAttributeValues");
@@ -862,6 +789,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "Images");
 
             migrationBuilder.DropTable(
+                name: "Logins");
+
+            migrationBuilder.DropTable(
                 name: "Logs");
 
             migrationBuilder.DropTable(
@@ -877,16 +807,25 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "ReturnProducts");
 
             migrationBuilder.DropTable(
+                name: "RootClaimRootRole");
+
+            migrationBuilder.DropTable(
+                name: "RootRoleRootUser");
+
+            migrationBuilder.DropTable(
                 name: "SaleItems");
 
             migrationBuilder.DropTable(
-                name: "ApplicationRoles");
+                name: "Tokens");
 
             migrationBuilder.DropTable(
                 name: "CategoryAttributes");
 
             migrationBuilder.DropTable(
                 name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "ProductVariants");
@@ -901,7 +840,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "MainProducts");
 
             migrationBuilder.DropTable(
-                name: "ApplicationUsers");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Brands");
@@ -910,10 +849,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "Categories");
 
             migrationBuilder.DropTable(
-                name: "ApplicationClaims");
+                name: "BranchOffices");
 
             migrationBuilder.DropTable(
-                name: "BranchOffices");
+                name: "Claims");
         }
     }
 }

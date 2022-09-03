@@ -13,7 +13,7 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: 649471
   rabbit:
     image: rabbitmq:latest
   entegrasyon.api:

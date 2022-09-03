@@ -1,23 +1,23 @@
 ﻿using Shared.Results;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Shared.Logic
 {
-    static class LogicRunner
+    public static class LogicRunner
     {
+        public static IResult Run(params ValueTuple<IResult,int>[] logics)
+        {
+            var results=logics.OrderBy(x => x.Item2).Select(x=>x.Item1).ToArray();
+            return Run(results);
+        }
         public static IResult Run(params IResult[] results)
         {
-            foreach(var result in results)
+            foreach (var result in results)
             {
-                if(!result.Success)
-                {
+                if (!result.Success)
                     return result;
-                }
             }
             return null;
         }
+        
     }
 }
