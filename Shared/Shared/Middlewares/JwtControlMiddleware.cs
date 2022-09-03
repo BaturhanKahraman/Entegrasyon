@@ -16,9 +16,11 @@ public class JwtControlMiddleware
 
     public async Task Invoke(HttpContext context,IJwtBlackListService blackListService)
     {
-        if(!context.Request.Headers.TryGetValue("Authorization",out _))
+        if(!context.Request.Headers.TryGetValue("Authorization",out var token))
             await _next.Invoke(context);
-        if(await blackListService.CheckBlackListToken(context.User.FindFirst(x=>x.Type==ClaimTypes.NameIdentifier)!.Value))
+        string bearerToken = token.First().Replace("Bearer ", "");
+        if(await blackListService.CheckBlackListToken(context.User.FindFirst(x=>x.Type==ClaimTypes.NameIdentifier)!.Value,
+               bearerToken))
             await _next.Invoke(context);
         else
         {

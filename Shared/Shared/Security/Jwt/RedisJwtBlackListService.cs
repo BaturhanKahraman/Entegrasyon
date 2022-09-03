@@ -11,11 +11,11 @@ public class RedisJwtBlackListService: IJwtBlackListService
     {
         _distributedCache = distributedCache;
     }
-    public async Task<bool> CheckBlackListToken(string userId)
+    public async Task<bool> CheckBlackListToken(string userId,string requestedJwt)
     {
         string fullCacheKey = CreateFullCacheKey(userId);
         var oldJwt = await _distributedCache.GetStringAsync(fullCacheKey);
-        if (string.IsNullOrEmpty(oldJwt))
+        if (string.IsNullOrEmpty(oldJwt) || !string.Equals(requestedJwt,oldJwt))
             return true;
         await _distributedCache.RemoveAsync(fullCacheKey);
         return false;

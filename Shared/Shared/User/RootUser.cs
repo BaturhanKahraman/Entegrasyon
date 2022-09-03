@@ -27,7 +27,7 @@ public class RootUser : GuidEntity
     public string TemporaryPassword { get; set; }
     public virtual List<RootLogin> Logins { get; set; }
     public virtual List<RootRole> Roles { get; set; }
-    public virtual List<RootJwtToken> JwtTokens { get; set; }
+    public List<RootJwtToken> JwtTokens { get; set; }
     public override string ToString()
     {
         return $"{Name} {Surname} {Email}";

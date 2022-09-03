@@ -2,6 +2,6 @@
 
 public interface IJwtBlackListService
 {
-    Task<bool> CheckBlackListToken(string userId);
+    Task<bool> CheckBlackListToken(string userId,string requestedJwt);
     Task AddTokenToBlackList(string token,DateTime expiresAt,string userId);
 }

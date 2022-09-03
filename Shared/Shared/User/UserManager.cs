@@ -54,6 +54,8 @@ where TUser:RootUser,new()
     }
 
     private async Task<TUser> GetUser(Expression<Func<TUser,bool>> expr) =>
-        await  _userContext.Users.FirstOrDefaultAsync(expr);
+        await  _userContext.Users
+            .Include(x=>x.JwtTokens.Where(jwt=>jwt.CurrentlyUsing && jwt.ExpiresAt>DateTimeOffset.Now))
+            .FirstOrDefaultAsync(expr);
     
 }
