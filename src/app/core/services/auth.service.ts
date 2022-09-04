@@ -6,13 +6,16 @@ import { environment } from 'src/environments/environment';
 import { LoginModel } from 'src/app/shared/models/login.model'; 
 import { Result } from 'src/app/shared/models/result.model'; 
 import { User } from 'src/app/shared/models/user.model'; 
+import { LoginFirstPasswordModel } from 'src/app/shared/models/login-first-password.model';
+import { LoginSetPasswordModel } from 'src/app/shared/models/login-set-password.model';
 
-interface TokenResult {
+class TokenResult {
   token: string;
   expiration: Date;
 }
 @Injectable()
 export class AuthService {
+
   private url = environment.url+'auth/';
   private userData = "userData";
   private userSubject = new BehaviorSubject<User|null>(null);
@@ -34,13 +37,24 @@ export class AuthService {
   }
 
   login(model: LoginModel) {
-    return this.http.post<Result<TokenResult>>(this.url + 'login', model).pipe(
+    return this.http.post<Result<TokenResult> | Result<LoginFirstPasswordModel>>(this.url + 'login', model)
+    .pipe(
       tap((x) => {
-        this.handleAuth(x.data.token);
-        localStorage.setItem(this.userData,x.data.token);
-        this.router.navigateByUrl("/");
+        if((<LoginFirstPasswordModel>x.data).needsToTakePassword){
+          this.router.navigate(["auth","set-password"],{queryParams:{userId:(<LoginFirstPasswordModel>x.data).userId}})
+        }
+      }),
+      tap(x=>{
+        if((<TokenResult>x.data).token){
+            this.handleAuth((<TokenResult>x.data).token);
+            localStorage.setItem(this.userData,(<TokenResult>x.data).token);
+            this.router.navigateByUrl("/");
+        }
       })
     );
+  }
+  setFirstPassword(loginSetPassword: LoginSetPasswordModel) {
+    return this.http.post<Result<null>>(this.url + 'AssignFirstPassword',loginSetPassword);
   }
   logout(){
     localStorage.removeItem(this.userData);

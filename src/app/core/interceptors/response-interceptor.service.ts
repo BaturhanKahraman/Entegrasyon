@@ -14,11 +14,11 @@ export class ResponseInterceptorService implements HttpInterceptor {
   }
   
   private handleError(errorRes:HttpErrorResponse){
-    let errorMessage = 'Bir hata meydana geldi.';        
-    if (errorRes.error.message) {
-      errorMessage=errorRes.error.message;
+    let errorMessage = 'Bir hata meydana geldi.';
+    if (errorRes.error) {
+      errorMessage=errorRes.error;
     }
-    this.snackBar.open(errorMessage,undefined,{duration:5000});
+    this.snackBar.open(errorMessage,"Tamam",{duration:5000});
     return throwError(()=>new Error(errorMessage));
   }
 }
