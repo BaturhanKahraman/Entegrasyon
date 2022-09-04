@@ -35,6 +35,13 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
-
+        [HttpGet]
+        public async Task<IActionResult> LogOut(string userId)
+        {
+            var result = await _authManager.LogOut(userId);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
     }
 }

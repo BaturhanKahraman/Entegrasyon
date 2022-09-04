@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Castle.Core.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Helpers;
 using Shared.Security.Jwt;
@@ -15,14 +16,5 @@ public static class ServiceCollectionExtension
         serviceCollection.AddScoped<ITokenHelper, JwtHelper>();
         return serviceCollection;
     }
-
-    public static IServiceCollection AddDbContextWithUser<TContext,TUser>
-        (this IServiceCollection serviceCollection,Action<DbContextOptionsBuilder> options)
-        where TContext : UserContext<TUser>
-        where TUser:RootUser
-    {
-        serviceCollection.AddDbContext<TContext>(options);
-        serviceCollection.AddDbContext<UserContext<TUser>>(options);
-        return serviceCollection;
-    }
+    
 }

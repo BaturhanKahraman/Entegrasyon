@@ -296,21 +296,25 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
-                    Surname = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
-                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
+                    Surname = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: true),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     UserName = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: true),
                     PasswordHash = table.Column<byte[]>(type: "bytea", nullable: true),
-                    IsMultipleLoginActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsTwoFactorAuthActive = table.Column<bool>(type: "boolean", nullable: false),
                     NeedsTakeNewPassword = table.Column<bool>(type: "boolean", nullable: false),
                     TemporaryPassword = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
+                    WebJwtToken = table.Column<string>(type: "text", nullable: true),
+                    WebJwtTokenExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    MobileJwtToken = table.Column<string>(type: "text", nullable: true),
+                    MobileJwtTokenExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Discriminator = table.Column<string>(type: "text", nullable: false),
                     RootClaimId = table.Column<int>(type: "integer", nullable: true),
-                    BranchOfficeId = table.Column<int>(type: "integer", nullable: true),
+                    DefaultBranchOfficeId = table.Column<int>(type: "integer", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -318,11 +322,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_BranchOffices_BranchOfficeId",
-                        column: x => x.BranchOfficeId,
+                        name: "FK_Users_BranchOffices_DefaultBranchOfficeId",
+                        column: x => x.DefaultBranchOfficeId,
                         principalTable: "BranchOffices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Users_Claims_RootClaimId",
                         column: x => x.RootClaimId,
@@ -507,29 +510,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tokens",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    JwtToken = table.Column<string>(type: "text", nullable: true),
-                    CurrentlyUsing = table.Column<bool>(type: "boolean", nullable: false),
-                    Device = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Tokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Images",
                 columns: table => new
                 {
@@ -632,6 +612,39 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         column: x => x.SaleId,
                         principalTable: "Sales",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "BranchOffices",
+                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
+                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Merkez Ofis" });
+
+            migrationBuilder.InsertData(
+                table: "Brands",
+                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
+                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "FirstBrand" });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "CategoryId", "CreatedAt", "IsDeleted", "Name", "SuperCategoryId" },
+                values: new object[,]
+                {
+                    { 1, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "supCategory", null },
+                    { 2, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "subCategory", 1 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "MainProducts",
+                columns: new[] { "Id", "Barcode", "BrandId", "CategoryId", "CreatedAt", "Header", "IsDeleted" },
+                values: new object[] { 1L, "123456798", 1, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün Başlığı", false });
+
+            migrationBuilder.InsertData(
+                table: "ProductVariants",
+                columns: new[] { "Id", "AttributeKeyValues", "BranchOfficeId", "CreatedAt", "CurrencyType", "Description", "DimensionalWeight", "IsDeleted", "ListPrice", "ProductMainId", "Quantity", "SalePrice", "SoldQuantity", "StockCode", "Title", "VatRate" },
+                values: new object[,]
+                {
+                    { 1L, null, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "₺", "Açıklama", null, false, 50m, 1L, 0, 54m, 0, "22qwe123456", "Başlık", 8m },
+                    { 2L, null, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "₺", "Açıklama 2", null, false, 50m, 1L, 0, 54m, 0, "22qwe123456", "Başlık 2", 8m }
                 });
 
             migrationBuilder.CreateIndex(
@@ -747,20 +760,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "SalePersonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tokens_JwtToken",
-                table: "Tokens",
-                column: "JwtToken",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tokens_UserId",
-                table: "Tokens",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_BranchOfficeId",
+                name: "IX_Users_DefaultBranchOfficeId",
                 table: "Users",
-                column: "BranchOfficeId");
+                column: "DefaultBranchOfficeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_RootClaimId",
@@ -814,9 +816,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "SaleItems");
-
-            migrationBuilder.DropTable(
-                name: "Tokens");
 
             migrationBuilder.DropTable(
                 name: "CategoryAttributes");

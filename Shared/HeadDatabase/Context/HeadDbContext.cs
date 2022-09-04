@@ -6,17 +6,9 @@ namespace MainDatabase.Context;
 
 public class HeadDbContext : DbContext
 {
-    private readonly IConfiguration _configuration;
-    public HeadDbContext(IConfiguration configuration)
+    public HeadDbContext(DbContextOptions<HeadDbContext> opt):base(opt)
     {
-        _configuration = configuration;
-    }
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        //optionsBuilder.UseSqlite("Data Source=Database/MainDatabase.db");
-        optionsBuilder.UseNpgsql(_configuration.GetConnectionString("Main"));
-
-        base.OnConfiguring(optionsBuilder);
+        
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

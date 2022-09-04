@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity;
+﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
@@ -10,20 +11,18 @@ using Shared.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
-public class IntegrationDbContext:UserContext<ApplicationUser>
+public class IntegrationDbContext:DbContext
 {
-    
-    public IntegrationDbContext(DbContextOptions<IntegrationDbContext> options):base(options)
+    public IntegrationDbContext(DbContextOptions<IntegrationDbContext> options) : base(options)
     {
-        
+
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ProductVariant>().Property(x => x.CurrentStockQuantity)
             .HasComputedColumnSql("(\"Quantity\")-(\"SoldQuantity\")",true);
-
-        //modelBuilder.Seed();
+        modelBuilder.Seed();
         base.OnModelCreating(modelBuilder);
     }
 
@@ -47,5 +46,13 @@ public class IntegrationDbContext:UserContext<ApplicationUser>
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ApplicationLog> Logs { get; set; }
     public DbSet<ApplicationCustomer> ApplicationCustomers { get; set; }
-    
+
+    public DbSet<ApplicationUser> Users { get; set; }
+    public DbSet<RootRole> Roles { get; set; }
+    public DbSet<RootClaim> Claims { get; set; }
+    public DbSet<RootLogin> Logins { get; set; }
+
+
+
+
 }

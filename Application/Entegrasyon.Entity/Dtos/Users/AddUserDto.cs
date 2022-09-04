@@ -15,6 +15,7 @@ public record AddUserDto
     public string Name { get; init; }
     [StringLength(maximumLength: 80,ErrorMessage = "En fazla 80 karakterden oluşabilir")]
     public string Surname { get; init; }
+
     [Required(ErrorMessage = "Lütfen kullanıcının ekleneceği ofisi seçin.")]
     public int BranchOfficeId { get; set; }
 }

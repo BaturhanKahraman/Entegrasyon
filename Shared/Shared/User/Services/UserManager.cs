@@ -9,15 +9,16 @@ using Shared.Security;
 
 namespace Shared.User.Services;
 
-public class UserManager<TUser> : IUserManager<TUser>
+public class UserManager<TUser,TContext> : IUserManager<TUser>
 where TUser : RootUser, new()
+where TContext : DbContext
 {
     private readonly IRandomGenerator _randomGenerator;
-    private readonly UserContext<TUser> _userContext;
-    public UserManager(IRandomGenerator randomGenerator, UserContext<TUser> userContext)
+    private readonly TContext _context;
+    public UserManager(IRandomGenerator randomGenerator,TContext context)
     {
         _randomGenerator = randomGenerator;
-        _userContext = userContext;
+        _context = context;
     }
     public async Task<IResult> CreateUserAsync(TUser user, string password)
     {
@@ -34,8 +35,9 @@ where TUser : RootUser, new()
         {
             user.NormalizedEmail = user.Email.NormalizeEmail();
         }
-        await _userContext.Users.AddAsync(user);
-        await _userContext.SaveChangesAsync();
+        user.NormalizedUserName = user.UserName.ToUpperInvariant();
+        await _context.Set<TUser>().AddAsync(user);
+        await _context.SaveChangesAsync();
         return new SuccessResult();
     }
 
@@ -43,43 +45,44 @@ where TUser : RootUser, new()
     {
         user.IsActive = false;
         user.IsDeleted = true;
-        _userContext.Users.Update(user);
-        await _userContext.SaveChangesAsync();
+        _context.Set<TUser>().Update(user);
+        await _context.SaveChangesAsync();
     }
 
     public async Task CreateTemporaryPasswordAsync(TUser user)
     {
         user.TemporaryPassword = _randomGenerator.GetRandomCode(15);
-        _userContext.Users.Update(user);
-        await _userContext.SaveChangesAsync();
+        _context.Set<TUser>().Update(user);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<TUser> GetByEmail(string email)
     {
         email.ThrowIfNullOrEmpty();
         string normalizedEmail = email.NormalizeEmail();
-        return await GetUser(x => x.NormalizedEmail == normalizedEmail,false);
+        return await GetUserAsync(x => x.NormalizedEmail == normalizedEmail,false);
     }
 
     public async Task<TUser> GetByUserName(string userName)
     {
         userName.ThrowIfNullOrEmpty();
-        return await GetUser(x => string.Equals(x.UserName, userName),false);
+        userName = userName.ToUpperInvariant();
+        return await GetUserAsync(x => x.NormalizedUserName==userName,false);
     }
 
     public async Task CreateUserPassword(string password, string userId)
     {
-        var user = await GetUser(x=>x.Id==Guid.Parse(userId),true);
+        var user = await GetUserAsync(x=>x.Id==Guid.Parse(userId),true);
         AssignPassword(user, password);
         user.NeedsTakeNewPassword = false;
-        _userContext.Users.Update(user);
-        await _userContext.SaveChangesAsync();
+        _context.Set<TUser>().Update(user);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateUser(TUser user)
     {
-        _userContext.Users.Update(user);
-        await _userContext.SaveChangesAsync();
+        _context.Set<TUser>().Update(user);
+        await _context.SaveChangesAsync();
     }
 
     private static void AssignPassword(TUser user, string password)
@@ -91,12 +94,18 @@ where TUser : RootUser, new()
 
     private async Task<IResult> CheckIfTheSameUserExits(TUser user)
     {
-        if (await _userContext.Users.AnyAsync(x => string.Equals(x.NormalizedEmail, user.Email.NormalizeEmail())) ||
-           await _userContext.Users.AnyAsync(u => string.Equals(u.UserName, user.UserName)))
-            return new ErrorResult(Messages.LoginFailedAlreadyExists);
+        if (await _context.Set<TUser>().AnyAsync(x => string.Equals(x.NormalizedEmail, user.Email.NormalizeEmail())) ||
+           await _context.Set<TUser>().AnyAsync(u => string.Equals(u.UserName, user.UserName)))
+            return new ErrorResult(Messages.RegisterFailedAlreadyExists);
         return new SuccessResult();
     }
-    public  Task<TUser> GetUser(Expression<Func<TUser, bool>> expr,bool isTracking) =>
-         isTracking? _userContext.Users.FirstOrDefaultAsync(expr) : _userContext.Users.AsNoTracking().FirstOrDefaultAsync(expr);
-
+    public  Task<TUser> GetUserAsync(Expression<Func<TUser, bool>> expr,bool isTracking) =>
+         isTracking? _context.Set<TUser>().FirstOrDefaultAsync(expr) : _context.Set<TUser>().AsNoTracking().FirstOrDefaultAsync(expr);
+    public Task<TUser> GetUserFullInformation(Expression<Func<TUser,bool>> expr) =>
+         _context.Set<TUser>()
+             .Include(x=>x.Logins)
+             .Include(x=>x.Roles)
+                .ThenInclude(x=>x.Claims)
+             .AsNoTracking()
+             .FirstOrDefaultAsync(expr);
 }

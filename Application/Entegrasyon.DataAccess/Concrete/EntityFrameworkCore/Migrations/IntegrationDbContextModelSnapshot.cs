@@ -78,6 +78,15 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("BranchOffices");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Merkez Ofis"
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
@@ -110,6 +119,23 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "supCategory"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "subCategory",
+                            SuperCategoryId = 1
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttribute", b =>
@@ -460,6 +486,15 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "FirstBrand"
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.MainProduct", b =>
@@ -496,6 +531,18 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("MainProducts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Barcode = "123456798",
+                            BrandId = 1,
+                            CategoryId = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Header = "Ürün Başlığı",
+                            IsDeleted = false
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.ProductVariant", b =>
@@ -565,6 +612,44 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("ProductMainId");
 
                     b.ToTable("ProductVariants");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            BranchOfficeId = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CurrencyType = "₺",
+                            CurrentStockQuantity = 50,
+                            Description = "Açıklama",
+                            IsDeleted = false,
+                            ListPrice = 50m,
+                            ProductMainId = 1L,
+                            Quantity = 0,
+                            SalePrice = 54m,
+                            SoldQuantity = 0,
+                            StockCode = "22qwe123456",
+                            Title = "Başlık",
+                            VatRate = 8m
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            BranchOfficeId = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CurrencyType = "₺",
+                            CurrentStockQuantity = 30,
+                            Description = "Açıklama 2",
+                            IsDeleted = false,
+                            ListPrice = 50m,
+                            ProductMainId = 1L,
+                            Quantity = 0,
+                            SalePrice = 54m,
+                            SoldQuantity = 0,
+                            StockCode = "22qwe123456",
+                            Title = "Başlık 2",
+                            VatRate = 8m
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.ChangeProduct", b =>
@@ -850,6 +935,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<byte[]>("PasswordHash")
                         .HasColumnType("bytea");

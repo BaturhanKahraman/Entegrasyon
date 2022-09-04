@@ -1,0 +1,56 @@
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using Microsoft.Extensions.Logging;
+
+namespace Shared.Middlewares
+{
+    public class ExceptionMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly ILogger _logger;
+
+        public ExceptionMiddleware(RequestDelegate request,ILogger<ExceptionMiddleware> logger)
+        {
+            _next = request;
+            _logger = logger;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            try
+            {
+                await _next.Invoke(context);
+            }
+            catch(Exception e)
+            {
+                await HandleExceptionAsync(context,e);
+            }
+        }
+
+        private async Task HandleExceptionAsync(HttpContext httpContext,Exception e)
+        {
+            httpContext.Response.ContentType = "application/json";
+            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+            string message = "Sistemsel bir hata oluşmuştur.";
+            if(e is ValidationException validation)
+            {
+                httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                //_logger.LogWarning(e,await httpContext.GetRequestInfosAsync());
+                message = validation.Message;
+            }
+            if(e.GetType() == typeof(TaskCanceledException))
+            {
+                message = e.Message;
+                httpContext.Response.StatusCode = 499;
+            }
+            else
+            {
+                _logger.LogError(e.ToString());
+            }
+
+            await httpContext.Response.WriteAsync(message);
+        }
+    }
+}

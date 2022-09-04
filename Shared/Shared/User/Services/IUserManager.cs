@@ -14,5 +14,6 @@ public interface IUserManager<TUser>
     Task<IResult> CreateUserAsync(TUser user);
     Task CreateUserPassword(string password, string userId);
     Task UpdateUser(TUser user);
-    Task<TUser> GetUser(Expression<Func<TUser, bool>> expr,bool isTracking);
+    Task<TUser> GetUserAsync(Expression<Func<TUser, bool>> expr,bool isTracking);
+    Task<TUser> GetUserFullInformation(Expression<Func<TUser,bool>> expr);
 }

@@ -26,13 +26,19 @@ public class AuthManager
         _tokenHelper = tokenHelper;
         _httpContext = httpContextAccessor.HttpContext;
     }
+    // TODO
+    // SIGNINMANAGER 
     public async Task<IResult> LoginAsync(string userName,string password)
     {
         var user = await _userManager.GetByUserName(userName);
         if (user==null)
             return new ErrorResult(Messages.LoginFailedWrongPassword);
-        if (user.NeedsTakeNewPassword && password == user.TemporaryPassword)
-          return new SuccessDataResult<LoginNewPasswordDto>(new LoginNewPasswordDto(true));
+        if (user.NeedsTakeNewPassword)
+        {
+            if(password == user.TemporaryPassword)
+                return new SuccessDataResult<LoginNewPasswordDto>(new LoginNewPasswordDto(true,user.Id.ToString()),"Şifre alma sayfasına yönlendiriliyorsunuz.");
+            return new ErrorResult(Messages.LoginFailedWrongPassword);
+        }
         var result =LogicRunner.Run(
             (ValidatePassword(password,user),1),
                 (CheckIfUserActive(user),2));
@@ -59,12 +65,11 @@ public class AuthManager
         }
         await _userManager.UpdateUser(user);
         return new SuccessDataResult<AccessToken>(newToken);
-
     }
     public async Task<IResult> TakeNewPasswordAsync(string password,string userId)
     {
         await _userManager.CreateUserPassword(password,userId);
-        return new SuccessResult();
+        return new SuccessResult(Messages.FirstPasswordAssigned);
     }
 
     private static IResult ValidatePassword(string password,ApplicationUser user)
@@ -80,5 +85,23 @@ public class AuthManager
         if(!user.IsActive)
             return new ErrorResult("Hesabınız aktif değildir. Lütfen sistem yöneticisi ile irtibata geçin.");
         return new SuccessResult();
+    }
+
+    public async Task<IResult> LogOut(string userId)
+    {
+        var user = await _userManager.GetUserAsync(x => x.Id == Guid.Parse(userId),false);
+        if (_httpContext.IsMobileDevice())
+        {
+            user.MobileJwtToken=string.Empty;
+            user.MobileJwtTokenExpiresAt=DateTimeOffset.MinValue;
+        }
+        else
+        {
+            user.WebJwtToken = string.Empty;
+            user.WebJwtTokenExpiresAt=DateTimeOffset.MinValue;
+        }
+
+        await _userManager.UpdateUser(user);
+        return new SuccessResult(Messages.LogOut);
     }
 }

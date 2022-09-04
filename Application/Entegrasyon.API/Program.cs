@@ -16,17 +16,27 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddLogging();
 
-builder.Services.AddDbContextWithUser<IntegrationDbContext,ApplicationUser>(opt =>
-{
-    opt.UseNpgsql("Server=db;Port=5432;Database=Demo;User Id=postgres;Password=649471;");
-});
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
-builder.Services.AddDbContext<HeadDbContext>();
+
+builder.Services.AddCors(options =>
+    options.AddPolicy("myclient",policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
+builder.Services.AddDbContext<IntegrationDbContext>(x =>
+{
+    x.UseNpgsql("Server=db;Port=5432;Database=Demo3;User Id=Baturhan;Password=649471;");
+});
+builder.Services.AddDbContext<HeadDbContext>(x =>
+{
+    x.UseNpgsql(builder.Configuration.GetConnectionString("Main"));
+});
 builder.Services.AddSharedSettings();
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
 
-builder.Services.AddScoped(typeof(IUserManager<>),typeof(UserManager<>));
+builder.Services.AddScoped<IUserManager<ApplicationUser>,UserManager<ApplicationUser,IntegrationDbContext>>();
+
 builder.Services.AddScoped<AuthManager>();
 builder.Services.AddScoped<ApplicationUserManager>();
 builder.Services.AddAutoMapper(x =>
@@ -57,13 +67,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 var app = builder.Build();
-
+app.AddCustomExceptionHandlerMiddleware();
 // Configure the HTTP request pipeline.
 if(app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("myclient");
 
 await using var scope = app.Services.CreateAsyncScope();
 

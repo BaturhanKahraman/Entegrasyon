@@ -1,3 +1,3 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Auth;
 
-public record LoginNewPasswordDto(bool NeedsToTakePassword);
+public record LoginNewPasswordDto(bool NeedsToTakePassword,string UserId);

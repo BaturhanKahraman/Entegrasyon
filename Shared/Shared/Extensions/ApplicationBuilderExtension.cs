@@ -9,4 +9,9 @@ public static class ApplicationBuilderExtension
     {
         builder.UseMiddleware<JwtControlMiddleware>();
     }
+
+    public static void AddCustomExceptionHandlerMiddleware(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<ExceptionMiddleware>();
+    }
 }

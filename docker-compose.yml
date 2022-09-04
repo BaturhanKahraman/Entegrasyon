@@ -11,11 +11,25 @@ services:
       - ./data:/data
   db:
     image: postgres:latest
+    container_name: pg_container
     restart: always
     environment:
+      POSTGRES_USER: Baturhan
       POSTGRES_PASSWORD: 649471
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
   rabbit:
     image: rabbitmq:latest
+    container_name: rabbitmq_container
   entegrasyon.api:
     image: ${DOCKER_REGISTRY-}entegrasyonapi
     build:
@@ -24,6 +38,3 @@ services:
     depends_on:
       - redis
       - db
-    
-  
-      
