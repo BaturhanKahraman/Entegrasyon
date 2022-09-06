@@ -1,6 +1,8 @@
 using System.Text;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.MapperProfiles;
+using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using MainDatabase.Context;
@@ -9,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
 using Shared.Security.Jwt;
+using Shared.User;
 using Shared.User.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,16 +29,17 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=Demo3;User Id=Baturhan;Password=649471;");
+    x.UseNpgsql("Server=db;Port=5432;Database=Demo2;User Id=Baturhan;Password=649471;");
 });
 builder.Services.AddDbContext<HeadDbContext>(x =>
 {
     x.UseNpgsql(builder.Configuration.GetConnectionString("Main"));
 });
 builder.Services.AddSharedSettings();
+builder.Services.AddUserServices<ApplicationUser, RootLogin, IntegrationDbContext>();
+builder.Services.AddScoped<ILogDal, EfLogDal>();
+builder.Services.AddScoped<ApplicationLogManager>();
 builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
-
-builder.Services.AddScoped<IUserManager<ApplicationUser>,UserManager<ApplicationUser,IntegrationDbContext>>();
 
 builder.Services.AddScoped<AuthManager>();
 builder.Services.AddScoped<ApplicationUserManager>();

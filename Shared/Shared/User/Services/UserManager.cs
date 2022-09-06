@@ -10,7 +10,7 @@ using Shared.Security;
 namespace Shared.User.Services;
 
 public class UserManager<TUser,TContext> : IUserManager<TUser>
-where TUser : RootUser, new()
+where TUser : RootUser
 where TContext : DbContext
 {
     private readonly IRandomGenerator _randomGenerator;
@@ -67,16 +67,17 @@ where TContext : DbContext
     {
         userName.ThrowIfNullOrEmpty();
         userName = userName.ToUpperInvariant();
-        return await GetUserAsync(x => x.NormalizedUserName==userName,false);
+        return await GetUserAsync(x => x.NormalizedUserName == userName,false);
     }
 
-    public async Task CreateUserPassword(string password, string userId)
+    public async Task<IResult> CreateUserPasswordAsync(string password, string userId)
     {
         var user = await GetUserAsync(x=>x.Id==Guid.Parse(userId),true);
         AssignPassword(user, password);
         user.NeedsTakeNewPassword = false;
         _context.Set<TUser>().Update(user);
         await _context.SaveChangesAsync();
+        return new SuccessResult(Messages.PasswordCreated);
     }
 
     public async Task UpdateUser(TUser user)
@@ -108,4 +109,6 @@ where TContext : DbContext
                 .ThenInclude(x=>x.Claims)
              .AsNoTracking()
              .FirstOrDefaultAsync(expr);
+
+    public Task<List<TUser>> GetUsers() => _context.Set<TUser>().AsNoTracking().ToListAsync();
 }

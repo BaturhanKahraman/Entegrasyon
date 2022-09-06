@@ -3,6 +3,7 @@
 public enum LogType
 {
     User,
+    Auth,
     Order,
     Product,
     Branch,

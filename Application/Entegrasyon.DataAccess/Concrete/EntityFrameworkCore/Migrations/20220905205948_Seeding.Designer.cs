@@ -4,6 +4,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    partial class IntegrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220905205948_Seeding")]
+    partial class Seeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1060,6 +1062,25 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Users");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("RootUser");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2022, 9, 5, 23, 59, 47, 651, DateTimeKind.Unspecified).AddTicks(2827), new TimeSpan(0, 3, 0, 0, 0)),
+                            Email = "admin@admin.com",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsTwoFactorAuthActive = false,
+                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Admin",
+                            NeedsTakeNewPassword = true,
+                            NormalizedUserName = "ADMIN",
+                            Surname = "Admin",
+                            TemporaryPassword = "Admin",
+                            UserName = "Admin",
+                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
@@ -1074,25 +1095,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Users");
 
                     b.HasDiscriminator().HasValue("ApplicationUser");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
-                            CreatedAt = new DateTimeOffset(new DateTime(2022, 9, 6, 0, 40, 21, 544, DateTimeKind.Unspecified).AddTicks(5429), new TimeSpan(0, 3, 0, 0, 0)),
-                            Email = "admin@admin.com",
-                            IsActive = true,
-                            IsDeleted = false,
-                            IsTwoFactorAuthActive = false,
-                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Name = "Admin",
-                            NeedsTakeNewPassword = true,
-                            NormalizedUserName = "ADMIN",
-                            Surname = "Admin",
-                            TemporaryPassword = "Admin",
-                            UserName = "Admin",
-                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>

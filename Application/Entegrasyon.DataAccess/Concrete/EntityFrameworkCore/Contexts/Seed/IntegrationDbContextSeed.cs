@@ -16,7 +16,19 @@ public static class IntegrationDbContextSeed
             Id = 1,
             Name = "Merkez Ofis"
         });
-        
+        modelBuilder.Entity<ApplicationUser>().HasData(new ApplicationUser()
+        {
+            Id = new Guid("DFDA5D4A-F807-408C-9B4D-908830AD5724"),
+            Name = "Admin",
+            Surname = "Admin",
+            UserName = "Admin",
+            NormalizedUserName = "ADMIN",
+            Email = "admin@admin.com",
+            NeedsTakeNewPassword = true,
+            TemporaryPassword = "Admin",
+            DefaultBranchOfficeId = 1
+        });
+        UserContextSeed.SeedDatabase(modelBuilder);
         modelBuilder.Entity<Brand>().HasData(new Brand()
         {
             Id = 1,

@@ -65,16 +65,6 @@ public static class UserContextSeed
             Id = 1,
             Name = "Admin"
         });
-        modelBuilder.Entity<RootUser>().HasData(new RootUser()
-        {
-            Id = new Guid("DFDA5D4A-F807-408C-9B4D-908830AD5724"),
-            Name = "Admin",
-            Surname = "Admin",
-            UserName = "Admin",
-            NormalizedUserName = "ADMIN",
-            Email = "admin@admin.com",
-            NeedsTakeNewPassword = true,
-            TemporaryPassword = "Admin"
-        });
+       
     }
 }

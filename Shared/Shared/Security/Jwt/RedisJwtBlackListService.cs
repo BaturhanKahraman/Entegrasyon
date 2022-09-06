@@ -23,6 +23,8 @@ public class RedisJwtBlackListService: IJwtBlackListService
 
     public async Task AddTokenToBlackList(string token,DateTime expiresAt,string userId)
     {
+        //TODO
+        //eklenirken eskini ezmemesi lazım.
         var fullCacheKey = CreateFullCacheKey(userId);
         await _distributedCache.SetStringAsync(fullCacheKey, token, new DistributedCacheEntryOptions()
         {
