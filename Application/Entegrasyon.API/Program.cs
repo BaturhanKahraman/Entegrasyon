@@ -1,18 +1,21 @@
 using System.Text;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.MapperProfiles;
+using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
+using FluentValidation;
 using MainDatabase.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
 using Shared.Security.Jwt;
 using Shared.User;
-using Shared.User.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddLogging();
-
+builder.Services.Configure<ApiBehaviorOptions>(o=>o.SuppressModelStateInvalidFilter=true);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
 
 builder.Services.AddCors(options =>
@@ -39,10 +42,16 @@ builder.Services.AddSharedSettings();
 builder.Services.AddUserServices<ApplicationUser, RootLogin, IntegrationDbContext>();
 builder.Services.AddScoped<ILogDal, EfLogDal>();
 builder.Services.AddScoped<ApplicationLogManager>();
-builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
+builder.Services.Configure<Shared.Security.Jwt.TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
 
 builder.Services.AddScoped<AuthManager>();
+builder.Services.AddScoped<IApplicationUserDal,EfApplicationUserDal>();
 builder.Services.AddScoped<ApplicationUserManager>();
+builder.Services.AddScoped<IBranchOfficeDal,EfBranchOfficeDal>();
+builder.Services.AddScoped<BranchOfficeManager>();
+
+
+builder.Services.AddScoped<IValidator<BranchOffice>, BranchValidator>();
 builder.Services.AddAutoMapper(x =>
 {
     x.AddProfile<UserProfile>();

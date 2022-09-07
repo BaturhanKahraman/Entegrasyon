@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="Dtos\Auth\" />
+    <Folder Include="Dtos\Branches\" />
   </ItemGroup>
 
 </Project>

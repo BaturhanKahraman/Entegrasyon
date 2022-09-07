@@ -1,6 +1,6 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Users;
 
-public class UserDetailListDto
+public record UserDetailListDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

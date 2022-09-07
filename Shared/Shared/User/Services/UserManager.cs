@@ -73,6 +73,8 @@ where TContext : DbContext
     public async Task<IResult> CreateUserPasswordAsync(string password, string userId)
     {
         var user = await GetUserAsync(x=>x.Id==Guid.Parse(userId),true);
+        if(!user.NeedsTakeNewPassword)
+            return new ErrorResult(Messages.CantChangePassword);
         AssignPassword(user, password);
         user.NeedsTakeNewPassword = false;
         _context.Set<TUser>().Update(user);

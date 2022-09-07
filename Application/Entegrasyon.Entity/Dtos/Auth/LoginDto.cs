@@ -1,3 +1,5 @@
-﻿namespace Entegrasyon.Entity.Dtos.Auth;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record LoginDto(string UserName,string Password);
+namespace Entegrasyon.Entity.Dtos.Auth;
+
+public record LoginDto([Required]string UserName,string Password);

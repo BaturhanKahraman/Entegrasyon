@@ -41,9 +41,8 @@ where TContext : DbContext
 
     public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity,bool>> expression = null,bool isTracking = false)
     {
-        return isTracking
-            ? await _context.Set<TEntity>().Where(expression).ToListAsync()
-            : await _context.Set<TEntity>().AsNoTracking().Where(expression).ToListAsync();
+        var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
+        return expression == null ? await entities.ToListAsync() : await entities.Where(expression).ToListAsync();
     }
     public async Task<List<TEntity>> GetAllPageableAsync(Expression<Func<TEntity,bool>> expression,int page,int pageSize,bool isTracking = false)
     {

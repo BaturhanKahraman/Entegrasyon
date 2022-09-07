@@ -27,9 +27,17 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
         [HttpGet]
+        public async Task<IActionResult> GetPaginatedUserDetailList(int page=1,int itemNumber=50)
+        {
+            var result = await _applicationUserManager.GetPaginatedUserDetails(null,page,itemNumber);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+        [HttpGet]
         public async Task<IActionResult> GetUserDetailList()
         {
-            var result = await _applicationUserManager.GetUsers();
+            var result = await _applicationUserManager.GetUserDetails();
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

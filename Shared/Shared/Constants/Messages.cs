@@ -8,4 +8,6 @@ public static class Messages
     public const string LogOut = "Başarı ile çıkış yapıldı.";
     public const string AccountNotActive = "Hesabınız aktif değildir. Lütfen sistem yöneticisi ile irtibata geçin.";
     public const string PasswordCreated = "Şifre başarı ile değiştirildi.";
+    public const string CantChangePassword = "Şifre değiştirme başarısız. Kullanıcının şifresini değiştirme izni yok.";
+    public const string BranchAdded = "Ofis başarı ile eklendi.";
 }

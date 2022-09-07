@@ -49,7 +49,8 @@ namespace Shared.Security.Jwt
                 new (ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new (ClaimTypes.Email, user.Email),
                 new (ClaimTypes.Name,user.Name),
-                new (ClaimTypes.Surname,user.Surname)
+                new (ClaimTypes.Surname,user.Surname),
+                new (ClaimTypes.GivenName,user.UserName)
             };
 
             var userClaims =user.Roles.SelectMany(x => x.Claims)

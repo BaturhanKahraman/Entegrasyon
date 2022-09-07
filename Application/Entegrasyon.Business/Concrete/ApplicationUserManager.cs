@@ -47,13 +47,16 @@ public class ApplicationUserManager
         var users = await _userManager.GetUsers();
         return new SuccessDataResult<List<ApplicationUser>>(users);
     }
-    //TODO
     public async Task<IDataResult<List<UserDetailListDto>>> GetPaginatedUserDetails(Expression<Func<ApplicationUser,bool>> expression=null,int page=1,int itemCount=50)
     {
         var result =await _applicationUserDal.GetPagedUserDetailList(expression, itemCount, page);
         return new SuccessDataResult<List<UserDetailListDto>>(result);
     }
-
+    public async Task<IDataResult<List<UserDetailListDto>>> GetUserDetails(Expression<Func<ApplicationUser,bool>> expression = null)
+    {
+        var result = await _applicationUserDal.GetUserDetailList(expression);
+        return new SuccessDataResult<List<UserDetailListDto>>(result);
+    }
     public string GetActiveUserId() =>
         _httpContextAccessor.HttpContext.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
 

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.Net;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace Shared.Middlewares
@@ -38,12 +38,12 @@ namespace Shared.Middlewares
             {
                 httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 //_logger.LogWarning(e,await httpContext.GetRequestInfosAsync());
-                message = validation.Message;
+                message =string.Join(Environment.NewLine,validation.Errors) ;
             }
             if(e.GetType() == typeof(TaskCanceledException))
             {
                 message = e.Message;
-                httpContext.Response.StatusCode = 499;
+                httpContext.Response.StatusCode =StatusCodes.Status410Gone;
             }
             else
             {
