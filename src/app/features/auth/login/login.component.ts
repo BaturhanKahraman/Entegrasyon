@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
     let loginModel:LoginModel=Object.assign(this.loginForm.value)
     console.log(loginModel);
     this.authService.login(loginModel).pipe(map(x=>x.message))
-    .subscribe(x=>this.snackBar.open(x,"Tamam",{duration:6000}))//todo
+    .subscribe()
     .add(()=>{
       this.isLoading=false;
       this.isLogining = false;

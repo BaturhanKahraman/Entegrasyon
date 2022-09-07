@@ -3,11 +3,14 @@ import { AuthInterceptorService } from './interceptors/auth-interceptor.service'
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { ResponseInterceptorService } from './interceptors/response-interceptor.service';
+import { UserService } from './services/user.service';
+import { StoreService } from './services/store.service';
+import { BranchOfficeService } from './services/branch-office.service';
 @NgModule({
   declarations: [],
   imports: [],
   providers: [
-    AuthService,
+    AuthService,UserService,StoreService,BranchOfficeService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,

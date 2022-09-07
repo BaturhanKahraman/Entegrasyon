@@ -3,77 +3,115 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { LoginModel } from 'src/app/shared/models/login.model'; 
-import { Result } from 'src/app/shared/models/result.model'; 
-import { User } from 'src/app/shared/models/user.model'; 
+import { LoginModel } from 'src/app/shared/models/login.model';
+import { Result } from 'src/app/shared/models/result.model';
+import { User } from 'src/app/shared/models/user.model';
 import { LoginFirstPasswordModel } from 'src/app/shared/models/login-first-password.model';
 import { LoginSetPasswordModel } from 'src/app/shared/models/login-set-password.model';
 
 class TokenResult {
   token: string;
-  expiration: Date;
+  expiresAt: Date;
 }
 @Injectable()
 export class AuthService {
+  private url = environment.url + 'auth/';
+  private userData = 'userData';
+  user: BehaviorSubject<User | null>= new BehaviorSubject<User | null>(null);
+  private tokenExpirationTimer: any;
+  constructor(private http: HttpClient, private router: Router) {}
 
-  private url = environment.url+'auth/';
-  private userData = "userData";
-  private userSubject = new BehaviorSubject<User|null>(null);
-  public user =this.userSubject.asObservable();
-  constructor(private http: HttpClient, private router: Router) {
-  }
-
-
-  autoLogin(){
-    const jwtToken =localStorage.getItem(this.userData);
-    if(!jwtToken)
-      return;
-    this.handleAuth(jwtToken);
-  }
-  isAuth(){
-    if(this.userSubject.getValue())
-      return true;
-    return false;
+  autoLogin() {
+    const savedUserData: {
+      email: string;
+      id: string;
+      name: string;
+      surname: string;
+      userName: string;
+      _token: string;
+      _tokenExpirationDate: Date;
+    } = JSON.parse(localStorage.getItem(this.userData)!);
+    if (!savedUserData) return;
+    const loadedUser: User = new User(
+      savedUserData.email,
+      savedUserData.id,
+      savedUserData.name,
+      savedUserData.surname,
+      savedUserData.userName,
+      savedUserData._token,
+      savedUserData._tokenExpirationDate
+    );
+    if (savedUserData._token) {
+      this.user.next(loadedUser);
+      
+      this.autoLogout(savedUserData._tokenExpirationDate);
+    }
   }
 
   login(model: LoginModel) {
-    return this.http.post<Result<TokenResult> | Result<LoginFirstPasswordModel>>(this.url + 'login', model)
-    .pipe(
-      tap((x) => {
-        if((<LoginFirstPasswordModel>x.data).needsToTakePassword){
-          this.router.navigate(["auth","set-password"],{queryParams:{userId:(<LoginFirstPasswordModel>x.data).userId}})
-        }
-      }),
-      tap(x=>{
-        if((<TokenResult>x.data).token){
-            this.handleAuth((<TokenResult>x.data).token);
-            localStorage.setItem(this.userData,(<TokenResult>x.data).token);
-            this.router.navigateByUrl("/");
-        }
-      })
-    );
+    return this.http
+      .post<Result<TokenResult> | Result<LoginFirstPasswordModel>>(
+        this.url + 'login',
+        model
+      )
+      .pipe(
+        tap((x) => {
+          if ((<LoginFirstPasswordModel>x.data).needsToTakePassword) {
+            this.router.navigate(['auth', 'set-password'], {
+              queryParams: { userId: (<LoginFirstPasswordModel>x.data).userId },
+            });
+          }
+        }),
+        tap((x) => {
+          if ((<TokenResult>x.data).token) {
+            const resultToken = (<TokenResult>x.data);
+            this.handleAuth(resultToken);
+            this.router.navigateByUrl('/');
+          }
+        })
+      );
   }
   setFirstPassword(loginSetPassword: LoginSetPasswordModel) {
-    return this.http.post<Result<null>>(this.url + 'AssignFirstPassword',loginSetPassword);
+    return this.http.post<Result<null>>(
+      this.url + 'AssignFirstPassword',
+      loginSetPassword
+    );
   }
-  logout(){
+  autoLogout(expiration: Date) {
+    const diffDate = new Date(expiration).getTime() - Date.now();
+    const diff = diffDate > 2147483647 ? 2147483647 :diffDate
+    console.log("Fark " + diff)
+    this.tokenExpirationTimer = setTimeout(() => {
+      this.logout();
+    },diff);
+  }
+  logout() {
+    console.log("logout")
+    this.user.next(null);
     localStorage.removeItem(this.userData);
-    return this.router.navigate(['auth','login']);
-  }
-  handleAuth(token:string) {
-    let jwt = this.parseJwt(token);
-    let user = this.getUserFromJwt(jwt);
-    this.userSubject.next(user);
+    if (this.tokenExpirationTimer) {
+     clearTimeout(this.tokenExpirationTimer);
+    }
+    this.tokenExpirationTimer = null;
+    this.router.navigate(['auth', 'login']);
   }
 
-  getUserFromJwt(jwt:any){
-    
-    return new User(
-      jwt["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email"],
-      jwt["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
-      jwt["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
-      jwt["http://schemas.microsoft.com/ws/2008/06/identity/claims/name"] + " " +jwt["http://schemas.microsoft.com/ws/2008/06/identity/claims/surname"]
-    )
+  handleAuth(token: TokenResult) {
+    let jwt = this.parseJwt(token.token);
+    let user = this.getUserFromJwt(jwt,token.token, token.expiresAt);
+    this.user.next(user);
+    this.autoLogout(token.expiresAt)
+    localStorage.setItem(this.userData, JSON.stringify(user));
+  }
+  getUserFromJwt(decodedJwt: any,token:string, expiration: Date): User {
+    const keys = Object.keys(decodedJwt);
+    const name = decodedJwt[keys.find((jwtKey) => jwtKey.endsWith('name'))!];
+    const surname = decodedJwt[keys.find((jwtKey) => jwtKey.endsWith('surname'))!];
+    const id = decodedJwt[keys.find((jwtKey) => jwtKey.endsWith('nameidentifier'))!];
+    const email = decodedJwt[keys.find((jwtKey) => jwtKey.endsWith('emailaddress'))!];
+    const givenName = decodedJwt[keys.find((jwtKey) => jwtKey.endsWith('givenname'))!];
+    const user = new User(email, id, name, surname, givenName, token, expiration);
+    return user;
   }
 
   parseJwt(token: string) {
