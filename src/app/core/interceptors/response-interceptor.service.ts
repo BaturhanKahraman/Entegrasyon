@@ -15,6 +15,7 @@ export class ResponseInterceptorService implements HttpInterceptor {
   
   private handleError(errorRes:HttpErrorResponse){
     let errorMessage = 'Bir hata meydana geldi.';
+    console.log(errorRes);
     if (errorRes.error) {
       errorMessage=errorRes.error;
     }
