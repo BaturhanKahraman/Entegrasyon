@@ -1,4 +1,6 @@
-﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
+﻿using System.Reflection;
+using System.Reflection.Emit;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Logs;
@@ -7,6 +9,7 @@ using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Shared.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -20,10 +23,10 @@ public class IntegrationDbContext:DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ProductVariant>().Property(x => x.CurrentStockQuantity)
-            .HasComputedColumnSql("(\"Quantity\")-(\"SoldQuantity\")",true);
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.Seed();
         base.OnModelCreating(modelBuilder);
+        
     }
 
     public DbSet<Category> Categories { get; set; }

@@ -1,4 +1,4 @@
-using System.Text;
+using System.Data.Common;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -9,13 +9,12 @@ using Entegrasyon.Entity;
 using FluentValidation;
 using MainDatabase.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
-using Shared.Security.Jwt;
 using Shared.User;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +31,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=Demo2;User Id=Baturhan;Password=649471;");
+    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb2;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;");
 });
 builder.Services.AddDbContext<HeadDbContext>(x =>
 {
@@ -92,7 +91,7 @@ app.UseCors("myclient");
 
 await using var scope = app.Services.CreateAsyncScope();
 
-await app.Services.CreateScope().ServiceProvider.GetService<IntegrationDbContext>().Database.MigrateAsync();
+await app.Services.CreateScope().ServiceProvider.GetService<IntegrationDbContext>()!.Database.MigrateAsync();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

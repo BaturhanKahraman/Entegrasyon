@@ -17,5 +17,5 @@ public record AddUserDto
     public string Surname { get; init; }
 
     [Required(ErrorMessage = "Lütfen kullanıcının ekleneceği ofisi seçin.")]
-    public int BranchOfficeId { get; set; }
+    public int BranchOfficeId { get; init; }
 }

@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Concrete\EntityFrameworkCore\Contexts\Seed\" />
-    <Folder Include="Concrete\EntityFrameworkCore\Migrations\" />
+    <Folder Include="Concrete\EntityFrameworkCore\EntityConfigurations\" />
   </ItemGroup>
 
   <ItemGroup>

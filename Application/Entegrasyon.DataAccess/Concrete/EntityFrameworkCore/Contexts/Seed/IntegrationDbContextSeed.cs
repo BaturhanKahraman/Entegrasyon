@@ -26,25 +26,30 @@ public static class IntegrationDbContextSeed
             Email = "admin@admin.com",
             NeedsTakeNewPassword = true,
             TemporaryPassword = "Admin",
-            DefaultBranchOfficeId = 1
+            DefaultBranchOfficeId = 1,
+            CreatedAt = DateTimeOffset.MinValue,
         });
         UserContextSeed.SeedDatabase(modelBuilder);
         modelBuilder.Entity<Brand>().HasData(new Brand()
         {
             Id = 1,
             Name = "FirstBrand"
+            ,
+            CreatedAt = DateTimeOffset.MinValue
         });
         modelBuilder.Entity<Category>().HasData(new Category()
         {
             Id = 1,
-            Name = "supCategory",
-            
+            Name = "supCategory"
+            ,
+            CreatedAt = DateTimeOffset.MinValue
         },
         new Category()
         {
             Id = 2,
             Name = "subCategory",
-            SuperCategoryId = 1
+            SuperCategoryId = 1,
+            CreatedAt = DateTimeOffset.MinValue
         });
         modelBuilder.Entity<MainProduct>().HasData(new MainProduct()
         {
@@ -53,6 +58,7 @@ public static class IntegrationDbContextSeed
             Header = "Ürün Başlığı",
             Barcode = "123456798",
             CategoryId = 1,
+            CreatedAt = DateTimeOffset.MinValue
         });
         modelBuilder.Entity<ProductVariant>().HasData(new List<ProductVariant>()
         {
@@ -67,7 +73,7 @@ public static class IntegrationDbContextSeed
                 StockCode = "22qwe123456",
                 Title = "Başlık",
                 ProductMainId = 1,
-                SalePrice = 54,
+                SalePrice = 54,CreatedAt = DateTimeOffset.MinValue
 
             },new()
             {Id = 2,
@@ -80,7 +86,7 @@ public static class IntegrationDbContextSeed
                 StockCode = "22qwe123456",
                 Title = "Başlık 2",
                 ProductMainId = 1,
-                SalePrice = 54
+                SalePrice = 54,CreatedAt = DateTimeOffset.MinValue
             },
         });
         //modelBuilder.Entity<AttributeKeyValue>().HasData(new AttributeKeyValue { Id = 1,CategoryAttributeKey = 3,CategoryAttributeValue = 4 },

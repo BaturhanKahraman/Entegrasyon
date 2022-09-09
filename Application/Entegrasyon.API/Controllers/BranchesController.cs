@@ -1,13 +1,13 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Entegrasyon.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class BranchesController : ControllerBase
     {
         private readonly BranchOfficeManager _branchOfficeManager;
@@ -16,8 +16,7 @@ namespace Entegrasyon.API.Controllers
         {
             _branchOfficeManager = branchOfficeManager;
         }
-
-        // GET: api/<BranchesController>
+        
         [HttpGet]
         public async Task<IActionResult> GetBranches()
         {
@@ -28,8 +27,7 @@ namespace Entegrasyon.API.Controllers
             }
             return BadRequest(result.Message);
         }
-
-        // GET api/<BranchesController>/5
+        
         [HttpPost]
         public async Task<IActionResult> AddBranch(BranchOffice office)
         {
@@ -40,21 +38,30 @@ namespace Entegrasyon.API.Controllers
         }
 
         // POST api/<BranchesController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpGet]
+        public async Task<IActionResult> GetBranchDetail(int branchId)
         {
+            var result = await _branchOfficeManager.GetBranchDetailById(branchId);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+        [HttpPut]
+        public async Task<IActionResult> UpdateBranch(BranchOffice branchOffice)
+        {
+            var result = await _branchOfficeManager.Update(branchOffice);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
         }
 
-        // PUT api/<BranchesController>/5
-        [HttpPut("{id}")]
-        public void Put(int id,[FromBody] string value)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteBranch(int id)
         {
-        }
-
-        // DELETE api/<BranchesController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            var result = await _branchOfficeManager.Delete(id);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
         }
     }
 }

@@ -13,7 +13,7 @@ public static class HttpContextExtension
     }
 
     public static string GetUserId(this HttpContext context)=>
-        context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)!.Value;
+        context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
     
     // ReSharper disable once InconsistentNaming
     public static string GetIPAddress(this HttpContext context) =>

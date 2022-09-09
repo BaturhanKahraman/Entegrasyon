@@ -13,7 +13,7 @@ where TContext : DbContext
         _context = ctx;
         Table = _context.Set<TEntity>();
     }
-    public IQueryable Table { get; }
+    public DbSet<TEntity> Table { get; }
     public async Task AddAsync(TEntity entity)
     {
         _context.Set<TEntity>().Add(entity);

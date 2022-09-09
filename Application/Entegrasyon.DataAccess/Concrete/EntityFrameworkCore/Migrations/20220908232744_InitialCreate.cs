@@ -325,7 +325,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_Users_BranchOffices_DefaultBranchOfficeId",
                         column: x => x.DefaultBranchOfficeId,
                         principalTable: "BranchOffices",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Users_Claims_RootClaimId",
                         column: x => x.RootClaimId,
@@ -448,9 +449,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Content = table.Column<string>(type: "text", nullable: true),
-                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     LogType = table.Column<int>(type: "integer", nullable: false),
                     LogAction = table.Column<int>(type: "integer", nullable: false),
+                    IpAddress = table.Column<string>(type: "text", nullable: true),
+                    Object = table.Column<string>(type: "jsonb", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -461,8 +464,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_Logs_Users_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -495,12 +497,18 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SalePersonId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<int>(type: "integer", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Sales", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sales_ApplicationCustomers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "ApplicationCustomers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Sales_Users_SalePersonId",
                         column: x => x.SalePersonId,
@@ -617,7 +625,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             migrationBuilder.InsertData(
                 table: "BranchOffices",
                 columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
-                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Merkez Ofis" });
+                values: new object[] { 1, new DateTimeOffset(new DateTime(2022, 9, 9, 2, 27, 43, 890, DateTimeKind.Unspecified).AddTicks(4013), new TimeSpan(0, 3, 0, 0, 0)), false, "Merkez Ofis" });
 
             migrationBuilder.InsertData(
                 table: "Brands",
@@ -634,9 +642,35 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Claims",
+                columns: new[] { "Id", "CreatedAt", "Description", "IsDeleted", "Name" },
+                values: new object[,]
+                {
+                    { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün ekleme yetkisi.", false, "Product.Add" },
+                    { 2, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün silme yetkisi.", false, "Product.Delete" },
+                    { 3, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün güncelleme yetkisi.", false, "Product.Update" },
+                    { 4, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün listeleme yetkisi.", false, "Product.List" },
+                    { 5, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış yapma yetkisi.", false, "Sale.Add" },
+                    { 6, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış düzenleme yetkisi.", false, "Sale.Update" },
+                    { 7, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube ekleme yetkisi.", false, "BranchOffice.Add" },
+                    { 8, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube düzenleme yetkisi.", false, "BranchOffice.Update" },
+                    { 9, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube silme yetkisi.", false, "BranchOffice.Delete" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
+                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Admin" });
+
+            migrationBuilder.InsertData(
                 table: "MainProducts",
                 columns: new[] { "Id", "Barcode", "BrandId", "CategoryId", "CreatedAt", "Header", "IsDeleted" },
                 values: new object[] { 1L, "123456798", 1, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün Başlığı", false });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CreatedAt", "DefaultBranchOfficeId", "Discriminator", "Email", "IsActive", "IsDeleted", "IsTwoFactorAuthActive", "MobileJwtToken", "MobileJwtTokenExpiresAt", "Name", "NeedsTakeNewPassword", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PasswordSalt", "RootClaimId", "Surname", "TemporaryPassword", "UserName", "WebJwtToken", "WebJwtTokenExpiresAt" },
+                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, "ApplicationUser", "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "ADMIN", null, null, null, "Admin", "Admin", "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
 
             migrationBuilder.InsertData(
                 table: "ProductVariants",
@@ -755,6 +789,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "SaleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sales_CustomerId",
+                table: "Sales",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sales_SalePersonId",
                 table: "Sales",
                 column: "SalePersonId");
@@ -772,9 +811,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "ApplicationCustomers");
-
             migrationBuilder.DropTable(
                 name: "CategoryAttributeValues");
 
@@ -837,6 +873,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "MainProducts");
+
+            migrationBuilder.DropTable(
+                name: "ApplicationCustomers");
 
             migrationBuilder.DropTable(
                 name: "Users");

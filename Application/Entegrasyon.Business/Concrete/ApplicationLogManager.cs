@@ -1,58 +1,64 @@
-﻿using Azure.Storage.Blobs.Models;
+﻿using System.Text.Json;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Logs;
+using Microsoft.AspNetCore.Http;
+using Shared.Extensions;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class ApplicationLogManager
 {
     private readonly ILogDal _logDal;
-
-    public ApplicationLogManager(ILogDal logDal)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public ApplicationLogManager(ILogDal logDal,IHttpContextAccessor httpContextAccessor)
     {
         _logDal = logDal;
+        _httpContextAccessor = httpContextAccessor;
     }
-    public async Task AddLog(string content,LogType type,string ipAddress)
+    public async Task AddLog(string content,LogType type)
     {
         var log = new ApplicationLog()
         {
             Content = content,
-            IpAddress = ipAddress,
+            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
+            ApplicationUserId = GetUserId(),
             LogType = type
         };
         await _logDal.AddAsync(log);
     }
-    public async Task AddLog(string content,Guid userId,string ipAddress)
+
+    private Guid? GetUserId()
+    {
+        var canParseId = Guid.TryParse(_httpContextAccessor.HttpContext.GetUserId(),out Guid userId);
+        if (canParseId)
+            return userId;
+        return null;
+    }
+
+    public async Task AddLog(string content,LogType type,object logObject)
+    {
+        string seriliazedLogObj = JsonSerializer.Serialize(logObject);
+        var log = new ApplicationLog()
+        {
+            Content = content,
+            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
+            ApplicationUserId = GetUserId(),
+            LogType = type,
+            Object = seriliazedLogObj
+        };
+        await _logDal.AddAsync(log);
+    }
+    public async Task AddLog(string content,LogType type,LogAction logAction)
     {
         var log = new ApplicationLog()
         {
             Content = content,
-            ApplicationUserId = userId,
-            IpAddress = ipAddress
-        };
-        await _logDal.AddAsync(log);
-    }
-    public async Task AddLog(string content,  Guid userId, string ipAddress,LogType logType)
-    {
-        var log = new ApplicationLog()
-        {
-            Content = content, ApplicationUserId = userId, LogType = logType,IpAddress = ipAddress
-        };
-        await _logDal.AddAsync(log);
-    }
-    public async Task AddLog(string content,Guid userId,string ipAddress,LogType logType,LogAction logAction)
-    {
-        var log = new ApplicationLog()
-        {
-            Content = content,
-            ApplicationUserId = userId,
-            LogType = logType,
-            IpAddress = ipAddress,
+            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
+            ApplicationUserId = GetUserId(),
+            LogType = type,
             LogAction = logAction
         };
         await _logDal.AddAsync(log);
     }
-    
-
 
 }

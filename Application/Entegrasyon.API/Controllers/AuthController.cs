@@ -32,12 +32,10 @@ namespace Entegrasyon.API.Controllers
             var result = await _loginManager.LoginWithUserNameAsync(dto.UserName,dto.Password);
             if (result.Success)
             {
-                await _applicationLogManager.AddLog("Başarıyla giriş yapıldı.",LogType.Auth,
-                    HttpContext.Connection.RemoteIpAddress?.ToString());
+                await _applicationLogManager.AddLog("Başarıyla giriş yapıldı.",LogType.Auth);
                 return Ok(result);
             }
-            await _applicationLogManager.AddLog($"Giriş başarısız {result.Message}",LogType.Auth,
-                HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _applicationLogManager.AddLog($"Giriş başarısız {result.Message}",LogType.Auth);
             return BadRequest(result.Message);
         }
 
@@ -47,12 +45,10 @@ namespace Entegrasyon.API.Controllers
             var result = await _userManager.CreateUserPasswordAsync(dto.Password,dto.UserId);
             if (result.Success)
             {
-                await _applicationLogManager.AddLog("Şifre değiştirme yapıldı.", Guid.Parse(dto.UserId),
-                    HttpContext.Connection.RemoteIpAddress?.ToString());
+                await _applicationLogManager.AddLog("Şifre değiştirme yapıldı.",LogType.Auth);
                 return Ok(result);  
             }
-            await _applicationLogManager.AddLog($"Şifre değiştirme başarısız! {result.Message}",Guid.Parse(dto.UserId),
-                HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _applicationLogManager.AddLog($"Şifre değiştirme başarısız! {result.Message}",LogType.Auth);
             return BadRequest(result.Message);
         }
         [HttpGet]

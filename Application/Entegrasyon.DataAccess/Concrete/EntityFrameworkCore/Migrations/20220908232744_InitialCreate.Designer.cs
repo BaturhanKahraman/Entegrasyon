@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20220905193812_NullableLogFK")]
-    partial class NullableLogFK
+    [Migration("20220908232744_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -85,7 +85,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2022, 9, 9, 2, 27, 43, 890, DateTimeKind.Unspecified).AddTicks(4013), new TimeSpan(0, 3, 0, 0, 0)),
                             IsDeleted = false,
                             Name = "Merkez Ofis"
                         });
@@ -281,6 +281,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<int>("LogType")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Object")
+                        .HasColumnType("jsonb");
 
                     b.HasKey("Id");
 
@@ -734,6 +737,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -741,6 +747,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("SalePersonId");
 
@@ -844,6 +852,80 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Claims");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ürün ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "Product.Add"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ürün silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "Product.Delete"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ürün güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "Product.Update"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ürün listeleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "Product.List"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış yapma yetkisi.",
+                            IsDeleted = false,
+                            Name = "Sale.Add"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış düzenleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "Sale.Update"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Şube ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "BranchOffice.Add"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Şube düzenleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "BranchOffice.Update"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Şube silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "BranchOffice.Delete"
+                        });
                 });
 
             modelBuilder.Entity("Shared.User.RootLogin", b =>
@@ -896,6 +978,15 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("Shared.User.RootUser", b =>
@@ -993,6 +1084,26 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Users");
 
                     b.HasDiscriminator().HasValue("ApplicationUser");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Email = "admin@admin.com",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsTwoFactorAuthActive = false,
+                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Admin",
+                            NeedsTakeNewPassword = true,
+                            NormalizedUserName = "ADMIN",
+                            Surname = "Admin",
+                            TemporaryPassword = "Admin",
+                            UserName = "Admin",
+                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DefaultBranchOfficeId = 1
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
@@ -1119,11 +1230,17 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.Sale", b =>
                 {
+                    b.HasOne("Entegrasyon.Entity.ApplicationCustomer", "Customer")
+                        .WithMany("Sales")
+                        .HasForeignKey("CustomerId");
+
                     b.HasOne("Entegrasyon.Entity.ApplicationUser", "SalePerson")
                         .WithMany()
                         .HasForeignKey("SalePersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Customer");
 
                     b.Navigation("SalePerson");
                 });
@@ -1192,10 +1309,21 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.BranchOffice", "DefaultBranchOffice")
-                        .WithMany()
-                        .HasForeignKey("DefaultBranchOfficeId");
+                        .WithMany("Users")
+                        .HasForeignKey("DefaultBranchOfficeId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("DefaultBranchOffice");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.ApplicationCustomer", b =>
+                {
+                    b.Navigation("Sales");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.BranchOffice", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>

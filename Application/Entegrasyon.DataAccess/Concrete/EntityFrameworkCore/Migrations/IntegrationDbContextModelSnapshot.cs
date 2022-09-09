@@ -83,7 +83,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2022, 9, 9, 2, 27, 43, 890, DateTimeKind.Unspecified).AddTicks(4013), new TimeSpan(0, 3, 0, 0, 0)),
                             IsDeleted = false,
                             Name = "Merkez Ofis"
                         });
@@ -279,6 +279,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<int>("LogType")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Object")
+                        .HasColumnType("jsonb");
 
                     b.HasKey("Id");
 
@@ -732,6 +735,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -739,6 +745,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("SalePersonId");
 
@@ -1079,7 +1087,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
-                            CreatedAt = new DateTimeOffset(new DateTime(2022, 9, 6, 0, 40, 21, 544, DateTimeKind.Unspecified).AddTicks(5429), new TimeSpan(0, 3, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Email = "admin@admin.com",
                             IsActive = true,
                             IsDeleted = false,
@@ -1091,7 +1099,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             Surname = "Admin",
                             TemporaryPassword = "Admin",
                             UserName = "Admin",
-                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DefaultBranchOfficeId = 1
                         });
                 });
 
@@ -1219,11 +1228,17 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.Sale", b =>
                 {
+                    b.HasOne("Entegrasyon.Entity.ApplicationCustomer", "Customer")
+                        .WithMany("Sales")
+                        .HasForeignKey("CustomerId");
+
                     b.HasOne("Entegrasyon.Entity.ApplicationUser", "SalePerson")
                         .WithMany()
                         .HasForeignKey("SalePersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Customer");
 
                     b.Navigation("SalePerson");
                 });
@@ -1292,10 +1307,21 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.BranchOffice", "DefaultBranchOffice")
-                        .WithMany()
-                        .HasForeignKey("DefaultBranchOfficeId");
+                        .WithMany("Users")
+                        .HasForeignKey("DefaultBranchOfficeId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("DefaultBranchOffice");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.ApplicationCustomer", b =>
+                {
+                    b.Navigation("Sales");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.BranchOffice", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>

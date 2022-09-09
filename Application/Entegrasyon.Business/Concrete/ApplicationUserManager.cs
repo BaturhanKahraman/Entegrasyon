@@ -32,13 +32,11 @@ public class ApplicationUserManager
 
     public async Task<IResult> AddUser(AddUserDto dto)
     {
-        await _applicationLogManager.AddLog("Kullanıcı ekleniyor...",GetActiveUserGuidId(),
-            _httpContextAccessor.HttpContext.GetIPAddress(),LogType.User);
+        await _applicationLogManager.AddLog("Kullanıcı ekleniyor...",LogType.User,LogAction.Add);
         var user = _mapper.Map<AddUserDto,ApplicationUser>(dto);
         user.NeedsTakeNewPassword = true;
         var result = await _userManager.CreateUserAsync(user);
-        await _applicationLogManager.AddLog("Kullanıcı eklendi.",GetActiveUserGuidId(),
-            _httpContextAccessor.HttpContext.GetIPAddress(),LogType.User);
+        await _applicationLogManager.AddLog("Kullanıcı eklendi.",LogType.User,LogAction.Add);
         return result;
     }
 

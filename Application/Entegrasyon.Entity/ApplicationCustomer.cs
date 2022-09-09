@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
+using System.ComponentModel.DataAnnotations;
 
 namespace Entegrasyon.Entity
 {
@@ -20,6 +16,7 @@ namespace Entegrasyon.Entity
         public string Name { get; set; }
         public string Surname { get; set; }
 
+        public List<Sale> Sales { get; set; }
 
     }
 }

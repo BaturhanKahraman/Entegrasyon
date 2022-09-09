@@ -1,11 +1,12 @@
 ﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Shared;
 
 public interface IEntityRepository<T>
 where T : class, new()
 {
-    IQueryable Table { get; }
+    DbSet<T> Table { get; }
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);

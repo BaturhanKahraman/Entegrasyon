@@ -12,58 +12,59 @@ public static class UserContextSeed
             {
                 Id = 1,
                 Name = "Product.Add",
-                Description = "Ürün ekleme yetkisi."
+                Description = "Ürün ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
                 Id = 2,
 
                 Name = "Product.Delete",
-                Description = "Ürün silme yetkisi."
+                Description = "Ürün silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
                 Id = 3,
 
                 Name = "Product.Update",
-                Description = "Ürün güncelleme yetkisi."
+                Description = "Ürün güncelleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {Id = 4,
                 Name = "Product.List",
-                Description = "Ürün listeleme yetkisi."
+                Description = "Ürün listeleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {Id = 5,
                 Name = "Sale.Add",
-                Description = "Satış yapma yetkisi."
+                Description = "Satış yapma yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {Id = 6,
                 Name = "Sale.Update",
-                Description = "Satış düzenleme yetkisi."
+                Description = "Satış düzenleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {Id = 7,
                 Name = "BranchOffice.Add",
-                Description = "Şube ekleme yetkisi."
+                Description = "Şube ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {   Id = 8,
                 Name = "BranchOffice.Update",
-                Description = "Şube düzenleme yetkisi."
+                Description = "Şube düzenleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
                 Id = 9,
                 Name = "BranchOffice.Delete",
-                Description = "Şube silme yetkisi."
+                Description = "Şube silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             }
         });
         modelBuilder.Entity<RootRole>().HasData(new RootRole()
         {
             Id = 1,
             Name = "Admin"
+            ,CreatedAt = DateTimeOffset.MinValue
         });
        
     }

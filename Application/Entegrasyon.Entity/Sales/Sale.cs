@@ -12,5 +12,8 @@ namespace Entegrasyon.Entity.Sales
         public List<SaleItem> SaleItems { get; set; }
         public Guid SalePersonId { get; set; }
         public ApplicationUser SalePerson { get; set; }
+
+        public int? CustomerId { get; set; }
+        public ApplicationCustomer Customer { get; set; }
     }
 }
