@@ -1,25 +1,38 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable, shareReplay, tap } from 'rxjs';
+import { ListResult } from 'src/app/shared/models/list-result.model';
 import { Result } from 'src/app/shared/models/result.model';
+import { SingleResult } from 'src/app/shared/models/single-result.model';
 import { UserDetailModel } from 'src/app/shared/models/user-detail.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class UserService {
   private url = environment.url + 'users/';
-
+  private usersSubject = new BehaviorSubject<UserDetailModel[]>([]);
+  usersDetails$ = this.usersSubject.asObservable();
+  private userCount: BehaviorSubject<number> = new BehaviorSubject(0);
+  userCount$ = this.userCount.asObservable();
   constructor(private http: HttpClient) {}
 
- 
-  getUserDetail():Observable<UserDetailModel[]> {
-    const fullUrl = this.url + 'GetUserDetailList';
-    return this.http.get<Result<UserDetailModel[]>>(fullUrl)
-    .pipe(map((x) => x.data))
+  init() {
+    this.getUserDetail().subscribe((x) => this.usersSubject.next(x));
+    this.getUserCount().subscribe((x) => this.userCount.next(x));
   }
-  getUserCount():Observable<number> {
+  getUserDetail(): Observable<UserDetailModel[]> {
+    const fullUrl = this.url + 'GetUserDetailList';
+    return this.http
+      .get<ListResult<UserDetailModel>>(fullUrl)
+      .pipe(map((x) => x.data));
+  }
+  getUserCount(): Observable<number> {
     const fullUrl = this.url + 'GetUserCount';
-    return this.http.get<Result<number>>(fullUrl).pipe(
-      map((x) => x.data))
+    return this.http
+      .get<SingleResult<number>>(fullUrl)
+      .pipe(map((x) => x.data));
+  }
+  addUser(){
+    
   }
 }

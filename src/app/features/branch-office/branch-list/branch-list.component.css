@@ -6,3 +6,8 @@ table {
     font-size: 14px;
     width: 100%;
   }
+
+  .row:hover{
+    opacity: 0.65;
+    cursor: pointer;
+  }

@@ -1,5 +1,4 @@
-export interface Result<T>{
+export interface Result{
     message:string;
-    data:T;
     success:boolean;
 }

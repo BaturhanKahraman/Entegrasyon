@@ -14,11 +14,11 @@ export class UserListComponent implements OnInit,AfterViewInit {
   userDetails$ : Observable<UserDetailModel[]>;
   totalUserCount$:Observable<number>;
 
-  constructor(private userService:UserService,private store:StoreService) {}
+  constructor(private userService:UserService) {}
 
   ngOnInit() {
-    this.userDetails$ = this.store.usersDetails$
-    this.totalUserCount$ = this.store.userCount$;
+    this.userDetails$ = this.userService.usersDetails$
+    this.totalUserCount$ = this.userService.userCount$;
   }
   ngAfterViewInit() {
   }
