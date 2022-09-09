@@ -8,6 +8,7 @@ import { Result } from 'src/app/shared/models/result.model';
 import { User } from 'src/app/shared/models/user.model';
 import { LoginFirstPasswordModel } from 'src/app/shared/models/login-first-password.model';
 import { LoginSetPasswordModel } from 'src/app/shared/models/login-set-password.model';
+import { SingleResult } from 'src/app/shared/models/single-result.model';
 
 class TokenResult {
   token: string;
@@ -50,7 +51,7 @@ export class AuthService {
 
   login(model: LoginModel) {
     return this.http
-      .post<Result<TokenResult> | Result<LoginFirstPasswordModel>>(
+      .post<SingleResult<TokenResult> | SingleResult<LoginFirstPasswordModel>>(
         this.url + 'login',
         model
       )
@@ -72,7 +73,7 @@ export class AuthService {
       );
   }
   setFirstPassword(loginSetPassword: LoginSetPasswordModel) {
-    return this.http.post<Result<null>>(
+    return this.http.post<Result>(
       this.url + 'AssignFirstPassword',
       loginSetPassword
     );
@@ -80,13 +81,11 @@ export class AuthService {
   autoLogout(expiration: Date) {
     const diffDate = new Date(expiration).getTime() - Date.now();
     const diff = diffDate > 2147483647 ? 2147483647 :diffDate
-    console.log("Fark " + diff)
     this.tokenExpirationTimer = setTimeout(() => {
       this.logout();
     },diff);
   }
   logout() {
-    console.log("logout")
     this.user.next(null);
     localStorage.removeItem(this.userData);
     if (this.tokenExpirationTimer) {

@@ -1,0 +1,52 @@
+<form [formGroup]="userAddForm" (ngSubmit)="submit()" >
+  <h1 mat-dialog-title>Kullanıcı Ekleme</h1>
+  <mat-dialog-content fxLayout="column" fxLayoutGap="10px">
+    <mat-form-field appearance="fill">
+      <mat-label>Kullanıcı Adı</mat-label>
+      <input matInput formControlName="userName">
+      <mat-hint align="start"><strong>Giriş yaparken kullanılacak isim.</strong> </mat-hint>
+      <mat-error *ngIf="userAddForm.get('userName')?.hasError('required') && userAddForm.get('userName')?.touched">Lütfen kullanıcı adını giriniz.</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>E-posta</mat-label>
+      <input matInput formControlName="email">
+      <mat-hint align="start">Gerekli değildir isteğe bağlıdır.</mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Geçici şifre</mat-label>
+      <input matInput formControlName="temporaryPassword">
+      <mat-error *ngIf="userAddForm.get('temporaryPassword')?.hasError('required')">Lütfen geçici şifre girin!</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>İsim</mat-label>
+      <input matInput formControlName="name">
+      <mat-error *ngIf="userAddForm.get('name')?.hasError('required')">Lütfen ismi girin!</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Soyisim</mat-label>
+      <input matInput formControlName="surname">
+      <mat-error *ngIf="userAddForm.get('surname')?.hasError('required')">Lütfen soyismi girin!</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Ofis</mat-label>
+      <mat-select formControlName="branchOfficeId">
+        <mat-option *ngFor="let office of offices$ | async" [value]="office.id">
+          {{office.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Rol</mat-label>
+      <mat-select [disabled]="true" formControlName="role">
+        <mat-option >
+          rol
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-checkbox formControlName="isTwoFactorEnabled" [disabled]="true">İki aşamalı doğrulama aktif.</mat-checkbox>
+  </mat-dialog-content>
+  <div mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close >Çıkış</button>
+    <button mat-button type="submit" >Ekle</button>
+  </div>
+</form>
