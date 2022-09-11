@@ -2,7 +2,7 @@
 
 public enum LogAction
 {
-    Add,
+    Add=1,
     Update,
     Delete,
     List

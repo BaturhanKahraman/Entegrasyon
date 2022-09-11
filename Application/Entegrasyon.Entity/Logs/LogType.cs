@@ -2,12 +2,13 @@
 
 public enum LogType
 {
-    User,
+    User=1,
     Auth,
     Order,
     Product,
     Branch,
     Sale,
     Matches,
-    Categories
+    Categories,
+    Role
 }

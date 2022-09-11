@@ -10,4 +10,6 @@ public static class Messages
     public const string PasswordCreated = "Şifre başarı ile değiştirildi.";
     public const string CantChangePassword = "Şifre değiştirme başarısız. Kullanıcının şifresini değiştirme izni yok.";
     public const string BranchAdded = "Ofis başarı ile eklendi.";
+    public const string RoleAdded = "Rol başarıyla eklendi.";
+    public const string RoleUpdated = "Rol başarıyla güncellendi.";
 }

@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using System.Reflection.Emit;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
+﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Logs;
@@ -9,12 +7,12 @@ using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Shared.User;
+using System.Reflection;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
-public class IntegrationDbContext:DbContext
+public class IntegrationDbContext : DbContext
 {
     public IntegrationDbContext(DbContextOptions<IntegrationDbContext> options) : base(options)
     {
@@ -25,8 +23,11 @@ public class IntegrationDbContext:DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.Seed();
-        base.OnModelCreating(modelBuilder);
         
+        base.OnModelCreating(modelBuilder);
+        /*INSERT INTO public.""RootClaimRootRole""(
+	        ""ClaimsId"", ""RolesId"")
+	        VALUES (1, 1),(2, 1),(3, 1),(4, 1),(5, 1),(6, 1),(7, 1),(8, 1),(9, 1);*/
     }
 
     public DbSet<Category> Categories { get; set; }

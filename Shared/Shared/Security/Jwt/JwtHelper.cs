@@ -50,11 +50,11 @@ namespace Shared.Security.Jwt
                 new (ClaimTypes.Email, user.Email),
                 new (ClaimTypes.Name,user.Name),
                 new (ClaimTypes.Surname,user.Surname),
-                new (ClaimTypes.GivenName,user.UserName)
+                new (ClaimTypes.GivenName,user.UserName),
+                new ("MainRole",user.Role.Name)
             };
 
-            var userClaims =user.Roles.SelectMany(x => x.Claims)
-                .Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
+            var userClaims =user.Role.Claims.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
             if(userClaims.Any())
                 claims.AddRange(userClaims);
             return claims;

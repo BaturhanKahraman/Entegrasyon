@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <Folder Include="MapperProfiles\" />
-    <Folder Include="Validation\FluentValidation\" />
   </ItemGroup>
 
 </Project>

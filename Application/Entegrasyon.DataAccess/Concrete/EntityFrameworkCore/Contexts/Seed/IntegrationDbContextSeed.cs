@@ -14,8 +14,11 @@ public static class IntegrationDbContextSeed
         modelBuilder.Entity<BranchOffice>().HasData(new BranchOffice()
         {
             Id = 1,
-            Name = "Merkez Ofis"
+            Name = "Merkez Ofis",
+            CreatedAt=DateTimeOffset.MinValue
         });
+
+        UserContextSeed.SeedDatabase(modelBuilder);
         modelBuilder.Entity<ApplicationUser>().HasData(new ApplicationUser()
         {
             Id = new Guid("DFDA5D4A-F807-408C-9B4D-908830AD5724"),
@@ -28,13 +31,12 @@ public static class IntegrationDbContextSeed
             TemporaryPassword = "Admin",
             DefaultBranchOfficeId = 1,
             CreatedAt = DateTimeOffset.MinValue,
+            RoleId = 1
         });
-        UserContextSeed.SeedDatabase(modelBuilder);
         modelBuilder.Entity<Brand>().HasData(new Brand()
         {
             Id = 1,
-            Name = "FirstBrand"
-            ,
+            Name = "FirstBrand",
             CreatedAt = DateTimeOffset.MinValue
         });
         modelBuilder.Entity<Category>().HasData(new Category()

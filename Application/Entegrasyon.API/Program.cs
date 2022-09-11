@@ -15,12 +15,16 @@ using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
 using Shared.User;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    //x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
 builder.Services.AddLogging();
 builder.Services.Configure<ApiBehaviorOptions>(o=>o.SuppressModelStateInvalidFilter=true);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -31,14 +35,14 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb2;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;");
+    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb2;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
 });
 builder.Services.AddDbContext<HeadDbContext>(x =>
 {
     x.UseNpgsql(builder.Configuration.GetConnectionString("Main"));
 });
 builder.Services.AddSharedSettings();
-builder.Services.AddUserServices<ApplicationUser, RootLogin, IntegrationDbContext>();
+builder.Services.AddUserServices<ApplicationUser, RootLogin,RootRole,RootClaim,IntegrationDbContext>();
 builder.Services.AddScoped<ILogDal, EfLogDal>();
 builder.Services.AddScoped<ApplicationLogManager>();
 builder.Services.Configure<Shared.Security.Jwt.TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
@@ -48,7 +52,7 @@ builder.Services.AddScoped<IApplicationUserDal,EfApplicationUserDal>();
 builder.Services.AddScoped<ApplicationUserManager>();
 builder.Services.AddScoped<IBranchOfficeDal,EfBranchOfficeDal>();
 builder.Services.AddScoped<BranchOfficeManager>();
-
+builder.Services.AddScoped<ApplicationRoleManager>();
 
 builder.Services.AddScoped<IValidator<BranchOffice>, BranchValidator>();
 builder.Services.AddAutoMapper(x =>

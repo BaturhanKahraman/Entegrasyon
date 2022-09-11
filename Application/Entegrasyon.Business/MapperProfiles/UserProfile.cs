@@ -8,6 +8,9 @@ public class UserProfile:Profile
 {
     public UserProfile()
     {
-        CreateMap<AddUserDto, ApplicationUser>();
+        CreateMap<AddUserDto, ApplicationUser>().ForMember(dest=>dest.DefaultBranchOfficeId,opt=>opt.MapFrom(src=>src.BranchOfficeId)).ReverseMap();
+        /*
+          dest => dest.SomeDestinationProperty,
+        opt => opt.MapFrom(src => src.SomeSourceProperty)*/
     }
 }

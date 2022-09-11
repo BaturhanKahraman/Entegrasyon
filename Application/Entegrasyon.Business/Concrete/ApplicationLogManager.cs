@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Logs;
 using Microsoft.AspNetCore.Http;
 using Shared.Extensions;
@@ -34,7 +35,20 @@ public class ApplicationLogManager
             return userId;
         return null;
     }
-
+    public async Task AddLog(string content,LogType type,LogAction action,object obj)
+    {
+        string seriliazedLogObj = JsonSerializer.Serialize(obj);
+        var log = new ApplicationLog()
+        {
+            Content = content,
+            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
+            ApplicationUserId = GetUserId(),
+            LogType = type,
+            LogAction=action,
+            Object = seriliazedLogObj
+        };
+        await _logDal.AddAsync(log);
+    }
     public async Task AddLog(string content,LogType type,object logObject)
     {
         string seriliazedLogObj = JsonSerializer.Serialize(logObject);
@@ -60,5 +74,6 @@ public class ApplicationLogManager
         };
         await _logDal.AddAsync(log);
     }
+
 
 }

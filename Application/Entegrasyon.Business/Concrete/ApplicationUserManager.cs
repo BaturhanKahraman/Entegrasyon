@@ -32,7 +32,7 @@ public class ApplicationUserManager
 
     public async Task<IResult> AddUser(AddUserDto dto)
     {
-        await _applicationLogManager.AddLog("Kullanıcı ekleniyor...",LogType.User,LogAction.Add);
+        await _applicationLogManager.AddLog("Kullanıcı ekleniyor...",LogType.User,LogAction.Add,dto);
         var user = _mapper.Map<AddUserDto,ApplicationUser>(dto);
         user.NeedsTakeNewPassword = true;
         var result = await _userManager.CreateUserAsync(user);

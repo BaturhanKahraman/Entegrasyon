@@ -107,9 +107,8 @@ where TContext : DbContext
     public Task<TUser> GetUserFullInformation(Expression<Func<TUser,bool>> expr) =>
          _context.Set<TUser>()
              .Include(x=>x.Logins)
-             .Include(x=>x.Roles)
+             .Include(x=>x.Role)
                 .ThenInclude(x=>x.Claims)
-             .AsNoTracking()
              .FirstOrDefaultAsync(expr);
 
     public Task<List<TUser>> GetUsers() => _context.Set<TUser>().AsNoTracking().ToListAsync();

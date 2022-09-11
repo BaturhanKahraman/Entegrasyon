@@ -5,7 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
+namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
 {
     public partial class InitialCreate : Migration
     {
@@ -292,6 +292,30 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RootClaimRootRole",
+                columns: table => new
+                {
+                    ClaimsId = table.Column<int>(type: "integer", nullable: false),
+                    RolesId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RootClaimRootRole", x => new { x.ClaimsId, x.RolesId });
+                    table.ForeignKey(
+                        name: "FK_RootClaimRootRole_Claims_ClaimsId",
+                        column: x => x.ClaimsId,
+                        principalTable: "Claims",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RootClaimRootRole_Roles_RolesId",
+                        column: x => x.RolesId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -312,6 +336,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     WebJwtTokenExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     MobileJwtToken = table.Column<string>(type: "text", nullable: true),
                     MobileJwtTokenExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RoleId = table.Column<int>(type: "integer", nullable: false),
                     Discriminator = table.Column<string>(type: "text", nullable: false),
                     RootClaimId = table.Column<int>(type: "integer", nullable: true),
                     DefaultBranchOfficeId = table.Column<int>(type: "integer", nullable: true),
@@ -332,27 +357,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         column: x => x.RootClaimId,
                         principalTable: "Claims",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RootClaimRootRole",
-                columns: table => new
-                {
-                    ClaimsId = table.Column<int>(type: "integer", nullable: false),
-                    RolesId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RootClaimRootRole", x => new { x.ClaimsId, x.RolesId });
                     table.ForeignKey(
-                        name: "FK_RootClaimRootRole_Claims_ClaimsId",
-                        column: x => x.ClaimsId,
-                        principalTable: "Claims",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RootClaimRootRole_Roles_RolesId",
-                        column: x => x.RolesId,
+                        name: "FK_Users_Roles_RoleId",
+                        column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -465,30 +472,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         column: x => x.ApplicationUserId,
                         principalTable: "Users",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RootRoleRootUser",
-                columns: table => new
-                {
-                    RolesId = table.Column<int>(type: "integer", nullable: false),
-                    UsersId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RootRoleRootUser", x => new { x.RolesId, x.UsersId });
-                    table.ForeignKey(
-                        name: "FK_RootRoleRootUser_Roles_RolesId",
-                        column: x => x.RolesId,
-                        principalTable: "Roles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RootRoleRootUser_Users_UsersId",
-                        column: x => x.UsersId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -625,7 +608,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             migrationBuilder.InsertData(
                 table: "BranchOffices",
                 columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
-                values: new object[] { 1, new DateTimeOffset(new DateTime(2022, 9, 9, 2, 27, 43, 890, DateTimeKind.Unspecified).AddTicks(4013), new TimeSpan(0, 3, 0, 0, 0)), false, "Merkez Ofis" });
+                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Merkez Ofis" });
 
             migrationBuilder.InsertData(
                 table: "Brands",
@@ -646,15 +629,51 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "IsDeleted", "Name" },
                 values: new object[,]
                 {
-                    { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün ekleme yetkisi.", false, "Product.Add" },
-                    { 2, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün silme yetkisi.", false, "Product.Delete" },
-                    { 3, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün güncelleme yetkisi.", false, "Product.Update" },
-                    { 4, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün listeleme yetkisi.", false, "Product.List" },
-                    { 5, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış yapma yetkisi.", false, "Sale.Add" },
-                    { 6, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış düzenleme yetkisi.", false, "Sale.Update" },
-                    { 7, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube ekleme yetkisi.", false, "BranchOffice.Add" },
-                    { 8, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube düzenleme yetkisi.", false, "BranchOffice.Update" },
-                    { 9, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube silme yetkisi.", false, "BranchOffice.Delete" }
+                    { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün ekleme yetkisi.", false, "product.Add" },
+                    { 2, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün silme yetkisi.", false, "product.Delete" },
+                    { 3, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün güncelleme yetkisi.", false, "product.Update" },
+                    { 4, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün listeleme yetkisi.", false, "product.List" },
+                    { 5, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış yapma yetkisi.", false, "sale.Add" },
+                    { 6, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış düzenleme yetkisi.", false, "sale.Update" },
+                    { 7, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube ekleme yetkisi.", false, "branchOffice.Add" },
+                    { 8, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube düzenleme yetkisi.", false, "branchOffice.Update" },
+                    { 9, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Şube silme yetkisi.", false, "branchOffice.Delete" },
+                    { 10, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kategori silme yetkisi.", false, "category.Add" },
+                    { 11, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kategori güncelleme yetkisi.", false, "category.Update" },
+                    { 12, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kategori görebilme yetkisi.", false, "category.List" },
+                    { 13, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kategori silme yetkisi.", false, "category.Delete" },
+                    { 14, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ofis görüntüleme yetkisi.", false, "BranchOffice.List" },
+                    { 15, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış ekleme yetkisi.", false, "sale.Add" },
+                    { 16, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış güncelleme yetkisi.", false, "sale.Update" },
+                    { 17, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış görüntüleme yetkisi.", false, "sale.List" },
+                    { 18, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış silme yetkisi.", false, "sale.Delete" },
+                    { 19, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri ekleme yetkisi.", false, "customer.Add" },
+                    { 20, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri güncelleme yetkisi.", false, "customer.Update" },
+                    { 21, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri görüntüleme yetkisi.", false, "customer.List" },
+                    { 22, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri silme yetkisi.", false, "customer.Delete" },
+                    { 23, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış ekleme yetkisi.", false, "order.Add" },
+                    { 24, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış güncelleme yetkisi.", false, "order.Update" },
+                    { 25, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış görüntüleme yetkisi.", false, "order.List" },
+                    { 26, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış silme yetkisi.", false, "order.Delete" },
+                    { 27, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor ekleme yetkisi.", false, "report.Add" },
+                    { 28, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor güncelleme yetkisi.", false, "report.Update" },
+                    { 29, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor görüntüleme yetkisi.", false, "report.List" },
+                    { 30, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor silme yetkisi.", false, "report.Delete" },
+                    { 31, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kargo ekleme yetkisi.", false, "cargo.Add" },
+                    { 32, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kargo güncelleme yetkisi.", false, "cargo.Update" },
+                    { 33, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kargo görüntüleme yetkisi.", false, "cargo.List" },
+                    { 34, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kargo silme yetkisi.", false, "cargo.Delete" },
+                    { 35, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Entegrasyon ekleme yetkisi.", false, "integration.Add" },
+                    { 36, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Entegrasyon güncelleme yetkisi.", false, "integration.Update" },
+                    { 37, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Entegrasyon görüntüleme yetkisi.", false, "integration.List" },
+                    { 38, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Entegrasyon silme yetkisi.", false, "integration.Delete" },
+                    { 39, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kullanıcı ekleme yetkisi.", false, "user.Add" },
+                    { 40, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kullanıcı güncelleme yetkisi.", false, "user.Update" },
+                    { 41, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kullanıcı görüntüleme yetkisi.", false, "user.List" },
+                    { 42, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kullanıcı silme yetkisi.", false, "user.Delete" },
+                    { 43, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Sistem kaydı görüntüleme yetkisi.", false, "log.List" },
+                    { 44, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ayar güncelleme yetkisi.", false, "setting.Update" },
+                    { 45, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ayar görüntüleme yetkisi.", false, "setting.List" }
                 });
 
             migrationBuilder.InsertData(
@@ -668,9 +687,61 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 values: new object[] { 1L, "123456798", 1, 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ürün Başlığı", false });
 
             migrationBuilder.InsertData(
+                table: "RootClaimRootRole",
+                columns: new[] { "ClaimsId", "RolesId" },
+                values: new object[,]
+                {
+                    { 1, 1 },
+                    { 2, 1 },
+                    { 3, 1 },
+                    { 4, 1 },
+                    { 5, 1 },
+                    { 6, 1 },
+                    { 7, 1 },
+                    { 8, 1 },
+                    { 9, 1 },
+                    { 10, 1 },
+                    { 11, 1 },
+                    { 12, 1 },
+                    { 13, 1 },
+                    { 14, 1 },
+                    { 15, 1 },
+                    { 16, 1 },
+                    { 17, 1 },
+                    { 18, 1 },
+                    { 19, 1 },
+                    { 20, 1 },
+                    { 21, 1 },
+                    { 22, 1 },
+                    { 23, 1 },
+                    { 24, 1 },
+                    { 25, 1 },
+                    { 26, 1 },
+                    { 27, 1 },
+                    { 28, 1 },
+                    { 29, 1 },
+                    { 30, 1 },
+                    { 31, 1 },
+                    { 32, 1 },
+                    { 33, 1 },
+                    { 34, 1 },
+                    { 35, 1 },
+                    { 36, 1 },
+                    { 37, 1 },
+                    { 38, 1 },
+                    { 39, 1 },
+                    { 40, 1 },
+                    { 41, 1 },
+                    { 42, 1 },
+                    { 43, 1 },
+                    { 44, 1 },
+                    { 45, 1 }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CreatedAt", "DefaultBranchOfficeId", "Discriminator", "Email", "IsActive", "IsDeleted", "IsTwoFactorAuthActive", "MobileJwtToken", "MobileJwtTokenExpiresAt", "Name", "NeedsTakeNewPassword", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PasswordSalt", "RootClaimId", "Surname", "TemporaryPassword", "UserName", "WebJwtToken", "WebJwtTokenExpiresAt" },
-                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, "ApplicationUser", "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "ADMIN", null, null, null, "Admin", "Admin", "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
+                columns: new[] { "Id", "CreatedAt", "DefaultBranchOfficeId", "Discriminator", "Email", "IsActive", "IsDeleted", "IsTwoFactorAuthActive", "MobileJwtToken", "MobileJwtTokenExpiresAt", "Name", "NeedsTakeNewPassword", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PasswordSalt", "RoleId", "RootClaimId", "Surname", "TemporaryPassword", "UserName", "WebJwtToken", "WebJwtTokenExpiresAt" },
+                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, "ApplicationUser", "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "ADMIN", null, null, 1, null, "Admin", "Admin", "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
 
             migrationBuilder.InsertData(
                 table: "ProductVariants",
@@ -774,11 +845,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "RolesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RootRoleRootUser_UsersId",
-                table: "RootRoleRootUser",
-                column: "UsersId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_SaleItems_ProductVariantId",
                 table: "SaleItems",
                 column: "ProductVariantId");
@@ -802,6 +868,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_Users_DefaultBranchOfficeId",
                 table: "Users",
                 column: "DefaultBranchOfficeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_RoleId",
+                table: "Users",
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_RootClaimId",
@@ -848,9 +919,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "RootClaimRootRole");
 
             migrationBuilder.DropTable(
-                name: "RootRoleRootUser");
-
-            migrationBuilder.DropTable(
                 name: "SaleItems");
 
             migrationBuilder.DropTable(
@@ -858,9 +926,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Orders");
-
-            migrationBuilder.DropTable(
-                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "ProductVariants");
@@ -891,6 +956,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Claims");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
         }
     }
 }

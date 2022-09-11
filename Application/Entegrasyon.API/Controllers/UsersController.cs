@@ -23,7 +23,7 @@ namespace Entegrasyon.API.Controllers
         {
             var result =await _applicationUserManager.AddUser(dto);
             if (result.Success)
-                return Created("",dto);
+                return Ok(result);
             return BadRequest(result.Message);
         }
         [HttpGet]

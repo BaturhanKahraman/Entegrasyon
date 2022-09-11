@@ -4,19 +4,17 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
+namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20220908232744_InitialCreate")]
-    partial class InitialCreate
+    partial class IntegrationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,7 +83,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(2022, 9, 9, 2, 27, 43, 890, DateTimeKind.Unspecified).AddTicks(4013), new TimeSpan(0, 3, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             Name = "Merkez Ofis"
                         });
@@ -809,21 +807,233 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("RolesId");
 
                     b.ToTable("RootClaimRootRole");
-                });
 
-            modelBuilder.Entity("RootRoleRootUser", b =>
-                {
-                    b.Property<int>("RolesId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UsersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("RolesId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("RootRoleRootUser");
+                    b.HasData(
+                        new
+                        {
+                            ClaimsId = 1,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 2,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 3,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 4,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 5,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 6,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 7,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 8,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 9,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 10,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 11,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 12,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 13,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 14,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 15,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 16,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 17,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 18,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 19,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 20,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 21,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 22,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 23,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 24,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 25,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 26,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 27,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 28,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 29,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 30,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 31,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 32,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 33,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 34,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 35,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 36,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 37,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 38,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 39,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 40,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 41,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 42,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 43,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 44,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 45,
+                            RolesId = 1
+                        });
                 });
 
             modelBuilder.Entity("Shared.User.RootClaim", b =>
@@ -860,7 +1070,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Ürün ekleme yetkisi.",
                             IsDeleted = false,
-                            Name = "Product.Add"
+                            Name = "product.Add"
                         },
                         new
                         {
@@ -868,7 +1078,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Ürün silme yetkisi.",
                             IsDeleted = false,
-                            Name = "Product.Delete"
+                            Name = "product.Delete"
                         },
                         new
                         {
@@ -876,7 +1086,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Ürün güncelleme yetkisi.",
                             IsDeleted = false,
-                            Name = "Product.Update"
+                            Name = "product.Update"
                         },
                         new
                         {
@@ -884,7 +1094,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Ürün listeleme yetkisi.",
                             IsDeleted = false,
-                            Name = "Product.List"
+                            Name = "product.List"
                         },
                         new
                         {
@@ -892,7 +1102,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış yapma yetkisi.",
                             IsDeleted = false,
-                            Name = "Sale.Add"
+                            Name = "sale.Add"
                         },
                         new
                         {
@@ -900,7 +1110,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış düzenleme yetkisi.",
                             IsDeleted = false,
-                            Name = "Sale.Update"
+                            Name = "sale.Update"
                         },
                         new
                         {
@@ -908,7 +1118,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Şube ekleme yetkisi.",
                             IsDeleted = false,
-                            Name = "BranchOffice.Add"
+                            Name = "branchOffice.Add"
                         },
                         new
                         {
@@ -916,7 +1126,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Şube düzenleme yetkisi.",
                             IsDeleted = false,
-                            Name = "BranchOffice.Update"
+                            Name = "branchOffice.Update"
                         },
                         new
                         {
@@ -924,7 +1134,295 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Şube silme yetkisi.",
                             IsDeleted = false,
-                            Name = "BranchOffice.Delete"
+                            Name = "branchOffice.Delete"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kategori silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "category.Add"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kategori güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "category.Update"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kategori görebilme yetkisi.",
+                            IsDeleted = false,
+                            Name = "category.List"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kategori silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "category.Delete"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ofis görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "BranchOffice.List"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "sale.Add"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "sale.Update"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "sale.List"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "sale.Delete"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Müşteri ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "customer.Add"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Müşteri güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "customer.Update"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Müşteri görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "customer.List"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Müşteri silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "customer.Delete"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "order.Add"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "order.Update"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "order.List"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Satış silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "order.Delete"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Rapor ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "report.Add"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Rapor güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "report.Update"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Rapor görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "report.List"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Rapor silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "report.Delete"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kargo ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "cargo.Add"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kargo güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "cargo.Update"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kargo görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "cargo.List"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kargo silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "cargo.Delete"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Entegrasyon ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "integration.Add"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Entegrasyon güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "integration.Update"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Entegrasyon görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "integration.List"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Entegrasyon silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "integration.Delete"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kullanıcı ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "user.Add"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kullanıcı güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "user.Update"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kullanıcı görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "user.List"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Kullanıcı silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "user.Delete"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Sistem kaydı görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "log.List"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ayar güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "setting.Update"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Ayar görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "setting.List"
                         });
                 });
 
@@ -1042,6 +1540,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<byte[]>("PasswordSalt")
                         .HasColumnType("bytea");
 
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("RootClaimId")
                         .HasColumnType("integer");
 
@@ -1064,6 +1565,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("RootClaimId");
 
@@ -1098,6 +1601,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             Name = "Admin",
                             NeedsTakeNewPassword = true,
                             NormalizedUserName = "ADMIN",
+                            RoleId = 1,
                             Surname = "Admin",
                             TemporaryPassword = "Admin",
                             UserName = "Admin",
@@ -1273,21 +1777,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RootRoleRootUser", b =>
-                {
-                    b.HasOne("Shared.User.RootRole", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shared.User.RootUser", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Shared.User.RootLogin", b =>
                 {
                     b.HasOne("Shared.User.RootUser", "RootUser")
@@ -1301,9 +1790,17 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Shared.User.RootUser", b =>
                 {
+                    b.HasOne("Shared.User.RootRole", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Shared.User.RootClaim", null)
                         .WithMany("Users")
                         .HasForeignKey("RootClaimId");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
@@ -1364,6 +1861,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             modelBuilder.Entity("Shared.User.RootClaim", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Shared.User.RootRole", b =>
                 {
                     b.Navigation("Users");
                 });

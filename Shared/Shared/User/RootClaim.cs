@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.AccessControl;
+using System.Text.Json.Serialization;
 
 namespace Shared.User;
 [Table("Claims")]
@@ -11,6 +12,8 @@ public class RootClaim : ApplicationEntity
     public string Name { get; set; }
     [StringLength(maximumLength: 255)]
     public string Description { get; set; }
+    [JsonIgnore]
     public List<RootUser> Users { get; set; }
+    [JsonIgnore]
     public List<RootRole> Roles { get; set; }
 }

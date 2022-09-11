@@ -32,8 +32,11 @@ public class RootUser : GuidEntity
     public string MobileJwtToken { get; set; }
     public DateTimeOffset MobileJwtTokenExpiresAt { get; set; }
 
+    public int RoleId { get; set; }
+    public RootRole Role { get; set; }
+
     public List<RootLogin> Logins { get; set; }
-    public List<RootRole> Roles { get; set; }
+    
     public override string ToString()
     {
         return $"{Name} {Surname} {Email}";
