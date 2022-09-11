@@ -4,6 +4,7 @@ import { BehaviorSubject, map, Observable, shareReplay, tap } from 'rxjs';
 import { ListResult } from 'src/app/shared/models/list-result.model';
 import { Result } from 'src/app/shared/models/result.model';
 import { SingleResult } from 'src/app/shared/models/single-result.model';
+import { UserAddModel } from 'src/app/shared/models/user-add.model';
 import { UserDetailModel } from 'src/app/shared/models/user-detail.model';
 import { environment } from 'src/environments/environment';
 
@@ -32,7 +33,8 @@ export class UserService {
       .get<SingleResult<number>>(fullUrl)
       .pipe(map((x) => x.data));
   }
-  addUser(){
-    
+  addUser(userAddDto:UserAddModel):Observable<Result>{
+    const fullUrl=this.url + 'AddUser';
+    return this.http.post<Result>(fullUrl,userAddDto);
   }
 }

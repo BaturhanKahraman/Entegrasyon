@@ -1,92 +1,107 @@
-<mat-nav-list role="navigation" fxLayout="column" fxLayoutAlign="start none">
-  <mat-list-item routerLink="/">
-    <a matLine>Anasayfa</a>
-    <button mat-icon-button>
-      <mat-icon>home</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/">
-    <a matLine>Ürünler</a>
-    <button mat-icon-button>
-      <mat-icon>hive</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/">
-    <a matLine>Kategoriler</a>
-    <button mat-icon-button>
-      <mat-icon>category</mat-icon>
-    </button>
-  </mat-list-item>
+<mat-nav-list role="navigation" fxLayout="column" fxLayoutAlign="space-between none">
+  <div class="up">
+
+    <mat-list-item *ngFor="let menu of upMenu$ | async" [routerLink]="menu.routerLink">
+      <a matLine>{{menu.content}}</a>
+      <button mat-icon-button>
+        <mat-icon>{{menu.matIcon}}</mat-icon>
+      </button>
+    </mat-list-item>
+<!-- 
+    <mat-list-item routerLink="/">
+      <a matLine>Anasayfa</a>
+      <button mat-icon-button>
+        <mat-icon>home</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/">
+      <a matLine>Ürünler</a>
+      <button mat-icon-button>
+        <mat-icon>hive</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/">
+      <a matLine>Kategoriler</a>
+      <button mat-icon-button>
+        <mat-icon>category</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/">
+      <a matLine>Satış</a>
+      <button mat-icon-button>
+        <mat-icon>point_of_sale</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/">
+      <a matLine>Müşteriler</a>
+      <button mat-icon-button>
+        <mat-icon>contact_page</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/">
+      <a matLine>Siparişler</a>
+      <button mat-icon-button>
+        <mat-icon>shopping_cart</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/">
+      <a matLine>Raporlar</a>
+      <button mat-icon-button>
+        <mat-icon>summarize</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/offices">
+      <a matLine>Ofisler</a>
+      <button mat-icon-button>
+        <mat-icon>maps_home_work</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/support">
+      <a matLine>Kargo Firmaları</a>
+      <button mat-icon-button>
+        <mat-icon>local_shipping</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/support">
+      <a matLine>Entegrasyon</a>
+      <button mat-icon-button>
+        <mat-icon>view_module</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/user">
+      <a matLine>Kullanıcılar</a>
+      <button mat-icon-button>
+        <mat-icon>people</mat-icon>
+      </button>
+    </mat-list-item> -->
+  </div>
+  <div class="down">
+    <mat-list-item *ngFor="let menu of downMenu$ | async" [routerLink]="menu.routerLink">
+      <a matLine>{{menu.content}}</a>
+      <button mat-icon-button>
+        <mat-icon>{{menu.matIcon}}</mat-icon>
+      </button>
+    </mat-list-item>
+    <!-- <mat-list-item routerLink="/support">
+      <a matLine>Sistem Kayıtları</a>
+      <button mat-icon-button>
+        <mat-icon>view_headline</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-list-item routerLink="/support">
+      <a matLine>Ayarlar</a>
+      <button mat-icon-button>
+        <mat-icon>settings</mat-icon>
+      </button>
+    </mat-list-item>
   
-  <mat-list-item routerLink="/">
-    <a matLine>Satış</a>
-    <button mat-icon-button>
-      <mat-icon>point_of_sale</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/">
-    <a matLine>Müşteriler</a>
-    <button mat-icon-button>
-      <mat-icon>contact_page</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/">
-    <a matLine>Siparişler</a>
-    <button mat-icon-button>
-      <mat-icon>shopping_cart</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/">
-    <a matLine>Raporlar</a>
-    <button mat-icon-button>
-      <mat-icon>summarize</mat-icon>
-    </button>
-  </mat-list-item>
-
-
- 
-  <mat-list-item routerLink="/offices">
-    <a matLine>Ofisler</a>
-    <button mat-icon-button>
-      <mat-icon>maps_home_work</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/support">
-    <a matLine>Kargo Firmaları</a>
-    <button mat-icon-button>
-      <mat-icon>local_shipping</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/support">
-    <a matLine>Entegrasyon</a>
-    <button mat-icon-button>
-      <mat-icon>view_module</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/user">
-    <a matLine>Kullanıcılar</a>
-    <button mat-icon-button>
-      <mat-icon>people</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/support">
-    <a matLine>Sistem Kayıtları</a>
-    <button mat-icon-button>
-      <mat-icon>view_headline</mat-icon>
-    </button>
-  </mat-list-item>
-  <mat-list-item routerLink="/support">
-    <a matLine>Ayarlar</a>
-    <button mat-icon-button>
-      <mat-icon>  settings</mat-icon>
-    </button>
-  </mat-list-item>
-
-  <mat-list-item routerLink="/support">
-    <a matLine>Destek</a>
-    <button mat-icon-button>
-      <mat-icon>help</mat-icon>
-    </button>
-  </mat-list-item>
+    <mat-list-item routerLink="/support" >
+      <a matLine>Destek</a>
+      <button mat-icon-button>
+        <mat-icon>help</mat-icon>
+      </button>
+    </mat-list-item> -->
+  
+  </div>
 
 </mat-nav-list>
