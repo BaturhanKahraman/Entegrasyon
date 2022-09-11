@@ -9,9 +9,7 @@ import { UserAddDialogComponent } from './user-add-dialog/user-add-dialog.compon
 })
 export class UserComponent {
 
-  constructor(private dialog:MatDialog) { }
+  constructor() { }
 
-  openAddDialog(){
-    this.dialog.open(UserAddDialogComponent,{width:'100%'});
-  }
+
 }

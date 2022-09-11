@@ -1,6 +1,9 @@
 <form [formGroup]="userAddForm" (ngSubmit)="submit()" >
   <h1 mat-dialog-title>Kullanıcı Ekleme</h1>
-  <mat-dialog-content fxLayout="column" fxLayoutGap="10px">
+  <mat-dialog-content  *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+  </mat-dialog-content>
+  <mat-dialog-content *ngIf="!isLoading" fxLayout="column" fxLayoutGap="10px">
     <mat-form-field appearance="fill">
       <mat-label>Kullanıcı Adı</mat-label>
       <input matInput formControlName="userName">
@@ -14,8 +17,10 @@
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>Geçici şifre</mat-label>
-      <input matInput formControlName="temporaryPassword">
+      <input matInput #temporaryPassword formControlName="temporaryPassword">
+      <mat-hint align="end">{{temporaryPassword.value.length+'/10'}}</mat-hint>
       <mat-error *ngIf="userAddForm.get('temporaryPassword')?.hasError('required')">Lütfen geçici şifre girin!</mat-error>
+      <mat-error *ngIf="userAddForm.get('temporaryPassword')?.hasError('minLength')">Lütfen tam 10 karakter girin</mat-error>
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>İsim</mat-label>

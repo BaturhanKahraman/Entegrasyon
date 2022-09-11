@@ -1,8 +1,11 @@
 <div class="table-container">
-  <span >Toplam kullanıcı sayınız : {{totalUserCount$ | async}}</span>
+<button mat-raised-button color="primary" (click)="openAddDialog()">Kullanıcı Ekle</button>
+
+<span class="total-count">Toplam kullanıcı sayınız : {{totalUserCount$ | async}}</span>
+
   <mat-form-field appearance="standard">
-    <mat-label>Filter</mat-label>
-    <input matInput placeholder="Ex. Mia" #input>
+    <mat-label>Arayın...</mat-label>
+    <input matInput placeholder="Admin" #input>
   </mat-form-field>
   
   <div class="mat-elevation-z8">
@@ -22,6 +25,7 @@
         <th mat-header-cell *matHeaderCellDef > Soyisim </th>
         <td mat-cell *matCellDef="let row"> {{row.surname}} </td>
       </ng-container>
+
       <ng-container matColumnDef="defaultOfficeName">
         <th mat-header-cell *matHeaderCellDef> Ofisi </th>
         <td mat-cell *matCellDef="let row"> {{row.defaultOfficeName}} </td>

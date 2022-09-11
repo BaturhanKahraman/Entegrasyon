@@ -1,10 +1,12 @@
 import { DialogRef } from '@angular/cdk/dialog';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, tap } from 'rxjs';
 import { BranchOfficeService } from 'src/app/core/services/branch-office.service';
 import { UserService } from 'src/app/core/services/user.service';
 import { BranchOfficeModel } from 'src/app/shared/models/branch-office.model';
+import { UserAddModel } from 'src/app/shared/models/user-add.model';
 
 @Component({
   selector: 'app-user-add-dialog',
@@ -13,14 +15,16 @@ import { BranchOfficeModel } from 'src/app/shared/models/branch-office.model';
 })
 export class UserAddDialogComponent implements OnInit {
   userAddForm:FormGroup;
+  isLoading:boolean = true;
   offices$:Observable<BranchOfficeModel[]>;
   constructor(private branchService:BranchOfficeService,
     private userService:UserService,
-    private dialogRef:DialogRef<UserAddDialogComponent>) { }
+    private dialogRef:DialogRef<UserAddDialogComponent>,private snackBar:MatSnackBar) { }
 
   ngOnInit() {
     this.offices$=this.branchService.branches$;
     this.initializeForm();
+    this.isLoading=false;
   }
 
   initializeForm(){
@@ -35,6 +39,18 @@ export class UserAddDialogComponent implements OnInit {
     });
   }
   submit(){
-
+    if(!this.userAddForm.valid || this.isLoading)
+      return;
+    this.isLoading=true;
+    let userModel:UserAddModel=Object.assign(this.userAddForm.value);
+    this.userService.addUser(userModel)
+    .pipe(tap(x=>{
+      if(x.message)
+        this.snackBar.open(x.message,'Tamam',{duration:5000})
+    })).subscribe(x=>{
+      this.userService.init();
+      this.isLoading=false;
+      this.dialogRef.close();
+    });
   }
 }

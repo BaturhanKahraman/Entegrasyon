@@ -6,11 +6,12 @@ import { ResponseInterceptorService } from './interceptors/response-interceptor.
 import { UserService } from './services/user.service';
 import { StoreService } from './services/store.service';
 import { BranchOfficeService } from './services/branch-office.service';
+import { RoleService } from './services/role.service';
 @NgModule({
   declarations: [],
   imports: [],
   providers: [
-    AuthService,UserService,StoreService,BranchOfficeService,
+    AuthService,UserService,StoreService,BranchOfficeService,RoleService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,
