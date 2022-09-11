@@ -17,7 +17,11 @@ export class ResponseInterceptorService implements HttpInterceptor {
     let errorMessage = 'Bir hata meydana geldi.';
     console.log(errorRes);
     if (errorRes.error) {
-      errorMessage=errorRes.error;
+      if(errorRes.name ==='HttpErrorResponse')
+        errorMessage = 'Sunucuya bağlanılamadı!';
+      else{
+        errorMessage=errorRes.error;
+      }
     }
     this.snackBar.open(errorMessage,"Tamam",{duration:5000});
     return throwError(()=>new Error(errorMessage));
