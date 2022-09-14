@@ -42,13 +42,13 @@
     </mat-form-field>
     <mat-form-field appearance="fill">
       <mat-label>Rol</mat-label>
-      <mat-select [disabled]="true" formControlName="role">
-        <mat-option >
-          rol
+      <mat-select formControlName="roleId">
+        <mat-option *ngFor="let role of roles$ | async" [value]="role.id">
+          {{role.name}}
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-checkbox formControlName="isTwoFactorEnabled" [disabled]="true">İki aşamalı doğrulama aktif.</mat-checkbox>
+    <mat-checkbox formControlName="isTwoFactorEnabled">İki aşamalı doğrulama aktif.</mat-checkbox>
   </mat-dialog-content>
   <div mat-dialog-actions align="end">
     <button mat-button type="button" mat-dialog-close >Çıkış</button>

@@ -1,4 +1,4 @@
-import { Component, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { UserComponent } from './user.component';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { RouterModule, Routes } from '@angular/router';
@@ -7,7 +7,7 @@ import { UserAddDialogComponent } from './user-add-dialog/user-add-dialog.compon
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserRoleComponent } from './user-role/user-role.component';
 import { RoleListComponent } from './user-role/role-list/role-list.component';
-import { RoleAddEditComponent } from './user-role/role-add-edit/role-add-edit.component';
+import { UserRoleAddDialogComponent} from './user-role/user-role-add-dialog/user-role-add-dialog.component';
 
 const routes: Routes = [{ path: '', component: UserComponent }];
 
@@ -24,7 +24,7 @@ const routes: Routes = [{ path: '', component: UserComponent }];
     UserAddDialogComponent,
     UserRoleComponent,
     RoleListComponent,
-    RoleAddEditComponent
+    UserRoleAddDialogComponent
   ],
   exports: [RouterModule],
 })
