@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Shared.Entity;
 
 namespace Shared.EntityFrameworkCore;
 
@@ -44,9 +45,16 @@ where TContext : DbContext
         var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
         return expression == null ? await entities.ToListAsync() : await entities.Where(expression).ToListAsync();
     }
-    public async Task<List<TEntity>> GetAllPageableAsync(Expression<Func<TEntity,bool>> expression,int page,int pageSize,bool isTracking = false)
+    public async Task<Pageable<TEntity>> GetAllPageableAsync(int page,int pageSize,bool isTracking = false,Expression<Func<TEntity,bool>> expression = null)
     {
-        return await _context.Set<TEntity>().Where(expression).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
+        var resultEntities = expression==null ?  
+            await entities.Skip((page-1)*pageSize).Take(pageSize)
+            .ToListAsync():
+            await entities.Where(expression).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var totalItemCount = entities.Count();
+        var pageCount =Convert.ToInt32(Math.Round(totalItemCount / (double)pageSize));
+        return new Pageable<TEntity> { CurrentPage = page,PagingItemCount = pageSize,Items = resultEntities,TotalPageCount = pageCount,TotalItemCount=totalItemCount };
     }
 
     public async Task<bool> Exists(Expression<Func<TEntity,bool>>? expression = null)

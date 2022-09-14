@@ -18,4 +18,5 @@ public record AddUserDto
 
     [Required(ErrorMessage = "Lütfen kullanıcının ekleneceği ofisi seçin.")]
     public int BranchOfficeId { get; init; }
+    public int RoleId { get; set; }
 }

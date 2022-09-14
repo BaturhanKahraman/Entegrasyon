@@ -13,7 +13,5 @@ public class RootClaim : ApplicationEntity
     [StringLength(maximumLength: 255)]
     public string Description { get; set; }
     [JsonIgnore]
-    public List<RootUser> Users { get; set; }
-    [JsonIgnore]
     public List<RootRole> Roles { get; set; }
 }

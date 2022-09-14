@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
+namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
     partial class IntegrationDbContextModelSnapshot : ModelSnapshot
@@ -1174,7 +1174,7 @@ namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Ofis görüntüleme yetkisi.",
                             IsDeleted = false,
-                            Name = "BranchOffice.List"
+                            Name = "branchOffice.List"
                         },
                         new
                         {
@@ -1543,9 +1543,6 @@ namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("RootClaimId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Surname")
                         .HasMaxLength(55)
                         .HasColumnType("character varying(55)");
@@ -1567,8 +1564,6 @@ namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("RootClaimId");
 
                     b.ToTable("Users");
 
@@ -1796,10 +1791,6 @@ namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.User.RootClaim", null)
-                        .WithMany("Users")
-                        .HasForeignKey("RootClaimId");
-
                     b.Navigation("Role");
                 });
 
@@ -1858,11 +1849,6 @@ namespace Entegrasyon.DataAccess.Concerete.EntityFrameworkCore.Migrations
             modelBuilder.Entity("Entegrasyon.Entity.Sales.Sale", b =>
                 {
                     b.Navigation("SaleItems");
-                });
-
-            modelBuilder.Entity("Shared.User.RootClaim", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Shared.User.RootRole", b =>

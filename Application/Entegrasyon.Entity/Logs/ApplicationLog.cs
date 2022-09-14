@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using NpgsqlTypes;
 using Shared.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 

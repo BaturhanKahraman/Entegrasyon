@@ -86,7 +86,7 @@ public static class UserContextSeed
             new()
             {
                 Id = 14,
-                Name = "BranchOffice.List",
+                Name = "branchOffice.List",
                 Description = "Ofis görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
              new()
