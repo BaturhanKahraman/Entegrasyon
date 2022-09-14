@@ -7,11 +7,17 @@ import { UserService } from './services/user.service';
 import { StoreService } from './services/store.service';
 import { BranchOfficeService } from './services/branch-office.service';
 import { RoleService } from './services/role.service';
+import { ApplicationLogService } from './services/application-log.service';
 @NgModule({
   declarations: [],
   imports: [],
   providers: [
-    AuthService,UserService,StoreService,BranchOfficeService,RoleService,
+    AuthService,
+    UserService,
+    StoreService,
+    BranchOfficeService,
+    RoleService,
+    ApplicationLogService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptorService,
@@ -21,7 +27,7 @@ import { RoleService } from './services/role.service';
       provide: HTTP_INTERCEPTORS,
       useClass: ResponseInterceptorService,
       multi: true,
-    }
+    },
   ],
 })
 export class CoreModule {}

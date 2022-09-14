@@ -6,4 +6,5 @@ export class UserAddModel{
     name :string;
     surname :string;
     branchOfficeId :number;
+    roleId:number;
 }

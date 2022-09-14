@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { RoleService } from 'src/app/core/services/role.service';
 import { RoleModel } from 'src/app/shared/models/role.model';
+import { UserRoleAddDialogComponent } from '../user-role-add-dialog/user-role-add-dialog.component';
 
 @Component({
   selector: 'app-role-list',
@@ -19,7 +20,6 @@ export class RoleListComponent implements OnInit {
     this.roles$=this.roleService.roles$;
   }
   openAddDialog(){
-   this.roleService.getClaimsFromToken();
+    this.dialog.open(UserRoleAddDialogComponent,{width:'100%',data:{mode:'Add'}});
   }
-
 }

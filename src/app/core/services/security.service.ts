@@ -7,14 +7,17 @@ import { RoleService } from './role.service';
   providedIn: 'root',
 })
 export class SecurityService {
-  private userClaimsSubject=new BehaviorSubject<RoleClaimModel[]>([]);
-  userClaims$:Observable<RoleClaimModel[]> = this.userClaimsSubject.asObservable();
+  private userClaimsSubject=new BehaviorSubject<string[]>([]);
   constructor(private roleService: RoleService) {}
 
   init(){
-    const roleClaims =this.roleService.getClaimsFromToken().map<RoleClaimModel>(x=>{return {name:x,description:''}});
+    const roleClaims =this.roleService.getClaimsFromToken();
     this.userClaimsSubject.next(roleClaims);
   }
 
+  checkPermission(permission:string):boolean{
+    const claims = this.userClaimsSubject.getValue();
+    return claims.includes(permission);
+  }
 
 }

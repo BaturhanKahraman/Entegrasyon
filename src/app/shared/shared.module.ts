@@ -3,9 +3,12 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MaterialModule } from '../material.module';
 import { CommonModule } from '@angular/common';
 import { NestedMenuDirective } from './directives/nested-menu.directive';
+import { HasAccessDirective } from './directives/has-access.directive';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { TurkishPaginatorIntl } from './translate/TurkishPaginatorIntl.service';
 
 @NgModule({
-  declarations:[NestedMenuDirective],
+  declarations:[NestedMenuDirective,HasAccessDirective],
   imports: [
     
   ],
@@ -13,8 +16,10 @@ import { NestedMenuDirective } from './directives/nested-menu.directive';
     FlexLayoutModule,
     MaterialModule,
     CommonModule,
-    NestedMenuDirective
-  ]
+    NestedMenuDirective,
+    HasAccessDirective
+  ],
+  providers:[{provide: MatPaginatorIntl, useClass: TurkishPaginatorIntl}]
   
 })
 export class SharedModule { }

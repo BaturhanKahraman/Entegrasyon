@@ -17,7 +17,7 @@ export class ResponseInterceptorService implements HttpInterceptor {
     let errorMessage = 'Bir hata meydana geldi.';
     console.log(errorRes);
     if (errorRes.error) {
-      if(errorRes.name ==='HttpErrorResponse')
+      if(errorRes.statusText ==='Unknown Error')
         errorMessage = 'Sunucuya bağlanılamadı!';
       else{
         errorMessage=errorRes.error;
