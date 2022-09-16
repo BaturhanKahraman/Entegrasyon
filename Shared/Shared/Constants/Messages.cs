@@ -12,4 +12,5 @@ public static class Messages
     public const string BranchAdded = "Ofis başarı ile eklendi.";
     public const string RoleAdded = "Rol başarıyla eklendi.";
     public const string RoleUpdated = "Rol başarıyla güncellendi.";
+    public const string RoleDeleted ="Rol başarı ile silindi.";
 }

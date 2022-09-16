@@ -89,90 +89,78 @@ public static class UserContextSeed
                 Name = "branchOffice.List",
                 Description = "Ofis görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
-             new()
+            new()
             {
                 Id = 15,
-                Name = "sale.Add",
-                Description = "Satış ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
-            },
-            new()
-            {
-                Id = 16,
-                Name = "sale.Update",
-                Description = "Satış güncelleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
-            },
-            new()
-            {
-                Id = 17,
                 Name = "sale.List",
                 Description = "Satış görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 18,
+                Id = 16,
                 Name = "sale.Delete",
                 Description = "Satış silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },new()
             {
-                Id = 19,
+                Id = 17,
                 Name = "customer.Add",
                 Description = "Müşteri ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 20,
+                Id = 18,
                 Name = "customer.Update",
                 Description = "Müşteri güncelleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 21,
+                Id = 19,
                 Name = "customer.List",
                 Description = "Müşteri görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 22,
+                Id = 20,
                 Name = "customer.Delete",
                 Description = "Müşteri silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             }, new()
             {
-                Id = 23,
+                Id = 21,
                 Name = "order.Add",
                 Description = "Satış ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 24,
+                Id = 22,
                 Name = "order.Update",
                 Description = "Satış güncelleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 25,
+                Id = 23,
                 Name = "order.List",
                 Description = "Satış görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 26,
+                Id = 24,
                 Name = "order.Delete",
                 Description = "Satış silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             }, new()
             {
-                Id = 27,
+                Id = 25,
                 Name = "report.Add",
                 Description = "Rapor ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 28,
+                Id = 26,
                 Name = "report.Update",
                 Description = "Rapor güncelleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
             new()
             {
-                Id = 29,
+                Id = 27,
                 Name = "report.List",
                 Description = "Rapor görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
@@ -305,8 +293,8 @@ public static class UserContextSeed
             new { ClaimsId=25,RolesId=1 },
             new { ClaimsId=26,RolesId=1 },
             new { ClaimsId=27,RolesId=1 },
-            new { ClaimsId=28,RolesId=1 },
-            new { ClaimsId=29,RolesId=1 },
+            //new { ClaimsId=28,RolesId=1 },
+            //new { ClaimsId=29,RolesId=1 },
             new { ClaimsId=30,RolesId=1 },
             new { ClaimsId=31,RolesId=1 },
             new { ClaimsId=32,RolesId=1 },

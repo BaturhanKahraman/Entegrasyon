@@ -51,7 +51,26 @@ namespace Entegrasyon.API.Controllers
             }
             return BadRequest(result.Message);
         }
-
+        [HttpPost]
+        public async Task<IActionResult> UpdateRole(EditRoleDto roledto)
+        {
+            var result = await _applicationRoleManager.UpdateRole(roledto);
+            if(result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result.Message);
+        }
+        [HttpDelete]
+        public async Task<IActionResult> DeleteRole(int id)
+        {
+            var result = await _applicationRoleManager.DeleteRole(id);
+            if(result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result.Message);
+        }
 
     }
 }

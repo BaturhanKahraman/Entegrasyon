@@ -4,7 +4,7 @@ public static class StringExtension
 {
     public static string NormalizeEmail(this string @this)
     {
-        return @this.Trim().Normalize().ToUpperInvariant();
+        return string.IsNullOrEmpty(@this)?string.Empty:@this.Trim().Normalize().ToUpperInvariant();
     }
 
     public static void ThrowIfNullOrEmpty(this string @this)

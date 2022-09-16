@@ -47,7 +47,7 @@ namespace Shared.Security.Jwt
             var claims = new List<Claim>
             {
                 new (ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new (ClaimTypes.Email, user.Email),
+                //new (ClaimTypes.Email, user.Email),
                 new (ClaimTypes.Name,user.Name),
                 new (ClaimTypes.Surname,user.Surname),
                 new (ClaimTypes.GivenName,user.UserName),

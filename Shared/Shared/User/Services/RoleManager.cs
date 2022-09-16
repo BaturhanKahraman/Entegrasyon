@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
@@ -29,21 +30,47 @@ public class RoleManager<TRole, TClaim, TContext> : IRoleManager<TRole,TClaim>
 
     public async Task UpdateRole(TRole role,List<TClaim> claims)
     {
-        if(role.Claims == null || !role.Claims.Any())
+        if(claims != null && claims.Any())
+        {
             role.Claims = claims as List<RootClaim>;
+        }
         _context.Set<TRole>().Update(role);
         await _context.SaveChangesAsync();
     }
-    
+    public async Task UpdateRole(int roleId,string name,List<int> claimIds)
+    {
+        var role = await _context.Set<TRole>().Where(x => x.Id == roleId).FirstOrDefaultAsync();
+        if(claimIds != null)
+        {
+            role.Claims = _context.Set<TClaim>().Cast<RootClaim>().Where(x => claimIds.Contains(x.Id)).ToList();
+        }
+        role.Name = name;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task AddRole(TRole role,List<TClaim> claims)
     {
         if(role.Claims == null || !role.Claims.Any())
             role.Claims = claims as List<RootClaim>;
         await AddRole(role);
     }
+    public async Task AddRole(TRole role,List<int> claimsInt)
+    {
+        if(claimsInt!=null)
+            role.Claims = _context.Set<TClaim>().Cast<RootClaim>().Where(x=>claimsInt.Contains(x.Id)).ToList();
+        await AddRole(role);
+    }
     public async Task AddRole(TRole role)
     {
+        role.CreatedAt = DateTimeOffset.UtcNow;
         await _context.Set<TRole>().AddAsync(role);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteRole(int id)
+    {
+        var role =await _context.Set<TRole>().FirstOrDefaultAsync(x => x.Id == id);
+        _context.Remove(role);
         await _context.SaveChangesAsync();
     }
 }

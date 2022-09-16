@@ -24,6 +24,7 @@ public class ApplicationLogManager
         var log = new ApplicationLog()
         {
             Content = content,
+            CreatedAt=DateTimeOffset.UtcNow,
             IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type
@@ -44,6 +45,7 @@ public class ApplicationLogManager
         var log = new ApplicationLog()
         {
             Content = content,
+            CreatedAt=DateTimeOffset.UtcNow,
             IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type,
@@ -58,6 +60,7 @@ public class ApplicationLogManager
         var log = new ApplicationLog()
         {
             Content = content,
+            CreatedAt=DateTimeOffset.UtcNow,
             IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type,
@@ -70,6 +73,7 @@ public class ApplicationLogManager
         var log = new ApplicationLog()
         {
             Content = content,
+            CreatedAt=DateTimeOffset.UtcNow,
             IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type,
@@ -81,7 +85,7 @@ public class ApplicationLogManager
     public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int page = 1,int itemCount = 50,
         LogType? logType = null,LogAction? logAction = null)
     {
-        IQueryable<ApplicationLog> filteredLogTable = _logDal.Table;
+        IQueryable<ApplicationLog> filteredLogTable = _logDal.Table.OrderByDescending(x=>x.Id);
         if(logType != null)
             filteredLogTable = filteredLogTable.Where(x=>x.LogType==logType);
         if(logAction!=null)
@@ -91,7 +95,7 @@ public class ApplicationLogManager
         .Select(x => new ApplicationLogDetailDto
         {
             Content = x.Content,
-            CreatedAt = x.CreatedAt,
+            CreatedAt = x.CreatedAt.UtcDateTime,
             Id = x.Id,
             IpAddress = x.IpAddress,
             LogAction = x.LogAction,

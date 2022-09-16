@@ -36,6 +36,7 @@ where TContext : DbContext
             user.NormalizedEmail = user.Email.NormalizeEmail();
         }
         user.NormalizedUserName = user.UserName.ToUpperInvariant();
+        user.CreatedAt = DateTimeOffset.UtcNow;
         await _context.Set<TUser>().AddAsync(user);
         await _context.SaveChangesAsync();
         return new SuccessResult();

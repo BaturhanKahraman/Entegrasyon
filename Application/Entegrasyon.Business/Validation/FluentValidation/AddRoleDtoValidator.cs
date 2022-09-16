@@ -6,8 +6,9 @@ namespace Entegrasyon.Business.Validation.FluentValidation
     {
         public AddRoleDtoValidator()
         {
-            RuleFor(x=>x.RoleName).NotEmpty().WithMessage("Lütfen rol ismini boş bırakmayın.");
-            RuleFor(x => x.RootClaims).NotNull().Must(x => x.Any()).WithMessage("Lütfen yetki ekleyin.");
+            RuleFor(x=>x.Name).NotEmpty().WithMessage("Lütfen rol ismini boş bırakmayın.");
+            RuleFor(x => x.Claims).NotNull().WithMessage("Lütfen yetki ekleyin.")
+                .Must(x => x.Any()).When(x=>x!=null).WithMessage("Lütfen yetki ekleyin.");
         }
     }
 }

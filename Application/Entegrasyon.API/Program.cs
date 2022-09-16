@@ -16,6 +16,7 @@ using Shared.Extensions;
 using Shared.User;
 using System.Text;
 using System.Text.Json.Serialization;
+using Entegrasyon.Entity.Dtos.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,7 @@ builder.Services.AddScoped<BranchOfficeManager>();
 builder.Services.AddScoped<ApplicationRoleManager>();
 
 builder.Services.AddScoped<IValidator<BranchOffice>, BranchValidator>();
+builder.Services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
 builder.Services.AddAutoMapper(x =>
 {
     x.AddProfile<UserProfile>();

@@ -30,6 +30,7 @@ public class BranchOfficeManager
     {
         await _applicationLogManager.AddLog("Ofis ekleme işlemi yapılmakta.",LogType.Branch,LogAction.Add);
         await _validator.ValidateAndThrowAsync(office);
+        office.CreatedAt = DateTimeOffset.UtcNow;
         await _branchOfficeDal.AddAsync(office);
         await _applicationLogManager.AddLog($"Ofis ekleme işlemi başarıyla tamamlandı. {office.Name}",LogType.Branch,LogAction.Add);
         return new SuccessResult(Messages.BranchAdded);

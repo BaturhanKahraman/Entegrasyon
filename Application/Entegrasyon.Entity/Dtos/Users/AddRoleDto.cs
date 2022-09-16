@@ -4,7 +4,7 @@ namespace Entegrasyon.Entity.Dtos.Users
 {
     public class AddRoleDto
     {
-        public string RoleName { get; set; }
-        public List<RootClaim> RootClaims { get; set; }
+        public string Name { get; set; }
+        public List<int> Claims { get; set; }
     }
 }
