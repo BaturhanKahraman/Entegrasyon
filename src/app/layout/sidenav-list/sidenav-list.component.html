@@ -7,6 +7,7 @@
         <mat-icon>{{menu.matIcon}}</mat-icon>
       </button>
     </mat-list-item>
+    
   </div>
   <div class="down">
     <mat-list-item *ngFor="let menu of downMenu$ | async" [routerLink]="menu.routerLink">
