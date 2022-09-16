@@ -36,7 +36,6 @@ export class BranchEditDialogComponent implements OnInit {
   }
   submit() {
     if (this.branchForm.valid) {
-      console.log(this.branchForm.value);
       let body:BranchOfficeModel = Object.assign(this.branchForm.value);
       this.branchService
         .editBranch(body)

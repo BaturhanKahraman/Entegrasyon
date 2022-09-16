@@ -14,6 +14,7 @@ import {
   zip,
 } from 'rxjs';
 import { RoleService } from 'src/app/core/services/role.service';
+import { RoleAddDto } from 'src/app/shared/models/role-add.model';
 import { RoleClaimModel } from 'src/app/shared/models/role-claim.model';
 
 class GroupedClaims {
@@ -67,7 +68,15 @@ export class UserRoleAddDialogComponent implements OnInit {
     });
   }
   submit() {
-    console.log(this.roleForm);
+    if(this.isLoading===true || this.roleForm.invalid)
+      return;
+    this.isLoading=true;
+    let claims =Array.from<string>(this.roleForm.value.claims);
+    const dto:RoleAddDto = new RoleAddDto(this.roleForm.value.name,claims.map(x=>+x))
+    this.roleService.addRole(dto).subscribe(x=>{
+      this.dialogRef.close();
+      this.roleService.init();
+    });
     
   }
 }

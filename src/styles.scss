@@ -5,3 +5,14 @@
 }
 html, body { height: 100%; }
 body { font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* width */
+::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+}
+
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,.26);
+}

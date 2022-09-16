@@ -11,13 +11,9 @@ export class HasAccessDirective {
     private securityService:SecurityService) { }
 
     @Input() set hasAccess(permission:string){
-      console.log(`yetki: ${permission}`)
-
       if(this.securityService.checkPermission(permission)){
-        console.log(`yetkisi var ${permission}`)
         this.viewContainer.createEmbeddedView(this.templateRef);
       }else{
-        console.log(`yetkisi yok ${permission}`)
         this.viewContainer.clear();
         this.viewContainer.createComponent(NoPermissionComponent)
       }

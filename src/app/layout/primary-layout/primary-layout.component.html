@@ -1,8 +1,8 @@
 <div class="container">
   <app-navbar (menuButtonClicked)="sidenav.toggle()"></app-navbar>
   <mat-sidenav-container>
-    <mat-sidenav [mode]="isSmallScreen ? 'over' : 'side'" [opened]="!isSmallScreen" #sidenav role="navigation">
-      <app-sidenav-list></app-sidenav-list>
+    <mat-sidenav [mode]="isSmallScreen ? 'over' : 'side'" [opened]="!isSmallScreen" #sidenav role="navigation" >
+      <app-sidenav-list (clicked)="closeSidenav()"></app-sidenav-list>
     </mat-sidenav>
     <mat-sidenav-content>
       <main>
