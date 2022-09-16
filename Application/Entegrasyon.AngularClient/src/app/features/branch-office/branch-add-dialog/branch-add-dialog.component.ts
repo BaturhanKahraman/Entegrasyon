@@ -31,7 +31,7 @@ export class BranchAddDialogComponent implements OnInit {
     if (this.branchForm.valid)
       this.branchService
         .addBranch(this.branchForm.value.branchOffice)
-        .pipe(tap((x) => this.snackBar.open(x.message)))
+        .pipe(tap((x) => this.snackBar.open(x.message,'Tamam',{duration:5000})))
         .subscribe((x) => {
           if (x.success) this.dialogRef.close();
           this.branchService.init();
