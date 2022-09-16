@@ -1,8 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { ListResult } from 'src/app/shared/models/list-result.model';
+import { Result } from 'src/app/shared/models/result.model';
+import { RoleAddDto } from 'src/app/shared/models/role-add.model';
 import { RoleClaimModel } from 'src/app/shared/models/role-claim.model';
+import { RoleEditDto } from 'src/app/shared/models/role-edit.model';
 import { RoleModel } from 'src/app/shared/models/role.model';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './auth.service';
@@ -26,11 +29,23 @@ export class RoleService {
     const fullUrl = this.url + 'GetRoles';
     return this.http
       .get<ListResult<RoleModel>>(fullUrl)
-      .pipe(map((x) => x.data),tap(console.log));
+      .pipe(map((x) => x.data));
   }
 
-  addRole() {}
-  updateRole() {}
+  addRole(roleAddDto:RoleAddDto):Observable<Result> {
+    const fullUrl = this.url + 'AddRole';
+    return this.http.post<Result>(fullUrl,roleAddDto);
+  }
+  updateRole(roleEditDto:RoleEditDto):Observable<Result> {
+    const fullUrl = this.url + 'UpdateRole';
+    return this.http.post<Result>(fullUrl,roleEditDto);
+  }
+  deleteRole(id:number){
+    const fullUrl = this.url + 'DeleteRole';
+    const param =new HttpParams().set('id',id);
+    return this.http.delete<Result>(fullUrl,{params:param});
+
+  }
 
   getAllClaims():Observable<RoleClaimModel[]>{
     const fullUrl = this.url + 'GetRoleClaims';

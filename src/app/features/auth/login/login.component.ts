@@ -28,9 +28,7 @@ export class LoginComponent implements OnInit {
       return;
     this.isLogining = true;
     this.isLoading = true;
-    console.log(this.loginForm);
     let loginModel:LoginModel=Object.assign(this.loginForm.value)
-    console.log(loginModel);
     this.authService.login(loginModel).pipe(map(x=>x.message))
     .subscribe()
     .add(()=>{

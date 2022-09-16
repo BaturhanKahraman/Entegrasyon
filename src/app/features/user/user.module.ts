@@ -8,6 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserRoleComponent } from './user-role/user-role.component';
 import { RoleListComponent } from './user-role/role-list/role-list.component';
 import { UserRoleAddDialogComponent} from './user-role/user-role-add-dialog/user-role-add-dialog.component';
+import { UserRoleEditDialogComponent } from './user-role/user-role-edit-dialog/user-role-edit-dialog.component';
 
 const routes: Routes = [{ path: '', component: UserComponent }];
 
@@ -24,7 +25,8 @@ const routes: Routes = [{ path: '', component: UserComponent }];
     UserAddDialogComponent,
     UserRoleComponent,
     RoleListComponent,
-    UserRoleAddDialogComponent
+    UserRoleAddDialogComponent,
+    UserRoleEditDialogComponent,
   ],
   exports: [RouterModule],
 })

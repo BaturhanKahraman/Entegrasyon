@@ -11,6 +11,7 @@
       <mat-error *ngIf="roleForm.get('name')?.hasError('required')">Lütfen rol ismini giriniz.</mat-error>
     </mat-form-field>
     <mat-form-field appearance="fill">
+      <mat-label>Yetkiler</mat-label>
       <mat-select multiple formControlName="claims">
         <mat-option *ngFor="let claim of roleClaims$ | async" [value]="claim.id.toString()">
           {{claim.description}}

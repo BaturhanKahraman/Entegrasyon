@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MenuService } from 'src/app/core/services/menu.service';
 import { SideNavItemsModel } from './sidenav-items.model';
@@ -11,6 +11,7 @@ import { SideNavItemsModel } from './sidenav-items.model';
 export class SidenavListComponent implements OnInit {
   upMenu$:Observable<SideNavItemsModel[]>;
   downMenu$:Observable<SideNavItemsModel[]>;
+  @Output('clicked') clicked= new EventEmitter();
   constructor(private menuService:MenuService) { }
 
   ngOnInit(): void {
@@ -18,4 +19,7 @@ export class SidenavListComponent implements OnInit {
     this.downMenu$ = this.menuService.getDownMenus();
   }
 
+  closeSidenav(){
+    this.clicked.emit();
+  }
 }

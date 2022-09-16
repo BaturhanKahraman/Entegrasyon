@@ -26,7 +26,7 @@
     <!-- Fruit Column -->
     <ng-container matColumnDef="createdAt">
       <th mat-header-cell *matHeaderCellDef>Tarih</th>
-      <td mat-cell *matCellDef="let row">{{ row.createdAt }}</td>
+      <td mat-cell *matCellDef="let row">{{ row.createdAt | date:'medium'}} </td>
     </ng-container>
 
     <ng-container matColumnDef="ipAddress">
@@ -52,10 +52,12 @@
     </tr>
   </table>
 
-  <mat-paginator
+  <mat-paginator 
     [pageSize]="selectedPageSize"
     [length]="totalItemCount"
     [pageSizeOptions]="[25, 50, 100, 250]"
     [showFirstLastButtons]="true"
+    [pageIndex]="currentPageIndex"
+    (page)="handlePage($event)"
   ></mat-paginator>
 </div>
