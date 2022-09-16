@@ -26,7 +26,7 @@
     <!-- Fruit Column -->
     <ng-container matColumnDef="createdAt">
       <th mat-header-cell *matHeaderCellDef>Tarih</th>
-      <td mat-cell *matCellDef="let row">{{ row.createdAt | date:'medium'}} </td>
+      <td mat-cell *matCellDef="let row">{{ row.createdAt | date:'medium':'locale'}} </td>
     </ng-container>
 
     <ng-container matColumnDef="ipAddress">
