@@ -26,8 +26,8 @@ export class PrimaryLayoutComponent implements OnInit {
   }
 
   closeSidenav(){
-    console.log(typeof(this.sideNav));
-    if(this.isSmallScreen === true)
+    
+   if(this.isSmallScreen === true)
       this.sideNav.close();
   }
 }
