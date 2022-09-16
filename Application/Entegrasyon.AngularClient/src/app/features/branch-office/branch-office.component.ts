@@ -14,6 +14,6 @@ export class BranchOfficeComponent implements OnInit {
   ngOnInit() {
   }
   openAddDialog(){
-    this.dialog.open(BranchAddDialogComponent)
+    this.dialog.open(BranchAddDialogComponent,{disableClose:true})
   }
 }
