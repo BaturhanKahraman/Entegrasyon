@@ -1,0 +1,53 @@
+<div class="table-container">
+<button mat-raised-button color="primary" (click)="openAddDialog()">Kullanıcı Ekle</button>
+
+<span class="total-count">Toplam kullanıcı sayınız : {{totalUserCount$ | async}}</span>
+
+  <mat-form-field appearance="standard">
+    <mat-label>Arayın...</mat-label>
+    <input matInput placeholder="Admin" #input>
+  </mat-form-field>
+  
+  <div class="mat-elevation-z8">
+      <table mat-table [dataSource]="userDetails$">
+
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef> Id </th>
+        <td mat-cell *matCellDef="let row"> {{row.id}} </td>
+      </ng-container>
+  
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef > İsim </th>
+        <td mat-cell *matCellDef="let row"> {{row.name}} </td>
+      </ng-container>
+  
+      <ng-container matColumnDef="surname">
+        <th mat-header-cell *matHeaderCellDef > Soyisim </th>
+        <td mat-cell *matCellDef="let row"> {{row.surname}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="defaultOfficeName">
+        <th mat-header-cell *matHeaderCellDef> Ofisi </th>
+        <td mat-cell *matCellDef="let row"> {{row.defaultOfficeName}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="userName">
+        <th mat-header-cell *matHeaderCellDef> Kullanıcı Adı </th>
+        <td mat-cell *matCellDef="let row"> {{row.userName}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef> Kayıt Tarihi </th>
+        <td mat-cell *matCellDef="let row"> {{row.createdAt | date }} </td>
+      </ng-container>
+      
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="row"></tr>
+  
+      <!-- Row shown when there is no matching data. -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">Herhangi bir sonuç bulunamadı :  "{{input.value}}"</td>
+      </tr>
+    </table>
+  </div>
+</div>
