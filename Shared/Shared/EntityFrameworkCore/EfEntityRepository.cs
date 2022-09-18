@@ -18,19 +18,19 @@ where TContext : DbContext
     public async Task AddAsync(TEntity entity)
     {
         _context.Set<TEntity>().Add(entity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task UpdateAsync(TEntity entity)
     {
         _context.Set<TEntity>().Update(entity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task DeleteAsync(TEntity entity)
     {
         _context.Set<TEntity>().Remove(entity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task<TEntity> Get(Expression<Func<TEntity,bool>> expression,bool isTracking = false)

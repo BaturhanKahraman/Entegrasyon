@@ -99,6 +99,26 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoryAttributes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryAttributeKey = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
+                    CategoriyAttributeHumanized = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
+                    Required = table.Column<bool>(type: "boolean", nullable: false),
+                    AllowCustom = table.Column<bool>(type: "boolean", nullable: false),
+                    Varianter = table.Column<bool>(type: "boolean", nullable: false),
+                    Slicer = table.Column<bool>(type: "boolean", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryAttributes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CategoryMarketPlaceMatches",
                 columns: table => new
                 {
@@ -236,33 +256,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CategoryAttributes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CategoryAttributeKey = table.Column<string>(type: "character varying(55)", maxLength: 55, nullable: false),
-                    CategoriyAttributeHumanized = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
-                    Required = table.Column<bool>(type: "boolean", nullable: false),
-                    AllowCustom = table.Column<bool>(type: "boolean", nullable: false),
-                    Varianter = table.Column<bool>(type: "boolean", nullable: false),
-                    Slicer = table.Column<bool>(type: "boolean", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CategoryAttributes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CategoryAttributes_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "MainProducts",
                 columns: table => new
                 {
@@ -287,6 +280,51 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_MainProducts_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CategoryAttributeValues",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(35)", maxLength: 35, nullable: false),
+                    CategoryAttributeId = table.Column<int>(type: "integer", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryAttributeValues", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CategoryAttributeValues_CategoryAttributes_CategoryAttribut~",
+                        column: x => x.CategoryAttributeId,
+                        principalTable: "CategoryAttributes",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CategoryCategoryAttribute",
+                columns: table => new
+                {
+                    CategoryAttributesId = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryCategoryAttribute", x => new { x.CategoryAttributesId, x.CategoryId });
+                    table.ForeignKey(
+                        name: "FK_CategoryCategoryAttribute_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryCategoryAttribute_CategoryAttributes_CategoryAttrib~",
+                        column: x => x.CategoryAttributesId,
+                        principalTable: "CategoryAttributes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -360,27 +398,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CategoryAttributeValues",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(35)", maxLength: 35, nullable: false),
-                    CategoryAttributeId = table.Column<int>(type: "integer", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CategoryAttributeValues", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CategoryAttributeValues_CategoryAttributes_CategoryAttribut~",
-                        column: x => x.CategoryAttributeId,
-                        principalTable: "CategoryAttributes",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProductVariants",
                 columns: table => new
                 {
@@ -447,20 +464,18 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "Logs",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Content = table.Column<string>(type: "text", nullable: true),
                     ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     LogType = table.Column<int>(type: "integer", nullable: false),
                     LogAction = table.Column<int>(type: "integer", nullable: false),
                     IpAddress = table.Column<string>(type: "text", nullable: true),
                     Object = table.Column<string>(type: "jsonb", nullable: true),
+                    Id = table.Column<int>(type: "integer", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Logs", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Logs_Users_ApplicationUserId",
                         column: x => x.ApplicationUserId,
@@ -637,21 +652,19 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     { 12, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kategori görebilme yetkisi.", false, "category.List" },
                     { 13, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kategori silme yetkisi.", false, "category.Delete" },
                     { 14, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Ofis görüntüleme yetkisi.", false, "branchOffice.List" },
-                    { 15, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış ekleme yetkisi.", false, "sale.Add" },
-                    { 16, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış güncelleme yetkisi.", false, "sale.Update" },
-                    { 17, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış görüntüleme yetkisi.", false, "sale.List" },
-                    { 18, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış silme yetkisi.", false, "sale.Delete" },
-                    { 19, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri ekleme yetkisi.", false, "customer.Add" },
-                    { 20, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri güncelleme yetkisi.", false, "customer.Update" },
-                    { 21, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri görüntüleme yetkisi.", false, "customer.List" },
-                    { 22, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri silme yetkisi.", false, "customer.Delete" },
-                    { 23, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış ekleme yetkisi.", false, "order.Add" },
-                    { 24, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış güncelleme yetkisi.", false, "order.Update" },
-                    { 25, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış görüntüleme yetkisi.", false, "order.List" },
-                    { 26, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış silme yetkisi.", false, "order.Delete" },
-                    { 27, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor ekleme yetkisi.", false, "report.Add" },
-                    { 28, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor güncelleme yetkisi.", false, "report.Update" },
-                    { 29, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor görüntüleme yetkisi.", false, "report.List" },
+                    { 15, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış görüntüleme yetkisi.", false, "sale.List" },
+                    { 16, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış silme yetkisi.", false, "sale.Delete" },
+                    { 17, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri ekleme yetkisi.", false, "customer.Add" },
+                    { 18, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri güncelleme yetkisi.", false, "customer.Update" },
+                    { 19, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri görüntüleme yetkisi.", false, "customer.List" },
+                    { 20, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Müşteri silme yetkisi.", false, "customer.Delete" },
+                    { 21, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış ekleme yetkisi.", false, "order.Add" },
+                    { 22, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış güncelleme yetkisi.", false, "order.Update" },
+                    { 23, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış görüntüleme yetkisi.", false, "order.List" },
+                    { 24, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Satış silme yetkisi.", false, "order.Delete" },
+                    { 25, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor ekleme yetkisi.", false, "report.Add" },
+                    { 26, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor güncelleme yetkisi.", false, "report.Update" },
+                    { 27, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor görüntüleme yetkisi.", false, "report.List" },
                     { 30, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Rapor silme yetkisi.", false, "report.Delete" },
                     { 31, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kargo ekleme yetkisi.", false, "cargo.Add" },
                     { 32, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kargo güncelleme yetkisi.", false, "cargo.Update" },
@@ -712,8 +725,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     { 25, 1 },
                     { 26, 1 },
                     { 27, 1 },
-                    { 28, 1 },
-                    { 29, 1 },
                     { 30, 1 },
                     { 31, 1 },
                     { 32, 1 },
@@ -764,14 +775,14 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CategoryAttributes_CategoryId",
-                table: "CategoryAttributes",
-                column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_CategoryAttributeValues_CategoryAttributeId",
                 table: "CategoryAttributeValues",
                 column: "CategoryAttributeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryCategoryAttribute_CategoryId",
+                table: "CategoryCategoryAttribute",
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Images_ProductVariantId",
@@ -787,6 +798,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_Logs_ApplicationUserId",
                 table: "Logs",
                 column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logs_LogAction",
+                table: "Logs",
+                column: "LogAction");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logs_LogAction_LogType",
+                table: "Logs",
+                columns: new[] { "LogAction", "LogType" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_MainProducts_BrandId",
@@ -873,6 +894,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CategoryAttributeValues");
+
+            migrationBuilder.DropTable(
+                name: "CategoryCategoryAttribute");
 
             migrationBuilder.DropTable(
                 name: "CategoryMarketPlaceMatches");

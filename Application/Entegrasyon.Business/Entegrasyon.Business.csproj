@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="MapperProfiles\" />
+    <Folder Include="Utility\" />
   </ItemGroup>
 
 </Project>

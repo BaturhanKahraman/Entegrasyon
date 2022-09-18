@@ -17,6 +17,7 @@ using Shared.User;
 using System.Text;
 using System.Text.Json.Serialization;
 using Entegrasyon.Entity.Dtos.Users;
+using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,9 @@ builder.Services.AddDbContext<HeadDbContext>(x =>
 {
     x.UseNpgsql(builder.Configuration.GetConnectionString("Main"));
 });
+
+
+
 builder.Services.AddSharedSettings();
 builder.Services.AddUserServices<ApplicationUser, RootLogin,RootRole,RootClaim,IntegrationDbContext>();
 builder.Services.AddScoped<ILogDal, EfLogDal>();
@@ -54,6 +58,8 @@ builder.Services.AddScoped<ApplicationUserManager>();
 builder.Services.AddScoped<IBranchOfficeDal,EfBranchOfficeDal>();
 builder.Services.AddScoped<BranchOfficeManager>();
 builder.Services.AddScoped<ApplicationRoleManager>();
+builder.Services.AddScoped<CategoryManager>();
+builder.Services.AddScoped<ICategoryDal, EfCategoryDal>();
 
 builder.Services.AddScoped<IValidator<BranchOffice>, BranchValidator>();
 builder.Services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
@@ -83,8 +89,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtTokenOptions:SecurityKey"]))
     };
 });
+builder.Services.AddHttpClient();
 builder.Services.AddAuthorization();
 var app = builder.Build();
+
 app.AddCustomExceptionHandlerMiddleware();
 // Configure the HTTP request pipeline.
 if(app.Environment.IsDevelopment())
@@ -95,9 +103,8 @@ if(app.Environment.IsDevelopment())
 
 app.UseCors("myclient");
 
-await using var scope = app.Services.CreateAsyncScope();
+app.UseMiddleware<MigrateDatabaseMiddleware>();
 
-await app.Services.CreateScope().ServiceProvider.GetService<IntegrationDbContext>()!.Database.MigrateAsync();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

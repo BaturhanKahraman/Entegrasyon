@@ -9,6 +9,6 @@ public class Category : ApplicationEntity
     [MinLength(3), MaxLength(30)]
     public string Name { get; set; }
     public int? SuperCategoryId { get; set; }
-    public virtual List<Category> SubCategories { get; set; }
-    public List<CategoryAttribute> CategoryAttributes { get; set; }
+    public virtual ICollection<Category> SubCategories { get; set; }
+    public ICollection<CategoryAttribute> CategoryAttributes { get; set; }
 }

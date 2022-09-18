@@ -8,7 +8,7 @@ public enum LogType
     Product,
     Branch,
     Sale,
-    Matches,
-    Categories,
+    Matching,
+    Category,
     Role
 }

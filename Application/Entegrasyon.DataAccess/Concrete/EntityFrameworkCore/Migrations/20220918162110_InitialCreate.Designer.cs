@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20220913232446_InitialCreate")]
+    [Migration("20220918162110_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CategoryCategoryAttribute", b =>
+                {
+                    b.Property<int>("CategoryAttributesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CategoryAttributesId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("CategoryCategoryAttribute");
+                });
 
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationCustomer", b =>
                 {
@@ -160,9 +175,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasMaxLength(55)
                         .HasColumnType("character varying(55)");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -179,8 +191,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("boolean");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("CategoryAttributes");
                 });
@@ -255,12 +265,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Logs.ApplicationLog", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
                     b.Property<Guid?>("ApplicationUserId")
                         .HasColumnType("uuid");
 
@@ -269,6 +273,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
 
                     b.Property<string>("IpAddress")
                         .HasColumnType("text");
@@ -285,9 +292,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("Object")
                         .HasColumnType("jsonb");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("LogAction");
+
+                    b.HasIndex("LogAction", "LogType");
 
                     b.ToTable("Logs");
                 });
@@ -948,16 +957,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            ClaimsId = 28,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 29,
-                            RolesId = 1
-                        },
-                        new
-                        {
                             ClaimsId = 30,
                             RolesId = 1
                         },
@@ -1182,29 +1181,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         {
                             Id = 15,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Satış ekleme yetkisi.",
-                            IsDeleted = false,
-                            Name = "sale.Add"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Satış güncelleme yetkisi.",
-                            IsDeleted = false,
-                            Name = "sale.Update"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış görüntüleme yetkisi.",
                             IsDeleted = false,
                             Name = "sale.List"
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 16,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış silme yetkisi.",
                             IsDeleted = false,
@@ -1212,7 +1195,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 17,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Müşteri ekleme yetkisi.",
                             IsDeleted = false,
@@ -1220,7 +1203,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 20,
+                            Id = 18,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Müşteri güncelleme yetkisi.",
                             IsDeleted = false,
@@ -1228,7 +1211,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 21,
+                            Id = 19,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Müşteri görüntüleme yetkisi.",
                             IsDeleted = false,
@@ -1236,7 +1219,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 22,
+                            Id = 20,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Müşteri silme yetkisi.",
                             IsDeleted = false,
@@ -1244,7 +1227,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 23,
+                            Id = 21,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış ekleme yetkisi.",
                             IsDeleted = false,
@@ -1252,7 +1235,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 24,
+                            Id = 22,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış güncelleme yetkisi.",
                             IsDeleted = false,
@@ -1260,7 +1243,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 25,
+                            Id = 23,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış görüntüleme yetkisi.",
                             IsDeleted = false,
@@ -1268,7 +1251,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 26,
+                            Id = 24,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Satış silme yetkisi.",
                             IsDeleted = false,
@@ -1276,7 +1259,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 27,
+                            Id = 25,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Rapor ekleme yetkisi.",
                             IsDeleted = false,
@@ -1284,7 +1267,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 28,
+                            Id = 26,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Rapor güncelleme yetkisi.",
                             IsDeleted = false,
@@ -1292,7 +1275,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         },
                         new
                         {
-                            Id = 29,
+                            Id = 27,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Rapor görüntüleme yetkisi.",
                             IsDeleted = false,
@@ -1607,22 +1590,26 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CategoryCategoryAttribute", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryAttributesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.Categories.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.Categories.Category", null)
                         .WithMany("SubCategories")
                         .HasForeignKey("CategoryId");
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttribute", b =>
-                {
-                    b.HasOne("Entegrasyon.Entity.Categories.Category", "Category")
-                        .WithMany("CategoryAttributes")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttributeValue", b =>
@@ -1818,8 +1805,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
                 {
-                    b.Navigation("CategoryAttributes");
-
                     b.Navigation("SubCategories");
                 });
 

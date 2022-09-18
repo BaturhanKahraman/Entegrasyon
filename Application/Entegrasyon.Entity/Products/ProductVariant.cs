@@ -28,6 +28,6 @@ public class ProductVariant : LongEntity
     [Column(TypeName = "jsonb")]
     public AttributeKeyValue[] AttributeKeyValues { get; set; }//json
 
-    public List<Image> Images { get; set; }
+    public ICollection<Image> Images { get; set; }
 
 }

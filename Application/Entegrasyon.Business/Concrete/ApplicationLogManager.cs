@@ -94,9 +94,9 @@ public class ApplicationLogManager
         await filteredLogTable.Include(x => x.ApplicationUser).Skip((page - 1) * itemCount).Take(itemCount)
         .Select(x => new ApplicationLogDetailDto
         {
+            Id = x.Id,
             Content = x.Content,
             CreatedAt = x.CreatedAt.UtcDateTime,
-            Id = x.Id,
             IpAddress = x.IpAddress,
             LogAction = x.LogAction,
             LogType = x.LogType,

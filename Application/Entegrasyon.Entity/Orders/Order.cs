@@ -10,7 +10,7 @@ public class Order : LongEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public decimal TotalPrice { get;  }//calculated
 
-    public List<OrderItem> OrderItems { get; set; }
+    public ICollection<OrderItem> OrderItems { get; set; }
     public Address BillingAddress { get; set; }
     public Address ShippingAddress { get; set; }
 }

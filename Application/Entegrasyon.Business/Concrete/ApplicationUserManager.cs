@@ -42,7 +42,7 @@ public class ApplicationUserManager
 
     public async Task<IDataResult<List<ApplicationUser>>> GetUsers()
     {
-        var users = await _userManager.GetUsers();
+        var users = await _userManager.GetUsers().ConfigureAwait(false);
         return new SuccessDataResult<List<ApplicationUser>>(users);
     }
     public async Task<IDataResult<List<UserDetailListDto>>> GetPaginatedUserDetails(Expression<Func<ApplicationUser,bool>> expression=null,int page=1,int itemCount=50)

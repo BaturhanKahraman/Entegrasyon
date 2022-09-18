@@ -9,7 +9,7 @@ namespace Entegrasyon.Entity.Sales
 {
     public class Sale:GuidEntity
     {
-        public List<SaleItem> SaleItems { get; set; }
+        public ICollection<SaleItem> SaleItems { get; set; }
         public Guid SalePersonId { get; set; }
         public ApplicationUser SalePerson { get; set; }
 

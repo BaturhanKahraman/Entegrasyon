@@ -38,3 +38,6 @@ services:
     depends_on:
       - redis
       - db
+    ports:
+      - "44399:443" 
+      

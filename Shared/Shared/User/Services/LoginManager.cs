@@ -39,7 +39,7 @@ where TLogin:RootLogin,new()
     {
         _logger.LogInformation("Login");
         userName = userName.ToUpperInvariant();
-        var user = await _userManager.GetUserFullInformation(x=>x.NormalizedUserName==userName);
+        var user = await _userManager.GetUserFullInformation(x=>x.NormalizedUserName==userName).ConfigureAwait(false);
         if(user == null)
             return new ErrorResult(Messages.LoginFailedWrongPassword);
         if(user.NeedsTakeNewPassword)
@@ -85,8 +85,8 @@ where TLogin:RootLogin,new()
         {
             IpAddress = ipAddress, LoginTime = DateTimeOffset.Now, RootUserId =userId
         };
-        await _tContext.Set<TLogin>().AddAsync(login,_httpContextAccessor.HttpContext.RequestAborted);
-        await _tContext.SaveChangesAsync(_httpContextAccessor.HttpContext.RequestAborted);
+        await _tContext.Set<TLogin>().AddAsync(login,_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
+        await _tContext.SaveChangesAsync(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
     }
 
     public async Task<IResult> LogOutAsync(Guid userId)

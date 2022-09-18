@@ -13,9 +13,6 @@ public class CategoryAttribute : ApplicationEntity
     public bool AllowCustom { get; set; }
     public bool Varianter { get; set; }
     public bool Slicer { get; set; }
-    public List<CategoryAttributeValue> CategoryAttributeValues { get; set; }
-    public int CategoryId { get; set; }
-    public Category Category { get; set; }
-
-
+    public ICollection<CategoryAttributeValue> CategoryAttributeValues { get; set; }
+    public ICollection<Category> Category { get; set; }
 }

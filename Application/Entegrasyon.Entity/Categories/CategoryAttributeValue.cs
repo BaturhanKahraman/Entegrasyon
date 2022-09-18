@@ -5,6 +5,6 @@ namespace Entegrasyon.Entity.Categories;
 
 public class CategoryAttributeValue : ApplicationEntity
 {
-    [Required, StringLength(maximumLength: 35,MinimumLength = 3)]
+    [Required, StringLength(maximumLength: 35)]
     public string Name { get; set; }
 }

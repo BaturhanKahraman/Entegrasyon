@@ -7,5 +7,5 @@ public class Brand : ApplicationEntity
 {
     [Required, StringLength(maximumLength: 55,MinimumLength = 1)]
     public string Name { get; set; }
-    public List<MainProduct> Products { get; set; }
+    public ICollection<MainProduct> Products { get; set; }
 }

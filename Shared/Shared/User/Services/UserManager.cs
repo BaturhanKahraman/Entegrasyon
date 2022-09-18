@@ -37,8 +37,8 @@ where TContext : DbContext
         }
         user.NormalizedUserName = user.UserName.ToUpperInvariant();
         user.CreatedAt = DateTimeOffset.UtcNow;
-        await _context.Set<TUser>().AddAsync(user);
-        await _context.SaveChangesAsync();
+        await _context.Set<TUser>().AddAsync(user).ConfigureAwait(false);
+        await _context.SaveChangesAsync().ConfigureAwait(false);
         return new SuccessResult();
     }
 
@@ -47,21 +47,21 @@ where TContext : DbContext
         user.IsActive = false;
         user.IsDeleted = true;
         _context.Set<TUser>().Update(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task CreateTemporaryPasswordAsync(TUser user)
     {
         user.TemporaryPassword = _randomGenerator.GetRandomCode(15);
         _context.Set<TUser>().Update(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task<TUser> GetByEmail(string email)
     {
         email.ThrowIfNullOrEmpty();
         string normalizedEmail = email.NormalizeEmail();
-        return await GetUserAsync(x => x.NormalizedEmail == normalizedEmail,false);
+        return await GetUserAsync(x => x.NormalizedEmail == normalizedEmail,false).ConfigureAwait(false);
     }
 
     public async Task<TUser> GetByUserName(string userName)
@@ -79,14 +79,14 @@ where TContext : DbContext
         AssignPassword(user, password);
         user.NeedsTakeNewPassword = false;
         _context.Set<TUser>().Update(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
         return new SuccessResult(Messages.PasswordCreated);
     }
 
     public async Task UpdateUser(TUser user)
     {
         _context.Set<TUser>().Update(user);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     private static void AssignPassword(TUser user, string password)

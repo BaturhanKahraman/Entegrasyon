@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using NpgsqlTypes;
-using Shared.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Shared.Entity;
 
 namespace Entegrasyon.Entity.Logs;
-
-public class ApplicationLog : LongEntity
+[Keyless]
+[Index("LogAction")]
+[Index("LogAction","LogType")]
+public class ApplicationLog :ApplicationEntity
 {
     public string Content { get; set; }
     public Guid? ApplicationUserId { get; set; }
