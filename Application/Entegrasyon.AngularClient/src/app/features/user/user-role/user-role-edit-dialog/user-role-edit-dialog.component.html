@@ -1,0 +1,29 @@
+<form [formGroup]="roleForm" (ngSubmit)="submit()" >
+  <h1 mat-dialog-title>Rol Düzenleme</h1>
+  <mat-dialog-content  *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+  </mat-dialog-content>
+  <mat-dialog-content *ngIf="!isLoading" fxLayout="column" fxLayoutGap="10px">
+    <input type="hidden" formControlName="id">
+    <mat-form-field appearance="fill">
+      <mat-label>Rol ismi</mat-label>
+      <input matInput formControlName="name">
+      <mat-hint align="start"><strong>Kullanıcı rolü</strong> </mat-hint>
+      <mat-error *ngIf="roleForm.get('name')?.hasError('required')">Lütfen rol ismini giriniz.</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Yetkiler</mat-label>
+      <mat-select multiple formControlName="claims" >
+        <mat-option *ngFor="let claim of claims$ | async" [value]="claim.id" >
+          {{claim.description}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+      
+  </mat-dialog-content>
+  <div mat-dialog-actions fxLayout="row" fxLayoutAlign="end" >
+    <button style="margin-right: auto;" mat-raised-button color="accent" type="button" mat-dialog-close >Çıkış</button>
+    <button mat-raised-button color="warn" type="button" (click)="deleteRole()">Sil</button>
+    <button mat-raised-button color="primary" type="submit" >Düzenle</button>
+  </div>
+</form>

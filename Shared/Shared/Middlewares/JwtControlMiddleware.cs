@@ -28,7 +28,9 @@ public class JwtControlMiddleware
             else
             {
                 context.Response.StatusCode = 401;
-                context.Response.Headers.Add("MustLogOut",new StringValues("true"));
+                context.Response.Headers.Add("access-control-expose-headers", new StringValues("MustLogOut")); 
+                context.Response.Headers.Add("MustLogOut", new StringValues("true"));
+                await context.Response.WriteAsync("Başka bir cihazdan giriş yapıldı. Çıkış yapılıyor.");
             }
         }
         
