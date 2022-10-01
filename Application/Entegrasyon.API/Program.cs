@@ -16,6 +16,7 @@ using Shared.Extensions;
 using Shared.User;
 using System.Text;
 using System.Text.Json.Serialization;
+using Entegrasyon.Business.Utility;
 using Entegrasyon.Entity.Dtos.Users;
 using Shared.Middlewares;
 
@@ -37,8 +38,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb2;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
+    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb33;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
+    //x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
 });
+builder.Services.AddScoped<DbContext, IntegrationDbContext>();
 builder.Services.AddDbContext<HeadDbContext>(x =>
 {
     x.UseNpgsql(builder.Configuration.GetConnectionString("Main"));
@@ -60,6 +63,9 @@ builder.Services.AddScoped<BranchOfficeManager>();
 builder.Services.AddScoped<ApplicationRoleManager>();
 builder.Services.AddScoped<CategoryManager>();
 builder.Services.AddScoped<ICategoryDal, EfCategoryDal>();
+builder.Services.AddScoped<AddTrendyolCategories>();
+builder.Services.AddScoped<ICategoryAttributeDal,EfCategoryAttributeDal>();
+builder.Services.AddScoped<CategoryAttributeManager>();
 
 builder.Services.AddScoped<IValidator<BranchOffice>, BranchValidator>();
 builder.Services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();

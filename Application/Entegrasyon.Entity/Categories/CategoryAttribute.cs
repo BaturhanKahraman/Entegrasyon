@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Shared.Entity;
 
 namespace Entegrasyon.Entity.Categories;
@@ -15,4 +16,6 @@ public class CategoryAttribute : ApplicationEntity
     public bool Slicer { get; set; }
     public ICollection<CategoryAttributeValue> CategoryAttributeValues { get; set; }
     public ICollection<Category> Category { get; set; }
+    [NotMapped]
+    public int TempMappingId { get; set; }
 }

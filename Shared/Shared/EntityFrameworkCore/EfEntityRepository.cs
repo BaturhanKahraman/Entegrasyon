@@ -45,14 +45,13 @@ where TContext : DbContext
         var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
         return expression == null ? await entities.ToListAsync() : await entities.Where(expression).ToListAsync();
     }
-    public async Task<Pageable<TEntity>> GetAllPageableAsync(int page,int pageSize,bool isTracking = false,Expression<Func<TEntity,bool>> expression = null)
+    public async Task<Pageable<TEntity>> GetAllPageableAsync(int page,int pageSize,Expression<Func<TEntity,bool>> expression = null)
     {
-        var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
         var resultEntities = expression==null ?  
-            await entities.Skip((page-1)*pageSize).Take(pageSize)
+            await _context.Set<TEntity>().Skip((page-1)*pageSize).Take(pageSize)
             .ToListAsync():
-            await entities.Where(expression).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        var totalItemCount = entities.Count();
+            await _context.Set<TEntity>().Where(expression).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var totalItemCount = _context.Set<TEntity>().Count();
         var pageCount =Convert.ToInt32(Math.Round(totalItemCount / (double)pageSize));
         return new Pageable<TEntity> { CurrentPage = page,PagingItemCount = pageSize,Items = resultEntities,TotalPageCount = pageCount,TotalItemCount=totalItemCount };
     }

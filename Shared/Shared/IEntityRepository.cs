@@ -13,7 +13,7 @@ where T : class, new()
     Task DeleteAsync(T entity);
     Task<T> Get(Expression<Func<T, bool>> expression, bool isTracking = false);
     Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
-    Task<Pageable<T>> GetAllPageableAsync(int page,int pageSize,bool isTracking = false,Expression<Func<T,bool>> expression = null);
+    Task<Pageable<T>> GetAllPageableAsync(int page,int pageSize,Expression<Func<T,bool>> expression = null);
 
     Task<bool> Exists(Expression<Func<T, bool>>? expression = null);
 

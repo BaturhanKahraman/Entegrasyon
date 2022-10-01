@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 
 namespace Entegrasyon.Entity.Logs;
-[Keyless]
 [Index("LogAction")]
 [Index("LogAction","LogType")]
 public class ApplicationLog :ApplicationEntity

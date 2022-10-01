@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20220918162110_InitialCreate")]
+    [Migration("20221001213535_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -114,9 +114,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -124,16 +121,14 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .IsConcurrencyToken()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                        .HasColumnType("text");
 
                     b.Property<int?>("SuperCategoryId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("SuperCategoryId");
 
                     b.ToTable("Categories");
 
@@ -265,6 +260,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Logs.ApplicationLog", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
                     b.Property<Guid?>("ApplicationUserId")
                         .HasColumnType("uuid");
 
@@ -273,9 +274,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
 
                     b.Property<string>("IpAddress")
                         .HasColumnType("text");
@@ -291,6 +289,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<string>("Object")
                         .HasColumnType("jsonb");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
 
@@ -309,8 +309,23 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ApiSecret")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BasicAuthPassword")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BasicAuthUserName")
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsBasicAuth")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -325,30 +340,56 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("MarketPlaces");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryMarketPlaceMatch", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeMarketPlaceMatch", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("MarketPlaceId")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<int>("ApplicationCategoryAttributeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MarketPlaceCategoryAttributeId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MarketPlaceId", "ApplicationCategoryAttributeId");
+
+                    b.HasIndex("ApplicationCategoryAttributeId");
+
+                    b.ToTable("CategoryAttributeMarketPlaceMatches");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeValueMarketPlaceMatch", b =>
+                {
+                    b.Property<int>("MarketPlaceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ApplicationCategoryAttributeValueId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MarketPlaceCategoryAttributeValueId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MarketPlaceId", "ApplicationCategoryAttributeValueId");
+
+                    b.HasIndex("ApplicationCategoryAttributeValueId");
+
+                    b.ToTable("CategoryAttributeValueMarketPlaceMatches");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryMarketPlaceMatch", b =>
+                {
+                    b.Property<int>("MarketPlaceId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ApplicationCategoryId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("MarketPlaceCategoryId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MarketPlaceId")
-                        .HasColumnType("integer");
+                    b.HasKey("MarketPlaceId", "ApplicationCategoryId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("ApplicationCategoryId");
 
                     b.ToTable("CategoryMarketPlaceMatches");
                 });
@@ -1607,9 +1648,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Categories.Category", null)
+                    b.HasOne("Entegrasyon.Entity.Categories.Category", "SuperCategory")
                         .WithMany("SubCategories")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("SuperCategoryId");
+
+                    b.Navigation("SuperCategory");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttributeValue", b =>
@@ -1633,6 +1676,63 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasForeignKey("ApplicationUserId");
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeMarketPlaceMatch", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "ApplicationCategoryAttribute")
+                        .WithMany()
+                        .HasForeignKey("ApplicationCategoryAttributeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationCategoryAttribute");
+
+                    b.Navigation("MarketPlace");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeValueMarketPlaceMatch", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttributeValue", "ApplicationCategoryAttributeValue")
+                        .WithMany()
+                        .HasForeignKey("ApplicationCategoryAttributeValueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationCategoryAttributeValue");
+
+                    b.Navigation("MarketPlace");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryMarketPlaceMatch", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.Categories.Category", "ApplicationCategory")
+                        .WithMany()
+                        .HasForeignKey("ApplicationCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationCategory");
+
+                    b.Navigation("MarketPlace");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -1676,7 +1776,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasForeignKey("BrandId");
 
                     b.HasOne("Entegrasyon.Entity.Categories.Category", "Category")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1805,6 +1905,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
                 {
+                    b.Navigation("Products");
+
                     b.Navigation("SubCategories");
                 });
 

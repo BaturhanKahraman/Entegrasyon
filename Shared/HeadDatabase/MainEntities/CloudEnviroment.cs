@@ -3,6 +3,7 @@
 public enum CloudEnviroment
 {
     Local,
+    Ftp,
     Azure,
     Amazon,
     GoogleCloud,
