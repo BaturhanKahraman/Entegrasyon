@@ -82,9 +82,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: true),
                     SuperCategoryId = table.Column<int>(type: "integer", nullable: true),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -92,8 +91,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Categories_Categories_CategoryId",
-                        column: x => x.CategoryId,
+                        name: "FK_Categories_Categories_SuperCategoryId",
+                        column: x => x.SuperCategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id");
                 });
@@ -116,23 +115,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CategoryAttributes", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CategoryMarketPlaceMatches",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ApplicationCategoryId = table.Column<int>(type: "integer", nullable: false),
-                    MarketPlaceId = table.Column<int>(type: "integer", nullable: false),
-                    MarketPlaceCategoryId = table.Column<int>(type: "integer", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CategoryMarketPlaceMatches", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -188,6 +170,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    ApiKey = table.Column<string>(type: "text", nullable: true),
+                    ApiSecret = table.Column<string>(type: "text", nullable: true),
+                    IsBasicAuth = table.Column<bool>(type: "boolean", nullable: false),
+                    BasicAuthUserName = table.Column<string>(type: "text", nullable: true),
+                    BasicAuthPassword = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -330,6 +317,56 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoryAttributeMarketPlaceMatches",
+                columns: table => new
+                {
+                    ApplicationCategoryAttributeId = table.Column<int>(type: "integer", nullable: false),
+                    MarketPlaceId = table.Column<int>(type: "integer", nullable: false),
+                    MarketPlaceCategoryAttributeId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryAttributeMarketPlaceMatches", x => new { x.MarketPlaceId, x.ApplicationCategoryAttributeId });
+                    table.ForeignKey(
+                        name: "FK_CategoryAttributeMarketPlaceMatches_CategoryAttributes_Appl~",
+                        column: x => x.ApplicationCategoryAttributeId,
+                        principalTable: "CategoryAttributes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryAttributeMarketPlaceMatches_MarketPlaces_MarketPlac~",
+                        column: x => x.MarketPlaceId,
+                        principalTable: "MarketPlaces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CategoryMarketPlaceMatches",
+                columns: table => new
+                {
+                    ApplicationCategoryId = table.Column<int>(type: "integer", nullable: false),
+                    MarketPlaceId = table.Column<int>(type: "integer", nullable: false),
+                    MarketPlaceCategoryId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryMarketPlaceMatches", x => new { x.MarketPlaceId, x.ApplicationCategoryId });
+                    table.ForeignKey(
+                        name: "FK_CategoryMarketPlaceMatches_Categories_ApplicationCategoryId",
+                        column: x => x.ApplicationCategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryMarketPlaceMatches_MarketPlaces_MarketPlaceId",
+                        column: x => x.MarketPlaceId,
+                        principalTable: "MarketPlaces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RootClaimRootRole",
                 columns: table => new
                 {
@@ -438,6 +475,31 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoryAttributeValueMarketPlaceMatches",
+                columns: table => new
+                {
+                    ApplicationCategoryAttributeValueId = table.Column<int>(type: "integer", nullable: false),
+                    MarketPlaceId = table.Column<int>(type: "integer", nullable: false),
+                    MarketPlaceCategoryAttributeValueId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryAttributeValueMarketPlaceMatches", x => new { x.MarketPlaceId, x.ApplicationCategoryAttributeValueId });
+                    table.ForeignKey(
+                        name: "FK_CategoryAttributeValueMarketPlaceMatches_CategoryAttributeV~",
+                        column: x => x.ApplicationCategoryAttributeValueId,
+                        principalTable: "CategoryAttributeValues",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryAttributeValueMarketPlaceMatches_MarketPlaces_Marke~",
+                        column: x => x.MarketPlaceId,
+                        principalTable: "MarketPlaces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Logins",
                 columns: table => new
                 {
@@ -464,18 +526,20 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "Logs",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Content = table.Column<string>(type: "text", nullable: true),
                     ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     LogType = table.Column<int>(type: "integer", nullable: false),
                     LogAction = table.Column<int>(type: "integer", nullable: false),
                     IpAddress = table.Column<string>(type: "text", nullable: true),
                     Object = table.Column<string>(type: "jsonb", nullable: true),
-                    Id = table.Column<int>(type: "integer", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
+                    table.PrimaryKey("PK_Logs", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Logs_Users_ApplicationUserId",
                         column: x => x.ApplicationUserId,
@@ -626,12 +690,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.InsertData(
                 table: "Categories",
-                columns: new[] { "Id", "CategoryId", "CreatedAt", "IsDeleted", "Name", "SuperCategoryId" },
-                values: new object[,]
-                {
-                    { 1, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "supCategory", null },
-                    { 2, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "subCategory", 1 }
-                });
+                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name", "SuperCategoryId" },
+                values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "supCategory", null });
 
             migrationBuilder.InsertData(
                 table: "Claims",
@@ -687,6 +747,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 table: "Roles",
                 columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name" },
                 values: new object[] { 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Admin" });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "CreatedAt", "IsDeleted", "Name", "SuperCategoryId" },
+                values: new object[] { 2, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "subCategory", 1 });
 
             migrationBuilder.InsertData(
                 table: "MainProducts",
@@ -770,9 +835,19 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Categories_CategoryId",
+                name: "IX_Categories_SuperCategoryId",
                 table: "Categories",
-                column: "CategoryId");
+                column: "SuperCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryAttributeMarketPlaceMatches_ApplicationCategoryAttr~",
+                table: "CategoryAttributeMarketPlaceMatches",
+                column: "ApplicationCategoryAttributeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryAttributeValueMarketPlaceMatches_ApplicationCategor~",
+                table: "CategoryAttributeValueMarketPlaceMatches",
+                column: "ApplicationCategoryAttributeValueId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CategoryAttributeValues_CategoryAttributeId",
@@ -783,6 +858,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_CategoryCategoryAttribute_CategoryId",
                 table: "CategoryCategoryAttribute",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryMarketPlaceMatches_ApplicationCategoryId",
+                table: "CategoryMarketPlaceMatches",
+                column: "ApplicationCategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Images_ProductVariantId",
@@ -893,7 +973,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CategoryAttributeValues");
+                name: "CategoryAttributeMarketPlaceMatches");
+
+            migrationBuilder.DropTable(
+                name: "CategoryAttributeValueMarketPlaceMatches");
 
             migrationBuilder.DropTable(
                 name: "CategoryCategoryAttribute");
@@ -917,9 +1000,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "Logs");
 
             migrationBuilder.DropTable(
-                name: "MarketPlaces");
-
-            migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
@@ -935,7 +1015,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "SaleItems");
 
             migrationBuilder.DropTable(
-                name: "CategoryAttributes");
+                name: "CategoryAttributeValues");
+
+            migrationBuilder.DropTable(
+                name: "MarketPlaces");
 
             migrationBuilder.DropTable(
                 name: "Orders");
@@ -948,6 +1031,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Sales");
+
+            migrationBuilder.DropTable(
+                name: "CategoryAttributes");
 
             migrationBuilder.DropTable(
                 name: "Address");

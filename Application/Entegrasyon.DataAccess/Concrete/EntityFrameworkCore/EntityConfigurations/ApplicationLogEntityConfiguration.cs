@@ -10,7 +10,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfiguratio
     {
         public void Configure(EntityTypeBuilder<ApplicationLog> builder)
         {
-            builder.HasNoKey();
+            builder.Property(x => x.Id).ValueGeneratedOnAdd();
         }
     }
 }

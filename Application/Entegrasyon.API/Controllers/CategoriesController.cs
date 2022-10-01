@@ -26,5 +26,23 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetCategoryDetails()
+        {
+            var result = await _categoryManager.GetCategoryDetailList();
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetCategoryDetailsPage(int page,int itemCount,string categoryName)
+        {
+            var result = await _categoryManager.GetCategoryDetailPageable(page,itemCount,categoryName);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+
+        
     }
 }
