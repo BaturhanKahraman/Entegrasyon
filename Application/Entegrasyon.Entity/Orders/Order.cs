@@ -6,9 +6,9 @@ namespace Entegrasyon.Entity.Orders;
 public class Order : LongEntity
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public int TotalQuantity{ get;  }//calculated
+    public int TotalQuantity{ get; set; }//calculated
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public decimal TotalPrice { get;  }//calculated
+    public decimal TotalPrice { get; set; }//calculated
 
     public ICollection<OrderItem> OrderItems { get; set; }
     public Address BillingAddress { get; set; }

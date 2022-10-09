@@ -33,64 +33,6 @@ public static class IntegrationDbContextSeed
             CreatedAt = DateTimeOffset.MinValue,
             RoleId = 1
         });
-        modelBuilder.Entity<Brand>().HasData(new Brand()
-        {
-            Id = 1,
-            Name = "FirstBrand",
-            CreatedAt = DateTimeOffset.MinValue
-        });
-        modelBuilder.Entity<Category>().HasData(new Category()
-        {
-            Id = 1,
-            Name = "supCategory"
-            ,
-            CreatedAt = DateTimeOffset.MinValue
-        },
-        new Category()
-        {
-            Id = 2,
-            Name = "subCategory",
-            SuperCategoryId = 1,
-            CreatedAt = DateTimeOffset.MinValue
-        });
-        modelBuilder.Entity<MainProduct>().HasData(new MainProduct()
-        {
-            Id = 1,
-            BrandId = 1,
-            Header = "Ürün Başlığı",
-            Barcode = "123456798",
-            CategoryId = 1,
-            CreatedAt = DateTimeOffset.MinValue
-        });
-        modelBuilder.Entity<ProductVariant>().HasData(new List<ProductVariant>()
-        {
-            new()
-            {Id = 1,
-                Description = "Açıklama",
-                BranchOfficeId = 1,
-                CurrencyType = "₺",
-                CurrentStockQuantity = 50,
-                ListPrice = 50,
-                VatRate = 8,
-                StockCode = "22qwe123456",
-                Title = "Başlık",
-                ProductMainId = 1,
-                SalePrice = 54,CreatedAt = DateTimeOffset.MinValue
-
-            },new()
-            {Id = 2,
-                Description = "Açıklama 2",
-                BranchOfficeId = 1,
-                CurrencyType = "₺",
-                CurrentStockQuantity = 30,
-                ListPrice = 50,
-                VatRate = 8,
-                StockCode = "22qwe123456",
-                Title = "Başlık 2",
-                ProductMainId = 1,
-                SalePrice = 54,CreatedAt = DateTimeOffset.MinValue
-            },
-        });
         //modelBuilder.Entity<AttributeKeyValue>().HasData(new AttributeKeyValue { Id = 1,CategoryAttributeKey = 3,CategoryAttributeValue = 4 },
         //    new AttributeKeyValue { Id = 2,CategoryAttributeKey = 4,CategoryAttributeValue = 66 },
         //    new AttributeKeyValue { Id = 3,CategoryAttributeKey = 1,CategoryAttributeValue = 2 },

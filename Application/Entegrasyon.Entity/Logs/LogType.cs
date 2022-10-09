@@ -10,5 +10,9 @@ public enum LogType
     Sale,
     Matching,
     Category,
-    Role
+    Role,
+    Brand,
+
+    Error=999
+
 }

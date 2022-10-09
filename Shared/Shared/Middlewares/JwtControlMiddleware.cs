@@ -22,7 +22,7 @@ public class JwtControlMiddleware
         else
         {
             string bearerToken = token.First().Replace("Bearer ","");
-            if(await blackListService.CheckBlackListToken(context.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)!.Value,
+            if(await blackListService.CheckBlackListToken(context.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)!.Value!,
                    bearerToken))
                 await _next.Invoke(context);
             else

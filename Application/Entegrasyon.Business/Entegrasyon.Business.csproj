@@ -7,19 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="FluentValidation" Version="11.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
     <ProjectReference Include="..\Entegrasyon.Entity\Entegrasyon.Entity.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="MapperProfiles\" />
-    <Folder Include="Utility\" />
   </ItemGroup>
 
 </Project>
