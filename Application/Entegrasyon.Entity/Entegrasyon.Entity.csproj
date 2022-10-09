@@ -14,6 +14,8 @@
     <Folder Include="Dtos\Auth\" />
     <Folder Include="Dtos\Branches\" />
     <Folder Include="Dtos\Category\" />
+    <Folder Include="Dtos\CargoCompany\" />
+    <Folder Include="Dtos\Customers\" />
   </ItemGroup>
 
 </Project>

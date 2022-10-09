@@ -9,15 +9,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Entegrasyon.Business.Utility;
 
-public class AddTrendyolCategories
+public class TrendyolCategories
 {
     private readonly IntegrationDbContext _dbContext;
     private readonly HttpClient _httpClient;
-    private readonly ILogger<AddTrendyolCategories> _logger;
+    private readonly ILogger<TrendyolCategories> _logger;
     private const string CategoryUrl = "https://api.trendyol.com/sapigw/product-categories";
-    private const string BrandCategoryUrl = "https://api.trendyol.com/sapigw/brands";
-    private const string CargoCompanyUrl = "";
-    public AddTrendyolCategories(IntegrationDbContext dbContext,HttpClient httpClient,ILogger<AddTrendyolCategories> logger)
+    public TrendyolCategories(IntegrationDbContext dbContext,HttpClient httpClient,ILogger<TrendyolCategories> logger)
     {
         _dbContext = dbContext;
         _httpClient = httpClient;
@@ -38,7 +36,6 @@ public class AddTrendyolCategories
 
         if(await _dbContext.Categories.CountAsync() < 5)
         {
-
             _httpClient.BaseAddress = new Uri(CategoryUrl);
             _httpClient.DefaultRequestHeaders.Add("Accept","application/json");
             var result = await _httpClient.GetAsync("");

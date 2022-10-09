@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+﻿using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
@@ -14,9 +15,9 @@ namespace Entegrasyon.Business.Concrete;
 public class BranchOfficeManager
 {
     private readonly IBranchOfficeDal _branchOfficeDal;
-    private readonly IValidator<BranchOffice> _validator;
+    private readonly FluentValidator _validator;
     private readonly ApplicationLogManager _applicationLogManager;
-    public BranchOfficeManager(IBranchOfficeDal branchOfficeDal,IValidator<BranchOffice> validator,ApplicationLogManager applicationLogManager)
+    public BranchOfficeManager(IBranchOfficeDal branchOfficeDal,FluentValidator validator,ApplicationLogManager applicationLogManager)
     {
         _branchOfficeDal = branchOfficeDal;
         _validator = validator;

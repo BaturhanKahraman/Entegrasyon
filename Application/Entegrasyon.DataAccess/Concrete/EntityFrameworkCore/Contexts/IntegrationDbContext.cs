@@ -46,10 +46,13 @@ public class IntegrationDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ApplicationLog> Logs { get; set; }
     public DbSet<ApplicationCustomer> ApplicationCustomers { get; set; }
+    public DbSet<CargoCompany> CargoCompanies { get; set; }
 
     public DbSet<CategoryMarketPlaceMatch> CategoryMarketPlaceMatches { get; set; }
     public DbSet<CategoryAttributeMarketPlaceMatch> CategoryAttributeMarketPlaceMatches { get; set; }
     public DbSet<CategoryAttributeValueMarketPlaceMatch> CategoryAttributeValueMarketPlaceMatches { get; set; }
+    public DbSet<BrandMarketPlaceMatch> BrandMarketPlaceMatches { get; set; }
+    public DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
 
     public DbSet<ApplicationUser> Users { get; set; }
     public DbSet<RootRole> Roles { get; set; }

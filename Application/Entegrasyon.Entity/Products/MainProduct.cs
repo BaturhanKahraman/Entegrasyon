@@ -21,7 +21,6 @@ public class MainProduct : LongEntity
     public int TotalCurrentStock => TotalQuantity - TotalSoldQuantity;
 
 
-
     public List<ProductVariant> ProductVariants { get; set; }
 
 }

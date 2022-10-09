@@ -11,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.8" />
@@ -31,6 +30,10 @@
     <ProjectReference Include="..\..\Shared\HeadDatabase\MainDatabase.csproj" />
     <ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

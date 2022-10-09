@@ -17,7 +17,11 @@ public class MigrateDatabaseMiddleware
 
     public async Task Invoke(HttpContext context,DbContext dbContext)
     {
-        await dbContext.Database.MigrateAsync(context.RequestAborted);
+        var migrations = await dbContext.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
+        if (migrations.Any())
+        {
+            await dbContext.Database.MigrateAsync(context.RequestAborted).ConfigureAwait(false);
+        }
         await _next.Invoke(context);
     }
 }

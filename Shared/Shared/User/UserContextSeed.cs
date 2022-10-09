@@ -239,7 +239,8 @@ public static class UserContextSeed
                 Id = 42,
                 Name = "user.Delete",
                 Description = "Kullanıcı silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
-            },new()
+            },
+            new()
             {
                 Id = 43,
                 Name = "log.List",
@@ -256,7 +257,31 @@ public static class UserContextSeed
                 Id = 45,
                 Name = "setting.List",
                 Description = "Ayar görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
+            },new()
+            {
+                Id = 46,
+                Name = "brand.Add",
+                Description = "Marka ekleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
             },
+            new()
+            {
+                Id = 47,
+                Name = "brand.Update",
+                Description = "Marka güncelleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
+            },
+            new()
+            {
+                Id = 48,
+                Name = "brand.List",
+                Description = "Marka görüntüleme yetkisi.",CreatedAt = DateTimeOffset.MinValue
+            },
+            new()
+            {
+                Id = 49,
+                Name = "brand.Delete",
+                Description = "Marka silme yetkisi.",CreatedAt = DateTimeOffset.MinValue
+            },
+
         });
         modelBuilder.Entity<RootRole>().HasData(new RootRole()
         {
@@ -306,13 +331,16 @@ public static class UserContextSeed
             new { ClaimsId=38,RolesId=1 },
             new { ClaimsId=39,RolesId=1 },
             new { ClaimsId=40,RolesId=1 },
-            new { ClaimsId=41,RolesId=1 },
-            new { ClaimsId=42,RolesId=1 },
-            new { ClaimsId=43,RolesId=1 },
-            new { ClaimsId=44,RolesId=1 },
-            new { ClaimsId=45,RolesId=1 }
-            );
-        ;
+            new { ClaimsId=41,RolesId=1 }
+            //new { ClaimsId=42,RolesId=1 },
+            //new { ClaimsId=43,RolesId=1 },
+            //new { ClaimsId=44,RolesId=1 },
+            //new { ClaimsId=45,RolesId=1 },
+            //new { ClaimsId=46,RolesId=1 },
+            //new { ClaimsId=47,RolesId=1 },
+            //new { ClaimsId=48,RolesId=1 },
+            //new { ClaimsId=49,RolesId=1 }
+        );
        
     }
 }

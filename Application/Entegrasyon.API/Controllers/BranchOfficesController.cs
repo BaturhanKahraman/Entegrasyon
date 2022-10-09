@@ -8,11 +8,11 @@ namespace Entegrasyon.API.Controllers
     [Route("api/[controller]/[action]")]
     [ApiController]
     [Authorize]
-    public class BranchesController : ControllerBase
+    public class BranchOfficesController : ControllerBase
     {
         private readonly BranchOfficeManager _branchOfficeManager;
 
-        public BranchesController(BranchOfficeManager branchOfficeManager)
+        public BranchOfficesController(BranchOfficeManager branchOfficeManager)
         {
             _branchOfficeManager = branchOfficeManager;
         }

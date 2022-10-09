@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Net.Mime;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -30,17 +31,17 @@ namespace Shared.Middlewares
 
         private async Task HandleExceptionAsync(HttpContext httpContext,Exception e)
         {
-            httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
             string message = "Sistemsel bir hata oluşmuştur.";
             if(e is ValidationException validation)
             {
+                httpContext.Response.ContentType = MediaTypeNames.Application.Rtf;
                 httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 //_logger.LogWarning(e,await httpContext.GetRequestInfosAsync());
                 message =string.Join(Environment.NewLine,validation.Errors) ;
             }
-            if(e.GetType() == typeof(TaskCanceledException))
+            else if(e.GetType() == typeof(TaskCanceledException))
             {
                 message = e.Message;
                 httpContext.Response.StatusCode =StatusCodes.Status410Gone;

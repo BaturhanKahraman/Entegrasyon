@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Dtos.Users;
+﻿using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Logs;
 using FluentValidation;
 using Shared.Constants;
@@ -12,8 +13,8 @@ namespace Entegrasyon.Business.Concrete
     {
         private readonly IRoleManager<RootRole,RootClaim> _roleManager;
         private readonly ApplicationLogManager _applicationLogManager;
-        private readonly IValidator<AddRoleDto> _validator;
-        public ApplicationRoleManager(IRoleManager<RootRole,RootClaim> roleManager,ApplicationLogManager applicationLogManager,IValidator<AddRoleDto> validator)
+        private readonly FluentValidator _validator;
+        public ApplicationRoleManager(IRoleManager<RootRole,RootClaim> roleManager,ApplicationLogManager applicationLogManager,FluentValidator validator)
         {
             _roleManager = roleManager;
             _applicationLogManager = applicationLogManager;

@@ -7,13 +7,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 
 #nullable disable
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20221001213535_InitialCreate")]
+    [Migration("20221009230721_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,26 +52,30 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Identity")
-                        .HasMaxLength(11)
-                        .HasColumnType("character varying(11)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<string>("NationalIdentity")
+                        .HasMaxLength(11)
+                        .HasColumnType("character varying(11)");
+
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
+                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "NationalIdentity", "Name", "Surname" });
+
                     b.Property<string>("Surname")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Identity")
-                        .IsUnique();
+                    b.HasIndex("SearchVector");
 
-                    b.HasIndex("Name", "Surname")
-                        .IsUnique();
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
                     b.ToTable("ApplicationCustomers");
                 });
@@ -106,6 +111,38 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.CargoCompany", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TaxNumber")
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CargoCompanies");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -131,23 +168,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("SuperCategoryId");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "supCategory"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "subCategory",
-                            SuperCategoryId = 1
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttribute", b =>
@@ -338,6 +358,42 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MarketPlaces");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.BrandMarketPlaceMatch", b =>
+                {
+                    b.Property<int>("MarketPlaceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ApplicationBrandId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MarketPlaceBrandId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MarketPlaceId", "ApplicationBrandId");
+
+                    b.HasIndex("ApplicationBrandId");
+
+                    b.ToTable("BrandMarketPlaceMatches");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CargoCompanyMarketPlaceMatch", b =>
+                {
+                    b.Property<int>("MarketPlaceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ApplicationCargoCompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MarketPlaceCargoCompanyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MarketPlaceId", "ApplicationCargoCompanyId");
+
+                    b.HasIndex("ApplicationCargoCompanyId");
+
+                    b.ToTable("CargoCompanyMarketPlaceMatches");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeMarketPlaceMatch", b =>
@@ -544,15 +600,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "FirstBrand"
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.MainProduct", b =>
@@ -589,18 +636,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("MainProducts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            Barcode = "123456798",
-                            BrandId = 1,
-                            CategoryId = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Header = "Ürün Başlığı",
-                            IsDeleted = false
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.ProductVariant", b =>
@@ -670,44 +705,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("ProductMainId");
 
                     b.ToTable("ProductVariants");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            BranchOfficeId = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CurrencyType = "₺",
-                            CurrentStockQuantity = 50,
-                            Description = "Açıklama",
-                            IsDeleted = false,
-                            ListPrice = 50m,
-                            ProductMainId = 1L,
-                            Quantity = 0,
-                            SalePrice = 54m,
-                            SoldQuantity = 0,
-                            StockCode = "22qwe123456",
-                            Title = "Başlık",
-                            VatRate = 8m
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            BranchOfficeId = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CurrencyType = "₺",
-                            CurrentStockQuantity = 30,
-                            Description = "Açıklama 2",
-                            IsDeleted = false,
-                            ListPrice = 50m,
-                            ProductMainId = 1L,
-                            Quantity = 0,
-                            SalePrice = 54m,
-                            SoldQuantity = 0,
-                            StockCode = "22qwe123456",
-                            Title = "Başlık 2",
-                            VatRate = 8m
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.ChangeProduct", b =>
@@ -1054,26 +1051,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             ClaimsId = 41,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 42,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 43,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 44,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 45,
                             RolesId = 1
                         });
                 });
@@ -1449,6 +1426,38 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             Description = "Ayar görüntüleme yetkisi.",
                             IsDeleted = false,
                             Name = "setting.List"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Marka ekleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "brand.Add"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Marka güncelleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "brand.Update"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Marka görüntüleme yetkisi.",
+                            IsDeleted = false,
+                            Name = "brand.List"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Marka silme yetkisi.",
+                            IsDeleted = false,
+                            Name = "brand.Delete"
                         });
                 });
 
@@ -1678,6 +1687,44 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.BrandMarketPlaceMatch", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.Products.Brand", "ApplicationBrand")
+                        .WithMany()
+                        .HasForeignKey("ApplicationBrandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationBrand");
+
+                    b.Navigation("MarketPlace");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Matches.CargoCompanyMarketPlaceMatch", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.CargoCompany", "ApplicationCargoCompany")
+                        .WithMany()
+                        .HasForeignKey("ApplicationCargoCompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationCargoCompany");
+
+                    b.Navigation("MarketPlace");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeMarketPlaceMatch", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "ApplicationCategoryAttribute")
@@ -1773,7 +1820,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     b.HasOne("Entegrasyon.Entity.Products.Brand", "Brand")
                         .WithMany("Products")
-                        .HasForeignKey("BrandId");
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Entegrasyon.Entity.Categories.Category", "Category")
                         .WithMany("Products")
