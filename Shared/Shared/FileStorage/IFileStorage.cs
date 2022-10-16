@@ -7,6 +7,7 @@ public interface IFileStorage
 {
     public FileStorageType FileStorageType { get; }
     Task UploadFile(Stream fileStream,string fileName,string containerName);
-    Task<Stream> DownloadFile(string fileName,string containerName = null);
+
+    Task<Stream> DownloadFile(string fileName,string containerName);
 
 }

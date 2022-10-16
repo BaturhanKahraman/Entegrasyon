@@ -2,4 +2,4 @@
 
 namespace Entegrasyon.Entity.Dtos.Auth;
 
-public record LoginDto([Required]string UserName,string Password);
+public sealed record LoginDto([Required]string UserName,string Password);

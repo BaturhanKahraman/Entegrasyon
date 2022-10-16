@@ -3,8 +3,9 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity;
 
-public class MarketPlace : ApplicationEntity
+public sealed class MarketPlace : BaseEntity
 {
+    public int Id { get; set; }
     [Required, StringLength(maximumLength: 50)]
     public string Name { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace Entegrasyon.Entity.Dtos.Users
 {
-    public class AddRoleDto
+    public sealed class AddRoleDto
     {
         public string Name { get; set; }
         public List<int> Claims { get; set; }

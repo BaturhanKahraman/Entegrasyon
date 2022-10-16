@@ -7,8 +7,9 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity.Sales
 {
-    public class Sale:GuidEntity
+    public sealed class Sale : BaseEntity
     {
+        public Guid Id { get; set; }
         public ICollection<SaleItem> SaleItems { get; set; }
         public Guid SalePersonId { get; set; }
         public ApplicationUser SalePerson { get; set; }

@@ -5,8 +5,9 @@ using Shared.Entity;
 namespace Shared.User;
 
 [Table("Roles")]
-public class RootRole : ApplicationEntity
+public class RootRole : BaseEntity
 {
+    public int Id { get; set; }
     public string Name { get; set; }
     [JsonIgnore]
     public List<RootUser> Users { get; set; }

@@ -2,7 +2,7 @@
 
 namespace Entegrasyon.Entity.Dtos.Users;
 
-public record AddUserDto
+public sealed record AddUserDto
 {
     [Required(ErrorMessage = "Lütfen kullanıcı adı bölümünü girin.")]
     public string UserName { get; init; }

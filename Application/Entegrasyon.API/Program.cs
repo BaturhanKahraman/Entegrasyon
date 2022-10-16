@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
 using System.Text;
 using Entegrasyon.Business.Extensions;
+using Shared.FileStorage;
+using Shared.FileStorage.Options;
 using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +25,8 @@ builder.Services.AddLogging();
 builder.Services.Configure<ApiBehaviorOptions>(o=>o.SuppressModelStateInvalidFilter=true);
 builder.Services.Configure<Shared.Security.Jwt.TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
 builder.Services.AddApplicationDependencies();
-
+builder.Services.AddFileStorage();
+builder.Services.Configure<LocalFileStorageOption>(x => x.RootPath = "wwwroot");
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
 
 builder.Services.AddDbContext<HeadDbContext>(x =>
@@ -36,7 +39,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb2;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
         npg=>
         {
             npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);

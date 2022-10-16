@@ -2,7 +2,7 @@
 
 namespace Entegrasyon.Entity.Matches;
 
-public class CategoryAttributeValueMarketPlaceMatch
+public sealed class CategoryAttributeValueMarketPlaceMatch
 {
     public int ApplicationCategoryAttributeValueId { get; set; }
     public CategoryAttributeValue ApplicationCategoryAttributeValue { get; set; }

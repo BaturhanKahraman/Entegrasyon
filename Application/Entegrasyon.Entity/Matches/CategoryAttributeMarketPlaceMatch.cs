@@ -3,7 +3,7 @@ using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.Entity.Matches;
 
-public class CategoryAttributeMarketPlaceMatch
+public sealed class CategoryAttributeMarketPlaceMatch
 {
     public int ApplicationCategoryAttributeId { get; set; }
     public CategoryAttribute ApplicationCategoryAttribute { get; set; }

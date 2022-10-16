@@ -2,7 +2,7 @@
 
 namespace Entegrasyon.Entity.Matches;
 
-public class BrandMarketPlaceMatch
+public sealed class BrandMarketPlaceMatch
 {
     public int ApplicationBrandId { get; set; }
     public Brand ApplicationBrand { get; set; }

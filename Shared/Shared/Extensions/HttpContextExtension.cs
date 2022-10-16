@@ -18,4 +18,6 @@ public static class HttpContextExtension
     // ReSharper disable once InconsistentNaming
     public static string GetIPAddress(this HttpContext context) =>
         context.Connection.RemoteIpAddress?.ToString();
+    
+
 }

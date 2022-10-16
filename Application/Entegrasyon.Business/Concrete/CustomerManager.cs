@@ -1,11 +1,15 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Customers;
+using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Shared.Entity;
+using Shared.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Logic;
 using Shared.Results;
@@ -17,46 +21,60 @@ public class CustomerManager
     private readonly IApplicationCustomerDal _customerDal;
     private readonly FluentValidator _fluentValidator;
     private readonly IMapper _mapper;
-    public CustomerManager(IApplicationCustomerDal customerDal, FluentValidator fluentValidator, IMapper mapper)
+    private readonly ApplicationLogManager _applicationLogManager;
+    public CustomerManager(IApplicationCustomerDal customerDal, FluentValidator fluentValidator, IMapper mapper, ApplicationLogManager applicationLogManager)
     {
         _customerDal = customerDal;
         _fluentValidator = fluentValidator;
         _mapper = mapper;
+        _applicationLogManager = applicationLogManager;
     }
 
     public async Task<IResult> UpdateCustomer(UpdateCustomerDto dto)
     {
+        await _applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.", LogType.Customer, LogAction.Update);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.Identity));
-        if(result != null)
+        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentity));
+        if (result != null)
+        {
+            await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarısız oldu. "+result.Message,LogType.Customer,LogAction.Update,dto);
             return result;
+
+        }
         var applicationCustomer = _mapper.Map<ApplicationCustomer>(dto);
         await _customerDal.AddAsync(applicationCustomer);
+        await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.", LogType.Customer, LogAction.Update);
         return new SuccessResult();
     } 
 
     public async Task<IResult> AddCustomer(AddCustomerDto dto)
     {
+        await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.", LogType.Customer, LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.Identity));
+        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentity));
         if (result != null)
+        {
+            await _applicationLogManager.AddLog("Müşteri ekleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Add,dto);
             return result;
+        }
         var applicationCustomer = _mapper.Map<ApplicationCustomer>(dto);
         await _customerDal.AddAsync(applicationCustomer);
+        await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add);
         return new SuccessResult();
     }
-    public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(int page = 1,int itemCount = 50,string customerInfo = null)
+    public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo,int pageIndex = 0,int itemCount = 50)
     {
-        var items = _customerDal.Table
-            .OrderByDescending(x => x.Sales.Count)
-            .WhereIf(!string.IsNullOrEmpty(customerInfo), x =>
-                x.SearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ForFullTextSearch())));
-        var result = await items
-            .Skip((page - 1) * itemCount).Take(itemCount)
-            .Select(x => new CustomerDetailDto(x.NationalIdentity,x.Name,x.Surname,x.Sales.Count))
-            .ToListAsync();
-        int totalItemCount = await items.CountAsync();
-        var pageableResult = new Pageable<CustomerDetailDto>(result,page,itemCount,totalItemCount,Convert.ToInt32(Math.Ceiling(totalItemCount / (double)itemCount)));
+        var orders = new List<(string,string)>
+        {
+            new ("Id","desc"),
+            new ("Sales.Count","desc")
+        };
+        var filters = new List<(bool, Expression<Func<ApplicationCustomer,bool>>)>
+        {
+            new (!string.IsNullOrEmpty(customerInfo),x=>x.SearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ForFullTextSearch())))
+        };
+        var pageableResult = await _customerDal.GetPaginatedTransformedEntities(pageIndex, itemCount,
+            x=>new CustomerDetailDto(x.CreatedAt,x.Id,x.NationalIdentity,x.Name,x.Surname,x.Sales.Count,x.PhoneNumber,x.Address),orders,filters);
         return new SuccessDataResult<Pageable<CustomerDetailDto>>(pageableResult);
     }
 

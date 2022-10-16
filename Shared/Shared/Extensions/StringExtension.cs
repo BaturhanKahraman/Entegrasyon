@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Shared.Extensions;
@@ -35,6 +36,11 @@ public static class StringExtension
     {
         return string.IsNullOrEmpty(@this) ? string.Empty : 
             $@"""{@this.Trim().RemoveRedundantSpaces().Replace(" ","|")}"":*" ;
-        //@$"""{customerInfo.Trim().Replace(" ","|")}"":*"
     }
+
+    public static string ToTitleCase(this string @this)
+    {
+        return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(@this.ToLower());
+    }
+    
 }

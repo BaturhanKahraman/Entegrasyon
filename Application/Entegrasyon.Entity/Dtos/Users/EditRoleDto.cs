@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Entegrasyon.Entity.Dtos.Users
 {
-    public class EditRoleDto
+    public sealed class EditRoleDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

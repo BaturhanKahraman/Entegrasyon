@@ -3,8 +3,9 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity.Sales;
 
-public class SaleItem:LongEntity
+public sealed class SaleItem:BaseEntity
 {
+    public long Id { get; set; }
     public long ProductId { get; set; }
     public ProductVariant ProductVariant { get; set; }
 

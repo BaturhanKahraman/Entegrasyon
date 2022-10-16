@@ -1,6 +1,6 @@
 ﻿namespace Entegrasyon.Entity.Categories;
 
-public class CategoryMarketplace
+public sealed class CategoryMarketplace
 {
     public int CategoryId { get; set; }
     public Category Category { get; set; }

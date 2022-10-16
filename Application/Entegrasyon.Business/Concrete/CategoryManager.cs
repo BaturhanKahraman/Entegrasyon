@@ -1,9 +1,11 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+﻿using System.Linq.Expressions;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
+using Shared.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Results;
 
@@ -27,8 +29,10 @@ namespace Entegrasyon.Business.Concrete
             {
                 Name = dto.Name,
                 SuperCategoryId = dto.SuperCategoryId,
-                CategoryAttributes = dto.CategoryAttributes.ToList()
             };
+            if (dto.CategoryAttributes != null)
+                category.CategoryAttributes = dto.CategoryAttributes.ToList();
+
             await _categoryDal.AddAsync(category);
             await _applicationLogManager.AddLog("Kategori eklendi.",LogType.Category,LogAction.Add);
             return new SuccessResult();
@@ -59,18 +63,19 @@ namespace Entegrasyon.Business.Concrete
                 await _categoryDal.Table.Select(x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count)).ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(categoriesDto);
         }
-        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int page = 1,int itemCount = 50,string categoryName=null)
+        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1,int itemCount = 50,string categoryName=null)
         {
-            var items = _categoryDal.Table
-                .OrderByDescending(x => x.Id)
-                .WhereIf(!string.IsNullOrEmpty(categoryName), x => EF.Functions.ILike(x.Name, $"%{categoryName}%"));
-            var result = await items
-                .Skip((page - 1) * itemCount).Take(itemCount)
-                .Select(x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count))
-                .ToListAsync();
-            int totalItemCount = await items.CountAsync();
-            var pageableResult = new Pageable<CategoryDetailDto>(result,page,itemCount,totalItemCount,Convert.ToInt32(Math.Round(totalItemCount / (double)itemCount)));
-            return new SuccessDataResult<Pageable<CategoryDetailDto>>(pageableResult);
+            var orderBy = new List<(string,string)>
+            {
+                new ("Id", "desc")
+            };
+            var filter = new List<(bool, Expression<Func<Category,bool>>)>
+            {
+                new (!string.IsNullOrEmpty(categoryName), x => EF.Functions.ILike(x.Name, $"%{categoryName}%"))
+            };
+            var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex,itemCount,
+                x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count),orderBy,filter);
+            return new SuccessDataResult<Pageable<CategoryDetailDto>>(categoriesDto);
         }
         public async Task GetCategoryDetailById()
         {

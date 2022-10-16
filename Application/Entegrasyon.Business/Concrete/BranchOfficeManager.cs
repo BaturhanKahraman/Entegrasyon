@@ -70,4 +70,10 @@ public class BranchOfficeManager
         await _applicationLogManager.AddLog("Ofis silme işlemi başarıyla tamamlandı. ",LogType.Branch,LogAction.Delete);
         return new SuccessResult("Ofis silme işlemi başarıyla tamamlandı. ");
     }
+
+
+    public async Task<bool> CheckIfOfficesExits(int[] officeIds)
+    {
+        return await _branchOfficeDal.CheckIfOfficesExits(officeIds);
+    }
 }

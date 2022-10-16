@@ -1,6 +1,6 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Brand;
 
-public class AddBrandDto
+public record AddBrandDto
 {
     public string Name { get; set; }
 }

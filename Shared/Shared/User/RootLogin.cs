@@ -4,8 +4,9 @@ using Shared.Entity;
 namespace Shared.User;
 
 [Table("Logins")]
-public class RootLogin : LongEntity
+public class RootLogin:BaseEntity
 {
+    public Guid Id { get; set; }
     public DateTimeOffset LoginTime { get; set; }
     public string IpAddress { get; set; }
 

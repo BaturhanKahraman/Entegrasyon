@@ -8,8 +8,6 @@ public class ProductVariantEntityConfiguration:IEntityTypeConfiguration<ProductV
 {
     public void Configure(EntityTypeBuilder<ProductVariant> builder)
     {
-        builder.Property(x => x.CurrentStockQuantity)
-            .HasComputedColumnSql("(\"Quantity\")-(\"SoldQuantity\")",true);
         builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

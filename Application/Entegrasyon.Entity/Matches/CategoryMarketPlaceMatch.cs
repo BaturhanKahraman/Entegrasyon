@@ -4,7 +4,7 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity.Matches;
 
-public class CategoryMarketPlaceMatch 
+public sealed class CategoryMarketPlaceMatch 
 {
     public int ApplicationCategoryId { get; set; }
     public Category ApplicationCategory { get; set; }
