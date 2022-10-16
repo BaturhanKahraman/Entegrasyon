@@ -2,4 +2,4 @@
 
 namespace Entegrasyon.Entity.Dtos.Category;
 
-public record AddCategoryDto(string Name,IEnumerable<CategoryAttribute> CategoryAttributes,int? SuperCategoryId);
+public sealed record AddCategoryDto(string Name,IEnumerable<CategoryAttribute> CategoryAttributes,int? SuperCategoryId);

@@ -4,8 +4,9 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity.Categories;
 
-public class CategoryAttribute : ApplicationEntity
+public sealed class CategoryAttribute : BaseEntity
 {
+    public int Id { get; set; }
     [Required, StringLength(maximumLength: 55,MinimumLength = 3)]
     public string CategoryAttributeKey { get; set; }
     [StringLength(80)]

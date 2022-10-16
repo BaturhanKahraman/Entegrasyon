@@ -6,8 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace Shared.User;
 [Table("Claims")]
-public class RootClaim : ApplicationEntity
+public class RootClaim : BaseEntity
 {
+    public int Id { get; set; }
     [Required, StringLength(maximumLength: 55,MinimumLength = 3)]
     public string Name { get; set; }
     [StringLength(maximumLength: 255)]

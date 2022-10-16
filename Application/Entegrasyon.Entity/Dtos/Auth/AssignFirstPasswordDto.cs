@@ -2,4 +2,4 @@
 
 namespace Entegrasyon.Entity.Dtos.Auth;
 
-public record AssignFirstPasswordDto([Required(ErrorMessage = "Lütfen şifreyi girin")]string Password,[Required] string UserId);
+public sealed record AssignFirstPasswordDto(string Password,string UserId);

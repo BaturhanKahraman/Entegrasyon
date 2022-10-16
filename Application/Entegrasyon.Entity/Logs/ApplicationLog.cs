@@ -6,8 +6,9 @@ using Shared.Entity;
 namespace Entegrasyon.Entity.Logs;
 [Index("LogAction")]
 [Index("LogAction","LogType")]
-public class ApplicationLog :ApplicationEntity
+public sealed class ApplicationLog : BaseEntity
 {
+    public long Id { get; set; }
     public string Content { get; set; }
     public Guid? ApplicationUserId { get; set; }
     public ApplicationUser ApplicationUser { get; set; }

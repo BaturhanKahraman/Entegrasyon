@@ -9,6 +9,8 @@ using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using Shared.User;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Shared.Entity;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -27,6 +29,23 @@ public class IntegrationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
+    {
+        foreach(var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            switch(entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
+                    break;
+            }
+        }
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
     public DbSet<Category> Categories { get; set; }
     public DbSet<CategoryAttribute> CategoryAttributes { get; set; }
     public DbSet<CategoryAttributeValue> CategoryAttributeValues { get; set; }
@@ -35,6 +54,8 @@ public class IntegrationDbContext : DbContext
     public DbSet<Brand> Brands { get; set; }
     public DbSet<MainProduct> MainProducts { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
+    public DbSet<BranchOfficeStock> BranchOfficeStocks { get; set; }
+    
     public DbSet<ChangeProduct> ChangeProducts { get; set; }
     public DbSet<DiscountVoucher> DiscountVouchers { get; set; }
     public DbSet<ReturnProduct> ReturnProducts { get; set; }

@@ -2,4 +2,4 @@
 
 namespace Entegrasyon.Entity.Dtos.Category;
 
-public record UpdateCategoryDto(int Id,string Name,List<CategoryAttribute> CategoryAttributes,int? SuperCategoryId);
+public sealed record UpdateCategoryDto(int Id,string Name,List<CategoryAttribute> CategoryAttributes,int? SuperCategoryId);

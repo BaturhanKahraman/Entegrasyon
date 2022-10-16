@@ -4,13 +4,11 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity;
 
-public class Notification : LongEntity
+public sealed class Notification : BaseEntity
 {
+    public long Id { get; set; }
     [MaxLength(60)]
-    [Column(TypeName = "varchar")]
     public string Header { get; set; }
-    [MaxLength(255)]
-    [Column(TypeName = "varchar")]
     public string Content { get; set; }
     public bool IsRead { get; set; }
     public DateTimeOffset ReadDate { get; set; }

@@ -4,8 +4,9 @@ using Shared.Entity;
 
 namespace Shared.User;
 [Table("Users")]
-public class RootUser : GuidEntity
+public class RootUser : BaseEntity
 {
+    public Guid Id { get; set; }
     [StringLength(maximumLength: 80)]
     public string Name { get; set; }
     [StringLength(maximumLength: 55)]

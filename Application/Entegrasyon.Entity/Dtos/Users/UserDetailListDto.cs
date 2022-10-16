@@ -1,6 +1,6 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Users;
 
-public record UserDetailListDto
+public sealed record UserDetailListDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

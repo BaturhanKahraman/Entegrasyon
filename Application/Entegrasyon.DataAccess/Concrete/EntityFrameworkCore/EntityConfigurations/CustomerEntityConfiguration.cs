@@ -13,7 +13,7 @@ public class CustomerEntityConfiguration : IEntityTypeConfiguration<ApplicationC
             .HasGeneratedTsVectorColumn(
                 p => p.SearchVector,
                 "english",  
-                p => new { p.NationalIdentity,p.Name,p.Surname })  
+                p => new { p.NationalIdentity,p.Name,p.Surname,p.PhoneNumber })  
             .HasIndex(p => p.SearchVector)
             .HasMethod("GIN");
     }

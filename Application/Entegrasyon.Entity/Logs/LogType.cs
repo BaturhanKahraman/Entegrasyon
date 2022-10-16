@@ -12,7 +12,7 @@ public enum LogType
     Category,
     Role,
     Brand,
+    Customer,
 
-    Error=999
-
+    Error = 999,
 }

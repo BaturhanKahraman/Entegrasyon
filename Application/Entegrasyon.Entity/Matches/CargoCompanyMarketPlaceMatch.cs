@@ -1,6 +1,6 @@
 ﻿namespace Entegrasyon.Entity.Matches;
 
-public class CargoCompanyMarketPlaceMatch
+public sealed class CargoCompanyMarketPlaceMatch
 {
     public int ApplicationCargoCompanyId { get; set; }
     public CargoCompany ApplicationCargoCompany { get; set; }

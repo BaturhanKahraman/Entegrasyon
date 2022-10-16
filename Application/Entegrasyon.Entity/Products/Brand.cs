@@ -3,8 +3,9 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity.Products;
 
-public class Brand : ApplicationEntity
+public sealed class Brand : BaseEntity
 {
+    public int Id { get; set; }
     [Required, StringLength(maximumLength: 55,MinimumLength = 1)]
     public string Name { get; set; }
     public ICollection<MainProduct> Products { get; set; }

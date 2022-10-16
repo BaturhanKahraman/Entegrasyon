@@ -2,7 +2,7 @@
 
 namespace Entegrasyon.Entity.Dtos.Log
 {
-    public class ApplicationLogDetailDto
+    public sealed class ApplicationLogDetailDto
     {
         public long Id { get; set; }
         public string Content { get; set; }

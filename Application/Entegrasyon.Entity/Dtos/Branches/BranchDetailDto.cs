@@ -1,6 +1,6 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Branches;
 
-public class BranchDetailDto
+public record BranchDetailDto
 {
     public int Id { get; set; }
     public string Name { get; set; }

@@ -17,9 +17,9 @@ namespace Entegrasyon.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCustomersPage(string customerInfo,int page=1,int itemCount = 50)
+        public async Task<IActionResult> GetCustomersPage(string customerInfo,int pageIndex=0,int itemCount = 50)
         {
-            var result = await _customerManager.GetCustomerDetailPageable(page,itemCount,customerInfo);
+            var result = await _customerManager.GetCustomerDetailPageable(customerInfo,pageIndex,itemCount);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

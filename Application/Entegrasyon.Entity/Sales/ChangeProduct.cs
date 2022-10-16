@@ -2,7 +2,7 @@
 
 namespace Entegrasyon.Entity.Sales;
 
-public class ChangeProduct:ApplicationEntity
+public sealed class ChangeProduct: BaseEntity
 {
-    
+    public int Id { get; set; }
 }

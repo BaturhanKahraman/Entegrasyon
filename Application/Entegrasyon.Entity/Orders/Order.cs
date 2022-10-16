@@ -3,8 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entegrasyon.Entity.Orders;
 
-public class Order : LongEntity
+public sealed class Order : BaseEntity
 {
+    public Guid Id { get; set; }
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public int TotalQuantity{ get; set; }//calculated
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]

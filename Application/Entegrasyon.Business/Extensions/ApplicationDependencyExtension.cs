@@ -33,6 +33,9 @@ public static class ApplicationDependencyExtension
         services.AddScoped<IBrandDal,EfBrandDal>();
         services.AddScoped<ICargoCompanyDal,EfCargoCompanyDal>();
         services.AddScoped<IApplicationCustomerDal,EfApplicationCustomerDal>();
+        services.AddScoped<IMainProductDal, EfMainProductDal>();
+        services.AddScoped<IBranchOfficeStockDal, EfBranchOfficeStockDal>();
+        services.AddScoped<IImageDal, EfImageDal>();
 
         services.AddScoped<BranchOfficeManager>();
         services.AddScoped<ApplicationRoleManager>();
@@ -44,6 +47,11 @@ public static class ApplicationDependencyExtension
         services.AddScoped<AuthManager>();
         services.AddScoped<CargoCompaniesManager>();
         services.AddScoped<CustomerManager>();
+        services.AddScoped<ProductManager>();
+        services.AddScoped<OfficeStockManager>();
+        services.AddScoped<ProductVariantManager>();
+        services.AddScoped<ImageManager>();
+        
 
         services.AddScoped<TrendyolCategories>();
         services.AddScoped<TrendyolBrands>();

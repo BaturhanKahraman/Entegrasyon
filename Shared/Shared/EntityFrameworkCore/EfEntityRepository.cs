@@ -1,6 +1,9 @@
 ﻿using System.Linq.Expressions;
+using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Shared.Entity;
+using Shared.Extensions;
 
 namespace Shared.EntityFrameworkCore;
 
@@ -45,17 +48,35 @@ where TContext : DbContext
         var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
         return expression == null ? await entities.ToListAsync() : await entities.Where(expression).ToListAsync();
     }
-    public async Task<Pageable<TEntity>> GetAllPageableAsync(int page,int pageSize,Expression<Func<TEntity,bool>> expression = null)
+    public async Task<TResult> GetTransformedEntity<TResult>(
+        Expression<Func<TEntity,TResult>> selector,
+        IEnumerable<(bool, Expression<Func<TEntity,bool>>)> expressionTuples = null)
     {
-        var resultEntities = expression==null ?  
-            await _context.Set<TEntity>().Skip((page-1)*pageSize).Take(pageSize)
-            .ToListAsync():
-            await _context.Set<TEntity>().Where(expression).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        var totalItemCount = _context.Set<TEntity>().Count();
-        var pageCount =Convert.ToInt32(Math.Round(totalItemCount / (double)pageSize));
-        return new Pageable<TEntity> { CurrentPage = page,PagingItemCount = pageSize,Items = resultEntities,TotalPageCount = pageCount,TotalItemCount=totalItemCount };
+        var entities = _context.Set<TEntity>().AsNoTracking();
+        entities = entities.ApplyFilter(expressionTuples);
+        return await entities.Select(selector).FirstOrDefaultAsync();
     }
-
+    public IQueryable<TResult> GetTransformedEntities<TResult>(
+        Expression<Func<TEntity,TResult>> selector,
+        IEnumerable<(string,string)> orderTuples = null,
+        IEnumerable<(bool, Expression<Func<TEntity,bool>>)> expressionTuples = null
+        )
+    {
+        var entities =_context.Set<TEntity>().AsNoTracking();
+        entities = entities.OrderQueryableDynamicly(orderTuples);
+        entities = entities.ApplyFilter(expressionTuples);
+        return entities.Select(selector).AsQueryable();
+    }
+    public async Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
+        int pageIndex,
+        int pageSize,
+        Expression<Func<TEntity,TResult>> selector,
+        IEnumerable<(string,string)> orderTuples = null,
+        IEnumerable<(bool, Expression<Func<TEntity,bool>>)> expressionTuples = null)
+    {
+        return await GetTransformedEntities(selector,orderTuples,expressionTuples).ToPagable(pageIndex,pageSize);
+    }
+    
     public async Task<bool> Exists(Expression<Func<TEntity,bool>>? expression = null)
     {
         return expression == null

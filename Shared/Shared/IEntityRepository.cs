@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
+using Shared.EntityFrameworkCore;
 
 namespace Shared;
 
@@ -13,8 +14,22 @@ where T : class, new()
     Task DeleteAsync(T entity);
     Task<T> Get(Expression<Func<T, bool>> expression, bool isTracking = false);
     Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
-    Task<Pageable<T>> GetAllPageableAsync(int page,int pageSize,Expression<Func<T,bool>> expression = null);
 
     Task<bool> Exists(Expression<Func<T, bool>>? expression = null);
 
+    IQueryable<TResult> GetTransformedEntities<TResult>(
+        Expression<Func<T,TResult>> selector,
+        IEnumerable<(string,string)> orderTuples = null,
+        IEnumerable<(bool, Expression<Func<T,bool>>)> expressionTuples = null);
+
+    Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
+        int pageIndex,
+        int pageSize,
+        Expression<Func<T,TResult>> selector,
+        IEnumerable<(string,string)> orderTuples = null,
+        IEnumerable<(bool, Expression<Func<T,bool>>)> expressionTuples = null);
+
+    Task<TResult> GetTransformedEntity<TResult>(
+        Expression<Func<T,TResult>> selector,
+        IEnumerable<(bool, Expression<Func<T,bool>>)> expressionTuples = null);
 }

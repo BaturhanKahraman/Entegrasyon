@@ -1,6 +1,8 @@
 ﻿using Castle.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Shared.FileStorage;
 using Shared.Helpers;
 using Shared.Security.Jwt;
 using Shared.User;
@@ -10,6 +12,8 @@ namespace Shared.Extensions;
 
 public static class ServiceCollectionExtension
 {
+    private const string FileStorageType = "Storage:FileStorageType";
+
     public static IServiceCollection AddSharedSettings(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<IRandomGenerator, RandomGenerator>();
@@ -30,5 +34,25 @@ public static class ServiceCollectionExtension
         services.AddScoped<IRoleManager<TRole,TClaim>,RoleManager<TRole,TClaim,TContext>>();
         return services;
     }
+    public static IServiceCollection AddFileStorage(this IServiceCollection services,string typeOfLocalStorage = null)
+    {
+        services.AddSingleton<IAwsFileStorage,AwsFileStorage>();
+        services.AddSingleton<IAzureFileStorage,AzureFileStorage>();
+        services.AddSingleton<ILocalFileStorage,LocalFileStorage>();
+        services.AddSingleton<FileStorageFactory>();
+        services.AddSingleton<IEnumerable<IFileStorage>>(x => new List<IFileStorage>
+        {
+            //x.GetService<IAwsFileStorage>()!,
+            x.GetService<IAzureFileStorage>()!,
+            x.GetService<ILocalFileStorage>()!
+        });
+        services.AddSingleton(x =>
+            typeOfLocalStorage == null ?
+                x.GetService<FileStorageFactory>()!.Create() :
+                x.GetService<FileStorageFactory>()!.Create(typeOfLocalStorage)
+        );
+        return services;
+    }
     
+
 }

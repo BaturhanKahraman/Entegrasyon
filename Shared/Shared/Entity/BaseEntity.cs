@@ -2,11 +2,10 @@
 
 namespace Shared.Entity;
 
-public interface IEntity<T>
-where T : struct
+public class BaseEntity
 {
-    [Key]
-    public T Id { get; set; }
     public bool IsDeleted { get; set; }
+    public DateTimeOffset DeletedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

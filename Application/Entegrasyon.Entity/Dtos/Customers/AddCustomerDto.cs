@@ -1,3 +1,3 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Customers;
 
-public record AddCustomerDto(string Identity,string Name,string Surname);
+public sealed record AddCustomerDto(string NationalIdentity,string Name,string Surname,string PhoneNumber,string Address);

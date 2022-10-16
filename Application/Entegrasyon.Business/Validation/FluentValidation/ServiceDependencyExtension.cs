@@ -1,6 +1,7 @@
 ﻿using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Customers;
+using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,10 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<Brand>,BrandValidator>();
         services.AddScoped<IValidator<AddCustomerDto>,AddCustomerDtoValidator>();
         services.AddScoped<IValidator<UpdateCustomerDto>,UpdateCustomerDtoValidator>();
-        services.AddTransient<FluentValidator>();
+        services.AddScoped<IValidator<AddProductDto>,AddProductValidator>();
+        services.AddScoped<IValidator<AddProductVariantDto>,AddProductVariantValidator>();
+        services.AddScoped<IValidator<AddBranchOfficeStockDto>,AddBranchOfficeStockValidator>();
+        services.AddScoped<FluentValidator>();
         return services;
     }
 }
