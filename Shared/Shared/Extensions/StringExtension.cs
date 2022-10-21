@@ -10,11 +10,21 @@ public static class StringExtension
     {
         return string.IsNullOrEmpty(@this)?string.Empty:@this.Trim().Normalize().ToUpperInvariant();
     }
-
+    public static bool IsEmailAddress(this string @this)
+    {
+        return new Regex(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$").IsMatch(@this);
+    }
     public static void ThrowIfNullOrEmpty(this string @this)
     {
         if(string.IsNullOrEmpty(@this))
             throw new ArgumentNullException(nameof(@this));
+    }
+
+    public static string ToStringOrEmpty(this string @this)
+    {
+        if(string.IsNullOrWhiteSpace(@this))
+            return string.Empty;
+        return @this.Trim().ToString();
     }
 
     public static string ToBase64(this string @this)
