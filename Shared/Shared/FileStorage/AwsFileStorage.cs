@@ -13,17 +13,13 @@ public class AwsFileStorage : IAwsFileStorage
     public FileStorageType FileStorageType => FileStorageType.Aws;
 
     private static IAmazonS3 _client;
-
-    public AwsFileStorage()
+    
+    public AwsFileStorage(IOptions<AwsFileStorageOption> option)
     {
-
-    }
-    public AwsFileStorage(IOptions<AwsFileStorageOption>? option = null)
-    {
-        if(option!.Value == null)
+        if(option.Value.AwsAccessKey is null || option.Value.AwsSecretKey is null)
             return;
-        AWSCredentials credentials = new BasicAWSCredentials(option.Value.AWSAccessKey,option.Value.AWSSecretKey);
-        _client = new AmazonS3Client(credentials);
+        AWSCredentials credentials = new BasicAWSCredentials(option.Value.AwsAccessKey,option.Value.AwsSecretKey);
+            _client = new AmazonS3Client(credentials);
     }
     public async Task<Stream> DownloadFile(string fileName,string container)
     {
@@ -36,9 +32,9 @@ public class AwsFileStorage : IAwsFileStorage
         return await transferUtility.OpenStreamAsync(transferUtilityDownloadRequest).ConfigureAwait(false);
     }
 
-    public async Task UploadFile(Stream fileStream,string fileName,string container)
+    public async Task<string> UploadFile(Stream fileStream, string fileName, string container)
     {
-        TransferUtility utility = new TransferUtility(_client);
+        using TransferUtility utility = new TransferUtility(_client);
         TransferUtilityUploadRequest request = new TransferUtilityUploadRequest
         {
             BucketName = container,
@@ -46,6 +42,8 @@ public class AwsFileStorage : IAwsFileStorage
             InputStream = fileStream
         };
         await utility.UploadAsync(request).ConfigureAwait(false);
+
+        return Path.Combine(container,fileName);
     }
 
     public IEnumerable<string> GetFiles(string container)

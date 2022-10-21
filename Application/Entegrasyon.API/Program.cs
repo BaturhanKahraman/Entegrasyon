@@ -1,5 +1,4 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-
 using MainDatabase.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -13,21 +12,15 @@ using Shared.FileStorage.Options;
 using Shared.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddControllers().AddJsonOptions(x =>
-{
-    //x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-});
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
+builder.Services.AddControllers();
 builder.Services.AddLogging();
-
 builder.Services.Configure<ApiBehaviorOptions>(o=>o.SuppressModelStateInvalidFilter=true);
 builder.Services.Configure<Shared.Security.Jwt.TokenOptions>(builder.Configuration.GetSection("JwtTokenOptions"));
 builder.Services.AddApplicationDependencies();
-builder.Services.AddFileStorage();
-builder.Services.Configure<LocalFileStorageOption>(x => x.RootPath = "wwwroot");
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
+builder.Services.AddFileStorageCore();
+builder.Services.AddLocalFileStorage(x=>builder.Configuration.GetSection("LocalFileStorageOptions"));
+//builder.Services.AddLocalFileStorage(new LocalFileStorageOption{RootPath = "wwwroot"});
 
 builder.Services.AddDbContext<HeadDbContext>(x =>
 {
@@ -71,8 +64,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtTokenOptions:SecurityKey"]))
     };
 });
-builder.Services.AddHttpClient();
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 app.AddCustomExceptionHandlerMiddleware();
@@ -81,11 +74,10 @@ if(app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseMiddleware<MigrateDatabaseMiddleware>();
 }
 
 app.UseCors("myclient");
-
-app.UseMiddleware<MigrateDatabaseMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

@@ -24,6 +24,8 @@ public class ProductManager
     private readonly FluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
     private readonly ImageManager _imageManager;
+    private static readonly SemaphoreSlim SemaphoreSlim = new(1);
+
     public ProductManager(IMainProductDal productDal, ApplicationLogManager applicationLogManager, IRandomGenerator randomGenerator, IMapper mapper, IFileStorage fileStorage, FluentValidator validator, OfficeStockManager officeStockManager, ImageManager imageManager)
     {
         _productDal = productDal;
@@ -41,53 +43,38 @@ public class ProductManager
         await _applicationLogManager.AddLog("Ürün ekleme isteği geldi.",LogType.Product,LogAction.Add,dto);
         await _validator.ValidateAndThrowAsync(dto);
         var result = LogicRunner.Run(
-            await _officeStockManager.CheckIfOfficeExists(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks.Select(y => y.BranchOfficeId)).ToArray())
+            await _officeStockManager.CheckIfOfficeExists(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks.Select(y => y.BranchOfficeId)).ToArray()),
+            _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
             );
         if (result != null)
             return result;
         foreach (var productVariantDto in dto.ProductVariants.Where(productVariantDto => string.IsNullOrEmpty(productVariantDto.Barcode)))
             productVariantDto.Barcode = _randomGenerator.GetRandomCode(13, true, false, false);
-        
-        
         var product = _mapper.Map<MainProduct>(dto);
         await _productDal.AddAsync(product);
-        //product.StockCode = _randomGenerator.GetRandomCode(10);
-        //foreach (var variant in product.ProductVariants)
-        //  variant.Barcode = _randomGenerator.GetRandomCode(8,true,false,false);
-        //todo gerekirse ayrı yere taşı.
-        var images = new List<Image>();
-        foreach(var productVariant in product.ProductVariants)
-        {
-            var productVariantDto =
-                dto.ProductVariants.FirstOrDefault(x => x.Barcode == productVariant.Barcode);
-            if(productVariantDto!.UploadedImages == null)
-                continue;
-            foreach(var formFile in productVariantDto.UploadedImages)
-            {
-                string extension = formFile.FileName.Split('.').LastOrDefault();
-                string imageGuid =Guid.NewGuid() +"."+ extension;
-                await _fileStorage.UploadFile(formFile.OpenReadStream(),imageGuid,
-                    productVariant.Id.ToString());
-                var image = new Image()
-                {
-                    ProductVariant = productVariant,
-                    Src = Path.Combine(productVariant.Id.ToString(),imageGuid)
-                };
-                images.Add(image);
-            }
-        }
-        await _imageManager.AddImages(images);
+        await _imageManager.AddProductImages(dto,product);
         return new SuccessResult();
     }
     public async Task<IResult> UpdateProduct()
+    {
+        await SemaphoreSlim.WaitAsync();
+        SemaphoreSlim.Release();
+        return new SuccessResult();
+    }
+    public async Task<IResult> DeactiveProduct()
+    {
+        return new SuccessResult();
+    }
+    public async Task<IResult> UpdateProductStock()
     {
         return new SuccessResult();
     }
     public async Task<IResult> GetProductDetail()
     {
+        
         return new SuccessResult();
     }
-    public async Task<IResult> GetProductsDetails()
+    public async Task<IResult> GetProductsDetailsPageable()
     {
         return new SuccessResult();
     }

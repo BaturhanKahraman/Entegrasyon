@@ -6,5 +6,5 @@ namespace Entegrasyon.DataAccess.Abstract;
 
 public interface IBranchOfficeDal : IEntityRepository<BranchOffice>
 {
-    Task<bool> CheckIfOfficesExits(int[] stocks);
+    Task<bool> CheckIfOfficesExits(IEnumerable<int> stocks);
 }

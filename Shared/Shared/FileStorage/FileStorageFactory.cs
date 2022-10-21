@@ -1,11 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Shared.Extensions;
+using Shared.FileStorage.Options;
 
 namespace Shared.FileStorage;
 
+public static class FileStorageExtension
+{
+    public static IServiceCollection AddLocalFileStorage(this IServiceCollection serviceCollection,Action<LocalFileStorageOption> option)
+    {
+        serviceCollection.Configure(option);
+        serviceCollection.AddSingleton(x =>
+            x.GetService<FileStorageFactory>()!.Create(FileStorageType.Local));
+        return serviceCollection;
+    }
+    public static IServiceCollection AddAwsFileStorage(this IServiceCollection serviceCollection,Action<AwsFileStorageOption> option)
+    {
+        serviceCollection.Configure(option);
+        serviceCollection.AddSingleton(x =>
+            x.GetService<FileStorageFactory>()!.Create(FileStorageType.Aws));
+        return serviceCollection;
+    }
+    public static IServiceCollection AddFileStorageCore(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddSingleton<IAwsFileStorage,AwsFileStorage>();
+        serviceCollection.AddSingleton<IAzureFileStorage,AzureFileStorage>();
+        serviceCollection.AddSingleton<ILocalFileStorage,LocalFileStorage>();
+        serviceCollection.AddSingleton<FileStorageFactory>();
+        serviceCollection.AddSingleton<IEnumerable<IFileStorage>>(x => new List<IFileStorage>
+        {
+            x.GetService<IAwsFileStorage>()!,
+            x.GetService<IAzureFileStorage>()!,
+            x.GetService<ILocalFileStorage>()!
+        });
+        return serviceCollection;
+    }
+}
 public class FileStorageFactory : IFileStorageFactory
 {
     private readonly IEnumerable<IFileStorage> _fileStorageFunc;
@@ -19,7 +49,8 @@ public class FileStorageFactory : IFileStorageFactory
 
     public IFileStorage Create() => Create(_configuration.GetOrThrow<string>(FileStorageType));
 
-
+    public IFileStorage Create(FileStorageType type) =>
+        _fileStorageFunc.Single(fs => fs.FileStorageType == type);
     public IFileStorage Create(string storageType) =>
         _fileStorageFunc.Single(fs => fs.FileStorageType == GetFileStorageType(storageType));
 
