@@ -2,7 +2,8 @@
 {
     public class AwsFileStorageOption
     {
-        public string AWSAccessKey { get; set; }
-        public string AWSSecretKey { get; set; }
+        public string AwsAccessKey { get; set; }
+        public string AwsSecretKey { get; set; }
+
     }
 }

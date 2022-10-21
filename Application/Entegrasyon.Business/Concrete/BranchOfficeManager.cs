@@ -72,7 +72,7 @@ public class BranchOfficeManager
     }
 
 
-    public async Task<bool> CheckIfOfficesExits(int[] officeIds)
+    public async Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds)
     {
         return await _branchOfficeDal.CheckIfOfficesExits(officeIds);
     }

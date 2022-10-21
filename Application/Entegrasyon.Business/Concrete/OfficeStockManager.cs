@@ -1,4 +1,5 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using Shared.Logic;
 using Shared.Results;
@@ -26,11 +27,26 @@ public class OfficeStockManager
         return new SuccessResult();
     }
 
-    public async Task<IResult> CheckIfOfficeExists(int[] officesIds)
+    public async Task<IResult> CheckIfOfficeExists(IEnumerable<int> officesIds)
     {
-        if (await _branchOfficeManager.CheckIfOfficesExits(officesIds))
+        var result = await _branchOfficeManager.CheckIfOfficesExits(officesIds);
+        if (result)
             return new SuccessResult();
         return new ErrorResult("Bir veya daha fazla ofis bulunamadı");
     }
-    
+
+    public async Task UpdateStock(int branchOfficeId,Guid productVariantId,int stock)
+    {
+        var stockToUpdate = await _branchOfficeStockDal.Get(x => x.BranchOfficeId == branchOfficeId && x.ProductVariantId == productVariantId);
+        stockToUpdate.FirstTotalStock = stock;
+        await _branchOfficeStockDal.UpdateAsync(stockToUpdate);
+    }
+
+    public IResult CheckIfProductCountZero(params AddBranchOfficeStockDto[] stocks)
+    {
+        var stocksList = stocks.ToList();
+        if(stocksList.Any(x=>x.FirstTotalStock==0))
+            return new ErrorResult("Bir veya daha fazla ürün stokta bulunmamaktadır");
+        return new SuccessResult();
+    }
 }

@@ -9,5 +9,6 @@ public class ProductVariantEntityConfiguration:IEntityTypeConfiguration<ProductV
     public void Configure(EntityTypeBuilder<ProductVariant> builder)
     {
         builder.HasQueryFilter(x => !x.IsDeleted);
+        builder.HasIndex(x => x.Barcode).IsUnique();
     }
 }

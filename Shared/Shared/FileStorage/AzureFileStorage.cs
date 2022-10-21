@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Shared.FileStorage;
@@ -7,9 +8,10 @@ public class AzureFileStorage : IAzureFileStorage
 {
     public FileStorageType FileStorageType => FileStorageType.Azure;
 
-    public Task UploadFile(Stream fileStream,string fileName,string containerName)
+    public Task<string> UploadFile(Stream fileStream, string fileName, string containerName)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(Path.Combine(containerName,fileName));
+        
     }
 
     public Task<Stream> DownloadFile(string fileName,string containerName = null)

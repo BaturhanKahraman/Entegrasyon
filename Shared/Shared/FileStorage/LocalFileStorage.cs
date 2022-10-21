@@ -13,13 +13,15 @@ public class LocalFileStorage : ILocalFileStorage
     {
         LocalFileRoot = options.Value.RootPath;
     }
-    public async Task UploadFile(Stream fileStream,string fileName,string containerName)
+    public async Task<string> UploadFile(Stream fileStream, string fileName, string containerName)
     {
         if(!Directory.Exists(CombinePath(containerName)))
             Directory.CreateDirectory(CombinePath(containerName!));
         fileStream.Seek(0,SeekOrigin.Begin);
+        string fullPath = Path.Combine(CombinePath(containerName), fileName);
         await using var file = File.Create(Path.Combine(CombinePath(containerName),fileName));
         await fileStream.CopyToAsync(file);
+        return fullPath;
     }
     public Task<Stream> DownloadFile(string fileName,string containerName)
     {

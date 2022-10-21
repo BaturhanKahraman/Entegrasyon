@@ -1,7 +1,6 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
-using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Shared.EntityFrameworkCore;
 
@@ -15,9 +14,9 @@ public class EfBranchOfficeDal:EfEntityRepository<BranchOffice,IntegrationDbCont
         _dbContext = dbContext;
     }
 
-    public Task<bool> CheckIfOfficesExits(int[] stocks)
+    public async Task<bool> CheckIfOfficesExits(IEnumerable<int> stocks)
     {
-        return _dbContext.BranchOffices.AllAsync(x=>stocks.Contains(x.Id));
+        return await _dbContext.BranchOffices.AllAsync(x=>stocks.Contains(x.Id));
     }
     
 }
