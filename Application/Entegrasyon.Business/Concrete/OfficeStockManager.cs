@@ -37,7 +37,7 @@ public class OfficeStockManager
 
     public async Task UpdateStock(int branchOfficeId,Guid productVariantId,int stock)
     {
-        var stockToUpdate = await _branchOfficeStockDal.Get(x => x.BranchOfficeId == branchOfficeId && x.ProductVariantId == productVariantId);
+        var stockToUpdate = await _branchOfficeStockDal.GetAsync(x => x.BranchOfficeId == branchOfficeId && x.ProductVariantId == productVariantId);
         stockToUpdate.FirstTotalStock = stock;
         await _branchOfficeStockDal.UpdateAsync(stockToUpdate);
     }

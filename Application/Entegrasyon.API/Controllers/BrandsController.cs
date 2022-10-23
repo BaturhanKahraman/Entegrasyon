@@ -49,9 +49,9 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
         [HttpGet]
-        public async Task<IActionResult> GetCategoryDetailsPage(int page,int itemCount,string categoryName)
+        public async Task<IActionResult> GetCategoryDetailsPage([FromQuery]GetCategoryDetailsPageDto dto)
         {
-            var result = await _brandManager.GetCategoryDetailPageable(page,itemCount,categoryName);
+            var result = await _brandManager.GetCategoryDetailPageable(dto);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

@@ -7,13 +7,8 @@ namespace Shared.Extensions;
 
 public static class QueryableExtensions
 {
-    public static IQueryable<TEntity> ApplyFilter<TEntity>(this IQueryable<TEntity> @this,IEnumerable<(bool, Expression<Func<TEntity,bool>>)> filterTuples)
-    {
-        if (filterTuples == null)
-            return @this;
-        @this = filterTuples.Aggregate(@this,(current,filterTuple) => current.WhereIf(filterTuple.Item1,filterTuple.Item2));
-        return @this;
-    }
+    public static IQueryable<TEntity> ApplyFilter<TEntity>(this IQueryable<TEntity> @this,Expression<Func<TEntity,bool>> filterExpression) 
+        => filterExpression == null ? @this : @this.Where(filterExpression);
 
     public static IQueryable<TEntity> OrderQueryableDynamicly<TEntity>(this IQueryable<TEntity> @this,IEnumerable<(string, string)> sortTuples)
     {

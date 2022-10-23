@@ -8,7 +8,6 @@ public sealed class AddProductDto
     public string StockCode { get; set; }
     public int BrandId { get; set; }
     public int CategoryId { get; set; }
-    public decimal ListPrice { get; set; }
     public List<AddProductVariantDto> ProductVariants { get; set; }
 }
 /*

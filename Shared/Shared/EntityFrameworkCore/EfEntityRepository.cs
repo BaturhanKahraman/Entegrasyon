@@ -36,7 +36,7 @@ where TContext : DbContext
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
-    public async Task<TEntity> Get(Expression<Func<TEntity,bool>> expression,bool isTracking = false)
+    public async Task<TEntity> GetAsync(Expression<Func<TEntity,bool>> expression,bool isTracking = false)
     {
         return (isTracking
             ? await _context.Set<TEntity>().FirstOrDefaultAsync(expression)
@@ -50,21 +50,21 @@ where TContext : DbContext
     }
     public async Task<TResult> GetTransformedEntity<TResult>(
         Expression<Func<TEntity,TResult>> selector,
-        IEnumerable<(bool, Expression<Func<TEntity,bool>>)> expressionTuples = null)
+        Expression<Func<TEntity,bool>> expression=null)
     {
         var entities = _context.Set<TEntity>().AsNoTracking();
-        entities = entities.ApplyFilter(expressionTuples);
+        entities = entities.ApplyFilter(expression);
         return await entities.Select(selector).FirstOrDefaultAsync();
     }
     public IQueryable<TResult> GetTransformedEntities<TResult>(
         Expression<Func<TEntity,TResult>> selector,
         IEnumerable<(string,string)> orderTuples = null,
-        IEnumerable<(bool, Expression<Func<TEntity,bool>>)> expressionTuples = null
+        Expression<Func<TEntity,bool>> expression = null
         )
     {
         var entities =_context.Set<TEntity>().AsNoTracking();
         entities = entities.OrderQueryableDynamicly(orderTuples);
-        entities = entities.ApplyFilter(expressionTuples);
+        entities = entities.ApplyFilter(expression);
         return entities.Select(selector).AsQueryable();
     }
     public async Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
@@ -72,9 +72,9 @@ where TContext : DbContext
         int pageSize,
         Expression<Func<TEntity,TResult>> selector,
         IEnumerable<(string,string)> orderTuples = null,
-        IEnumerable<(bool, Expression<Func<TEntity,bool>>)> expressionTuples = null)
+        Expression<Func<TEntity,bool>> expression = null)
     {
-        return await GetTransformedEntities(selector,orderTuples,expressionTuples).ToPagable(pageIndex,pageSize);
+        return await GetTransformedEntities(selector,orderTuples,expression).ToPagable(pageIndex,pageSize);
     }
     
     public async Task<bool> Exists(Expression<Func<TEntity,bool>>? expression = null)

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.EntityFrameworkCore;
+using static Amazon.S3.Util.S3EventNotification;
 
 namespace Shared;
 
@@ -12,24 +13,24 @@ where T : class, new()
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);
-    Task<T> Get(Expression<Func<T, bool>> expression, bool isTracking = false);
-    Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
+    Task<T> GetAsync(Expression<Func<T,bool>> expression,bool isTracking = false);
+    Task<List<T>> GetAllAsync(Expression<Func<T,bool>> expression = null,bool isTracking = false);
 
-    Task<bool> Exists(Expression<Func<T, bool>>? expression = null);
+    Task<bool> Exists(Expression<Func<T,bool>>? expression = null);
 
     IQueryable<TResult> GetTransformedEntities<TResult>(
         Expression<Func<T,TResult>> selector,
-        IEnumerable<(string,string)> orderTuples = null,
-        IEnumerable<(bool, Expression<Func<T,bool>>)> expressionTuples = null);
+        IEnumerable<(string, string)> orderTuples = null,
+        Expression<Func<T,bool>> expression= null);
 
     Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
         int pageIndex,
         int pageSize,
         Expression<Func<T,TResult>> selector,
-        IEnumerable<(string,string)> orderTuples = null,
-        IEnumerable<(bool, Expression<Func<T,bool>>)> expressionTuples = null);
+        IEnumerable<(string, string)> orderTuples = null,
+        Expression<Func<T,bool>> expression = null);
 
     Task<TResult> GetTransformedEntity<TResult>(
-        Expression<Func<T,TResult>> selector,
-        IEnumerable<(bool, Expression<Func<T,bool>>)> expressionTuples = null);
+    Expression<Func<T,TResult>> selector,
+        Expression<Func<T,bool>> expression = null);
 }
