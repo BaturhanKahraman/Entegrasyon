@@ -16,7 +16,6 @@
     <Folder Include="Dtos\Category\" />
     <Folder Include="Dtos\CargoCompany\" />
     <Folder Include="Dtos\Customers\" />
-    <Folder Include="Dtos\Product\" />
   </ItemGroup>
 
 </Project>

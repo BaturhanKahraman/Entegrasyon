@@ -66,15 +66,15 @@ public class CustomerManager
     {
         var orders = new List<(string,string)>
         {
-            new ("Id","desc"),
-            new ("Sales.Count","desc")
+            new ("Id","desc")
         };
-        var filters = new List<(bool, Expression<Func<ApplicationCustomer,bool>>)>
-        {
-            new (!string.IsNullOrEmpty(customerInfo),x=>x.SearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ForFullTextSearch())))
-        };
+        Expression<Func<ApplicationCustomer, bool>> filter =
+            !string.IsNullOrEmpty(customerInfo)
+                ? x => x.SearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ForFullTextSearch()))
+                : null;
+        
         var pageableResult = await _customerDal.GetPaginatedTransformedEntities(pageIndex, itemCount,
-            x=>new CustomerDetailDto(x.CreatedAt,x.Id,x.NationalIdentity,x.Name,x.Surname,x.Sales.Count,x.PhoneNumber,x.Address),orders,filters);
+            x=>new CustomerDetailDto(x.CreatedAt,x.Id,x.NationalIdentity,x.Name,x.Surname,x.Sales.Count,x.PhoneNumber,x.Address),orders,filter);
         return new SuccessDataResult<Pageable<CustomerDetailDto>>(pageableResult);
     }
 

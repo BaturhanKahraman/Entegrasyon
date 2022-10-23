@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
@@ -75,18 +76,17 @@ public class BrandManager
         await _applicationLogManager.AddLog("Marka başarıyla silindi.",LogType.Brand,LogAction.Delete,brand);
         return new SuccessResult();
     }
-    public async Task<IDataResult<Pageable<BrandDetailDto>>> GetCategoryDetailPageable(int page = 1,int itemCount = 50,string categoryName = null)
+    public async Task<IDataResult<Pageable<BrandDetailDto>>> GetCategoryDetailPageable(GetCategoryDetailsPageDto dto)
     {
-        var items = _brandDal.Table
-            .OrderByDescending(x => x.Id)
-            .WhereIf(!string.IsNullOrEmpty(categoryName),x => EF.Functions.ILike(x.Name,$"%{categoryName}%"));
-        var result = await items
-            .Skip((page - 1) * itemCount).Take(itemCount)
-            .Select(x => new BrandDetailDto(x.Id,x.CreatedAt,x.Name,x.Products.Count))
-            .ToListAsync();
-        int totalItemCount = await items.CountAsync();
-        var pageableResult = new Pageable<BrandDetailDto>(result,page,itemCount,totalItemCount,Convert.ToInt32(Math.Round(totalItemCount / (double)itemCount)));
-        return new SuccessDataResult<Pageable<BrandDetailDto>>(pageableResult);
+        Expression<Func<Brand,bool>> expr = 
+            !string.IsNullOrEmpty(dto.CategoryName)
+                ? x => EF.Functions.ILike(x.Name,@$"%{dto.CategoryName}%")
+                :null;
+        var result = await _brandDal.GetPaginatedTransformedEntities(dto.PageIndex,
+            dto.ItemCount,
+            x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count),
+            expression: expr);
+        return new SuccessDataResult<Pageable<BrandDetailDto>>(result);
     }
 
     private async Task<IResult> CheckIfTheSameNameExits(string name)

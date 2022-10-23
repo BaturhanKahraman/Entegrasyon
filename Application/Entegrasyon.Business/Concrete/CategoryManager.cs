@@ -41,7 +41,7 @@ namespace Entegrasyon.Business.Concrete
         public async Task UpdateCategory(UpdateCategoryDto dto)
         {
             await _applicationLogManager.AddLog("Kategori güncelleniyor.",LogType.Category,LogAction.Update,dto);
-            var category = await _categoryDal.Get(x => x.Id == dto.Id,true);
+            var category = await _categoryDal.GetAsync(x => x.Id == dto.Id,true);
             category.Name = dto.Name ?? category.Name;
             category.SuperCategoryId = dto.SuperCategoryId ?? category.SuperCategoryId;
             category.CategoryAttributes = dto.CategoryAttributes ?? category.CategoryAttributes;
@@ -52,7 +52,7 @@ namespace Entegrasyon.Business.Concrete
         public async Task DeleteCategory(int categoryId)
         {
             await _applicationLogManager.AddLog("Kategori siliniyor.",LogType.Category,LogAction.Delete,new { categoryId });
-            var category = await _categoryDal.Get(x => x.Id == categoryId);
+            var category = await _categoryDal.GetAsync(x => x.Id == categoryId);
             await _categoryDal.DeleteAsync(category);
             await _applicationLogManager.AddLog("Kategori silindi.",LogType.Category,LogAction.Delete,new { categoryId });
         }
@@ -69,10 +69,10 @@ namespace Entegrasyon.Business.Concrete
             {
                 new ("Id", "desc")
             };
-            var filter = new List<(bool, Expression<Func<Category,bool>>)>
-            {
-                new (!string.IsNullOrEmpty(categoryName), x => EF.Functions.ILike(x.Name, $"%{categoryName}%"))
-            };
+            Expression<Func<Category,bool>> filter = !string.IsNullOrEmpty(categoryName)
+                ? x => EF.Functions.ILike(x.Name, $"%{categoryName}%")
+                : null;
+            
             var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex,itemCount,
                 x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count),orderBy,filter);
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(categoriesDto);

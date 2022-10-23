@@ -25,5 +25,23 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetProductsPageable([FromQuery]GetProductPageableDto dto)
+        {
+            var result = await _productManager.GetProductsDetailsPageable(dto);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetProductById(Guid id)
+        {
+            var result = await _productManager.GetProductDetailById(id);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
     }
 }
