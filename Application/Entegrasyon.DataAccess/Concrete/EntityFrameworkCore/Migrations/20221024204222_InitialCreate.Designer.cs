@@ -14,7 +14,7 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20221014111827_InitialCreate")]
+    [Migration("20221024204222_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -196,6 +196,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsFavorite")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
@@ -314,6 +317,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int>("FileStorageType")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsCoverImage")
                         .HasColumnType("boolean");
@@ -833,6 +839,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique();
 
                     b.HasIndex("ProductMainId");
 

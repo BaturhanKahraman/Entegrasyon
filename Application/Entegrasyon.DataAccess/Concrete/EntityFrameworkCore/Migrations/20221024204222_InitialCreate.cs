@@ -119,6 +119,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
+                    IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
                     SuperCategoryId = table.Column<int>(type: "integer", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -718,6 +719,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     AlternativeText = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     IsCoverImage = table.Column<bool>(type: "boolean", nullable: false),
+                    FileStorageType = table.Column<int>(type: "integer", nullable: false),
                     ProductVariantId = table.Column<int>(type: "integer", nullable: false),
                     ProductVariantId1 = table.Column<Guid>(type: "uuid", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -1054,6 +1056,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_Orders_ShippingAddressId",
                 table: "Orders",
                 column: "ShippingAddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_Barcode",
+                table: "ProductVariants",
+                column: "Barcode",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductMainId",

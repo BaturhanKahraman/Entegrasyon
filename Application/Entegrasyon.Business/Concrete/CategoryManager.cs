@@ -1,13 +1,11 @@
-﻿using System.Linq.Expressions;
-using Entegrasyon.DataAccess.Abstract;
+﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
-using Shared.EntityFrameworkCore;
-using Shared.Extensions;
 using Shared.Results;
+using System.Linq.Expressions;
 
 namespace Entegrasyon.Business.Concrete
 {
@@ -59,8 +57,15 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IDataResult<List<CategoryDetailDto>>> GetCategoryDetailList()
         {
-            var categoriesDto =
-                await _categoryDal.Table.Select(x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count)).ToListAsync();
+            var orderTuples = new List<(string, string)>
+            {
+                new ("IsFavorite", "desc"),
+                new ("Id", "desc")
+            };
+            var categoriesDto = await _categoryDal.GetTransformedEntities(x => new CategoryDetailDto(
+                x.Id,
+                x.Products.Sum(p => p.TotalCurrentStock), x.Name, x.SubCategories.Count,x.IsFavorite),orderTuples:orderTuples).ToListAsync();
+                
             return new SuccessDataResult<List<CategoryDetailDto>>(categoriesDto);
         }
         public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1,int itemCount = 50,string categoryName=null)
@@ -74,17 +79,39 @@ namespace Entegrasyon.Business.Concrete
                 : null;
             
             var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex,itemCount,
-                x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count),orderBy,filter);
+                x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderBy,filter);
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(categoriesDto);
         }
-        public async Task GetCategoryDetailById()
+
+        public async Task<IResult> AddFavorite(int categoryId)
         {
-            throw new NotImplementedException();
+            var category =await _categoryDal.GetAsync(x => x.Id == categoryId);
+            if (category == null)
+                return new ErrorResult("Böyle bir kategori bulunamadı.");
+            category.IsFavorite = true;
+            await _categoryDal.UpdateAsync(category);
+            return new SuccessResult("Kategori başarı ile favorilere eklendi.");
+        }
+        public async Task<IResult> AddFavorites(int[] categoryIds)
+        {
+            var categories = await _categoryDal.GetAllAsync(x => categoryIds.Contains(x.Id));
+            if(categories == null || !categories.Any())
+                return new ErrorResult("Bulunamayan kategori var.");
+            categories.ForEach(x=>x.IsFavorite=true);
+            await _categoryDal.UpdateRangeAsync(categories);
+            return new SuccessResult("Kategoriler başarı ile favorilere eklendi.");
         }
 
-        public async Task AddMultipleCategory(IEnumerable<Category> categories)
+        public async Task<IDataResult<List<CategoryDetailDto>>> GetFavoriteCategories()
         {
-            throw new NotImplementedException();
+            var orderTuples = new List<(string, string)>
+            {
+                new("Id", "desc")
+            };
+            var result = await _categoryDal.GetTransformedEntities(x =>
+                    new CategoryDetailDto(x.Id, x.Products.Count, x.Name, x.SubCategories.Count, x.IsFavorite),orderTuples,x=>x.IsFavorite)
+                .ToListAsync();
+            return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
     }
 }

@@ -8,6 +8,7 @@ public sealed class Category : BaseEntity
 {
     public int Id { get; set; }
     public string Name { get; set; }
+    public bool IsFavorite { get; set; }
     public int? SuperCategoryId { get; set; }
     public Category SuperCategory { get; set; }
     public ICollection<Category> SubCategories { get; set; }

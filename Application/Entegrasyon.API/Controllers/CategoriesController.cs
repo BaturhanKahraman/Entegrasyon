@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Category;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.API.Controllers
@@ -42,7 +41,22 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetFavoriteCategories()
+        {
+            var result = await _categoryManager.GetFavoriteCategories();
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddFavorite([FromBody]int categoryId)
+        {
+            var result = await _categoryManager.AddFavorite(categoryId);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
 
-        
     }
 }
