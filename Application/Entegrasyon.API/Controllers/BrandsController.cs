@@ -49,7 +49,7 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
         [HttpGet]
-        public async Task<IActionResult> GetCategoryDetailsPage([FromQuery]GetCategoryDetailsPageDto dto)
+        public async Task<IActionResult> GetBrandDetailsPage([FromQuery]GetCategoryDetailsPageDto dto)
         {
             var result = await _brandManager.GetCategoryDetailPageable(dto);
             if(result.Success)

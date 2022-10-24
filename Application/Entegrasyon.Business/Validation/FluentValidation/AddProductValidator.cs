@@ -13,7 +13,6 @@ public class AddProductValidator:AbstractValidator<AddProductDto>
         RuleFor(x => x.StockCode).NotEmpty().WithMessage("Ürün stok kodu boş geçilemez");
         RuleFor(x => x.BrandId).NotEmpty().WithMessage("Ürün markası boş geçilemez");
         RuleFor(x => x.CategoryId).NotEmpty().WithMessage("Ürün kategorisi boş geçilemez");
-        RuleFor(x => x.ListPrice).NotEmpty().WithMessage("Ürün liste fiyatı boş geçilemez");
         RuleFor(x => x.ProductVariants).NotEmpty().WithMessage("Ürün varyantları boş geçilemez");
        
         RuleForEach(x => x.ProductVariants).SetValidator(new AddProductVariantValidator());
