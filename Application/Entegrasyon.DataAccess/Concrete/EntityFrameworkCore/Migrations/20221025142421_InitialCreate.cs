@@ -720,8 +720,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     IsCoverImage = table.Column<bool>(type: "boolean", nullable: false),
                     FileStorageType = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId1 = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -731,10 +730,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     table.PrimaryKey("PK_Images", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Images_ProductVariants_ProductVariantId1",
-                        column: x => x.ProductVariantId1,
+                        name: "FK_Images_ProductVariants_ProductVariantId",
+                        column: x => x.ProductVariantId,
                         principalTable: "ProductVariants",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -744,8 +744,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductId = table.Column<long>(type: "bigint", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -763,10 +762,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItems_ProductVariants_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_OrderItems_ProductVariants_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "ProductVariants",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -775,8 +775,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProductId = table.Column<long>(type: "bigint", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -786,10 +785,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     table.PrimaryKey("PK_ReturnProducts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ReturnProducts_ProductVariants_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_ReturnProducts_ProductVariants_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "ProductVariants",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -997,9 +997,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "ApplicationCategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Images_ProductVariantId1",
+                name: "IX_Images_ProductVariantId",
                 table: "Images",
-                column: "ProductVariantId1");
+                column: "ProductVariantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Logins_RootUserId",
@@ -1043,9 +1043,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_ProductId1",
+                name: "IX_OrderItems_ProductId",
                 table: "OrderItems",
-                column: "ProductId1");
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_BillingAddressId",
@@ -1069,9 +1069,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "ProductMainId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReturnProducts_ProductId1",
+                name: "IX_ReturnProducts_ProductId",
                 table: "ReturnProducts",
-                column: "ProductId1");
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RootClaimRootRole_RolesId",

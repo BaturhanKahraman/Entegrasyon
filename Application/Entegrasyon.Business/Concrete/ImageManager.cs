@@ -2,7 +2,6 @@
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
-using Microsoft.AspNetCore.Http;
 using Shared.FileStorage;
 using Shared.Results;
 

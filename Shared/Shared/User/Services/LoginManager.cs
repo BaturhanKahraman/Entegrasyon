@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Constants;
 using Shared.Extensions;
@@ -17,13 +16,13 @@ where TContext:DbContext
 where TLogin:RootLogin,new()
 {
     private readonly ILogger _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
     private readonly IUserManager<TUser> _userManager;
     private readonly IJwtBlackListService _jwtBlackListService;
     private readonly ITokenHelper _tokenHelper;
     private readonly TContext _tContext;
     public LoginManager(ILogger<LoginManager<TUser,TLogin,TContext>> logger,
-        IHttpContextAccessor httpContextAccessor, IUserManager<TUser> userManager,
+        Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, IUserManager<TUser> userManager,
         IJwtBlackListService blackListService, ITokenHelper tokenHelper,
         TContext tContext)
     {
