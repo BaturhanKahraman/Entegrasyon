@@ -2,7 +2,7 @@
 using AutoMapper;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.Entity;
+using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Logs;
@@ -41,7 +41,7 @@ public class CustomerManager
             return result;
 
         }
-        var applicationCustomer = _mapper.Map<ApplicationCustomer>(dto);
+        var applicationCustomer = _mapper.Map<Customer>(dto);
         await _customerDal.AddAsync(applicationCustomer);
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.", LogType.Customer, LogAction.Update);
         return new SuccessResult();
@@ -57,24 +57,24 @@ public class CustomerManager
             await _applicationLogManager.AddLog("Müşteri ekleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Add,dto);
             return result;
         }
-        var applicationCustomer = _mapper.Map<ApplicationCustomer>(dto);
+        var applicationCustomer = _mapper.Map<Customer>(dto);
         await _customerDal.AddAsync(applicationCustomer);
         await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add);
         return new SuccessResult();
     }
+
     public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo,int pageIndex = 0,int itemCount = 50)
     {
         var orders = new List<(string,string)>
         {
-            new ("Id","desc")
+            new ("Id","desc"),
+            new ("Sales.Count","desc")
         };
-        Expression<Func<ApplicationCustomer, bool>> filter =
-            !string.IsNullOrEmpty(customerInfo)
-                ? x => x.SearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ForFullTextSearch()))
-                : null;
-        
+        var filters = new List<(bool, Expression<Func<Customer,bool>>)>
+        {
+        };
         var pageableResult = await _customerDal.GetPaginatedTransformedEntities(pageIndex, itemCount,
-            x=>new CustomerDetailDto(x.CreatedAt,x.Id,x.NationalIdentity,x.Name,x.Surname,x.Sales.Count,x.PhoneNumber,x.Address),orders,filter);
+            x=>new CustomerDetailDto(x.CreatedAt,x.Id,x.,x.Name,x.Surname,x.Sales.Count,x.PhoneNumber,x.Address),orders,filters);
         return new SuccessDataResult<Pageable<CustomerDetailDto>>(pageableResult);
     }
 

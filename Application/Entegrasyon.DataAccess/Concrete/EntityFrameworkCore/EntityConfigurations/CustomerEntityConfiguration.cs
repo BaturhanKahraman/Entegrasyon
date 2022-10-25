@@ -1,20 +1,14 @@
-﻿using Entegrasyon.Entity;
+﻿using Entegrasyon.Entity.Customers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfigurations;
 
-public class CustomerEntityConfiguration : IEntityTypeConfiguration<ApplicationCustomer>
+public class CustomerEntityConfiguration : IEntityTypeConfiguration<Customer>
 {
 
-    public void Configure(EntityTypeBuilder<ApplicationCustomer> builder)
+    public void Configure(EntityTypeBuilder<Customer> builder)
     {
-        builder
-            .HasGeneratedTsVectorColumn(
-                p => p.SearchVector,
-                "english",  
-                p => new { p.NationalIdentity,p.Name,p.Surname,p.PhoneNumber })  
-            .HasIndex(p => p.SearchVector)
-            .HasMethod("GIN");
+        builder.OwnsOne(x => x.Address);
     }
 }

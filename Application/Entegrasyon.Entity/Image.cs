@@ -17,6 +17,6 @@ public sealed class Image : BaseEntity
     public string Description { get; set; }
     public bool IsCoverImage { get; set; } = false;
     public FileStorageType FileStorageType { get; set; }
-    public Guid ProductVariantId { get; set; }
+    public Guid? ProductVariantId { get; set; }
     public ProductVariant ProductVariant { get; set; }
 }

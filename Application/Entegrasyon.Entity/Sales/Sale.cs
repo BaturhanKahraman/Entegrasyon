@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Entegrasyon.Entity.Customers;
 using Shared.Entity;
 
 namespace Entegrasyon.Entity.Sales
@@ -15,6 +16,6 @@ namespace Entegrasyon.Entity.Sales
         public ApplicationUser SalePerson { get; set; }
 
         public int? CustomerId { get; set; }
-        public ApplicationCustomer Customer { get; set; }
+        public Customer Customer { get; set; }
     }
 }

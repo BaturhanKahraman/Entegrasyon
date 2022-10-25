@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Entity.Orders;
+﻿using Entegrasyon.Entity;
 using Shared;
 
 namespace Entegrasyon.DataAccess.Abstract;

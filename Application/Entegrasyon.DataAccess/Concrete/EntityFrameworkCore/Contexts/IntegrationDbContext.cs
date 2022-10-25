@@ -11,6 +11,7 @@ using Shared.User;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Shared.Entity;
+using Entegrasyon.Entity.Customers;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -66,7 +67,7 @@ public class IntegrationDbContext : DbContext
     public DbSet<MarketPlace> MarketPlaces { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ApplicationLog> Logs { get; set; }
-    public DbSet<ApplicationCustomer> ApplicationCustomers { get; set; }
+    public DbSet<Customer> ApplicationCustomers { get; set; }
     public DbSet<CargoCompany> CargoCompanies { get; set; }
 
     public DbSet<CategoryMarketPlaceMatch> CategoryMarketPlaceMatches { get; set; }

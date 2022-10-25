@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Dtos.Customers;
@@ -22,9 +23,9 @@ public class MapProfiles:Profile
             .ReverseMap();
         CreateMap<AddCargoCompanyDto,CargoCompany>()
             .ReverseMap();
-        CreateMap<AddCustomerDto,ApplicationCustomer>()
+        CreateMap<AddCustomerDto,Customer>()
             .ReverseMap();
-        CreateMap<ApplicationCustomer,CustomerDetailDto>()
+        CreateMap<Customer,CustomerDetailDto>()
             .ForMember(dest => dest.SalesCount,opt => opt.MapFrom(src => src.Sales.Count))
             .ReverseMap();
         CreateMap<AddProductDto,MainProduct>().ReverseMap();
