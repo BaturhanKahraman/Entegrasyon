@@ -14,6 +14,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfiguratio
         public void Configure(EntityTypeBuilder<Image> builder)
         {
             builder.HasKey(x => x.Id);
+            builder.HasOne(i=>i.ProductVariant)
+                .WithMany(p=>p.Images)
+                .HasForeignKey(x=>x.ProductVariantId);
+
         }
     }
 }
