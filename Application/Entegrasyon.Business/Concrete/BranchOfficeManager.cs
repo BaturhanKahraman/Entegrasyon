@@ -4,7 +4,6 @@ using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
 using Shared.Extensions;
@@ -74,6 +73,6 @@ public class BranchOfficeManager
 
     public async Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds)
     {
-        return await _branchOfficeDal.CheckIfOfficesExits(officeIds);
+        return await _branchOfficeDal.CheckIfOfficesExits(officeIds.ToArray());
     }
 }

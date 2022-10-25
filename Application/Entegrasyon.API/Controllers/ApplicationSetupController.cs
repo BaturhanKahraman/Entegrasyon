@@ -11,12 +11,14 @@ namespace Entegrasyon.API.Controllers
         private readonly TrendyolCategories _trendyolCategories;
         private readonly TrendyolBrands _trendyolBrands;
         private readonly TrendyolCargoCompanies _trendyolCargoCompanies;
+        private readonly ILogger<ApplicationSetupController> _logger;
 
-        public ApplicationSetupController(TrendyolCategories trendyolCategories, TrendyolBrands trendyolBrands, TrendyolCargoCompanies trendyolCargoCompanies)
+        public ApplicationSetupController(TrendyolCategories trendyolCategories, TrendyolBrands trendyolBrands, TrendyolCargoCompanies trendyolCargoCompanies, ILogger<ApplicationSetupController> logger)
         {
             _trendyolCategories = trendyolCategories;
             _trendyolBrands = trendyolBrands;
             _trendyolCargoCompanies = trendyolCargoCompanies;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -56,6 +58,14 @@ namespace Entegrasyon.API.Controllers
             {
                 return BadRequest(e);
             }
+            return Ok();
+        }
+        [HttpGet]
+        public IActionResult TryLogger()
+        {
+            _logger.LogInformation("Information eklendi");
+            _logger.LogWarning("Bu warninging txt dosyasına yazılması gerekiyor.");
+            _logger.LogError("Bu errorun da dosyaya yazılması gerekiyor");
             return Ok();
         }
     }

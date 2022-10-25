@@ -10,6 +10,8 @@ using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
 using Shared.FileStorage.Options;
 using Shared.Middlewares;
+using Serilog;
+using Shared.Logger.Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -66,6 +68,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
+builder.AddSerilogWithLoggerProvider(builder.Configuration);
 var app = builder.Build();
 
 app.AddCustomExceptionHandlerMiddleware();

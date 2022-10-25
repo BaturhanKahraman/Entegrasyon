@@ -1,5 +1,4 @@
 ﻿using Entegrasyon.Entity;
-using Microsoft.AspNetCore.Http;
 using Shared.Constants;
 using Shared.Extensions;
 using Shared.Logic;
@@ -16,11 +15,11 @@ public class AuthManager
 {
     private readonly IUserManager<ApplicationUser> _userManager;
     private readonly IJwtBlackListService _jwtBlackListService;
-    private readonly HttpContext _httpContext;
+    private readonly Microsoft.AspNetCore.Http.HttpContext _httpContext;
     private readonly ITokenHelper _tokenHelper;
     private readonly ILoginManager<ApplicationUser> _loginManager;
 
-    public AuthManager(IUserManager<ApplicationUser> userManager, IJwtBlackListService jwtBlackListService, IHttpContextAccessor httpContextAccessor, ITokenHelper tokenHelper, ILoginManager<ApplicationUser> loginManager)
+    public AuthManager(IUserManager<ApplicationUser> userManager, IJwtBlackListService jwtBlackListService, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, ITokenHelper tokenHelper, ILoginManager<ApplicationUser> loginManager)
     {
         _userManager = userManager;
         _jwtBlackListService = jwtBlackListService;

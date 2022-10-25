@@ -5,8 +5,6 @@ using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Logs;
-using Microsoft.AspNetCore.Http;
-using Shared.Extensions;
 using Shared.Results;
 using Shared.User.Services;
 
@@ -17,10 +15,10 @@ public class ApplicationUserManager
     private readonly IUserManager<ApplicationUser> _userManager;
     private readonly IMapper _mapper;
     private readonly ApplicationLogManager _applicationLogManager;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
     private readonly IApplicationUserDal _applicationUserDal;
     public ApplicationUserManager(IUserManager<ApplicationUser> userManager,IMapper mapper,ApplicationLogManager applicationLogManager,
-        IHttpContextAccessor httpContextAccessor,
+        Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
         IApplicationUserDal applicationUserDal)
     {
         _userManager = userManager;

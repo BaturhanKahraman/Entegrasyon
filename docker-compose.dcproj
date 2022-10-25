@@ -5,7 +5,7 @@
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>f35c7412-8edf-4bb5-9282-be0dba7b39f7</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-    <DockerServiceUrl>{Scheme}://localhost:44399/swagger</DockerServiceUrl>
+    <DockerServiceUrl>{Scheme}://localhost:44444/swagger</DockerServiceUrl>
     <DockerServiceName>entegrasyon.api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
