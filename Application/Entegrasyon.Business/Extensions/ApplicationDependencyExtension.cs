@@ -32,7 +32,7 @@ public static class ApplicationDependencyExtension
         services.AddScoped<ICategoryAttributeDal,EfCategoryAttributeDal>();
         services.AddScoped<IBrandDal,EfBrandDal>();
         services.AddScoped<ICargoCompanyDal,EfCargoCompanyDal>();
-        services.AddScoped<IApplicationCustomerDal,EfApplicationCustomerDal>();
+        services.AddScoped<ICustomerDal,EfApplicationCustomerDal>();
         services.AddScoped<IMainProductDal, EfMainProductDal>();
         services.AddScoped<IBranchOfficeStockDal, EfBranchOfficeStockDal>();
         services.AddScoped<IImageDal, EfImageDal>();

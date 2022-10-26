@@ -8,7 +8,9 @@ public class AddCustomerDtoValidator: AbstractValidator<AddCustomerDto>
 {
     public AddCustomerDtoValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().WithMessage("Lütfen müşteri adını boş bırakmayın.");
-        RuleFor(x => x.Surname).NotEmpty().WithMessage("Lütfen müşteri soyadını boş bırakmayın.");
+        RuleFor(x => x.NameOrCorporateName).NotEmpty().WithMessage("Lütfen müşteri/şirket adını boş bırakmayın.");
+        RuleFor(x => x.Type)
+            .NotEmpty().WithMessage("Lütfen müşteri tipini boş bırakmayın.");
+        
     }
 }

@@ -2,11 +2,11 @@
 using Entegrasyon.Entity.Dtos.Customers;
 using Shared;
 using Shared.Entity;
-using Shared.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace Entegrasyon.DataAccess.Abstract;
 
-public interface IApplicationCustomerDal : IEntityRepository<Customer>
+public interface ICustomerDal : IEntityRepository<Customer>
 {
+    Task<IReadOnlyList<CustomerDetailDto>> GetCustomerDetailsAsync(string fullTextSearch);
+    Task<Pageable<CustomerDetailDto>> GetCustomerDetailsPageable(string fullTextSearch, int pageIndex, int pageSize);
 }

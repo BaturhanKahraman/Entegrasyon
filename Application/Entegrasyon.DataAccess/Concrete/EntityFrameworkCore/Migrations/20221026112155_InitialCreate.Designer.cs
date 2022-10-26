@@ -14,7 +14,7 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20221025222532_InitialCreate")]
+    [Migration("20221026112155_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -256,11 +256,14 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CustomerType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Discriminator")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
@@ -276,7 +279,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.ToTable("Customers");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("Customer");
+                    b.HasDiscriminator<string>("CustomerType").HasValue("Customer");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Image", b =>
@@ -1868,10 +1871,20 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("CorporateName")
                         .HasColumnType("text");
 
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "turkish")
+                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "CorporateName", "TaxNumber" });
+
                     b.Property<string>("TaxNumber")
                         .HasColumnType("text");
 
-                    b.HasDiscriminator().HasValue("CorporateCustomer");
+                    b.HasIndex("SearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
+
+                    b.HasDiscriminator().HasValue("Corporate");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Customers.RetailCustomer", b =>
@@ -1884,10 +1897,21 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("NationalIdentity")
                         .HasColumnType("text");
 
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasColumnName("RetailCustomer_SearchVector")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "turkish")
+                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "Surname", "Name", "NationalIdentity" });
+
                     b.Property<string>("Surname")
                         .HasColumnType("text");
 
-                    b.HasDiscriminator().HasValue("RetailCustomer");
+                    b.HasIndex("SearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
+
+                    b.HasDiscriminator().HasValue("Retail");
                 });
 
             modelBuilder.Entity("CategoryCategoryAttribute", b =>

@@ -8,15 +8,57 @@ using static Amazon.S3.Util.S3EventNotification;
 using System.Linq.Expressions;
 using Shared.Extensions;
 using Entegrasyon.Entity.Customers;
+using System.Linq;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 
-public class EfApplicationCustomerDal:EfEntityRepository<Customer,IntegrationDbContext>,IApplicationCustomerDal
+public class EfApplicationCustomerDal : EfEntityRepository<Customer, IntegrationDbContext>, ICustomerDal
 {
     private readonly IntegrationDbContext _dbContext;
     public EfApplicationCustomerDal(IntegrationDbContext ctx) : base(ctx)
     {
         _dbContext = ctx;
     }
-    
+
+    public async Task<IReadOnlyList<CustomerDetailDto>> GetCustomerDetailsAsync(string fullTextSearch)
+    {
+        return (await _dbContext.Customers
+            .WhereIf(!string.IsNullOrEmpty(fullTextSearch),
+            x =>
+            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            ||
+            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            ).AsSingleQuery().AsNoTracking()
+            .ToListAsync())
+            .Select(CustomerToDetailDto())
+            .ToList().AsReadOnly();
+    }
+
+    public async Task<Pageable<CustomerDetailDto>> GetCustomerDetailsPageable(string fullTextSearch,int pageIndex,int pageSize)
+    {
+        var customerQueryable = _dbContext.Customers
+            .WhereIf(!string.IsNullOrEmpty(fullTextSearch),
+            x =>
+            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            ||
+            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            ).AsSplitQuery().AsNoTracking();
+        var customers =await customerQueryable.ToPageableQuery(pageIndex, pageSize).ToListAsync();
+        var customerCount = await customerQueryable.CountAsync();
+        return new Pageable<CustomerDetailDto>(customers.Select(CustomerToDetailDto()), pageIndex, pageSize, customerCount);
+    }
+
+    private static Func<Customer, CustomerDetailDto> CustomerToDetailDto()
+    {
+        return x =>
+        {
+            if (x is RetailCustomer retailCustomer)
+                return new CustomerDetailDto(retailCustomer.CreatedAt, retailCustomer.Id, retailCustomer.NationalIdentity, retailCustomer.FullName,
+                    retailCustomer.Sales?.Count ?? 0, retailCustomer.PhoneNumber, retailCustomer.Address?.FullAddress ?? "", retailCustomer.Discriminator);
+            else if (x is CorporateCustomer corporateCustomer)
+                return new CustomerDetailDto(corporateCustomer.CreatedAt, corporateCustomer.Id, corporateCustomer.TaxNumber, corporateCustomer.TaxNumber,
+                    corporateCustomer.Sales?.Count ?? 0, corporateCustomer.PhoneNumber, corporateCustomer.Address?.FullAddress ?? "", corporateCustomer.Discriminator);
+            return new CustomerDetailDto(x.CreatedAt, x.Id, "", "", x.Sales?.Count ?? 0, x.PhoneNumber, x.Address?.FullAddress ?? "", x.Discriminator);
+        };
+    }
 }
