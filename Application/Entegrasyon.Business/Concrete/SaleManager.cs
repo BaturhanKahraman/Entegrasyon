@@ -26,6 +26,16 @@ public sealed class SaleManager
         await _applicationLogManager.AddLog("Satış yapma isteği geldi.", LogType.Sale, LogAction.Add, dto);
         await _fluentValidator.ValidateAndThrowAsync(dto);
         //business logic control
-        
+        var sale = new Sale()
+        {
+            CustomerId = dto.CustomerId,SalePersonId = dto.SalePersonId
+        };
+        var decreaseStockResult = await _officeStockManager.DecreaseProductsStock(dto.SaleItems.Select(x => 
+            new DecreaseStockDto(x.ProductVariantId,x.Quantity)));
+        if(!decreaseStockResult.Success)
+            return decreaseStockResult;
+        return new SuccessResult();
     }
+    
+    
 }

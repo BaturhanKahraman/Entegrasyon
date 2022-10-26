@@ -30,17 +30,16 @@ public sealed class EfBranchOfficeStockDal: EfEntityRepository<BranchOfficeStock
             foreach (var decreaseStock in dto)
             {
                 var item = await _context.BranchOfficeStocks.FirstOrDefaultAsync(x => x.ProductVariantId==decreaseStock.ProductId && x.BranchOfficeId == decreaseStock.OfficeId);
-                if (item.CurrentStock < decreaseStock.StockNumber)
+                if (item!.CurrentStock < decreaseStock.StockNumber)
                     throw new Exception();
-                item.SoldQuantity += decreaseStock.StockNumber;
+                item!.SoldQuantity += decreaseStock.StockNumber;
             }
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
         catch (Exception)
         {
-            transaction.Rollback();
-            
+            await transaction.RollbackAsync();
         }
     }
 

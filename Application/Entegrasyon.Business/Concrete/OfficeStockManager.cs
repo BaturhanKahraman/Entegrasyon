@@ -74,6 +74,9 @@ public class OfficeStockManager
         await _branchOfficeStockDal.UpdateAsync(stockStatus);
         return new SuccessResult("Stok başarı ile düşmüştür.");
     }
+
+    //TODO
+    //officeId ye bakılacak.
     public async Task<IResult> DecreaseProductsStock(IEnumerable<DecreaseStockDto> dtos, bool overrideStockStatus = false)
     {
         var stocksToDecrease = new List<BranchOfficeStock>();
@@ -81,7 +84,7 @@ public class OfficeStockManager
         foreach (var dto in dtos)
         {
             var officeStock = dbStocks.First(s => dto.ProductId ==s.ProductVariantId && dto.OfficeId == s.BranchOfficeId);
-            if (officeStock.CurrentStock < dto.StockNumber)
+            if (!overrideStockStatus && officeStock.CurrentStock < dto.StockNumber)
                 return new ErrorResult(dto.ProductId + " id li üründe stok yetersiz.");
             officeStock.SoldQuantity += dto.StockNumber;
             stocksToDecrease.Add(officeStock);
