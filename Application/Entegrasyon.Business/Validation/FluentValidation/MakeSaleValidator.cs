@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Entegrasyon.Business.Validation.FluentValidation
 {
-    public class SaleValidator:AbstractValidator<MakeSaleDto>
+    public class MakeSaleValidator:AbstractValidator<MakeSaleDto>
     {
-        public SaleValidator()
+        public MakeSaleValidator()
         {
             RuleFor(x=>x.CustomerId).NotEmpty();
             RuleFor(x=>x.SalePersonId).NotEmpty();

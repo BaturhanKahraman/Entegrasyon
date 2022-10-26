@@ -2,4 +2,13 @@
 
 namespace Entegrasyon.Entity.Dtos.Sale;
 
-public sealed record MakeSaleDto(Guid SalePersonId,int CustomerId,ICollection<SaleItem> SaleItems);
+public sealed record MakeSaleDto(
+    Guid SalePersonId,
+    int CustomerId,
+    ICollection<SaleItemDto> SaleItems);
+public sealed record SaleItemDto(
+    Guid ProductVariantId,
+    double TaxPercentage,
+    double DiscountPercent,
+    decimal UnitPrice,
+    int Quantity);
