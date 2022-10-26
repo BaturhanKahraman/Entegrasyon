@@ -36,6 +36,8 @@ public static class ApplicationDependencyExtension
         services.AddScoped<IMainProductDal, EfMainProductDal>();
         services.AddScoped<IBranchOfficeStockDal, EfBranchOfficeStockDal>();
         services.AddScoped<IImageDal, EfImageDal>();
+        services.AddScoped<IProductVariantDal,EfProductVariantDal>();
+
 
         services.AddScoped<BranchOfficeManager>();
         services.AddScoped<ApplicationRoleManager>();

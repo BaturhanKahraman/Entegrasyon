@@ -82,10 +82,7 @@ public class ProductManager
     {
         return new SuccessResult();
     }
-    public async Task<IResult> UpdateProductStock()
-    {
-        return new SuccessResult();
-    }
+    
     public async Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId)
     {
         var result = await _productDal.GetTransformedEntity(x => 

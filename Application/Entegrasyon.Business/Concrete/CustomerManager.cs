@@ -31,13 +31,13 @@ public class CustomerManager
     {
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.",LogType.Customer,LogAction.Update);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentity));
-        if(result != null)
-        {
-            await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Update,dto);
-            return result;
+        //var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentity));
+        //if(result != null)
+        //{
+        //    await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Update,dto);
+        //    return result;
 
-        }
+        //}
         var applicationCustomer = _mapper.Map<Customer>(dto);
         await _customerDal.AddAsync(applicationCustomer);
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.",LogType.Customer,LogAction.Update);
@@ -48,12 +48,12 @@ public class CustomerManager
     {
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.",LogType.Customer,LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentityOrTaxNumber));
-        if(result != null)
-        {
-            await _applicationLogManager.AddLog("Müşteri ekleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Add,dto);
-            return result;
-        }
+        //var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentityOrTaxNumber));
+        //if(result != null)
+        //{
+        //    await _applicationLogManager.AddLog("Müşteri ekleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Add,dto);
+        //    return result;
+        //}
         Customer customer = dto.Type=="Retail" 
             ? _mapper.Map<RetailCustomer>(dto) 
             : _mapper.Map<CorporateCustomer>(dto);
@@ -69,13 +69,13 @@ public class CustomerManager
         return new SuccessDataResult<Pageable<CustomerDetailDto>>(result);
     }
 
-    private async Task<IResult> CheckIfSameIdExits(string customerIdentity)
-    {
-        if(string.IsNullOrEmpty(customerIdentity))
-            return new SuccessResult();
-        //if (await _customerDal.Exists(x => x.NationalIdentity == customerIdentity))
-        //    return new ErrorResult("Aynı id'de başka bir müşteri var.");
-        return new SuccessResult();
-    }
+    //private async Task<IResult> CheckIfSameIdExits(string customerIdentity)
+    //{
+    //    if(string.IsNullOrEmpty(customerIdentity))
+    //        return new SuccessResult();
+    //    if (await _customerDal.Exists(x => x. == customerIdentity))
+    //        return new ErrorResult("Aynı id'de başka bir müşteri var.");
+    //    return new SuccessResult();
+    //}
 
 }

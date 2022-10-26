@@ -1,12 +1,23 @@
-﻿using Entegrasyon.Entity.Products;
+﻿using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Sales;
+using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class ProductVariantManager
 {
-    
-    public async Task AddProductVariants(IEnumerable<ProductVariant> variants)
-    {
+    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IProductVariantDal _productVariantDal;
 
+    public ProductVariantManager(IProductVariantDal productVariantDal, ApplicationLogManager applicationLogManager)
+    {
+        _productVariantDal = productVariantDal;
+        _applicationLogManager = applicationLogManager;
+    }
+
+    public async Task<ProductVariant> GetById(Guid id)
+    {
+        return await _productVariantDal.GetAsync(x => x.Id == id);
     }
 }
