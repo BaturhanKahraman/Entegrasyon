@@ -23,8 +23,16 @@ public class MapProfiles:Profile
             .ReverseMap();
         CreateMap<AddCargoCompanyDto,CargoCompany>()
             .ReverseMap();
-        CreateMap<AddCustomerDto,Customer>()
-            .ReverseMap();
+        CreateMap<AddCustomerDto, RetailCustomer>()
+            .ForMember(x => x.Name, opt => opt.MapFrom(x => x.NameOrCorporateName))
+            .ForMember(x => x.NationalIdentity, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber))
+            .ForMember(x => x.Discriminator, opt => opt.MapFrom(x => x.Type));
+
+        CreateMap<AddCustomerDto, CorporateCustomer>()
+            .ForMember(x => x.CorporateName, opt => opt.MapFrom(x => x.NameOrCorporateName))
+            .ForMember(x => x.TaxNumber, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber))
+            .ForMember(x => x.Discriminator, opt => opt.MapFrom(x => x.Type));
+
         CreateMap<Customer,CustomerDetailDto>()
             .ForMember(dest => dest.SalesCount,opt => opt.MapFrom(src => src.Sales.Count))
             .ReverseMap();

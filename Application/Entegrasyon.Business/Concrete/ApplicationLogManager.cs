@@ -70,14 +70,14 @@ public class ApplicationLogManager
         await _logDal.AddAsync(log);
     }
 
-    public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int page = 1,int itemCount = 50,
+    public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int pageIndex = 0,int itemCount = 50,
         LogType? logType = null,LogAction? logAction = null)
     {
         var logs = await
             _logDal.Table.OrderByDescending(x => x.Id)
                 .WhereIf(logType != null,x => x.LogType == logType)
                 .WhereIf(logAction != null,x => x.LogAction == logAction)
-                .Include(x => x.ApplicationUser).Skip((page - 1) * itemCount).Take(itemCount)
+                .Include(x => x.ApplicationUser).Skip((pageIndex - 1) * itemCount).Take(itemCount)
                 .Select(x => new ApplicationLogDetailDto
                 {
                     Id = x.Id,
@@ -89,14 +89,7 @@ public class ApplicationLogManager
                     UserInfos = x.ApplicationUser.UserName + ' ' + x.ApplicationUser.Name + ' ' + x.ApplicationUser.Surname
                 }).ToListAsync();
         int totalItemCount = _logDal.Table.Count();
-        var logResult = new Pageable<ApplicationLogDetailDto>()
-        {
-            Items = logs,
-            CurrentPage = page,
-            PagingItemCount = itemCount,
-            TotalPageCount = Convert.ToInt32(Math.Round(totalItemCount / (double)itemCount)),
-            TotalItemCount = totalItemCount
-        };
+        var logResult = new Pageable<ApplicationLogDetailDto>(logs, pageIndex, itemCount, totalItemCount);
         return new SuccessDataResult<Pageable<ApplicationLogDetailDto>>(logResult);
     }
 

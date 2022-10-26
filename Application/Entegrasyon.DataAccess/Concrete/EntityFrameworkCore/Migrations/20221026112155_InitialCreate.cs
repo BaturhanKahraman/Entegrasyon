@@ -155,18 +155,25 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    Discriminator = table.Column<string>(type: "text", nullable: true),
                     Address_City = table.Column<string>(type: "text", nullable: true),
                     Address_Country = table.Column<string>(type: "text", nullable: true),
                     Address_County = table.Column<string>(type: "text", nullable: true),
                     Address_Street = table.Column<string>(type: "text", nullable: true),
                     Address_ZipCode = table.Column<string>(type: "text", nullable: true),
                     Address_FullAddress = table.Column<string>(type: "text", nullable: true),
-                    Discriminator = table.Column<string>(type: "text", nullable: false),
+                    CustomerType = table.Column<string>(type: "text", nullable: false),
                     TaxNumber = table.Column<string>(type: "text", nullable: true),
                     CorporateName = table.Column<string>(type: "text", nullable: true),
+                    SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true)
+                        .Annotation("Npgsql:TsVectorConfig", "turkish")
+                        .Annotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "CorporateName", "TaxNumber" }),
                     NationalIdentity = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Surname = table.Column<string>(type: "text", nullable: true),
+                    RetailCustomer_SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true)
+                        .Annotation("Npgsql:TsVectorConfig", "turkish")
+                        .Annotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "Surname", "Name", "NationalIdentity" }),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -972,6 +979,18 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_CategoryMarketPlaceMatches_ApplicationCategoryId",
                 table: "CategoryMarketPlaceMatches",
                 column: "ApplicationCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Customers_RetailCustomer_SearchVector",
+                table: "Customers",
+                column: "RetailCustomer_SearchVector")
+                .Annotation("Npgsql:IndexMethod", "GIN");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Customers_SearchVector",
+                table: "Customers",
+                column: "SearchVector")
+                .Annotation("Npgsql:IndexMethod", "GIN");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Images_ProductVariantId",

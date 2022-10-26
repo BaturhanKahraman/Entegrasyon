@@ -33,7 +33,7 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
         [HttpPost]
-        public async Task<IActionResult> GetCustomers(UpdateCustomerDto dto)
+        public async Task<IActionResult> UpdateCustomer(UpdateCustomerDto dto)
         {
             var result = await _customerManager.UpdateCustomer(dto);
             if(result.Success)

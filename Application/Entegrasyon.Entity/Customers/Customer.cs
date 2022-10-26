@@ -11,7 +11,8 @@ namespace Entegrasyon.Entity.Customers
     {
         public int Id { get; set; }
         public string PhoneNumber { get; set; }
-        public Address? Address { get; set; }
-        public List<Sale> Sales { get; set; }
+        public string Discriminator { get; set; }
+        public Address Address { get; set; }
+        public ICollection<Sale> Sales { get; set; }
     }
 }

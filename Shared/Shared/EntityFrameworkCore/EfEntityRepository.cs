@@ -74,7 +74,7 @@ where TContext : DbContext
         IEnumerable<(string,string)> orderTuples = null,
         Expression<Func<TEntity,bool>> expression = null)
     {
-        return await GetTransformedEntities(selector,orderTuples,expression).ToPagable(pageIndex,pageSize);
+        return await GetTransformedEntities(selector,orderTuples,expression).ToPage(pageIndex,pageSize);
     }
     
     public async Task<bool> Exists(Expression<Func<TEntity,bool>>? expression = null)

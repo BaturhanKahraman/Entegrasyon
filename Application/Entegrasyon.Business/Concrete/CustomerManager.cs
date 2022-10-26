@@ -15,11 +15,11 @@ namespace Entegrasyon.Business.Concrete;
 
 public class CustomerManager
 {
-    private readonly IApplicationCustomerDal _customerDal;
+    private readonly ICustomerDal _customerDal;
     private readonly FluentValidator _fluentValidator;
     private readonly IMapper _mapper;
     private readonly ApplicationLogManager _applicationLogManager;
-    public CustomerManager(IApplicationCustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,ApplicationLogManager applicationLogManager)
+    public CustomerManager(ICustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,ApplicationLogManager applicationLogManager)
     {
         _customerDal = customerDal;
         _fluentValidator = fluentValidator;
@@ -48,41 +48,25 @@ public class CustomerManager
     {
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.",LogType.Customer,LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentity));
+        var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentityOrTaxNumber));
         if(result != null)
         {
             await _applicationLogManager.AddLog("Müşteri ekleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Add,dto);
             return result;
         }
-        var applicationCustomer = _mapper.Map<Customer>(dto);
-        await _customerDal.AddAsync(applicationCustomer);
+        Customer customer = dto.Type=="Retail" 
+            ? _mapper.Map<RetailCustomer>(dto) 
+            : _mapper.Map<CorporateCustomer>(dto);
+
+        await _customerDal.AddAsync(customer);
         await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.",LogType.Customer,LogAction.Add);
-        return new SuccessResult();
+        return new SuccessResult("Müşteri başarı ile eklendi.");
     }
 
     public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo,int pageIndex = 0,int itemCount = 50)
     {
-        List<CustomerDetailDto> customerDetailDtos = new();
-        (await _customerDal.Table.Skip(pageIndex * itemCount).Take(itemCount).AsNoTracking().ToListAsync()).ForEach(x =>
-        {
-            switch (x)
-            {
-                case RetailCustomer retail:
-                    customerDetailDtos.Add(new CustomerDetailDto(retail.CreatedAt, retail.Id, retail.NationalIdentity,
-                        retail.FullName, retail.Sales.Count, retail.PhoneNumber, retail.Address?.FullAddress ?? "",
-                        "Retail"));
-                    break;
-                case CorporateCustomer corporate:
-                    customerDetailDtos.Add(new CustomerDetailDto(corporate.CreatedAt, corporate.Id, corporate.TaxNumber,
-                        corporate.CorporateName, corporate.Sales.Count, corporate.PhoneNumber,
-                        corporate.Address?.FullAddress ?? "", "Corporate"));
-                    break;
-            }
-        });
-        var totalItemCount = await _customerDal.Table.CountAsync();
-
-
-        return new SuccessDataResult<Pageable<CustomerDetailDto>>(customerDetailDtos.ToPageable(pageIndex,itemCount,totalItemCount));
+        var result =await _customerDal.GetCustomerDetailsPageable(customerInfo,pageIndex,itemCount); 
+        return new SuccessDataResult<Pageable<CustomerDetailDto>>(result);
     }
 
     private async Task<IResult> CheckIfSameIdExits(string customerIdentity)

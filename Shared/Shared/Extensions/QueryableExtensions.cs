@@ -70,19 +70,23 @@ public static class QueryableExtensions
         return @this;
     }
 
-    public static async Task<Pageable<TEntity>> ToPagable<TEntity>(this IQueryable<TEntity> @this,int pageIndex,int pageSize)
+    public static async Task<Pageable<TEntity>> ToPage<TEntity>(this IQueryable<TEntity> @this,int pageIndex,int pageSize)
     {
-        if(pageIndex < 0)
-            throw new ArgumentException("Page index must be greater than or equal to 0");
-        if(pageSize <= 0)
-            throw new ArgumentException("Page size must be greater than 0");
-        if(@this == null)
-            throw new ArgumentNullException(nameof(@this));
-        var items = await @this.Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
-        var totalItemCount = await @this.CountAsync();
-        var pageCount = Convert.ToInt32(Math.Ceiling(totalItemCount / (double)pageSize));
-        return new Pageable<TEntity>(items,pageIndex,pageSize,totalItemCount,pageCount);
+        var items =await @this.ToPageableQuery(pageIndex, pageSize).ToListAsync();
+        int totalItemCount = await @this.CountAsync();
+        return new Pageable<TEntity>(items,pageIndex,pageSize,totalItemCount);
     }
+    public static IQueryable<TEntity> ToPageableQuery<TEntity>(this IQueryable<TEntity> @this, int pageIndex, int pageSize)
+    {
+        if (@this == null)
+            return null;
+        if (pageIndex < 0)
+            throw new ArgumentException("Page index must be greater than or equal to 0");
+        if (pageSize <= 0)
+            throw new ArgumentException("Page size must be greater than 0");
+        return @this.Skip(pageIndex * pageSize).Take(pageSize);
+    }
+
     public static IQueryable<T> WhereIf<T>(this IQueryable<T> query,bool condition,Expression<Func<T,bool>> predicate)
         => condition ? query.Where(predicate) : query;
 }

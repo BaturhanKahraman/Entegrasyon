@@ -12,6 +12,7 @@ using Shared.FileStorage.Options;
 using Shared.Middlewares;
 using Serilog;
 using Shared.Logger.Serilog;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -34,14 +35,15 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb12;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb111;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
         npg=>
         {
             npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(10),null);
+            npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
         });
     //x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb111;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
     x.EnableDetailedErrors();
+    x.LogTo(Console.WriteLine);
 
 });
 
