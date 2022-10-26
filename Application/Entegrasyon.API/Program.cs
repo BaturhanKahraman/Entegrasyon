@@ -34,7 +34,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb00;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb12;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
         npg=>
         {
             npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);

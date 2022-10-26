@@ -67,7 +67,9 @@ public class IntegrationDbContext : DbContext
     public DbSet<MarketPlace> MarketPlaces { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<ApplicationLog> Logs { get; set; }
-    public DbSet<Customer> ApplicationCustomers { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<RetailCustomer> RetailCustomers { get; set; }
+    public DbSet<CorporateCustomer> CorporateCustomers { get; set; }
     public DbSet<CargoCompany> CargoCompanies { get; set; }
 
     public DbSet<CategoryMarketPlaceMatch> CategoryMarketPlaceMatches { get; set; }
