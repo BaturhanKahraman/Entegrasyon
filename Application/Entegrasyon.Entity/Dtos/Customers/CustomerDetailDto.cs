@@ -4,36 +4,27 @@ public sealed class CustomerDetailDto
 {
     public CustomerDetailDto()
     {
-        
+
     }
-    public CustomerDetailDto(DateTimeOffset createdAt, int id, string nationalIdentity, string name, string surname, int salesCount, string phoneNumber, string fullAddress)
+    public CustomerDetailDto(DateTimeOffset createdAt,int id,string nationalIdentityOrTaxNumber,string nameSurnameOrCorporateName,int salesCount,string phoneNumber,string fullAddress,string customerType)
     {
         CreatedAt = createdAt;
         Id = id;
-        NationalIdentity = nationalIdentity;
-        Name = name;
-        Surname = surname;
+        NationalIdentityOrTaxNumber = nationalIdentityOrTaxNumber;
+        NameSurnameOrCorporateName = nameSurnameOrCorporateName;
         SalesCount = salesCount;
         PhoneNumber = phoneNumber;
         Address = fullAddress;
+        CustomerType = customerType;
     }
+
+    public string CustomerType { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public int Id { get; init; }
-    public string NationalIdentity { get; init; }
-    public string Name { get; init; }
-    public string Surname { get; init; }
+    public string NationalIdentityOrTaxNumber { get; init; }
+    public string NameSurnameOrCorporateName { get; init; }
     public int SalesCount { get; init; }
     public string PhoneNumber { get; set; }
     public string Address { get; set; }
-    
+
 }
-
-/*
- *        public string NationalIdentity { get; set; }
-
-        public string Name { get; set; }
-        public string Surname { get; set; }
-
-        public List<Sale> Sales { get; set; }
- *
- */

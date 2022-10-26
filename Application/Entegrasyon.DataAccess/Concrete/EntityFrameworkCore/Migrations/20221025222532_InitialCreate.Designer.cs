@@ -14,7 +14,7 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20221025142421_InitialCreate")]
+    [Migration("20221025222532_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,57 +39,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("CategoryCategoryAttribute");
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.ApplicationCustomer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NationalIdentity")
-                        .HasMaxLength(11)
-                        .HasColumnType("character varying(11)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<NpgsqlTsVector>("SearchVector")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("tsvector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
-                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "NationalIdentity", "Name", "Surname", "PhoneNumber" });
-
-                    b.Property<string>("Surname")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SearchVector");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
-
-                    b.ToTable("ApplicationCustomers");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.BranchOffice", b =>
@@ -296,6 +245,40 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("CategoryAttributeValues");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Customer");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Image", b =>
                 {
                     b.Property<int>("Id")
@@ -327,7 +310,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ProductVariantId")
+                    b.Property<Guid?>("ProductVariantId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Src")
@@ -566,52 +549,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Orders.Address", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("City")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Street")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ZipCode")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Address");
-                });
-
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("BillingAddressId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -620,9 +563,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<int?>("ShippingAddressId")
-                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalPrice")
                         .ValueGeneratedOnAddOrUpdate()
@@ -636,10 +576,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BillingAddressId");
-
-                    b.HasIndex("ShippingAddressId");
 
                     b.ToTable("Orders");
                 });
@@ -664,7 +600,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
@@ -690,7 +626,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<int>("BranchOfficeId")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("ProductVariantId")
+                    b.Property<Guid?>("ProductVariantId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("FirstTotalStock")
@@ -1925,6 +1861,35 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.CorporateCustomer", b =>
+                {
+                    b.HasBaseType("Entegrasyon.Entity.Customers.Customer");
+
+                    b.Property<string>("CorporateName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaxNumber")
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("CorporateCustomer");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.RetailCustomer", b =>
+                {
+                    b.HasBaseType("Entegrasyon.Entity.Customers.Customer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NationalIdentity")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Surname")
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("RetailCustomer");
+                });
+
             modelBuilder.Entity("CategoryCategoryAttribute", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", null)
@@ -1956,13 +1921,47 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasForeignKey("CategoryAttributeId");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.Customer", b =>
+                {
+                    b.OwnsOne("Entegrasyon.Entity.Address", "Address", b1 =>
+                        {
+                            b1.Property<int>("CustomerId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("City")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Country")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("County")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("FullAddress")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Street")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("ZipCode")
+                                .HasColumnType("text");
+
+                            b1.HasKey("CustomerId");
+
+                            b1.ToTable("Customers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerId");
+                        });
+
+                    b.Navigation("Address");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Image", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.Products.ProductVariant", "ProductVariant")
                         .WithMany("Images")
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductVariantId");
 
                     b.Navigation("ProductVariant");
                 });
@@ -2073,13 +2072,67 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Orders.Address", "BillingAddress")
-                        .WithMany()
-                        .HasForeignKey("BillingAddressId");
+                    b.OwnsOne("Entegrasyon.Entity.Address", "BillingAddress", b1 =>
+                        {
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid");
 
-                    b.HasOne("Entegrasyon.Entity.Orders.Address", "ShippingAddress")
-                        .WithMany()
-                        .HasForeignKey("ShippingAddressId");
+                            b1.Property<string>("City")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Country")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("County")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("FullAddress")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Street")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("ZipCode")
+                                .HasColumnType("text");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("Orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+                        });
+
+                    b.OwnsOne("Entegrasyon.Entity.Address", "ShippingAddress", b1 =>
+                        {
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("City")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Country")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("County")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("FullAddress")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Street")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("ZipCode")
+                                .HasColumnType("text");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("Orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+                        });
 
                     b.Navigation("BillingAddress");
 
@@ -2096,9 +2149,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasOne("Entegrasyon.Entity.Products.ProductVariant", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Order");
 
@@ -2166,7 +2217,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.Sale", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.ApplicationCustomer", "Customer")
+                    b.HasOne("Entegrasyon.Entity.Customers.Customer", "Customer")
                         .WithMany("Sales")
                         .HasForeignKey("CustomerId");
 
@@ -2241,11 +2292,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("DefaultBranchOffice");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.ApplicationCustomer", b =>
-                {
-                    b.Navigation("Sales");
-                });
-
             modelBuilder.Entity("Entegrasyon.Entity.BranchOffice", b =>
                 {
                     b.Navigation("Users");
@@ -2261,6 +2307,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttribute", b =>
                 {
                     b.Navigation("CategoryAttributeValues");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.Customer", b =>
+                {
+                    b.Navigation("Sales");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>

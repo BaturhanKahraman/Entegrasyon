@@ -11,5 +11,7 @@ namespace Entegrasyon.Entity.Customers
         public string NationalIdentity { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
+
+        public string FullName => Name + " " + Surname;
     }
 }

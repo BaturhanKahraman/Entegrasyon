@@ -13,50 +13,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Address",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    City = table.Column<string>(type: "text", nullable: true),
-                    Country = table.Column<string>(type: "text", nullable: true),
-                    Street = table.Column<string>(type: "text", nullable: true),
-                    ZipCode = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Address", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ApplicationCustomers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    NationalIdentity = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: true),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    Surname = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    Address = table.Column<string>(type: "text", nullable: true),
-                    SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true)
-                        .Annotation("Npgsql:TsVectorConfig", "english")
-                        .Annotation("Npgsql:TsVectorProperties", new[] { "NationalIdentity", "Name", "Surname", "PhoneNumber" }),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApplicationCustomers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "BranchOffices",
                 columns: table => new
                 {
@@ -193,6 +149,35 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    Address_City = table.Column<string>(type: "text", nullable: true),
+                    Address_Country = table.Column<string>(type: "text", nullable: true),
+                    Address_County = table.Column<string>(type: "text", nullable: true),
+                    Address_Street = table.Column<string>(type: "text", nullable: true),
+                    Address_ZipCode = table.Column<string>(type: "text", nullable: true),
+                    Address_FullAddress = table.Column<string>(type: "text", nullable: true),
+                    Discriminator = table.Column<string>(type: "text", nullable: false),
+                    TaxNumber = table.Column<string>(type: "text", nullable: true),
+                    CorporateName = table.Column<string>(type: "text", nullable: true),
+                    NationalIdentity = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Surname = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DiscountVouchers",
                 columns: table => new
                 {
@@ -253,6 +238,35 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    BillingAddress_City = table.Column<string>(type: "text", nullable: true),
+                    BillingAddress_Country = table.Column<string>(type: "text", nullable: true),
+                    BillingAddress_County = table.Column<string>(type: "text", nullable: true),
+                    BillingAddress_Street = table.Column<string>(type: "text", nullable: true),
+                    BillingAddress_ZipCode = table.Column<string>(type: "text", nullable: true),
+                    BillingAddress_FullAddress = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddress_City = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddress_Country = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddress_County = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddress_Street = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddress_ZipCode = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddress_FullAddress = table.Column<string>(type: "text", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -267,35 +281,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    BillingAddressId = table.Column<int>(type: "integer", nullable: true),
-                    ShippingAddressId = table.Column<int>(type: "integer", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Orders_Address_BillingAddressId",
-                        column: x => x.BillingAddressId,
-                        principalTable: "Address",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Orders_Address_ShippingAddressId",
-                        column: x => x.ShippingAddressId,
-                        principalTable: "Address",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -671,9 +656,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     table.PrimaryKey("PK_Sales", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Sales_ApplicationCustomers_CustomerId",
+                        name: "FK_Sales_Customers_CustomerId",
                         column: x => x.CustomerId,
-                        principalTable: "ApplicationCustomers",
+                        principalTable: "Customers",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Sales_Users_SalePersonId",
@@ -720,7 +705,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     IsCoverImage = table.Column<bool>(type: "boolean", nullable: false),
                     FileStorageType = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -733,8 +718,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_Images_ProductVariants_ProductVariantId",
                         column: x => x.ProductVariantId,
                         principalTable: "ProductVariants",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -744,7 +728,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -765,8 +749,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_OrderItems_ProductVariants_ProductId",
                         column: x => x.ProductId,
                         principalTable: "ProductVariants",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -940,12 +923,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "ApplicationUser", "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "ADMIN", null, null, 1, "Admin", "Admin", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ApplicationCustomers_SearchVector",
-                table: "ApplicationCustomers",
-                column: "SearchVector")
-                .Annotation("Npgsql:IndexMethod", "GIN");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_BranchOfficeStocks_ProductVariantId",
                 table: "BranchOfficeStocks",
                 column: "ProductVariantId");
@@ -1046,16 +1023,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_OrderItems_ProductId",
                 table: "OrderItems",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_BillingAddressId",
-                table: "Orders",
-                column: "BillingAddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_ShippingAddressId",
-                table: "Orders",
-                column: "ShippingAddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_Barcode",
@@ -1187,13 +1154,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "CategoryAttributes");
 
             migrationBuilder.DropTable(
-                name: "Address");
-
-            migrationBuilder.DropTable(
                 name: "MainProducts");
 
             migrationBuilder.DropTable(
-                name: "ApplicationCustomers");
+                name: "Customers");
 
             migrationBuilder.DropTable(
                 name: "Users");
