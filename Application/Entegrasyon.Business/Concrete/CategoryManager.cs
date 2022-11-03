@@ -115,5 +115,18 @@ namespace Entegrasyon.Business.Concrete
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
+        public async Task<IDataResult<List<CategoryDetailDto>>> GetSubCategories()
+        {
+            var orderTuples = new List<(string, string)>
+            {
+                new ("IsFavorite","desc"),
+                new("Name","asc"),
+                new("Id", "desc"),
+            };
+            var result = await _categoryDal.GetTransformedEntities(x =>
+                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.SubCategories.Count==0)
+                .ToListAsync();
+            return new SuccessDataResult<List<CategoryDetailDto>>(result);
+        }
     }
 }
