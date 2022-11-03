@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text.Json;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
@@ -21,9 +23,12 @@ public class TrendyolCategories
         _httpClient = httpClient;
         _logger = logger;
     }
-
+    //parallel yapılacak
     public async Task AddCategories()
     {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
         var marketPlace = new MarketPlace { Name = "Trendyol" };
         if(!await _dbContext.MarketPlaces.AnyAsync(x=>x.Name==marketPlace.Name))
             _dbContext.MarketPlaces.Add(marketPlace);
@@ -31,8 +36,8 @@ public class TrendyolCategories
         {
             marketPlace = await _dbContext.MarketPlaces.FindAsync(1);
         }
-        List<CategoryAttribute> AddedCategoryAttrs = new();
-        List<CategoryAttributeValue> AddedCategoryAttrValues = new();
+        HashSet<CategoryAttribute> AddedCategoryAttrs = new();
+        HashSet<CategoryAttributeValue> AddedCategoryAttrValues = new();
 
         if(await _dbContext.Categories.CountAsync() < 5)
         {
@@ -45,6 +50,7 @@ public class TrendyolCategories
             if(categories is null)
                 return;
 
+
             foreach(var subCategory in categories.categories)
             {
                 var sysCat = new Entity.Categories.Category
@@ -53,15 +59,16 @@ public class TrendyolCategories
                     Name = subCategory.name,
                     CategoryAttributes = new List<CategoryAttribute>()
                 };
-                if (subCategory.subCategories != null)
+
+                if(subCategory.subCategories != null)
                 {
                     await AddAllCategory(sysCat,subCategory.subCategories);
                 }
                 await _dbContext.Categories.AddAsync(sysCat);
-
             }
-
             await _dbContext.SaveChangesAsync();
+            stopwatch.Stop();
+            _logger.LogInformation($"Trendyol Kategorileri Eklendi. Süre: {stopwatch.ElapsedMilliseconds} ms");
         }
 
         async Task AddAllCategory(Entity.Categories.Category sysCat,IEnumerable<Category> children)
@@ -70,26 +77,47 @@ public class TrendyolCategories
 
             foreach(var category in children)
             {
+                Debug.WriteLine("subcategory id : "+ category.id);
+
                 var subCat = new Entity.Categories.Category
                 {
                     CreatedAt = DateTimeOffset.Now,
                     Name = category.name,
-                    SuperCategoryId = sysCat.Id,
                     CategoryAttributes = new List<CategoryAttribute>()
                 };
                 sysCat.SubCategories.Add(subCat);
                 var match = new CategoryMarketPlaceMatch()
                     { ApplicationCategory = subCat, MarketPlace = marketPlace, MarketPlaceCategoryId = category.id };
                 await _dbContext.CategoryMarketPlaceMatches.AddAsync(match);
-                        
-                if(category.subCategories != null)
+                if(!category.subCategories.IsNullOrEmpty())
                     await AddAllCategory(subCat,category.subCategories);
                 else
                 {
-                    var attrResult =await _httpClient.GetStringAsync(new Uri($"{CategoryUrl}/{category.id}/attributes"));
-                    RootCategoryAttr trendyolCategoryAttrResult = JsonSerializer.Deserialize<RootCategoryAttr>(attrResult);
+                    var attrResult =await _httpClient.GetAsync(new Uri($"{CategoryUrl}/{category.id}/attributes"));
+                    if (!attrResult.IsSuccessStatusCode)
+                    {
+                        int tryCount = 10;
+                        while(tryCount > 0)
+                        {
+                            Debug.WriteLine("tekrar deneniyor : " + $"{CategoryUrl}/{category.id}/attributes");
+                            await Task.Delay(500);
+                            attrResult = await _httpClient.GetAsync(new Uri($"{CategoryUrl}/{category.id}/attributes"));
+                            if(attrResult.IsSuccessStatusCode)
+                                break;
+                            tryCount--;
+                        }
+
+                        if (tryCount == 0)
+                        {
+                            Debug.WriteLine("Kategori Attribute Getirilemedi. Kategori Id: " + category.id + " " + attrResult.StatusCode);
+                            continue;
+                        }
+                    }
+                    var attrContent = await attrResult.Content.ReadAsStringAsync();
+                    RootCategoryAttr trendyolCategoryAttrResult = JsonSerializer.Deserialize<RootCategoryAttr>(attrContent);
                     foreach (var trendyolCategoryAttr in trendyolCategoryAttrResult?.categoryAttributes!)
                     {
+                        Debug.WriteLine("attr: " + trendyolCategoryAttr.attribute.name);
                         //eğer daha önce eklenmiş trendyol kategori attr varsa
                         if (AddedCategoryAttrs.Any(x => x.TempMappingId == trendyolCategoryAttr.attribute.id))
                         {
@@ -119,29 +147,71 @@ public class TrendyolCategories
                             await _dbContext.CategoryAttributeMarketPlaceMatches.AddAsync(categoryAttrMatch);
                             if(!trendyolCategoryAttr.allowCustom)
                             {
-                                foreach(var trendyolAttrValue in trendyolCategoryAttr.attributeValues)
+                                if(trendyolCategoryAttr.attributeValues.Length >= 10_000)
                                 {
-                                    if(AddedCategoryAttrValues.Any(x => x.TempMappingId == trendyolAttrValue.id))
+                                    Debug.WriteLine("attr allow custom +10000: " + trendyolCategoryAttr.attribute.name + " attr value sayısı " + trendyolCategoryAttr.attributeValues.Length);
+
+                                    var tempAddedCategoryConcurrentBag = new ConcurrentBag<CategoryAttributeValue>(AddedCategoryAttrValues); 
+                                    var attrValueMatchConcurrentBag = new ConcurrentBag<CategoryAttributeValueMarketPlaceMatch>();
+                                    var appAttrValues = new ConcurrentBag<CategoryAttributeValue>();
+                                    Parallel.ForEach(trendyolCategoryAttr.attributeValues,trendyolAttrValue =>
                                     {
-                                        categoryAttr.CategoryAttributeValues.Add(AddedCategoryAttrValues.First(x => x.TempMappingId == trendyolAttrValue.id));
-                                    }
-                                    else
+                                        if(tempAddedCategoryConcurrentBag.Any(x => x.TempMappingId == trendyolAttrValue.id))
+                                        {
+                                            categoryAttr.CategoryAttributeValues.Add(tempAddedCategoryConcurrentBag.First(x => x.TempMappingId == trendyolAttrValue.id));
+                                        }
+                                        else
+                                        {
+                                            var attrValue = new CategoryAttributeValue()
+                                            {
+                                                Name = trendyolAttrValue.name,
+                                                TempMappingId = trendyolAttrValue.id
+                                            };
+                                            appAttrValues.Add(attrValue);
+                                            var attrValueMatch = new CategoryAttributeValueMarketPlaceMatch
+                                            {
+                                                MarketPlace = marketPlace,
+                                                MarketPlaceCategoryAttributeValueId = trendyolAttrValue.id,
+                                                ApplicationCategoryAttributeValue = attrValue
+                                            };
+                                            attrValueMatchConcurrentBag.Add(attrValueMatch);
+                                            tempAddedCategoryConcurrentBag.Add(attrValue);
+                                            categoryAttr.CategoryAttributeValues.Add(attrValue);
+                                        }
+
+                                    });
+                                    AddedCategoryAttrValues = tempAddedCategoryConcurrentBag.ToHashSet();
+                                    await _dbContext.CategoryAttributeValues.AddRangeAsync(appAttrValues);
+                                    await _dbContext.CategoryAttributeValueMarketPlaceMatches.AddRangeAsync(attrValueMatchConcurrentBag);
+                                }
+                                else
+                                {
+                                    foreach(var trendyolAttrValue in trendyolCategoryAttr.attributeValues)
                                     {
-                                        var attrValue = new CategoryAttributeValue()
+                                        Debug.WriteLine("attr allow custom: " + trendyolAttrValue.name + " attr value sayısı " + trendyolCategoryAttr.attributeValues.Length);
+
+                                        if(AddedCategoryAttrValues.Any(x => x.TempMappingId == trendyolAttrValue.id))
                                         {
-                                            Name = trendyolAttrValue.name,
-                                            TempMappingId = trendyolAttrValue.id
-                                        };
-                                        await _dbContext.CategoryAttributeValues.AddAsync(attrValue);
-                                        var attrValueMatch = new CategoryAttributeValueMarketPlaceMatch
+                                            categoryAttr.CategoryAttributeValues.Add(AddedCategoryAttrValues.First(x => x.TempMappingId == trendyolAttrValue.id));
+                                        }
+                                        else
                                         {
-                                            MarketPlace = marketPlace,
-                                            MarketPlaceCategoryAttributeValueId = trendyolAttrValue.id,
-                                            ApplicationCategoryAttributeValue = attrValue
-                                        };
-                                        await _dbContext.CategoryAttributeValueMarketPlaceMatches.AddAsync(attrValueMatch);
-                                        AddedCategoryAttrValues.Add(attrValue);
-                                        categoryAttr.CategoryAttributeValues.Add(attrValue);
+                                            var attrValue = new CategoryAttributeValue()
+                                            {
+                                                Name = trendyolAttrValue.name,
+                                                TempMappingId = trendyolAttrValue.id
+                                            };
+                                            await _dbContext.CategoryAttributeValues.AddAsync(attrValue);
+                                            var attrValueMatch = new CategoryAttributeValueMarketPlaceMatch
+                                            {
+                                                MarketPlace = marketPlace,
+                                                MarketPlaceCategoryAttributeValueId = trendyolAttrValue.id,
+                                                ApplicationCategoryAttributeValue = attrValue
+                                            };
+                                            await _dbContext.CategoryAttributeValueMarketPlaceMatches.AddAsync(attrValueMatch);
+                                            AddedCategoryAttrValues.Add(attrValue);
+                                            categoryAttr.CategoryAttributeValues.Add(attrValue);
+                                        }
                                     }
                                 }
                             }

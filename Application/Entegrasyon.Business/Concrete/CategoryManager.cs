@@ -28,7 +28,7 @@ namespace Entegrasyon.Business.Concrete
                 Name = dto.Name,
                 SuperCategoryId = dto.SuperCategoryId,
             };
-            if (dto.CategoryAttributes != null)
+            if(dto.CategoryAttributes != null)
                 category.CategoryAttributes = dto.CategoryAttributes.ToList();
 
             await _categoryDal.AddAsync(category);
@@ -64,20 +64,22 @@ namespace Entegrasyon.Business.Concrete
             };
             var categoriesDto = await _categoryDal.GetTransformedEntities(x => new CategoryDetailDto(
                 x.Id,
-                x.Products.Sum(p => p.TotalCurrentStock), x.Name, x.SubCategories.Count,x.IsFavorite),orderTuples:orderTuples).ToListAsync();
-                
+                x.Products.Sum(p => p.ProductVariants
+                    .SelectMany(pv => pv.BranchOfficeStocks)
+                    .Sum(bo => bo.CurrentStock)),x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples: orderTuples).ToListAsync();
+
             return new SuccessDataResult<List<CategoryDetailDto>>(categoriesDto);
         }
-        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1,int itemCount = 50,string categoryName=null)
+        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1,int itemCount = 50,string categoryName = null)
         {
-            var orderBy = new List<(string,string)>
+            var orderBy = new List<(string, string)>
             {
                 new ("Id", "desc")
             };
             Expression<Func<Category,bool>> filter = !string.IsNullOrEmpty(categoryName)
-                ? x => EF.Functions.ILike(x.Name, $"%{categoryName}%")
+                ? x => EF.Functions.ILike(x.Name,$"%{categoryName}%")
                 : null;
-            
+
             var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex,itemCount,
                 x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderBy,filter);
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(categoriesDto);
@@ -85,8 +87,8 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IResult> AddFavorite(int categoryId)
         {
-            var category =await _categoryDal.GetAsync(x => x.Id == categoryId);
-            if (category == null)
+            var category = await _categoryDal.GetAsync(x => x.Id == categoryId);
+            if(category == null)
                 return new ErrorResult("Böyle bir kategori bulunamadı.");
             category.IsFavorite = true;
             await _categoryDal.UpdateAsync(category);
@@ -97,7 +99,7 @@ namespace Entegrasyon.Business.Concrete
             var categories = await _categoryDal.GetAllAsync(x => categoryIds.Contains(x.Id));
             if(categories == null || !categories.Any())
                 return new ErrorResult("Bulunamayan kategori var.");
-            categories.ForEach(x=>x.IsFavorite=true);
+            categories.ForEach(x => x.IsFavorite = true);
             await _categoryDal.UpdateRangeAsync(categories);
             return new SuccessResult("Kategoriler başarı ile favorilere eklendi.");
         }
@@ -109,7 +111,7 @@ namespace Entegrasyon.Business.Concrete
                 new("Id", "desc")
             };
             var result = await _categoryDal.GetTransformedEntities(x =>
-                    new CategoryDetailDto(x.Id, x.Products.Count, x.Name, x.SubCategories.Count, x.IsFavorite),orderTuples,x=>x.IsFavorite)
+                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.IsFavorite)
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }

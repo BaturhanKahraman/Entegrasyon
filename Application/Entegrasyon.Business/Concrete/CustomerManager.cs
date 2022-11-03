@@ -48,13 +48,7 @@ public class CustomerManager
     {
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.",LogType.Customer,LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        //var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentityOrTaxNumber));
-        //if(result != null)
-        //{
-        //    await _applicationLogManager.AddLog("Müşteri ekleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Add,dto);
-        //    return result;
-        //}
-        Customer customer = dto.Type=="Retail" 
+        Customer customer = dto.CustomerType=="Retail" 
             ? _mapper.Map<RetailCustomer>(dto) 
             : _mapper.Map<CorporateCustomer>(dto);
 

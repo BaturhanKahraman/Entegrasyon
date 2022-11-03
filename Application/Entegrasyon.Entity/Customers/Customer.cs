@@ -12,6 +12,9 @@ namespace Entegrasyon.Entity.Customers
         public int Id { get; set; }
         public string PhoneNumber { get; set; }
         public string Discriminator { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string FullName { get; set; }
         public Address Address { get; set; }
         public ICollection<Sale> Sales { get; set; }
     }
