@@ -49,6 +49,14 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetSubCategories()
+        {
+            var result = await _categoryManager.GetSubCategories();
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
         [HttpPost]
         public async Task<IActionResult> AddFavorite([FromBody]int categoryId)
         {
