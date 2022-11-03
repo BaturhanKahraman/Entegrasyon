@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\MarketPlace\MarketPlace.csproj" />
     <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
     <ProjectReference Include="..\Entegrasyon.Entity\Entegrasyon.Entity.csproj" />
