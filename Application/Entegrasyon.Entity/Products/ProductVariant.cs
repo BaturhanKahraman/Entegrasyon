@@ -18,9 +18,6 @@ public sealed class ProductVariant :BaseEntity
     [Column(TypeName = "money")]
     public decimal SalePrice { get; set; }
     public decimal VatRate { get; set; }
-    public int TotalCurrentQuantity => BranchOfficeStocks.Sum(x => x.CurrentStock);
-    public int TotalSold => BranchOfficeStocks.Sum(x => x.SoldQuantity);
-    public int TotalQuantity => BranchOfficeStocks.Sum(x => x.FirstTotalStock);
     public ICollection<BranchOfficeStock> BranchOfficeStocks { get; set; }
     
     [Column(TypeName = "jsonb")]

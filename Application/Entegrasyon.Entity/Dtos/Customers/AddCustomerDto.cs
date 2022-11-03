@@ -2,8 +2,9 @@
 
 public sealed record AddCustomerDto(
     string NationalIdentityOrTaxNumber,
-    string NameOrCorporateName,
+    string Name,
     string Surname,
+    string CorporateName,
     string PhoneNumber,
     string FullAddress,
-    string Type);
+    string CustomerType);

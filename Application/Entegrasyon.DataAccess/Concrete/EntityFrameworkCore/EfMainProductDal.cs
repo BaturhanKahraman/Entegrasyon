@@ -26,8 +26,12 @@ public class EfMainProductDal : EfEntityRepository<MainProduct,IntegrationDbCont
                 x.StockCode,
                 x.Brand.Name,
                 x.Category.Name,
-                x.TotalQuantity,x.TotalSoldQuantity,
-                x.TotalCurrentStock,
+                x.ProductVariants.
+                    SelectMany(productVariant=>productVariant.BranchOfficeStocks)
+                    .Sum(branchOfficeStock=>branchOfficeStock.FirstTotalStock),
+                x.ProductVariants.
+                    SelectMany(productVariant => productVariant.BranchOfficeStocks)
+                    .Sum(branchOfficeStock => branchOfficeStock.SoldQuantity),
                 x.ProductVariants.Count))
             .FirstOrDefaultAsync();
     }
