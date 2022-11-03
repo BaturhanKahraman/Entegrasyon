@@ -8,7 +8,7 @@ public sealed class BranchOfficeStock
     public Guid? ProductVariantId { get; set; }
     public ProductVariant ProductVariant { get; set; }
 
-    public int CurrentStock => FirstTotalStock - SoldQuantity;
+    public int CurrentStock { get; set; }
     public int SoldQuantity { get; set; }
     public int FirstTotalStock { get; set; }
 }
