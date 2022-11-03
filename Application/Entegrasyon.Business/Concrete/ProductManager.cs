@@ -92,9 +92,8 @@ public class ProductManager
                 x.StockCode,
                 x.Brand.Name,
                 x.Category.Name,
-                x.TotalQuantity,
-                x.TotalSoldQuantity,
-                x.TotalCurrentStock,
+                x.ProductVariants.SelectMany(pv=>pv.BranchOfficeStocks).Sum(bo=>bo.FirstTotalStock),
+                x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 x.ProductVariants.Count),x => x.Id == productId);
         return new SuccessDataResult<ProductDetailDto>(result);
     }
@@ -106,7 +105,10 @@ public class ProductManager
                                                            x.SearchVector.Matches(EF.Functions.ToTsQuery(dto.FullTextSearchKey.ForFullTextSearch()));
         var result = await _productDal.GetPaginatedTransformedEntities(dto.PageIndex,
             dto.PageSize,
-            x => new ProductDetailDto(x.Id,x.Title,x.Description,x.StockCode,x.Brand.Name,x.Category.Name,x.TotalQuantity,x.TotalSoldQuantity,x.TotalCurrentStock,x.ProductVariants.Count),
+            x => new ProductDetailDto(x.Id,x.Title,x.Description,x.StockCode,x.Brand.Name,x.Category.Name,
+                x.ProductVariants.SelectMany(pv=>pv.BranchOfficeStocks).Sum(bo=>bo.FirstTotalStock),
+                x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
+                x.ProductVariants.Count),
             orderTupleList,expression);
         return new SuccessDataResult<Pageable<ProductDetailDto>>(result);
     }

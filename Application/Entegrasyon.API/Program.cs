@@ -13,6 +13,7 @@ using Shared.Middlewares;
 using Serilog;
 using Shared.Logger.Serilog;
 using System.Diagnostics;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -35,15 +36,21 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<IntegrationDbContext>(x =>
 {
-    x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb111;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
-        npg=>
-        {
-            npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
-        });
-    //x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb111;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
+    //x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb111;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+    //    npg=>
+    //    {
+    //        npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+    //        npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
+    //    });
+    x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb1;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+        npg =>
+                {
+                    npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
+                });
+    x.EnableSensitiveDataLogging();
     x.EnableDetailedErrors();
-    x.LogTo(Console.WriteLine);
+    x.LogTo(z=>Debug.WriteLine(z));
 
 });
 
@@ -87,7 +94,7 @@ app.UseCors("myclient");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.AddJwtBlacklistMiddleware();
+//app.AddJwtBlacklistMiddleware();
 app.MapControllers();
 
 app.Run();

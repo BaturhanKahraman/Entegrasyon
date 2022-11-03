@@ -1,7 +1,6 @@
 ﻿using Entegrasyon.Entity.Customers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NpgsqlTypes;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfigurations;
 
@@ -14,13 +13,14 @@ public class CustomerEntityConfiguration : IEntityTypeConfiguration<Customer>
         builder.HasDiscriminator<string>("CustomerType")
             .HasValue<RetailCustomer>("Retail")
             .HasValue<CorporateCustomer>("Corporate");
+        builder.Property(x=>x.FullName)
+            .HasComputedColumnSql(@"""Name"" || ' ' || ""Surname""",stored: true);
     }
 }
 public class RetailCustomerEntityConfiguration : IEntityTypeConfiguration<RetailCustomer>
 {
     public void Configure(EntityTypeBuilder<RetailCustomer> builder)
     {
-        //builder.Property(x=>x.SearchVector).IsGeneratedTsVectorColumn("turkish","PhoneNumber","Surname","Name","NationalIdentity");
         builder
           .HasGeneratedTsVectorColumn(
               p => p.SearchVector,
@@ -39,7 +39,7 @@ public class CorporateCustomerEntityConfiguration : IEntityTypeConfiguration<Cor
          .HasGeneratedTsVectorColumn(
              p => p.SearchVector,
              "turkish",
-             p => new { p.PhoneNumber, p.CorporateName, p.TaxNumber })
+             p => new { p.PhoneNumber, p.CorporateName, p.TaxNumber,p.Name,p.Surname,})
          .HasIndex(p => p.SearchVector)
          .HasMethod("GIN");
     }

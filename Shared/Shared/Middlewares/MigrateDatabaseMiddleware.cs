@@ -14,14 +14,12 @@ public class MigrateDatabaseMiddleware
 
     public async Task Invoke(HttpContext context,DbContext dbContext)
     {
-        lock (_nextLock)
+        var migrations = await dbContext.Database.GetPendingMigrationsAsync();
+        if(migrations.Any())
         {
-            var migrations = dbContext.Database.GetPendingMigrations();
-            if(migrations.Any())
-            {
-                 dbContext.Database.Migrate();
-            }
+            await dbContext.Database.MigrateAsync();
         }
         await _next.Invoke(context);
+
     }
 }
