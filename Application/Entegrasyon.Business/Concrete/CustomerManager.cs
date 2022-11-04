@@ -63,6 +63,12 @@ public class CustomerManager
         return new SuccessDataResult<Pageable<CustomerDetailDto>>(result);
     }
 
+    public async Task<IResult> CheckIfCustomerExits(int id)
+    {
+        var result =  await _customerDal.Exists(x => x.Id == id);
+        return result ? new SuccessResult() : new ErrorResult("Müşteri bulunamamıştır.");
+    }
+    
     //private async Task<IResult> CheckIfSameIdExits(string customerIdentity)
     //{
     //    if(string.IsNullOrEmpty(customerIdentity))
