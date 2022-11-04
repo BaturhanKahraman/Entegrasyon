@@ -37,6 +37,7 @@ public static class ApplicationDependencyExtension
         services.AddScoped<IBranchOfficeStockDal, EfBranchOfficeStockDal>();
         services.AddScoped<IImageDal, EfImageDal>();
         services.AddScoped<IProductVariantDal,EfProductVariantDal>();
+        services.AddScoped<IDiscountVoucherDal,EfDiscountVoucherDal>();
 
 
         services.AddScoped<BranchOfficeManager>();
@@ -53,7 +54,8 @@ public static class ApplicationDependencyExtension
         services.AddScoped<OfficeStockManager>();
         services.AddScoped<ProductVariantManager>();
         services.AddScoped<ImageManager>();
-        
+        services.AddScoped<DiscountVoucherManager>();
+
 
         services.AddScoped<TrendyolCategories>();
         services.AddScoped<TrendyolBrands>();

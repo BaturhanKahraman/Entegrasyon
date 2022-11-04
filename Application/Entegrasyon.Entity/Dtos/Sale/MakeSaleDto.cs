@@ -11,4 +11,5 @@ public sealed record SaleItemDto(
     double TaxPercentage,
     double DiscountPercent,
     decimal UnitPrice,
-    int Quantity);
+    int Quantity,
+    string DiscountVoucherCode);
