@@ -17,5 +17,6 @@ namespace Entegrasyon.Entity.Customers
         public string FullName { get; set; }
         public Address Address { get; set; }
         public ICollection<Sale> Sales { get; set; }
+        public ICollection<DiscountVoucher> DiscountVouchers { get; set; }
     }
 }

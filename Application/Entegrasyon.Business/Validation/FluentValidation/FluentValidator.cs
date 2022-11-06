@@ -21,7 +21,7 @@ public class FluentValidator
             throw new ValidationException(new ValidationFailure[1]{new ValidationFailure("Object","Obje null olarak geldi.")});
         var validator = (IValidator<T>)_serviceProvider.GetService(typeof(IValidator<T>));
         if(validator==null)
-            throw new Exception("Validator bulunamadı");
+            throw new Exception("Validator not found!");
         var validateResult = await validator.ValidateAsync(entity);
         if (validateResult.IsValid)
             return;
