@@ -11,6 +11,8 @@ namespace Entegrasyon.Entity.Sales
     public sealed class Sale : BaseEntity
     {
         public Guid Id { get; set; }
+        public int DiscountVoucherId { get; set; }
+        public DiscountVoucher DiscountVoucher { get; set; }
         public ICollection<SaleItem> SaleItems { get; set; }
         public Guid SalePersonId { get; set; }
         public ApplicationUser SalePerson { get; set; }

@@ -13,6 +13,7 @@ public enum LogType
     Role,
     Brand,
     Customer,
+    DiscountVoucher,
 
-    Error = 999,
+    Error = 999
 }

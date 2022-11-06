@@ -1,6 +1,7 @@
 ﻿using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Customers;
+using Entegrasyon.Entity.Dtos.DiscountVouchers;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using FluentValidation;
@@ -21,6 +22,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<AddProductDto>,AddProductValidator>();
         services.AddScoped<IValidator<AddProductVariantDto>,AddProductVariantValidator>();
         services.AddScoped<IValidator<AddBranchOfficeStockDto>,AddBranchOfficeStockValidator>();
+        services.AddScoped<IValidator<CreateDiscountVoucherDto>,CreateDiscountVoucherDtoValidator>();
         services.AddScoped<FluentValidator>();
         return services;
     }
