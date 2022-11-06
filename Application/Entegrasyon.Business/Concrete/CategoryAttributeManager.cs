@@ -41,7 +41,7 @@ public class CategoryAttributeManager
         return new SuccessDataResult<List<CategoryAttribute>>(result);
     }
 
-    public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
+    public Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
         //validate
         throw new NotImplementedException();
