@@ -20,7 +20,7 @@ public class CategoryAttributeManager
     public async Task<bool> CheckIfExits(string name)
     {
         string nameNormalize = name.Trim().ToLower();
-        return await _attributeDal.Table.AnyAsync(x=>x.CategoryAttributeKey== nameNormalize);
+        return await _attributeDal.Table.AnyAsync(x => x.CategoryAttributeKey == nameNormalize);
     }
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes()
@@ -30,10 +30,18 @@ public class CategoryAttributeManager
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributesByCategory(int categoryId)
     {
-        var result =await _attributeDal.GetAllAsync(x => x.Category.Any(z=>z.Id==categoryId));
+        var result = await _attributeDal.GetTransformedEntities(
+            x => new CategoryAttribute
+            {
+                Id = x.Id, Required = x.Required, Slicer = x.Slicer, Varianter = x.Varianter,
+                AllowCustom = x.AllowCustom, CreatedAt = x.CreatedAt,
+                CategoryAttributeValues = x.CategoryAttributeValues, CategoryAttributeKey = x.CategoryAttributeKey
+            },expression:x=>x.Category.Any(c=>c.Id==categoryId)).ToListAsync();
+
         return new SuccessDataResult<List<CategoryAttribute>>(result);
     }
-    public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
+
+    public Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
         //validate
         throw new NotImplementedException();

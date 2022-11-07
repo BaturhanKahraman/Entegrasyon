@@ -1,12 +1,12 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Customers;
-using Entegrasyon.Entity.Dtos.DiscountVouchers;
 using Entegrasyon.Entity.Sales;
 using Shared.Entity;
 using Shared.Helpers;
 using Shared.Results;
 using System.Linq.Expressions;
 using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.Entity.Dtos.DiscountVouchers;
 using Entegrasyon.Entity.Logs;
 
 namespace Entegrasyon.Business.Concrete;
@@ -86,8 +86,9 @@ public class DiscountVoucherManager
             : null;
 
         var result = await _discountVoucherDal.GetPaginatedTransformedEntities(pageIndex, pagesize, d =>
-            new DiscountVoucherDto(d.Id, d.Code, d.Percentage, d.Amount, d.ExpiringDate, d.Customer.FullName,
+            new DiscountVoucherDto(d.Id, d.Code, d.Percentage, d.Amount, d.ExpiringDate.Value, d.Customer.FullName,
                 d.Customer.PhoneNumber,
+                d.Customer.Discriminator,
                 (d.Customer as RetailCustomer).NationalIdentity,
                 (d.Customer as CorporateCustomer).TaxNumber
             ), orderTuples, expression);

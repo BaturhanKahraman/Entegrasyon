@@ -49,8 +49,6 @@ public class TrendyolCategories
             var categories = JsonSerializer.Deserialize<Rootobject>(content);
             if(categories is null)
                 return;
-
-
             foreach(var subCategory in categories.categories)
             {
                 var sysCat = new Entity.Categories.Category
