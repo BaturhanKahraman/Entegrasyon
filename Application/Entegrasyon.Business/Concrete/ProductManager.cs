@@ -1,19 +1,13 @@
-﻿using System.Collections;
-using System.Linq.Expressions;
-using System.Transactions;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Shared.Entity;
 using Shared.Extensions;
-using Shared.FileStorage;
 using Shared.Helpers;
 using Shared.Logic;
 using Shared.Results;
@@ -26,19 +20,17 @@ public class ProductManager
     private readonly ApplicationLogManager _applicationLogManager;
     private readonly IRandomGenerator _randomGenerator;
     private readonly IMapper _mapper;
-    private readonly IFileStorage _fileStorage;
     private readonly FluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
     private readonly ImageManager _imageManager;
     private static readonly SemaphoreSlim SemaphoreSlim = new(1);
 
-    public ProductManager(IMainProductDal productDal,ApplicationLogManager applicationLogManager,IRandomGenerator randomGenerator,IMapper mapper,IFileStorage fileStorage,FluentValidator validator,OfficeStockManager officeStockManager,ImageManager imageManager)
+    public ProductManager(IMainProductDal productDal,ApplicationLogManager applicationLogManager,IRandomGenerator randomGenerator,IMapper mapper,FluentValidator validator,OfficeStockManager officeStockManager,ImageManager imageManager)
     {
         _productDal = productDal;
         _applicationLogManager = applicationLogManager;
         _randomGenerator = randomGenerator;
         _mapper = mapper;
-        _fileStorage = fileStorage;
         _validator = validator;
         _officeStockManager = officeStockManager;
         _imageManager = imageManager;
@@ -76,10 +68,6 @@ public class ProductManager
     {
         await SemaphoreSlim.WaitAsync();
         SemaphoreSlim.Release();
-        return new SuccessResult();
-    }
-    public async Task<IResult> DeactiveProduct()
-    {
         return new SuccessResult();
     }
     
