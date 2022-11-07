@@ -17,6 +17,8 @@ public sealed class ProductVariant :BaseEntity
     public decimal ListPrice { get; set; }
     [Column(TypeName = "money")]
     public decimal SalePrice { get; set; }
+    [Column(TypeName = "money")]
+    public decimal ArrivalPrice { get; set; }//geliş fiyatı ?
     public decimal VatRate { get; set; }
     public ICollection<BranchOfficeStock> BranchOfficeStocks { get; set; }
     

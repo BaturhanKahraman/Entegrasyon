@@ -8,7 +8,7 @@ using Shared.Results;
 using Shared.Security;
 
 namespace Shared.User.Services;
-
+//IOptions ile optionslar getir.
 public class UserManager<TUser,TContext> : IUserManager<TUser>
 where TUser : RootUser
 where TContext : DbContext
