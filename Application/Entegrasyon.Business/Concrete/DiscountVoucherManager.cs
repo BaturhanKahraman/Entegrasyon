@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Customers;
-using Entegrasyon.Entity.Sales;
 using Shared.Entity;
 using Shared.Helpers;
 using Shared.Results;
@@ -8,6 +7,7 @@ using System.Linq.Expressions;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.DiscountVouchers;
 using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.DiscountVouchers;
 
 namespace Entegrasyon.Business.Concrete;
 

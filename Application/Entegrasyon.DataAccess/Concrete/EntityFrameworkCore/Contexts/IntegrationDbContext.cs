@@ -12,6 +12,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Shared.Entity;
 using Entegrasyon.Entity.Customers;
+using Entegrasyon.Entity.DiscountVouchers;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
