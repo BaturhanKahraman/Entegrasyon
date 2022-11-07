@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Entity.Sales;
+﻿using Entegrasyon.Entity.DiscountVouchers;
 using Shared;
 
 namespace Entegrasyon.DataAccess.Abstract;

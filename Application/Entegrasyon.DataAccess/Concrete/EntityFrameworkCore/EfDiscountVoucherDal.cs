@@ -1,6 +1,6 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Entegrasyon.Entity.Sales;
+using Entegrasyon.Entity.DiscountVouchers;
 using Microsoft.EntityFrameworkCore;
 using Shared.EntityFrameworkCore;
 

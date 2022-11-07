@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Entity.Sales;
+﻿using Entegrasyon.Entity.DiscountVouchers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
