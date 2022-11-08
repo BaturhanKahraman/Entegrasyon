@@ -1,7 +1,6 @@
 ﻿using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Logs;
-using FluentValidation;
 using Shared.Constants;
 using Shared.Results;
 using Shared.User;

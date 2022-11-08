@@ -2,7 +2,6 @@
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
-using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;

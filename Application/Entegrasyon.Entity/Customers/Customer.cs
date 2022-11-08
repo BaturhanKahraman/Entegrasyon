@@ -1,9 +1,5 @@
 ﻿using Entegrasyon.Entity.Sales;
-using Microsoft.EntityFrameworkCore;
-using NpgsqlTypes;
 using Shared.Entity;
-using System.ComponentModel.DataAnnotations;
-using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.DiscountVouchers;
 
 namespace Entegrasyon.Entity.Customers

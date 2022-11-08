@@ -7,7 +7,6 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 using Entegrasyon.Entity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Extensions;
 using Shared.User;

@@ -1,8 +1,4 @@
-﻿using System.ComponentModel;
-using System.IO;
-using System.Threading.Tasks;
-
-namespace Shared.FileStorage;
+﻿namespace Shared.FileStorage;
 
 public class AzureFileStorage : IAzureFileStorage
 {

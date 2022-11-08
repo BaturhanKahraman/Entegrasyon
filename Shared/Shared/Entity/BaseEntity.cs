@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Shared.Entity;
+﻿namespace Shared.Entity;
 
 public class BaseEntity
 {

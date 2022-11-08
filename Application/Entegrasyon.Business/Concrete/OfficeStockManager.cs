@@ -1,5 +1,4 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
@@ -54,9 +53,9 @@ public class OfficeStockManager
         return new SuccessResult();
     }
 
-    public async Task<IResult> IncreaseProductStock()
+    public Task<IResult> IncreaseProductStock()
     {
-        return new SuccessResult();
+        throw new NotImplementedException();
     }
     public async Task<IResult> DecreaseProductStock(Guid id, int stockNumber, int branchId, bool overrideStockStatus = false)
     {

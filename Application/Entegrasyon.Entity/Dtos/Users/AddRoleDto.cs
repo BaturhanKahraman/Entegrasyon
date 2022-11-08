@@ -1,6 +1,4 @@
-﻿using Shared.User;
-
-namespace Entegrasyon.Entity.Dtos.Users
+﻿namespace Entegrasyon.Entity.Dtos.Users
 {
     public sealed class AddRoleDto
     {

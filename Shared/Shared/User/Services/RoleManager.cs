@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Shared.User.Services;

@@ -1,8 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
-using Shared.EntityFrameworkCore;
-using static Amazon.S3.Util.S3EventNotification;
 
 namespace Shared;
 

@@ -5,11 +5,7 @@ using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Logs;
 using Shared.Entity;
-using Shared.Logic;
 using Shared.Results;
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
 
 namespace Entegrasyon.Business.Concrete;
 

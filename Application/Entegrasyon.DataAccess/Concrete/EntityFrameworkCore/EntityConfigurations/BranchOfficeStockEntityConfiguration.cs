@@ -1,5 +1,4 @@
-﻿using Entegrasyon.Entity.Logs;
-using Entegrasyon.Entity.Products;
+﻿using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

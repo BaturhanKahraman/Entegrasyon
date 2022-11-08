@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Logs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.API.Controllers

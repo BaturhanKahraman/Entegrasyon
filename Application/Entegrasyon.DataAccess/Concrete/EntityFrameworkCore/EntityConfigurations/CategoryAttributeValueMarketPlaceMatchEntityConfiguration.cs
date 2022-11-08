@@ -1,5 +1,4 @@
-﻿using Entegrasyon.Entity;
-using Entegrasyon.Entity.Matches;
+﻿using Entegrasyon.Entity.Matches;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

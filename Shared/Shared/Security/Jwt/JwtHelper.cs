@@ -1,10 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shared.User;
-using System.Linq;
 
 namespace Shared.Security.Jwt
 {
