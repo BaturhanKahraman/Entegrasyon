@@ -1,6 +1,4 @@
 ﻿using Entegrasyon.Entity;
-using Entegrasyon.Entity.Categories;
-using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Shared.User;
 

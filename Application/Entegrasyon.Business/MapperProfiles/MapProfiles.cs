@@ -24,12 +24,10 @@ public class MapProfiles:Profile
         CreateMap<AddCargoCompanyDto,CargoCompany>()
             .ReverseMap();
         CreateMap<AddCustomerDto, RetailCustomer>()
-            .ForMember(x => x.NationalIdentity, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber))
-            .ForMember(x => x.Discriminator, opt => opt.MapFrom(x => x.CustomerType));
+            .ForMember(x => x.NationalIdentity, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber));
 
         CreateMap<AddCustomerDto, CorporateCustomer>()
-            .ForMember(x => x.TaxNumber, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber))
-            .ForMember(x => x.Discriminator, opt => opt.MapFrom(x => x.CustomerType));
+            .ForMember(x => x.TaxNumber, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber));
 
         CreateMap<Customer,CustomerDetailDto>()
             .ForMember(dest => dest.SalesCount,opt => opt.MapFrom(src => src.Sales.Count))

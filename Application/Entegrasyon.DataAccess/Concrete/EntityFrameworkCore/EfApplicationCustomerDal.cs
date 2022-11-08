@@ -4,11 +4,8 @@ using Entegrasyon.Entity.Dtos.Customers;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.EntityFrameworkCore;
-using static Amazon.S3.Util.S3EventNotification;
-using System.Linq.Expressions;
 using Shared.Extensions;
 using Entegrasyon.Entity.Customers;
-using System.Linq;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 
@@ -57,13 +54,13 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
                 RetailCustomer retailCustomer => new CustomerDetailDto(retailCustomer.CreatedAt, retailCustomer.Id,
                     retailCustomer.NationalIdentity, retailCustomer.FullName, null, retailCustomer.Sales?.Count ?? 0,
                     retailCustomer.PhoneNumber, retailCustomer.Address?.FullAddress ?? "",
-                    retailCustomer.Discriminator),
+                    retailCustomer.CustomerType),
                 CorporateCustomer corporateCustomer => new CustomerDetailDto(corporateCustomer.CreatedAt,
                     corporateCustomer.Id, corporateCustomer.TaxNumber, corporateCustomer.FullName,
                     corporateCustomer.CorporateName, corporateCustomer.Sales?.Count ?? 0, corporateCustomer.PhoneNumber,
-                    corporateCustomer.Address?.FullAddress ?? "", corporateCustomer.Discriminator),
+                    corporateCustomer.Address?.FullAddress ?? "", corporateCustomer.CustomerType),
                 _ => new CustomerDetailDto(x.CreatedAt, x.Id, "", "", "", x.Sales?.Count ?? 0, x.PhoneNumber,
-                    x.Address?.FullAddress ?? "", x.Discriminator)
+                    x.Address?.FullAddress ?? "", x.CustomerType)
             };
         };
     }

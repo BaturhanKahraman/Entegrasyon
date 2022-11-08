@@ -2,8 +2,6 @@
 using Amazon.S3.Transfer;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
-using System.IO;
-using System.Threading.Tasks;
 using Shared.FileStorage.Options;
 
 namespace Shared.FileStorage;

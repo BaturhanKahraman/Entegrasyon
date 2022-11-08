@@ -1,7 +1,5 @@
-﻿using Entegrasyon.Entity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Reflection.Emit;
 using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfigurations;

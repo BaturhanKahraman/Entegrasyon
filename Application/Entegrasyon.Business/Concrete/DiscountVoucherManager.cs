@@ -88,7 +88,7 @@ public class DiscountVoucherManager
         var result = await _discountVoucherDal.GetPaginatedTransformedEntities(pageIndex, pagesize, d =>
             new DiscountVoucherDto(d.Id, d.Code, d.Percentage, d.Amount, d.ExpiringDate.Value, d.Customer.FullName,
                 d.Customer.PhoneNumber,
-                d.Customer.Discriminator,
+                d.Customer.CustomerType,
                 (d.Customer as RetailCustomer).NationalIdentity,
                 (d.Customer as CorporateCustomer).TaxNumber
             ), orderTuples, expression);

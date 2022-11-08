@@ -8,12 +8,9 @@ using Shared.Extensions;
 using System.Text;
 using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
-using Shared.FileStorage.Options;
 using Shared.Middlewares;
-using Serilog;
 using Shared.Logger.Serilog;
 using System.Diagnostics;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);

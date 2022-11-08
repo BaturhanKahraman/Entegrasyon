@@ -1,7 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Shared.Entity;
 using Shared.Extensions;
 

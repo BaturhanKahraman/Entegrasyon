@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Entegrasyon.Entity.Categories;
+﻿using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.Entity.Matches;
 

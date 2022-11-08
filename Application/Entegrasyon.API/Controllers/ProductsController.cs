@@ -1,8 +1,6 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Product;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Entegrasyon.API.Controllers
 {

@@ -2,7 +2,6 @@
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Reflection.Emit;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfigurations
 {

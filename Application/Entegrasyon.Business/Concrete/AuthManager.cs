@@ -1,12 +1,8 @@
 ﻿using Entegrasyon.Entity;
 using Shared.Constants;
 using Shared.Extensions;
-using Shared.Logic;
 using Shared.Results;
-using Shared.Security;
 using Shared.Security.Jwt;
-using Shared.User;
-using Shared.User.Dto;
 using Shared.User.Services;
 
 namespace Entegrasyon.Business.Concrete;

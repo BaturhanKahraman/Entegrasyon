@@ -1,5 +1,4 @@
-﻿using Amazon.S3.Encryption.Internal;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 
 namespace Shared.Security.Jwt;
 

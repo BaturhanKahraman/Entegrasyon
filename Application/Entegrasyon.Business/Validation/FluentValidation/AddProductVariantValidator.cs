@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Entity.Dtos.Product;
 using FluentValidation;
-using FluentValidation.Validators;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 

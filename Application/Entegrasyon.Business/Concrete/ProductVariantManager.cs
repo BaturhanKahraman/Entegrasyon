@@ -1,7 +1,5 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Products;
-using Entegrasyon.Entity.Sales;
-using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

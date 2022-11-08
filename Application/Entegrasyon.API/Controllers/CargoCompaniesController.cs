@@ -1,7 +1,6 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.CargoCompany;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.API.Controllers

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Entegrasyon.Entity.Dtos.Branches;
+﻿namespace Entegrasyon.Entity.Dtos.Branches;
 
 public sealed record AddBranchDto
 {

@@ -1,5 +1,4 @@
 ﻿using Shared.Entity;
-using System.Runtime.CompilerServices;
 
 namespace Shared.Extensions;
 

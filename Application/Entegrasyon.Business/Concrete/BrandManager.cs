@@ -2,15 +2,11 @@
 using AutoMapper;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 using Entegrasyon.Entity.Dtos.Brand;
-using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Shared.Entity;
-using Shared.Extensions;
 using Shared.Logic;
 using Shared.Results;
 

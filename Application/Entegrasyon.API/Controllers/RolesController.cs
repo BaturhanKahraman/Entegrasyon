@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Users;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Results;
 using Shared.User;

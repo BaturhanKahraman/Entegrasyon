@@ -3,10 +3,8 @@ using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
-using Shared.Extensions;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;

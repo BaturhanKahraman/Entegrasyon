@@ -9,7 +9,6 @@ using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using Shared.User;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Shared.Entity;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;

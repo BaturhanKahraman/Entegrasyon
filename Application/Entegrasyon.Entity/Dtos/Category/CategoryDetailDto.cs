@@ -1,6 +1,4 @@
-﻿using System.Collections.Specialized;
-
-namespace Entegrasyon.Entity.Dtos.Category;
+﻿namespace Entegrasyon.Entity.Dtos.Category;
 
 public sealed record CategoryDetailDto(int Id,
     int TotalProductCount,

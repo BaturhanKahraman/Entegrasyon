@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.Extensions;
 using Shared.Results;
-using System.Linq;
 using System.Text.Json;
 
 namespace Entegrasyon.Business.Concrete;

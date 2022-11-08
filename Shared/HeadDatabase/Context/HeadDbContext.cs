@@ -1,6 +1,5 @@
 ﻿using MainDatabase.MainEntities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace MainDatabase.Context;
 
