@@ -10,7 +10,7 @@ public sealed class AddProductVariantDto
     public string Barcode { get; set; }
     public decimal ListPrice { get; set; }
     public decimal SalePrice { get; set; }
-    public decimal ArrivalPrice { get; set; }
+    public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; }
     public AttributeKeyValue[] AttributeKeyValues { get; set; }
     public List<AddBranchOfficeStockDto> BranchOfficeStocks { get; set; }
