@@ -1,4 +1,3 @@
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using MainDatabase.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +9,6 @@ using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
 using Shared.Middlewares;
 using Shared.Logger.Serilog;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -31,25 +29,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("myclient",policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
-builder.Services.AddDbContext<IntegrationDbContext>(x =>
-{
-    //x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb111;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
-    //    npg=>
-    //    {
-    //        npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-    //        npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
-    //    });
-    x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb1;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
-        npg =>
-                {
-                    npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
-                });
-    x.EnableSensitiveDataLogging();
-    x.EnableDetailedErrors();
-    x.LogTo(z=>Debug.WriteLine(z));
 
-});
 
 builder.Services.AddStackExchangeRedisCache(opt =>
     {
@@ -59,6 +39,7 @@ builder.Services.AddStackExchangeRedisCache(opt =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCustomDbContext();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
 {
     x.TokenValidationParameters = new TokenValidationParameters()

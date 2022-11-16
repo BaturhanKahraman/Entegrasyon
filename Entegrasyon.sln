@@ -20,12 +20,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared\Shared.csproj", "{FDEF9CD2-4484-4BF2-A930-B64B4676491B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entegrasyon.API", "Application\Entegrasyon.API\Entegrasyon.API.csproj", "{8D6FDBBD-9038-46FB-8B8E-F8A64DA7D0C0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDEF9CD2-4484-4BF2-A930-B64B4676491B} = {FDEF9CD2-4484-4BF2-A930-B64B4676491B}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrendyolBackgroundJob", "WorkerServices\TrendyolBackgroundService\TrendyolBackgroundJob.csproj", "{27E55F12-35A4-4F86-A0B2-9701142FE960}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{F35C7412-8EDF-4BB5-9282-BE0DBA7B39F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketPlace", "Shared\MarketPlace\MarketPlace.csproj", "{2163341F-1451-4F1A-AB21-27C88D3FEC34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MarketPlace", "Shared\MarketPlace\MarketPlace.csproj", "{2163341F-1451-4F1A-AB21-27C88D3FEC34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

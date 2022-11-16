@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Extensions;
 using Shared.User;
-
+using System.Diagnostics;
 
 namespace Entegrasyon.Business.Extensions;
 
@@ -19,10 +19,10 @@ public static class ApplicationDependencyExtension
     public static IServiceCollection AddApplicationDependencies(this IServiceCollection services)
     {
 
-       services.AddScoped<DbContext,IntegrationDbContext>();
+       //services.AddScoped<DbContext,IntegrationDbContext>();
 
         services.AddSharedSettings();
-        services.AddUserServices<ApplicationUser,RootLogin,RootRole,RootClaim,IntegrationDbContext>();
+        //services.AddUserServices<ApplicationUser,RootLogin,RootRole,RootClaim,IntegrationDbContext>();
 
         services.AddScoped<ILogDal,EfLogDal>();
         services.AddScoped<IApplicationUserDal,EfApplicationUserDal>();
@@ -64,6 +64,29 @@ public static class ApplicationDependencyExtension
         services.AddAutoMapper(x =>
         {
             x.AddProfile<MapProfiles>();
+        });
+        return services;
+    }
+
+    public static IServiceCollection AddCustomDbContext(this IServiceCollection services)
+    {
+        services.AddDbContext<IntegrationDbContext>(x =>
+        {
+            //x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb111;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+            //    npg=>
+            //    {
+            //        npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            //        npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
+            //    });
+            x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb1;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+                npg =>
+                {
+                    npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    npg.EnableRetryOnFailure(5, TimeSpan.FromSeconds(2), null);
+                });
+            x.EnableSensitiveDataLogging();
+            x.EnableDetailedErrors();
+            x.LogTo(z => Debug.WriteLine(z));
         });
         return services;
     }
