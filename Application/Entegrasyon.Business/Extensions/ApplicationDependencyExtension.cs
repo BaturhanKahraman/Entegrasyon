@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared.Extensions;
 using Shared.User;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace Entegrasyon.Business.Extensions;
 
@@ -18,7 +20,7 @@ public static class ApplicationDependencyExtension
 {
     public static IServiceCollection AddApplicationDependencies(this IServiceCollection services)
     {
-
+        services.AddScoped<ApplicationLifetimeManager>();
        //services.AddScoped<DbContext,IntegrationDbContext>();
 
         services.AddSharedSettings();
@@ -67,7 +69,6 @@ public static class ApplicationDependencyExtension
         });
         return services;
     }
-
     public static IServiceCollection AddCustomDbContext(this IServiceCollection services)
     {
         services.AddDbContext<IntegrationDbContext>(x =>
@@ -91,4 +92,11 @@ public static class ApplicationDependencyExtension
         return services;
     }
     
+    public static IServiceCollection AddConfigurations(this IServiceCollection services,IConfiguration configuration = null)
+    {
+        services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);
+        services.Configure<Shared.Security.Jwt.TokenOptions>(configuration.GetSection("JwtTokenOptions"));
+        return services;
+    }
+
 }

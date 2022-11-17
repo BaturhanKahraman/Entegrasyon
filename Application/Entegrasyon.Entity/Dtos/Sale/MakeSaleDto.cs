@@ -3,6 +3,7 @@
 public sealed record MakeSaleDto(
     Guid SalePersonId,
     int CustomerId,
+    double GeneralDiscount,
     ICollection<SaleItemDto> SaleItems);
 public sealed record SaleItemDto(
     Guid ProductVariantId,

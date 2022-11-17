@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Sales;
@@ -13,12 +14,14 @@ public sealed class SaleManager
     private readonly IMapper _mapper;
     private readonly FluentValidator _fluentValidator;
     private readonly OfficeStockManager _officeStockManager;
-    public SaleManager(ApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, OfficeStockManager officeStockManager)
+    private readonly ISaleDal _saleDal;
+    public SaleManager(ApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, OfficeStockManager officeStockManager, ISaleDal saleDal)
     {
         _applicationLogManager = applicationLogManager;
         _mapper = mapper;
         _fluentValidator = fluentValidator;
         _officeStockManager = officeStockManager;
+        _saleDal = saleDal;
     }
 
     public async Task<IResult> MakeSale(MakeSaleDto dto)
@@ -32,8 +35,13 @@ public sealed class SaleManager
         };
         var decreaseStockResult = await _officeStockManager.DecreaseProductsStock(dto.SaleItems.Select(x => 
             new DecreaseStockDto(x.ProductVariantId,x.Quantity)));
-        if(!decreaseStockResult.Success)
+        if (!decreaseStockResult.Success)
+        {
+            //await _applicationLogManager.AddLog("Satış ", LogType.Sale, LogAction.Add, dto);
             return decreaseStockResult;
+        }
+        await _saleDal.AddAsync(sale);
+        await _applicationLogManager.AddLog("Satış başarı ile tamamlandı.", LogType.Sale, LogAction.Add, dto);
         return new SuccessResult();
     }
     

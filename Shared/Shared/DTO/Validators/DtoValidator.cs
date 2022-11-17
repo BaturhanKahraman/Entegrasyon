@@ -31,7 +31,7 @@ namespace Shared.DTO.Validators
                 );
             foreach (var dtoProperty in dtoValidateObject.DtoProperties)
             {
-                var dtoOrginalProperty = dto.GetType().GetProperties().FirstOrDefault(x => string.Equals(x.Name,dtoProperty.PropertyName));
+                var dtoOrginalProperty = dto.GetType().GetProperties().FirstOrDefault(x => string.Equals(x.Name,dtoProperty.PropertyName,StringComparison.OrdinalIgnoreCase));
                 
                 var rules = dtoProperty.RuleValidations.Select(x => x.ApplicableRule);
                 foreach (var rule in rules)
@@ -39,7 +39,11 @@ namespace Shared.DTO.Validators
                     var value =dtoOrginalProperty.GetValue(dto);
                     if (value == null)
                         continue;
-
+                    var valueType = value.GetType();//can this return object ? if it can gonna be write casting extension.
+                    if (valueType.IsValueType && valueType is IComparable valueComparable)
+                    {
+                        //valueComparable.CompareTo(rule.);
+                    }
                 }
             }
             throw new NotImplementedException();
