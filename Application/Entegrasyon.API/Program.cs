@@ -54,9 +54,11 @@ builder.AddSerilogWithLoggerProvider(builder.Configuration);
 var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
-    var lifeTimeHandler = app.Services.GetService<ApplicationLifetimeManager>();
+    await using var serviceScope = app.Services.CreateAsyncScope();
+    var lifeTimeHandler = serviceScope.ServiceProvider.GetRequiredService<ApplicationLifetimeManager>();
     if(lifeTimeHandler != null)
         await lifeTimeHandler.ApplyStartActions();
+    await serviceScope.DisposeAsync();
 });
 app.AddCustomExceptionHandlerMiddleware();
 app.UseSwagger();
