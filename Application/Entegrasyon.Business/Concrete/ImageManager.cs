@@ -17,7 +17,8 @@ public class ImageManager
         _imageDal = imageDal;
         _fileStorage = fileStorage;
     }
-
+    //TODO
+    //artık product variant ile beraber geliyor.
     public async Task<IResult> AddProductImages(AddProductDto dto,MainProduct addedProduct)
     {
         var images = new List<Image>();
@@ -30,15 +31,15 @@ public class ImageManager
             foreach(var formFile in productVariantDto.UploadedImages)
             {
                 string containerName = Path.Combine("images",productVariant.Id.ToString());
-                string extension = formFile.FileName.Split('.').LastOrDefault();
+                string extension = formFile.UploadedImageFile.FileName.Split('.').LastOrDefault();
                 string imageName = Path.GetRandomFileName() + "." + extension;
-                string imageUrl = await _fileStorage.UploadFile(formFile.OpenReadStream(),imageName,
+                string imageUrl = await _fileStorage.UploadFile(formFile.UploadedImageFile.OpenReadStream(),imageName,
                     containerName);
                 var image = new Image()
                 {
                     ProductVariant = productVariant,
                     Src = imageUrl,
-                    AlternativeText = formFile.FileName,
+                    AlternativeText = formFile.UploadedImageFile.FileName,
                     FileStorageType = _fileStorage.FileStorageType
                 };
                 images.Add(image);

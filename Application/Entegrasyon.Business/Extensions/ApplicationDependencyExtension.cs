@@ -22,9 +22,9 @@ public static class ApplicationDependencyExtension
     {
         services.AddScoped<ApplicationLifetimeManager>();
        //services.AddScoped<DbContext,IntegrationDbContext>();
-
+       
         services.AddSharedSettings();
-        //services.AddUserServices<ApplicationUser,RootLogin,RootRole,RootClaim,IntegrationDbContext>();
+        services.AddUserServices<ApplicationUser,RootLogin,RootRole,RootClaim,IntegrationDbContext>();
 
         services.AddScoped<ILogDal,EfLogDal>();
         services.AddScoped<IApplicationUserDal,EfApplicationUserDal>();

@@ -21,6 +21,7 @@ public class ApplicationLifetimeManager
     }
     private async Task MigrateDatabase(CancellationToken ct = default)
     {
+        //handle multiple databases.
         var pendingMigrations = await _context.Database.GetPendingMigrationsAsync(ct);
         if (pendingMigrations.Any())
             await _context.Database.MigrateAsync(ct);

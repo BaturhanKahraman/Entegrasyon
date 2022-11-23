@@ -14,6 +14,12 @@ public sealed class AddProductVariantDto
     public decimal VatRate { get; set; }
     public AttributeKeyValue[] AttributeKeyValues { get; set; }
     public List<AddBranchOfficeStockDto> BranchOfficeStocks { get; set; }
-    public IFormFileCollection UploadedImages { get; set; }
+    public IEnumerable<UploadedImage> UploadedImages { get; set; }
     
+}
+
+public sealed record UploadedImage
+{
+    public IFormFile UploadedImageFile { get; set; }
+    public bool IsMainImage { get; set; }
 }
