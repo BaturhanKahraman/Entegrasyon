@@ -16,7 +16,7 @@ where T : class, new()
 
     Task<bool> Exists(Expression<Func<T,bool>>? expression = null);
 
-    IQueryable<TResult> GetTransformedEntities<TResult>(
+    Task<List<TResult>> GetTransformedEntitiesAsync<TResult>(
         Expression<Func<T,TResult>> selector,
         IEnumerable<(string, string)> orderTuples = null,
         Expression<Func<T,bool>> expression= null);

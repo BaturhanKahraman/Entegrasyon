@@ -16,7 +16,7 @@ public sealed class CategoryAttribute : BaseEntity
     public bool Varianter { get; set; }
     public bool Slicer { get; set; }
     public ICollection<CategoryAttributeValue> CategoryAttributeValues { get; set; }
-    public ICollection<Category> Category { get; set; }
+    public ICollection<Category> Categories { get; set; }
     [NotMapped]
     public int TempMappingId { get; set; }
 }

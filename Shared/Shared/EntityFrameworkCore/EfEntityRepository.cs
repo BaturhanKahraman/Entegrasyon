@@ -54,16 +54,13 @@ where TContext : DbContext
         entities = entities.ApplyFilter(expression);
         return await entities.Select(selector).FirstOrDefaultAsync();
     }
-    public IQueryable<TResult> GetTransformedEntities<TResult>(
+    public Task<List<TResult>> GetTransformedEntitiesAsync<TResult>(
         Expression<Func<TEntity,TResult>> selector,
         IEnumerable<(string,string)> orderTuples = null,
         Expression<Func<TEntity,bool>> expression = null
         )
     {
-        var entities =_context.Set<TEntity>().AsNoTracking();
-        entities = entities.OrderQueryableDynamicly(orderTuples);
-        entities = entities.ApplyFilter(expression);
-        return entities.Select(selector).AsQueryable();
+        return GetTransformedEntitiesAsQueryable(selector,orderTuples,expression).ToListAsync();
     }
     public async Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
         int pageIndex,
@@ -72,7 +69,7 @@ where TContext : DbContext
         IEnumerable<(string,string)> orderTuples = null,
         Expression<Func<TEntity,bool>> expression = null)
     {
-        return await GetTransformedEntities(selector,orderTuples,expression).ToPage(pageIndex,pageSize);
+        return await GetTransformedEntitiesAsQueryable(selector,orderTuples,expression).ToPage(pageIndex,pageSize);
     }
     
     public async Task<bool> Exists(Expression<Func<TEntity,bool>>? expression = null)
@@ -81,6 +78,16 @@ where TContext : DbContext
             ? await _context.Set<TEntity>().AnyAsync()
             : await _context.Set<TEntity>().AnyAsync(expression);
     }
-
+    private IQueryable<TResult> GetTransformedEntitiesAsQueryable<TResult>(
+       Expression<Func<TEntity, TResult>> selector,
+       IEnumerable<(string, string)> orderTuples = null,
+       Expression<Func<TEntity, bool>> expression = null
+       )
+    {
+        var entities = _context.Set<TEntity>().AsNoTracking();
+        entities = entities.OrderQueryableDynamicly(orderTuples);
+        entities = entities.ApplyFilter(expression);
+        return entities.Select(selector).AsQueryable();
+    }
 
 }

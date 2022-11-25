@@ -30,13 +30,13 @@ public class CategoryAttributeManager
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributesByCategory(int categoryId)
     {
-        var result = await _attributeDal.GetTransformedEntities(
+        var result = await _attributeDal.GetTransformedEntitiesAsync(
             x => new CategoryAttribute
             {
                 Id = x.Id, Required = x.Required, Slicer = x.Slicer, Varianter = x.Varianter,
                 AllowCustom = x.AllowCustom, CreatedAt = x.CreatedAt,
                 CategoryAttributeValues = x.CategoryAttributeValues, CategoryAttributeKey = x.CategoryAttributeKey
-            },expression:x=>x.Category.Any(c=>c.Id==categoryId)).ToListAsync();
+            },expression:x=>x.Categories.Any(c=>c.Id==categoryId));
 
         return new SuccessDataResult<List<CategoryAttribute>>(result);
     }
