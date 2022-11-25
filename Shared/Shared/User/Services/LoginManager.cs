@@ -82,7 +82,7 @@ where TLogin:RootLogin,new()
         string ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
         var login = new TLogin()
         {
-            IpAddress = ipAddress, LoginTime = DateTimeOffset.Now, RootUserId =userId
+            IpAddress = ipAddress, LoginTime = DateTimeOffset.UtcNow, RootUserId =userId
         };
         await _tContext.Set<TLogin>().AddAsync(login,_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
         await _tContext.SaveChangesAsync(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
