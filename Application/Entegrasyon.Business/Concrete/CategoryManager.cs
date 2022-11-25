@@ -62,11 +62,11 @@ namespace Entegrasyon.Business.Concrete
                 new ("IsFavorite", "desc"),
                 new ("Id", "desc")
             };
-            var categoriesDto = await _categoryDal.GetTransformedEntities(x => new CategoryDetailDto(
+            var categoriesDto = await _categoryDal.GetTransformedEntitiesAsync(x => new CategoryDetailDto(
                 x.Id,
                 x.Products.Sum(p => p.ProductVariants
                     .SelectMany(pv => pv.BranchOfficeStocks)
-                    .Sum(bo => bo.CurrentStock)),x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples: orderTuples).ToListAsync();
+                    .Sum(bo => bo.CurrentStock)),x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples: orderTuples);
 
             return new SuccessDataResult<List<CategoryDetailDto>>(categoriesDto);
         }
@@ -110,9 +110,9 @@ namespace Entegrasyon.Business.Concrete
             {
                 new("Id", "desc")
             };
-            var result = await _categoryDal.GetTransformedEntities(x =>
+            var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
                     new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.IsFavorite)
-                .ToListAsync();
+                ;
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
         public async Task<IDataResult<List<CategoryDetailDto>>> GetSubCategories()
@@ -123,9 +123,8 @@ namespace Entegrasyon.Business.Concrete
                 new("Name","asc"),
                 new("Id", "desc"),
             };
-            var result = await _categoryDal.GetTransformedEntities(x =>
-                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.SubCategories.Count==0)
-                .ToListAsync();
+            var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
+                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.SubCategories.Count==0);
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
     }

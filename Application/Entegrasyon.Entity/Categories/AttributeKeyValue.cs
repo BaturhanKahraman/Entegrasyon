@@ -2,9 +2,8 @@
 
 namespace Entegrasyon.Entity.Categories;
 
-public sealed class AttributeKeyValue : BaseEntity
+public sealed class AttributeKeyValue 
 {
-    public int Id { get; set; }
     public int CategoryAttributeId { get; set; }
     public CategoryAttribute CategoryAttribute { get; set; }
     public string CustomValue { get; set; }

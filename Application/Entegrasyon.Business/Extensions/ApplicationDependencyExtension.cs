@@ -56,7 +56,7 @@ public static class ApplicationDependencyExtension
         services.AddScoped<ProductVariantManager>();
         services.AddScoped<ImageManager>();
         services.AddScoped<DiscountVoucherManager>();
-
+        services.AddScoped<AttributeKeyValueManager>();
 
         services.AddScoped<TrendyolCategories>();
         services.AddScoped<TrendyolBrands>();

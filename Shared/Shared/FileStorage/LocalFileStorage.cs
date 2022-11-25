@@ -6,29 +6,33 @@ namespace Shared.FileStorage;
 public class LocalFileStorage : ILocalFileStorage
 {
     public FileStorageType FileStorageType => FileStorageType.Local;
-    public string LocalFileRoot { get;}
+    private string LocalFileRoot { get;}
+    private string ApplicationUrl { get; }
+    private string FullRoot => Path.Combine(ApplicationUrl, LocalFileRoot);
     public LocalFileStorage(IOptions<LocalFileStorageOption> options)
     {
         LocalFileRoot = options.Value.RootPath;
     }
     public async Task<string> UploadFile(Stream fileStream, string fileName, string containerName)
     {
-        if(!Directory.Exists(CombinePath(containerName)))
-            Directory.CreateDirectory(CombinePath(containerName!));
+        string fullRootPath = CombinePath(containerName);
+        if(!Directory.Exists(fullRootPath))
+            Directory.CreateDirectory(fullRootPath);
         fileStream.Seek(0,SeekOrigin.Begin);
-        string fullPath = Path.Combine(CombinePath(containerName), fileName);
-        await using var file = File.Create(Path.Combine(CombinePath(containerName),fileName));
+        string fullPath = Path.Combine(fullRootPath, fileName);
+        await using var file = File.Create(Path.Combine(fullRootPath, fileName));
         await fileStream.CopyToAsync(file);
         return fullPath;
     }
     public Task<Stream> DownloadFile(string fileName,string containerName)
     {
-        if(!Directory.Exists(CombinePath(containerName)))
-            throw new DirectoryNotFoundException($"Directory {CombinePath(containerName)} not found");
-        if(!File.Exists(Path.Combine(CombinePath(containerName),fileName)))
+        string fullDirectoryPath = CombinePath(containerName);
+        if(!Directory.Exists(fullDirectoryPath))
+            throw new DirectoryNotFoundException($"Directory {fullDirectoryPath} not found");
+        if(!File.Exists(Path.Combine(fullDirectoryPath, fileName)))
             throw new FileNotFoundException($"File {fileName} not found");
-        return Task.FromResult<Stream>(File.OpenRead(Path.Combine(CombinePath(containerName),fileName)));
+        return Task.FromResult<Stream>(File.OpenRead(Path.Combine(fullDirectoryPath, fileName)));
     }
-    private string CombinePath(string containerName)=>Path.Combine(LocalFileRoot, containerName);
+    private string CombinePath(string containerName)=>Path.Combine(FullRoot, containerName);
     
 }
