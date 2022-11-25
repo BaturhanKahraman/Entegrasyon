@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.DiscountVouchers;
-using Shared;
+using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

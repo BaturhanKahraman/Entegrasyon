@@ -1,7 +1,7 @@
 ﻿using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Customers;
-using Shared;
 using Shared.Entity;
+using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

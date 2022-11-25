@@ -10,15 +10,13 @@ namespace Entegrasyon.Business.Concrete;
 public class AuthManager
 {
     private readonly IUserManager<ApplicationUser> _userManager;
-    private readonly IJwtBlackListService _jwtBlackListService;
     private readonly Microsoft.AspNetCore.Http.HttpContext _httpContext;
     private readonly ITokenHelper _tokenHelper;
     private readonly ILoginManager<ApplicationUser> _loginManager;
 
-    public AuthManager(IUserManager<ApplicationUser> userManager, IJwtBlackListService jwtBlackListService, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, ITokenHelper tokenHelper, ILoginManager<ApplicationUser> loginManager)
+    public AuthManager(IUserManager<ApplicationUser> userManager,Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, ITokenHelper tokenHelper, ILoginManager<ApplicationUser> loginManager)
     {
         _userManager = userManager;
-        _jwtBlackListService = jwtBlackListService;
         _tokenHelper = tokenHelper;
         _loginManager = loginManager;
         _httpContext = httpContextAccessor.HttpContext;

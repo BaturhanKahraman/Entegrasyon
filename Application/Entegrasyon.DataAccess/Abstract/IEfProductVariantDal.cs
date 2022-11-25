@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.Products;
-using Shared;
+using Shared.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Entegrasyon.DataAccess.Abstract;

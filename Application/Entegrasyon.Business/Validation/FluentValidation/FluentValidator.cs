@@ -18,7 +18,7 @@ public class FluentValidator
     public async Task ValidateAndThrowAsync<T>(T entity)
     {
         if(entity == null)
-            throw new ValidationException(new ValidationFailure[1]{new ValidationFailure("Object","Obje null olarak geldi.")});
+            throw new ValidationException(new ValidationFailure[1]{new ValidationFailure("Object","Obje boş geldi. Lütfen geliştirici ile irtibata geçin.")});
         var validator = (IValidator<T>)_serviceProvider.GetService(typeof(IValidator<T>));
         if(validator==null)
             throw new Exception("Validator not found!");

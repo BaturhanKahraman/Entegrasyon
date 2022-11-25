@@ -16,11 +16,11 @@ public class EfMainProductDal : EfEntityRepository<MainProduct,IntegrationDbCont
         _context = context;
     }
 
-    public async Task<ProductDetailDto> GetProductDetail(Expression<Func<MainProduct,bool>> expr)
+    public async Task<ProductsDetailDto> GetProductDetail(Expression<Func<MainProduct,bool>> expr)
     {
         return await _context.MainProducts
             .Where(expr)
-            .Select(x => new ProductDetailDto(x.Id,
+            .Select(x => new ProductsDetailDto(x.Id,
                 x.Title,
                 x.Description,
                 x.StockCode,
