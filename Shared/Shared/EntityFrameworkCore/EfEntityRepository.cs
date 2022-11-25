@@ -87,7 +87,7 @@ where TContext : DbContext
         var entities = _context.Set<TEntity>().AsNoTracking();
         entities = entities.OrderQueryableDynamicly(orderTuples);
         entities = entities.ApplyFilter(expression);
-        return entities.Select(selector).AsQueryable();
+        return entities.Select(selector);
     }
 
 }
