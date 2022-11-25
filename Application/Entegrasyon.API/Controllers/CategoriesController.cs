@@ -16,7 +16,8 @@ namespace Entegrasyon.API.Controllers
         {
             _categoryManager = categoryManager;
         }
-
+        //TODO
+        //attribute ekleme işlemi yapılacak.
         [HttpPost]
         public async Task<IActionResult> AddCategory(AddCategoryDto dto)
         {

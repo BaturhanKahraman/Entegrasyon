@@ -1,5 +1,6 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Products;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -18,4 +19,6 @@ public class ProductVariantManager
     {
         return await _productVariantDal.GetAsync(x => x.Id == id);
     }
+
+    public Task<ProductVariant> GetLastProductVariantWithBarcode() => _productVariantDal.Table.LastOrDefaultAsync(x=>x.Barcode!=null);
 }

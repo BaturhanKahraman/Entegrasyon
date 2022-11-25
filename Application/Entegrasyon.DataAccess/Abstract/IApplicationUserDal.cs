@@ -1,6 +1,6 @@
 ﻿using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Users;
-using Shared;
+using Shared.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Entegrasyon.DataAccess.Abstract;

@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.Logs;
-using Shared;
+using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

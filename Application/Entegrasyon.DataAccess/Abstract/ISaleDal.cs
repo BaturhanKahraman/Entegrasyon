@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.Sales;
-using Shared;
+using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

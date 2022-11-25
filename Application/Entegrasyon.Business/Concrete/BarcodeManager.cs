@@ -1,19 +1,25 @@
-﻿using Shared.Helpers;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Shared.Helpers;
+using System.Numerics;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class BarcodeManager
 {
-    private readonly IRandomGenerator _randomGenerator;
+    private readonly ProductVariantManager _productVariantManager;
     private const string BarcodeCountryCode = "869";
-    public BarcodeManager(IRandomGenerator randomGenerator)
+    public BarcodeManager(ProductVariantManager productVariantManager)
     {
-        _randomGenerator = randomGenerator;
+        _productVariantManager = productVariantManager;
     }
 
-    public string GenerateBarcode()
+    public async Task<string> GenerateBarcode()
     {
-        
-        return String.Empty;
+        var pv = await _productVariantManager.GetLastProductVariantWithBarcode();
+        if(pv == null)
+            return "0000000000001";
+        var barcodeNumber = BigInteger.Parse(pv.Barcode);
+        barcodeNumber++;
+        return barcodeNumber.ToString();
     }
 }
