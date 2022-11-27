@@ -1,7 +1,7 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Product;
 
-public class AddBranchOfficeStockDto
+public sealed record AddBranchOfficeStockDto
 {
-    public int BranchOfficeId { get; set; }
-    public int FirstTotalStock { get; set; }
+    public int BranchOfficeId { get; init; }
+    public int FirstTotalStock { get; init; }
 }

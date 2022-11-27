@@ -21,8 +21,7 @@ public sealed class ProductVariant :BaseEntity
     public decimal VatRate { get; set; }
     public ICollection<BranchOfficeStock> BranchOfficeStocks { get; set; }
     
-    [Column(TypeName = "jsonb")]
-    public AttributeKeyValue[] AttributeKeyValues { get; set; }//json
+    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
 
     public ICollection<Image> Images { get; set; }
 

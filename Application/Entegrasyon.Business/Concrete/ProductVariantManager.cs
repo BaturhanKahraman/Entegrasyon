@@ -20,5 +20,6 @@ public class ProductVariantManager
         return await _productVariantDal.GetAsync(x => x.Id == id);
     }
 
-    public Task<ProductVariant> GetLastProductVariantWithBarcode() => _productVariantDal.Table.LastOrDefaultAsync(x=>x.Barcode!=null);
+    public async Task<string> GetLastProductVariantBarcode() => (await _productVariantDal.Table
+        .AsNoTracking().OrderByDescending(x=>x.CreatedAt).FirstOrDefaultAsync(x=>x.Barcode!=null))?.Barcode;
 }

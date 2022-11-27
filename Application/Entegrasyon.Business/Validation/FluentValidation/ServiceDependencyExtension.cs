@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 

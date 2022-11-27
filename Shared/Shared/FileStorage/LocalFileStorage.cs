@@ -11,7 +11,8 @@ public class LocalFileStorage : ILocalFileStorage
     private string FullRoot => Path.Combine(ApplicationUrl, LocalFileRoot);
     public LocalFileStorage(IOptions<LocalFileStorageOption> options)
     {
-        LocalFileRoot = options.Value.RootPath;
+        LocalFileRoot = options.Value.RootPath ?? "wwwroot";
+        ApplicationUrl = options.Value.ApplicationUrl ?? "";
     }
     public async Task<string> UploadFile(Stream fileStream, string fileName, string containerName)
     {
@@ -22,7 +23,7 @@ public class LocalFileStorage : ILocalFileStorage
         string fullPath = Path.Combine(fullRootPath, fileName);
         await using var file = File.Create(Path.Combine(fullRootPath, fileName));
         await fileStream.CopyToAsync(file);
-        return fullPath;
+        return Path.Combine(ApplicationUrl,containerName,fileName);
     }
     public Task<Stream> DownloadFile(string fileName,string containerName)
     {
@@ -33,6 +34,6 @@ public class LocalFileStorage : ILocalFileStorage
             throw new FileNotFoundException($"File {fileName} not found");
         return Task.FromResult<Stream>(File.OpenRead(Path.Combine(fullDirectoryPath, fileName)));
     }
-    private string CombinePath(string containerName)=>Path.Combine(FullRoot, containerName);
+    private string CombinePath(string containerName)=>Path.Combine(LocalFileRoot, containerName);
     
 }

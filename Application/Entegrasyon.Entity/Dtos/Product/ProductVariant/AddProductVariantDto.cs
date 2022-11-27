@@ -1,7 +1,7 @@
 ﻿using Entegrasyon.Entity.Categories;
 using Microsoft.AspNetCore.Http;
 
-namespace Entegrasyon.Entity.Dtos.Product;
+namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
 public sealed class AddProductVariantDto
 {
@@ -12,10 +12,10 @@ public sealed class AddProductVariantDto
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; }
-    public AttributeKeyValue[] AttributeKeyValues { get; set; }
+    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
     public List<AddBranchOfficeStockDto> BranchOfficeStocks { get; set; }
-    public IEnumerable<UploadedImage> UploadedImages { get; set; }
-    
+    public ICollection<UploadedImage> UploadedImages { get; set; }
+
 }
 
 public sealed record UploadedImage

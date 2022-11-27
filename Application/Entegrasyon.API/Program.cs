@@ -8,6 +8,7 @@ using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
 using Shared.Logger.Serilog;
 using Entegrasyon.Business.Concrete;
+using Shared.FileStorage.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -16,7 +17,8 @@ builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
 builder.Services.AddApplicationDependencies();
 builder.Services.AddFileStorageCore();
-builder.Services.AddLocalFileStorage(x=>builder.Configuration.GetSection("LocalFileStorageOptions"));
+
+builder.Services.AddLocalFileStorage(builder.Configuration.GetSection("LocalFileStorageOptions"));
 
 builder.Services.AddDbContext<HeadDbContext>(x =>
 {
@@ -64,7 +66,7 @@ app.AddCustomExceptionHandlerMiddleware();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
+app.UseStaticFiles();
 app.UseCors("myclient");
 
 app.UseHttpsRedirection();

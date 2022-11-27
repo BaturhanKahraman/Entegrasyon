@@ -46,7 +46,7 @@ public static class QueryableExtensions
             method += "OrderBy";
         else
             method += "ThenBy";
-        if (string.Equals(orderDirection,"asc",StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(orderDirection,"asc",StringComparison.OrdinalIgnoreCase))
             method += "Descending";
         return Expression.Call(typeof(Queryable),method,new[] { typeof(TEntity),expressionProperty.Type },queryable.Expression,Expression.Quote(expression));
     }

@@ -78,7 +78,7 @@ public class IntegrationDbContext : DbContext
     public DbSet<CategoryAttributeValueMarketPlaceMatch> CategoryAttributeValueMarketPlaceMatches { get; set; }
     public DbSet<BrandMarketPlaceMatch> BrandMarketPlaceMatches { get; set; }
     public DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
-
+    public DbSet<AttributeKeyValue> AttributeKeyValues { get; set; }
     public DbSet<ApplicationUser> Users { get; set; }
     public DbSet<RootRole> Roles { get; set; }
     public DbSet<RootClaim> Claims { get; set; }

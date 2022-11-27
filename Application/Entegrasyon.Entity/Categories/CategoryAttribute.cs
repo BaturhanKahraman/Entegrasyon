@@ -17,6 +17,9 @@ public sealed class CategoryAttribute : BaseEntity
     public bool Slicer { get; set; }
     public ICollection<CategoryAttributeValue> CategoryAttributeValues { get; set; }
     public ICollection<Category> Categories { get; set; }
+
+    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
+        
     [NotMapped]
     public int TempMappingId { get; set; }
 }
