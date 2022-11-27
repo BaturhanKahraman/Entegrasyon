@@ -120,7 +120,7 @@ public class ProductManager
                         pv.SalePrice,pv.CostPrice,pv.VatRate,pv.AttributeKeyValues,
                             pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId,bos.FirstTotalStock)).ToList(),
                         pv.Images.Select(img => new EditableImageDto(img.Id,img.Src,img.IsCoverImage,img.IsDeleted)).ToList()
-                        )sss
+                        )
                 ).ToList()),x => x.Id == id);
         return new SuccessDataResult<EditProductDto>(productEditDto);
     }
