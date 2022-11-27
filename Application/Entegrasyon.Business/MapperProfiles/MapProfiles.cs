@@ -5,6 +5,7 @@ using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Products;
 using Shared.Entity;

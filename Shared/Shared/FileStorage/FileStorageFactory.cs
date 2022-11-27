@@ -7,9 +7,9 @@ namespace Shared.FileStorage;
 
 public static class FileStorageExtension
 {
-    public static IServiceCollection AddLocalFileStorage(this IServiceCollection serviceCollection,Action<LocalFileStorageOption> option)
+    public static IServiceCollection AddLocalFileStorage(this IServiceCollection serviceCollection,IConfiguration config)
     {
-        serviceCollection.Configure(option);
+        serviceCollection.Configure<LocalFileStorageOption>(config);
         serviceCollection.AddSingleton(x =>
             x.GetService<FileStorageFactory>()!.Create(FileStorageType.Local));
         return serviceCollection;

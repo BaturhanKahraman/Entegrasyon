@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Entity.Dtos.Product;
+﻿using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using FluentValidation;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;

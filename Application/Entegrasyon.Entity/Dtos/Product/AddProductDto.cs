@@ -1,4 +1,6 @@
-﻿namespace Entegrasyon.Entity.Dtos.Product;
+﻿using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+
+namespace Entegrasyon.Entity.Dtos.Product;
 
 public sealed class AddProductDto
 {

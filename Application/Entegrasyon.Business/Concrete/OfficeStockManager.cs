@@ -47,9 +47,11 @@ public class OfficeStockManager
 
     public IResult CheckIfProductCountZero(params AddBranchOfficeStockDto[] stocks)
     {
+        if (stocks == null)
+            return new SuccessResult();
         var stocksList = stocks.ToList();
-        if(stocksList.Any(x=>x.FirstTotalStock==0))
-            return new ErrorResult("Bir veya daha fazla ürün stokta bulunmamaktadır");
+        if(stocksList.All(x=>x.FirstTotalStock==0))
+            return new ErrorResult("Lütfen en az bir stok girin.");
         return new SuccessResult();
     }
 

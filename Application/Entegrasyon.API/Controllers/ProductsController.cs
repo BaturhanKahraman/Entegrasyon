@@ -41,5 +41,14 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetProductByIdForEdit(Guid id)
+        {
+            var result = await _productManager.GetProductByIdForEdit(id);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
     }
 }

@@ -124,7 +124,8 @@ namespace Entegrasyon.Business.Concrete
                 new("Id", "desc"),
             };
             var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
-                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.SubCategories.Count==0);
+                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,
+                x => x.SubCategories.Count==0 && x.CategoryAttributes.Count>=1);
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
     }

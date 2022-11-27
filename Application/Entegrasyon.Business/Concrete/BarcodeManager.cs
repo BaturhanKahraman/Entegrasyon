@@ -8,6 +8,7 @@ public class BarcodeManager
 {
     private readonly ProductVariantManager _productVariantManager;
     private const string BarcodeCountryCode = "869";
+    private static readonly SemaphoreSlim SemaphoreSlim = new (1,1);
     public BarcodeManager(ProductVariantManager productVariantManager)
     {
         _productVariantManager = productVariantManager;
@@ -15,11 +16,15 @@ public class BarcodeManager
 
     public async Task<string> GenerateBarcode()
     {
-        var pv = await _productVariantManager.GetLastProductVariantWithBarcode();
-        if(pv == null)
+        //distrubuted lock needs to be used.
+        await SemaphoreSlim.WaitAsync();
+        var lastBarcode = await _productVariantManager.GetLastProductVariantBarcode();
+        SemaphoreSlim.Release();
+        if(string.IsNullOrEmpty(lastBarcode))
             return "0000000000001";
-        var barcodeNumber = BigInteger.Parse(pv.Barcode);
+        var barcodeNumber = BigInteger.Parse(lastBarcode);
         barcodeNumber++;
-        return barcodeNumber.ToString();
+        string newBarcode = barcodeNumber.ToString().PadLeft(13, '0');
+        return newBarcode;
     }
 }

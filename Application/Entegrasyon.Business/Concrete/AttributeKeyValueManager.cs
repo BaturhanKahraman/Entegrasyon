@@ -8,8 +8,8 @@ public class AttributeKeyValueManager
     public void ClearEmptyAttributes (ProductVariant pv)
     {
         pv.AttributeKeyValues = pv.AttributeKeyValues
-            .Where(x => (x.AttributeValueId != null && x.AttributeValueId!=0) || !string.IsNullOrEmpty(x.CustomValue))
-            .ToArray();
+            .Where(x => x.AttributeValueId.HasValue ||
+                        !string.IsNullOrEmpty(x.CustomValue)).ToList();
     }
 
 }

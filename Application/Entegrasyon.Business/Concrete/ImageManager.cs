@@ -17,8 +17,7 @@ public class ImageManager
         _imageDal = imageDal;
         _fileStorage = fileStorage;
     }
-    //TODO
-    //artık product variant ile beraber geliyor.
+    
     public async Task<IResult> AddProductImages(AddProductDto dto,MainProduct addedProduct)
     {
         var images = new List<Image>();
