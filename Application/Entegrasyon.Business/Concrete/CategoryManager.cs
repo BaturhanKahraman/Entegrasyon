@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+﻿using AutoMapper;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
@@ -13,24 +14,21 @@ namespace Entegrasyon.Business.Concrete
     {
         private readonly ICategoryDal _categoryDal;
         private readonly ApplicationLogManager _applicationLogManager;
+        private readonly IMapper _mapper;
 
-        public CategoryManager(ICategoryDal categoryDal,ApplicationLogManager applicationLogManager)
+        public CategoryManager(ICategoryDal categoryDal, ApplicationLogManager applicationLogManager, IMapper mapper)
         {
             _categoryDal = categoryDal;
             _applicationLogManager = applicationLogManager;
+            _mapper = mapper;
         }
 
         public async Task<IResult> AddCategory(AddCategoryDto dto)
         {
             await _applicationLogManager.AddLog("Kategori ekleniyor.",LogType.Category,LogAction.Add,dto);
-            var category = new Category
-            {
-                Name = dto.Name,
-                SuperCategoryId = dto.SuperCategoryId,
-            };
+            var category = _mapper.Map<Category>(dto);
             if(dto.CategoryAttributes != null)
                 category.CategoryAttributes = dto.CategoryAttributes.ToList();
-
             await _categoryDal.AddAsync(category);
             await _applicationLogManager.AddLog("Kategori eklendi.",LogType.Category,LogAction.Add);
             return new SuccessResult();

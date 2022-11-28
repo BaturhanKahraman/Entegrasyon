@@ -19,7 +19,7 @@ public sealed class CategoryAttribute : BaseEntity
     public ICollection<Category> Categories { get; set; }
 
     public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
-        
+
     [NotMapped]
     public int TempMappingId { get; set; }
 }
