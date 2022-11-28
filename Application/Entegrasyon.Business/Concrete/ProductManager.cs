@@ -20,18 +20,16 @@ public class ProductManager
 {
     private readonly IMainProductDal _productDal;
     private readonly ApplicationLogManager _applicationLogManager;
-    private readonly IRandomGenerator _randomGenerator;
     private readonly IMapper _mapper;
     private readonly FluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
     private readonly ImageManager _imageManager;
     private readonly AttributeKeyValueManager _attributeKeyValueManager;
     private readonly BarcodeManager _barcodeManager;
-    public ProductManager(IMainProductDal productDal,ApplicationLogManager applicationLogManager,IRandomGenerator randomGenerator,IMapper mapper,FluentValidator validator,OfficeStockManager officeStockManager,ImageManager imageManager,AttributeKeyValueManager attributeKeyValueManager,BarcodeManager barcodeManager)
+    public ProductManager(IMainProductDal productDal,ApplicationLogManager applicationLogManager,IMapper mapper,FluentValidator validator,OfficeStockManager officeStockManager,ImageManager imageManager,AttributeKeyValueManager attributeKeyValueManager,BarcodeManager barcodeManager)
     {
         _productDal = productDal;
         _applicationLogManager = applicationLogManager;
-        _randomGenerator = randomGenerator;
         _mapper = mapper;
         _validator = validator;
         _officeStockManager = officeStockManager;
@@ -70,8 +68,15 @@ public class ProductManager
         return new SuccessDataResult<ProductsDetailDto>(_mapper.Map<ProductsDetailDto>(product));
     }
 
-    public async Task<IResult> UpdateProduct()
+    public async Task<IResult> UpdateProduct(EditProductDto dto)
     {
+        //TODO
+        await _applicationLogManager.AddLog("Ürün güncelleniyor.", LogType.Product, LogAction.Update, dto);
+        var product = _mapper.Map<MainProduct>(dto);//tam olarak eşleşmesi gerekiyor
+        //silinmiş fotoğrafların silinmesi ve yeni gelen foto varsa yüklenmesi gerek
+
+        await _productDal.UpdateAsync(product);
+        await _applicationLogManager.AddLog("Ürün güncellendi.", LogType.Product, LogAction.Update, dto);
         return new SuccessResult();
     }
 

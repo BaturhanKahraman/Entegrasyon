@@ -50,5 +50,13 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+        [HttpPost]
+        public async Task<IActionResult> EditProduct(EditProductDto dto)
+        {
+            var result = await _productManager.UpdateProduct(dto);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
     }
 }

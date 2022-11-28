@@ -40,6 +40,10 @@ public class MapProfiles:Profile
         CreateMap<AddProductVariantDto,ProductVariant>().ReverseMap();
         CreateMap<AddBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
         CreateMap<AddCategoryDto, Category>().ReverseMap();
+        CreateMap<EditProductDto, MainProduct>();
+        CreateMap<EditProductVariantDto, ProductVariant>();
+        CreateMap<EditBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
+
         /*
           dest => dest.SomeDestinationProperty,
         opt => opt.MapFrom(src => src.SomeSourceProperty)*/
