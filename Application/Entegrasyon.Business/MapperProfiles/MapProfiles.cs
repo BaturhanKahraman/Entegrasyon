@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Entegrasyon.Business.Utility;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.CargoCompany;
@@ -11,7 +12,6 @@ using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Products;
 using Shared.Entity;
-using Brand = Entegrasyon.Entity.Products.Brand;
 
 namespace Entegrasyon.Business.MapperProfiles;
 
@@ -23,7 +23,7 @@ public class MapProfiles:Profile
         CreateMap<AddUserDto, ApplicationUser>()
             .ForMember(dest=>dest.DefaultBranchOfficeId,opt=>opt.MapFrom(src=>src.BranchOfficeId))
             .ReverseMap();
-        CreateMap<AddBrandDto, Brand>()
+        CreateMap<AddBrandDto, Entity.Products.Brand>()
             .ReverseMap();
         CreateMap<AddCargoCompanyDto,CargoCompany>()
             .ReverseMap();
@@ -39,10 +39,11 @@ public class MapProfiles:Profile
         CreateMap<AddProductDto,MainProduct>().ReverseMap();
         CreateMap<AddProductVariantDto,ProductVariant>().ReverseMap();
         CreateMap<AddBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
-        CreateMap<AddCategoryDto, Category>().ReverseMap();
+        CreateMap<AddCategoryDto, Entity.Categories.Category>().ReverseMap();
         CreateMap<EditProductDto, MainProduct>();
         CreateMap<EditProductVariantDto, ProductVariant>();
         CreateMap<EditBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
+        CreateMap<AddCategoryAttributeDto, CategoryAttribute>().ReverseMap();
 
         /*
           dest => dest.SomeDestinationProperty,

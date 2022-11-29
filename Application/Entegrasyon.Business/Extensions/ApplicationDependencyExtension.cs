@@ -39,7 +39,7 @@ public static class ApplicationDependencyExtension
         services.AddScoped<IImageDal, EfImageDal>();
         services.AddScoped<IProductVariantDal,EfProductVariantDal>();
         services.AddScoped<IDiscountVoucherDal,EfDiscountVoucherDal>();
-
+        services.AddScoped<IAttributeKeyValueDal, EfAttributeKeyValueDal>();
 
         services.AddScoped<BranchOfficeManager>();
         services.AddScoped<ApplicationRoleManager>();

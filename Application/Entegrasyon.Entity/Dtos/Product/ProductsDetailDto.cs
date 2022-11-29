@@ -4,10 +4,10 @@ public sealed class ProductsDetailDto
 {
     public ProductsDetailDto(Guid id,
         string title,
-        string? description,
-        string? stockCode,
-        string? brandName,
-        string? categoryName,
+        string description,
+        string stockCode,
+        string brandName,
+        string categoryName,
         int totalQuantity,
         int totalSoldQuantity,
         int variantCount)

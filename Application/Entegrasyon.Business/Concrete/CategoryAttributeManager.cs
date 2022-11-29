@@ -1,4 +1,6 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+﻿using AutoMapper;
+using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +12,14 @@ public class CategoryAttributeManager
 {
     private readonly ICategoryAttributeDal _attributeDal;
     private readonly ApplicationLogManager _applicationLogManager;
-
-    public CategoryAttributeManager(ICategoryAttributeDal attributeDal, ApplicationLogManager applicationLogManager)
+    private readonly FluentValidator _fluentValidator;
+    private readonly IMapper _mapper;
+    public CategoryAttributeManager(ICategoryAttributeDal attributeDal, ApplicationLogManager applicationLogManager, FluentValidator fluentValidator, IMapper mapper)
     {
         _attributeDal = attributeDal;
         _applicationLogManager = applicationLogManager;
+        _fluentValidator = fluentValidator;
+        _mapper = mapper;
     }
 
     public async Task<bool> CheckIfExits(string name)
@@ -41,9 +46,23 @@ public class CategoryAttributeManager
         return new SuccessDataResult<List<CategoryAttribute>>(result);
     }
 
-    public Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
+    public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
-        //validate
-        throw new NotImplementedException();
+        await _fluentValidator.ValidateAndThrowAsync(dto);
+        var categoryAttr = _mapper.Map<CategoryAttribute>(dto);
+        
+        await _attributeDal.AddAsync(categoryAttr);
+        return new SuccessResult();
     }
+    public async Task<IResult> AddCategoryAttributeRange(IEnumerable<AddCategoryAttributeDto> dto)
+    {
+        //döngüye gerek var mı ?
+        //içeriye gelen ve Id si olanları geldiği category'e many to many olarak eklemek gerekiyor mu ?
+        await _fluentValidator.ValidateAndThrowAsync(dto);
+        
+        var categoryAttr = _mapper.Map<IEnumerable<CategoryAttribute>>(dto);
+        await _attributeDal.AddRangeAsync(categoryAttr);
+        return new SuccessResult();
+    }
+
 }

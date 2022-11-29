@@ -9,8 +9,8 @@ public sealed class ProductVariant :BaseEntity
     public Guid Id { get; set; }
     public Guid ProductMainId { get; set; }
     public MainProduct ProductMain { get; set; }
-    public string? Barcode { get; set; }
-    public decimal? DimensionalWeight { get; set; }
+    public string Barcode { get; set; }
+    public decimal DimensionalWeight { get; set; }
     public string CurrencyType { get; set; } = "TRY";
     [Column(TypeName = "money")]
     public decimal ListPrice { get; set; }

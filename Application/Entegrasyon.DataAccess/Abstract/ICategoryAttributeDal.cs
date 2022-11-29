@@ -5,4 +5,5 @@ namespace Entegrasyon.DataAccess.Abstract;
 
 public interface ICategoryAttributeDal : IEntityRepository<CategoryAttribute>
 {
+    Task AddRangeAsync(IEnumerable<CategoryAttribute> categoryAttr);
 }

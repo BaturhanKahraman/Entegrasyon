@@ -8,8 +8,8 @@ public sealed class MainProduct : BaseEntity
 {
     public Guid Id { get; set; }
     public string Title { get; set; }
-    public string? Description { get; set; }
-    public string? StockCode { get; set; }
+    public string Description { get; set; }
+    public string StockCode { get; set; }
     public int? BrandId { get; set; }
     public Brand Brand { get; set; }
     public int CategoryId { get; set; }

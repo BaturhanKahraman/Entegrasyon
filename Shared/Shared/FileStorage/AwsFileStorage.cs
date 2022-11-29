@@ -49,7 +49,7 @@ public class AwsFileStorage : IAwsFileStorage
         throw new System.NotImplementedException();
     }
 
-    public async Task DeleteFile(string fileName,string container)
+    public Task DeleteFile(string fileName,string container)
     {
         throw new System.NotImplementedException();
     }
