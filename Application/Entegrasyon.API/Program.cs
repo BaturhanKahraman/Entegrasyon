@@ -1,6 +1,4 @@
-using MainDatabase.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
 using System.Text;
@@ -8,7 +6,6 @@ using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
 using Shared.Logger.Serilog;
 using Entegrasyon.Business.Concrete;
-using Shared.FileStorage.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
@@ -20,10 +17,7 @@ builder.Services.AddFileStorageCore();
 
 builder.Services.AddLocalFileStorage(builder.Configuration.GetSection("LocalFileStorageOptions"));
 
-builder.Services.AddDbContext<HeadDbContext>(x =>
-{
-    x.UseNpgsql(builder.Configuration.GetConnectionString("Main"));
-});
+
 builder.Services.AddCors(options =>
     options.AddPolicy("myclient",policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
