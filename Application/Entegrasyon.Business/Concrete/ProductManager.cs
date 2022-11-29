@@ -44,7 +44,8 @@ public class ProductManager
         await _validator.ValidateAndThrowAsync(dto);
         var result = LogicRunner.Run(
             await _officeStockManager.CheckIfOfficeExists(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks.Select(y => y.BranchOfficeId)).ToArray()),
-            _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
+            _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray()),
+            await _attributeKeyValueManager.ValidateAttributeKeyValues(dto.ProductVariants.SelectMany(pv=>pv.AttributeKeyValues))
             );
         if(result != null)
             return result;
@@ -121,7 +122,7 @@ public class ProductManager
     {
         var productEditDto = await _productDal.GetTransformedEntity(p =>
             new EditProductDto(p.Id,p.Title,p.Description,p.StockCode,p.BrandId!.Value,p.CategoryId,
-                    p.ProductVariants.Select(pv => new EditProductVariantDto(pv.Id,pv.DimensionalWeight.Value,pv.CurrencyType,pv.Barcode,pv.ListPrice,
+                    p.ProductVariants.Select(pv => new EditProductVariantDto(pv.Id,pv.DimensionalWeight,pv.CurrencyType,pv.Barcode,pv.ListPrice,
                         pv.SalePrice,pv.CostPrice,pv.VatRate,pv.AttributeKeyValues,
                             pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId,bos.FirstTotalStock)).ToList(),
                         pv.Images.Select(img => new EditableImageDto(img.Id,img.Src,img.IsCoverImage,img.IsDeleted)).ToList()

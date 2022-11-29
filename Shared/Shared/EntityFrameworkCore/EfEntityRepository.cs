@@ -72,7 +72,7 @@ where TContext : DbContext
         return await GetTransformedEntitiesAsQueryable(selector,orderTuples,expression).ToPage(pageIndex,pageSize);
     }
     
-    public async Task<bool> Exists(Expression<Func<TEntity,bool>>? expression = null)
+    public async Task<bool> Exists(Expression<Func<TEntity,bool>> expression = null)
     {
         return expression == null
             ? await _context.Set<TEntity>().AnyAsync()

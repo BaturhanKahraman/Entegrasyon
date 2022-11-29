@@ -27,8 +27,7 @@ namespace Entegrasyon.Business.Concrete
         {
             await _applicationLogManager.AddLog("Kategori ekleniyor.",LogType.Category,LogAction.Add,dto);
             var category = _mapper.Map<Category>(dto);
-            if(dto.CategoryAttributes != null)
-                category.CategoryAttributes = dto.CategoryAttributes.ToList();
+            //TODO
             await _categoryDal.AddAsync(category);
             await _applicationLogManager.AddLog("Kategori eklendi.",LogType.Category,LogAction.Add);
             return new SuccessResult();
