@@ -11,8 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared.Extensions;
 using Shared.User;
 using System.Diagnostics;
+using Entegrasyon.Business.Utility.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Shared.Security.Jwt;
 
 namespace Entegrasyon.Business.Extensions;
 
@@ -40,6 +42,7 @@ public static class ApplicationDependencyExtension
         services.AddScoped<IProductVariantDal,EfProductVariantDal>();
         services.AddScoped<IDiscountVoucherDal,EfDiscountVoucherDal>();
         services.AddScoped<IAttributeKeyValueDal, EfAttributeKeyValueDal>();
+        services.AddScoped<ISaleDal, EfSaleDal>();
 
         services.AddScoped<BranchOfficeManager>();
         services.AddScoped<ApplicationRoleManager>();
@@ -58,11 +61,14 @@ public static class ApplicationDependencyExtension
         services.AddScoped<DiscountVoucherManager>();
         services.AddScoped<AttributeKeyValueManager>();
         services.AddScoped<BarcodeManager>();
+        services.AddScoped<SaleManager>();
 
         services.AddScoped<TrendyolCategories>();
         services.AddScoped<TrendyolBrands>();
         services.AddScoped<TrendyolCargoCompanies>();
 
+        services.AddScoped<ITokenHelper, ClaimHelper>();
+        
         services.AddValidators();
         services.AddAutoMapper(x =>
         {
@@ -80,7 +86,7 @@ public static class ApplicationDependencyExtension
             //        npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             //        npg.EnableRetryOnFailure(5,TimeSpan.FromSeconds(2),null);
             //    });
-            x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb1;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+            x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb00;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
                 npg =>
                 {
                     npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);

@@ -1,10 +1,15 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
+using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Logs;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
+using Shared.Extensions;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
@@ -44,27 +49,31 @@ public class CustomerManager
     {
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.",LogType.Customer,LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        Customer customer = dto.CustomerType=="Retail" 
-            ? _mapper.Map<RetailCustomer>(dto) 
+        Customer customer = dto.CustomerType == "Retail"
+            ? _mapper.Map<RetailCustomer>(dto)
             : _mapper.Map<CorporateCustomer>(dto);
-
         await _customerDal.AddAsync(customer);
         await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.",LogType.Customer,LogAction.Add);
-        return new SuccessResult("Müşteri başarı ile eklendi.");
+        CustomerDetailDto result;
+        if(customer is RetailCustomer retailCustomer)
+            result = _mapper.Map<CustomerDetailDto>(retailCustomer);
+        else
+            result = _mapper.Map<CustomerDetailDto>(customer);
+        return new SuccessDataResult<CustomerDetailDto>(result, "Müşteri başarıyla eklendi.");
     }
 
     public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo,int pageIndex = 0,int itemCount = 50)
     {
-        var result =await _customerDal.GetCustomerDetailsPageable(customerInfo,pageIndex,itemCount); 
+        var result = await _customerDal.GetCustomerDetailsPageable(customerInfo,pageIndex,itemCount);
         return new SuccessDataResult<Pageable<CustomerDetailDto>>(result);
     }
 
     public async Task<IResult> CheckIfCustomerExits(int id)
     {
-        var result =  await _customerDal.Exists(x => x.Id == id);
+        var result = await _customerDal.Exists(x => x.Id == id);
         return result ? new SuccessResult() : new ErrorResult("Müşteri bulunamamıştır.");
     }
-    
+
     //private async Task<IResult> CheckIfSameIdExits(string customerIdentity)
     //{
     //    if(string.IsNullOrEmpty(customerIdentity))
@@ -74,4 +83,21 @@ public class CustomerManager
     //    return new SuccessResult();
     //}
 
+    public async Task<IDataResult<IEnumerable<CustomerDetailDto>>> GetCustomerBySearch(string searchText)
+    {
+        if(string.IsNullOrEmpty(searchText))
+            throw new ValidationException("Arama kriteri boş olamaz.");
+        var orders = new List<(string, string)>
+        {
+            ("FullName", "asc")
+        };
+
+        Expression<Func<Customer,bool>> expression =
+            x =>
+                (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()))
+                ||
+                (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()));
+        var result = await _customerDal.GetTransformedEntitiesAsync(FuncMappings.CustomerToDetailDto().ToExpression(),orders,expression);
+        return new SuccessDataResult<IEnumerable<CustomerDetailDto>>(result);
+    }
 }

@@ -54,7 +54,7 @@ public class IntegrationDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Brand> Brands { get; set; }
-    public DbSet<MainProduct> MainProducts { get; set; }
+    public DbSet<Product> MainProducts { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
     public DbSet<BranchOfficeStock> BranchOfficeStocks { get; set; }
     
@@ -83,8 +83,6 @@ public class IntegrationDbContext : DbContext
     public DbSet<RootRole> Roles { get; set; }
     public DbSet<RootClaim> Claims { get; set; }
     public DbSet<RootLogin> Logins { get; set; }
-
-
 
 
 }

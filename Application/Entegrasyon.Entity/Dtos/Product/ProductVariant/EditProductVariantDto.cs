@@ -11,7 +11,6 @@ decimal ListPrice,
 decimal SalePrice,
 decimal CostPrice,
 decimal VatRate,
-ICollection<AttributeKeyValue> AttributeKeyValues,
 List<EditBranchOfficeStockDto> BranchOfficeStocks,
-ICollection<EditableImageDto> UploadedImages
+    IEnumerable<EditableImageDto> UploadedImages
     );

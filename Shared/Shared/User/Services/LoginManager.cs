@@ -59,8 +59,8 @@ where TLogin:RootLogin,new()
             ExpiresAt = isMobile ? user.MobileJwtTokenExpiresAt.DateTime : user.WebJwtTokenExpiresAt.DateTime,
             Token = isMobile ? user.MobileJwtToken : user.WebJwtToken
         };
-        if(jwtToken.ExpiresAt > DateTime.Now)
-            await _jwtBlackListService.AddTokenToBlackList(jwtToken.Token,jwtToken.ExpiresAt,user.Id.ToString());
+        //if(jwtToken.ExpiresAt > DateTime.Now)
+            //await _jwtBlackListService.AddTokenToBlackList(jwtToken.Token,jwtToken.ExpiresAt,user.Id.ToString());
         var newToken = _tokenHelper.CreateToken(user);
         if(isMobile)
         {

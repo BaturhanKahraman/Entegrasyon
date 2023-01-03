@@ -8,18 +8,24 @@ namespace Entegrasyon.Business.Concrete;
 public class AttributeKeyValueManager
 {
     private readonly IAttributeKeyValueDal _attributeKeyValueDal;
-    public void ClearEmptyAttributes (ProductVariant pv)
+
+    public AttributeKeyValueManager(IAttributeKeyValueDal attributeKeyValueDal)
     {
-        pv.AttributeKeyValues = pv.AttributeKeyValues
+        _attributeKeyValueDal = attributeKeyValueDal;
+    }
+
+    public void ClearEmptyAttributes (Product product)
+    {
+        product.AttributeKeyValues = product.AttributeKeyValues
             .Where(x => x.AttributeValueId.HasValue ||
                         !string.IsNullOrEmpty(x.CustomValue)).ToList();
     }
 
     public async Task<IResult> ValidateAttributeKeyValues(IEnumerable<AttributeKeyValue> kv)
     {
-        var errorKeys =await _attributeKeyValueDal.ValidateKeyValues(kv);
+        var errorKeys =(await _attributeKeyValueDal.ValidateKeyValues(kv)).ToList();
         if (errorKeys.Any())
-            return new ErrorResult(string.Join(' ',errorKeys,Environment.NewLine,"Belirtilen ürün özellikleri zorunlu olmalıdır."));
+            return new ErrorResult(string.Join(' ',errorKeys)+ " özellikleri eksiksiz doldurulmalıdır.");
         return new SuccessResult();
     }
     

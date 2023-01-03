@@ -18,7 +18,7 @@ public class ImageManager
         _fileStorage = fileStorage;
     }
     
-    public async Task<IResult> AddProductImages(AddProductDto dto,MainProduct addedProduct)
+    public async Task<IResult> AddProductImages(AddProductDto dto,Product addedProduct)
     {
         var images = new List<Image>();
         foreach(var productVariant in addedProduct.ProductVariants)

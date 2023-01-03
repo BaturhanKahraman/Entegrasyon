@@ -20,4 +20,8 @@
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Utility\Auth\" />
+  </ItemGroup>
+
 </Project>

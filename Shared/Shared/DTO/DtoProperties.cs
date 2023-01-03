@@ -13,6 +13,6 @@ namespace Shared.DTO
         public bool IsRequired { get; set; }
         public int DtoValidateObjectId { get; set; }
         public DtoValidateObject DtoValidateObject { get; set; }
-        public ICollection<RuleValidation> RuleValidations { get; set; }
+        public IEnumerable<RuleValidation> RuleValidations { get; set; }
     }
 }

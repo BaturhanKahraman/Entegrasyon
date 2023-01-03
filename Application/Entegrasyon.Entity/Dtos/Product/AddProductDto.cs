@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+﻿using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
 namespace Entegrasyon.Entity.Dtos.Product;
 
@@ -10,7 +11,9 @@ public sealed class AddProductDto
     public string StockCode { get; set; }
     public int BrandId { get; set; }
     public int CategoryId { get; set; }
-    public List<AddProductVariantDto> ProductVariants { get; set; }
+    public IEnumerable<AttributeKeyValue> AttributeKeyValues { get; set; }
+    
+    public IEnumerable<AddProductVariantDto> ProductVariants { get; set; }
 }
 /*
  *     public string Title { get; set; }

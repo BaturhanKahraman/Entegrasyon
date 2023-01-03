@@ -4,6 +4,6 @@
     {
         public int Id { get; set; }
         public string DtoName { get; set; }
-        public ICollection<DtoProperty> DtoProperties { get; set; }
+        public IEnumerable<DtoProperty> DtoProperties { get; set; }
     }
 }

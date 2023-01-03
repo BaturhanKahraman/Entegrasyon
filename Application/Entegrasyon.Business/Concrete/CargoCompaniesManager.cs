@@ -34,7 +34,7 @@ public class CargoCompaniesManager
     public async Task<IDataResult<List<CargoCompany>>> GetCargoCompanies(string cargoCompanySearchParam)
     {
         var result = await _cargoDal.Table
-            .WhereIf(!string.IsNullOrEmpty(cargoCompanySearchParam),x=>x.SearchVector.Matches(cargoCompanySearchParam.ForFullTextSearch()))
+            .WhereIf(!string.IsNullOrEmpty(cargoCompanySearchParam),x=>x.SearchVector.Matches(cargoCompanySearchParam.ToFullTextSearchQuery()))
             .ToListAsync();
         return new SuccessDataResult<List<CargoCompany>>(result);
     } 

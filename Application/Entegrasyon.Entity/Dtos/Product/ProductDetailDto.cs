@@ -11,5 +11,6 @@ public sealed record ProductDetailDto(
         string CategoryName,
         int TotalQuantity,
         int TotalSoldQuantity,
-        IEnumerable<ProductVariantDetailDto> ProductVariantsDetails
+        IEnumerable<ProductVariantDetailDto> ProductVariantsDetails,
+        IEnumerable<AttributeKeyValueDetailDto> AttributeKeyValueDetails
     );

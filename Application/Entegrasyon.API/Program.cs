@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Extensions;
@@ -6,6 +7,8 @@ using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
 using Shared.Logger.Serilog;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);

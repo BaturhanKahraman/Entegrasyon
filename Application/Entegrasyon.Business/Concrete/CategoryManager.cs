@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.Results;
 using System.Linq.Expressions;
+using Entegrasyon.Business.Utility.Constants;
 
 namespace Entegrasyon.Business.Concrete
 {
@@ -14,23 +15,39 @@ namespace Entegrasyon.Business.Concrete
     {
         private readonly ICategoryDal _categoryDal;
         private readonly ApplicationLogManager _applicationLogManager;
+        private readonly CategoryAttributeManager _categoryAttributeManager;
         private readonly IMapper _mapper;
 
-        public CategoryManager(ICategoryDal categoryDal, ApplicationLogManager applicationLogManager, IMapper mapper)
+        public CategoryManager(ICategoryDal categoryDal,ApplicationLogManager applicationLogManager,IMapper mapper, CategoryAttributeManager categoryAttributeManager)
         {
             _categoryDal = categoryDal;
             _applicationLogManager = applicationLogManager;
             _mapper = mapper;
+            _categoryAttributeManager = categoryAttributeManager;
         }
 
         public async Task<IResult> AddCategory(AddCategoryDto dto)
         {
             await _applicationLogManager.AddLog("Kategori ekleniyor.",LogType.Category,LogAction.Add,dto);
             var category = _mapper.Map<Category>(dto);
-            //TODO
+            //TODO 
+            //2 den fazla varyant/slicer eklenememeli.
+            var categoryAttributes = _mapper.Map<List<CategoryAttribute>>(dto.CategoryAttributes);
+            categoryAttributes = await _categoryAttributeManager.AddIfNotExits(categoryAttributes);
+            categoryAttributes.ForEach(ca =>
+            {
+                category.CategoryAttributes.Add(new CategoryAttributeCategory
+                {
+                    CategoryAttributeId = ca.Id,
+                    IsRequired = ca.IsRequired,
+                    IsSlicer = ca.IsSlicer,
+                    IsVarianter = ca.IsVarianter
+                });
+            });
+            
             await _categoryDal.AddAsync(category);
-            await _applicationLogManager.AddLog("Kategori eklendi.",LogType.Category,LogAction.Add);
-            return new SuccessResult();
+            await _applicationLogManager.AddLog(Messages.CategoryAdded,LogType.Category,LogAction.Add);
+            return new SuccessResult(Messages.CategoryAdded);
         }
 
         public async Task UpdateCategory(UpdateCategoryDto dto)
@@ -39,7 +56,6 @@ namespace Entegrasyon.Business.Concrete
             var category = await _categoryDal.GetAsync(x => x.Id == dto.Id,true);
             category.Name = dto.Name ?? category.Name;
             category.SuperCategoryId = dto.SuperCategoryId ?? category.SuperCategoryId;
-            category.CategoryAttributes = dto.CategoryAttributes ?? category.CategoryAttributes;
             await _categoryDal.UpdateAsync(category);
             await _applicationLogManager.AddLog("Kategori güncellendi.",LogType.Category,LogAction.Update,dto);
         }
@@ -63,7 +79,7 @@ namespace Entegrasyon.Business.Concrete
                 x.Id,
                 x.Products.Sum(p => p.ProductVariants
                     .SelectMany(pv => pv.BranchOfficeStocks)
-                    .Sum(bo => bo.CurrentStock)),x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples: orderTuples);
+                    .Sum(bo => bo.CurrentStock)),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count()),orderTuples: orderTuples);
 
             return new SuccessDataResult<List<CategoryDetailDto>>(categoriesDto);
         }
@@ -78,7 +94,7 @@ namespace Entegrasyon.Business.Concrete
                 : null;
 
             var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex,itemCount,
-                x => new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderBy,filter);
+                x => new CategoryDetailDto(x.Id,x.Products.Count(),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count()),orderBy,filter);
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(categoriesDto);
         }
 
@@ -108,7 +124,7 @@ namespace Entegrasyon.Business.Concrete
                 new("Id", "desc")
             };
             var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
-                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,x => x.IsFavorite)
+                    new CategoryDetailDto(x.Id,x.Products.Count(),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count()),orderTuples,x => x.IsFavorite)
                 ;
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -118,11 +134,23 @@ namespace Entegrasyon.Business.Concrete
             {
                 new ("IsFavorite","desc"),
                 new("Name","asc"),
-                new("Id", "desc"),
             };
             var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
-                    new CategoryDetailDto(x.Id,x.Products.Count,x.Name,x.SubCategories.Count,x.IsFavorite),orderTuples,
-                x => x.SubCategories.Count==0 && x.CategoryAttributes.Count>=1);
+                    new CategoryDetailDto(x.Id,x.Products.Count(),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count()),orderTuples,
+                x => !x.SubCategories.Any());
+            return new SuccessDataResult<List<CategoryDetailDto>>(result);
+        }
+
+        public async Task<IDataResult<List<CategoryDetailDto>>> GetSuperCategories()
+        {
+            var orderTuples = new List<(string, string)>
+            {
+                new ("IsFavorite","desc"),
+                new("Name","asc"),
+            };
+            var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
+                    new CategoryDetailDto(x.Id,x.Products.Count(),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count()),orderTuples,
+                x => !x.CategoryAttributes.Any());
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
     }

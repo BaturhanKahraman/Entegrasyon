@@ -39,5 +39,14 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomersBySearch(string searchText)
+        {
+            var result = await _customerManager.GetCustomerBySearch(searchText);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
     }
 }
