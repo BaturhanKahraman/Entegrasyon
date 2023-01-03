@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+﻿using System.Data;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
@@ -23,7 +24,7 @@ public sealed class EfBranchOfficeStockDal: EfEntityRepository<BranchOfficeStock
 
     public async Task DecreaseStocksTransaction(IEnumerable<DecreaseStockDto> dto)
     {
-        await using var transaction =await _context.Database.BeginTransactionAsync();
+        await using var transaction =await _context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
         try
         {
             foreach (var decreaseStock in dto)

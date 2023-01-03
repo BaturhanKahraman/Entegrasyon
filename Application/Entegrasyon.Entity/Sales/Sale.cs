@@ -9,7 +9,7 @@ namespace Entegrasyon.Entity.Sales
         public Guid Id { get; set; }
         public int DiscountVoucherId { get; set; }
         public DiscountVoucher DiscountVoucher { get; set; }
-        public ICollection<SaleItem> SaleItems { get; set; }
+        public IEnumerable<SaleItem> SaleItems { get; set; }
         public Guid SalePersonId { get; set; }
         public ApplicationUser SalePerson { get; set; }
 

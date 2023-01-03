@@ -10,7 +10,7 @@ public sealed class Category : BaseEntity
     public bool IsFavorite { get; set; }
     public int? SuperCategoryId { get; set; }
     public Category SuperCategory { get; set; }
-    public ICollection<Category> SubCategories { get; set; }
-    public ICollection<CategoryAttribute> CategoryAttributes { get; set; }
-    public ICollection<MainProduct> Products { get; set; }
+    public IEnumerable<Category> SubCategories { get; set; }
+    public List<CategoryAttributeCategory> CategoryAttributes { get; set; } = new ();
+    public IEnumerable<Product> Products { get; set; }
 }

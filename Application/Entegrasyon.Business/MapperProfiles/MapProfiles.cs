@@ -29,18 +29,30 @@ public class MapProfiles:Profile
             .ReverseMap();
         CreateMap<AddCustomerDto, RetailCustomer>()
             .ForMember(x => x.NationalIdentity, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber));
-
         CreateMap<AddCustomerDto, CorporateCustomer>()
             .ForMember(x => x.TaxNumber, opt => opt.MapFrom(x => x.NationalIdentityOrTaxNumber));
 
         CreateMap<Customer,CustomerDetailDto>()
-            .ForMember(dest => dest.SalesCount,opt => opt.MapFrom(src => src.Sales.Count))
+            .ForMember(dest => dest.SalesCount,opt => opt.MapFrom(src => src.Sales.Count()))
             .ReverseMap();
-        CreateMap<AddProductDto,MainProduct>().ReverseMap();
+        CreateMap<RetailCustomer, CustomerDetailDto>()
+            .ForMember(x => x.NameSurname,opt => opt.MapFrom(x => x.FullName))
+            .ForMember(x => x.NationalIdentityOrTaxNumber,opt => opt.MapFrom(x => x.NationalIdentity))
+            .ReverseMap();
+
+        CreateMap<CorporateCustomer, CustomerDetailDto>()
+            .ForMember(x => x.NameSurname,opt => opt.MapFrom(x => x.FullName))
+            .ForMember(x => x.NationalIdentityOrTaxNumber,opt => opt.MapFrom(x => x.TaxNumber))
+            .ReverseMap();
+
+        CreateMap<AddProductDto,Product>().ReverseMap();
         CreateMap<AddProductVariantDto,ProductVariant>().ReverseMap();
         CreateMap<AddBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
-        CreateMap<AddCategoryDto, Entity.Categories.Category>().ReverseMap();
-        CreateMap<EditProductDto, MainProduct>();
+        CreateMap<AddCategoryDto, Entity.Categories.Category>()
+            .ForMember(dest=>dest.CategoryAttributes,opt=>opt.Ignore())
+            .ForMember(dest=>dest.SuperCategoryId,opt=>opt.Condition(prop=>prop.SuperCategoryId!=0))
+            .ReverseMap();
+        CreateMap<EditProductDto, Product>();
         CreateMap<EditProductVariantDto, ProductVariant>();
         CreateMap<EditBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
         CreateMap<AddCategoryAttributeDto, CategoryAttribute>().ReverseMap();

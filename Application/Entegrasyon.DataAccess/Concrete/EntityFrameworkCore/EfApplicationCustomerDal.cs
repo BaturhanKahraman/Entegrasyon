@@ -22,9 +22,9 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
         return (await _dbContext.Customers
             .WhereIf(!string.IsNullOrEmpty(fullTextSearch),
             x =>
-            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ||
-            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ).AsSingleQuery().AsNoTracking()
             .ToListAsync())
             .Select(CustomerToDetailDto())
@@ -36,9 +36,9 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
         var customerQueryable = _dbContext.Customers
             .WhereIf(!string.IsNullOrEmpty(fullTextSearch),
             x =>
-            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ||
-            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ForFullTextSearch()))
+            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ).AsSplitQuery().AsNoTracking();
         var customers =await customerQueryable.ToPageableQuery(pageIndex, pageSize).ToListAsync();
         var customerCount = await customerQueryable.CountAsync();
@@ -52,14 +52,14 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
             return x switch
             {
                 RetailCustomer retailCustomer => new CustomerDetailDto(retailCustomer.CreatedAt, retailCustomer.Id,
-                    retailCustomer.NationalIdentity, retailCustomer.FullName, null, retailCustomer.Sales?.Count ?? 0,
+                    retailCustomer.NationalIdentity, retailCustomer.FullName, null, retailCustomer.Sales?.Count() ?? 0,
                     retailCustomer.PhoneNumber, retailCustomer.Address?.FullAddress ?? "",
                     retailCustomer.CustomerType),
                 CorporateCustomer corporateCustomer => new CustomerDetailDto(corporateCustomer.CreatedAt,
                     corporateCustomer.Id, corporateCustomer.TaxNumber, corporateCustomer.FullName,
-                    corporateCustomer.CorporateName, corporateCustomer.Sales?.Count ?? 0, corporateCustomer.PhoneNumber,
+                    corporateCustomer.CorporateName, corporateCustomer.Sales?.Count() ?? 0, corporateCustomer.PhoneNumber,
                     corporateCustomer.Address?.FullAddress ?? "", corporateCustomer.CustomerType),
-                _ => new CustomerDetailDto(x.CreatedAt, x.Id, "", "", "", x.Sales?.Count ?? 0, x.PhoneNumber,
+                _ => new CustomerDetailDto(x.CreatedAt, x.Id, "", "", "", x.Sales?.Count() ?? 0, x.PhoneNumber,
                     x.Address?.FullAddress ?? "", x.CustomerType)
             };
         };

@@ -9,5 +9,6 @@ public class Messages
     public const string ProductVariantDeleted = "Ürün varyantı başarıyla silindi";
     public const string ProductVariantListed = "Ürün varyantları başarıyla listelendi";
     public const string ProductAdded = "Ürün başarı ile eklendi.";
-
+    public const string CategoryAdded = "Kategori başarı ile eklendi.";
+    public const string NoAttributeForCategory = "Kategoride herhangi bir özellik bulunamamıştır.";
 }

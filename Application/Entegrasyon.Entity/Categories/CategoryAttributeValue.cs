@@ -3,7 +3,7 @@ using Shared.Entity;
 
 namespace Entegrasyon.Entity.Categories;
 
-public sealed class CategoryAttributeValue : BaseEntity
+public class CategoryAttributeValue : BaseEntity
 {
     public int Id { get; set; }
     public string Name { get; set; }

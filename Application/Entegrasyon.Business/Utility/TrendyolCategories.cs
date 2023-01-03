@@ -55,7 +55,7 @@ public class TrendyolCategories
                 {
                     CreatedAt = DateTimeOffset.Now,
                     Name = subCategory.name,
-                    CategoryAttributes = new List<CategoryAttribute>()
+                    //categoryAttributes = new List<CategoryAttribute>()
                 };
 
                 if(subCategory.subCategories != null)
@@ -81,9 +81,9 @@ public class TrendyolCategories
                 {
                     CreatedAt = DateTimeOffset.Now,
                     Name = category.name,
-                    CategoryAttributes = new List<CategoryAttribute>()
+                    //CategoryAttributes = new List<CategoryAttribute>()
                 };
-                sysCat.SubCategories.Add(subCat);
+                //sysCat.SubCategories.Add(subCat);
                 var match = new CategoryMarketPlaceMatch()
                     { ApplicationCategory = subCat, MarketPlace = marketPlace, MarketPlaceCategoryId = category.id };
                 await _dbContext.CategoryMarketPlaceMatches.AddAsync(match);
@@ -119,7 +119,7 @@ public class TrendyolCategories
                         //eğer daha önce eklenmiş trendyol kategori attr varsa
                         if (AddedCategoryAttrs.Any(x => x.TempMappingId == trendyolCategoryAttr.attribute.id))
                         {
-                            subCat.CategoryAttributes.Add(AddedCategoryAttrs.First(x => x.TempMappingId == trendyolCategoryAttr.attribute.id));
+                            //subCat.CategoryAttributes.Add(AddedCategoryAttrs.First(x => x.TempMappingId == trendyolCategoryAttr.attribute.id));
                         }
                         else
                         {
@@ -129,9 +129,9 @@ public class TrendyolCategories
                                 TempMappingId = trendyolCategoryAttr.attribute.id,
                                 AllowCustom = trendyolCategoryAttr.allowCustom,
                                 CategoryAttributeKey = trendyolCategoryAttr.attribute.name,
-                                Required = trendyolCategoryAttr.required,
-                                Slicer = trendyolCategoryAttr.slicer,
-                                Varianter = trendyolCategoryAttr.varianter,
+                                IsRequired = trendyolCategoryAttr.required,
+                                IsSlicer = trendyolCategoryAttr.slicer,
+                                IsVarianter = trendyolCategoryAttr.varianter,
                                 CategoryAttributeValues = new List<CategoryAttributeValue>()
                             };
                             AddedCategoryAttrs.Add(categoryAttr);
@@ -156,7 +156,7 @@ public class TrendyolCategories
                                     {
                                         if(tempAddedCategoryConcurrentBag.Any(x => x.TempMappingId == trendyolAttrValue.id))
                                         {
-                                            categoryAttr.CategoryAttributeValues.Add(tempAddedCategoryConcurrentBag.First(x => x.TempMappingId == trendyolAttrValue.id));
+                                            //categoryAttr.CategoryAttributeValues.Add(tempAddedCategoryConcurrentBag.First(x => x.TempMappingId == trendyolAttrValue.id));
                                         }
                                         else
                                         {
@@ -174,7 +174,7 @@ public class TrendyolCategories
                                             };
                                             attrValueMatchConcurrentBag.Add(attrValueMatch);
                                             tempAddedCategoryConcurrentBag.Add(attrValue);
-                                            categoryAttr.CategoryAttributeValues.Add(attrValue);
+                                            //categoryAttr.CategoryAttributeValues.Add(attrValue);
                                         }
 
                                     });
@@ -190,7 +190,7 @@ public class TrendyolCategories
 
                                         if(AddedCategoryAttrValues.Any(x => x.TempMappingId == trendyolAttrValue.id))
                                         {
-                                            categoryAttr.CategoryAttributeValues.Add(AddedCategoryAttrValues.First(x => x.TempMappingId == trendyolAttrValue.id));
+                                            //categoryAttr.CategoryAttributeValues.Add(AddedCategoryAttrValues.First(x => x.TempMappingId == trendyolAttrValue.id));
                                         }
                                         else
                                         {
@@ -208,7 +208,7 @@ public class TrendyolCategories
                                             };
                                             await _dbContext.CategoryAttributeValueMarketPlaceMatches.AddAsync(attrValueMatch);
                                             AddedCategoryAttrValues.Add(attrValue);
-                                            categoryAttr.CategoryAttributeValues.Add(attrValue);
+                                            //categoryAttr.CategoryAttributeValues.Add(attrValue);
                                         }
                                     }
                                 }

@@ -9,6 +9,5 @@ public sealed record ProductVariantDetailDto(Guid Id,
     decimal CostPrice,
     decimal VatRate,
     string[] imageLinks,
-    IEnumerable<StockDetailDto> StockDetails,
-    IEnumerable<AttributeKeyValueDetailDto> AttributeKeyValueDetails
+    IEnumerable<StockDetailDto> StockDetails
     );

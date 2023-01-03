@@ -7,6 +7,6 @@
         public bool IsActive { get; set; }
         public string RuleSymbol { get; set; }
         public int ComparisionValue { get; set; }
-        public ICollection<RuleValidation> RuleValidations { get; set; }
+        public IEnumerable<RuleValidation> RuleValidations { get; set; }
     }
 }

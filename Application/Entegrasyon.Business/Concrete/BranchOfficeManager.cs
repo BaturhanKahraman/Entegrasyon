@@ -43,7 +43,7 @@ public class BranchOfficeManager
                 CreatedAt = x.CreatedAt,
                 Id = x.Id,
                 Name = x.Name,
-                UserCount = x.Users.Count
+                UserCount = x.Users.Count()
             }).FirstOrDefaultAsync();
         return new SuccessDataResult<BranchDetailDto>(data);
     }

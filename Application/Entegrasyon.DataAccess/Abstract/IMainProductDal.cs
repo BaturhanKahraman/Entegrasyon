@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 
 namespace Entegrasyon.DataAccess.Abstract;
 
-public interface IMainProductDal : IEntityRepository<MainProduct>
+public interface IMainProductDal : IEntityRepository<Product>
 {
-    Task<ProductsDetailDto> GetProductDetail(Expression<Func<MainProduct, bool>> expr);
 }

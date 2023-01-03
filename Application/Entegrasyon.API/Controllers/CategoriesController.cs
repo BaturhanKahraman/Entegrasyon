@@ -16,8 +16,6 @@ namespace Entegrasyon.API.Controllers
         {
             _categoryManager = categoryManager;
         }
-        //TODO
-        //attribute ekleme işlemi yapılacak.
         [HttpPost]
         public async Task<IActionResult> AddCategory(AddCategoryDto dto)
         {
@@ -62,6 +60,15 @@ namespace Entegrasyon.API.Controllers
         public async Task<IActionResult> AddFavorite([FromBody]int categoryId)
         {
             var result = await _categoryManager.AddFavorite(categoryId);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+        //supercategoryler de alınacak
+        [HttpGet]
+        public async Task<IActionResult> GetSuperCategories()
+        {
+            var result = await _categoryManager.GetSuperCategories();
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

@@ -4,7 +4,7 @@ public sealed record MakeSaleDto(
     Guid SalePersonId,
     int CustomerId,
     double GeneralDiscount,
-    ICollection<SaleItemDto> SaleItems);
+    IEnumerable<SaleItemDto> SaleItems);
 public sealed record SaleItemDto(
     Guid ProductVariantId,
     double TaxPercentage,

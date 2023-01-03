@@ -8,31 +8,11 @@ using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
 
-public class EfMainProductDal : EfEntityRepository<MainProduct,IntegrationDbContext>, IMainProductDal
+public class EfMainProductDal : EfEntityRepository<Product,IntegrationDbContext>, IMainProductDal
 {
     private readonly IntegrationDbContext _context;
     public EfMainProductDal(IntegrationDbContext context) : base(context)
     {
         _context = context;
-    }
-
-    public async Task<ProductsDetailDto> GetProductDetail(Expression<Func<MainProduct,bool>> expr)
-    {
-        return await _context.MainProducts
-            .Where(expr)
-            .Select(x => new ProductsDetailDto(x.Id,
-                x.Title,
-                x.Description,
-                x.StockCode,
-                x.Brand.Name,
-                x.Category.Name,
-                x.ProductVariants.
-                    SelectMany(productVariant=>productVariant.BranchOfficeStocks)
-                    .Sum(branchOfficeStock=>branchOfficeStock.FirstTotalStock),
-                x.ProductVariants.
-                    SelectMany(productVariant => productVariant.BranchOfficeStocks)
-                    .Sum(branchOfficeStock => branchOfficeStock.SoldQuantity),
-                x.ProductVariants.Count))
-            .FirstOrDefaultAsync();
     }
 }

@@ -8,15 +8,7 @@ public static class IntegrationDbContextSeed
 {
     public static void Seed(this ModelBuilder modelBuilder)
     {
-       
-        modelBuilder.Entity<BranchOffice>().HasData(new BranchOffice()
-        {
-            Id = 1,
-            Name = "Merkez Ofis",
-            CreatedAt=DateTimeOffset.MinValue
-        });
-
-        UserContextSeed.SeedDatabase(modelBuilder);
+       UserContextSeed.SeedDatabase(modelBuilder);
         modelBuilder.Entity<ApplicationUser>().HasData(new ApplicationUser()
         {
             Id = new Guid("DFDA5D4A-F807-408C-9B4D-908830AD5724"),

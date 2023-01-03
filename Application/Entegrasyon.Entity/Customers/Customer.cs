@@ -13,7 +13,7 @@ namespace Entegrasyon.Entity.Customers
         public string Surname { get; set; }
         public string FullName { get; set; }
         public Address Address { get; set; }
-        public ICollection<Sale> Sales { get; set; }
-        public ICollection<DiscountVoucher> DiscountVouchers { get; set; }
+        public IEnumerable<Sale> Sales { get; set; }
+        public IEnumerable<DiscountVoucher> DiscountVouchers { get; set; }
     }
 }

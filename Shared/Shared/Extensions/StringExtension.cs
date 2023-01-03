@@ -42,7 +42,7 @@ public static class StringExtension
         return string.IsNullOrEmpty(@this) ? string.Empty : Regex.Replace(@this,@"\s+"," ");
     }
 
-    public static string ForFullTextSearch(this string @this)
+    public static string ToFullTextSearchQuery(this string @this)
     {
         return string.IsNullOrEmpty(@this) ? string.Empty : 
             $@"""{@this.Trim().RemoveRedundantSpaces().Replace(" ","|")}"":*" ;

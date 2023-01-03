@@ -15,8 +15,43 @@ public class CargoCompanyEntityConfiguration : IEntityTypeConfiguration<CargoCom
             .HasGeneratedTsVectorColumn(
                 p => p.SearchVector,
                 "turkish",
-                p => new { p.Code,p.Name,p.TaxNumber })
+                p => new { p.Code, p.Name, p.TaxNumber })
             .HasIndex(p => p.SearchVector)
             .HasMethod("GIN");
+        CargoCompany[] companies = new[]
+        {
+            new CargoCompany
+            {
+                Id = 1,
+                Code = "MNG",
+                Name = "MNG Kargo",
+                TaxNumber = "123456",
+                CreatedAt = DateTimeOffset.MinValue
+            },new CargoCompany
+            {
+                Id = 2,
+                Code = "YK",
+                Name = "Yurtiçi Kargo",
+                TaxNumber = "123456",
+                CreatedAt = DateTimeOffset.MinValue
+            },
+            new CargoCompany
+            {
+                Id = 3,
+                Code = "TEX",
+                Name = "Trendyol Express",
+                TaxNumber = "123456",
+                CreatedAt = DateTimeOffset.MinValue
+            },
+            new CargoCompany
+            {
+                Id = 4,
+                Code = "SK",
+                Name = "Sürat Kargo",
+                TaxNumber = "123456",
+                CreatedAt = DateTimeOffset.MinValue
+            }
+        };
+        builder.HasData(companies);
     }
 }

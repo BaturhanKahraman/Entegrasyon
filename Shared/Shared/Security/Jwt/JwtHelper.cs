@@ -8,6 +8,7 @@ namespace Shared.Security.Jwt
 {
     public class JwtHelper : ITokenHelper
     {
+        protected List<Claim> Claims = new ();
         private readonly IOptions<TokenOptions> _tokenOption;
         public JwtHelper(IOptions<TokenOptions> tokenOption)
         {
@@ -40,22 +41,20 @@ namespace Shared.Security.Jwt
             );
             return jwt;
         }
-        private static IEnumerable<Claim> SetClaims(RootUser user)
+        protected virtual IEnumerable<Claim> SetClaims(RootUser user)
         {
-            var claims = new List<Claim>
+            Claims.AddRange(new List<Claim>
             {
                 new (ClaimTypes.NameIdentifier, user.Id.ToString()),
-                //new (ClaimTypes.Email, user.Email),
                 new (ClaimTypes.Name,user.Name),
                 new (ClaimTypes.Surname,user.Surname),
                 new (ClaimTypes.GivenName,user.UserName),
-                new ("MainRole",user.Role.Name)
-            };
-
-            var userClaims =user.Role.Claims.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
+                new (ClaimTypes.Role,user.Role.Name),
+            });
+            var userClaims =user.Role.Claims.Select(x => new Claim("authorizationgroup", x.Name)).ToList();
             if(userClaims.Any())
-                claims.AddRange(userClaims);
-            return claims;
+                Claims.AddRange(userClaims);
+            return Claims;
         }
     }
 }

@@ -10,7 +10,7 @@ public sealed class AttributeKeyValue :BaseEntity
     public string CustomValue { get; set; }
     public int? AttributeValueId { get; set; }
     public CategoryAttributeValue AttributeValue { get; set; }
-    
-    public Guid ProductVariantId { get; set; }
-    public ProductVariant ProductVariant { get; set; }
+
+    public Guid ProductId { get; set; }
+    public Product Product { get; set; }
 }

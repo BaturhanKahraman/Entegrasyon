@@ -1,14 +1,15 @@
-﻿using Entegrasyon.Entity.Categories;
-using Shared.Entity;
+﻿using Shared.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
+using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.Entity.Products;
 
-public sealed class ProductVariant :BaseEntity
+public sealed class ProductVariant:BaseEntity
 {
     public Guid Id { get; set; }
-    public Guid ProductMainId { get; set; }
-    public MainProduct ProductMain { get; set; }
+    public Guid ProductId { get; set; }
+    public Product Product { get; set; }
+    public IEnumerable<ProductVariantAttribute> ProductVariantAttributes { get; set; } //color:red,size:xl etc...
     public string Barcode { get; set; }
     public decimal DimensionalWeight { get; set; }
     public string CurrencyType { get; set; } = "TRY";
@@ -17,12 +18,11 @@ public sealed class ProductVariant :BaseEntity
     [Column(TypeName = "money")]
     public decimal SalePrice { get; set; }
     [Column(TypeName = "money")]
-    public decimal CostPrice { get; set; }//geliş fiyatı ?
+    public decimal CostPrice { get; set; }
+    [Column(TypeName = "money")]
+    public decimal ECommercePrice { get; set; }
     public decimal VatRate { get; set; }
     public ICollection<BranchOfficeStock> BranchOfficeStocks { get; set; }
-    
-    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
-
     public ICollection<Image> Images { get; set; }
-
+    
 }

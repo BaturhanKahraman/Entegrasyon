@@ -80,7 +80,7 @@ public class BrandManager
                 :null;
         var result = await _brandDal.GetPaginatedTransformedEntities(dto.PageIndex,
             dto.ItemCount,
-            x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count),
+            x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()),
             expression: expr);
         return new SuccessDataResult<Pageable<BrandDetailDto>>(result);
     }

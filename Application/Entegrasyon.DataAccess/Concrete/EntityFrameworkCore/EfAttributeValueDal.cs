@@ -22,7 +22,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore
             var attrs =await _ctx.CategoryAttributes
                 .AsNoTracking()
                 .AsSplitQuery()
-                .Where(ca => categoryIds.Contains(ca.Id) && ca.Required)
+                .Where(ca => categoryIds.Contains(ca.Id))
                 .Select(ca => new ValueTuple<int,string>(ca.Id,ca.CategoryAttributeKey))
                 .ToArrayAsync();
             foreach (var item in attrkv.Where(x=>attrs.Any(z=>z.Item1==x.CategoryAttributeId)))

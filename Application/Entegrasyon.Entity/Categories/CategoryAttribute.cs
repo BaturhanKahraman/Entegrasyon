@@ -9,15 +9,20 @@ public sealed class CategoryAttribute : BaseEntity
     public int Id { get; set; }
     public string CategoryAttributeKey { get; set; }
     public string CategoriyAttributeHumanized { get; set; }
-    public bool Required { get; set; }
-    public bool AllowCustom { get; set; }
-    public bool Varianter { get; set; }
-    public bool Slicer { get; set; }
-    public ICollection<CategoryAttributeValue> CategoryAttributeValues { get; set; }
-    public ICollection<Category> Categories { get; set; }
 
-    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
+    public bool AllowCustom { get; set; }
+
+    public IEnumerable<CategoryAttributeValue> CategoryAttributeValues { get; set; }
+    public IEnumerable<CategoryAttributeCategory> Categories { get; set; }
+
+    public IEnumerable<AttributeKeyValue> AttributeKeyValues { get; set; }
 
     [NotMapped]
     public int TempMappingId { get; set; }
+    [NotMapped]
+    public bool IsRequired { get; set; }
+    [NotMapped]
+    public bool IsVarianter { get; set; }
+    [NotMapped]
+    public bool IsSlicer { get; set; }
 }
