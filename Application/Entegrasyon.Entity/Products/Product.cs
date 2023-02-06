@@ -6,10 +6,16 @@ namespace Entegrasyon.Entity.Products;
 
 public sealed class Product : BaseEntity
 {
+    //yılı
+    // sezon
+    // firma
+    // 
     public Guid Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
     public string StockCode { get; set; }
+    public string Season { get; set; }
+    public string Year { get; set; }
     public int? BrandId { get; set; }
     public Brand Brand { get; set; }
     public int CategoryId { get; set; }

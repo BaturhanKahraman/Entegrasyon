@@ -7,17 +7,22 @@ using Entegrasyon.Business.Extensions;
 using Shared.FileStorage;
 using Shared.Logger.Serilog;
 using Entegrasyon.Business.Concrete;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+});
+
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
+builder.Services.AddRabbitMQ(builder.Configuration);
 builder.Services.AddApplicationDependencies();
 builder.Services.AddFileStorageCore();
-
+builder.Services.AddBackgroundServices();
 builder.Services.AddLocalFileStorage(builder.Configuration.GetSection("LocalFileStorageOptions"));
 
 

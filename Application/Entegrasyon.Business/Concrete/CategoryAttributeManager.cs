@@ -30,6 +30,11 @@ public class CategoryAttributeManager
         return list.ToList();
     }
 
+    public async Task<bool> CheckIfCategoryHasCategoryAttribute(int categoryId)
+    {
+        return await _attributeDal.Exists(x => x.Categories.Any(c => c.CategoryId == categoryId));
+    }
+
     public async Task<bool> CheckIfExits(string name)
     {
         string nameNormalize = name.Trim().ToLower();
@@ -46,7 +51,6 @@ public class CategoryAttributeManager
         var result = await _attributeDal.GetTransformedEntitiesAsync(
             x => new CategoryAttributeDto(
                x.Id,
-               
                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId==x.Id).IsRequired,
                x.AllowCustom,
                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsVarianter,
@@ -79,4 +83,15 @@ public class CategoryAttributeManager
         return new SuccessResult();
     }
 
+    public async Task RemoveAllAttributesByCategoryId(int categoryId)
+    {
+        if(await _attributeDal.Exists(x => x.Categories.Any(c => c.CategoryId == categoryId)))
+        {
+            var attrs = await _attributeDal.GetAllAsync(x => x.Categories.Any(c => c.CategoryId == categoryId),true);
+            await _attributeDal.RemoveRangeAsync(attrs);
+        }
+    }
+
+    public async Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs)=>await _attributeDal.RemoveRangeAsync(attrs);
+    
 }

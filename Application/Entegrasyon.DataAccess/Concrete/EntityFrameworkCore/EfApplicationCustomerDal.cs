@@ -22,9 +22,9 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
         return (await _dbContext.Customers
             .WhereIf(!string.IsNullOrEmpty(fullTextSearch),
             x =>
-            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
+            (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ||
-            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
+            (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ).AsSingleQuery().AsNoTracking()
             .ToListAsync())
             .Select(CustomerToDetailDto())
@@ -36,9 +36,9 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
         var customerQueryable = _dbContext.Customers
             .WhereIf(!string.IsNullOrEmpty(fullTextSearch),
             x =>
-            (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
+            (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ||
-            (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
+            (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
             ).AsSplitQuery().AsNoTracking();
         var customers =await customerQueryable.ToPageableQuery(pageIndex, pageSize).ToListAsync();
         var customerCount = await customerQueryable.CountAsync();

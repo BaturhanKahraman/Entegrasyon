@@ -107,7 +107,7 @@ public class TrendyolCategories
 
                         if (tryCount == 0)
                         {
-                            Debug.WriteLine("Kategori Attribute Getirilemedi. Kategori Id: " + category.id + " " + attrResult.StatusCode);
+                            Debug.WriteLine("Kategori TrendyolAttribute Getirilemedi. Kategori Id: " + category.id + " " + attrResult.StatusCode);
                             continue;
                         }
                     }

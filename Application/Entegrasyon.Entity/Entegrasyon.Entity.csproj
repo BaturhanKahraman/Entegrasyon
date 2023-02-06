@@ -13,9 +13,13 @@
   <ItemGroup>
     <Folder Include="Dtos\Auth\" />
     <Folder Include="Dtos\Branches\" />
-    <Folder Include="Dtos\Category\" />
     <Folder Include="Dtos\CargoCompany\" />
     <Folder Include="Dtos\Customers\" />
+    <Folder Include="Barcode\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

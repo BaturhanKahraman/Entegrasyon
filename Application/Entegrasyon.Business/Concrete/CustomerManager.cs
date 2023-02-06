@@ -94,9 +94,9 @@ public class CustomerManager
 
         Expression<Func<Customer,bool>> expression =
             x =>
-                (x as RetailCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()))
+                (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()))
                 ||
-                (x as CorporateCustomer).SearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()));
+                (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()));
         var result = await _customerDal.GetTransformedEntitiesAsync(FuncMappings.CustomerToDetailDto().ToExpression(),orders,expression);
         return new SuccessDataResult<IEnumerable<CustomerDetailDto>>(result);
     }

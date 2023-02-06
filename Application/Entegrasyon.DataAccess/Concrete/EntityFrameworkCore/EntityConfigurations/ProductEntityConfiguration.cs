@@ -1,6 +1,7 @@
 ﻿using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfigurations;
 
@@ -13,7 +14,10 @@ public class ProductEntityConfiguration:IEntityTypeConfiguration<Product>
         builder.HasOne(x => x.Brand).WithMany(x => x.Products).HasForeignKey(x => x.BrandId);
         builder.HasOne(x => x.Category).WithMany(x => x.Products).HasForeignKey(x => x.CategoryId);
         builder.Property(x => x.Title).HasMaxLength(255).IsRequired();
-        
+        builder.Property(x => x.Season).HasMaxLength(55);
+        builder.Property(x => x.Year).HasMaxLength(55);
+
+
         builder
             .HasGeneratedTsVectorColumn(
                 p => p.SearchVector,

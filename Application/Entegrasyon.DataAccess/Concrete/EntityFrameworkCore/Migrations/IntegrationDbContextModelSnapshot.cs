@@ -19,10 +19,52 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:CaseInsensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "6.0.12")
+                .HasAnnotation("ProductVersion", "6.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Entegrasyon.Entity.Barcode.TempBarcode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsAddable")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsAdded")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ValidUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique();
+
+                    b.ToTable("TempBarcodes");
+                });
 
             modelBuilder.Entity("Entegrasyon.Entity.BranchOffice", b =>
                 {
@@ -119,7 +161,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<NpgsqlTsVector>("SearchVector")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tsvector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "turkish")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
                         .HasAnnotation("Npgsql:TsVectorProperties", new[] { "Code", "Name", "TaxNumber" });
 
                     b.Property<string>("TaxNumber")
@@ -233,10 +275,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("ImportId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsFavorite")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsImported")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -250,6 +298,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ImportId");
+
                     b.HasIndex("SuperCategoryId");
 
                     b.ToTable("Categories");
@@ -262,6 +312,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsFavorite = false,
+                            IsImported = false,
                             Name = "Giyim",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
@@ -272,6 +323,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsFavorite = false,
+                            IsImported = false,
                             Name = "Teknoloji",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
@@ -282,6 +334,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsFavorite = false,
+                            IsImported = false,
                             Name = "Hayat",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
@@ -292,6 +345,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsFavorite = false,
+                            IsImported = false,
                             Name = "Ev Eşyaları",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
@@ -302,6 +356,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsFavorite = false,
+                            IsImported = false,
                             Name = "Çocuk Giyim",
                             SuperCategoryId = 1,
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -313,6 +368,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsFavorite = true,
+                            IsImported = false,
                             Name = "Çocuk Ceket",
                             SuperCategoryId = 5,
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -342,6 +398,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ImportId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -349,6 +408,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImportId");
 
                     b.ToTable("CategoryAttributes");
                 });
@@ -386,7 +447,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasIndex("CategoryAttributeId");
 
-                    b.ToTable("CategoryAttributeCategory");
+                    b.ToTable("CategoryAttributeCategories");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttributeValue", b =>
@@ -655,6 +716,18 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MarketPlaces");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsBasicAuth = false,
+                            IsDeleted = false,
+                            Name = "Trendyol",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Matches.BrandMarketPlaceMatch", b =>
@@ -991,6 +1064,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasAnnotation("Npgsql:TsVectorConfig", "english")
                         .HasAnnotation("Npgsql:TsVectorProperties", new[] { "Title", "Description", "StockCode" });
 
+                    b.Property<string>("Season")
+                        .HasMaxLength(55)
+                        .HasColumnType("character varying(55)");
+
                     b.Property<string>("StockCode")
                         .HasColumnType("text");
 
@@ -1001,6 +1078,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Year")
+                        .HasMaxLength(55)
+                        .HasColumnType("character varying(55)");
 
                     b.HasKey("Id");
 
@@ -2173,18 +2254,18 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("CorporateName")
                         .HasColumnType("text");
 
-                    b.Property<NpgsqlTsVector>("SearchVector")
+                    b.Property<NpgsqlTsVector>("CorporateSearchVector")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tsvector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "turkish")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
                         .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "CorporateName", "TaxNumber", "Name", "Surname" });
 
                     b.Property<string>("TaxNumber")
                         .HasColumnType("text");
 
-                    b.HasIndex("SearchVector");
+                    b.HasIndex("CorporateSearchVector");
 
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("CorporateSearchVector"), "GIN");
 
                     b.HasDiscriminator().HasValue("Corporate");
 
@@ -2237,16 +2318,15 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("NationalIdentity")
                         .HasColumnType("text");
 
-                    b.Property<NpgsqlTsVector>("SearchVector")
+                    b.Property<NpgsqlTsVector>("RetailSearchVector")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tsvector")
-                        .HasColumnName("RetailCustomer_SearchVector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "turkish")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
                         .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "Surname", "Name", "NationalIdentity" });
 
-                    b.HasIndex("SearchVector");
+                    b.HasIndex("RetailSearchVector");
 
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RetailSearchVector"), "GIN");
 
                     b.HasDiscriminator().HasValue("Retail");
 
@@ -2296,7 +2376,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasForeignKey("AttributeValueId");
 
                     b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "CategoryAttribute")
-                        .WithMany("AttributeKeyValues")
+                        .WithMany()
                         .HasForeignKey("CategoryAttributeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2753,8 +2833,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttribute", b =>
                 {
-                    b.Navigation("AttributeKeyValues");
-
                     b.Navigation("Categories");
 
                     b.Navigation("CategoryAttributeValues");

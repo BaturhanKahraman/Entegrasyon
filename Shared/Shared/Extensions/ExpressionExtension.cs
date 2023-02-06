@@ -31,4 +31,6 @@ public static class ExpressionExtension
         var invokedExpr = Expression.Invoke(expr2,expr1.Parameters);
         return Expression.Lambda<Func<T,bool>>(Expression.OrElse(expr1.Body,invokedExpr),expr1.Parameters);
     }
+    public static Expression<Func<T,TResult>> ToExpression<T, TResult>(this Func<T,TResult> func) => x => func(x);
+
 }

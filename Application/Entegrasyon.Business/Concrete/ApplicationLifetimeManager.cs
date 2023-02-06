@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+﻿using System.Diagnostics;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,11 +23,12 @@ public class ApplicationLifetimeManager
     private async Task MigrateDatabase(CancellationToken ct = default)
     {
         //handle multiple databases.
+        //you can use connection string placeholder but need to handle multiple database when needed.
         var db = _context.Database;
         var pendingMigrations = await db.GetPendingMigrationsAsync(ct);
         if (pendingMigrations.Any())
         {
-            await _context.Database.MigrateAsync(ct);
+            await db.MigrateAsync(ct);
         }
     }
 

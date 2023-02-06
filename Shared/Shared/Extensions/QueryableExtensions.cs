@@ -72,8 +72,8 @@ public static class QueryableExtensions
 
     public static async Task<Pageable<TEntity>> ToPage<TEntity>(this IQueryable<TEntity> @this,int pageIndex,int pageSize)
     {
-        var items =await @this.ToPageableQuery(pageIndex, pageSize).ToListAsync();
-        int totalItemCount = await @this.CountAsync();
+        var items =await @this.ToPageableQuery(pageIndex,pageSize).ToListAsync().ConfigureAwait(false);
+        int totalItemCount = await @this.CountAsync().ConfigureAwait(false);
         return new Pageable<TEntity>(items,pageIndex,pageSize,totalItemCount);
     }
     public static IQueryable<TEntity> ToPageableQuery<TEntity>(this IQueryable<TEntity> @this, int pageIndex, int pageSize)

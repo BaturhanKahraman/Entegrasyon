@@ -153,5 +153,7 @@ namespace Entegrasyon.Business.Concrete
                 x => !x.CategoryAttributes.Any());
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
+
+       
     }
 }

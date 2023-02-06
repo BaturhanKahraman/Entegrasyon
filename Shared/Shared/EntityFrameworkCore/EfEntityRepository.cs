@@ -16,43 +16,55 @@ where TContext : DbContext
         Table = _context.Set<TEntity>();
     }
     public DbSet<TEntity> Table { get; }
+    protected async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+
     public async Task AddAsync(TEntity entity)
     {
-        _context.Set<TEntity>().Add(entity);
+        await Table.AddAsync(entity).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task UpdateAsync(TEntity entity)
     {
-        _context.Set<TEntity>().Update(entity);
+        Table.Update(entity);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task DeleteAsync(TEntity entity)
     {
-        _context.Set<TEntity>().Remove(entity);
+        Table.Remove(entity);
+        await _context.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task RemoveRangeAsync(IEnumerable<TEntity> entities)
+    {
+        Table.RemoveRange(entities);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task<TEntity> GetAsync(Expression<Func<TEntity,bool>> expression,bool isTracking = false)
     {
         return (isTracking
-            ? await _context.Set<TEntity>().FirstOrDefaultAsync(expression)
-            : await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(expression))!;
+            ? await Table.FirstOrDefaultAsync(expression)
+            : await Table.AsNoTracking().FirstOrDefaultAsync(expression))!;
     }
 
     public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity,bool>> expression = null,bool isTracking = false)
     {
-        var entities = isTracking ? _context.Set<TEntity>() : _context.Set<TEntity>().AsNoTracking();
-        return expression == null ? await entities.ToListAsync() : await entities.Where(expression).ToListAsync();
+        var entities = isTracking ? Table : Table.AsNoTracking();
+        var result =expression == null ? entities :  entities.Where(expression);
+        return await result.ToListAsync().ConfigureAwait(false);
     }
     public async Task<TResult> GetTransformedEntity<TResult>(
         Expression<Func<TEntity,TResult>> selector,
         Expression<Func<TEntity,bool>> expression=null)
     {
-        var entities = _context.Set<TEntity>().AsNoTracking();
+        var entities = Table.AsNoTracking();
         entities = entities.ApplyFilter(expression);
-        return await entities.Select(selector).FirstOrDefaultAsync();
+        return await entities.Select(selector).FirstOrDefaultAsync().ConfigureAwait(false);
     }
     public Task<List<TResult>> GetTransformedEntitiesAsync<TResult>(
         Expression<Func<TEntity,TResult>> selector,
@@ -69,14 +81,14 @@ where TContext : DbContext
         IEnumerable<(string,string)> orderTuples = null,
         Expression<Func<TEntity,bool>> expression = null)
     {
-        return await GetTransformedEntitiesAsQueryable(selector,orderTuples,expression).ToPage(pageIndex,pageSize);
+        return await GetTransformedEntitiesAsQueryable(selector,orderTuples,expression).ToPage(pageIndex,pageSize).ConfigureAwait(false);
     }
     
     public async Task<bool> Exists(Expression<Func<TEntity,bool>> expression = null)
     {
         return expression == null
-            ? await _context.Set<TEntity>().AnyAsync()
-            : await _context.Set<TEntity>().AnyAsync(expression);
+            ? await Table.AnyAsync().ConfigureAwait(false)
+            : await Table.AnyAsync(expression).ConfigureAwait(false);
     }
     private IQueryable<TResult> GetTransformedEntitiesAsQueryable<TResult>(
        Expression<Func<TEntity, TResult>> selector,
@@ -84,7 +96,7 @@ where TContext : DbContext
        Expression<Func<TEntity, bool>> expression = null
        )
     {
-        var entities = _context.Set<TEntity>().AsNoTracking();
+        var entities = Table.AsNoTracking();
         entities = entities.OrderQueryableDynamicly(orderTuples);
         entities = entities.ApplyFilter(expression);
         return entities.Select(selector);

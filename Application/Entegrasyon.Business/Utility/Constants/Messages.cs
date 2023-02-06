@@ -7,8 +7,10 @@ public class Messages
     public const string ProductVariantAdded = "Ürün varyantı başarıyla eklendi";
     public const string ProductVariantUpdated = "Ürün varyantı başarıyla güncellendi";
     public const string ProductVariantDeleted = "Ürün varyantı başarıyla silindi";
+    public const string ProductVariantGettingSuccessful = "Ürün varyantı başarıyla getirildi.";
     public const string ProductVariantListed = "Ürün varyantları başarıyla listelendi";
     public const string ProductAdded = "Ürün başarı ile eklendi.";
     public const string CategoryAdded = "Kategori başarı ile eklendi.";
     public const string NoAttributeForCategory = "Kategoride herhangi bir özellik bulunamamıştır.";
+    public const string CategoryImportQueued = "Kategori içe aktarma işlemi kuyruğa alındı.";
 }
