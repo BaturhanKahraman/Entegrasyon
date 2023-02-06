@@ -22,12 +22,13 @@ public class RetailCustomerEntityConfiguration : IEntityTypeConfiguration<Retail
 {
     public void Configure(EntityTypeBuilder<RetailCustomer> builder)
     {
+            builder.Property(x => x.RetailSearchVector);
         builder
             .HasGeneratedTsVectorColumn(
-                p => p.SearchVector,
-                "turkish",
+                p => p.RetailSearchVector,
+                "english",
                 p => new { p.PhoneNumber,p.Surname,p.Name,p.NationalIdentity })
-            .HasIndex(p => p.SearchVector)
+            .HasIndex(p => p.RetailSearchVector)
             .HasMethod("GIN");
         var retailCustomers = new RetailCustomer[3];
         retailCustomers[0] = new RetailCustomer
@@ -61,13 +62,13 @@ public class RetailCustomerEntityConfiguration : IEntityTypeConfiguration<Retail
     {
         public void Configure(EntityTypeBuilder<CorporateCustomer> builder)
         {
-            builder.Property(x => x.SearchVector);
+            builder.Property(x => x.CorporateSearchVector);
             builder
                 .HasGeneratedTsVectorColumn(
-                    p => p.SearchVector,
-                    "turkish",
+                    p => p.CorporateSearchVector,
+                    "english",
                     p => new { p.PhoneNumber,p.CorporateName,p.TaxNumber,p.Name,p.Surname,})
-                .HasIndex(p => p.SearchVector)
+                .HasIndex(p => p.CorporateSearchVector)
                 .HasMethod("GIN");
             var corporateCustomers = new CorporateCustomer[3];
             corporateCustomers[0] = new CorporateCustomer

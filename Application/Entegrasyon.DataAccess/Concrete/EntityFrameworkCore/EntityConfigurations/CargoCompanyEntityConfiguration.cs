@@ -14,7 +14,7 @@ public class CargoCompanyEntityConfiguration : IEntityTypeConfiguration<CargoCom
         builder
             .HasGeneratedTsVectorColumn(
                 p => p.SearchVector,
-                "turkish",
+                "english",
                 p => new { p.Code, p.Name, p.TaxNumber })
             .HasIndex(p => p.SearchVector)
             .HasMethod("GIN");

@@ -16,7 +16,7 @@ public class EfBranchOfficeDal:EfEntityRepository<BranchOffice,IntegrationDbCont
 
     public async Task<bool> CheckIfOfficesExits(IEnumerable<int> stocks)
     {
-        return await _dbContext.BranchOffices.AllAsync(x=>stocks.Contains(x.Id));
+        return await _dbContext.BranchOffices.AnyAsync(x=>stocks.Contains(x.Id));
     }
     
 }

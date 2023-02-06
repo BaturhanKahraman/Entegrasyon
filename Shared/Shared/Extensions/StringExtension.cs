@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace Shared.Extensions;
 
@@ -24,7 +26,7 @@ public static class StringExtension
     {
         if(string.IsNullOrWhiteSpace(@this))
             return string.Empty;
-        return @this.Trim().ToString();
+        return @this.Trim();
     }
 
     public static string ToBase64(this string @this)
@@ -52,5 +54,5 @@ public static class StringExtension
     {
         return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(@this.ToLower());
     }
-    
+
 }

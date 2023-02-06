@@ -25,6 +25,5 @@ public static class FuncMappings
         };
     }
 
-    public static Expression<Func<T,TResult>> ToExpression<T, TResult>(this Func<T,TResult> func)=> x => func(x);
     
 }

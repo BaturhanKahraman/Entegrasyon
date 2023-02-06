@@ -14,19 +14,19 @@ public class AttributeKeyValueManager
         _attributeKeyValueDal = attributeKeyValueDal;
     }
 
-    public void ClearEmptyAttributes (Product product)
+    public void ClearEmptyAttributes(Product product)
     {
         product.AttributeKeyValues = product.AttributeKeyValues
-            .Where(x => x.AttributeValueId.HasValue ||
-                        !string.IsNullOrEmpty(x.CustomValue)).ToList();
+            .Where(x=>(x.AttributeValueId == 0 && !string.IsNullOrEmpty(x.CustomValue) || x.AttributeValueId>0))
+            .ToList();
     }
 
     public async Task<IResult> ValidateAttributeKeyValues(IEnumerable<AttributeKeyValue> kv)
     {
-        var errorKeys =(await _attributeKeyValueDal.ValidateKeyValues(kv)).ToList();
-        if (errorKeys.Any())
-            return new ErrorResult(string.Join(' ',errorKeys)+ " özellikleri eksiksiz doldurulmalıdır.");
+        var errorKeys = (await _attributeKeyValueDal.ValidateKeyValues(kv)).ToList();
+        if(errorKeys.Any())
+            return new ErrorResult(string.Join(' ',errorKeys) + " özellikleri eksiksiz doldurulmalıdır.");
         return new SuccessResult();
     }
-    
+
 }

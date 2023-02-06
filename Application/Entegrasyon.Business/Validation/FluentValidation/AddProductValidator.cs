@@ -10,7 +10,7 @@ public class AddProductValidator:AbstractValidator<AddProductDto>
         RuleFor(x => x.Title).NotEmpty().WithMessage("Ürün adı boş geçilemez");
         RuleFor(x => x.Description).NotEmpty().WithMessage("Ürün açıklaması boş geçilemez");
         RuleFor(x => x.StockCode).NotEmpty().WithMessage("Ürün stok kodu boş geçilemez");
-        RuleFor(x => x.BrandId).NotEmpty().WithMessage("Ürün markası boş geçilemez");
+        //RuleFor(x => x.BrandId).NotEmpty().WithMessage("Ürün markası boş geçilemez");
         RuleFor(x => x.CategoryId).NotEmpty().WithMessage("Ürün kategorisi boş geçilemez");
         RuleFor(x => x.ProductVariants).NotEmpty().WithMessage("Ürün varyantları boş geçilemez");
        

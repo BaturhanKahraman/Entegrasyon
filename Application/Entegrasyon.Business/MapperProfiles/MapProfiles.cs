@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
@@ -56,6 +57,11 @@ public class MapProfiles:Profile
         CreateMap<EditProductVariantDto, ProductVariant>();
         CreateMap<EditBranchOfficeStockDto, BranchOfficeStock>().ReverseMap();
         CreateMap<AddCategoryAttributeDto, CategoryAttribute>().ReverseMap();
+
+        CreateMap<TrendyolCategoryAttribute, CategoryAttribute>()
+            .ForMember(dest => dest.CategoryAttributeKey, opt => opt.MapFrom(s => s.Attribute.Name))
+            .ForMember(dest => dest.CategoriyAttributeHumanized, opt => opt.MapFrom(s => s.Attribute.Name));
+        CreateMap<TrendyolAttributeValue, CategoryAttributeValue>().ForMember(dest=>dest.Id,opt=>opt.Ignore());
 
         /*
           dest => dest.SomeDestinationProperty,

@@ -13,7 +13,8 @@ public class CategoryEntityConfiguration:IEntityTypeConfiguration<Category>
         builder.HasOne(x => x.SuperCategory)
             .WithMany(x=>x.SubCategories)
             .HasForeignKey(x=>x.SuperCategoryId);
-
+        builder.Property(x => x.ImportId).IsRequired(false);
+        builder.HasIndex(x => x.ImportId);
         Category[] categories = new Category[6];
         categories[0] = new Category { CreatedAt = DateTimeOffset.MinValue, Id = 1, IsFavorite = false, Name = "Giyim" };
         categories[1] = new Category { CreatedAt = DateTimeOffset.MinValue, Id = 2, IsFavorite = false, Name = "Teknoloji" };

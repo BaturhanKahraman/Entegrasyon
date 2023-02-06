@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Shared.Entity;
 
 namespace Entegrasyon.Entity.Categories;
@@ -11,11 +10,9 @@ public sealed class CategoryAttribute : BaseEntity
     public string CategoriyAttributeHumanized { get; set; }
 
     public bool AllowCustom { get; set; }
-
-    public IEnumerable<CategoryAttributeValue> CategoryAttributeValues { get; set; }
+    public int ImportId { get; set; }
+    public ICollection<CategoryAttributeValue> CategoryAttributeValues { get; set; }
     public IEnumerable<CategoryAttributeCategory> Categories { get; set; }
-
-    public IEnumerable<AttributeKeyValue> AttributeKeyValues { get; set; }
 
     [NotMapped]
     public int TempMappingId { get; set; }

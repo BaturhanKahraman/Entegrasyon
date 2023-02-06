@@ -24,8 +24,15 @@ public class ProductManager
     private readonly OfficeStockManager _officeStockManager;
     private readonly ImageManager _imageManager;
     private readonly AttributeKeyValueManager _attributeKeyValueManager;
-    private readonly BarcodeManager _barcodeManager;
-    public ProductManager(IMainProductDal productDal,ApplicationLogManager applicationLogManager,IMapper mapper,FluentValidator validator,OfficeStockManager officeStockManager,ImageManager imageManager,AttributeKeyValueManager attributeKeyValueManager,BarcodeManager barcodeManager)
+    private readonly TempBarcodeManager _barcodeManager;
+    public ProductManager(IMainProductDal productDal,
+        ApplicationLogManager applicationLogManager,
+        IMapper mapper,
+        FluentValidator validator,
+        OfficeStockManager officeStockManager,
+        ImageManager imageManager,
+        AttributeKeyValueManager attributeKeyValueManager,
+        TempBarcodeManager barcodeManager)
     {
         _productDal = productDal;
         _applicationLogManager = applicationLogManager;
@@ -42,17 +49,18 @@ public class ProductManager
         await _applicationLogManager.AddLog("Ürün ekleme isteği geldi.",LogType.Product,LogAction.Add,dto);
         await _validator.ValidateAndThrowAsync(dto);
         var result = LogicRunner.Run(
-            await _officeStockManager.CheckIfOfficeExists(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks.Select(y => y.BranchOfficeId)).ToArray()),
-            _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray()),
-            await _attributeKeyValueManager.ValidateAttributeKeyValues(dto.AttributeKeyValues)
+            //await _officeStockManager.CheckIfOfficeExists(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks.Select(y => y.BranchOfficeId)).ToArray()),
+            _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
+            //await _attributeKeyValueManager.ValidateAttributeKeyValues(dto.AttributeKeyValues)
             );
         if(result != null)
             return result;
         foreach(var productVariantDto in dto.ProductVariants.Where(productVariantDto => string.IsNullOrEmpty(productVariantDto.Barcode)))
-            productVariantDto.Barcode = await _barcodeManager.GenerateBarcode();
+            productVariantDto.Barcode = (await _barcodeManager.GetBarcode())?.Barcode;
         var product = _mapper.Map<Product>(dto);
-        _attributeKeyValueManager.ClearEmptyAttributes(product);//attr keyvalues
+        _attributeKeyValueManager.ClearEmptyAttributes(product);
         await _productDal.AddAsync(product);
+        await _barcodeManager.MarkAddedBarcodes(product.ProductVariants.Select(pv => pv.Barcode));
         await _imageManager.AddProductImages(dto,product);
         await _applicationLogManager.AddLog("Ürün başarı ile eklendi",LogType.Product,LogAction.Add);
         return new SuccessResult(Messages.ProductAdded);
@@ -102,10 +110,10 @@ public class ProductManager
     }
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(GetProductPageableDto dto)
     {
-        var orderTupleList = new List<(string, string)> { new("CreatedAt","desc") };
-        Expression<Func<Product, bool>> expression =
+        var orderTupleList = new List<(string, string)> { new("CreatedAt","desc"),new("UpdatedAt","desc") };
+        Expression<Func<Product,bool>> expression =
             string.IsNullOrEmpty(dto.FullTextSearchKey) ? null : x =>
-            x.SearchVector.Matches(dto.FullTextSearchKey.ToFullTextSearchQuery()) || x.ProductVariants.Any(pv=>pv.Barcode.Contains(dto.FullTextSearchKey));
+            x.SearchVector.Matches(dto.FullTextSearchKey.ToFullTextSearchQuery()) || x.ProductVariants.Any(pv => pv.Barcode.Contains(dto.FullTextSearchKey));
         var result = await _productDal.GetPaginatedTransformedEntities(dto.PageIndex,
             dto.PageSize,
             x => new ProductsDetailDto(x.Id,x.Title,x.Description,x.StockCode,x.Brand.Name,x.Category.Name,

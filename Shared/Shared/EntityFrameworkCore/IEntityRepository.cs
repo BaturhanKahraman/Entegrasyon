@@ -11,6 +11,7 @@ where T : class, new()
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);
+    Task RemoveRangeAsync(IEnumerable<T> entities);
     Task<T> GetAsync(Expression<Func<T, bool>> expression, bool isTracking = false);
     Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
 

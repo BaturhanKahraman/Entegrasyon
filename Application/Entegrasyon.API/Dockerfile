@@ -8,10 +8,10 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Application/Entegrasyon.API/Entegrasyon.API.csproj", "Application/Entegrasyon.API/"]
+COPY ["Application/Entegrasyon.Business/Entegrasyon.Business.csproj", "Application/Entegrasyon.Business/"]
 COPY ["Application/Entegrasyon.DataAccess/Entegrasyon.DataAccess.csproj", "Application/Entegrasyon.DataAccess/"]
 COPY ["Application/Entegrasyon.Entity/Entegrasyon.Entity.csproj", "Application/Entegrasyon.Entity/"]
 COPY ["Shared/Shared/Shared.csproj", "Shared/Shared/"]
-COPY ["Shared/MainDatabase/MainDatabase.csproj", "Shared/MainDatabase/"]
 RUN dotnet restore "Application/Entegrasyon.API/Entegrasyon.API.csproj"
 COPY . .
 WORKDIR "/src/Application/Entegrasyon.API"

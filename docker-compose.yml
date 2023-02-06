@@ -1,6 +1,24 @@
 version: '3.4'
 
 services:
+  rabbit:
+    image: rabbitmq:management
+    container_name: rabbitmq_container
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+    environment:
+        - RABBITMQ_ERLANG_COOKIE=mysecretcookie
+        - RABBITMQ_MANAGEMENT=true
+    healthcheck:
+      test: curl -f http://localhost:15672/ || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+  
   redis:
     image: redis:latest
     container_name: redis
@@ -27,17 +45,15 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
-  rabbit:
-    image: rabbitmq:latest
-    container_name: rabbitmq_container
+
   entegrasyon.api:
     image: ${DOCKER_REGISTRY-}entegrasyonapi
     build:
       context: ./
       dockerfile: Application/Entegrasyon.API/Dockerfile
     depends_on:
+      - rabbit
       - redis
       - db
     ports:
       - "44444:443" 
-      

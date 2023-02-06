@@ -54,9 +54,9 @@ public class ApplicationUserManager
         return new SuccessDataResult<List<UserDetailListDto>>(result);
     }
     public string GetActiveUserId() =>
-        _httpContextAccessor.HttpContext.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+       this.GetActiveUserGuidId().ToString();
 
-    public Guid GetActiveUserGuidId() => Guid.Parse(_httpContextAccessor.HttpContext.User
+    public Guid GetActiveUserGuidId() => Guid.Parse(_httpContextAccessor.HttpContext!.User
         .FindFirst(x => x.Type == ClaimTypes.NameIdentifier)
         ?.Value!);
 
