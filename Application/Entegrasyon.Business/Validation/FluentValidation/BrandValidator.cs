@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Entity.Products;
+﻿using Entegrasyon.Entity.Brands;
 using FluentValidation;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;

@@ -1,6 +1,7 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Product;
 using Microsoft.AspNetCore.Mvc;
+using Shared.DTO;
 
 namespace Entegrasyon.API.Controllers
 {
@@ -25,7 +26,7 @@ namespace Entegrasyon.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProductsPageable([FromQuery]GetProductPageableDto dto)
+        public async Task<IActionResult> GetProductsPageable([FromQuery] SearchablePageDto dto)
         {
             var result = await _productManager.GetProductsDetailsPageable(dto);
             if(result.Success)
@@ -45,13 +46,13 @@ namespace Entegrasyon.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductByIdForEdit(Guid id)
         {
-            var result = await _productManager.GetProductByIdForEdit(id);
+            var result = await _productManager.GetProductEditDetailById(id);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);
         }
         [HttpPost]
-        public async Task<IActionResult> EditProduct(EditProductDto dto)
+        public async Task<IActionResult> EditProduct(ProductEditDetailDto dto)
         {
             var result = await _productManager.UpdateProduct(dto);
             if (result.Success)

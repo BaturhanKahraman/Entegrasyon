@@ -1,5 +1,4 @@
 ﻿using Entegrasyon.Business.Concrete;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.API.Controllers

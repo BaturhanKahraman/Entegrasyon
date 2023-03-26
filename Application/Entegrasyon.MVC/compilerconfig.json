@@ -1,0 +1,129 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/site.css",
+    "inputFile": "wwwroot/css/site.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/main.css",
+    "inputFile": "wwwroot/css/assets/main.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/structure.css",
+    "inputFile": "wwwroot/css/assets/structure.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/support-chat.css",
+    "inputFile": "wwwroot/css/assets/support-chat.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/animate/animate.css",
+    "inputFile": "wwwroot/css/plugins/animate/animate.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/users/login-1.css",
+    "inputFile": "wwwroot/css/assets/users/login-1.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/structure/variables/_fonticons.css",
+    "inputFile": "wwwroot/css/assets/structure/variables/_fonticons.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/structure/variables/_urls.css",
+    "inputFile": "wwwroot/css/assets/structure/variables/_urls.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/structure/variables/_variables.css",
+    "inputFile": "wwwroot/css/assets/structure/variables/_variables.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/plugins/jquery.mCustomScrollbar.css",
+    "inputFile": "wwwroot/css/assets/plugins/jquery.mCustomScrollbar.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/pages/contact_us.css",
+    "inputFile": "wwwroot/css/assets/pages/contact_us.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/main/_alerts.css",
+    "inputFile": "wwwroot/css/assets/main/_alerts.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/main/utility/_alignment.css",
+    "inputFile": "wwwroot/css/assets/main/utility/_alignment.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/custom-basic_calendar.css",
+    "inputFile": "wwwroot/css/assets/apps/custom-basic_calendar.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/mailing-chat.css",
+    "inputFile": "wwwroot/css/assets/apps/mailing-chat.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/mailbox-read.css",
+    "inputFile": "wwwroot/css/assets/apps/mailbox-read.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/mailbox.css",
+    "inputFile": "wwwroot/css/assets/apps/mailbox.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/mailbox-with-chat.css",
+    "inputFile": "wwwroot/css/assets/apps/mailbox-with-chat.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/mailing-compose.css",
+    "inputFile": "wwwroot/css/assets/apps/mailing-compose.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/scheduler.css",
+    "inputFile": "wwwroot/css/assets/apps/scheduler.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/apps/newsletter/style.css",
+    "inputFile": "wwwroot/css/assets/apps/newsletter/style.scss",
+    "options": {
+      "sourceMap": false
+    }
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/autocomplete/autocomplete.css",
+    "inputFile": "wwwroot/css/plugins/autocomplete/autocomplete.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/bootstrap-colorpicker/bootstrap-colorpicker.css",
+    "inputFile": "wwwroot/css/plugins/bootstrap-colorpicker/bootstrap-colorpicker.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/bootstrap-select/bootstrap-select.min.css",
+    "inputFile": "wwwroot/css/plugins/bootstrap-select/bootstrap-select.min.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/base/_color_variables.css",
+    "inputFile": "wwwroot/css/assets/base/_color_variables.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/base/_fonticons.css",
+    "inputFile": "wwwroot/css/assets/base/_fonticons.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/base/_urls.css",
+    "inputFile": "wwwroot/css/assets/base/_urls.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/assets/base/_utilities_variables.css",
+    "inputFile": "wwwroot/css/assets/base/_utilities_variables.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/flaticon/style.css",
+    "inputFile": "wwwroot/css/plugins/flaticon/style.scss"
+  },
+  {
+    "outputFile": "wwwroot/lib/template/css/plugins/table/datatable/datatables.css",
+    "inputFile": "wwwroot/lib/template/css/plugins/table/datatable/datatables.scss"
+  },
+  {
+    "outputFile": "wwwroot/lib/template/css/assets/ui-kit/custom-tree_view.css",
+    "inputFile": "wwwroot/lib/template/css/assets/ui-kit/custom-tree_view.scss"
+  }
+]

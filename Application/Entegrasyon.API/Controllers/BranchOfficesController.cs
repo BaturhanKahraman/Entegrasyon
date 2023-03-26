@@ -1,5 +1,6 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Branches;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,9 +30,9 @@ namespace Entegrasyon.API.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> AddBranch(BranchOffice office)
+        public async Task<IActionResult> AddBranch(BranchOfficeAddDto officedto)
         {
-            var result =await _branchOfficeManager.AddBranch(office);
+            var result =await _branchOfficeManager.AddBranch(officedto);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);
@@ -47,9 +48,9 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateBranch(BranchOffice branchOffice)
+        public async Task<IActionResult> UpdateBranch(BranchOfficeEditDto branchOfficeDto)
         {
-            var result = await _branchOfficeManager.Update(branchOffice);
+            var result = await _branchOfficeManager.Update(branchOfficeDto);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

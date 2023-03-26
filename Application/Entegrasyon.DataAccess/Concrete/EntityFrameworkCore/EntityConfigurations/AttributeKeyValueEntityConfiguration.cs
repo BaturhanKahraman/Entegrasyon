@@ -12,5 +12,6 @@ public class AttributeKeyValueEntityConfiguration : IEntityTypeConfiguration<Att
         builder.Property(x => x.CustomValue).IsRequired(false);
         builder.Property(x => x.AttributeValueId).IsRequired(false);
         builder.HasOne(x => x.Product).WithMany(pv => pv.AttributeKeyValues).HasForeignKey(x=>x.ProductId);
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

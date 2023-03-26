@@ -1,6 +1,4 @@
-﻿using Amazon.S3.Model;
-
-namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
+﻿namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
 public record ProductVariantSaleSearchDto(
     Guid ProductVariantId,

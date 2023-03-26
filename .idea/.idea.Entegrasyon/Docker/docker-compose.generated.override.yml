@@ -1,0 +1,32 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.4"
+services:
+  entegrasyon.api:
+    build:
+      context: "D:\\Projelerim\\Entegrasyon"
+      dockerfile: "Application/Entegrasyon.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "/riderDebugger/linux-x64/dotnet/dotnet"
+    - "/riderDebugger/JetBrains.Debugger.Worker.exe"
+    - "--mode=server"
+    - "--frontend-port=57100"
+    - "--backend-port=57300"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net7.0/Entegrasyon.API.staticwebassets.runtime.CT.json"
+      RIDER_DEBUGGER_LOG_DIR: "/riderLogs"
+      RESHARPER_LOG_CONF: "/riderLogsConf/backend-log.xml"
+    image: "entegrasyonapi:dev"
+    ports:
+    - "57002:57100"
+    - "57202:57300"
+    volumes:
+    - "D:\\Projelerim\\Entegrasyon\\Application\\Entegrasyon.API:/app:rw"
+    - "C:\\Users\\Baturhan\\AppData\\Local\\JetBrains\\RiderRemoteDebugger\\2023.1EAP8\\\
+      Linux64:/riderDebugger"
+    - "C:\\Program Files\\JetBrains\\JetBrains Rider 231.8109.48/bin:/riderLogsConf"
+    - "C:\\Users\\Baturhan\\AppData\\Local\\JetBrains\\Rider2023.1\\log\\DebuggerWorker\\\
+      JetBrains.Debugger.Worker.2023_3_16_00_10_46:/riderLogs:rw"
+    working_dir: "/app"

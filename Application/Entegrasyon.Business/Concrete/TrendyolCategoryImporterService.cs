@@ -1,10 +1,5 @@
-﻿using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using System.Xml;
-using AutoMapper;
+﻿using System.Collections.Immutable;
 using Entegrasyon.Business.Utility.Constants;
-using Entegrasyon.Business.Utility.MessageBroker;
 using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
@@ -14,9 +9,7 @@ using Entegrasyon.Entity.Matches;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using RabbitMQ.Client;
 using Shared.Results;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -24,21 +17,15 @@ public class TrendyolCategoryImporterService
 {
     private readonly HttpClient _httpClient;
     private readonly IntegrationDbContext _dbContext;
-    private readonly IConnection _connection;
-    private readonly ApplicationUserManager _userManager;
     private readonly RabbitMqPublisherService _brokerHelper;
-    private readonly IMapper _mapper;
     private readonly ILogger<TrendyolCategoryImporterService> _logger;
-    private List<CategoryAttribute> SavedCategoryAttributes = new();
+    private readonly List<CategoryAttribute> SavedCategoryAttributes = new();
 
     private const string CategoryUrl = @"https://api.trendyol.com/sapigw/product-categories";
-    public TrendyolCategoryImporterService(HttpClient httpClient,IConnection connection,ApplicationUserManager userManager,RabbitMqPublisherService brokerHelper,IMapper mapper,IntegrationDbContext dbContext,ILogger<TrendyolCategoryImporterService> logger)
+    public TrendyolCategoryImporterService(HttpClient httpClient,RabbitMqPublisherService brokerHelper,IntegrationDbContext dbContext,ILogger<TrendyolCategoryImporterService> logger)
     {
         _httpClient = httpClient;
-        _connection = connection;
-        _userManager = userManager;
         _brokerHelper = brokerHelper;
-        _mapper = mapper;
         _dbContext = dbContext;
         _logger = logger;
     }
@@ -60,11 +47,6 @@ public class TrendyolCategoryImporterService
         //validate
         if(trendyolImports == null)
             return new ErrorResult("Boş obje gönderildi.");
-        //var model =_connection.CreateModel();
-        //model.QueueDeclare(MessageBrokerNames.TrendyolCategoryImportQueueName,true,false,false,null);
-        //var message = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(trendyolImports));
-        //model.BasicPublish("",MessageBrokerNames.TrendyolCategoryImportQueueName,null,message);
-        //model.ConfirmSelect();
         _brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolCategoryImportQueueName,trendyolImports);
         return new SuccessResult(Messages.CategoryImportQueued);
     }
@@ -78,7 +60,7 @@ public class TrendyolCategoryImporterService
             import.SubCategories = lookup[import.Id].ToList();
         }
 
-        var rootcategories = lookup[0].ToList();
+        var rootcategories = lookup[null].ToImmutableList();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {
@@ -227,7 +209,7 @@ public class TrendyolCategoryImporterService
                 x.ImportId == categoryAttribute.Attribute.Id)) ?? new CategoryAttribute
                 {
                     CategoryAttributeKey = categoryAttribute.Attribute.Name,
-                    CategoriyAttributeHumanized = categoryAttribute.Attribute.Name,
+                    CategoryAttributeHumanized = categoryAttribute.Attribute.Name,
                     ImportId = categoryAttribute.Attribute.Id,
                     AllowCustom = categoryAttribute.AllowCustom,
                     CategoryAttributeValues = new List<CategoryAttributeValue>()

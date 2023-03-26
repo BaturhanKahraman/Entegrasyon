@@ -331,15 +331,15 @@ public static class UserContextSeed
             new { ClaimsId=38,RolesId=1 },
             new { ClaimsId=39,RolesId=1 },
             new { ClaimsId=40,RolesId=1 },
-            new { ClaimsId=41,RolesId=1 }
-            //new { ClaimsId=42,RolesId=1 },
-            //new { ClaimsId=43,RolesId=1 },
-            //new { ClaimsId=44,RolesId=1 },
-            //new { ClaimsId=45,RolesId=1 },
-            //new { ClaimsId=46,RolesId=1 },
-            //new { ClaimsId=47,RolesId=1 },
-            //new { ClaimsId=48,RolesId=1 },
-            //new { ClaimsId=49,RolesId=1 }
+            new { ClaimsId=41,RolesId=1 },
+            new { ClaimsId = 42,RolesId = 1 },
+            new { ClaimsId = 43,RolesId = 1 },
+            new { ClaimsId = 44,RolesId = 1 },
+            new { ClaimsId = 45,RolesId = 1 },
+            new { ClaimsId = 46,RolesId = 1 },
+            new { ClaimsId = 47,RolesId = 1 },
+            new { ClaimsId = 48,RolesId = 1 },
+            new { ClaimsId = 49,RolesId = 1 }
         );
        
     }

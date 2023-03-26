@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using Entegrasyon.Business.MapperProfiles;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Customers;
@@ -17,35 +18,60 @@ namespace Entegrasyon.Business.Concrete;
 public class CustomerManager
 {
     private readonly ICustomerDal _customerDal;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly FluentValidator _fluentValidator;
     private readonly IMapper _mapper;
     private readonly ApplicationLogManager _applicationLogManager;
-    public CustomerManager(ICustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,ApplicationLogManager applicationLogManager)
+    public CustomerManager(ICustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,ApplicationLogManager applicationLogManager, IUnitOfWork unitOfWork)
     {
         _customerDal = customerDal;
         _fluentValidator = fluentValidator;
         _mapper = mapper;
         _applicationLogManager = applicationLogManager;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task<IResult> UpdateCustomer(UpdateCustomerDto dto)
-    {
+    public async Task<IDataResult<Customer>> UpdateCustomer(UpdateCustomerDto customerDto)
+     {
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.",LogType.Customer,LogAction.Update);
-        await _fluentValidator.ValidateAndThrowAsync(dto);
-        //var result = LogicRunner.Run(await CheckIfSameIdExits(dto.NationalIdentity));
-        //if(result != null)
-        //{
-        //    await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarısız oldu. " + result.Message,LogType.Customer,LogAction.Update,dto);
-        //    return result;
+        //await _fluentValidator.ValidateAndThrowAsync(dto);
 
-        //}
-        var applicationCustomer = _mapper.Map<Customer>(dto);
-        await _customerDal.AddAsync(applicationCustomer);
+        Customer applicationCustomer = await _customerDal.GetAsync(x=>x.Id==customerDto.Id,true);
+        if (customerDto.CustomerType == "Retail")
+        {
+            if (applicationCustomer is CorporateCustomer corpCustomer)
+            {
+                corpCustomer.CorporateName = null;
+                corpCustomer.TaxNumber = null;
+            }
+            var retailCustomer = applicationCustomer as RetailCustomer;
+            retailCustomer!.NationalIdentity = customerDto.NationalIdentity;
+            retailCustomer.Name = customerDto.Name;
+            retailCustomer.CustomerType = customerDto.CustomerType;
+            retailCustomer.Surname = customerDto.Surname;
+            retailCustomer.PhoneNumber = customerDto.PhoneNumber;
+        }
+        else
+        {
+            if(applicationCustomer is RetailCustomer corpCustomer)
+            {
+                corpCustomer.NationalIdentity = null;
+            }
+            var corporateCustomer = applicationCustomer as CorporateCustomer;
+            corporateCustomer!.TaxNumber = customerDto.TaxNumber;
+            corporateCustomer.CorporateName = customerDto.CorporateName;
+            corporateCustomer.Name = customerDto.Name;
+            corporateCustomer.CustomerType = customerDto.CustomerType;
+            corporateCustomer.Surname = customerDto.Surname;
+            corporateCustomer.PhoneNumber = customerDto.PhoneNumber;
+        }
+
+        await _unitOfWork.SaveAsync();
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.",LogType.Customer,LogAction.Update);
-        return new SuccessResult();
+        return new SuccessDataResult<Customer>(applicationCustomer);
     }
 
-    public async Task<IResult> AddCustomer(AddCustomerDto dto)
+    public async Task<IResult> AddCustomer(CustomerAddDto dto)
     {
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.",LogType.Customer,LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
@@ -74,14 +100,24 @@ public class CustomerManager
         return result ? new SuccessResult() : new ErrorResult("Müşteri bulunamamıştır.");
     }
 
-    //private async Task<IResult> CheckIfSameIdExits(string customerIdentity)
-    //{
-    //    if(string.IsNullOrEmpty(customerIdentity))
-    //        return new SuccessResult();
-    //    if (await _customerDal.Exists(x => x. == customerIdentity))
-    //        return new ErrorResult("Aynı id'de başka bir müşteri var.");
-    //    return new SuccessResult();
-    //}
+    private async Task<IResult> CheckIfSameIdExits(UpdateCustomerDto customer)
+    {
+        if (customer.CustomerType=="Retail")
+        {
+
+            var exits = await _customerDal.Table.Cast<RetailCustomer>()
+                .AnyAsync(r => r.NationalIdentity == customer.NationalIdentity);
+            return exits ? new ErrorResult(Messages.NationalIdentityAlreadyExits) : new SuccessResult();
+        }
+        if(customer.CustomerType=="Corporate")
+        {
+            var exits = await _customerDal.Table.Cast<CorporateCustomer>()
+                .AnyAsync(r => r.TaxNumber == customer.NationalIdentity);
+            return exits ? new ErrorResult(Messages.TaxNumberAlreadyExits) : new SuccessResult();
+        }
+
+        return new SuccessResult();
+    }
 
     public async Task<IDataResult<IEnumerable<CustomerDetailDto>>> GetCustomerBySearch(string searchText)
     {
@@ -99,5 +135,27 @@ public class CustomerManager
                 (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()));
         var result = await _customerDal.GetTransformedEntitiesAsync(FuncMappings.CustomerToDetailDto().ToExpression(),orders,expression);
         return new SuccessDataResult<IEnumerable<CustomerDetailDto>>(result);
+    }
+
+    public async Task<IDataResult<Customer>> GetCustomerById(int id)
+    {
+        return new SuccessDataResult<Customer>(await _customerDal.GetAsync(x => x.Id==id));
+    }
+
+    public async Task<IDataResult<CustomerDetailDto>> GetCustomerDetailById(int id)
+    {
+        Expression<Func<Customer, CustomerDetailDto>> expr = FuncMappings.CustomerToDetailDto().ToExpression();
+        var cust = await _customerDal.GetTransformedEntity(expr,
+            c=>c.Id==id);
+        return new SuccessDataResult<CustomerDetailDto>(cust);
+    }
+
+    public async Task<IResult> SoftDelete(int id)
+    {
+        var cust =await _customerDal.GetAsync(x => x.Id == id);
+        if (cust == null)
+            return new ErrorResult(Messages.CustomerNotFound);
+        await _customerDal.SoftDeleteAsync(cust);
+        return new SuccessResult(Messages.ProcessSuccess);
     }
 }

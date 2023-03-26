@@ -64,7 +64,14 @@ namespace Entegrasyon.API.Controllers
                 return Ok(result);
             return BadRequest(result.Message);
         }
-        //supercategoryler de alınacak
+
+        [HttpGet]
+        public async Task<IActionResult> GetCategoryEditDetail(int id)
+        {
+            var result = await _categoryManager.GetCategoryEditDetail(id);
+            return Ok(result);
+        }
+        
         [HttpGet]
         public async Task<IActionResult> GetSuperCategories()
         {
@@ -74,5 +81,13 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
 
+        [HttpPut]
+        public async Task<IActionResult> EditCategory(EditCategoryDto dto)
+        {
+            var result = await _categoryManager.UpdateCategory(dto);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
     }
 }

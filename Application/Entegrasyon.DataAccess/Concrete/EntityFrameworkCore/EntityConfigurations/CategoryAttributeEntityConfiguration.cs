@@ -9,5 +9,6 @@ public class CategoryAttributeEntityConfiguration:IEntityTypeConfiguration<Categ
     public void Configure(EntityTypeBuilder<CategoryAttribute> builder)
     {
         builder.HasIndex(x => x.ImportId);
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

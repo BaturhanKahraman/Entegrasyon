@@ -1,6 +1,4 @@
-﻿using Entegrasyon.Entity.Products;
-using Entegrasyon.Entity.Sales;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.WinForm.Data;
 

@@ -1,10 +1,3 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Branches;
 
-public record BranchDetailDto
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public int UserCount { get; set; }
-
-}
+public record BranchDetailDto(int Id,string Name,int UserCount,DateTimeOffset CreatedAt);

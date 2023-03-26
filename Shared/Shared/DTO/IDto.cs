@@ -1,7 +1,6 @@
-﻿namespace Shared.DTO
-{
-    public interface IValidatebleDto
-    {
+﻿namespace Shared.DTO;
 
-    }
+public interface IDto
+{
+    
 }

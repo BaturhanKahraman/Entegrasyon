@@ -1,0 +1,110 @@
+﻿@using Entegrasyon.MVC.ViewModels.Auth
+@model Shared.Entity.Pageable<Entegrasyon.Entity.Dtos.Users.UserDetailListDto>
+@{
+    ViewData["Title"] = "Kullanıcı Listesi";
+    ViewData["PageTitle"] = "Kullanıcı Listesi";
+}
+@section Styles
+    {
+    <style>
+        .setting-button {
+            margin-bottom: 4px;
+        }
+    </style>
+}
+<div class="table-responsive">
+    <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
+        <thead>
+        <tr>
+            <th data-field="id" data-sortable="true">ID</th>
+            <th data-field="name" data-sortable="true">İsim</th>
+            <th data-field="surname" data-sortable="true">Soyisim</th>
+            <th data-field="userName" data-sortable="true">Kullanıcı Adı</th>
+            <th data-field="isActive" data-sortable="true">Aktiflik</th>
+            <th data-field="isTwoFactorAuthActive" data-sortable="true">İki Adımlı doğrulama</th>
+            <th data-field="needsTakeNewPassword" data-sortable="true">Yeni Şifre</th>
+            <th data-field="createdAt" data-sortable="true">Oluşturulma Tarihi</th>
+            <th data-field="defaultOfficeName" data-sortable="true">Kayıtlı Ofis</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach(var userDetail in Model.Items)
+        {
+            <tr>
+                <td>@userDetail.Id</td>
+                <td>@userDetail.Name</td>
+                <td>@userDetail.Surname</td>
+                <td>@userDetail.UserName</td>
+                <td>
+                    @(userDetail.IsActive
+                        ?Html.Raw(@"<i class=""flaticon-fill-tick text-primary fs-20""></i>")
+                        : Html.Raw(@"<i class=""flaticon-close-fill text-danger fs-20""></i>")
+                        )
+                </td>
+                <td>
+                    @(userDetail.IsTwoFactorAuthActive
+                        ? Html.Raw(@"<i class=""flaticon-fill-tick text-primary fs-20""></i>")
+                        : Html.Raw(@"<i class=""flaticon-close-fill text-danger fs-20""></i>")
+                        )
+                </td>
+                <td>
+                    @(userDetail.NeedsTakeNewPassword
+                        ?Html.Raw(@"<i class=""flaticon-fill-tick text-primary fs-20""></i>")
+                        : Html.Raw(@"<i class=""flaticon-close-fill text-danger fs-20""></i>")
+                        )
+                </td>
+                <td>@userDetail.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td>@userDetail.DefaultOfficeName</td>
+                <td class="text-center">
+                    <ul class="table-controls">
+                        <li>
+                            <div class="btn-group setting-button">
+                                <a data-boundary="viewport" href="javascript:void(0);" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                   data-placement="top" title="" data-original-title="Ayarlar">
+                                    <i class="flaticon-settings-4  bg-primary p-1 text-white br-6 mb-1"></i>
+                                </a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item show-modal" 
+                                       data-username="@userDetail.UserName"
+                                       data-id="@userDetail.Id">Şifre sıfırla</a>
+                                    <a class="dropdown-item" data-id="@userDetail.Id">Pasif Yap</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <a asp-action="Details" asp-route-id="@userDetail.Id">
+                                    <i class="flaticon-search  bg-success p-1 text-white br-6 mb-1"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if(Model.TotalPageCount > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @if(Model.CurrentPageIndex > 0)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex - 1, pageSize = Model.PagingItemCount })">Previous</a></li>
+                }
+                @for(int i = 0;i < Model.TotalPageCount;i++)
+                {
+                    <li class="@(i == Model.CurrentPageIndex ? "page-item active" : "page-item")"><a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PagingItemCount })">@((i + 1).ToString())</a></li>
+                }
+                @if(Model.CurrentPageIndex < Model.TotalPageCount - 1)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex + 1, pageSize = Model.PagingItemCount })">Next</a></li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+@section Scripts
+{
+   <script src="~/js/users/index.js"></script>
+   
+}

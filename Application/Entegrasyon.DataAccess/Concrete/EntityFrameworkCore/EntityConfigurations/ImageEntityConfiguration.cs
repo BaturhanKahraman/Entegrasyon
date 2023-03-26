@@ -12,6 +12,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfiguratio
             builder.HasOne(i=>i.ProductVariant)
                 .WithMany(p=>p.Images)
                 .HasForeignKey(x=>x.ProductVariantId);
+            builder.HasQueryFilter(x => !x.IsDeleted);
 
         }
     }

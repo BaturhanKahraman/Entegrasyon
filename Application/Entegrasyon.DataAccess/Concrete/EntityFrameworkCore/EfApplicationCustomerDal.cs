@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+﻿using System.Collections.Immutable;
+using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Customers;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,7 @@ public class EfApplicationCustomerDal : EfEntityRepository<Customer, Integration
             ).AsSplitQuery().AsNoTracking();
         var customers =await customerQueryable.ToPageableQuery(pageIndex, pageSize).ToListAsync();
         var customerCount = await customerQueryable.CountAsync();
-        return new Pageable<CustomerDetailDto>(customers.Select(CustomerToDetailDto()), pageIndex, pageSize, customerCount);
+        return new Pageable<CustomerDetailDto>(customers.Select(CustomerToDetailDto()).ToImmutableList(), pageIndex, pageSize, customerCount);
     }
 
     private static Func<Customer, CustomerDetailDto> CustomerToDetailDto()

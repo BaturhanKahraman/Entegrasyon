@@ -11,6 +11,7 @@ public class OrderEntityConfiguration : IEntityTypeConfiguration<Order>
     {
         builder.OwnsOne(x => x.ShippingAddress);
         builder.OwnsOne(x => x.BillingAddress);
-        
+        builder.HasQueryFilter(x => !x.IsDeleted);
+
     }
 }

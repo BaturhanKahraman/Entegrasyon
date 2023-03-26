@@ -1,0 +1,93 @@
+﻿@model Shared.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
+@{
+    ViewData["Title"] = "Müşteri Listesi";
+    ViewData["PageTitle"] = "Müşteri Listesi";
+}
+@section Styles
+    {
+    <style>
+        .setting-button {
+            margin-bottom: 4px;
+        }
+    </style>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>TC Kimlik/Vergi no</th>
+                <th>Satış Sayısı</th>
+                <th>İletişim No.</th>
+                <th>Adres</th>
+                <th>Kullanıcı Tipi</th>
+                <th>İsim Soyisim</th>
+                <th>Oluşturulma Tarihi</th>
+                <th>Şirket</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var detail in Model.Items)
+            {
+                <tr>
+                    <td>@detail.Id</td>
+                    <td>@detail.NationalIdentityOrTaxNumber</td>
+                    <td>@detail.SalesCount</td>
+                    <td>@detail.PhoneNumber</td>
+                    <td>@detail.Address</td>
+                    <td>@detail.CustomerType</td>
+                    <td>@detail.NameSurname</td>
+                    <td>@detail.CreatedAt.ToString("dd/MM/yyyy")</td>
+                    <td>@detail.CorporateName</td>
+                    <td class="text-center">
+                        <ul class="table-controls">
+                            @* <li>
+                                 <div class="btn-group setting-button">
+                            <a data-boundary="viewport" href="javascript:void(0);" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            data-placement="top" title="" data-original-title="Ayarlar">
+                            <i class="flaticon-settings-4  bg-primary p-1 text-white br-6 mb-1"></i>
+                            </a>
+                            <div class="dropdown-menu">
+                            <a class="dropdown-item show-modal"
+                            data-username="@detail.UserName"
+                            data-id="@detail.Id">Şifre sıfırla</a>
+                            <a class="dropdown-item" data-id="@detail.Id">Pasif Yap</a>
+                            </div>
+                            </div>
+                            </li>*@
+                            <li>
+                                <a asp-action="Details" asp-route-id="@detail.Id">
+                                    <i class="flaticon-search  bg-success p-1 text-white br-6 mb-1"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if(Model.TotalPageCount > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @if(Model.CurrentPageIndex > 0)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex - 1, pageSize = Model.PagingItemCount })">Previous</a></li>
+                }
+                @for(int i = 0;i < Model.TotalPageCount;i++)
+                {
+                    <li class="@(i == Model.CurrentPageIndex ? "page-item active" : "page-item")"><a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PagingItemCount })">@((i + 1).ToString())</a></li>
+                }
+                @if(Model.CurrentPageIndex < Model.TotalPageCount - 1)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex + 1, pageSize = Model.PagingItemCount })">Next</a></li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+@section Scripts
+    {
+}

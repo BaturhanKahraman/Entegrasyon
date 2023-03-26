@@ -11,6 +11,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfiguratio
             builder.Property(x => x.Code)
                 .UseCollation("CaseInsensitive");
             builder.HasIndex(x => x.Code);
+        builder.HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

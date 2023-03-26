@@ -1,0 +1,181 @@
+﻿<div class="sidebar-wrapper sidebar-theme">
+
+    <div id="dismiss" class="d-lg-none"><i class="flaticon-cancel-12"></i></div>
+
+    <nav id="sidebar">
+
+        <ul class="navbar-nav theme-brand flex-row  d-none d-lg-flex">
+            <li class="nav-item theme-text">
+                <a asp-action="Index" asp-controller="Home" class="nav-link"> ProEntegrasyon </a>
+            </li>
+        </ul>
+
+
+        <ul class="list-unstyled menu-categories" id="accordionExample">
+            <li class="menu">
+                <a asp-action="Index" asp-controller="Home" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-computer-6 ml-3"></i>
+                        <span>Panel</span>
+                    </div>
+                </a>
+            </li>
+            <li class="menu">
+                <a href="#users" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Kullanıcılar</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="users" data-parent="#accordionExample">
+                    <li>
+                        <a asp-action="Index" asp-controller="Users"> Kullanıcılar </a>
+                    </li>
+                    <li>
+                        <a asp-action="Add" asp-controller="Users"> Kullanıcı Ekle </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu">
+                <a href="#customers" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Müşteriler</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="customers" data-parent="#accordionExample">
+                    <li>
+                        <a asp-action="Index" asp-controller="Customers"> Müşteriler </a>
+                    </li>
+                    <li>
+                        <a asp-action="Add" asp-controller="Customers"> Müşteri Ekle </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu">
+                <a href="#offices" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Ofis/Depo Yönetimi</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="offices" >
+                    <li>
+                        <a asp-action="Index" asp-controller="Offices"> Ofisler </a>
+                    </li>
+                    <li>
+                        <a asp-action="Create" asp-controller="Offices"> Ofis Ekle </a>
+                    </li>
+                </ul>
+
+            </li>
+            <li class="menu">
+                <a href="#products" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Ürün Yönetimi</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="products" >
+                    <li>
+                        <a asp-action="Index" asp-controller="Products"> Ofisler </a>
+                    </li>
+                    <li>
+                        <a asp-action="Create" asp-controller="Products"> Ofis Ekle </a>
+                    </li>
+                </ul>
+
+            </li>
+            <li class="menu">
+                <a href="#categories" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Kategori Yönetimi</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="categories" >
+                    <li>
+                        <a asp-action="Index" asp-controller="Categories"> Kategoriler </a>
+                    </li>
+                    <li>
+                        <a asp-action="Create" asp-controller="Categories"> Kategori Ekle </a>
+                    </li>
+                    <li>
+                        <a asp-action="Index" asp-controller="CategoryImport"> Aktarım </a>
+                    </li>
+                </ul>
+
+            </li>
+            <li class="menu">
+                <a href="#sales" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Satış</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="sales">
+                    <li>
+                        <a asp-action="Index" asp-controller="Sales"> Satış </a>
+                    </li>
+                    <li>
+                        <a asp-action="Create" asp-controller="Sales"> Satış</a>
+                    </li>
+                </ul>
+
+            </li>
+            <li class="menu">
+                <a href="#orders" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Siparişler</span>
+                    </div>
+                    <div>
+                        <i class="flaticon-right-arrow"></i>
+                    </div>
+                </a>
+                <ul class="collapse submenu list-unstyled" id="orders">
+                    <li>
+                        <a asp-action="Index" asp-controller="Orders"> Satış </a>
+                    </li>
+                   
+                </ul>
+
+            </li>
+            <li class="menu">
+                <a href="#reports" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Siparişler</span>
+                    </div>
+                </a>
+            </li>
+            <li class="menu" >
+                <a asp-action="Index" asp-controller="Settings" class="dropdown-toggle">
+                    <div class="">
+                        <i class="flaticon-user-group"></i>
+                        <span>Ayarlar</span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+</div>

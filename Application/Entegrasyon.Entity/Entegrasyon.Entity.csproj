@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
   </PropertyGroup>
@@ -11,15 +11,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Brands\Import\" />
     <Folder Include="Dtos\Auth\" />
-    <Folder Include="Dtos\Branches\" />
     <Folder Include="Dtos\CargoCompany\" />
-    <Folder Include="Dtos\Customers\" />
     <Folder Include="Barcode\" />
+    <Folder Include="Dtos\Attributes\" />
+    <Folder Include="Tenants\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

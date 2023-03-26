@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Shared.DTO.Attributes;
 using Shared.Extensions;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Shared.DTO.Validators
 {

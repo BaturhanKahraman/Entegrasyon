@@ -8,6 +8,7 @@ using Shared.Entity;
 using Shared.Results;
 using System.Linq.Expressions;
 using Entegrasyon.Business.Utility.Constants;
+using Entegrasyon.Business.Validation.FluentValidation;
 
 namespace Entegrasyon.Business.Concrete
 {
@@ -16,17 +17,23 @@ namespace Entegrasyon.Business.Concrete
         private readonly ICategoryDal _categoryDal;
         private readonly ApplicationLogManager _applicationLogManager;
         private readonly CategoryAttributeManager _categoryAttributeManager;
+        private readonly CategoryAttributeCategoryManager _categoryAttributeCategoryManager;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly FluentValidator _fluentValidator;
 
-        public CategoryManager(ICategoryDal categoryDal,ApplicationLogManager applicationLogManager,IMapper mapper, CategoryAttributeManager categoryAttributeManager)
+        public CategoryManager(ICategoryDal categoryDal,ApplicationLogManager applicationLogManager,IMapper mapper, CategoryAttributeManager categoryAttributeManager,IUnitOfWork unitOfWork, CategoryAttributeCategoryManager categoryAttributeCategoryManager, FluentValidator fluentValidator)
         {
             _categoryDal = categoryDal;
             _applicationLogManager = applicationLogManager;
             _mapper = mapper;
             _categoryAttributeManager = categoryAttributeManager;
+            _unitOfWork = unitOfWork;
+            _categoryAttributeCategoryManager = categoryAttributeCategoryManager;
+            _fluentValidator = fluentValidator;
         }
 
-        public async Task<IResult> AddCategory(AddCategoryDto dto)
+        public async Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto)
         {
             await _applicationLogManager.AddLog("Kategori ekleniyor.",LogType.Category,LogAction.Add,dto);
             var category = _mapper.Map<Category>(dto);
@@ -47,17 +54,81 @@ namespace Entegrasyon.Business.Concrete
             
             await _categoryDal.AddAsync(category);
             await _applicationLogManager.AddLog(Messages.CategoryAdded,LogType.Category,LogAction.Add);
-            return new SuccessResult(Messages.CategoryAdded);
+            CategoryDetailDto detail = await _categoryDal.ConvertToCategoryDetail(category);
+            return new SuccessDataResult<CategoryDetailDto>(detail);
         }
 
-        public async Task UpdateCategory(UpdateCategoryDto dto)
+        public async Task<IDataResult<CategoryDetailDto>> UpdateCategory(EditCategoryDto dto)
         {
-            await _applicationLogManager.AddLog("Kategori güncelleniyor.",LogType.Category,LogAction.Update,dto);
-            var category = await _categoryDal.GetAsync(x => x.Id == dto.Id,true);
-            category.Name = dto.Name ?? category.Name;
-            category.SuperCategoryId = dto.SuperCategoryId ?? category.SuperCategoryId;
-            await _categoryDal.UpdateAsync(category);
-            await _applicationLogManager.AddLog("Kategori güncellendi.",LogType.Category,LogAction.Update,dto);
+            await _fluentValidator.ValidateAndThrowAsync(dto);
+            var dbCategory = await _categoryDal.GetAsync(x => x.Id == dto.Id, true);
+            if (dbCategory==null)
+            {
+                return new ErrorDataResult<CategoryDetailDto>(null, "Kategori bulunamadı.");
+            }
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                dbCategory.IsFavorite = dto.IsFavorite;
+                dbCategory.Name = dto.Name;
+                if(await _categoryDal.Exists(c=>c.Id==dto.SuperCategoryId))
+                    dbCategory.SuperCategoryId = dto.SuperCategoryId;
+                var detailedCategory = await _categoryDal
+                    .Table
+                    .Include(x => x.CategoryAttributes)
+                    .ThenInclude(x => x.CategoryAttribute)
+                    .ThenInclude(x => x.CategoryAttributeValues)
+                    .FirstAsync(x => x.Id == dbCategory.Id);
+                List<CategoryAttributeCategory> categoryAttributeCategories=new();
+                var dbCatAttrManyToManyTable = detailedCategory.CategoryAttributes;
+                foreach (var dtoCatAttrs in dto.CategoryAttributes)
+                {
+                    //many to many tablodaki kayıt, bundan cat attr ulaşılacak.
+                    var dbcatAttrMtM = dbCatAttrManyToManyTable.FirstOrDefault(x =>
+                        x.CategoryId == detailedCategory.Id && x.CategoryAttributeId == dtoCatAttrs.Id);
+                    if(dbcatAttrMtM==null)
+                        continue;
+                    dbcatAttrMtM.IsRequired = dtoCatAttrs.IsRequired;
+                    dbcatAttrMtM.IsVarianter = dtoCatAttrs.IsVarianter;
+                    dbcatAttrMtM.IsVarianter = dbcatAttrMtM.IsVarianter;
+                    var dbCatAttr = dbcatAttrMtM.CategoryAttribute;
+                    dbCatAttr.AllowCustom = dtoCatAttrs.AllowCustom;
+                    dbCatAttr.CategoryAttributeHumanized = dtoCatAttrs.CategoryAttributeHumanized;
+                    dbCatAttr.CategoryAttributeKey = dbCatAttr.CategoryAttributeKey;
+                    List<CategoryAttributeValue> values=new();
+                    foreach (var dtoCategoryAttributeValue in dtoCatAttrs.CategoryAttributeValues)
+                    {
+                        if (dtoCategoryAttributeValue.Id == 0)
+                        {
+                            values.Add(dtoCategoryAttributeValue);
+                            continue;
+                        }
+                        var dbCatAttrValue =
+                            dbCatAttr.CategoryAttributeValues.FirstOrDefault(x => x.Id == dtoCategoryAttributeValue.Id);
+                        if (dbCatAttrValue!=null)
+                        {
+                            dbCatAttrValue.Name = dtoCategoryAttributeValue.Name;
+                            values.Add(dbCatAttrValue);
+                        }
+                    }
+                    dbCatAttr.CategoryAttributeValues = values;
+                    categoryAttributeCategories.Add(dbcatAttrMtM);
+                }
+                detailedCategory.CategoryAttributes = categoryAttributeCategories;
+                //dbCategory.CategoryAttributes=await _categoryAttributeCategoryManager.UpdateRangeCategoryAttributeCategories(dbCategory.Id,
+                //    dto.CategoryAttributes);
+                //await _categoryDal.UpdateAsync(dbCategory);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitAsync();
+                CategoryDetailDto detail = await _categoryDal.ConvertToCategoryDetail(dbCategory);
+                return new SuccessDataResult<CategoryDetailDto>(detail);
+            }
+            catch
+            {
+                await _unitOfWork.RollBackAsync();
+                throw;
+            }
+
         }
 
         public async Task DeleteCategory(int categoryId)
@@ -154,6 +225,27 @@ namespace Entegrasyon.Business.Concrete
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
-       
+        public async Task<IDataResult<CategoryEditDetailDto>> GetCategoryEditDetail(int id)
+        {
+            var result = await _categoryDal.GetTransformedEntity(category => new CategoryEditDetailDto(
+                category.Id, category.Name,
+                category.CategoryAttributes.Select(attributeCategory => new EditCategoryAttributeDto(
+                    attributeCategory.CategoryAttribute.Id,
+                    attributeCategory.CategoryAttribute.IsRequired,
+                    attributeCategory.CategoryAttribute.AllowCustom,
+                    attributeCategory.IsVarianter,
+                    attributeCategory.CategoryAttribute.CategoryAttributeKey,
+                    attributeCategory.IsSlicer,
+                    attributeCategory.CategoryAttribute.CategoryAttributeHumanized,
+                    attributeCategory.CategoryAttribute.CategoryAttributeValues.ToList(),
+                    attributeCategory.CategoryId
+                )).ToList()
+                , category.SuperCategoryId, category.IsFavorite
+            ),x=>x.Id==id);
+
+            return new SuccessDataResult<CategoryEditDetailDto>(result);
+        }
+
+     
     }
 }

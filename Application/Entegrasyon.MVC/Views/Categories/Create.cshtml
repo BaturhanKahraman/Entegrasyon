@@ -1,0 +1,105 @@
+﻿@model Entegrasyon.MVC.ViewModels.Category.CategoryAddViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>CategoryAddViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SuperCategoryId" class="control-label"></label>
+                <input asp-for="SuperCategoryId" class="form-control" />
+                <span asp-validation-for="SuperCategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" id="attribute-container">
+                
+                <div class="d-flex flex-row justify-content-center align-items-center" >
+                    <button type="button" id="add-attribute" class="btn btn-gradient-secondary">Özellik Ekle</button>
+                </div>
+                <input type="hidden" value="0" id="attribute-counter" />
+
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsFavorite" /> @Html.DisplayNameFor(model => model.IsFavorite)
+                </label>
+            </div>
+
+
+
+
+
+
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function () {
+                    var rowCount = parseInt($("#attribute-counter").val());
+                $("#add-attribute").click(function () {
+                    var rowId = rowCount;
+
+                    var html = "<div class='form-group' id='attribute-" + rowId + "' >" +
+                        "<input type='hidden' name='CategoryAttributes[" + rowId + "].id' />" +
+                        "<input type='text' name='CategoryAttributes[" + rowId + "].CategoryAttributeKey' placeholder='Özellik ismi' /> <br>" +
+                        "<input type='checkbox' name='CategoryAttributes[" + rowId + "].IsRequired' /> Zorunlu mu ? " +
+                        "<input type='checkbox' id='allow-custom-" + rowId + "' name='CategoryAttributes[" + rowId + "].AllowCustom' /> Yazı değeri" +
+                        "<input type='checkbox' name='CategoryAttributes[" + rowId + "].IsVarianter' /> Varyant Yapıcı" +
+                        "<input type='checkbox' name='CategoryAttributes[" + rowId + "].IsSlicer' /> Sayfa Bölücü" +
+                        "<input type='text' id='values-input-" + rowId + "' style='display: none;'  name='CategoryAttributes[" + rowId + "].CategoryAttributeValues'" +
+                        " placeholder='Özellik Değerleri (Lütfen virgülle ayırın)' /> <br>" +
+                        "<button id='delete-button-" + rowId + "' class=\"delete-attribute\" type=\"button\">Sil</button>" +
+                        "</div>";
+                    $('#attribute-container').prepend(html);
+
+                    $("#allow-custom-" + rowId).change(function (e) {
+                        console.log(rowId);
+                        if ($(this).is(":checked")) {
+                            $("#values-input-" + rowId).show();
+                            console.log(rowId - 1);
+                            console.log("#values-input-" + rowId);
+                            console.log("if girdi");
+                        } else {
+                            $("#values-input-" + rowId ).hide();
+                            console.log("if girmedi");
+                        }
+                    });
+                    $("#delete-button-" + rowId).click(function () {
+                        var rowId = $(this).attr("id").split('-')[2];
+                        $("#attribute-" + rowId).remove();
+                        rowCount--;
+                        $("#attribute-counter").val(rowCount);
+                    });
+
+                    rowCount++;
+                    $("#attribute-counter").val(rowCount);
+                });
+            });
+        </script>
+    }
+   
+}

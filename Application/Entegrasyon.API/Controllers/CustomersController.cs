@@ -1,4 +1,5 @@
 ﻿using Entegrasyon.Business.Concrete;
+using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Customers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,14 +25,14 @@ namespace Entegrasyon.API.Controllers
             return BadRequest(result.Message);
         }
         [HttpPost]
-        public async Task<IActionResult> AddCustomer(AddCustomerDto dto)
+        public async Task<IActionResult> AddCustomer(CustomerAddDto dto)
         {
             var result = await _customerManager.AddCustomer(dto);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);
         }
-        [HttpPost]
+        [HttpPut]
         public async Task<IActionResult> UpdateCustomer(UpdateCustomerDto dto)
         {
             var result = await _customerManager.UpdateCustomer(dto);
@@ -44,6 +45,15 @@ namespace Entegrasyon.API.Controllers
         public async Task<IActionResult> GetCustomersBySearch(string searchText)
         {
             var result = await _customerManager.GetCustomerBySearch(searchText);
+            if(result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerById(int id)
+        {
+            var result = await _customerManager.GetCustomerById(id);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

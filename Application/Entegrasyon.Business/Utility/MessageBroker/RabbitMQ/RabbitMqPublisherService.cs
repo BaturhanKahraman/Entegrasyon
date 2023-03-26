@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using System.Threading.Channels;
 using Newtonsoft.Json;
-using RabbitMQ.Client;
 
 namespace Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 
@@ -14,7 +12,7 @@ public class RabbitMqPublisherService
         _clientService = clientService;
     }
 
-    public void PublishToQueue<T>(string queueName, T data)
+    public void PublishToQueue(string queueName, object data)
     {
         var model = _clientService.Connect();
         var message = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data));

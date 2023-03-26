@@ -4,8 +4,10 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>f35c7412-8edf-4bb5-9282-be0dba7b39f7</ProjectGuid>
-    <DockerServiceUrl>{Scheme}://localhost:44444/swagger</DockerServiceUrl>
-    <DockerServiceName>entegrasyon.api</DockerServiceName>
+    <DockerServiceUrl>{Scheme}://localhost:44444/</DockerServiceUrl>
+    <DockerServiceName>entegrasyon.mvc</DockerServiceName>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <PropertyGroup>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>

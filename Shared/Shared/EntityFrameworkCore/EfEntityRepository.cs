@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using EFCore.BulkExtensions;
+//using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.Extensions;
@@ -39,6 +41,24 @@ where TContext : DbContext
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
 
+    public async Task SoftDeleteAsync<TBaseEntity>(TBaseEntity entity)
+    where TBaseEntity: BaseEntity,TEntity
+
+    {
+        entity.IsDeleted = true;
+        entity.DeletedAt=DateTimeOffset.Now;
+        Table.Update(entity);
+        await _context.SaveChangesAsync();
+    }
+
+    public virtual async Task AddRange(List<TEntity> entities)
+    {
+        await Table.AddRangeAsync(entities).ConfigureAwait(false);
+        await _context.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    
+
     public async Task RemoveRangeAsync(IEnumerable<TEntity> entities)
     {
         Table.RemoveRange(entities);
@@ -58,21 +78,31 @@ where TContext : DbContext
         var result =expression == null ? entities :  entities.Where(expression);
         return await result.ToListAsync().ConfigureAwait(false);
     }
+
+    public async Task<List<TEntity>> FromSqlRaw(string sql)
+    {
+        return await Table.FromSqlRaw(sql).ToListAsync();
+    }
+
+
     public async Task<TResult> GetTransformedEntity<TResult>(
         Expression<Func<TEntity,TResult>> selector,
-        Expression<Func<TEntity,bool>> expression=null)
+        Expression<Func<TEntity,bool>> expression=null,bool track=false)
     {
-        var entities = Table.AsNoTracking();
+        IQueryable<TEntity> entities = Table;
+        if(!track)
+            entities = Table.AsNoTracking();
         entities = entities.ApplyFilter(expression);
         return await entities.Select(selector).FirstOrDefaultAsync().ConfigureAwait(false);
     }
     public Task<List<TResult>> GetTransformedEntitiesAsync<TResult>(
         Expression<Func<TEntity,TResult>> selector,
         IEnumerable<(string,string)> orderTuples = null,
-        Expression<Func<TEntity,bool>> expression = null
+        Expression<Func<TEntity,bool>> expression = null,
+        bool track = false
         )
     {
-        return GetTransformedEntitiesAsQueryable(selector,orderTuples,expression).ToListAsync();
+        return GetTransformedEntitiesAsQueryable(selector,orderTuples,expression,track).ToListAsync();
     }
     public async Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
         int pageIndex,
@@ -93,10 +123,13 @@ where TContext : DbContext
     private IQueryable<TResult> GetTransformedEntitiesAsQueryable<TResult>(
        Expression<Func<TEntity, TResult>> selector,
        IEnumerable<(string, string)> orderTuples = null,
-       Expression<Func<TEntity, bool>> expression = null
+       Expression<Func<TEntity, bool>> expression = null,
+       bool tracking = false
        )
     {
-        var entities = Table.AsNoTracking();
+        IQueryable<TEntity> entities=Table;
+        if(!tracking)
+            entities = Table.AsNoTracking();
         entities = entities.OrderQueryableDynamicly(orderTuples);
         entities = entities.ApplyFilter(expression);
         return entities.Select(selector);

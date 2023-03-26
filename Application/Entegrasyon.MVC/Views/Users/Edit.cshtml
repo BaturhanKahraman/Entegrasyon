@@ -1,0 +1,75 @@
+﻿@model Entegrasyon.MVC.ViewModels.User.UserEditViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Düzenle";
+    ViewData["PageTitle"] = "Kullanıcı Düzenle";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input asp-for="Id" type="hidden" class="form-control" />
+            <div class="form-group">
+                <label asp-for="UserName" class="control-label"></label>
+                <input asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Surname" class="control-label"></label>
+                <input asp-for="Surname" class="form-control" />
+                <span asp-validation-for="Surname" class="text-danger"></span>
+            </div>
+                <div class="form-row mb-4">
+                    <div class="form-group col-md-6 mb-4">
+                        <label asp-for="BranchOfficeId"></label>
+                        <select asp-for="BranchOfficeId" asp-items="Model.BranchOffices" class="form-control">
+                            <option value="">Lütfen seçim yapın</option>
+                        </select>
+                        <span asp-validation-for="BranchOfficeId" class="invalid-feedback d-block"></span>
+                    </div>
+                    <div class="form-group col-md-6 mb-4">
+                        <label asp-for="RoleId"></label>
+                        <select asp-for="RoleId" asp-items="Model.Roles" class="form-control">
+                            <option value="">Lütfen seçim yapın</option>
+                        </select>
+                        <span asp-validation-for="RoleId" class="invalid-feedback d-block"></span>
+                    </div>
+                </div>
+            <div class="form-group">
+                <input type="button" value="Sil" class="btn btn-danger" onclick="deleteItem()"/>
+                <input type="submit" value="Kaydet" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function deleteItem() {
+            if (!confirm("Gerçekten silmek istediğinize emin misiniz ?")) {
+                return;
+            }
+            $.post('@Url.Action("Delete")',
+                { id: @Model.Id },
+                function (res) {
+                    if (res.success === true) {
+                        window.location.href = "@Url.Action("Index")";
+                    } else {
+                        alert(res.message);
+                    }
+                });
+        }
+    </script>
+}

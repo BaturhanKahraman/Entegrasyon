@@ -10,7 +10,6 @@ public class TempBarcodeEntityConfiguration:IEntityTypeConfiguration<TempBarcode
     {
         builder.Property(x => x.Barcode).IsRequired().HasMaxLength(50);
         builder.HasIndex(x => x.Barcode).IsUnique();
-        
-        
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }
