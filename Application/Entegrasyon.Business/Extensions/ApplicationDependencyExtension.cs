@@ -32,6 +32,7 @@ public static class ApplicationDependencyExtension
         services.AddSharedSettings();
         services.AddUserServices<ApplicationUser,RootLogin,RootRole,RootClaim,IntegrationDbContext>();
 
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ILogDal,EfLogDal>();
         services.AddScoped<IApplicationUserDal,EfApplicationUserDal>();
         services.AddScoped<IBranchOfficeDal,EfBranchOfficeDal>();
@@ -48,6 +49,8 @@ public static class ApplicationDependencyExtension
         services.AddScoped<IAttributeKeyValueDal, EfAttributeKeyValueDal>();
         services.AddScoped<ISaleDal, EfSaleDal>();
         services.AddScoped<ITempBarcodeDal, EfTempBarcodeDal>();
+        services.AddScoped<IBrandMarketPlaceMatchDal,EfBrandMarketPlaceMatchDal>();
+        services.AddScoped<ICategoryAttributeCategoryDal,EfCategoryAttributeCategoryDal>();
 
         services.AddScoped<BranchOfficeManager>();
         services.AddScoped<ApplicationRoleManager>();
@@ -68,10 +71,10 @@ public static class ApplicationDependencyExtension
         services.AddScoped<SaleManager>();
         services.AddScoped<ApplicationLifetimeManager>();
         services.AddScoped<TrendyolCategoryImporterService>();
-        services.AddScoped<TrendyolCategories>();
-        services.AddScoped<TrendyolBrands>();
-        services.AddScoped<TrendyolCargoCompanies>();
+        services.AddScoped<TrendyolBrandImporterService>();
         services.AddScoped<TempBarcodeManager>();
+        services.AddScoped<BrandMatchService>();
+        services.AddScoped<CategoryAttributeCategoryManager>();
 
         services.AddScoped<ITokenHelper, ClaimHelper>();
 
@@ -99,14 +102,8 @@ public static class ApplicationDependencyExtension
                 Pooling = true,
                 Timeout = 120,
             };
-            x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb02;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
+            x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
                 npg => npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
-            //x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb00;User Id=postgres;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
-            //    npg =>
-            //    {
-            //        npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            //        npg.EnableRetryOnFailure(5, TimeSpan.FromSeconds(2), null);
-            //    });
             x.EnableSensitiveDataLogging();
             x.EnableDetailedErrors();
             x.LogTo(z => Debug.WriteLine(z));
@@ -116,7 +113,8 @@ public static class ApplicationDependencyExtension
 
     public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
     {
-        services.AddHostedService<TrendyolCategoryImportRabbitMQListener>();
+        services.AddHostedService<TrendyolCategoryImportListener>();
+        services.AddHostedService<TrendyolBrandImportListener>();
         services.AddHostedService<TempBarcodeBackgroundService>();
         return services;
     }

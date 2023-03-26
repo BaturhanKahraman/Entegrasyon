@@ -1,4 +1,5 @@
-﻿using Shared.Entity;
+﻿using System.Collections.Immutable;
+using Shared.Entity;
 
 namespace Shared.Extensions;
 
@@ -14,9 +15,10 @@ public static class EnumerableExtension
             throw new ArgumentException("Page size must be greater than 0");
         if(@this == null)
             throw new ArgumentNullException(nameof(@this));
-        int totalItemCount = @this.Count();
-        var items = @this.Skip(pageIndex * pageSize).Take(pageSize);
-        return new Pageable<T>(items, pageIndex, pageSize, totalItemCount);
+        var immutableList = @this.ToImmutableList();
+        int totalItemCount = immutableList.Count();
+        var items = immutableList.Skip(pageIndex * pageSize).Take(pageSize);
+        return new Pageable<T>(immutableList, pageIndex, pageSize, totalItemCount);
     }
 
 }

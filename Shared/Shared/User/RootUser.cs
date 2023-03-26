@@ -11,6 +11,8 @@ public class RootUser : BaseEntity
     public string Name { get; set; }
     [StringLength(maximumLength: 55)]
     public string Surname { get; set; }
+    public string FullName { get; set; }
+
     [StringLength(maximumLength: 100)]
     public string Email { get; set; }
     [StringLength(30)]

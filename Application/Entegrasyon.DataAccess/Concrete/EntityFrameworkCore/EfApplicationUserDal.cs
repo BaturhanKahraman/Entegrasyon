@@ -40,16 +40,9 @@ public class EfApplicationUserDal:EfEntityRepository<ApplicationUser,Integration
             .ToListAsync();
     }
 
-    private static Expression<Func<ApplicationUser,UserDetailListDto>> UserToUserDetail=>(user) => new UserDetailListDto
-    {
-        CreatedAt = user.CreatedAt,
-        DefaultOfficeName = user.DefaultBranchOffice.Name,
-        Id = user.Id,
-        IsActive = user.IsActive,
-        IsTwoFactorAuthActive = user.IsTwoFactorAuthActive,
-        Name = user.Name,
-        UserName = user.UserName,
-        Surname = user.Surname,
-        NeedsTakeNewPassword = user.NeedsTakeNewPassword
-    };
+    private static Expression<Func<ApplicationUser, UserDetailListDto>> UserToUserDetail => (user) =>
+        new UserDetailListDto
+        (user.Id, user.Name, user.Surname, user.UserName, user.IsActive, user.IsTwoFactorAuthActive,
+            user.NeedsTakeNewPassword, user.CreatedAt, user.DefaultBranchOffice.Name ?? string.Empty);
+        
 }

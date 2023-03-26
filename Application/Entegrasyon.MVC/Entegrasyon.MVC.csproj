@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d595da3d-8338-48f7-93a6-7d9f61614d22</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>6</WarningLevel>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>6</WarningLevel>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="BuildWebCompiler2022" Version="1.14.10" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.4" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Utility\Extensions\" />
+    <Folder Include="Utility\Objects\" />
+    <Folder Include="Utility\ToastrNotification\" />
+    <Folder Include="ViewModels\CategoryImport\" />
+    <Folder Include="ViewModels\Office\" />
+    <Folder Include="ViewModels\User\" />
+    <Folder Include="Views\Categories\CategoryAttributes\" />
+    <Folder Include="wwwroot\img\auth\" />
+  </ItemGroup>
+
+</Project>

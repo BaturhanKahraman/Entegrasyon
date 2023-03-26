@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Customers;
-using System.Linq.Expressions;
 
 namespace Entegrasyon.Business.MapperProfiles;
 public static class FuncMappings

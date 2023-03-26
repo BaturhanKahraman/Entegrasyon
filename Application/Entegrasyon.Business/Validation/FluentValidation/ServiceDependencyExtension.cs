@@ -1,12 +1,14 @@
 ﻿using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Brands;
+using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Dtos.DiscountVouchers;
 using Entegrasyon.Entity.Dtos.Product;
-using Entegrasyon.Entity.Products;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+using Entegrasyon.Entity.Dtos.Sale;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -18,12 +20,14 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
         services.AddScoped<IValidator<AddUserDto>,AddUserDtoValidator>();
         services.AddScoped<IValidator<Brand>,BrandValidator>();
-        services.AddScoped<IValidator<AddCustomerDto>,AddCustomerDtoValidator>();
+        services.AddScoped<IValidator<CustomerAddDto>,AddCustomerDtoValidator>();
         services.AddScoped<IValidator<UpdateCustomerDto>,UpdateCustomerDtoValidator>();
         services.AddScoped<IValidator<AddProductDto>,AddProductValidator>();
         services.AddScoped<IValidator<AddProductVariantDto>,AddProductVariantValidator>();
         services.AddScoped<IValidator<AddBranchOfficeStockDto>,AddBranchOfficeStockValidator>();
         services.AddScoped<IValidator<CreateDiscountVoucherDto>,CreateDiscountVoucherDtoValidator>();
+        services.AddScoped<IValidator<MakeSaleDto>,MakeSaleValidator>();
+        services.AddScoped<IValidator<EditCategoryDto>,EditCategoryDtoValidator>();
         services.AddScoped<FluentValidator>();
         return services;
     }

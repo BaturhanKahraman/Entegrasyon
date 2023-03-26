@@ -1,0 +1,76 @@
+﻿@model Entegrasyon.MVC.ViewModels.User.UserAddViewModel
+@{
+    ViewData["title"] = "Kullanıcı Ekle";
+    ViewData["pageTitle"] = "Kullanıcı Ekle";
+}
+<div class="statbox widget box box-shadow">
+    <div class="widget-header">
+        <div class="row">
+            <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                <h4>Kullanıcı Ekle</h4>
+            </div>
+        </div>
+    </div>
+    <div class="widget-content widget-content-area">
+        <form asp-action="Add" asp-controller="Users" method="Post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group mb-4">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control">
+                <span asp-validation-for="Email" class="invalid-feedback d-block"></span>
+            </div>
+            <div class="form-group mb-4">
+                <label asp-for="UserName"></label>
+                <input asp-for="UserName" class="form-control">
+                <span asp-validation-for="UserName" class="invalid-feedback d-block"></span>
+            </div>
+            <div class="form-row mb-4">
+                <div class="form-group col-md-6">
+                    <label asp-for="Name"></label>
+                    <input asp-for="Name" class="form-control">
+                    <span asp-validation-for="Name" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="form-group col-md-6">
+                    <label asp-for="Surname"></label>
+                    <input asp-for="Surname" class="form-control">
+                    <span asp-validation-for="Surname" class="invalid-feedback d-block"></span>
+                </div>
+            </div>
+            <div class="form-row mb-4">
+                <div class="form-group col-md-6">
+                    <label asp-for="TemporaryPassword"></label>
+                    <input asp-for="TemporaryPassword" class="form-control">
+                    <span asp-validation-for="TemporaryPassword" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="form-group col-md-6">
+                    <label asp-for="TemporaryPasswordCompare"></label>
+                    <input asp-for="TemporaryPasswordCompare" class="form-control">
+                    <span asp-validation-for="TemporaryPasswordCompare" class="invalid-feedback d-block"></span>
+                </div>
+            </div>
+            <div class="form-row mb-4">
+
+                <div class="form-group col-md-6 mb-4">
+                    <label asp-for="BranchOfficeId"></label>
+                    <select asp-for="BranchOfficeId" asp-items="Model.BranchOffices" class="form-control">
+                        <option value="">Lütfen seçim yapın</option>
+                    </select>
+                    <span asp-validation-for="BranchOfficeId" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="form-group col-md-6 mb-4">
+                    <label asp-for="RoleId"></label>
+                    <select asp-for="RoleId" asp-items="Model.Roles" class="form-control">
+                        <option value="">Lütfen seçim yapın</option>
+                    </select>
+                    <span asp-validation-for="RoleId" class="invalid-feedback d-block"></span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-button-7 mb-4 mt-3">Kaydet</button>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

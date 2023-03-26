@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
+﻿using System.Linq.Expressions;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Logs;
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore;
 using Shared.User;
 using System.Reflection;
 using Entegrasyon.Entity.Barcode;
+using Entegrasyon.Entity.Brands;
 using Shared.Entity;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -28,10 +31,10 @@ public class IntegrationDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.HasCollation("CaseInsensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
         modelBuilder.Seed();
-        
+
         base.OnModelCreating(modelBuilder);
     }
-
+    
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
         foreach(var entry in ChangeTracker.Entries<BaseEntity>())

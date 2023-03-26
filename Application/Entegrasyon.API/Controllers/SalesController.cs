@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Sale;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.API.Controllers
@@ -17,12 +16,21 @@ namespace Entegrasyon.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddSale(MakeSaleDto dto)
+        public async Task<IActionResult> MakeSale(MakeSaleDto dto)
         {
             var result = await _saleManager.MakeSale(dto);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSalesPageable([FromQuery] SalePageableDto  dto)
+        {
+            var result = await _saleManager.GetSalesPageable(dto);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result.Message);
         }
     }
 }

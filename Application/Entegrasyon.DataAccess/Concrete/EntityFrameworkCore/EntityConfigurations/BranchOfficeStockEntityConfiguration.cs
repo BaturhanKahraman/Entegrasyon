@@ -13,17 +13,17 @@ public class BranchOfficeStockEntityConfiguration: IEntityTypeConfiguration<Bran
         builder.Property(x => x.CurrentStock)
             .HasComputedColumnSql(@"""FirstTotalStock""-""SoldQuantity""",stored:true);
         //.HasComputedColumnSql(@"""Name"" || ' ' || ""Surname""",stored: true);
-        var bof = new List<BranchOfficeStock>()
-        {
-            new()
-            {
+        //var bof = new List<BranchOfficeStock>()
+        //{
+        //    new()
+        //    {
 
-                FirstTotalStock = 5,
-                SoldQuantity = 0,
-                BranchOfficeId = 2,
-                ProductVariantId = new Guid("32BFC865-B803-4945-9B1C-9E313A9C6398")
-            }
-        };
-        builder.HasData(bof);
+        //        FirstTotalStock = 5,
+        //        SoldQuantity = 0,
+        //        BranchOfficeId = 1,
+        //        ProductVariantId = new Guid("32BFC865-B803-4945-9B1C-9E313A9C6398")
+        //    }
+        //};
+        //builder.HasData(bof);
     }
 }

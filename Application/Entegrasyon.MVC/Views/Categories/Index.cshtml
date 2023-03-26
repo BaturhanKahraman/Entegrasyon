@@ -1,0 +1,60 @@
+﻿@model Shared.Entity.Pageable<Entegrasyon.MVC.ViewModels.Category.CategoryDetailListViewModel>
+
+@{
+    ViewData["Title"] = "Ofis/Depo Listesi";
+    ViewData["PageTitle"] = "Ofis/Depo Listesi";
+}
+<div class="table-responsive">
+    <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>İsim</th>
+                <th>Özellik Sayısı</th>
+                <th>Alt Kategori Sayısı</th>
+                <th>Ürün Sayısı</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var category in Model.Items)
+            {
+                <tr>
+                    <td>@category.Id</td>
+                    <td>@category.Name</td>
+                    <td>@category.AttributeCount</td>
+                    <td>@category.SubCategoryCount</td>
+                    <td>@category.TotalProductCount</td>
+                    <td class="text-center">
+                        <ul class="table-controls">
+                            <li>
+                                <a asp-action="Details" asp-route-id="@category.Id">
+                                    <i class="flaticon-search  bg-success p-1 text-white br-6 mb-1"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if(Model.TotalPageCount > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @if(Model.CurrentPageIndex > 0)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex - 1, pageSize = Model.PagingItemCount })">Previous</a></li>
+                }
+                @for(int i = 0;i < Model.TotalPageCount;i++)
+                {
+                    <li class="@(i == Model.CurrentPageIndex ? "page-item active" : "page-item")"><a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PagingItemCount })">@((i + 1).ToString())</a></li>
+                }
+                @if(Model.CurrentPageIndex < Model.TotalPageCount - 1)
+                {
+                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex + 1, pageSize = Model.PagingItemCount })">Next</a></li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

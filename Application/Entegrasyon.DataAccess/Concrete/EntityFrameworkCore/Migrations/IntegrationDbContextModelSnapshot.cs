@@ -19,7 +19,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:CaseInsensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "6.0.13")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -80,6 +80,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsDefaultMarketPlaceStock")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -99,37 +102,41 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             Id = 1,
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDefaultMarketPlaceStock = false,
                             IsDeleted = false,
                             Name = "Merkez Ofis",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "İstanbul",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "İzmir",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ankara",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Brands.Brand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(55)
+                        .HasColumnType("character varying(55)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Brands");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.CargoCompany", b =>
@@ -183,45 +190,199 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             Id = 1,
-                            Code = "MNG",
+                            Code = "DHLMP",
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
-                            Name = "MNG Kargo",
-                            TaxNumber = "123456",
+                            Name = "DHL Marketplace",
+                            TaxNumber = "951-241-77-13",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = 2,
-                            Code = "YK",
+                            Code = "SENDEOMP",
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
-                            Name = "Yurtiçi Kargo",
-                            TaxNumber = "123456",
+                            Name = "NetKargo Lojistik Marketplace",
+                            TaxNumber = "2910804196",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = 3,
-                            Code = "TEX",
+                            Code = "NETMP",
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
-                            Name = "Trendyol Express",
-                            TaxNumber = "123456",
+                            Name = "DHL Marketplace",
+                            TaxNumber = "6930094440",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = 4,
-                            Code = "SK",
+                            Code = "MARSMP",
                             CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
-                            Name = "Sürat Kargo",
-                            TaxNumber = "123456",
+                            Name = "Mars Lojistik Marketplace",
+                            TaxNumber = "6120538808",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "BIRGUNDEMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Bir Günde Kargo Marketplace",
+                            TaxNumber = "1770545653",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "OCTOMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Octovan Lojistik Marketplace",
+                            TaxNumber = "6330506845",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Code = "BORMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Borusan Lojistik Marketplace",
+                            TaxNumber = "1800038254",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Code = "UPSMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "UPS Kargo Marketplace",
+                            TaxNumber = "9170014856",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Code = "AGTMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "AGT Marketplace",
+                            TaxNumber = "6090414309",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Code = "CAIMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Cainiao Marketplace",
+                            TaxNumber = "0",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Code = "MNGMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "MNG Kargo Marketplace",
+                            TaxNumber = "6080712084",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Code = "PTTMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "PTT Kargo Marketplace",
+                            TaxNumber = "7320068060",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Code = "SURATMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Sürat Kargo Marketplace",
+                            TaxNumber = "7870233582",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Code = "TEXMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Trendyol Express Marketplace",
+                            TaxNumber = "8590921777",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Code = "HOROZMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Horoz Kargo Marketplace",
+                            TaxNumber = "4630097122",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Code = "CEVAMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "CEVA Marketplace",
+                            TaxNumber = "8450298557",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Code = "YKMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Yurtiçi Kargo Marketplace",
+                            TaxNumber = "3130557669",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Code = "ARASMP",
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Aras Kargo Marketplace",
+                            TaxNumber = "720039666",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });
@@ -303,76 +464,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("SuperCategoryId");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            IsFavorite = false,
-                            IsImported = false,
-                            Name = "Giyim",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            IsFavorite = false,
-                            IsImported = false,
-                            Name = "Teknoloji",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            IsFavorite = false,
-                            IsImported = false,
-                            Name = "Hayat",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            IsFavorite = false,
-                            IsImported = false,
-                            Name = "Ev Eşyaları",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            IsFavorite = false,
-                            IsImported = false,
-                            Name = "Çocuk Giyim",
-                            SuperCategoryId = 1,
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            IsFavorite = true,
-                            IsImported = false,
-                            Name = "Çocuk Ceket",
-                            SuperCategoryId = 5,
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttribute", b =>
@@ -386,7 +477,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("AllowCustom")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("CategoriyAttributeHumanized")
+                    b.Property<string>("CategoryAttributeHumanized")
                         .HasColumnType("text");
 
                     b.Property<string>("CategoryAttributeKey")
@@ -526,6 +617,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Customers");
 
                     b.HasDiscriminator<string>("CustomerType").HasValue("Customer");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.DiscountVouchers.DiscountVoucher", b =>
@@ -764,6 +857,116 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("ApplicationCargoCompanyId");
 
                     b.ToTable("CargoCompanyMarketPlaceMatches");
+
+                    b.HasData(
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 1,
+                            MarketPlaceCargoCompanyId = 42
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 2,
+                            MarketPlaceCargoCompanyId = 38
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 3,
+                            MarketPlaceCargoCompanyId = 36
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 4,
+                            MarketPlaceCargoCompanyId = 34
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 5,
+                            MarketPlaceCargoCompanyId = 39
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 6,
+                            MarketPlaceCargoCompanyId = 35
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 7,
+                            MarketPlaceCargoCompanyId = 30
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 8,
+                            MarketPlaceCargoCompanyId = 12
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 9,
+                            MarketPlaceCargoCompanyId = 13
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 10,
+                            MarketPlaceCargoCompanyId = 14
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 11,
+                            MarketPlaceCargoCompanyId = 10
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 12,
+                            MarketPlaceCargoCompanyId = 19
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 13,
+                            MarketPlaceCargoCompanyId = 9
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 14,
+                            MarketPlaceCargoCompanyId = 17
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 15,
+                            MarketPlaceCargoCompanyId = 6
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 16,
+                            MarketPlaceCargoCompanyId = 20
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 17,
+                            MarketPlaceCargoCompanyId = 4
+                        },
+                        new
+                        {
+                            MarketPlaceId = 1,
+                            ApplicationCargoCompanyId = 18,
+                            MarketPlaceCargoCompanyId = 7
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Matches.CategoryAttributeMarketPlaceMatch", b =>
@@ -828,6 +1031,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<Guid?>("ApplicationUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
@@ -854,6 +1060,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.ToTable("Notifications");
                 });
@@ -954,84 +1162,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("ProductVariantId");
 
                     b.ToTable("BranchOfficeStocks");
-
-                    b.HasData(
-                        new
-                        {
-                            BranchOfficeId = 2,
-                            ProductVariantId = new Guid("32bfc865-b803-4945-9b1c-9e313a9c6398"),
-                            CurrentStock = 0,
-                            FirstTotalStock = 5,
-                            SoldQuantity = 0
-                        });
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.Products.Brand", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(55)
-                        .HasColumnType("character varying(55)");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Brands");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Nike",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Adidas",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Puma",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Reebok",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.Product", b =>
@@ -1094,20 +1224,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
                     b.ToTable("MainProducts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("84ee61db-2275-43f4-b44e-5d54efe4b6c5"),
-                            CategoryId = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Product 1 Description",
-                            IsDeleted = false,
-                            StockCode = "Product 1 Stock Code",
-                            Title = "Product 1",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.ProductVariant", b =>
@@ -1146,9 +1262,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ProductVariantAttributes")
-                        .HasColumnType("jsonb");
-
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("money");
 
@@ -1166,25 +1279,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductVariants");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("32bfc865-b803-4945-9b1c-9e313a9c6398"),
-                            Barcode = "0000000000001",
-                            CostPrice = 50m,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CurrencyType = "TRY",
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DimensionalWeight = 0m,
-                            ECommercePrice = 0m,
-                            IsDeleted = false,
-                            ListPrice = 150m,
-                            ProductId = new Guid("84ee61db-2275-43f4-b44e-5d54efe4b6c5"),
-                            SalePrice = 100m,
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            VatRate = 0m
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.ChangeProduct", b =>
@@ -1248,6 +1342,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("BranchOfficeId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1257,8 +1354,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DiscountVoucherId")
+                    b.Property<int?>("DiscountVoucherId")
                         .HasColumnType("integer");
+
+                    b.Property<double>("GeneralDiscount")
+                        .HasColumnType("double precision");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -1271,6 +1371,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BranchOfficeId");
+
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("DiscountVoucherId");
@@ -1282,11 +1384,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.SaleItem", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    b.Property<int?>("BranchOfficeId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1300,10 +1403,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("ProductVariantId")
+                    b.Property<Guid>("ProductVariantId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
@@ -1321,7 +1421,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UsedDiscountVoucherCode")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchOfficeId");
 
                     b.HasIndex("ProductVariantId");
 
@@ -1538,6 +1643,46 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         new
                         {
                             ClaimsId = 41,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 42,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 43,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 44,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 45,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 46,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 47,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 48,
+                            RolesId = 1
+                        },
+                        new
+                        {
+                            ClaimsId = 49,
                             RolesId = 1
                         });
                 });
@@ -2141,6 +2286,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("FullName")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("text")
+                        .HasComputedColumnSql("\"Name\" || ' ' || \"Surname\"", true);
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -2208,6 +2358,51 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Users");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("RootUser");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.CorporateCustomer", b =>
+                {
+                    b.HasBaseType("Entegrasyon.Entity.Customers.Customer");
+
+                    b.Property<string>("CorporateName")
+                        .HasColumnType("text");
+
+                    b.Property<NpgsqlTsVector>("CorporateSearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
+                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "CorporateName", "TaxNumber", "Name", "Surname" });
+
+                    b.Property<string>("TaxNumber")
+                        .HasColumnType("text");
+
+                    b.HasIndex("CorporateSearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("CorporateSearchVector"), "GIN");
+
+                    b.HasDiscriminator().HasValue("Corporate");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Customers.RetailCustomer", b =>
+                {
+                    b.HasBaseType("Entegrasyon.Entity.Customers.Customer");
+
+                    b.Property<string>("NationalIdentity")
+                        .HasColumnType("text");
+
+                    b.Property<NpgsqlTsVector>("RetailSearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
+                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "Surname", "Name", "NationalIdentity" });
+
+                    b.HasIndex("RetailSearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RetailSearchVector"), "GIN");
+
+                    b.HasDiscriminator().HasValue("Retail");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
@@ -2244,128 +2439,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             UserName = "Admin",
                             WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DefaultBranchOfficeId = 1
-                        });
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.Customers.CorporateCustomer", b =>
-                {
-                    b.HasBaseType("Entegrasyon.Entity.Customers.Customer");
-
-                    b.Property<string>("CorporateName")
-                        .HasColumnType("text");
-
-                    b.Property<NpgsqlTsVector>("CorporateSearchVector")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("tsvector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
-                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "CorporateName", "TaxNumber", "Name", "Surname" });
-
-                    b.Property<string>("TaxNumber")
-                        .HasColumnType("text");
-
-                    b.HasIndex("CorporateSearchVector");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("CorporateSearchVector"), "GIN");
-
-                    b.HasDiscriminator().HasValue("Corporate");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ali",
-                            PhoneNumber = "0532 123 45 67",
-                            Surname = "Yılmaz",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CorporateName = "Entegrasyon Yazılım",
-                            TaxNumber = "12345678901"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ayşe",
-                            PhoneNumber = "0532 123 45 67",
-                            Surname = "Kara",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CorporateName = "Entegrasyon Yazılım",
-                            TaxNumber = "12345678901"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ayşe",
-                            PhoneNumber = "0532 123 45 67",
-                            Surname = "Kara",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CorporateName = "Entegrasyon Yazılım",
-                            TaxNumber = "12345678901"
-                        });
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.Customers.RetailCustomer", b =>
-                {
-                    b.HasBaseType("Entegrasyon.Entity.Customers.Customer");
-
-                    b.Property<string>("NationalIdentity")
-                        .HasColumnType("text");
-
-                    b.Property<NpgsqlTsVector>("RetailSearchVector")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("tsvector")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
-                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "PhoneNumber", "Surname", "Name", "NationalIdentity" });
-
-                    b.HasIndex("RetailSearchVector");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RetailSearchVector"), "GIN");
-
-                    b.HasDiscriminator().HasValue("Retail");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ali",
-                            PhoneNumber = "0532 123 45 67",
-                            Surname = "Yılmaz",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            NationalIdentity = "12345678901"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ayşe",
-                            PhoneNumber = "0532 123 45 67",
-                            Surname = "Kara",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            NationalIdentity = "12345678901"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Ahmet",
-                            PhoneNumber = "0532 123 45 67",
-                            Surname = "Yılmaz",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            NationalIdentity = "12345678901"
                         });
                 });
 
@@ -2494,7 +2567,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Matches.BrandMarketPlaceMatch", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Products.Brand", "ApplicationBrand")
+                    b.HasOne("Entegrasyon.Entity.Brands.Brand", "ApplicationBrand")
                         .WithMany()
                         .HasForeignKey("ApplicationBrandId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2585,6 +2658,15 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("ApplicationCategory");
 
                     b.Navigation("MarketPlace");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notification", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -2694,7 +2776,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.Product", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Products.Brand", "Brand")
+                    b.HasOne("Entegrasyon.Entity.Brands.Brand", "Brand")
                         .WithMany("Products")
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -2718,7 +2800,43 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsMany("Entegrasyon.Entity.Products.ProductVariantAttribute", "ProductVariantAttributes", b1 =>
+                        {
+                            b1.Property<Guid>("ProductVariantId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("CategoryAttributeValue")
+                                .HasColumnType("text");
+
+                            b1.Property<int?>("CategoryAttributeValueId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("CustomValue")
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsSlicer")
+                                .HasColumnType("boolean");
+
+                            b1.Property<bool>("IsVarianter")
+                                .HasColumnType("boolean");
+
+                            b1.HasKey("ProductVariantId", "Id");
+
+                            b1.ToTable("ProductVariantAttributes", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductVariantId");
+                        });
+
                     b.Navigation("Product");
+
+                    b.Navigation("ProductVariantAttributes");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.ReturnProduct", b =>
@@ -2734,21 +2852,27 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.Sale", b =>
                 {
+                    b.HasOne("Entegrasyon.Entity.BranchOffice", "BranchOffice")
+                        .WithMany()
+                        .HasForeignKey("BranchOfficeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Entegrasyon.Entity.Customers.Customer", "Customer")
                         .WithMany("Sales")
                         .HasForeignKey("CustomerId");
 
                     b.HasOne("Entegrasyon.Entity.DiscountVouchers.DiscountVoucher", "DiscountVoucher")
                         .WithMany()
-                        .HasForeignKey("DiscountVoucherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DiscountVoucherId");
 
                     b.HasOne("Entegrasyon.Entity.ApplicationUser", "SalePerson")
                         .WithMany()
                         .HasForeignKey("SalePersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("BranchOffice");
 
                     b.Navigation("Customer");
 
@@ -2759,13 +2883,21 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.SaleItem", b =>
                 {
+                    b.HasOne("Entegrasyon.Entity.BranchOffice", "BranchOffice")
+                        .WithMany()
+                        .HasForeignKey("BranchOfficeId");
+
                     b.HasOne("Entegrasyon.Entity.Products.ProductVariant", "ProductVariant")
                         .WithMany()
-                        .HasForeignKey("ProductVariantId");
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Entegrasyon.Entity.Sales.Sale", null)
                         .WithMany("SaleItems")
                         .HasForeignKey("SaleId");
+
+                    b.Navigation("BranchOffice");
 
                     b.Navigation("ProductVariant");
                 });
@@ -2822,6 +2954,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Brands.Brand", b =>
+                {
+                    b.Navigation("Products");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Categories.Category", b =>
                 {
                     b.Navigation("CategoryAttributes");
@@ -2848,11 +2985,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
                 {
                     b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.Products.Brand", b =>
-                {
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Products.Product", b =>

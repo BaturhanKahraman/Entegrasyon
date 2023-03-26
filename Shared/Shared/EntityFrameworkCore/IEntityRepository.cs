@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
+using static Amazon.S3.Util.S3EventNotification;
 
 namespace Shared.EntityFrameworkCore;
 
@@ -11,16 +12,20 @@ where T : class, new()
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);
+    Task SoftDeleteAsync<TBaseEntity>(TBaseEntity entity)
+        where TBaseEntity : BaseEntity, T;
+    Task AddRange(List<T> entities);
     Task RemoveRangeAsync(IEnumerable<T> entities);
     Task<T> GetAsync(Expression<Func<T, bool>> expression, bool isTracking = false);
     Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
-
+    Task<List<T>> FromSqlRaw(string sql);
     Task<bool> Exists(Expression<Func<T, bool>> expression = null);
-
+    
     Task<List<TResult>> GetTransformedEntitiesAsync<TResult>(
         Expression<Func<T, TResult>> selector,
         IEnumerable<(string, string)> orderTuples = null,
-        Expression<Func<T, bool>> expression = null);
+        Expression<Func<T, bool>> expression = null,
+        bool track=false);
 
     Task<Pageable<TResult>> GetPaginatedTransformedEntities<TResult>(
         int pageIndex,
@@ -31,5 +36,5 @@ where T : class, new()
 
     Task<TResult> GetTransformedEntity<TResult>(
     Expression<Func<T, TResult>> selector,
-        Expression<Func<T, bool>> expression = null);
+        Expression<Func<T, bool>> expression = null,bool track=false);
 }

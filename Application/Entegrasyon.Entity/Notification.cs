@@ -11,4 +11,6 @@ public sealed class Notification : BaseEntity
     public string Content { get; set; }
     public bool IsRead { get; set; }
     public DateTimeOffset ReadDate { get; set; }
+    public Guid? ApplicationUserId { get; set; }
+    public ApplicationUser ApplicationUser { get; set; }
 }

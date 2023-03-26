@@ -1,6 +1,5 @@
 ﻿using Shared.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
-using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.Entity.Products;
 
@@ -9,7 +8,7 @@ public sealed class ProductVariant:BaseEntity
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }
     public Product Product { get; set; }
-    public IEnumerable<ProductVariantAttribute> ProductVariantAttributes { get; set; } //color:red,size:xl etc...
+    public List<ProductVariantAttribute> ProductVariantAttributes { get; set; } //color:red,size:xl etc...
     public string Barcode { get; set; }
     public decimal DimensionalWeight { get; set; }
     public string CurrencyType { get; set; } = "TRY";

@@ -1,4 +1,5 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
@@ -13,7 +14,7 @@ public class OfficeStockManager
     private readonly BranchOfficeManager _branchOfficeManager;
     private readonly ProductVariantManager _productVariantManager;
 
-    public OfficeStockManager(IBranchOfficeStockDal branchOfficeStockDal, BranchOfficeManager branchOfficeManager, ProductVariantManager productVariantManager)
+    public OfficeStockManager(IBranchOfficeStockDal branchOfficeStockDal,BranchOfficeManager branchOfficeManager,ProductVariantManager productVariantManager, IntegrationDbContext dbContext)
     {
         _branchOfficeStockDal = branchOfficeStockDal;
         _branchOfficeManager = branchOfficeManager;
@@ -33,7 +34,7 @@ public class OfficeStockManager
     public async Task<IResult> CheckIfOfficeExists(IEnumerable<int> officesIds)
     {
         var result = await _branchOfficeManager.CheckIfOfficesExits(officesIds);
-        if (result)
+        if(result)
             return new SuccessResult();
         return new ErrorResult("Bir veya daha fazla ofis bulunamadı");
     }
@@ -47,10 +48,10 @@ public class OfficeStockManager
 
     public IResult CheckIfProductCountZero(params AddBranchOfficeStockDto[] stocks)
     {
-        if (stocks == null)
+        if(stocks == null)
             return new SuccessResult();
         var stocksList = stocks.ToList();
-        if(stocksList.All(x=>x.FirstTotalStock==0))
+        if(stocksList.All(x => x.FirstTotalStock == 0))
             return new ErrorResult("Lütfen en az bir stok girin.");
         return new SuccessResult();
     }
@@ -59,38 +60,43 @@ public class OfficeStockManager
     {
         throw new NotImplementedException();
     }
-    public async Task<IResult> DecreaseProductStock(Guid id, int stockNumber, int branchId, bool overrideStockStatus = false)
+    public async Task<IResult> DecreaseProductStock(Guid id,int stockNumber,int branchId,bool overrideStockStatus = false)
     {
         var productVariant = await _productVariantManager.GetById(id);
-        if (productVariant == null)
+        if(productVariant == null)
             return new ErrorResult("İlettiğiniz ürün bulunamamıştır.");
-        BranchOfficeStock stockStatus= await _branchOfficeStockDal.GetAsync(b=>b.ProductVariantId==id && b.BranchOfficeId == branchId);
-        if (stockStatus==null)
+        BranchOfficeStock stockStatus = await _branchOfficeStockDal.GetAsync(b => b.ProductVariantId == id && b.BranchOfficeId == branchId);
+        if(stockStatus == null)
             return new ErrorResult("İlettiğiniz ürünün bu ofis/depoda stoğu bulunamamıştır.");
-        if (!overrideStockStatus) {
+        if(!overrideStockStatus)
+        {
             if(stockStatus.CurrentStock < stockNumber)
                 return new ErrorResult("İlettiğiniz ofiste/depoda yeterli stok bulunmamaktadır.");
         }
-        stockStatus.SoldQuantity+=stockNumber;
+        stockStatus.SoldQuantity += stockNumber;
         await _branchOfficeStockDal.UpdateAsync(stockStatus);
         return new SuccessResult("Stok başarı ile düşmüştür.");
     }
 
     //TODO
-    //officeId ye bakılacak.
-    public async Task<IResult> DecreaseProductsStock(IEnumerable<DecreaseStockDto> dtos, bool overrideStockStatus = false)
+    //TRANSACTIONA ALINMASI GEREK
+    public async Task<IResult> DecreaseProductsStock(List<DecreaseStockDto> dtos,bool overrideStockStatus = false)
     {
         var stocksToDecrease = new List<BranchOfficeStock>();
-        var dbStocks = await _branchOfficeStockDal.GetAllAsync(x => dtos.Any(z => z.ProductId == x.ProductVariantId && z.OfficeId == x.BranchOfficeId));
-        foreach (var dto in dtos)
+        string query = $@"
+        SELECT * FROM  ""BranchOfficeStocks""
+            WHERE ""BranchOfficeId"" IN ({string.Join(',', dtos.Select(x => x.OfficeId))}) AND
+            ""ProductVariantId"" IN ({string.Join(',', dtos.Select(x => "'" + x.ProductId + "'"))})
+        ";
+        var dbStocks =await _branchOfficeStockDal.FromSqlRaw(query);
+        foreach(var dto in dtos)
         {
-            var officeStock = dbStocks.First(s => dto.ProductId ==s.ProductVariantId && dto.OfficeId == s.BranchOfficeId);
-            if (!overrideStockStatus && officeStock.CurrentStock < dto.StockNumber)
+            var officeStock = dbStocks.First(s => dto.ProductId == s.ProductVariantId && s.FirstTotalStock > 0);
+            if(!overrideStockStatus && officeStock.CurrentStock < dto.StockNumber)
                 return new ErrorResult(dto.ProductId + " id li üründe stok yetersiz.");
             officeStock.SoldQuantity += dto.StockNumber;
             stocksToDecrease.Add(officeStock);
         }
-
         await _branchOfficeStockDal.UpdateRangeAsync(stocksToDecrease);
         return new SuccessResult("Başarıyla stoktan düşüldü.");
     }

@@ -1,7 +1,5 @@
-﻿using Entegrasyon.Entity.Dtos.Product;
-using Entegrasyon.Entity.Products;
+﻿using Entegrasyon.Entity.Products;
 using Shared.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

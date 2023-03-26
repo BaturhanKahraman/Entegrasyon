@@ -9,6 +9,8 @@ public static class IntegrationDbContextSeed
     public static void Seed(this ModelBuilder modelBuilder)
     {
        UserContextSeed.SeedDatabase(modelBuilder);
+       modelBuilder.Entity<RootUser>().Property(x => x.FullName)
+           .HasComputedColumnSql(@"""Name"" || ' ' || ""Surname""", stored: true);
         modelBuilder.Entity<ApplicationUser>().HasData(new ApplicationUser()
         {
             Id = new Guid("DFDA5D4A-F807-408C-9B4D-908830AD5724"),

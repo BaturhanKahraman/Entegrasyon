@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Entegrasyon.Business.Concrete;
-using Entegrasyon.Entity;
 using RabbitMQ.Client;
 
 namespace Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;

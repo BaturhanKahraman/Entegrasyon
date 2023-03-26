@@ -3,11 +3,13 @@ using AutoMapper;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
+using Shared.DTO;
 using Shared.Entity;
 using Shared.Extensions;
 using Shared.Logic;
@@ -76,7 +78,7 @@ public class ProductManager
         return new SuccessDataResult<ProductsDetailDto>(_mapper.Map<ProductsDetailDto>(product));
     }
 
-    public async Task<IResult> UpdateProduct(EditProductDto dto)
+    public async Task<IResult> UpdateProduct(ProductEditDetailDto dto)
     {
         //TODO
         await _applicationLogManager.AddLog("Ürün güncelleniyor.",LogType.Product,LogAction.Update,dto);
@@ -108,7 +110,7 @@ public class ProductManager
             ),expression: x => x.Id == productId);
         return new SuccessDataResult<ProductDetailDto>(result);
     }
-    public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(GetProductPageableDto dto)
+    public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)
     {
         var orderTupleList = new List<(string, string)> { new("CreatedAt","desc"),new("UpdatedAt","desc") };
         Expression<Func<Product,bool>> expression =
@@ -127,16 +129,26 @@ public class ProductManager
     }
 
 
-    public async Task<IDataResult<EditProductDto>> GetProductByIdForEdit(Guid id)
+    public async Task<IDataResult<ProductEditDetailDto>> GetProductEditDetailById(Guid id)
     {
         var productEditDto = await _productDal.GetTransformedEntity(p =>
-            new EditProductDto(p.Id,p.Title,p.Description,p.StockCode,p.BrandId!.Value,p.CategoryId,
-                    p.ProductVariants.Select(pv => new EditProductVariantDto(pv.Id,pv.DimensionalWeight,pv.CurrencyType,pv.Barcode,pv.ListPrice,
-                        pv.SalePrice,pv.CostPrice,pv.VatRate,
-                            pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId,bos.FirstTotalStock)).ToList(),
-                        pv.Images.Select(img => new EditableImageDto(img.Id,img.Src,img.IsCoverImage,img.IsDeleted)).ToList()
-                        )
-                ).ToList(),p.AttributeKeyValues.ToList()),x => x.Id == id);
-        return new SuccessDataResult<EditProductDto>(productEditDto);
+            new ProductEditDetailDto(
+                p.Id,p.Title,p.Description,p.StockCode,p.BrandId!.Value,p.CategoryId,
+                    p.ProductVariants.Select(pv => new ProductVariantEditDetailDto(pv.Id,pv.DimensionalWeight,pv.CurrencyType,pv.Barcode,pv.ListPrice,
+                        pv.SalePrice,pv.CostPrice,pv.VatRate,pv.BranchOfficeStocks
+                            .Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId,bos.FirstTotalStock)).ToList(),
+                        pv.Images.Select(img => new EditableImageDto(img.Id,img.Src,img.IsCoverImage,img.IsDeleted)).ToList(),
+                        pv.ProductVariantAttributes
+                            .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId,pva.CategoryAttributeValue,pva.CustomValue,pva.IsVarianter,pva.IsSlicer))
+                            .ToList()
+                        )).ToList(),
+                    p.AttributeKeyValues.Select(akv => new AttributeKeyValueDto(
+                            akv.CategoryAttributeId,
+                            akv.CategoryAttribute.CategoryAttributeKey,
+                            akv.AttributeValueId,
+                            akv.AttributeValue.Name,
+                            akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId).IsRequired,akv.CustomValue)
+                        ).ToList()),x => x.Id == id);
+        return new SuccessDataResult<ProductEditDetailDto>(productEditDto);
     }
 }

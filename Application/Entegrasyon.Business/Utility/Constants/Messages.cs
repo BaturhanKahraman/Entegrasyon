@@ -2,6 +2,10 @@
 
 public class Messages
 {
+    public const string ProcessFailed = "İşlem başarısız.";
+    public const string ProcessSuccess = "İşlem başarılı.";
+
+
     public const string ProductVariantNotFound = "Ürün varyantı bulunamadı";
     public const string ProductVariantAlreadyExists = "Ürün varyantı zaten mevcut";
     public const string ProductVariantAdded = "Ürün varyantı başarıyla eklendi";
@@ -13,4 +17,13 @@ public class Messages
     public const string CategoryAdded = "Kategori başarı ile eklendi.";
     public const string NoAttributeForCategory = "Kategoride herhangi bir özellik bulunamamıştır.";
     public const string CategoryImportQueued = "Kategori içe aktarma işlemi kuyruğa alındı.";
+    public const string SaleSuccess = "Satış başarıyla gerçekleşti.";
+    public const string BrandsImportingQueued = "Marka çekme işlemi başarıyla sıraya alındı.";
+    public const string BrandsImportingInterruptedNull = "Marka çekme işlemi bölündü. null sonuç.";
+    public const string BrandsImportingSuccess = "Marka çekme işlemi başarılı.";
+    public const string BrandUpdatedSuccessfuly = "Marka başarılı bir şekilde güncellendi.";
+    public const string NationalIdentityAlreadyExits = "Aynı TC numaralı kullanıcınız zaten var.";
+    public const string TaxNumberAlreadyExits = "Aynı vergi numaralı kullanıcınız zaten var.";
+    public const string UserDeletedSuccessfuly = "Kullanıcı başarıyla silindi";
+    public const string CustomerNotFound = "Müşteri bulunamadı.";
 }

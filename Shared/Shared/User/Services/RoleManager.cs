@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Immutable;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Shared.User.Services;
@@ -14,6 +15,10 @@ public class RoleManager<TRole, TClaim, TContext> : IRoleManager<TRole,TClaim>
     {
         _context = context;
     }
+
+    public async Task<List<RootRole>> GetRolesSelectList()
+        => await _context.Set<TRole>().Select(r => new RootRole() { Id = r.Id, Name = r.Name }).AsNoTracking()
+            .ToListAsync();
     public async Task<IEnumerable<TRole>> GetRoles()=>
         await _context.Set<TRole>().Include(x=>x.Claims).AsNoTracking().ToListAsync();
     

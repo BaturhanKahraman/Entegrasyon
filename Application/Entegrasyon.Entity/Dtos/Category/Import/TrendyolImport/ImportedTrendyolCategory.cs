@@ -9,6 +9,6 @@ public class ImportedTrendyolCategory
     public int Id { get; set; }
     public string Name { get; set; }
     public int? ParentId { get; set; }
-    public IEnumerable<ImportedTrendyolCategory> SubCategories { get; set; }
+    public List<ImportedTrendyolCategory> SubCategories { get; set; }
 
 }

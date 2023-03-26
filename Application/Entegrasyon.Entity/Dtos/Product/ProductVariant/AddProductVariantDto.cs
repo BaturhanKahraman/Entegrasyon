@@ -1,5 +1,4 @@
-﻿using Entegrasyon.Entity.Categories;
-using Entegrasyon.Entity.Products;
+﻿using Entegrasyon.Entity.Products;
 using Microsoft.AspNetCore.Http;
 
 namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;

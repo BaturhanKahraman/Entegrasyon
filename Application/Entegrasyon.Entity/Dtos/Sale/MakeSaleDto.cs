@@ -4,6 +4,7 @@ public sealed record MakeSaleDto(
     Guid SalePersonId,
     int CustomerId,
     double GeneralDiscount,
+    int BranchOfficeId,
     IEnumerable<SaleItemDto> SaleItems);
 public sealed record SaleItemDto(
     Guid ProductVariantId,

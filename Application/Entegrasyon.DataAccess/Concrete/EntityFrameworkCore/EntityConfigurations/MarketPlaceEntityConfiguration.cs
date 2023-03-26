@@ -8,13 +8,14 @@ public class MarketPlaceEntityConfiguration:IEntityTypeConfiguration<MarketPlace
 {
     public void Configure(EntityTypeBuilder<MarketPlace> builder)
     {
+        builder.HasQueryFilter(x => !x.IsDeleted);
+
         builder.HasData(new List<MarketPlace>()
         {
-            new MarketPlace
+            new()
             {
                 Id=1,
                 Name = "Trendyol"
-
             }
         });
     }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

@@ -13,62 +13,40 @@ namespace Entegrasyon.Business.Concrete;
 public class ApplicationLogManager
 {
     private readonly ILogDal _logDal;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly HttpContext _httpContext;
     public ApplicationLogManager(ILogDal logDal,IHttpContextAccessor httpContextAccessor)
     {
         _logDal = logDal;
-        _httpContextAccessor = httpContextAccessor;
+        _httpContext = httpContextAccessor.HttpContext;
     }
-    public async Task AddLog(string content,LogType type)
+    public async Task AddLog(string content,LogType type,LogAction action = LogAction.None,object obj = null)
     {
         var log = new ApplicationLog()
         {
             Content = content,
             CreatedAt = DateTimeOffset.UtcNow,
-            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
+            IpAddress = _httpContext.GetIPAddress(),
             ApplicationUserId = GetUserId(),
-            LogType = type
+            LogType = type,
+            LogAction = action
         };
+
+        if(obj != null)
+        {
+            log.Object = JsonSerializer.Serialize(obj);
+        }
+
         await _logDal.AddAsync(log);
     }
 
     private Guid? GetUserId()
     {
-        var canParseId = Guid.TryParse(_httpContextAccessor.HttpContext.GetUserId(),out Guid userId);
+        var canParseId = Guid.TryParse(_httpContext.GetUserId(),out Guid userId);
         if(canParseId)
             return userId;
         return null;
     }
-    public async Task AddLog(string content,LogType type,LogAction action,object obj)
-    {
-        string seriliazedLogObj = JsonSerializer.Serialize(obj);
-        var log = new ApplicationLog()
-        {
-            Content = content,
-            CreatedAt = DateTimeOffset.UtcNow,
-            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
-            ApplicationUserId = GetUserId(),
-            LogType = type,
-            LogAction = action,
-            Object = seriliazedLogObj
-        };
-        await _logDal.AddAsync(log);
-    }
-    
-    public async Task AddLog(string content,LogType type,LogAction logAction)
-    {
-        var log = new ApplicationLog()
-        {
-            Content = content,
-            CreatedAt = DateTimeOffset.UtcNow,
-            IpAddress = _httpContextAccessor.HttpContext.GetIPAddress(),
-            ApplicationUserId = GetUserId(),
-            LogType = type,
-            LogAction = logAction
-        };
-        await _logDal.AddAsync(log);
-    }
-
+  
     public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int pageIndex = 0,int itemCount = 50,
         LogType? logType = null,LogAction? logAction = null)
     {

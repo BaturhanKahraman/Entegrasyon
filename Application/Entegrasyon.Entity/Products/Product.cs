@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Categories;
+﻿using Entegrasyon.Entity.Brands;
+using Entegrasyon.Entity.Categories;
 using NpgsqlTypes;
 using Shared.Entity;
 

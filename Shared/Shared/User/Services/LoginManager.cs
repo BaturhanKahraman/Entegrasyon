@@ -52,7 +52,8 @@ where TLogin:RootLogin,new()
             (CheckIfUserActive(user), 2));
         if(result != null)
             return result;
-
+        await AddLoginRecord(user.Id);
+        return new SuccessDataResult<RootUser>(user);
         bool isMobile = _httpContextAccessor.HttpContext.IsMobileDevice();
         var jwtToken = new AccessToken()
         {
@@ -73,7 +74,6 @@ where TLogin:RootLogin,new()
             user.WebJwtTokenExpiresAt = newToken.ExpiresAt;
         }
         await _userManager.UpdateUser(user);
-        await AddLoginRecord(user.Id);
         return new SuccessDataResult<AccessToken>(newToken);
     }
 

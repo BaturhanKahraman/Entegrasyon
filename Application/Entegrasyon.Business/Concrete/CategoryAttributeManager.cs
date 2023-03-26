@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
-using Microsoft.EntityFrameworkCore;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
@@ -46,6 +44,8 @@ public class CategoryAttributeManager
         return new SuccessDataResult<List<CategoryAttribute>>(await _attributeDal.GetAllAsync());
     }
 
+
+
     public async Task<IDataResult<List<CategoryAttributeDto>>> GetCategoryAttributesByCategory(int categoryId)
     {
         var result = await _attributeDal.GetTransformedEntitiesAsync(
@@ -57,7 +57,7 @@ public class CategoryAttributeManager
                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsSlicer,
                x.CreatedAt,
                x.CategoryAttributeKey,
-               x.CategoriyAttributeHumanized,
+               x.CategoryAttributeHumanized,
                x.CategoryAttributeValues.ToList()
             ),expression: x => x.Categories.Any(c => c.CategoryId == categoryId));
 
@@ -93,5 +93,9 @@ public class CategoryAttributeManager
     }
 
     public async Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs)=>await _attributeDal.RemoveRangeAsync(attrs);
-    
+
+    public async Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids)
+    {
+        return await _attributeDal.GetAllAsync(x => ids.Contains(x.Id),true);
+    }
 }

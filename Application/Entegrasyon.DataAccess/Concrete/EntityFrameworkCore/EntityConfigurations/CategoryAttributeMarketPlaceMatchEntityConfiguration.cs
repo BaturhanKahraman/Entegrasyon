@@ -9,6 +9,6 @@ public class CategoryAttributeMarketPlaceMatchEntityConfiguration: IEntityTypeCo
     public void Configure(EntityTypeBuilder<CategoryAttributeMarketPlaceMatch> builder)
     {
         builder.HasKey(x => new {x.MarketPlaceId,x.ApplicationCategoryAttributeId});
-        
+
     }
 }

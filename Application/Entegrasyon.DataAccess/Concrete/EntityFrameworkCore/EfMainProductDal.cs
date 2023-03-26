@@ -1,9 +1,6 @@
-﻿using System.Linq.Expressions;
-using Entegrasyon.DataAccess.Abstract;
+﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
-using Microsoft.EntityFrameworkCore;
 using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;

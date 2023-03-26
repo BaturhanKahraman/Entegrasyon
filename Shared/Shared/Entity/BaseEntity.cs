@@ -1,4 +1,8 @@
-﻿namespace Shared.Entity;
+﻿
+
+using System.ComponentModel.DataAnnotations;
+
+namespace Shared.Entity;
 
 public class BaseEntity
 {

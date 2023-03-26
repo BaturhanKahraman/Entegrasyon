@@ -16,4 +16,5 @@ public interface IRoleManager<TRole, TClaim>
     Task<IEnumerable<TRole>> GetRoles();
     Task UpdateRole(TRole role,List<TClaim> claims);
     Task UpdateRole(int roleId,string name,List<int> claimIds);
+    Task<List<RootRole>> GetRolesSelectList();
 }

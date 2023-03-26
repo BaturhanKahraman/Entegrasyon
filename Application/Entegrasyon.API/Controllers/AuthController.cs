@@ -16,20 +16,22 @@ namespace Entegrasyon.API.Controllers
         //private readonly AuthManager _authManager;
         private readonly IUserManager<ApplicationUser> _userManager;
         private readonly ILoginManager<ApplicationUser> _loginManager;
+        private readonly AuthManager _authManager;
         private readonly ApplicationLogManager _applicationLogManager;    
 
-        public AuthController(IUserManager<ApplicationUser> userManager,ILoginManager<ApplicationUser> loginManager, ApplicationLogManager applicationLogManager)
+        public AuthController(IUserManager<ApplicationUser> userManager,ILoginManager<ApplicationUser> loginManager, ApplicationLogManager applicationLogManager, AuthManager authManager)
         {
             _userManager = userManager;
             _loginManager = loginManager;
             _applicationLogManager = applicationLogManager;
+            _authManager = authManager;
         }
 
         // GET: api/<AuthController>
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            var result = await _loginManager.LoginWithUserNameAsync(dto.UserName,dto.Password);
+            var result = await _authManager.LoginAsync(dto.UserName,dto.Password);
             if (result.Success)
             {
                 await _applicationLogManager.AddLog("Başarıyla giriş yapıldı.",LogType.Auth);
@@ -38,7 +40,19 @@ namespace Entegrasyon.API.Controllers
             await _applicationLogManager.AddLog($"Giriş başarısız {result.Message}",LogType.Auth);
             return BadRequest(result.Message);
         }
-
+        [HttpPost]
+        public async Task<IActionResult> LoginJWT(LoginDto dto)
+        {
+            var result = await _authManager.LoginJWTAsync(dto.UserName,dto.Password);
+            if(result.Success)
+            {
+                await _applicationLogManager.AddLog("Başarıyla giriş yapıldı.",LogType.Auth);
+                return Ok(result);
+            }
+            await _applicationLogManager.AddLog($"Giriş başarısız {result.Message}",LogType.Auth);
+            return BadRequest(result.Message);
+        }
+        
         [HttpPost]
         public async Task<IActionResult> AssignFirstPassword(AssignFirstPasswordDto dto)
         {

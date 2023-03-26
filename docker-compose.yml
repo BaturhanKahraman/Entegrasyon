@@ -35,7 +35,9 @@ services:
       POSTGRES_USER: Baturhan
       POSTGRES_PASSWORD: 649471
     ports:
-      - "5432:5432"
+      - 5432:5432
+    volumes:
+      - D:\TempData:/var/lib/postgresql/data
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
@@ -45,6 +47,20 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
+    depends_on:
+      - db
+      
+  #entegrasyon.mvc:
+  #  image: ${DOCKER_REGISTRY-}entegrasyonmvc
+  #  build:
+  #    context: ./
+  #    dockerfile: Application/Entegrasyon.MVC/Dockerfile
+  #  depends_on:
+  #    - rabbit
+  #    - redis
+  #    - db
+  #  ports:
+  #    - "44444:443" 
 
   entegrasyon.api:
     image: ${DOCKER_REGISTRY-}entegrasyonapi

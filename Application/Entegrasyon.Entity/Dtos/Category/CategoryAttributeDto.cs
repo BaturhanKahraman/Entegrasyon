@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Entegrasyon.Entity.Categories;
+﻿using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.Entity.Dtos.Category;
 
