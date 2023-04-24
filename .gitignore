@@ -362,3 +362,7 @@ MigrationBackup/
 FodyWeavers.xsd
 /.idea/.idea.Entegrasyon/.idea
 /Application/Entegrasyon.API/wwwroot/images/*
+
+#rabbitmq data files
+/data/rabbitmq/*
+/data/dump.rdb
