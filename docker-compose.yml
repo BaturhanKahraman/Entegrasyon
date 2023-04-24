@@ -9,7 +9,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     volumes:
-      - ./data/rabbitmq:/var/lib/rabbitmq
+      - ./data/rabbitmq:/var/lib/rabbitmq/mnesia
     environment:
         - RABBITMQ_ERLANG_COOKIE=mysecretcookie
         - RABBITMQ_MANAGEMENT=true
@@ -50,26 +50,26 @@ services:
     depends_on:
       - db
       
-  #entegrasyon.mvc:
-  #  image: ${DOCKER_REGISTRY-}entegrasyonmvc
-  #  build:
-  #    context: ./
-  #    dockerfile: Application/Entegrasyon.MVC/Dockerfile
-  #  depends_on:
-  #    - rabbit
-  #    - redis
-  #    - db
-  #  ports:
-  #    - "44444:443" 
-
-  entegrasyon.api:
-    image: ${DOCKER_REGISTRY-}entegrasyonapi
+  entegrasyon.mvc:
+    image: ${DOCKER_REGISTRY-}entegrasyonmvc
     build:
       context: ./
-      dockerfile: Application/Entegrasyon.API/Dockerfile
+      dockerfile: Application/Entegrasyon.MVC/Dockerfile
     depends_on:
       - rabbit
       - redis
       - db
     ports:
       - "44444:443" 
+
+  #entegrasyon.api:
+  #  image: ${DOCKER_REGISTRY-}entegrasyonapi
+  #  build:
+  #    context: ./
+  #    dockerfile: Application/Entegrasyon.API/Dockerfile
+  #  depends_on:
+  #    - rabbit
+  #    - redis
+  #    - db
+  #  ports:
+  #    - "44444:443" 
