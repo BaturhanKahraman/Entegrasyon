@@ -47,7 +47,9 @@
                     </div>
                 </div>
             <div class="form-group">
-                <input type="button" value="Sil" class="btn btn-danger" onclick="deleteItem()"/>
+                <input type="button"
+                       onclick="deleteItem()"
+                    value="Sil" class="btn btn-danger" />
                 <input type="submit" value="Kaydet" class="btn btn-primary" />
             </div>
         </form>
@@ -62,7 +64,7 @@
                 return;
             }
             $.post('@Url.Action("Delete")',
-                { id: @Model.Id },
+                { id: "@Model.Id" },
                 function (res) {
                     if (res.success === true) {
                         window.location.href = "@Url.Action("Index")";

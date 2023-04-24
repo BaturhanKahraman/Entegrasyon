@@ -95,6 +95,10 @@ public class ApplicationUserManager
 
     public async Task<IResult> SoftDelete(Guid userId)
     {
+        if(await _applicationUserDal.GetCount() == 1)
+        {
+            return new ErrorResult(Messages.NoUserLeft);
+        }
         var user = await GetUserById(userId);
         await _applicationUserDal.SoftDeleteAsync(user);
         return new SuccessResult(Messages.UserDeletedSuccessfuly);
