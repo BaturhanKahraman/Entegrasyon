@@ -30,7 +30,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{1DB52DB0-B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entegrasyon.WinForm", "Application\Entegrasyon.WinForm\Entegrasyon.WinForm.csproj", "{5EFA6FA8-B33B-4388-A612-6C9086599938}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.MVC", "Application\Entegrasyon.MVC\Entegrasyon.MVC.csproj", "{12A8C4E3-1F84-4D2D-B40F-8A15087CC790}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entegrasyon.MVC", "Application\Entegrasyon.MVC\Entegrasyon.MVC.csproj", "{12A8C4E3-1F84-4D2D-B40F-8A15087CC790}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FDEF9CD2-4484-4BF2-A930-B64B4676491B} = {FDEF9CD2-4484-4BF2-A930-B64B4676491B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

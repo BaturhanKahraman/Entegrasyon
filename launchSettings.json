@@ -4,11 +4,11 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "composeLaunchAction": "LaunchBrowser",
-      "composeLaunchServiceName": "entegrasyon.api",
+      "composeLaunchServiceName": "entegrasyon.mvc",
       "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
       "serviceActions": {
         "db": "StartWithoutDebugging",
-        "entegrasyon.api": "StartDebugging",
+        "entegrasyon.mvc": "StartDebugging",
         "pgadmin": "StartWithoutDebugging",
         "rabbit": "StartWithoutDebugging",
         "redis": "StartWithoutDebugging"
