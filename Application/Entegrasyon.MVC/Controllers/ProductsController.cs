@@ -1,20 +1,37 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Entegrasyon.Business.Concrete;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using Shared.DTO;
 namespace Entegrasyon.MVC.Controllers
 {
     public class ProductsController : Controller
     {
-        // GET: ProductsController
-        public ActionResult Index()
+        private readonly ProductManager _productManager;
+
+        public ProductsController(ProductManager productManager)
         {
-            return View();
+            this._productManager = productManager;
+        }
+
+        // GET: ProductsController
+        public async Task<ActionResult> Index([FromQuery]SearchablePageDto dto)
+        {
+            var result = await _productManager.GetProductsDetailsPageable(dto);
+            return View(result.Data);
         }
 
         // GET: ProductsController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(string id)
         {
-            return View();
+            if(string.IsNullOrEmpty(id))
+                return BadRequest();
+            bool isValid = Guid.TryParse(id,out var guidId);
+            if(!isValid)
+                return BadRequest();
+            var result = await _productManager.GetProductDetailById(guidId);
+            if(result.Data == null)
+                return NotFound();
+            return View(result.Data);
         }
 
         // GET: ProductsController/Create

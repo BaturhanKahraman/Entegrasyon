@@ -26,4 +26,5 @@ public class Messages
     public const string TaxNumberAlreadyExits = "Aynı vergi numaralı kullanıcınız zaten var.";
     public const string UserDeletedSuccessfuly = "Kullanıcı başarıyla silindi";
     public const string CustomerNotFound = "Müşteri bulunamadı.";
+    public const string NoUserLeft="Yalnızca tek kullanıcı kaldığı için silme işlemi başarısız olmuştur.";
 }
