@@ -37,7 +37,7 @@ where TLogin:RootLogin,new()
     public async Task<IResult> LoginWithUserNameAsync(string userName,string password)
     {
         _logger.LogInformation("Login");
-        userName = userName.ToUpperInvariant();
+        userName = userName.Normalize();
         var user = await _userManager.GetUserFullInformation(x=>x.NormalizedUserName==userName).ConfigureAwait(false);
         if(user == null)
             return new ErrorResult(Messages.LoginFailedWrongPassword);

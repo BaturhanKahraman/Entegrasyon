@@ -9,6 +9,7 @@ using Shared.Results;
 using System.Linq.Expressions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.Entity.Dtos.Category.AddStep;
 
 namespace Entegrasyon.Business.Concrete
 {
@@ -31,6 +32,30 @@ namespace Entegrasyon.Business.Concrete
             _unitOfWork = unitOfWork;
             _categoryAttributeCategoryManager = categoryAttributeCategoryManager;
             _fluentValidator = fluentValidator;
+        }
+
+        public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
+        {
+            await _fluentValidator.ValidateAndThrowAsync(dto);
+            //map
+            var category =_mapper.Map<Category>(dto);
+            if(await _categoryDal.Exists(x => string.Equals(dto.Name,x.Name,StringComparison.OrdinalIgnoreCase)))
+            {
+                return new ErrorResult(Messages.SameNameCategoryExits);
+            }
+            await _categoryDal.AddAsync(category);
+            return new SuccessResult(Messages.CategoryAdded);
+        }
+        public async Task<IResult> AddCategoryStepTwo(AddCategoryDtoStepOne dto)
+        {
+            //validate dto
+            await _fluentValidator.ValidateAndThrowAsync(dto);
+            //map
+            var category = _mapper.Map<Category>(dto);
+            if(await _categoryDal.Exists(x => string.Equals(dto.Name,x.Name,StringComparison.OrdinalIgnoreCase)))
+                return new ErrorResult(Messages.SameNameCategoryExits);
+            await _categoryDal.AddAsync(category);
+            return new SuccessDataResult<Category>(category,Messages.CategoryAdded);
         }
 
         public async Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto)
@@ -246,6 +271,21 @@ namespace Entegrasyon.Business.Concrete
             return new SuccessDataResult<CategoryEditDetailDto>(result);
         }
 
-     
+
+        public async Task<bool> Exits(int id)
+        {
+            if(id <= 0)
+                return false;
+            return await _categoryDal.Exists(x => x.Id == id);
+        }
+
+        public Task<string> GetCategoryNameById(int categoryId)
+        {
+            return _categoryDal.Table
+                .AsNoTracking()
+                .Where(x => x.Id == categoryId)
+                .Select(x => x.Name)
+                .FirstOrDefaultAsync();
+        }
     }
 }

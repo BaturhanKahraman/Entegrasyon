@@ -9,6 +9,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Dtos.Category.AddStep;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -28,6 +29,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<CreateDiscountVoucherDto>,CreateDiscountVoucherDtoValidator>();
         services.AddScoped<IValidator<MakeSaleDto>,MakeSaleValidator>();
         services.AddScoped<IValidator<EditCategoryDto>,EditCategoryDtoValidator>();
+        services.AddScoped<IValidator<AddCategoryDtoStepOne>,AddCategoryDtoStepOneValidator>();
         services.AddScoped<FluentValidator>();
         return services;
     }

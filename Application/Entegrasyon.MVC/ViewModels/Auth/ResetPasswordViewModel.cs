@@ -7,11 +7,13 @@ namespace Entegrasyon.MVC.ViewModels.Auth;
 public class ResetPasswordViewModel
 {
     [MaxLength(15,ErrorMessage = "15 Karakterden fazla olamaz!")]
+    [Required(AllowEmptyStrings =false,ErrorMessage ="Bu alan boş olamaz.")]
     [Display(Name = "Geçici Şifre")]
     public string TemporaryPassword { get; set; }
 
     [Display(Name = "Geçici Şifre Tekrar")]
     [MaxLength(15,ErrorMessage = "15 Karakterden fazla olamaz!")]
+    [Required(AllowEmptyStrings =false,ErrorMessage ="Bu alan boş olamaz.")]
     [Compare(nameof(TemporaryPassword),ErrorMessage = "Şifreler eşleşmiyor.")]
     public string TemporaryPasswordCompare { get; set; }
     

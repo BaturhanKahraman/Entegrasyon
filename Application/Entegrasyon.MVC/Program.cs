@@ -7,9 +7,8 @@ using Shared.FileStorage;
 using Shared.Logger.Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddAntiforgery();
 
 builder.Services.AddLogging();
