@@ -27,4 +27,5 @@ public class Messages
     public const string UserDeletedSuccessfuly = "Kullanıcı başarıyla silindi";
     public const string CustomerNotFound = "Müşteri bulunamadı.";
     public const string NoUserLeft="Yalnızca tek kullanıcı kaldığı için silme işlemi başarısız olmuştur.";
+    public const string SameNameCategoryExits="Aynı isimde bir kategori zaten var.";
 }

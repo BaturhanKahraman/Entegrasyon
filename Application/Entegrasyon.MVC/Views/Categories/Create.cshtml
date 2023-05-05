@@ -1,13 +1,11 @@
 ﻿@model Entegrasyon.MVC.ViewModels.Category.CategoryAddViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Kategori Ekle";
+    ViewData["PageTitle"] = "Kategori Ekle";
 }
 
-<h1>Create</h1>
-
-<h4>CategoryAddViewModel</h4>
-<hr />
+<h1>Kategori Oluştur</h1>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
@@ -22,29 +20,15 @@
                 <input asp-for="SuperCategoryId" class="form-control" />
                 <span asp-validation-for="SuperCategoryId" class="text-danger"></span>
             </div>
-
-            <div class="form-group" id="attribute-container">
-                
-                <div class="d-flex flex-row justify-content-center align-items-center" >
-                    <button type="button" id="add-attribute" class="btn btn-gradient-secondary">Özellik Ekle</button>
-                </div>
-                <input type="hidden" value="0" id="attribute-counter" />
-
-            </div>
+           
             <div class="form-group form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsFavorite" /> @Html.DisplayNameFor(model => model.IsFavorite)
+                    <label asp-for="IsFavorite" class="control-label"></label>
+                    <input class="form-check-input" asp-for="IsFavorite" />
                 </label>
             </div>
-
-
-
-
-
-
-
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Oluştur" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -59,7 +43,7 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
         <script>
             $(function () {
-                    var rowCount = parseInt($("#attribute-counter").val());
+                var rowCount = parseInt($("#attribute-counter").val());
                 $("#add-attribute").click(function () {
                     var rowId = rowCount;
 
@@ -84,7 +68,7 @@
                             console.log("#values-input-" + rowId);
                             console.log("if girdi");
                         } else {
-                            $("#values-input-" + rowId ).hide();
+                            $("#values-input-" + rowId).hide();
                             console.log("if girmedi");
                         }
                     });
@@ -101,5 +85,5 @@
             });
         </script>
     }
-   
+
 }

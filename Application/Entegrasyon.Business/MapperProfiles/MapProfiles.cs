@@ -8,6 +8,7 @@ using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity.Dtos.Category.AddStep;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Dtos.Product;
@@ -66,7 +67,10 @@ public class MapProfiles : Profile
         CreateMap<CategoryAttribute,AddCategoryAttributeDto>()
             .ReverseMap()
             .ForMember(d => d.Categories,opt => opt.Ignore());
-        
+
+        CreateMap<AddCategoryDtoStepOne,Category>()
+                .ReverseMap();
+
         CreateMap<EditCategoryAttributeDto, CategoryAttributeCategory>()
             .ForMember(dest=>dest.CategoryAttributeId,opt=>opt.MapFrom(source=>source.Id))
             .ForPath(dest => dest.CategoryAttribute.Id,opt => opt.MapFrom(source => source.Id))

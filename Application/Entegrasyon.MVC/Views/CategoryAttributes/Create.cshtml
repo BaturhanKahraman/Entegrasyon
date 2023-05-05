@@ -1,0 +1,164 @@
+﻿@model Entegrasyon.MVC.ViewModels.Category.CategoryAttributeAddViewModel
+@{
+    ViewData["Title"] = "Kategori Özelliği Ekle";
+    ViewData["PageTitle"] = "Kategori Özelliği Ekle";
+}
+js html bölümünü düzenle.
+<h2>
+    @if(!string.IsNullOrEmpty(ViewBag.CategoryName))
+    {
+        <span>@ViewBag.CategoryName için</span>
+    }
+    Özellik ekleme işlemi
+</h2>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="CategoryId" value="@Context.Request.Query["categoryId"].FirstOrDefault()" />
+    <div class="attr-container">
+        @if(Model?.CategoryAttributeList != null)
+        {
+            for(int i = 0;i < Model.CategoryAttributeList.Count;i++)
+            {
+                <div class="form-group mb-3">
+                    <div class="row attribute-row" data-index="@i">
+                        <div class="col-md-1">
+                            <label for="CategoryAttributeList_@(i)__IsRequired" class="new-control new-checkbox checkbox-primary">
+                                <input class="new-control-input" asp-for="CategoryAttributeList[i].IsRequired" class="new-control-input" />
+                                <span class="new-control-indicator"></span>
+                                @Html.DisplayNameFor(x=>x.CategoryAttributeList[i].IsRequired)
+                                
+                            </label>
+                            <span asp-validation-for="CategoryAttributeList[i].IsRequired" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-1">
+                            @{
+                                string labelFor = "CategoryAttributeList_" + i + "AllowCustom";
+                            }
+                            <label for="CategoryAttributeList_@(i)__AllowCustom"  class="new-control new-checkbox checkbox-primary">
+                                <input class="new-control-input allow-custom-checkbox" asp-for="CategoryAttributeList[i].AllowCustom" />
+                                <span class="new-control-indicator"></span>
+                                Düz Yazı
+                            </label>
+                            <span asp-validation-for="CategoryAttributeList[i].AllowCustom" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-1">
+                            <label for="CategoryAttributeList_@(i)__IsVarianter" class="new-control new-checkbox checkbox-primary">
+                                <input class="new-control-input" asp-for="CategoryAttributeList[i].IsVarianter" class="new-control-input" />
+                                <span class="new-control-indicator"></span>
+                                Varyant
+                            </label>
+                            <span asp-validation-for="CategoryAttributeList[i].IsVarianter" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="CategoryAttributeList_@(i)__IsSlicer" class="new-control new-checkbox checkbox-primary">
+                                <input class="new-control-input" asp-for="CategoryAttributeList[i].IsSlicer" class="new-control-input" />
+                                <span class="new-control-indicator"></span>
+                                Sayfa Bölücü
+                            </label>
+                            <span asp-validation-for="CategoryAttributeList[i].IsSlicer" class="text-danger"></span>
+                        </div>                 
+                        <div class="col-md-4">
+                            <input asp-for="@Model.CategoryAttributeList[i].CategoryAttributeKey" class="form-control" />
+                            <span asp-validation-for="CategoryAttributeList[i].CategoryAttributeKey" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-warning btn-value-add" style="width:140px">Değer ekle <span class="value-count"></span> </button>
+                            <button type="button" class="btn btn-danger remove-btn">Sil</button>
+                        </div>
+                        @if(Model.CategoryAttributeList[i].CategoryAttributeValues.Any())
+                        {
+                            for(int j = 0;j < Model.CategoryAttributeList[i].CategoryAttributeValues.Count;j++)
+                            {
+                                <input type="hidden" asp-for="@Model.CategoryAttributeList[i].CategoryAttributeValues[j].Id" />
+                                <input type="hidden" asp-for="@Model.CategoryAttributeList[i].CategoryAttributeValues[j].Name" />
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <div class="form-group">
+        <button type="button" id="add-attribute-btn" class="btn btn-primary">Yeni Özellik Ekle</button>
+        <button type="button" id="add-existing-attribute-btn" class="btn btn-secondary">Varolan Özellik Ekle</button>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-success">Kaydet</button>
+    </div>
+</form>
+
+<div class="modal fade" id="existingAttributeModal" tabindex="-1" role="dialog" aria-labelledby="existingAttributeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="existingAttributeModalLabel">Varolan Özelliği Ekle</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="existingAttributeSelect">Bir Özellik Seçin:</label>
+                <select id="existingAttributeSelect" class="form-control">
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="addExistingAttributeBtn">Ekle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addValueModal" tabindex="-1" role="dialog" aria-labelledby="addValueModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="existingAttributeModalLabel">Değer Ekle</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="values">Lütfen değerleri virgül ile ekleyin</label>
+                <input type="hidden" id="attr-index" />
+                <input type="text" id="values" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="add-values-btn">Ekle</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/categoryattribute/category-attribute-add.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            var isFetched = false;
+            $("#add-existing-attribute-btn").click(function () {
+                if (!isFetched) {
+                    $.get("@Url.Action("GetAllCategoryAttributes")", function (data) {
+                        console.log(data);
+                        var select = $("#existingAttributeSelect");
+                        select.empty();
+                        select.append("<option>Lütfen seçiniz</option>");
+                        for (var i = 0; i < data.length; i++) {
+                            var attribute = data[i];
+                            select.append('<option value="' + attribute.id + '">' +
+                                attribute.categoryAttributeKey + '</option>')
+                        }
+                        isFetched = true;
+                    },).fail(function () {
+                        alert("Bir hata oluştu.");
+                    });
+                }
+                $("#existingAttributeModal").modal("show");
+            });
+        })
+    </script>
+}

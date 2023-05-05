@@ -1,16 +1,26 @@
-﻿using Entegrasyon.MVC.Utility.Attributes.ModelState;
+﻿using Entegrasyon.Business.Concrete;
+using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Entity;
 
 namespace Entegrasyon.MVC.Controllers
 {
     public class CategoriesController : Controller
     {
         // GET: CategoriesController
-        public ActionResult Index(int pageIndex = 0,int pageSize = 10)
+        private readonly CategoryManager _categoryManager;
+
+        public CategoriesController(CategoryManager categoryManager)
         {
-            return View();
+            _categoryManager = categoryManager;
+        }
+
+        public async Task<ActionResult> Index(int pageIndex = 0,int pageSize = 10)
+        {
+            var model = await _categoryManager.GetCategoryDetailPageable(pageIndex,pageSize);
+            return View(model.Data);
         }
 
         // GET: CategoriesController/Details/5
@@ -32,8 +42,13 @@ namespace Entegrasyon.MVC.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(CategoryAddViewModel model)
         {
+            if(!ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Create),model);
+            }
             return View();
         }
+
 
         // GET: CategoriesController/Edit/5
         public ActionResult Edit(int id)
