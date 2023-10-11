@@ -27,17 +27,10 @@ namespace Entegrasyon.MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> ImportFromTrendyol()
         {
-            var jsonTrendyolCategories = Request.Form["trendyolCategories"];
-            var model = JsonConvert.DeserializeObject<List<ImportedTrendyolCategory>>(jsonTrendyolCategories);
             var selectedCategoryIds = Request.Form["selectedCategories"];
             var ids = selectedCategoryIds[0].Split(',').Select(x => Convert.ToInt32(x)).ToList();
-            var flattenedCategoryIds = new List<int>();
-            foreach(var category in model)
-            {
-                FlattenCategoryList(model,category,flattenedCategoryIds);
-            }
             
-            return View(nameof(Index),model);
+            return RedirectToAction(nameof(Index));
 
         }
         [NonAction]

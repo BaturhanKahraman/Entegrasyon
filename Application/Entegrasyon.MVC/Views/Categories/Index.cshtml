@@ -4,6 +4,12 @@
     ViewData["Title"] = "Ofis/Depo Listesi";
     ViewData["PageTitle"] = "Ofis/Depo Listesi";
 }
+@{
+    if(ViewData[StringConstant.SuccessAlert] != null)
+    {
+        <div class="alert">@ViewData[StringConstant.SuccessAlert]</div>
+    }
+}
 <div class="table-responsive">
     <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
         <thead>

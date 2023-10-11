@@ -1,5 +1,8 @@
-﻿using Entegrasyon.Business.Concrete;
+﻿using AutoMapper;
+using Entegrasyon.Business.Concrete;
+using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
+using Entegrasyon.MVC.Utility.Constants;
 using Entegrasyon.MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +14,18 @@ namespace Entegrasyon.MVC.Controllers
     {
         // GET: CategoriesController
         private readonly CategoryManager _categoryManager;
-
-        public CategoriesController(CategoryManager categoryManager)
+        private readonly IMapper _mapper;
+        public CategoriesController(CategoryManager categoryManager,IMapper mapper)
         {
             _categoryManager = categoryManager;
+            this._mapper = mapper;
         }
 
         public async Task<ActionResult> Index(int pageIndex = 0,int pageSize = 10)
         {
-            var model = await _categoryManager.GetCategoryDetailPageable(pageIndex,pageSize);
-            return View(model.Data);
+            var result = await _categoryManager.GetCategoryDetailPageable(pageIndex,pageSize);
+            var modelData = _mapper.Map<Pageable<CategoryDetailListViewModel>>(result.Data);
+            return View(modelData);
         }
 
         // GET: CategoriesController/Details/5
@@ -40,13 +45,21 @@ namespace Entegrasyon.MVC.Controllers
         [HttpPost]
         [SetTempDataModelState]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(CategoryAddViewModel model)
+        public async Task<ActionResult> Create(CategoryAddViewModel model)
         {
             if(!ModelState.IsValid)
             {
                 return RedirectToAction(nameof(Create),model);
             }
-            return View();
+            var dto = _mapper.Map<AddCategoryDto>(model);
+            var result = await _categoryManager.AddCategory(dto);
+            if(!result.Success)
+            {
+                ModelState.AddModelError(string.Empty,result.Message);
+                return RedirectToAction(nameof(Create));
+            }
+            ViewData[StringConstant.SuccessAlert] = result.Message;
+            return RedirectToAction(nameof(Index));
         }
 
 

@@ -14,13 +14,14 @@ namespace Entegrasyon.MVC.Controllers
             new(2)
         {
             new CategoryAttributeCreateViewModel(){
+                Id=1,
+                AllowCustom=true,
                 CategoryAttributeKey="Key 1" },
                 new CategoryAttributeCreateViewModel(){
-                                 AllowCustom=true,
-                CategoryAttributeKey="Key 2",
+                Id=2,CategoryAttributeKey="Key 2",
                 CategoryAttributeValues=new List<CategoryAttributeValueViewModel>(2){
-                new CategoryAttributeValueViewModel(null,"Value 3"),
-                new CategoryAttributeValueViewModel(null,"Value 4"),
+                new CategoryAttributeValueViewModel(1,"Value 3"),
+                new CategoryAttributeValueViewModel(2,"Value 4"),
                 }
         } };
         public CategoryAttributesController(CategoryManager categoryManager,CategoryAttributeManager categoryAttributeManager)

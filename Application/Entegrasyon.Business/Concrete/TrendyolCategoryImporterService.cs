@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Net.Http.Json;
+using System.Security.Cryptography.X509Certificates;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -49,6 +51,65 @@ public class TrendyolCategoryImporterService
             return new ErrorResult("Boş obje gönderildi.");
         _brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolCategoryImportQueueName,trendyolImports);
         return new SuccessResult(Messages.CategoryImportQueued);
+    }
+    public IResult QueueImportByIdList(List<int> ids)
+    {
+
+        return new SuccessResult();
+    }
+    //bu metodu refactor et
+    //daha önce olan var mı
+    //üst kategori seçilmiş mi
+    //üst kategori seçildiyse alt kategorileri neler
+    public async Task<IResult> ImportByIdList(List<int> ids)
+    {
+        var intersectedCategories =await _dbContext.Categories//güncellenecekler
+            .Where(x => ids.Any(i => i == x.ImportId))
+            .Include(x=>x.CategoryAttributes)
+                .ThenInclude(x=>x.CategoryAttribute)
+            .AsNoTracking().ToListAsync();
+        var trendyolCategories = new List<TrendyolSelectedCategory>();
+        var marketPlace = await _dbContext.MarketPlaces.FirstOrDefaultAsync(x => string.Equals("Trendyol",x.Name));
+
+        foreach(var id in ids)
+        {
+            //parentId si sistemimizde var mı ? varsa parent olarak ayarlanması gerekir
+            //eğer sistemde yoksa ve idler arasında gelmemişse gidip aynı işlemin yapılması gerekiyor.
+            
+            string attrAddr = string.Format("https://api.trendyol.com/sapigw/product-categories/{0}/attributes",id);
+            var response = await _httpClient.GetAsync(attrAddr);
+            if(!response.IsSuccessStatusCode)
+                continue;
+            var result =await response.Content.ReadFromJsonAsync<TrendyolCategory>();
+            bool isParent = !result.categoryAttributes.Any();
+            if(intersectedCategories.Any(x => x.ImportId == result.id))
+            {
+
+                //zaten sistemde var, tekrar seçilmiş güncelle
+                var updatedCat= intersectedCategories.First(x => x.ImportId == id);
+                //burada güncelle
+                updatedCat.UpdatedAt = DateTimeOffset.Now;
+                updatedCat.Name = result.displayName;
+                if(!isParent)
+                {
+                    _dbContext.Categories.Update(updatedCat);
+                    continue;
+                }
+            }
+            var category = new Category()
+            {
+                ImportId = id,
+                IsImported = true,
+                Name = result.displayName
+            };
+            var categoryMatch = new CategoryMarketPlaceMatch()
+            { MarketPlace = marketPlace,ApplicationCategory = category };
+
+            if(!isParent)
+                await _dbContext.Categories.AddAsync(category);
+            
+        }
+        return new SuccessResult();
     }
     public async Task<IResult> Import(List<TrendyolImport> trendyolImports)
     {
