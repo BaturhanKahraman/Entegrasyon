@@ -115,14 +115,23 @@
 
     // Attribute row eklenip çıkarıldığında value-count'ları güncelle
     $(document).on('change', '.attribute-row input', function () {
+        console.log("Tetiklendim");
         updateValueCounts();
     });
+
+    $('.attribute-row').on('DOMNodeInserted DOMNodeRemoved', 'input', function () {
+        updateValueCounts();
+    })
 
     function updateValueCounts() {
         $('.attribute-row').each(function () {
             var count = $(this).find('input[id$="__Name"]').length;
-            if (count >0)
-                $(this).find('.value-count').text('('+count+')');
+            console.log("count :", count);
+            if (count > 0)
+                $(this).find('.value-count').text('(' + count + ')');
+            else if (count == 0) {
+                $(this).find('.value-count').text('');
+            }
         });
     }
 
@@ -138,6 +147,7 @@
                     return;
                 }
                 inputs.remove();
+                updateValueCounts();
             };
             $(this).parents('.attribute-row').find('.btn-value-add').prop('disabled', isSelected);
         } else {
@@ -152,18 +162,44 @@
             $(this).parents('.attribute-row').find('.btn-value-add').prop('disabled', false);
         }
     })
-
+    //kategori özellik değeri eklemek için bootstrap modal açıldığında
+    //zaten ekli olan değerler içeriye, ile aktarılacak
+    // değiştirildiğinde ya da eklendiğinde sync yapılacak.
     $(document).on('click', '.btn-value-add', function () {
         var index = $(this).parents('.attribute-row').data('index')
         $("#attr-index").val(index);
+        var valuestxtBox = $("#values");
+        valuestxtBox.val(null);
+        var values = $(this).parents('.attribute-row').find('input[id$="__Name"]');
+        console.log(values);
+        if (values) {
+            for (var i = 0; i < values.length; i++) {
+                var oldValue = valuestxtBox.val();
+                var addedValue = values.eq(i).val();
+                if (!oldValue) {
+                    valuestxtBox.val(addedValue);
+                    continue;
+                }
+                if (i == values.length - 1) {
+                    valuestxtBox.val(oldValue + ',' + addedValue);
+                    break;
+                }
+                valuestxtBox.val(oldValue + ',' + addedValue +',');
+            }
+        }
         $("#addValueModal").modal("show");
     });
-
+    //değer ekleme işlemi
     $(document).on('click', '#add-values-btn', function () {
-        var values = $('#values').val();
-        var id = $('#attr-index').val();
+        var values = $('#values').val();// girilen değerler
+        var id = $('#attr-index').val();// attribute index
+        var row = $('[data-index="' + id + '"]');//satırı
+        var oldValues = row.find('input[id$="__Name"]').map(function () {
+            return $(this).val();
+        }).get();//içerisindeki input değerleri.
         if (values) {
             var valuesSplit = values.trim().split(',');
+            //kopya değerleri ayıklama
             valuesSplit = valuesSplit.filter(function (value, index, self) {
                 // Boş değerleri filtrele
                 if (value.trim() === '') {
@@ -171,11 +207,31 @@
                 }
                 // Kopya değerleri filtrele
                 return index === self.indexOf(value);
-            });
+            });//temizleme işlemi
+            if (valuesSplit.length == 0) {//hiç yoksa sil
+                var confirmAccepted = confirm("Tüm değerleri sildiniz, devam edecek misiniz ?");
+                if (confirmAccepted) {
+                    row.find('input').clear();
+                }
+                // sayfadaki hali hazırda eklenmişler inputlar da silinecek mi ?
+            }
             if (valuesSplit.length > 0) {
-                var row = $('[data-index="' + id + '"]');
-                console.log(row);
+                //arrayi unionla, inputtan gelen farkları ekle
+                var newAddedValues = $(valuesSplit).not(oldValues).get(); // yeni eklenenler
+                for (var i = 0; i < newAddedValues.length; i++) {
+                    row.append(
+                        `<input 
+                                type="hidden" 
+                                value="${newAddedValues[i].trim()}"
+                                name="CategoryAttributeList[${id}].CategoryAttributeValues[${i}].Name"
+                                class="cat-attr-value"
+                                id="CategoryAttributeList_${id}__CategoryAttributeValues_${i}__Id"
+                                                />`)// önceki eklenenlerle karışabilir
+                }
+
                 for (var i = 0; i < valuesSplit.length; i++) {
+                    if ($.inArray(valuesSplit[i], oldValues) === -1)
+                        continue;
                     row.append(
                         `<input 
                                 type="hidden" 
@@ -185,8 +241,15 @@
                                 id="CategoryAttributeList_${id}__CategoryAttributeValues_${i}__Id"
                                                 />`)
                 }
+                //array farklarını al
+                var diff1 = $(valuesSplit).not(oldValues).get(); // yeni eklenenler
+                console.log(diff1);
+                var diff2 = $(oldValues).not(valuesSplit).get(); // silinenler
+                console.log(diff2);
             }
         }
+        updateValueCounts();
         $("#addValueModal").modal("hide");
+
     });
 });

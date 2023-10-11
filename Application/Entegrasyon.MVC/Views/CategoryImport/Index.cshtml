@@ -39,7 +39,6 @@
                         </ul>
                     </div>
                     <input type="hidden" name="selectedCategories" id="selectedCategories" />
-                   @Html.Hidden("trendyolCategories",Json.Serialize(Model))
                     <button type="submit" class="btn btn-gradient-primary mt-3 float-right" > Onayla</button>
                 </form>
             </div>
@@ -75,11 +74,14 @@
                 },
                 "plugins": ["wholerow", "checkbox"]
             });
-
-            $('form').submit(function () {
-                var selectedCategories = $('#trendyol-js-tree').jstree('get_selected');
-                $('#selectedCategories').val(selectedCategories.join(','));
+            $('#trendyol-js-tree').on("changed.jstree", function (e, data) {
+                $('#selectedCategories').val(data.selected);
             });
+            //$('form').submit(function () {
+            //    var selectedCategories = $('#trendyol-js-tree').jstree().get_selected(true);
+            //    console.log(selectedCategories);
+            //    $('#selectedCategories').val(selectedCategories);
+            //});
         });
     </script>
 }

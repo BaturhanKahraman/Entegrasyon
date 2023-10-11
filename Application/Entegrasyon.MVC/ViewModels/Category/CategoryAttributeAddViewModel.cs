@@ -15,9 +15,10 @@ public class CategoryAttributeAddViewModel
 public class CategoryAttributeCreateViewModel
 {
     public int? Id { get; set; }
+    public bool IsAddedAfterward { get; set; }
     [Display(Name = "Zorunlu mu?",Description = "Bu kategoriden bir ürün oluştururken zorunlu olan değer.")]
     public bool IsRequired { get; set; } 
-    [Display(Name = "Düz yazıya izin ver.",Description = "Bu seçenek işaretlendiğinde, değer yazılarak girilir.")]
+    [Display(Name = "Düz yazı",Description = "Bu seçenek işaretlendiğinde, değer yazılarak girilir.")]
     public bool AllowCustom { get; set; }
     [ExclusiveBoolean(nameof(IsSlicer),ErrorMessage = "İki özellik de aynı anda aktif olamaz.")]
     [Display(Name = "Varyant")]

@@ -15,4 +15,8 @@ public sealed class Pageable<T>
         PagingItemCount = pagingItemCount;
         TotalItemCount = totalItemCount;
     }
+    public Pageable()
+    {
+        // Default constructor without arguments
+    }
 }

@@ -11,10 +11,13 @@ js html bölümünü düzenle.
     }
     Özellik ekleme işlemi
 </h2>
+<button id="add-member" class="btn">Eleman ekle</button>
 
 <form asp-action="Create" method="post">
     <input type="hidden" asp-for="CategoryId" value="@Context.Request.Query["categoryId"].FirstOrDefault()" />
-    <div class="attr-container">
+    <div id="category-attributes">
+    </div>
+    <div id="attr-container">
         @if(Model?.CategoryAttributeList != null)
         {
             for(int i = 0;i < Model.CategoryAttributeList.Count;i++)
@@ -135,30 +138,17 @@ js html bölümünü düzenle.
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script src="~/js/categoryattribute/category-attribute-add.js"></script>
+    @*<script src="~/js/categoryattribute/category-attribute-add.js"></script>*@
+    <script src="~/js/category-attributes/category-attribute-add-manager.js"></script>
     <script>
-
-        $(document).ready(function () {
-            var isFetched = false;
-            $("#add-existing-attribute-btn").click(function () {
-                if (!isFetched) {
-                    $.get("@Url.Action("GetAllCategoryAttributes")", function (data) {
-                        console.log(data);
-                        var select = $("#existingAttributeSelect");
-                        select.empty();
-                        select.append("<option>Lütfen seçiniz</option>");
-                        for (var i = 0; i < data.length; i++) {
-                            var attribute = data[i];
-                            select.append('<option value="' + attribute.id + '">' +
-                                attribute.categoryAttributeKey + '</option>')
-                        }
-                        isFetched = true;
-                    },).fail(function () {
-                        alert("Bir hata oluştu.");
-                    });
-                }
-                $("#existingAttributeModal").modal("show");
-            });
-        })
+        const manager = new CategoryAttributeAddManager(@Html.Raw(Json.Serialize(Model.CategoryAttributeList)));
+        manager.setAttributeSettings({
+            isRequiredLabel: "Zorunlu mu",
+            allowCustomLabel: "Düz Yazı",
+            isVarianterLabel: "Varyant",
+            isSlicerLabel: "Sayfa Bölücü",
+            addButtonLabel: "Değer Ekle",
+            removeButtonLabel: "Sil",
+        });
     </script>
 }
