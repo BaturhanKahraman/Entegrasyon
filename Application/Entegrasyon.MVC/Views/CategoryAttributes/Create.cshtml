@@ -1,4 +1,5 @@
-﻿@model Entegrasyon.MVC.ViewModels.Category.CategoryAttributeAddViewModel
+﻿@using Entegrasyon.MVC.Components.Razor.CategoryAttribute;
+@model Entegrasyon.MVC.ViewModels.Category.CategoryAttributeAddViewModel
 @{
     ViewData["Title"] = "Kategori Özelliği Ekle";
     ViewData["PageTitle"] = "Kategori Özelliği Ekle";
@@ -11,7 +12,10 @@ js html bölümünü düzenle.
     }
     Özellik ekleme işlemi
 </h2>
-<button id="add-member" class="btn">Eleman ekle</button>
+<category-attribute-add></category-attribute-add>
+ @(await Html.RenderComponentAsync<CategoryAttributeAdd>(RenderMode.Server,
+     new {catId=Context.Request.Query["categoryId"].FirstOrDefault()})) 
+@* <button id="add-member" class="btn">Eleman ekle</button>
 
 <form asp-action="Create" method="post">
     <input type="hidden" asp-for="CategoryId" value="@Context.Request.Query["categoryId"].FirstOrDefault()" />
@@ -138,7 +142,7 @@ js html bölümünü düzenle.
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    @*<script src="~/js/categoryattribute/category-attribute-add.js"></script>*@
+    @*<script src="~/js/categoryattribute/category-attribute-add.js"></script>
     <script src="~/js/category-attributes/category-attribute-add-manager.js"></script>
     <script>
         const manager = new CategoryAttributeAddManager(@Html.Raw(Json.Serialize(Model.CategoryAttributeList)));
@@ -151,4 +155,4 @@ js html bölümünü düzenle.
             removeButtonLabel: "Sil",
         });
     </script>
-}
+} *@

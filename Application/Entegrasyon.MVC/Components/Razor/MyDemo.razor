@@ -1,0 +1,24 @@
+﻿@using Entegrasyon.MVC.ViewModels.Category;
+@using System.Diagnostics;
+Deneme
+Durum : @FormStatus
+<EditForm Model=@model OnValidSubmit="@OnFormSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText @bind-Value="model.Name"/>
+    <ValidationMessage For="()=>model.Name"/>
+    <button type="submit">Submit</button>
+</EditForm>
+@code {
+    private CategoryAddViewModel model;
+    private string FormStatus="Not Sent";
+    protected override void OnInitialized()
+    {
+        model ??= new();
+        base.OnInitialized();
+    }
+    private void OnFormSubmit()
+    {
+        this.FormStatus = "Gönderildi";
+    }
+}

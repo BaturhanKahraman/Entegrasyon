@@ -9,6 +9,7 @@ using Shared.Logger.Serilog;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddServerSideBlazor();
 builder.Services.AddAntiforgery();
 
 builder.Services.AddLogging();
@@ -70,7 +71,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapBlazorHub();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
