@@ -14,7 +14,7 @@ html {
 
 body.dark {
   color: #888ea8;
-  height: 100%;
+  height: 100%;.theme
   font-size: 0.875rem;
   background: #060818;
   overflow-x: hidden;
@@ -841,7 +841,7 @@ body.dark .sidebar-closed > .sidebar-wrapper:hover #sidebar .theme-brand li.them
   display: block;
 }
 body.dark #sidebar .theme-brand div.theme-text a {
-  font-size: 25px !important;
+  font-size: 18px !important;
   color: #e0e6ed !important;
   line-height: 2.75rem;
   padding: 0.39rem 0.8rem;
