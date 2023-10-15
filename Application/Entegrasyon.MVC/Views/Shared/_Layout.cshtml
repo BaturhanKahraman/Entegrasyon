@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <base href="~/" />
     <title>@ViewData["Title"] </title>
     <link rel="icon" type="image/x-icon" href="~/img/favicon.ico" />
     <link href="~/css/site.min.css" rel="stylesheet" />
@@ -76,11 +77,12 @@
     <script src="~/lib/template/js/app.js" ></script>
     <script src="~/lib/template/js/custom.js" asp-append-version="true"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
+    <script src="_framework/blazor.server.js"></script>
+
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
     @{
         await RenderSectionAsync("Scripts", required: false);
     }
-    <script src="_framework/blazor.server.js"></script>
-    <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
+    <!-- END PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
 </body>
 </html>

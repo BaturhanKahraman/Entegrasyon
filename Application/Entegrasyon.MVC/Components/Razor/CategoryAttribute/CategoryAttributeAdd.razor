@@ -1,5 +1,30 @@
-﻿<h3>CategoryAttributeAdd</h3>
-catId: @CatId
-<EditForm Model=Model >
-
+﻿@if(!string.IsNullOrEmpty(CategoryName))
+{
+    <span>@CategoryName için özellik ekleme işlemi.</span>
+}
+<EditForm Model=_model>
+    <DataAnnotationsValidator />
+    <button type="button" class="btn btn-secondary" @onclick="AddAttribute">Özellik Ekle</button>
+    <div class="row mt-2">
+        @foreach(var item in _model.CategoryAttributeList)
+        {
+            <div class="col-sm">
+                <Entegrasyon.MVC.Components.Razor.Shared.Form.DisplayName @For="()=>@item.CategoryAttributeKey">
+                    <InputText class="form-control" @bind-Value="item.CategoryAttributeKey" />
+                </Entegrasyon.MVC.Components.Razor.Shared.Form.DisplayName>
+                <ValidationMessage For="()=>item.CategoryAttributeKey" />
+            </div>
+            <div class="col-sm">
+                <InputCheckbox class="form-control" @bind-Value="item.IsRequired" />
+                <ValidationMessage For="()=>item.IsRequired" />
+            </div>
+            <div class="col-sm-1">
+                <button type="button" @onclick="()=>RemevoAttribute(item)">Sil</button>
+            </div>
+        }
+    </div>
+    @if(_model.CategoryAttributeList.Any())
+    {
+        <button type="submit" class="btn btn-primary">Gönder</button>
+    }
 </EditForm>

@@ -8,7 +8,7 @@ namespace Entegrasyon.MVC.ViewModels.Category;
 public class CategoryAttributeAddViewModel
 {
     public int? CategoryId { get; set; }
-    public List<CategoryAttributeCreateViewModel> CategoryAttributeList { get; set; }
+    public List<CategoryAttributeCreateViewModel> CategoryAttributeList { get; set; } = new();
 
 }
 
