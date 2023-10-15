@@ -77,9 +77,9 @@
     <script src="~/lib/template/js/custom.js" asp-append-version="true"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
-    @await RenderSectionAsync("Scripts",required:false)
-    <script src="~/js/app.js"></script>
-    <base  href="~/"/>
+    @{
+        await RenderSectionAsync("Scripts", required: false);
+    }
     <script src="_framework/blazor.server.js"></script>
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
 </body>
