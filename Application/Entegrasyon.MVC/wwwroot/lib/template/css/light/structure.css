@@ -890,7 +890,7 @@ body .navbar .dark-mode, body:not(.dark) .navbar .dark-mode {
 }
 
 #sidebar .theme-brand div.theme-text a {
-  font-size: 25px !important;
+  font-size: 18px !important;
   color: #e0e6ed !important;
   line-height: 2.75rem;
   padding: 0.39rem 0.8rem;
