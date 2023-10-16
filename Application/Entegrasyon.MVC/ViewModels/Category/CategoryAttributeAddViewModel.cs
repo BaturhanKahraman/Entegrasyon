@@ -24,11 +24,15 @@ public class CategoryAttributeCreateViewModel
     [Display(Name = "Varyant")]
     public bool IsVarianter { get; set; } 
     [Display(Name = "Sayfa Bölücü")]
-    public bool IsSlicer { get; set; } 
+    [ExclusiveBoolean(nameof(IsVarianter),ErrorMessage = "İki özellik de aynı anda aktif olamaz.")]
+    public bool IsSlicer { get; set; }
     [Required(AllowEmptyStrings = false,ErrorMessage = "Lütfen özellik için bir isim girin.")]
     [MaxLength(55,ErrorMessage = "Özellik ismi 55 karakterden fazla olamaz.")]
     [MinLength(2,ErrorMessage = "Özellik ismi 2 karakterden az olamaz.")]
     [Display(Name = "Kategori Özellik İsmi",Prompt ="Kategori İsmi")]
     public string CategoryAttributeKey { get; set; }
+    [Display(Name ="Değerler")]
+    public string CustomValues { get; set; }
+    public string FormUniqueId { get; set; }
     public List<CategoryAttributeValueViewModel> CategoryAttributeValues { get; set; } = new();
 }

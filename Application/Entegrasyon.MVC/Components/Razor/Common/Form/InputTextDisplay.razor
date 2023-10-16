@@ -1,0 +1,17 @@
+﻿@typeparam T
+@inherits Display<T>
+
+@if(ChildContent == null)
+{
+    <label>@label</label>
+}
+else
+{
+    <div class="form-group mb-1">
+        <label for="@InputTextId">@label</label>
+        @ChildContent
+    </div>
+}
+@code {
+    [Parameter] public string InputTextId { get; set; }
+}
