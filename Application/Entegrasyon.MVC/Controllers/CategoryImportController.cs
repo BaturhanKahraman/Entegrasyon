@@ -29,7 +29,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             var selectedCategoryIds = Request.Form["selectedCategories"];
             var ids = selectedCategoryIds[0].Split(',').Select(x => Convert.ToInt32(x)).ToList();
-            
+            await Task.Yield();
             return RedirectToAction(nameof(Index));
 
         }
