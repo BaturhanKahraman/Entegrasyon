@@ -5,7 +5,7 @@
 {
     <span>@CategoryName için özellik ekleme işlemi.</span>
 }
-<EditForm Model=_model>
+<EditForm Model=_model OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <button type="button" class="btn btn-secondary" @onclick="AddAttribute">Özellik Ekle</button>
     @foreach(var item in _model.CategoryAttributeList)
