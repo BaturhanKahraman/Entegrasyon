@@ -24,9 +24,9 @@ public class ExclusiveBooleanAttribute : ValidationAttribute
         if(!otherPropertyValue.HasValue ||
             (otherPropertyValue == false && boolValue == false) || 
             otherPropertyValue != boolValue)
-            return ValidationResult.Success;
+            return ValidationResult.Success!;
         //take display names
-        string comparedObjName = otherPropertyInfo.GetAttribute<DisplayAttribute>().GetName();
+        string comparedObjName = otherPropertyInfo.GetAttribute<DisplayAttribute>()?.GetName() ?? otherPropertyInfo.Name;
         return new ValidationResult($"{comparedObjName} değeri ve {validationContext.DisplayName} özelliklerinin ikisi de aynı anda açık olamaz.");
     }
 }

@@ -44,14 +44,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Components\View\" />
-		<Folder Include="Utility\Objects\" />
 		<Folder Include="Utility\ToastrNotification\" />
 		<Folder Include="ViewModels\CategoryImport\" />
 		<Folder Include="ViewModels\Office\" />
 		<Folder Include="ViewModels\User\" />
 		<Folder Include="Views\Categories\CategoryAttributes\" />
-		<Folder Include="Views\Shared\Components\" />
 		<Folder Include="wwwroot\img\auth\" />
 	</ItemGroup>
 
