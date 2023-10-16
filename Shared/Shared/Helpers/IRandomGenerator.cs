@@ -2,7 +2,6 @@
 {
     public interface IRandomGenerator 
     {
-        string GetRandomCode(int length);
-        string GetRandomCode(int length,bool includeNumbers,bool includeLower,bool includeUpper);
+        string GetRandomCode(int length,bool includeNumbers=true,bool includeLower=true,bool includeUpper=true);
     }
 }

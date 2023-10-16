@@ -5,7 +5,7 @@
       "commandVersion": "1.0",
       "composeLaunchAction": "LaunchBrowser",
       "composeLaunchServiceName": "entegrasyon.mvc",
-      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/",
       "serviceActions": {
         "db": "StartWithoutDebugging",
         "entegrasyon.mvc": "StartDebugging",

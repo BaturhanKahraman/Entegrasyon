@@ -2,6 +2,7 @@
 @using System.Linq.Expressions;
 @using System.ComponentModel.DataAnnotations;
 @typeparam T
+
 @if(ChildContent == null)
 {
     <label>@label</label>
@@ -14,14 +15,14 @@ else
     </label>
 }
 @code {
-    [Parameter] public Expression<Func<T>> For { get; set; }
+    [Parameter] public Expression<Func<T>> DisplayFor { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    private string label => GetDisplayName();
+    protected string label => GetDisplayName();
 
-    private string GetDisplayName()
+    protected virtual string GetDisplayName()
     {
-        var expression = (MemberExpression)For.Body;
+        var expression = (MemberExpression)DisplayFor.Body;
         var value = expression.Member.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;
         return value?.Name ?? expression.Member.Name ?? "";
     }

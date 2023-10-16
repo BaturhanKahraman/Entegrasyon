@@ -45,7 +45,6 @@
 
 	<ItemGroup>
 		<Folder Include="Components\View\" />
-		<Folder Include="Utility\Extensions\" />
 		<Folder Include="Utility\Objects\" />
 		<Folder Include="Utility\ToastrNotification\" />
 		<Folder Include="ViewModels\CategoryImport\" />
@@ -55,6 +54,7 @@
 		<Folder Include="Views\Shared\Components\" />
 		<Folder Include="wwwroot\img\auth\" />
 	</ItemGroup>
+
 	<ItemGroup>
 		<None Include="compilerconfig.json" />
 	</ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Castle.Core.Internal;
+using System.ComponentModel.DataAnnotations;
 
 namespace Entegrasyon.MVC.Utility.Attributes;
 
@@ -24,7 +25,8 @@ public class ExclusiveBooleanAttribute : ValidationAttribute
             (otherPropertyValue == false && boolValue == false) || 
             otherPropertyValue != boolValue)
             return ValidationResult.Success;
-
-        return new ValidationResult($"{_comparedBooleanProp} değeri ve {validationContext.MemberName} özelliklerinin ikisi de aynı anda açık olamaz.");
+        //take display names
+        string comparedObjName = otherPropertyInfo.GetAttribute<DisplayAttribute>().GetName();
+        return new ValidationResult($"{comparedObjName} değeri ve {validationContext.DisplayName} özelliklerinin ikisi de aynı anda açık olamaz.");
     }
 }
