@@ -2,9 +2,11 @@
 using System.Diagnostics;
 using Entegrasyon.MVC.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Entegrasyon.MVC.Utility.Attributes;
 
 namespace Entegrasyon.MVC.Controllers
 {
+    [Breadcrumb("Anasayfa",BreadcrumbUsageType.Controller)]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -13,12 +15,14 @@ namespace Entegrasyon.MVC.Controllers
         {
             _logger = logger;
         }
+
         [Authorize]
         public IActionResult Index()
         {
             return View();
         }
 
+        [Breadcrumb("Gizlilik")]
         public IActionResult Privacy()
         {
             return View();

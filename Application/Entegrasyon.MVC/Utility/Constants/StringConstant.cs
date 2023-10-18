@@ -6,5 +6,6 @@
         public const string DangerAlert = "DangerAlert";
         public const string WarningAlert = "WarningAlert";
         public const string SuccessAlert = "SuccessAlert";
+        public const string Breadcrumb = "Breadcrumb";
     }
 }

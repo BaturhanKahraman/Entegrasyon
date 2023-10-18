@@ -33,7 +33,6 @@
 
 </head>
 <body class="layout-boxed">
-    <!-- BEGIN LOADER -->
     <div id="load_screen">
         <div class="loader">
             <div class="loader-content">
@@ -41,12 +40,9 @@
             </div>
         </div>
     </div>
-    <!--  END LOADER -->
-    <!--  BEGIN NAVBAR  -->
     @{
         await Html.RenderPartialAsync("Partials/_Navbar");
     }
-    <!--  END NAVBAR  -->
     <!--  BEGIN MAIN CONTAINER  -->
     <div class="main-container " id="container">
 
@@ -57,6 +53,10 @@
         <!--  BEGIN CONTENT AREA  -->
         <div id="content" class="main-content">
             <div class="layout-px-spacing">
+                @{
+                    if(ViewData[StringConstant.Breadcrumb] is List<BreadcrumbModel> bcModel)
+                        await Html.RenderPartialAsync("Partials/_Breadcrumb",bcModel);
+                }
                 @RenderBody()
             </div>
 
@@ -76,8 +76,8 @@
     <script src="~/lib/template/js/waves.min.js"></script>
     <script src="~/lib/template/js/app.js" ></script>
     <script src="~/lib/template/js/custom.js" asp-append-version="true"></script>
-    <!-- END GLOBAL MANDATORY SCRIPTS -->
     <script src="_framework/blazor.server.js"></script>
+    <!-- END GLOBAL MANDATORY SCRIPTS -->
 
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
     @{

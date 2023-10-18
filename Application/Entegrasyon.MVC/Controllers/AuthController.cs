@@ -23,9 +23,10 @@ namespace Entegrasyon.MVC.Controllers
             _authManager = authManager;
             _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
+
         [HttpGet]
         [RestoreModelStateFromTempData]
-        public IActionResult Login(string? returnUrl)
+        public IActionResult Login(string returnUrl)
         {
             if(User.Identity!.IsAuthenticated)
             {
@@ -103,17 +104,18 @@ namespace Entegrasyon.MVC.Controllers
             }
             return RedirectToAction(nameof(Login));
         }
+
         [HttpGet]
         public IActionResult ResetPassword(string userId,string userName)
         {
-            if (userId == null)
+            if(userId == null)
             {
                 return NotFound();
             }
 
             var model = new ResetPasswordViewModel()
             {
-                UserId =userId,
+                UserId = userId,
                 UserName = userName
             };
             return PartialView("Partials/Modals/Auth/_ResetPasswordForm",model);
@@ -122,9 +124,9 @@ namespace Entegrasyon.MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            if (!ModelState.IsValid)
+            if(!ModelState.IsValid)
                 return Json(new ErrorResult("Gönderdiğiniz veride bir hata var lütfen tekrar deneyin."));
-            var result =await _authManager.AssignNewPassword(model.TemporaryPassword, model.UserId);
+            var result = await _authManager.AssignNewPassword(model.TemporaryPassword,model.UserId);
             return Json(result);
         }
 
