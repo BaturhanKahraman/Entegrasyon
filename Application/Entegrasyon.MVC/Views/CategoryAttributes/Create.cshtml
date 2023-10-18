@@ -17,7 +17,7 @@
             Özellik ekleme işlemi
         </h5>
         @(await Html.RenderComponentAsync<CategoryAttributeAdd>(RenderMode.Server,
-            new { catId = Context.Request.Query["categoryId"].FirstOrDefault() }))
+            new { catId = Context.Request.Query["categoryId"].FirstOrDefault(), }))
     </div>
 </div>
 @section Scripts{

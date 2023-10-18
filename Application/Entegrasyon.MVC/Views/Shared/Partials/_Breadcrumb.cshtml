@@ -1,0 +1,33 @@
+﻿@using Shared.Extensions;
+@model List<BreadcrumbModel>
+@if(Model is not null
+   && Model.Count > 0
+   && Model.Any(x => x.UsageType == BreadcrumbUsageType.Action))
+{
+    <div class="page-meta">
+        <nav class="breadcrumb-style-one" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                @{
+                    string active = string.Empty;
+                    var orderedModel = Model
+                    .OrderByDescending(x => x.UsageType == BreadcrumbUsageType.Controller)
+                    .ToList();
+                }
+                @for(int i = 0;i < orderedModel.Count;i++)
+                {
+                    var item = orderedModel[i];
+                    active = (i == orderedModel.Count - 1) ? "active" : string.Empty;
+                    <li class="breadcrumb-item @active">
+                        @if(i == orderedModel.Count - 1)
+                        {
+                            <a href="JavaScript:void(0)">@item.Name.ToTitleCase()</a>
+                        }
+                        else{
+                            <a href="@item.Url">@item.Name.ToTitleCase()</a>
+                        }
+                    </li>
+                }
+            </ol>
+        </nav>
+    </div>
+}
