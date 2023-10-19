@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.MVC.Utility.Mapper;
+using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
 using Shared.FileStorage;
@@ -21,7 +22,6 @@ builder.Services.AddFileStorageCore();
 builder.Services.AddBackgroundServices();
 builder.Services.AddLocalFileStorage(builder.Configuration.GetSection("LocalFileStorageOptions"));
 
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
 {
     x.SlidingExpiration = true;
@@ -36,12 +36,18 @@ builder.Services.AddStackExchangeRedisCache(opt =>
     opt.Configuration = "redis";
     opt.InstanceName = "DemoInstance";
 });
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddMemoryCache();
+builder.Services.AddSession(x =>
+{
+    x.IdleTimeout = TimeSpan.FromHours(1);
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext();
 builder.Services.AddHttpClient();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
-
+builder.Services.AddSingleton<IMenuService,MenuService>();
 var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
@@ -57,18 +63,17 @@ if(!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
 app.UseResponseCaching();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseStaticFiles(new StaticFileOptions() 
-{ 
+app.UseStaticFiles(new StaticFileOptions()
+{
     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(),"node_modules")),
     RequestPath = "/vendor"
 });
 
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapBlazorHub();
