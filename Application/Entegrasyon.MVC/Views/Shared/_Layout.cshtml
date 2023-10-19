@@ -23,6 +23,7 @@
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM STYLES -->
     @await RenderSectionAsync("Styles",required:false)
     <!-- END PAGE LEVEL PLUGINS/CUSTOM STYLES -->
+    <script src="~/vendor/feather-icons/dist/feather.min.js"></script>
 
     <style>
         body.dark .layout-px-spacing, .layout-px-spacing {
@@ -48,7 +49,8 @@
 
         <div class="overlay"></div>
         @{
-            await Html.RenderPartialAsync("Partials/_Sidebar");
+            <vc:menu></vc:menu>
+            // await Html.RenderPartialAsync("Partials/_Sidebar");
         }
         <!--  BEGIN CONTENT AREA  -->
         <div id="content" class="main-content">
@@ -74,9 +76,9 @@
     <script src="~/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/vendor/perfect-scrollbar/dist/perfect-scrollbar.min.js"></script>
     <script src="~/lib/template/js/waves.min.js"></script>
-    <script src="~/lib/template/js/app.js" ></script>
     <script src="~/lib/template/js/custom.js" asp-append-version="true"></script>
     <script src="_framework/blazor.server.js"></script>
+    <script src="~/lib/template/js/app.js"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
 
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
@@ -84,5 +86,6 @@
         await RenderSectionAsync("Scripts", required: false);
     }
     <!-- END PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
+    <script src="~/js/site.js"></script>
 </body>
 </html>
