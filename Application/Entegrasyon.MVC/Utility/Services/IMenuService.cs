@@ -5,6 +5,8 @@ namespace Entegrasyon.MVC.Utility.Services
 {
     public interface IMenuService
     {
-        Task<List<NavigationItem>> GetOrCreateMenu(ClaimsPrincipal user);
+        List<NavigationItem> GetMenu();
+
+        void CreateMenu(ClaimsPrincipal user);
     }
 }

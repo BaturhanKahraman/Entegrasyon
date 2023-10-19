@@ -8,6 +8,8 @@
   "dependencies": {
     "@yaireo/tagify": "^4.17.9",
     "bootstrap": "5.3.0",
+    "feather-icons": "^4.29.1",
+    "font-awesome": "^4.7.0",
     "jquery": "3.1.1",
     "jquery-validation": "1.19.5",
     "jquery-validation-unobtrusive": "4.0.0",

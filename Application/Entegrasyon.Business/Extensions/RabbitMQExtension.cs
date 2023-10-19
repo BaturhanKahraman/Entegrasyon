@@ -19,7 +19,6 @@ public static class RabbitMQExtension
                 Password = configuration["RabbitMQ:Password"],
             };
             return TryConnect(factory);
-            return factory.CreateConnection();
         });
 
         services.AddSingleton<RabbitMQClientService>();
@@ -29,8 +28,8 @@ public static class RabbitMQExtension
 
     private static IConnection TryConnect(ConnectionFactory factory)
     {
-        int tryCount=0;
-        while (true)
+        int tryCount = 0;
+        while(true)
         {
             try
             {
@@ -40,7 +39,7 @@ public static class RabbitMQExtension
             catch(Exception e)
             {
                 Thread.Sleep(5000);
-                if (tryCount == 5)
+                if(tryCount == 5)
                     throw new Exception("RabbitMQ'ya bağlanamadı." + e.Message);
             }
         }

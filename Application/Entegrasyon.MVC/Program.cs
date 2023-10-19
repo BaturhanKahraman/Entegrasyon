@@ -27,6 +27,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     x.SlidingExpiration = true;
     x.ExpireTimeSpan = TimeSpan.FromHours(1);
     x.LoginPath = "/auth/login";
+
     x.AccessDeniedPath = "/access-denied";
     x.LogoutPath = "/auth/logout";
 });
@@ -47,7 +48,7 @@ builder.Services.AddCustomDbContext();
 builder.Services.AddHttpClient();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
-builder.Services.AddSingleton<IMenuService,MenuService>();
+builder.Services.AddScoped<IMenuService,MenuService>();
 var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async () =>
 {

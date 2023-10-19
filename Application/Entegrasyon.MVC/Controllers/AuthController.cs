@@ -1,8 +1,10 @@
 ﻿using System.Security.Claims;
+using Amazon.Runtime.Internal;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.Utility.Constants;
+using Entegrasyon.MVC.Utility.Services;
 using Entegrasyon.MVC.ViewModels.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -17,16 +19,18 @@ namespace Entegrasyon.MVC.Controllers
     {
         private readonly AuthManager _authManager;
         private readonly HttpContext _httpContext;
+        private readonly IMenuService _menuService;
 
-        public AuthController(AuthManager authManager,IHttpContextAccessor httpContextAccessor)
+        public AuthController(AuthManager authManager,IHttpContextAccessor httpContextAccessor,IMenuService menuService)
         {
             _authManager = authManager;
             _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _menuService = menuService;
         }
 
         [HttpGet]
         [RestoreModelStateFromTempData]
-        public IActionResult Login(string returnUrl)
+        public IActionResult Login(string returnUrl = null)
         {
             if(User.Identity!.IsAuthenticated)
             {
@@ -73,8 +77,9 @@ namespace Entegrasyon.MVC.Controllers
                 claims,CookieAuthenticationDefaults.AuthenticationScheme);
             var claimPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            await _httpContext.SignInAsync(claimPrincipal);
-
+            await Task.WhenAll
+                (_httpContext.SignInAsync(claimPrincipal),
+                Task.Run(() => _menuService.CreateMenu(claimPrincipal)));
             if(!string.IsNullOrEmpty(model.ReturnUrl))
                 return LocalRedirect(model.ReturnUrl);
             return RedirectToAction("Index","Home");
