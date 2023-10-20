@@ -1,13 +1,11 @@
 ﻿@using Entegrasyon.MVC.Utility.Objects;
 @model List<NavigationItem>
 @{
-    var orderedModel = Model.OrderBy(m=>m.Order).ToList();
+    var orderedModel = Model.OrderBy(m => m.Order).ToList();
 }
 <!--  BEGIN SIDEBAR  -->
 <div class="sidebar-wrapper sidebar-theme">
-
     <nav id="sidebar">
-
         <div class="navbar-nav theme-brand flex-row  text-center">
             <div class="nav-logo">
                 <div class="nav-item theme-text">
@@ -20,8 +18,15 @@
                 </div>
             </div>
         </div>
-
         <ul class="list-unstyled menu-categories" id="accordionExample">
+            <li class="menu" active-menu is-home-page=true>
+                <a asp-action="index" asp-controller="home" aria-expanded="false" class="dropdown-toggle">
+                    <div class="">
+                        <i data-feather="home"></i>
+                        <span>Anasayfa</span>
+                    </div>
+                </a>
+            </li>
             @foreach(var navItem in orderedModel)
             {
                 <li class="menu" active-menu>
@@ -37,8 +42,6 @@
                 </li>
             }
         </ul>
-
     </nav>
-
 </div>
 <!--  END SIDEBAR  -->
