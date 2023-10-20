@@ -24,7 +24,7 @@
         <ul class="list-unstyled menu-categories" id="accordionExample">
             @foreach(var navItem in orderedModel)
             {
-                <li class="menu">
+                <li class="menu" active-menu>
                     <a href="/@navItem.Href" aria-expanded="false" class="dropdown-toggle">
                         <div class="">
                             @if(!string.IsNullOrEmpty(navItem.Icon))

@@ -92,7 +92,7 @@ public class TempBarcodeManager
     }
     public async Task CorrectAddables()
     {
-        var barcodes = await _tempBarcodeDal.GetAllAsync(x => x.IsAdded == false && x.ValidUntil < DateTimeOffset.Now,true);
+        var barcodes = await _tempBarcodeDal.GetAllAsync(x => x.IsAdded == false && x.ValidUntil < DateTimeOffset.UtcNow,true);
         barcodes.ForEach(x =>
         {
             x.IsAddable = true;
