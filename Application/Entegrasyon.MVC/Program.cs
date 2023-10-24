@@ -9,9 +9,11 @@ using Shared.Logger.Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+var mvcBuilder = builder.Services.AddControllersWithViews();
+#if DEBUG
+mvcBuilder.AddRazorRuntimeCompilation();
+#endif
 builder.Services.AddServerSideBlazor();
-builder.Services.AddAntiforgery();
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
@@ -42,6 +44,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSession(x =>
 {
     x.IdleTimeout = TimeSpan.FromHours(1);
+    x.Cookie.IsEssential = true;
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext();
@@ -61,11 +64,14 @@ app.Lifetime.ApplicationStarted.Register(async () =>
 if(!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    app.UseStatusCodePagesWithRedirects("~/home/error?code={0}");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+    app.UseDeveloperExceptionPage();
 app.UseResponseCaching();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions()
 {
