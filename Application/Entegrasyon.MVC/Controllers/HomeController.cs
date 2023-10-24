@@ -36,19 +36,15 @@ namespace Entegrasyon.MVC.Controllers
         {
             if(code == 0)
                 return View();
-            char codeStartsWith = code.ToString()[0];
-            switch(codeStartsWith)
+            switch(code / 100)  // Bu, kodun ilk rakamını almamızı sağlar.
             {
-                case '4':
+                case 4:
                     ViewBag.ErrorMessage = "Muhtemelen sizden kaynaklı bir hata oluştu.";
                     break;
 
-                case '5':
+                case 5:
                     ViewBag.ErrorMessage = "Bizden kaynaklı bir hata oluştu, geliştiricilere haber verildi.";
                     break;
-
-                default:
-                    return View();
             }
             return View();
         }
