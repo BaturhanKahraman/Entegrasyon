@@ -60,8 +60,7 @@ services:
       - redis
       - db
     ports:
-      - "44444:443" 
-
+      - "7070:8080" 
   #entegrasyon.api:
   #  image: ${DOCKER_REGISTRY-}entegrasyonapi
   #  build:
