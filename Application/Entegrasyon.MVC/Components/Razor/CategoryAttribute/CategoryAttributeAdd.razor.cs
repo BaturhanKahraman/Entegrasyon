@@ -17,7 +17,7 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttribute
         [Inject]
         private IJSRuntime _js { get; set; }
         private CategoryAttributeAddViewModel _model;
-        private Queue<string> _addedItemIds = new();
+        private readonly Queue<string> _addedItemIds = new();
         protected override async Task OnInitializedAsync()
         {
             _model ??= new();
@@ -33,6 +33,10 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttribute
                     await Tagify(formId);
                 }
             }
+        }
+        private void OnValidSubmit()
+        {
+
         }
         private void AddAttribute()
         {
