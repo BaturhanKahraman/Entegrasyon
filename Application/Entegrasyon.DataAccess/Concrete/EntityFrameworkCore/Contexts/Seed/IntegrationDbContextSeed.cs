@@ -17,7 +17,7 @@ public static class IntegrationDbContextSeed
             Name = "Admin",
             Surname = "Admin",
             UserName = "Admin",
-            NormalizedUserName = "Admin".Normalize(),
+            NormalizedUserName = "Admin",
             Email = "admin@admin.com",
             NeedsTakeNewPassword = true,
             TemporaryPassword = "Admin",

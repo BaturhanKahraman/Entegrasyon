@@ -4,12 +4,14 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+WORKDIR /src
+
 RUN apt-get update && apt-get install -y curl \
     && curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && apt-get install -y nodejs
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-WORKDIR /src
 COPY ["Application/Entegrasyon.MVC/Entegrasyon.MVC.csproj", "Application/Entegrasyon.MVC/"]
 COPY ["Application/Entegrasyon.Business/Entegrasyon.Business.csproj", "Application/Entegrasyon.Business/"]
 COPY ["Application/Entegrasyon.DataAccess/Entegrasyon.DataAccess.csproj", "Application/Entegrasyon.DataAccess/"]
