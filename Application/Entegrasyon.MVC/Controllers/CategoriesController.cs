@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.MVC.Utility.Attributes;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.Utility.Constants;
 using Entegrasyon.MVC.ViewModels.Category;
@@ -10,6 +11,7 @@ using Shared.Entity;
 
 namespace Entegrasyon.MVC.Controllers
 {
+    [Breadcrumb("Kategori",ViewModels.BreadcrumbUsageType.Controller)]
     public class CategoriesController : Controller
     {
         // GET: CategoriesController
@@ -20,7 +22,7 @@ namespace Entegrasyon.MVC.Controllers
             _categoryManager = categoryManager;
             this._mapper = mapper;
         }
-
+        [Breadcrumb("Liste")]
         public async Task<ActionResult> Index(int pageIndex = 0,int pageSize = 10)
         {
             var result = await _categoryManager.GetCategoryDetailPageable(pageIndex,pageSize);
@@ -36,6 +38,7 @@ namespace Entegrasyon.MVC.Controllers
 
         // GET: CategoriesController/Create
         [RestoreModelStateFromTempData]
+        [Breadcrumb("Oluştur")]
         public ActionResult Create()
         {
             return View();
