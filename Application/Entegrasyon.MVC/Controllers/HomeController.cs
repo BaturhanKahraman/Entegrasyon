@@ -7,7 +7,6 @@ using Entegrasyon.MVC.Utility.Attributes;
 namespace Entegrasyon.MVC.Controllers
 {
     [Breadcrumb("Anasayfa",BreadcrumbUsageType.Controller)]
-    [Route("Home")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -20,6 +19,7 @@ namespace Entegrasyon.MVC.Controllers
         }
 
         [Authorize]
+        [Route("~/")]
         public IActionResult Index()
         {
             return View();

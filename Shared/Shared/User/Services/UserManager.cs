@@ -32,9 +32,7 @@ where TContext : DbContext
         if(badResult != null)
             return badResult;
         if(!string.IsNullOrEmpty(user.Email))
-        {
             user.NormalizedEmail = user.Email.NormalizeEmail();
-        }
         user.NormalizedUserName = user.UserName.Normalize();
         user.CreatedAt = DateTimeOffset.UtcNow;
         await _context.Set<TUser>().AddAsync(user).ConfigureAwait(false);
