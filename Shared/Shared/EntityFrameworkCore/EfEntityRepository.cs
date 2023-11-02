@@ -7,7 +7,7 @@ using Shared.Extensions;
 
 namespace Shared.EntityFrameworkCore;
 
-public class EfEntityRepository<TEntity, TContext> : IEntityRepository<TEntity>
+public abstract class EfEntityRepository<TEntity, TContext> : IEntityRepository<TEntity>
 where TEntity : class, new()
 where TContext : DbContext
 {
@@ -56,9 +56,6 @@ where TContext : DbContext
         await Table.AddRangeAsync(entities).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
-
-    
-
     public async Task RemoveRangeAsync(IEnumerable<TEntity> entities)
     {
         Table.RemoveRange(entities);

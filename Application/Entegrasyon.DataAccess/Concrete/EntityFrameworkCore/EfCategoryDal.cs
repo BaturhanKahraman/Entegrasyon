@@ -36,6 +36,6 @@ public class EfCategoryDal: EfEntityRepository<Category,IntegrationDbContext>,IC
             dbCategory.Name,
             subCategoryCount,
             dbCategory.IsFavorite,
-            catAttrCount);
+            catAttrCount,dbCategory.SuperCategory?.Name ?? "");
     }
 }

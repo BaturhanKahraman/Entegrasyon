@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Extensions;
+using Entegrasyon.MVC.Utility.Attributes;
 using Entegrasyon.MVC.Utility.Mapper;
 using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
