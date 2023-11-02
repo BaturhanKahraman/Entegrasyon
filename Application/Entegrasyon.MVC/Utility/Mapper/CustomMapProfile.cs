@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Category;
@@ -18,7 +19,9 @@ namespace Entegrasyon.MVC.Utility.Mapper
         {
             #region Categories
             CreateMap<CategoryDetailDto,CategoryDetailListViewModel>();
-            CreateMap<CategoryAddViewModel,AddCategoryDto>()
+            CreateMap<Category,CategoryUpsertViewModel>();
+            CreateMap<CategoryUpsertViewModel,EditCategoryDto>();
+            CreateMap<CategoryUpsertViewModel,AddCategoryDto>()
                 .ForCtorParam("CategoryAttributes",x=>Enumerable.Empty<AddCategoryAttributeDto>());
             #endregion
             #region UserMappings
