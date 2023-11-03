@@ -29,6 +29,7 @@
             </div>
             <div class="form-group">
                 <input type="submit" value="Düzenle" class="btn btn-primary" />
+                <input type="button" onclick="deleteItem(@Model.Id,this)" value="Sil" class="btn btn-danger" />
             </div>
         </form>
     </div>
@@ -41,7 +42,33 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    <script>
+                function deleteItem(itemId,button) {
+                    if (confirm('Bu öğeyi silmek istediğinden emin misin?')) {
+                        $(button).prop('disabled',true)
+                        $.ajax({
 
+                            url: '@Url.Action("Delete","Categories",Model.Id)', // Controller ve Action yolu
+                            type: 'POST',
+                            data: {
+                                'id': itemId,
+                                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function (result) {
+                                // Silme işlemi başarılı olduysa kullanıcıya bilgi ver
+                                if(result.message)
+                                    alert(result.message);
+                                window.location.href='@Url.Action("Index")'
+                            },
+                            error: function (xhr, status, error) {
+                                // Hata durumunda kullanıcıya bilgi ver
+                                alert('Bir hata oluştu: ' + error);
+                            }
+                        });
+                        $(button).prop('disabled', false);
+                    }
+                }
+    </script>
     }
 
 }

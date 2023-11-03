@@ -22,8 +22,8 @@ namespace Entegrasyon.Business.Concrete
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly FluentValidator _fluentValidator;
-
-        public CategoryManager(ICategoryDal categoryDal,ApplicationLogManager applicationLogManager,IMapper mapper, CategoryAttributeManager categoryAttributeManager,IUnitOfWork unitOfWork, CategoryAttributeCategoryManager categoryAttributeCategoryManager, FluentValidator fluentValidator)
+        private readonly ProductManager _productManager;
+        public CategoryManager(ICategoryDal categoryDal, ApplicationLogManager applicationLogManager, IMapper mapper, CategoryAttributeManager categoryAttributeManager, IUnitOfWork unitOfWork, CategoryAttributeCategoryManager categoryAttributeCategoryManager, FluentValidator fluentValidator, ProductManager productManager)
         {
             _categoryDal = categoryDal;
             _applicationLogManager = applicationLogManager;
@@ -32,14 +32,15 @@ namespace Entegrasyon.Business.Concrete
             _unitOfWork = unitOfWork;
             _categoryAttributeCategoryManager = categoryAttributeCategoryManager;
             _fluentValidator = fluentValidator;
+            _productManager = productManager;
         }
 
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
         {
             await _fluentValidator.ValidateAndThrowAsync(dto);
             //map
-            var category =_mapper.Map<Category>(dto);
-            if(await _categoryDal.Exists(x => string.Equals(dto.Name,x.Name,StringComparison.OrdinalIgnoreCase)))
+            var category = _mapper.Map<Category>(dto);
+            if (await _categoryDal.Exists(x => string.Equals(dto.Name, x.Name, StringComparison.OrdinalIgnoreCase)))
             {
                 return new ErrorResult(Messages.SameNameCategoryExits);
             }
@@ -52,15 +53,15 @@ namespace Entegrasyon.Business.Concrete
             await _fluentValidator.ValidateAndThrowAsync(dto);
             //map
             var category = _mapper.Map<Category>(dto);
-            if(await _categoryDal.Exists(x => string.Equals(dto.Name,x.Name,StringComparison.OrdinalIgnoreCase)))
+            if (await _categoryDal.Exists(x => string.Equals(dto.Name, x.Name, StringComparison.OrdinalIgnoreCase)))
                 return new ErrorResult(Messages.SameNameCategoryExits);
             await _categoryDal.AddAsync(category);
-            return new SuccessDataResult<Category>(category,Messages.CategoryAdded);
+            return new SuccessDataResult<Category>(category, Messages.CategoryAdded);
         }
 
         public async Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto)
         {
-            await _applicationLogManager.AddLog("Kategori ekleniyor.",LogType.Category,LogAction.Add,dto);
+            await _applicationLogManager.AddLog("Kategori ekleniyor.", LogType.Category, LogAction.Add, dto);
             var category = _mapper.Map<Category>(dto);
             //TODO 
             //2 den fazla varyant/slicer eklenememeli.
@@ -76,9 +77,9 @@ namespace Entegrasyon.Business.Concrete
                     IsVarianter = ca.IsVarianter
                 });
             });
-            
+
             await _categoryDal.AddAsync(category);
-            await _applicationLogManager.AddLog(Messages.CategoryAdded,LogType.Category,LogAction.Add);
+            await _applicationLogManager.AddLog(Messages.CategoryAdded, LogType.Category, LogAction.Add);
             CategoryDetailDto detail = await _categoryDal.ConvertToCategoryDetail(category);
             return new SuccessDataResult<CategoryDetailDto>(detail);
         }
@@ -87,7 +88,7 @@ namespace Entegrasyon.Business.Concrete
         {
             await _fluentValidator.ValidateAndThrowAsync(dto);
             var dbCategory = await _categoryDal.GetAsync(x => x.Id == dto.Id, true);
-            if (dbCategory==null)
+            if (dbCategory == null)
                 return new ErrorDataResult<CategoryDetailDto>(null, "Kategori bulunamadı.");
             dbCategory.SuperCategoryId = dto.SuperCategoryId;
             dbCategory.Name = dto.Name;
@@ -96,14 +97,30 @@ namespace Entegrasyon.Business.Concrete
             return new SuccessResult(Messages.CategoryUpdated);
         }
 
-        public async Task DeleteCategory(int categoryId)
+        public async Task<IResult> DeleteCategory(int categoryId)
         {
-            await _applicationLogManager.AddLog("Kategori siliniyor.",LogType.Category,LogAction.Delete,new { categoryId });
+            await _applicationLogManager.AddLog("Kategori siliniyor.", LogType.Category, LogAction.Delete, new { categoryId });
             var category = await _categoryDal.GetAsync(x => x.Id == categoryId);
+            if (category == null)
+                return new ErrorResult(Messages.CategoryNotFound);
             await _categoryDal.DeleteAsync(category);
-            await _applicationLogManager.AddLog("Kategori silindi.",LogType.Category,LogAction.Delete,new { categoryId });
+            await _applicationLogManager.AddLog("Kategori silindi.", LogType.Category, LogAction.Delete, new { categoryId });
+            return new SuccessResult(Messages.CategoryDeleted);
         }
-
+        //eğer altında ürün varsa silinmemeli
+        public async Task<IResult> SoftDelete(int categoryId)
+        {
+            await _applicationLogManager.AddLog("Kategori siliniyor.", LogType.Category, LogAction.Delete, new { categoryId });
+            var category = await _categoryDal.GetAsync(x => x.Id == categoryId);
+            if (category == null)
+                return new ErrorResult(Messages.CategoryNotFound);
+            int productCount = await _productManager.GetProductCountByCategoryId(categoryId);
+            if (productCount>0)
+                return new ErrorResult(Messages.CategoryHasProducts);
+            await _categoryDal.SoftDeleteAsync(category);
+            await _applicationLogManager.AddLog("Kategori silindi.", LogType.Category, LogAction.Delete, new { categoryId });
+            return new SuccessResult(Messages.CategoryDeleted);
+        }
         public async Task<IDataResult<List<CategoryDetailDto>>> GetCategoryDetailList()
         {
             var orderTuples = new List<(string, string)>
@@ -115,29 +132,29 @@ namespace Entegrasyon.Business.Concrete
                 x.Id,
                 x.Products.Sum(p => p.ProductVariants
                     .SelectMany(pv => pv.BranchOfficeStocks)
-                    .Sum(bo => bo.CurrentStock)),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count(),x.SuperCategory.Name),orderTuples: orderTuples);
+                    .Sum(bo => bo.CurrentStock)), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name), orderTuples: orderTuples);
 
             return new SuccessDataResult<List<CategoryDetailDto>>(categoriesDto);
         }
-        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1,int itemCount = 50,string categoryName = null)
+        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string categoryName = null)
         {
             var orderBy = new List<(string, string)>
             {
                 new ("Id", "desc")
             };
-            Expression<Func<Category,bool>> filter = !string.IsNullOrEmpty(categoryName)
-                ? x => EF.Functions.ILike(x.Name,$"%{categoryName}%")
+            Expression<Func<Category, bool>> filter = !string.IsNullOrEmpty(categoryName)
+                ? x => EF.Functions.ILike(x.Name, $"%{categoryName}%")
                 : null;
 
-            var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex,itemCount,
-                x => new CategoryDetailDto(x.Id,x.Products.Count(),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count(), x.SuperCategory.Name),orderBy,filter);
+            var categoriesDto = await _categoryDal.GetPaginatedTransformedEntities(pageIndex, itemCount,
+                x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name), orderBy, filter);
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(categoriesDto);
         }
 
         public async Task<IResult> AddFavorite(int categoryId)
         {
             var category = await _categoryDal.GetAsync(x => x.Id == categoryId);
-            if(category == null)
+            if (category == null)
                 return new ErrorResult("Böyle bir kategori bulunamadı.");
             category.IsFavorite = true;
             await _categoryDal.UpdateAsync(category);
@@ -146,7 +163,7 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IResult> AddFavorites(int[] categoryIds)
         {
             var categories = await _categoryDal.GetAllAsync(x => categoryIds.Contains(x.Id));
-            if(categories == null || !categories.Any())
+            if (categories == null || !categories.Any())
                 return new ErrorResult("Bulunamayan kategori var.");
             categories.ForEach(x => x.IsFavorite = true);
             await _categoryDal.UpdateRangeAsync(categories);
@@ -160,7 +177,7 @@ namespace Entegrasyon.Business.Concrete
                 new("Id", "desc")
             };
             var result = await _categoryDal.GetTransformedEntitiesAsync(x =>
-                    new CategoryDetailDto(x.Id,x.Products.Count(),x.Name,x.SubCategories.Count(),x.IsFavorite,x.CategoryAttributes.Count(), x.SuperCategory.Name),orderTuples,x => x.IsFavorite)
+                    new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name), orderTuples, x => x.IsFavorite)
                 ;
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -178,7 +195,7 @@ namespace Entegrasyon.Business.Concrete
                     x.SubCategories.Count(),
                     x.IsFavorite,
                     x.CategoryAttributes.Count(),
-                    x.SuperCategory.Name),orderTuples,
+                    x.SuperCategory.Name), orderTuples,
                 x => !x.SubCategories.Any());
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -197,21 +214,21 @@ namespace Entegrasyon.Business.Concrete
                     x.SubCategories.Count(),
                     x.IsFavorite,
                     x.CategoryAttributes.Count(),
-                    x.SuperCategory.Name),orderTuples,
+                    x.SuperCategory.Name), orderTuples,
                 x => !x.CategoryAttributes.Any());
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
         public async Task<IDataResult<Category>> GetCategoryEditDetail(int id)
         {
-            var result = await _categoryDal.GetAsync(x=>x.Id==id);
+            var result = await _categoryDal.GetAsync(x => x.Id == id);
             return new SuccessDataResult<Category>(result);
         }
 
 
         public async Task<bool> Exits(int id)
         {
-            if(id <= 0)
+            if (id <= 0)
                 return false;
             return await _categoryDal.Exists(x => x.Id == id);
         }
