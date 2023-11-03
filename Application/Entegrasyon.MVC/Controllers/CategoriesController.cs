@@ -104,25 +104,17 @@ namespace Entegrasyon.MVC.Controllers
             return RedirectToAction(nameof(Edit));
         }
 
-        // GET: CategoriesController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
 
         // POST: CategoriesController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var result = await _categoryManager.SoftDelete(id);
+            if (!result.Success)
+                return BadRequest(result.Message);
+            ViewData[StringConstant.SuccessAlert] = result.Message;
+            return RedirectToAction(nameof(Index));
         }
 
         private async Task AddIfNotSuperCategoriesExists(CategoryUpsertViewModel model)
