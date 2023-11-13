@@ -1,0 +1,36 @@
+﻿<div class="modal fade @($"{(_isVisible ? "show":"")}") " id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
+     style='@($"display: {(_isVisible ? "block" : "none")};")'
+@attributes=ModalAttributes()>
+    <div class="modal-dialog modal-dialog-scrollable"
+         tabindex="-1">
+        <div class="modal-dialog">
+            @ChildContent
+        </div>
+    </div>
+</div>
+@code {
+    // Popup'ı gösterip gizlemek için bir property
+    private bool _isVisible;
+    /// <summary>
+    /// Static backdrop
+    ///When backdrop is set to static, the modal will not close when clicking outside of it.
+    /// </summary>
+    [Parameter] public bool EnableBackgroundClose { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private Dictionary<string, object> ModalAttributes()
+    {
+        var attributes = new Dictionary<string, object>();
+        if (EnableBackgroundClose)
+            attributes.Add("data-bs-backdrop", "static");
+        return attributes;
+    }
+
+    public void Toggle()
+    {
+        _isVisible = !_isVisible;
+        StateHasChanged();
+    }
+    public void Hide() { _isVisible = false; StateHasChanged(); }
+    public void Show() { _isVisible = true; StateHasChanged(); }
+}

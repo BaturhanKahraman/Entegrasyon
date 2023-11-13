@@ -17,20 +17,14 @@ namespace Entegrasyon.Business.Concrete
     {
         private readonly ICategoryDal _categoryDal;
         private readonly ApplicationLogManager _applicationLogManager;
-        private readonly CategoryAttributeManager _categoryAttributeManager;
-        private readonly CategoryAttributeCategoryManager _categoryAttributeCategoryManager;
         private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly FluentValidator _fluentValidator;
         private readonly ProductManager _productManager;
-        public CategoryManager(ICategoryDal categoryDal, ApplicationLogManager applicationLogManager, IMapper mapper, CategoryAttributeManager categoryAttributeManager, IUnitOfWork unitOfWork, CategoryAttributeCategoryManager categoryAttributeCategoryManager, FluentValidator fluentValidator, ProductManager productManager)
+        public CategoryManager(ICategoryDal categoryDal, ApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, ProductManager productManager)
         {
             _categoryDal = categoryDal;
             _applicationLogManager = applicationLogManager;
             _mapper = mapper;
-            _categoryAttributeManager = categoryAttributeManager;
-            _unitOfWork = unitOfWork;
-            _categoryAttributeCategoryManager = categoryAttributeCategoryManager;
             _fluentValidator = fluentValidator;
             _productManager = productManager;
         }
@@ -47,37 +41,11 @@ namespace Entegrasyon.Business.Concrete
             await _categoryDal.AddAsync(category);
             return new SuccessResult(Messages.CategoryAdded);
         }
-        public async Task<IResult> AddCategoryStepTwo(AddCategoryDtoStepOne dto)
-        {
-            //validate dto
-            await _fluentValidator.ValidateAndThrowAsync(dto);
-            //map
-            var category = _mapper.Map<Category>(dto);
-            if (await _categoryDal.Exists(x => string.Equals(dto.Name, x.Name, StringComparison.OrdinalIgnoreCase)))
-                return new ErrorResult(Messages.SameNameCategoryExits);
-            await _categoryDal.AddAsync(category);
-            return new SuccessDataResult<Category>(category, Messages.CategoryAdded);
-        }
 
         public async Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto)
         {
             await _applicationLogManager.AddLog("Kategori ekleniyor.", LogType.Category, LogAction.Add, dto);
             var category = _mapper.Map<Category>(dto);
-            //TODO 
-            //2 den fazla varyant/slicer eklenememeli.
-            var categoryAttributes = _mapper.Map<List<CategoryAttribute>>(dto.CategoryAttributes);
-            categoryAttributes = await _categoryAttributeManager.AddIfNotExits(categoryAttributes);
-            categoryAttributes.ForEach(ca =>
-            {
-                category.CategoryAttributes.Add(new CategoryAttributeCategory
-                {
-                    CategoryAttributeId = ca.Id,
-                    IsRequired = ca.IsRequired,
-                    IsSlicer = ca.IsSlicer,
-                    IsVarianter = ca.IsVarianter
-                });
-            });
-
             await _categoryDal.AddAsync(category);
             await _applicationLogManager.AddLog(Messages.CategoryAdded, LogType.Category, LogAction.Add);
             CategoryDetailDto detail = await _categoryDal.ConvertToCategoryDetail(category);
@@ -115,7 +83,7 @@ namespace Entegrasyon.Business.Concrete
             if (category == null)
                 return new ErrorResult(Messages.CategoryNotFound);
             int productCount = await _productManager.GetProductCountByCategoryId(categoryId);
-            if (productCount>0)
+            if (productCount > 0)
                 return new ErrorResult(Messages.CategoryHasProducts);
             await _categoryDal.SoftDeleteAsync(category);
             await _applicationLogManager.AddLog("Kategori silindi.", LogType.Category, LogAction.Delete, new { categoryId });
@@ -241,5 +209,14 @@ namespace Entegrasyon.Business.Concrete
                 .Select(x => x.Name)
                 .FirstOrDefaultAsync();
         }
+
+        public Task<Category> GetCategoryById(int? categoryId) =>
+            _categoryDal.GetAsync(x => x.Id == categoryId);
+
+        public Task<Category> GetCategoryWithAttrById(int? categoryId) =>
+            _categoryDal.Table.Include(x => x.CategoryAttributes).FirstOrDefaultAsync(x => x.Id == categoryId);
+
+        public Task UpdatePlainCategory(Category category) => _categoryDal.UpdateAsync(category);
+
     }
 }

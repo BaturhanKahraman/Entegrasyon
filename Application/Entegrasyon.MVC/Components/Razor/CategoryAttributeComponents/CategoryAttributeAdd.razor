@@ -5,13 +5,16 @@
 {
     <span>@CategoryName için özellik ekleme işlemi.</span>
 }
-<EditForm Model=_model OnValidSubmit="OnValidSubmit">
+<EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
-    <button type="button" class="btn btn-secondary" @onclick="AddAttribute">Özellik Ekle</button>
+    <button type="button" class="btn btn-secondary" @onclick="AddAttribute">Yeni Özellik Ekle</button>
+    <button type="button" class="btn btn-light-default" @onclick="OpenExistedCatAttrSelectModal">Varolan Özellik Ekle</button>
+    <ValidationSummary/>
     @foreach(var item in _model.CategoryAttributeList)
     {
         <div class="row mt-2 border">
             <div class="col-sm d-flex flex-column">
+                <input type="hidden" @bind-value="item.Id" id="@string.Concat(item.FormUniqueId,"_Id")" />
                 <InputTextDisplay InputTextId="@string.Concat(item.FormUniqueId,"_CategoryAttributeKey")" DisplayFor="@(()=>item.CategoryAttributeKey)">
                     <InputText id="@string.Concat(item.FormUniqueId,"_CategoryAttributeKey")"
                                class="form-control form-control-sm" @bind-Value="item.CategoryAttributeKey" />
@@ -51,3 +54,7 @@
         <button type="submit" class="btn btn-primary mt-2">Gönder</button>
     }
 </EditForm>
+
+<SelectExistingAttributeModal @ref="_selectExistingAttributeModal">
+
+</SelectExistingAttributeModal>

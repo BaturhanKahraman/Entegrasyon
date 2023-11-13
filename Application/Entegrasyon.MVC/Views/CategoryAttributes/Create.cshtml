@@ -1,4 +1,4 @@
-﻿@using Entegrasyon.MVC.Components.Razor.CategoryAttribute;
+﻿@using Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents;
 @model Entegrasyon.MVC.ViewModels.Category.CategoryAttributeAddViewModel
 @{
     ViewData["Title"] = "Kategori Özelliği Ekle";
@@ -17,10 +17,13 @@
             Özellik ekleme işlemi
         </h5>
         @(await Html.RenderComponentAsync<CategoryAttributeAdd>(RenderMode.Server,
-            new { catId = Context.Request.Query["categoryId"].FirstOrDefault(), }))
+            new { catId = ViewBag.CategoryId }))
     </div>
 </div>
 @section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script src="~/vendor/@@yaireo/tagify/dist/tagify.min.js"></script>
     <script>
         function initializeTagify(inputId) {

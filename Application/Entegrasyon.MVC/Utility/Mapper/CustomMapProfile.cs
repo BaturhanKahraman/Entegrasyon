@@ -24,30 +24,17 @@ namespace Entegrasyon.MVC.Utility.Mapper
             CreateMap<CategoryUpsertViewModel,AddCategoryDto>()
                 .ForCtorParam("CategoryAttributes",x=>Enumerable.Empty<AddCategoryAttributeDto>());
             #endregion
-            #region UserMappings
-            CreateMap<UserAddViewModel,AddUserDto>();
-            CreateMap<ApplicationUser,UserEditViewModel>()
-                .ForMember(source => source.BranchOfficeId,opt => opt.MapFrom(dest => dest.DefaultBranchOfficeId))
-                .ReverseMap();
-            CreateMap<UserEditViewModel,UserEditDto>()
-                .ForMember(s => s.DefaultBranchOfficeId,opt => opt.MapFrom(d => d.BranchOfficeId.Value))
-                .ForCtorParam(nameof(UserEditDto.DefaultBranchOfficeId),x => x.MapFrom(z => z.BranchOfficeId.Value))
-                .ForMember(s => s.RoleId,opt => opt.MapFrom(d => d.RoleId.Value))
-                .ForCtorParam(nameof(UserEditDto.DefaultBranchOfficeId),x => x.MapFrom(z => z.RoleId.Value))
-                .ReverseMap();
-            CreateMap<UserDetailDto,UserDetailViewModel>()
-                .ForMember(dest => dest.BranchOfficeName,opt => opt.MapFrom(s => s.DefaultOfficeName));
-
+            #region CategoryAttributes
+            CreateMap<CategoryAttributeCreateViewModel, AddCategoryAttributeDto>()
+                .ForMember(x=>x.CategoryAttributeHumanized,z=>z.Ignore());
+            CreateMap<CategoryAttributeValueViewModel, CategoryAttributeValue>();
             #endregion
 
-            #region Office
 
-            CreateMap<BranchDetailDto, OfficeDetailViewModel>().ReverseMap();
-            CreateMap<OfficeCreateViewModel,BranchOfficeAddDto>();
-            CreateMap<BranchOffice,OfficeEditViewModel>();
-            CreateMap<BranchOfficeEditDto,OfficeEditViewModel>().ReverseMap();
 
-            #endregion
+
+
+
 
             #region Customer
             CreateMap<CustomerDetailDto,CustomerDetailListViewModel>();

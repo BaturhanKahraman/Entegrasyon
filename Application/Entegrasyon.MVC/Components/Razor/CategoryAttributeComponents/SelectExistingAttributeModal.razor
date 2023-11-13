@@ -1,0 +1,27 @@
+﻿
+@using Entegrasyon.MVC.Components.Razor.Common.Modal
+
+<Modal @ref="_modalRef">
+    <ModalContent>
+        <ModalHeader CloseButtonActive="true">Başlık</ModalHeader>
+        <ModalBody>
+            @if(_categoryAttributes == null)
+            {
+                <span>Kategoriler yükleniyor...</span>
+            }else if (!_categoryAttributes.Any())
+            {
+                <span>Hiç kategori özelliği bulunamadı. :(</span>
+            }
+            else
+            {
+                <select multiple>
+                    @foreach (var catAttr in _categoryAttributes)
+                    {
+                        <option value="@catAttr">@catAttr.Id - @catAttr.CategoryAttributeKey</option> 
+                    }
+                </select>
+            }
+        </ModalBody>
+        <ModalFooter><button class="btn btn-outline-primary">Ekle</button></ModalFooter>
+    </ModalContent>
+</Modal>
