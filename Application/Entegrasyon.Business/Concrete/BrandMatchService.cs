@@ -14,7 +14,7 @@ public class BrandMatchService
 
     public async Task AddRange(List<BrandMarketPlaceMatch> entities)
     {
-        await _dal.AddRange(entities);
+        await _dal.AddRangeAsync(entities);
     }
 
     public Task<List<int>> GetMarketPlaceBrandIdsByMarketPlaceId(int marketPlaceId)=>

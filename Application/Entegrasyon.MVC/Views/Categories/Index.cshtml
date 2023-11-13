@@ -58,7 +58,8 @@
                                             <a asp-action="Edit" asp-route-id="@category.Id">
                                                 <i data-feather="edit-2"></i>
                                             </a>
-                                             <a asp-action="Create" asp-controller="CategoryAttributes" asp-route-id="@category.Id">
+
+                                            <a asp-controller="CategoryAttributes" asp-action="Create" asp-route-categoryId="@category.Id">
                                                 <i data-feather="trello"></i>
                                             </a>
                                         </div>

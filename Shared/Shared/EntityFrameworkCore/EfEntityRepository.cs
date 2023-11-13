@@ -51,7 +51,7 @@ where TContext : DbContext
         await _context.SaveChangesAsync();
     }
 
-    public virtual async Task AddRange(List<TEntity> entities)
+    public virtual async Task AddRangeAsync(List<TEntity> entities)
     {
         await Table.AddRangeAsync(entities).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);

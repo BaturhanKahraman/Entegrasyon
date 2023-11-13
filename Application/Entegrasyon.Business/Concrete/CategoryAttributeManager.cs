@@ -11,14 +11,16 @@ public class CategoryAttributeManager
 {
     private readonly ICategoryAttributeDal _attributeDal;
     private readonly ApplicationLogManager _applicationLogManager;
+    private readonly CategoryManager _categoryManager;
     private readonly FluentValidator _fluentValidator;
     private readonly IMapper _mapper;
-    public CategoryAttributeManager(ICategoryAttributeDal attributeDal,ApplicationLogManager applicationLogManager,FluentValidator fluentValidator,IMapper mapper)
+    public CategoryAttributeManager(ICategoryAttributeDal attributeDal, ApplicationLogManager applicationLogManager, FluentValidator fluentValidator, IMapper mapper, CategoryManager categoryManager)
     {
         _attributeDal = attributeDal;
         _applicationLogManager = applicationLogManager;
         _fluentValidator = fluentValidator;
         _mapper = mapper;
+        _categoryManager = categoryManager;
     }
 
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
@@ -41,6 +43,8 @@ public class CategoryAttributeManager
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes()
     {
+        //TODO
+        //cache
         return new SuccessDataResult<List<CategoryAttribute>>(await _attributeDal.GetAllAsync());
     }
 
@@ -51,7 +55,7 @@ public class CategoryAttributeManager
         var result = await _attributeDal.GetTransformedEntitiesAsync(
             x => new CategoryAttributeDto(
                x.Id,
-               x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId==x.Id).IsRequired,
+               x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsRequired,
                x.AllowCustom,
                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsVarianter,
                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsSlicer,
@@ -59,7 +63,7 @@ public class CategoryAttributeManager
                x.CategoryAttributeKey,
                x.CategoryAttributeHumanized,
                x.CategoryAttributeValues.ToList()
-            ),expression: x => x.Categories.Any(c => c.CategoryId == categoryId));
+            ), expression: x => x.Categories.Any(c => c.CategoryId == categoryId));
 
         return new SuccessDataResult<List<CategoryAttributeDto>>(result);
     }
@@ -72,30 +76,21 @@ public class CategoryAttributeManager
         await _attributeDal.AddAsync(categoryAttr);
         return new SuccessResult();
     }
-    public async Task<IResult> AddCategoryAttributeRange(IEnumerable<AddCategoryAttributeDto> dto)
-    {
-        //döngüye gerek var mı ?
-        //içeriye gelen ve Id si olanları geldiği category'e many to many olarak eklemek gerekiyor mu ?
-        await _fluentValidator.ValidateAndThrowAsync(dto);
 
-        var categoryAttr = _mapper.Map<IEnumerable<CategoryAttribute>>(dto);
-        await _attributeDal.AddRangeAsync(categoryAttr);
-        return new SuccessResult();
-    }
 
     public async Task RemoveAllAttributesByCategoryId(int categoryId)
     {
-        if(await _attributeDal.Exists(x => x.Categories.Any(c => c.CategoryId == categoryId)))
+        if (await _attributeDal.Exists(x => x.Categories.Any(c => c.CategoryId == categoryId)))
         {
-            var attrs = await _attributeDal.GetAllAsync(x => x.Categories.Any(c => c.CategoryId == categoryId),true);
+            var attrs = await _attributeDal.GetAllAsync(x => x.Categories.Any(c => c.CategoryId == categoryId), true);
             await _attributeDal.RemoveRangeAsync(attrs);
         }
     }
 
-    public async Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs)=>await _attributeDal.RemoveRangeAsync(attrs);
+    public async Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs) => await _attributeDal.RemoveRangeAsync(attrs);
 
     public async Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids)
     {
-        return await _attributeDal.GetAllAsync(x => ids.Contains(x.Id),true);
+        return await _attributeDal.GetAllAsync(x => ids.Contains(x.Id), true);
     }
 }

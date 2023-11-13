@@ -15,7 +15,7 @@ public class EfBrandMarketPlaceMatchDal: EfEntityRepository<BrandMarketPlaceMatc
         _context = ctx;
     }
 
-    public override async Task AddRange(List<BrandMarketPlaceMatch> entities)
+    public override async Task AddRangeAsync(List<BrandMarketPlaceMatch> entities)
     {
         await _context.BrandMarketPlaceMatches.AddRangeAsync(entities);
         await _context.SaveChangesAsync();
