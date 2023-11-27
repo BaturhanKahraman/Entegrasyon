@@ -2,6 +2,7 @@
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.MVC.Utility.Attributes;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
+using Entegrasyon.MVC.Utility.Constants;
 using Entegrasyon.MVC.ViewModels;
 using Entegrasyon.MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Mvc;
@@ -24,48 +25,52 @@ namespace Entegrasyon.MVC.Controllers
         [HttpGet]
         [Breadcrumb("Ekle")]
         [RestoreModelStateFromTempData]
-        [Route("Create/{categoryId:int}")]
-        public async Task<IActionResult> Create(int? categoryId)
+        [Route("Upsert/{categoryId:int}")]
+        public async Task<IActionResult> Upsert(int? categoryId)
         {
             if (categoryId.HasValue)
             {
                 if (!await _categoryManager.Exits(categoryId.Value))
-                    return BadRequest();
+                    return BadRequest("Böyle bir kategori bulunmamaktadır.");
+                if (await _categoryManager.IsSuper(categoryId))
+                    return BadRequest("Bu kategorinin alt kategorileri var. Özellik ekleme yapamazsınız.");
                 var categoryName = await _categoryManager.GetCategoryNameById(categoryId.Value);
                 ViewBag.CategoryName = categoryName;
                 ViewBag.CategoryId = categoryId.Value;
+                var model = new CategoryAttributeAddViewModel()
+                {
+                    CategoryId = categoryId.Value,
+                };
+                var result = await _categoryAttributeManager.GetCategoryAttributesByCategory(categoryId.Value);
+                if (result.Data == null)
+                    return View(model);
+                model.CategoryAttributeList = result.Data //mapper getir
+                     .Select(ca => new CategoryAttributeCreateViewModel() { 
+                            AllowCustom=ca.AllowCustom,
+                            CategoryAttributeKey = ca.CategoryAttributeKey,
+                            CategoryAttributeValues=ca.CategoryAttributeValues.Select(cav=>new CategoryAttributeValueViewModel(cav.Id,cav.Name))
+                                .ToList(),
+                            Id=ca.Id,
+                            IsRequired=ca.IsRequired,
+                            IsSlicer = ca.IsSlicer,
+                            IsVarianter = ca.IsVarianter
+                        })
+                     .ToList();
+                return View(model);//update ise isslicer ve isvarianterı değiştirememeli.
             }
-            return View();
+            else
+            {
+                ViewData[StringConstant.WarningAlert] = "Bir hata oluştu";
+                return RedirectToAction("Index", "Category");
+            }
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetAllCategoryAttributes()
+        public IActionResult SuccesffullyAdded()
         {
-            var results = await _categoryAttributeManager.GetCategoryAttributes();
-            return Json(results.Data);
+            ViewData[StringConstant.SuccessAlert] = "Kategori özellikleri başarıyla eklenmiştir.";
+            return RedirectToAction("Index", "Categories");
         }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [SetTempDataModelState]
-        public async Task<IActionResult> Create(CategoryAttributeAddViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return RedirectToAction(nameof(Create));
-            int catId;
-            string categoryQueryString = Request.Query["categoryId"].FirstOrDefault();
-            if (!string.IsNullOrEmpty(categoryQueryString))
-            {
-                bool catBool = int.TryParse(categoryQueryString, out catId);
-                if (!catBool || !await _categoryManager.Exits(catId))
-                {
-                    return BadRequest();
-                }
-            }
-
-            return RedirectToAction(nameof(Create));
-        }
-
 
     }
 }

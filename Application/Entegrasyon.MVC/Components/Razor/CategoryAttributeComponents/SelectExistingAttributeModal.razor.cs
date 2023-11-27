@@ -10,23 +10,38 @@ public partial class SelectExistingAttributeModal
     private Modal _modalRef;
     [Inject]
     private CategoryAttributeManager _categoryManager { get; set; }
-    private List<CategoryAttribute> _categoryAttributes;
+    private List<CategoryAttribute> _categoryAttributes = new();
+    private List<CategoryAttribute> _selectedCatAttributes = new();
+    private string _selectedCategoryAttributesAsString=string.Empty;
     public EventCallback<List<CategoryAttribute>> OnConfirmedSelectedAttributes { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCategoryAttributes();
+        await base.OnInitializedAsync();
+    }
     public async Task GetCategoryAttributes()
     {
-        if (_categoryAttributes != null)
-            return;
-        var result = await _categoryManager.GetCategoryAttributes();
-        this._categoryAttributes = result.Data;
+        if (!_categoryAttributes.Any())
+        {
+            var result = await _categoryManager.GetCategoryAttributes();
+            _categoryAttributes = result.Data;
+        }        
     }
 
     public async Task Open()
     {
-        await this.GetCategoryAttributes();
         _modalRef.Show();
     }
     private void Close() => _modalRef.Hide();
 
+    private void WriteSelected()
+    {
+        Console.WriteLine(_selectedCategoryAttributesAsString);
+        //foreach (var item in _selectedCatAttributes)
+        //{
+        //    Console.WriteLine(item.CategoryAttributeKey);
+        //}
+    }
 
 }

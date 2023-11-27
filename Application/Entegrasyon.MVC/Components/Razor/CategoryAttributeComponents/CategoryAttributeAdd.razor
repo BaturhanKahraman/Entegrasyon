@@ -10,7 +10,7 @@
     <button type="button" class="btn btn-secondary" @onclick="AddAttribute">Yeni Özellik Ekle</button>
     <button type="button" class="btn btn-light-default" @onclick="OpenExistedCatAttrSelectModal">Varolan Özellik Ekle</button>
     <ValidationSummary/>
-    @foreach(var item in _model.CategoryAttributeList)
+    @foreach(var item in Model.CategoryAttributeList)
     {
         <div class="row mt-2 border">
             <div class="col-sm d-flex flex-column">
@@ -49,7 +49,7 @@
             </div>
         </div>
     }
-    @if(_model.CategoryAttributeList.Any())
+    @if(Model.CategoryAttributeList.Any())
     {
         <button type="submit" class="btn btn-primary mt-2">Gönder</button>
     }

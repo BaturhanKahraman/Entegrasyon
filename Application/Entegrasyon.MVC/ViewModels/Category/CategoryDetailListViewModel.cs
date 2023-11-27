@@ -9,4 +9,7 @@ public class CategoryDetailListViewModel
     public int SubCategoryCount { get; set; }
     public bool IsFavorited { get; set; }
     public int AttributeCount { get; set; }
+
+    public bool HasChild => SubCategoryCount>0;
+    public bool IsChild => !string.IsNullOrEmpty(SuperCategoryName);
 }   

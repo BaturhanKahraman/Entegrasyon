@@ -20,14 +20,15 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         [Inject]
         private IRandomGenerator _randomGenerator { get; set; }
         [Inject]
+        private NavigationManager _navigationManager { get; set; }
+        [Inject]
         private IJSRuntime _js { get; set; }
         [Inject]
         private IMapper _mapper { get; set; }
         [Inject]
         private CategoryAttributeCategoryManager _cacManager { get; set; }
-        [Inject]
-        private CategoryAttributeManager _categoryAttributeManager { get; set; }
-        private readonly CategoryAttributeAddViewModel _model = new();
+        [Parameter]
+        public CategoryAttributeAddViewModel Model { get; set; } = new();
 
         private ValidationMessageStore _messageStore;
         private EditContext _editContext;
@@ -35,13 +36,11 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         private SelectExistingAttributeModal _selectExistingAttributeModal;
         protected override void OnInitialized()
         {
-            _model.CategoryId = CatId;
-            _editContext = new(_model);
+            Model.CategoryId ??= CatId;
+            _editContext = new(Model);
             _messageStore = new(_editContext);
             _editContext.OnValidationRequested += _editContext_OnValidationRequested;
         }
-
-        
 
         private void _editContext_OnValidationRequested(object sender, ValidationRequestedEventArgs e)
         {
@@ -63,7 +62,7 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         }
         private async Task OnValidSubmit()
         {
-            _model.CategoryAttributeList.ForEach(ca =>
+            Model.CategoryAttributeList.ForEach(ca =>
             {
                 if (!ca.AllowCustom && !string.IsNullOrEmpty(ca.CustomValues))
                 {
@@ -73,11 +72,12 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
                             .Select(x=>new CategoryAttributeValueViewModel(null,x.Value)).ToList();
                 }
             });
-            var dto = _mapper.Map<List<AddCategoryAttributeDto>>(_model.CategoryAttributeList);
-            var result = await _cacManager.AddCategoryAttributeForCategory(_model.CategoryId.Value, dto);
+            var dto = _mapper.Map<List<AddCategoryAttributeDto>>(Model.CategoryAttributeList);
+            var result = await _cacManager.AddCategoryAttributeForCategory(Model.CategoryId.Value, dto);
             if (result.Success)
             {
                 //success
+                _navigationManager.NavigateTo("/CategoryAttributes/SuccesffullyAdded");
             }
             else
             {
@@ -87,12 +87,12 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
 
         private bool ValidateCompleteModel()
         {
-            ValidationContext vc = new(_model);
+            ValidationContext vc = new(Model);
             List<ValidationResult> results = new();
-            var result = Validator.TryValidateObject(_model, vc, results, true);
+            var result = Validator.TryValidateObject(Model, vc, results, true);
 
             bool anyItemValid = true;
-            foreach (var item in _model.CategoryAttributeList)
+            foreach (var item in Model.CategoryAttributeList)
             {
                 ValidationContext itemContext = new ValidationContext(item);
                 bool isItemValid = Validator.TryValidateObject(item, itemContext, results, true);
@@ -116,7 +116,7 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         {
             var vm = new CategoryAttributeCreateViewModel
             { FormUniqueId = _randomGenerator.GetRandomCode(6, includeNumbers: false) };
-            _model.CategoryAttributeList.Add(vm);
+            Model.CategoryAttributeList.Add(vm);
             _addedItemIds.Enqueue(vm.FormUniqueId);
         }
         private async Task ChangeAllowCustom(CategoryAttributeCreateViewModel item, bool status)
@@ -135,7 +135,7 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
             await _js.InvokeVoidAsync("setDisable", inputId, status);
         }
         private void RemevoAttribute(CategoryAttributeCreateViewModel vm)
-            => _model.CategoryAttributeList.Remove(vm);
+            => Model.CategoryAttributeList.Remove(vm);
         private async Task OpenExistedCatAttrSelectModal()
         {
             await _selectExistingAttributeModal.Open();

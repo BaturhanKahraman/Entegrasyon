@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+﻿using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
-using Microsoft.EntityFrameworkCore;
+using Shared.Logic;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
@@ -23,7 +23,11 @@ public class CategoryAttributeCategoryManager
     public async Task<IResult> AddCategoryAttributeForCategory(int catId, IEnumerable<AddCategoryAttributeDto> dto)
     {
         //validations & business logic must come here
-
+        var result = LogicRunner.Run(
+            await CategoryExists(catId),
+            await IsSuper(catId));
+        if (result != null)
+            return result;
 
        var catAttrCats= dto.Select(catAttr => new CategoryAttributeCategory()
         {
@@ -42,33 +46,19 @@ public class CategoryAttributeCategoryManager
         await _attributeCategoryDal.AddRangeAsync(catAttrCats);
         return new SuccessResult();
     }
+
+    private async Task<IResult> IsSuper(int categoryId)
+    {
+        var isSuper = await _categoryManager.IsSuper(categoryId);
+        if (isSuper)
+            return new ErrorResult(Messages.CategoryIsSuper);
+        return new SuccessResult();
+    }
+    private async Task<IResult> CategoryExists(int categoryId)
+    {
+        var exits =await _categoryManager.Exits(categoryId);
+        if (!exits)
+            return new ErrorResult(Messages.CategoryNotFound);
+        return new SuccessResult();
+    }
 }
-
-
-//await _attributeCategoryDal.GetTransformedEntitiesAsync(x=>
-//    new CategoryAttributeCategory{
-//        CategoryAttribute = new CategoryAttribute
-//        {
-//            IsDeleted = x.IsDeleted,
-//            DeletedAt = x.DeletedAt,
-//            CreatedAt = x.CategoryAttribute.CreatedAt,
-//            UpdatedAt = x.CategoryAttribute.UpdatedAt,
-//            Id = x.CategoryAttribute.Id,
-//            CategoryAttributeKey = x.CategoryAttribute.CategoryAttributeKey,
-//            CategoryAttributeHumanized = x.CategoryAttribute.CategoryAttributeHumanized,
-//            AllowCustom = x.CategoryAttribute.AllowCustom,
-//            ImportId = x.CategoryAttribute.ImportId,
-//            CategoryAttributeValues =
-//                new List<CategoryAttributeValue>(x.CategoryAttribute.CategoryAttributeValues),
-//        },
-//        CategoryAttributeId = x.CategoryAttributeId,
-//        CategoryId = x.CategoryId,
-//        CreatedAt = x.CreatedAt,
-//        DeletedAt = x.DeletedAt,
-//        IsDeleted = x.IsDeleted,
-//        IsRequired = x.IsRequired,
-//        IsVarianter = x.IsVarianter,
-//        IsSlicer = x.IsSlicer,
-//        UpdatedAt = x.UpdatedAt
-//    },null,expression:x =>
-//    x.CategoryId == categoryId && ids.Contains(x.CategoryAttributeId),true);
