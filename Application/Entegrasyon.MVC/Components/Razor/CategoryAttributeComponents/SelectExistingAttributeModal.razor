@@ -1,27 +1,18 @@
 ﻿
 @using Entegrasyon.MVC.Components.Razor.Common.Modal
 
-<Modal @ref="_modalRef">
-    <ModalContent>
-        <ModalHeader CloseButtonActive="true">Başlık</ModalHeader>
-        <ModalBody>
-            @if(_categoryAttributes == null)
+<Modal Title="Modal Başlığı" @ref="_modalRef">
+    <ChildContent>
+        <select multiple @bind="_selectedCategoryAttributesAsString" title="Kategori özellikleri" class="w-100">
+            <option disabled>Lütfen özellikleri seçin.</option>
+            @foreach (var catAttr in _categoryAttributes)
             {
-                <span>Kategoriler yükleniyor...</span>
-            }else if (!_categoryAttributes.Any())
-            {
-                <span>Hiç kategori özelliği bulunamadı. :(</span>
+                <option value="@catAttr.Id">@catAttr.Id - @catAttr.CategoryAttributeKey</option>
             }
-            else
-            {
-                <select multiple>
-                    @foreach (var catAttr in _categoryAttributes)
-                    {
-                        <option value="@catAttr">@catAttr.Id - @catAttr.CategoryAttributeKey</option> 
-                    }
-                </select>
-            }
-        </ModalBody>
-        <ModalFooter><button class="btn btn-outline-primary">Ekle</button></ModalFooter>
-    </ModalContent>
+        </select>
+    </ChildContent>
+    <FooterContent>
+        <button class="btn btn-secondary" @onclick="() => Close()">Kapat</button>
+        <button class="btn btn-primary" @onclick="()=>WriteSelected()">Bak</button>"
+    </FooterContent>
 </Modal>

@@ -17,7 +17,7 @@
             Özellik ekleme işlemi
         </h5>
         @(await Html.RenderComponentAsync<CategoryAttributeAdd>(RenderMode.Server,
-            new { catId = ViewBag.CategoryId }))
+            new { catId = ViewBag.CategoryId,categoryName=ViewBag.CategoryName,Model=Model }))
     </div>
 </div>
 @section Scripts{

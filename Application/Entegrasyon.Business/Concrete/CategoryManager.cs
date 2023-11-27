@@ -218,5 +218,8 @@ namespace Entegrasyon.Business.Concrete
 
         public Task UpdatePlainCategory(Category category) => _categoryDal.UpdateAsync(category);
 
+        public Task<bool> IsSuper(int? categoryId) => _categoryDal
+                .Exists(c => c.Id == categoryId && c.SubCategories.Any());
+
     }
 }

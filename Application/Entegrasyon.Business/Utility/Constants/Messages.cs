@@ -32,4 +32,5 @@ public class Messages
     public const string CategoryNotFound="Kategori bulunamadı.";
     public const string CategoryDeleted="Kategori silindi.";
     public const string CategoryHasProducts = "Kategoride ürün bulunuyor.";
+    public const string CategoryIsSuper="Kategori bir üst kategoridir!";
 }
