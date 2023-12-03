@@ -5,10 +5,14 @@ using NpgsqlTypes;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
+    /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterDatabase()
@@ -77,7 +81,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
                     IsImported = table.Column<bool>(type: "boolean", nullable: false),
                     ImportId = table.Column<int>(type: "integer", nullable: true),
@@ -104,7 +108,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CategoryAttributeKey = table.Column<string>(type: "text", nullable: true),
-                    CategoriyAttributeHumanized = table.Column<string>(type: "text", nullable: true),
+                    CategoryAttributeHumanized = table.Column<string>(type: "text", nullable: true),
                     AllowCustom = table.Column<bool>(type: "boolean", nullable: false),
                     ImportId = table.Column<int>(type: "integer", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -207,26 +211,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MarketPlaces", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Header = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: true),
-                    Content = table.Column<string>(type: "text", nullable: true),
-                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
-                    ReadDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -370,7 +354,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    CategoryAttributeId = table.Column<int>(type: "integer", nullable: true),
+                    CategoryAttributeId = table.Column<int>(type: "integer", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -383,7 +367,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         name: "FK_CategoryAttributeValues_CategoryAttributes_CategoryAttribut~",
                         column: x => x.CategoryAttributeId,
                         principalTable: "CategoryAttributes",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -590,7 +575,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductVariantAttributes = table.Column<string>(type: "jsonb", nullable: true),
                     Barcode = table.Column<string>(type: "text", nullable: true),
                     DimensionalWeight = table.Column<decimal>(type: "numeric", nullable: false),
                     CurrencyType = table.Column<string>(type: "text", nullable: true),
@@ -632,16 +616,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 {
                     table.PrimaryKey("PK_AttributeKeyValues", x => new { x.CategoryAttributeId, x.ProductId });
                     table.ForeignKey(
+                        name: "FK_AttributeKeyValues_CategoryAttributeValues_AttributeValueId",
+                        column: x => x.AttributeValueId,
+                        principalTable: "CategoryAttributeValues",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_AttributeKeyValues_CategoryAttributes_CategoryAttributeId",
                         column: x => x.CategoryAttributeId,
                         principalTable: "CategoryAttributes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AttributeKeyValues_CategoryAttributeValues_AttributeValueId",
-                        column: x => x.AttributeValueId,
-                        principalTable: "CategoryAttributeValues",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_AttributeKeyValues_MainProducts_ProductId",
                         column: x => x.ProductId,
@@ -721,6 +705,32 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     table.PrimaryKey("PK_Logs", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Logs_Users_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Header = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: true),
+                    Content = table.Column<string>(type: "text", nullable: true),
+                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
+                    ReadDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Users_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "Users",
                         principalColumn: "Id");
@@ -851,6 +861,30 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         column: x => x.ProductId,
                         principalTable: "ProductVariants",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductVariantAttributes",
+                columns: table => new
+                {
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryAttributeValueId = table.Column<int>(type: "integer", nullable: true),
+                    CategoryAttributeValue = table.Column<string>(type: "text", nullable: true),
+                    CustomValue = table.Column<string>(type: "text", nullable: true),
+                    IsVarianter = table.Column<bool>(type: "boolean", nullable: false),
+                    IsSlicer = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductVariantAttributes", x => new { x.ProductVariantId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_ProductVariantAttributes_ProductVariants_ProductVariantId",
+                        column: x => x.ProductVariantId,
+                        principalTable: "ProductVariants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1091,7 +1125,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "DefaultBranchOfficeId", "DeletedAt", "Discriminator", "Email", "IsActive", "IsDeleted", "IsTwoFactorAuthActive", "MobileJwtToken", "MobileJwtTokenExpiresAt", "Name", "NeedsTakeNewPassword", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PasswordSalt", "RoleId", "Surname", "TemporaryPassword", "UpdatedAt", "UserName", "WebJwtToken", "WebJwtTokenExpiresAt" },
-                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "ApplicationUser", "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "ADMIN", null, null, 1, "Admin", "Admin", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
+                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "ApplicationUser", "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "Admin", null, null, 1, "Admin", "Admin", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AttributeKeyValues_AttributeValueId",
@@ -1128,6 +1162,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "IX_Categories_ImportId",
                 table: "Categories",
                 column: "ImportId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_Name",
+                table: "Categories",
+                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_SuperCategoryId",
@@ -1228,6 +1267,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 .Annotation("Npgsql:IndexMethod", "GIN");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_ApplicationUserId",
+                table: "Notifications",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
@@ -1310,6 +1354,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "RoleId");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -1353,6 +1398,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
+
+            migrationBuilder.DropTable(
+                name: "ProductVariantAttributes");
 
             migrationBuilder.DropTable(
                 name: "ReturnProducts");

@@ -81,7 +81,7 @@ namespace Entegrasyon.MVC.Controllers
             if (result.Data == null || !result.Success)
                 return BadRequest();
             var model = _mapper.Map<CategoryUpsertViewModel>(result.Data);
-            await AddIfNotSuperCategoriesExists(model);
+            await AddIfNotSuperCategoriesExists(model,id);
             return View(model);
         }
 
@@ -117,11 +117,12 @@ namespace Entegrasyon.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task AddIfNotSuperCategoriesExists(CategoryUpsertViewModel model)
+        private async Task AddIfNotSuperCategoriesExists(CategoryUpsertViewModel model,int exceptId=0)
         {
             if(!model.SuperCategories.Any())
                 model.SuperCategories.AddRange(
                     (await _categoryManager.GetSuperCategories()).Data
+                    .Where(c=>c.Id!=exceptId)
                     .Select(x => new SelectListItem(x.Name, x.Id.ToString())));
         }
 

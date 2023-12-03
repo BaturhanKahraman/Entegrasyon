@@ -102,8 +102,8 @@ public static class ApplicationDependencyExtension
                 Pooling = true,
                 Timeout = 120,
             };
-            x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;",
-                npg => npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            x.UseNpgsql(cs.ToString(),npg => npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             x.EnableSensitiveDataLogging();
             x.EnableDetailedErrors();
             x.LogTo(z => Debug.WriteLine(z));

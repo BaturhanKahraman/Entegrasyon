@@ -1,6 +1,4 @@
 ﻿using System.Linq.Expressions;
-using EFCore.BulkExtensions;
-//using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.Extensions;

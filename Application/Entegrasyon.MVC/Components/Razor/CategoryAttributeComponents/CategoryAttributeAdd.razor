@@ -28,20 +28,20 @@
             </div>
             <div class="col-sm d-flex flex-column flex-wrap p-1">
                 <CheckBoxDisplay CheckboxId="@string.Concat(item.FormUniqueId,"_IsRequired")" DisplayFor="@(()=>item.IsRequired)">
-                    <InputCheckbox id="@string.Concat(item.FormUniqueId,"_IsRequired")" class="form-check-input" @bind-Value="item.IsRequired" />
+                    <InputCheckbox disabled="@(!item.IsAddedAfterward)" id="@string.Concat(item.FormUniqueId,"_IsRequired")" class="form-check-input" @bind-Value="item.IsRequired" />
                 </CheckBoxDisplay>
                 <CheckBoxDisplay CheckboxId="@string.Concat(item.FormUniqueId,"_AllowCustom")" DisplayFor="@(()=>item.AllowCustom)">
                     <InputCheckbox id="@string.Concat(item.FormUniqueId,"_AllowCustom")" class="form-check-input"
                                    Value="@item.AllowCustom"
                                    ValueChanged="@((bool status)=>ChangeAllowCustom(item,status))"
                                    ValueExpression="@(()=> item.AllowCustom )"
-                    />
+                                   disabled="@(!item.IsAddedAfterward)" />
                 </CheckBoxDisplay>
                 <CheckBoxDisplay CheckboxId="@string.Concat(item.FormUniqueId,"_IsSlicer")" DisplayFor="@(()=>item.IsSlicer)">
-                    <InputCheckbox id="@string.Concat(item.FormUniqueId,"_IsSlicer")" class="form-check-input" @bind-Value="item.IsSlicer" />
+                    <InputCheckbox disabled="@(!item.IsAddedAfterward)" id="@string.Concat(item.FormUniqueId,"_IsSlicer")" class="form-check-input" @bind-Value="item.IsSlicer" />
                 </CheckBoxDisplay>
-                <CheckBoxDisplay CheckboxId="@string.Concat(item.FormUniqueId,"_IsVarianter")" DisplayFor="@(()=>item.IsVarianter)">
-                    <InputCheckbox id="@string.Concat(item.FormUniqueId,"_IsVarianter")" class="form-check-input" @bind-Value="item.IsVarianter" />
+                <CheckBoxDisplay  CheckboxId="@string.Concat(item.FormUniqueId,"_IsVarianter")" DisplayFor="@(()=>item.IsVarianter)">
+                    <InputCheckbox disabled="@(!item.IsAddedAfterward)" id="@string.Concat(item.FormUniqueId,"_IsVarianter")" class="form-check-input" @bind-Value="item.IsVarianter" />
                 </CheckBoxDisplay>
             </div>
             <div class="col-sm-1 d-flex align-items-center">

@@ -45,16 +45,17 @@ namespace Entegrasyon.MVC.Controllers
                 if (result.Data == null)
                     return View(model);
                 model.CategoryAttributeList = result.Data //mapper getir
-                     .Select(ca => new CategoryAttributeCreateViewModel() { 
-                            AllowCustom=ca.AllowCustom,
-                            CategoryAttributeKey = ca.CategoryAttributeKey,
-                            CategoryAttributeValues=ca.CategoryAttributeValues.Select(cav=>new CategoryAttributeValueViewModel(cav.Id,cav.Name))
+                     .Select(ca => new CategoryAttributeCreateViewModel() {
+                         AllowCustom = ca.AllowCustom,
+                         CategoryAttributeKey = ca.CategoryAttributeKey,
+                         CategoryAttributeValues = ca.CategoryAttributeValues.Select(cav => new CategoryAttributeValueViewModel(cav.Id, cav.Name))
                                 .ToList(),
-                            Id=ca.Id,
-                            IsRequired=ca.IsRequired,
-                            IsSlicer = ca.IsSlicer,
-                            IsVarianter = ca.IsVarianter
-                        })
+                         Id = ca.Id,
+                         IsRequired = ca.IsRequired,
+                         IsSlicer = ca.IsSlicer,
+                         IsVarianter = ca.IsVarianter,
+                         IsAddedAfterward = false
+                     })
                      .ToList();
                 return View(model);//update ise isslicer ve isvarianterı değiştirememeli.
             }
@@ -66,7 +67,8 @@ namespace Entegrasyon.MVC.Controllers
         }
 
         [HttpGet]
-        public IActionResult SuccesffullyAdded()
+        [Route("SuccesfullyAdded")]
+        public IActionResult SuccesfullyAdded()
         {
             ViewData[StringConstant.SuccessAlert] = "Kategori özellikleri başarıyla eklenmiştir.";
             return RedirectToAction("Index", "Categories");
