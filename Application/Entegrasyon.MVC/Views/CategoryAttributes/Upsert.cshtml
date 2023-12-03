@@ -32,6 +32,15 @@
                 new Tagify(input);
             }
         }
+        function initializeTagify(inputId,initialJsonValue) {
+            var input = document.querySelector(inputId);
+            if (input) {
+            var tagify = new Tagify(input);
+                if (initialJsonValue) {
+                    tagify.addTags(JSON.parse(initialJsonValue));
+                }
+            }
+        }
         function setDisable(inputId,status) {
             var tagify = new Tagify(document.querySelector(inputId));
             tagify.setDisabled(status);

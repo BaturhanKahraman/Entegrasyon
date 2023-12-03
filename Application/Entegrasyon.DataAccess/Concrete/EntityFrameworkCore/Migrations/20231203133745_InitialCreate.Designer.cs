@@ -13,15 +13,16 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20230224222010_Type")]
-    partial class Type
+    [Migration("20231203133745_InitialCreate")]
+    partial class InitialCreate
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:CaseInsensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "6.0.13")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -451,7 +452,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<int?>("SuperCategoryId")
                         .HasColumnType("integer");
@@ -462,6 +465,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ImportId");
+
+                    b.HasIndex("Name");
 
                     b.HasIndex("SuperCategoryId");
 
@@ -551,7 +556,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryAttributeId")
+                    b.Property<int>("CategoryAttributeId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -619,6 +624,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Customers");
 
                     b.HasDiscriminator<string>("CustomerType").HasValue("Customer");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.DiscountVouchers.DiscountVoucher", b =>
@@ -1261,9 +1268,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("ProductVariantAttributes")
-                        .HasColumnType("jsonb");
 
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("money");
@@ -2361,43 +2365,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Users");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("RootUser");
-                });
 
-            modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
-                {
-                    b.HasBaseType("Shared.User.RootUser");
-
-                    b.Property<int?>("DefaultBranchOfficeId")
-                        .HasColumnType("integer");
-
-                    b.HasIndex("DefaultBranchOfficeId");
-
-                    b.ToTable("Users");
-
-                    b.HasDiscriminator().HasValue("ApplicationUser");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Email = "admin@admin.com",
-                            IsActive = true,
-                            IsDeleted = false,
-                            IsTwoFactorAuthActive = false,
-                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Name = "Admin",
-                            NeedsTakeNewPassword = true,
-                            NormalizedUserName = "ADMIN",
-                            RoleId = 1,
-                            Surname = "Admin",
-                            TemporaryPassword = "Admin",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            UserName = "Admin",
-                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DefaultBranchOfficeId = 1
-                        });
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Customers.CorporateCustomer", b =>
@@ -2441,6 +2410,43 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RetailSearchVector"), "GIN");
 
                     b.HasDiscriminator().HasValue("Retail");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
+                {
+                    b.HasBaseType("Shared.User.RootUser");
+
+                    b.Property<int?>("DefaultBranchOfficeId")
+                        .HasColumnType("integer");
+
+                    b.HasIndex("DefaultBranchOfficeId");
+
+                    b.ToTable("Users");
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Email = "admin@admin.com",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsTwoFactorAuthActive = false,
+                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Admin",
+                            NeedsTakeNewPassword = true,
+                            NormalizedUserName = "Admin",
+                            RoleId = 1,
+                            Surname = "Admin",
+                            TemporaryPassword = "Admin",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UserName = "Admin",
+                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DefaultBranchOfficeId = 1
+                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.AttributeKeyValue", b =>
@@ -2498,9 +2504,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttributeValue", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", null)
+                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "CategoryAttribute")
                         .WithMany("CategoryAttributeValues")
-                        .HasForeignKey("CategoryAttributeId");
+                        .HasForeignKey("CategoryAttributeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryAttribute");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Customers.Customer", b =>
@@ -2801,7 +2811,43 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsMany("Entegrasyon.Entity.Products.ProductVariantAttribute", "ProductVariantAttributes", b1 =>
+                        {
+                            b1.Property<Guid>("ProductVariantId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("CategoryAttributeValue")
+                                .HasColumnType("text");
+
+                            b1.Property<int?>("CategoryAttributeValueId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("CustomValue")
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsSlicer")
+                                .HasColumnType("boolean");
+
+                            b1.Property<bool>("IsVarianter")
+                                .HasColumnType("boolean");
+
+                            b1.HasKey("ProductVariantId", "Id");
+
+                            b1.ToTable("ProductVariantAttributes", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductVariantId");
+                        });
+
                     b.Navigation("Product");
+
+                    b.Navigation("ProductVariantAttributes");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Sales.ReturnProduct", b =>

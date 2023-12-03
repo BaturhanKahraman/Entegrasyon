@@ -449,7 +449,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<int?>("SuperCategoryId")
                         .HasColumnType("integer");
@@ -460,6 +462,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ImportId");
+
+                    b.HasIndex("Name");
 
                     b.HasIndex("SuperCategoryId");
 
@@ -549,7 +553,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryAttributeId")
+                    b.Property<int>("CategoryAttributeId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -2431,7 +2435,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Admin",
                             NeedsTakeNewPassword = true,
-                            NormalizedUserName = "ADMIN",
+                            NormalizedUserName = "Admin",
                             RoleId = 1,
                             Surname = "Admin",
                             TemporaryPassword = "Admin",
@@ -2497,9 +2501,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttributeValue", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", null)
+                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "CategoryAttribute")
                         .WithMany("CategoryAttributeValues")
-                        .HasForeignKey("CategoryAttributeId");
+                        .HasForeignKey("CategoryAttributeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryAttribute");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Customers.Customer", b =>

@@ -5,9 +5,10 @@ using Entegrasyon.MVC.ViewModels.Category;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using Newtonsoft.Json;
 using Shared.Helpers;
+using Shared.Results;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
 {
@@ -30,18 +31,29 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         [Parameter]
         public CategoryAttributeAddViewModel Model { get; set; } = new();
 
+        private const int RandomFormUniqueIdLength = 6;
+        private bool IsUpdating = false;
+
         private ValidationMessageStore _messageStore;
         private EditContext _editContext;
         private readonly Queue<string> _addedItemIds = new();
         private SelectExistingAttributeModal _selectExistingAttributeModal;
         protected override void OnInitialized()
         {
+            //gelen değerler doluysa random formuniqueid atanıp tagify yapılacak.
             Model.CategoryId ??= CatId;
+            IsUpdating = Model.CategoryAttributeList.Any();
+            if (IsUpdating)
+            {
+                Model.CategoryAttributeList.ForEach(ca => {
+                    ca.FormUniqueId = GetFormUniqueId();
+                    ca.IsAddedAfterward = false;
+                });
+            }
             _editContext = new(Model);
             _messageStore = new(_editContext);
             _editContext.OnValidationRequested += _editContext_OnValidationRequested;
         }
-
         private void _editContext_OnValidationRequested(object sender, ValidationRequestedEventArgs e)
         {
             _messageStore.Clear();
@@ -59,6 +71,11 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
                     await Tagify(formId);
                 }
             }
+            else
+                Model.CategoryAttributeList.ForEach(async ca=>
+                    await Tagify(ca.FormUniqueId,
+                    JsonSerializer.Serialize(ca.CategoryAttributeValues.Select(
+                        cav=>new TagifyValue(cav.Id.Value,cav.Name)))));
         }
         private async Task OnValidSubmit()
         {
@@ -66,22 +83,25 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
             {
                 if (!ca.AllowCustom && !string.IsNullOrEmpty(ca.CustomValues))
                 {
-                    //json value atıyor burada parçalanıp tek tek eklenecek.
-                    ca.CategoryAttributeValues = JsonConvert
-                            .DeserializeObject<List<TagifyValue>>(ca.CustomValues)
-                            .Select(x=>new CategoryAttributeValueViewModel(null,x.Value)).ToList();
+                    ca.CategoryAttributeValues = JsonSerializer
+                            .Deserialize<List<TagifyValue>>(ca.CustomValues)
+                            .Select(x=>new CategoryAttributeValueViewModel(x.id,x.value)).ToList();
                 }
             });
             var dto = _mapper.Map<List<AddCategoryAttributeDto>>(Model.CategoryAttributeList);
-            var result = await _cacManager.AddCategoryAttributeForCategory(Model.CategoryId.Value, dto);
-            if (result.Success)
+            Shared.Results.IResult result;
+            try
             {
-                //success
-                _navigationManager.NavigateTo("/CategoryAttributes/SuccesffullyAdded");
+                result = await _cacManager.AddCategoryAttributeForCategory(Model.CategoryId.Value, dto);
+                if (result.Success)
+                {
+                    //success
+                    _navigationManager.NavigateTo("/CategoryAttributes/SuccesfullyAdded",true);
+                }
             }
-            else
+            catch (Exception e)
             {
-                _messageStore.Add(null, result.Message);
+                //ignore
             }
         }
 
@@ -115,10 +135,15 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         private void AddAttribute()
         {
             var vm = new CategoryAttributeCreateViewModel
-            { FormUniqueId = _randomGenerator.GetRandomCode(6, includeNumbers: false) };
+            { FormUniqueId = GetFormUniqueId(), IsAddedAfterward = true };
             Model.CategoryAttributeList.Add(vm);
             _addedItemIds.Enqueue(vm.FormUniqueId);
         }
+
+        private string GetFormUniqueId()
+            =>_randomGenerator.GetRandomCode(RandomFormUniqueIdLength, includeNumbers: false);
+        
+
         private async Task ChangeAllowCustom(CategoryAttributeCreateViewModel item, bool status)
         {
             await ToggleDisabilityTagify(item.FormUniqueId, status);
@@ -128,6 +153,11 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         {
             var inputId = $"#{formId}_CustomValues";
             await _js.InvokeVoidAsync("initializeTagify", inputId);
+        }
+        private async Task Tagify(string formId,string initialJsonValue)
+        {
+            var inputId = $"#{formId}_CustomValues";
+            await _js.InvokeVoidAsync("initializeTagify", inputId,initialJsonValue);
         }
         private async Task ToggleDisabilityTagify(string formId, bool status)
         {
@@ -148,4 +178,3 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
 }
 
 
-public sealed record TagifyValue(string Value);
