@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.MVC.Utility.Extensions;
 using Entegrasyon.MVC.ViewModels.Category;
+using Entegrasyon.MVC.ViewModels.CategoryAttribute;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using Shared.Helpers;
-using Shared.Results;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
@@ -28,6 +30,8 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         private IMapper _mapper { get; set; }
         [Inject]
         private CategoryAttributeCategoryManager _cacManager { get; set; }
+        [Inject]
+        private CategoryAttributeValueManager _cavManager { get; set; }
         [Parameter]
         public CategoryAttributeAddViewModel Model { get; set; } = new();
 
@@ -68,14 +72,16 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
                 while (_addedItemIds.Any())
                 {
                     string formId = _addedItemIds.Dequeue();
-                    await Tagify(formId);
+                    var values= Model.CategoryAttributeList.Single(x => x.FormUniqueId == formId).CategoryAttributeValues;
+                    if(values!=null && values.Any())
+                        await Tagify(formId,values.ToTagifyValue().ToJson());
+                    else
+                        await Tagify(formId);
                 }
             }
             else
                 Model.CategoryAttributeList.ForEach(async ca=>
-                    await Tagify(ca.FormUniqueId,
-                    JsonSerializer.Serialize(ca.CategoryAttributeValues.Select(
-                        cav=>new TagifyValue(cav.Id.Value,cav.Name)))));
+                    await Tagify(ca.FormUniqueId,ca.CategoryAttributeValues.ToTagifyValue().ToJson()));
         }
         private async Task OnValidSubmit()
         {
@@ -166,9 +172,30 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         }
         private void RemevoAttribute(CategoryAttributeCreateViewModel vm)
             => Model.CategoryAttributeList.Remove(vm);
-        private async Task OpenExistedCatAttrSelectModal()
+        private void OpenExistedCatAttrSelectModal()
         {
-            await _selectExistingAttributeModal.Open();
+            _selectExistingAttributeModal.Open();
+        }
+        private async Task HandleSelectings(List<CategoryAttribute> catAttributes)
+        {
+            var values = await _cavManager.GetValuesByCategoryAttributeIds(catAttributes.Select(ca=>ca.Id));
+            catAttributes.ForEach(ca =>
+            {
+                CategoryAttributeCreateViewModel cacVM = new CategoryAttributeCreateViewModel()
+                {
+                    CategoryAttributeKey = ca.CategoryAttributeKey,
+                    FormUniqueId = GetFormUniqueId(),
+                    IsAddedAfterward = true,
+                    CategoryAttributeValues = values
+                        .Where(x => x.CategoryAttributeId == ca.Id)
+                        .Select(x => new CategoryAttributeValueViewModel(x.Id, x.Name))
+                        .ToList(),
+                    Id = ca.Id,
+                    IsExistingAdding = true
+                };
+                Model.CategoryAttributeList.Add(cacVM);
+                _addedItemIds.Enqueue(cacVM.FormUniqueId);
+            });
         }
         public void Dispose()
         {

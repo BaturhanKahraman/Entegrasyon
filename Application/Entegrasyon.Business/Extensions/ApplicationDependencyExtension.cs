@@ -75,6 +75,7 @@ public static class ApplicationDependencyExtension
         services.AddScoped<TempBarcodeManager>();
         services.AddScoped<BrandMatchService>();
         services.AddScoped<CategoryAttributeCategoryManager>();
+        services.AddScoped<CategoryAttributeValueManager>();
 
         services.AddScoped<ITokenHelper, ClaimHelper>();
 

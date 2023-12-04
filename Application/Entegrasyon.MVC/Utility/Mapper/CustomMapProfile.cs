@@ -7,6 +7,7 @@ using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.MVC.ViewModels.Category;
+using Entegrasyon.MVC.ViewModels.CategoryAttribute;
 using Entegrasyon.MVC.ViewModels.Customer;
 using Entegrasyon.MVC.ViewModels.Office;
 using Entegrasyon.MVC.ViewModels.User;

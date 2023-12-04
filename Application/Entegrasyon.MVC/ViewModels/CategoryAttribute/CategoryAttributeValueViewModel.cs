@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace Entegrasyon.MVC.ViewModels.Category;
+namespace Entegrasyon.MVC.ViewModels.CategoryAttribute;
 
 public sealed record CategoryAttributeValueViewModel(
     int? Id,
