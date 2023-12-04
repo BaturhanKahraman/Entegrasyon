@@ -52,7 +52,6 @@
 		<Folder Include="ViewModels\CategoryImport\" />
 		<Folder Include="ViewModels\Office\" />
 		<Folder Include="ViewModels\User\" />
-		<Folder Include="Views\Categories\CategoryAttributes\" />
 		<Folder Include="wwwroot\img\auth\" />
 	</ItemGroup>
 

@@ -1,10 +1,16 @@
-﻿@using Entegrasyon.MVC.Components.Razor.Common.Form
+﻿@using Entegrasyon.Entity.Categories;
+@using Entegrasyon.MVC.Components.Razor.Common.Form
 @using Shared.Helpers;
 @inject IRandomGenerator _rndm;
 @if(!string.IsNullOrEmpty(CategoryName))
 {
     <span>@CategoryName için özellik ekleme işlemi.</span>
 }
+@*
+    TODO
+    Varolan kategorileri seçip eklemesi yapılacak
+*@
+
 <EditForm EditContext="_editContext" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <button type="button" class="btn btn-secondary" @onclick="AddAttribute">Yeni Özellik Ekle</button>
@@ -35,7 +41,7 @@
                                    Value="@item.AllowCustom"
                                    ValueChanged="@((bool status)=>ChangeAllowCustom(item,status))"
                                    ValueExpression="@(()=> item.AllowCustom )"
-                                   disabled="@(!item.IsAddedAfterward)" />
+                                   disabled="@(!item.IsAddedAfterward || item.IsExistingAdding)" />
                 </CheckBoxDisplay>
                 <CheckBoxDisplay CheckboxId="@string.Concat(item.FormUniqueId,"_IsSlicer")" DisplayFor="@(()=>item.IsSlicer)">
                     <InputCheckbox disabled="@(!item.IsAddedAfterward)" id="@string.Concat(item.FormUniqueId,"_IsSlicer")" class="form-check-input" @bind-Value="item.IsSlicer" />
@@ -55,6 +61,8 @@
     }
 </EditForm>
 
-<SelectExistingAttributeModal @ref="_selectExistingAttributeModal">
+<SelectExistingAttributeModal @ref="_selectExistingAttributeModal"
+                              ExceptIds="Model.CategoryAttributeList.Where(x=>x.Id!=null).Select(x=> x.Id.Value).ToArray()"
+                              OnPressOk="HandleSelectings">
 
 </SelectExistingAttributeModal>

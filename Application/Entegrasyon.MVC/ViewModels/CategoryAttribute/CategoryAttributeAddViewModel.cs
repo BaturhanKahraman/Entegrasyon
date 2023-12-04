@@ -6,7 +6,7 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.MVC.Utility.Attributes;
 using Entegrasyon.MVC.Utility.Attributes.Validations;
 
-namespace Entegrasyon.MVC.ViewModels.Category;
+namespace Entegrasyon.MVC.ViewModels.CategoryAttribute;
 
 public class CategoryAttributeAddViewModel
 {
@@ -22,6 +22,7 @@ public class CategoryAttributeCreateViewModel
 
     public int? Id { get; set; }
     public bool IsAddedAfterward { get; set; }
+    public bool IsExistingAdding { get; set; }
 
     [Display(Name = "Zorunlu mu?", Description = "Bu kategoriden bir ürün oluştururken zorunlu olan değer.")]
     public bool IsRequired { get; set; }
@@ -47,4 +48,4 @@ public class CategoryAttributeCreateViewModel
     public string FormUniqueId { get; set; }
     public List<CategoryAttributeValueViewModel> CategoryAttributeValues { get; set; } = new();
 }
-public sealed record TagifyValue(int id,string value);
+public sealed record TagifyValue(int id, string value);

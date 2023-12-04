@@ -5,12 +5,15 @@ using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.Utility.Constants;
 using Entegrasyon.MVC.ViewModels;
 using Entegrasyon.MVC.ViewModels.Category;
+using Entegrasyon.MVC.ViewModels.CategoryAttribute;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.MVC.Controllers
 {
     [Breadcrumb("Kategori Özelliği", BreadcrumbUsageType.Controller)]
     [Route("CategoryAttributes")]
+    [Authorize]
     public class CategoryAttributesController : Controller
     {
         private readonly CategoryManager _categoryManager;

@@ -1,18 +1,25 @@
-﻿
-@using Entegrasyon.MVC.Components.Razor.Common.Modal
+﻿@using Entegrasyon.MVC.Components.Razor.Common.Modal
 
 <Modal Title="Modal Başlığı" @ref="_modalRef">
     <ChildContent>
         <select multiple @bind="_selectedCategoryAttributesAsString" title="Kategori özellikleri" class="w-100">
-            <option disabled>Lütfen özellikleri seçin.</option>
-            @foreach (var catAttr in _categoryAttributes)
+            @if(_categoryAttributes is null || !_categoryAttributes.Any())
             {
-                <option value="@catAttr.Id">@catAttr.Id - @catAttr.CategoryAttributeKey</option>
+                <option disabled> Herhangi bir kategori özelliği bulunamamıştır.</option>
+            }
+            else
+            {
+                <option disabled>Lütfen özellikleri seçin.</option>
+                @foreach (var catAttr in _categoryAttributes)
+                {
+                    <option value=@catAttr.Id>@catAttr.Id - @catAttr.CategoryAttributeKey</option>
+                }
             }
         </select>
     </ChildContent>
     <FooterContent>
-        <button class="btn btn-secondary" @onclick="() => Close()">Kapat</button>
-        <button class="btn btn-primary" @onclick="()=>WriteSelected()">Bak</button>"
+        <button class="btn btn-secondary" @onclick="Close">Kapat</button>
+        <button class="btn btn-primary" @onclick="OnAccepted">Bak</button>
     </FooterContent>
+    
 </Modal>

@@ -1,20 +1,27 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
 public sealed class CategoryAttributeValueManager
 {
-    private readonly ICategoryAttributeValueDal _cavDal;
-
-    public CategoryAttributeValueManager(ICategoryAttributeValueDal cavDal)
+    private readonly IntegrationDbContext _ctx;
+    public CategoryAttributeValueManager(IntegrationDbContext ctx)
     {
-        _cavDal = cavDal;
+        _ctx = ctx;
     }
 
     public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeId(int id)
     {
+        return await _ctx.CategoryAttributeValues.Where(x=>x.CategoryAttributeId== id).ToListAsync();
+    }
 
-        throw new NotImplementedException();
+    public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeIds(IEnumerable<int> categoryAttributeIds)
+    {
+        return await _ctx.CategoryAttributeValues
+            .Where(cav=>categoryAttributeIds.Contains(cav.CategoryAttributeId))
+            .ToListAsync();
     }
 }
