@@ -1,4 +1,5 @@
-﻿
+﻿@using Entegrasyon.MVC.Utility.Helpers;
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,12 +57,13 @@
         <!--  BEGIN CONTENT AREA  -->
         <div id="content" class="main-content">
             <div class="layout-px-spacing">
-                    @{
-                        if (ViewData[StringConstant.Breadcrumb] is List<BreadcrumbModel> bcModel)
-                            await Html.RenderPartialAsync("Partials/_Breadcrumb", bcModel);
-                    }
-                    @RenderBody()
-                </div>
+                @{
+                    if (ViewData[StringConstant.Breadcrumb] is List<BreadcrumbModel> bcModel)
+                        await Html.RenderPartialAsync("Partials/_Breadcrumb", bcModel);
+                }
+                @ViewData.RenderAlerts()
+                @RenderBody()
+            </div>
         </div>
         <!--  END CONTENT AREA  -->
     </div>
@@ -79,12 +81,12 @@
     <script src="~/lib/template/js/custom.js" asp-append-version="true"></script>
     <script src="_framework/blazor.server.js"></script>
     <script src="~/lib/template/js/app.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
     @{
         await RenderSectionAsync("Scripts", required: false);
     }
     <!-- END PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
-    <script src="~/js/site.js"></script>
 </body>
 </html>

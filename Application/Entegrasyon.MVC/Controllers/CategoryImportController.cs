@@ -1,11 +1,15 @@
-﻿using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
+using Entegrasyon.MVC.Utility.Attributes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace Entegrasyon.MVC.Controllers
 {
     [Route("/category/category-import")]
+    [Authorize]
+    [Breadcrumb("Kategori Aktarımı",ViewModels.BreadcrumbUsageType.Controller)]
     public class CategoryImportController : Controller
     {
         private readonly TrendyolCategoryImporterService _trendyolCategoryImporterService;
@@ -15,14 +19,18 @@ namespace Entegrasyon.MVC.Controllers
             _trendyolCategoryImporterService = trendyolCategoryImporterService;
         }
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var result = await _trendyolCategoryImporterService.GetTrendyolCategories();
-            if (result.Data == null)
-            {
-                return NoContent();
-            }
-            return View(result.Data.ToList());
+            return View();
+        }
+        [HttpGet]
+        [Route("GetTrendyolCategories")]
+        public async Task<IActionResult> GetTrendyolCategories()
+        {
+            var categoriesResult = await _trendyolCategoryImporterService.GetTrendyolCategories();
+            if(categoriesResult.Success)
+                return Json(categoriesResult.Data);
+            return NotFound(categoriesResult.Message);
         }
         [HttpPost]
         public async Task<IActionResult> ImportFromTrendyol()

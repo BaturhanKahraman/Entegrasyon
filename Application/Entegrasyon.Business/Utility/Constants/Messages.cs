@@ -33,4 +33,5 @@ public class Messages
     public const string CategoryDeleted="Kategori silindi.";
     public const string CategoryHasProducts = "Kategoride ürün bulunuyor.";
     public const string CategoryIsSuper="Kategori bir üst kategoridir!";
+    public const string TrendyolCategoryApiError="Trendyol kategorilerini çekerken bir hata meydana geldi.";
 }
