@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 using Microsoft.Extensions.DependencyInjection;

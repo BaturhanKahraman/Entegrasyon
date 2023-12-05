@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;

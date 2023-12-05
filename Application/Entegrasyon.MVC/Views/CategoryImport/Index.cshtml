@@ -1,87 +1,78 @@
-﻿@model List<Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport.ImportedTrendyolCategory>
-@{
-    ViewData["Title"] = "Kategori Aktarımı";
-    ViewData["PageTitle"] = "Kategori Aktarımı";
+﻿@{
+    ViewData["Title"] = "Kategori İçe Aktarım";
+    ViewData["PageTitle"] = "Kategori İçe Aktarım";
 }
-@section Styles
-    {
+@section Styles{
+    @*for tab*@
+    <link href="~/css/tabs.css" rel="stylesheet" />
+    @*for jstree*@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
-
 }
-<div class="statbox widget box box-shadow">
-    <div class="widget-header border-bottom border-default">
-        <div class="row">
-            <div class="col-xl-12 col-md-12 col-sm-12 col-12">
-                <h4>Kategori Aktarım İşlemleri</h4>
-            </div>
-        </div>
-    </div>
-    <div class="widget-content widget-content-area simple-pills">
-        <ul class="nav nav-pills mb-3 mt-3" id="pills-tab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-trendyol" role="tab" aria-controls="pills-trendyol" aria-selected="true">Trendyol</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-CSV" role="tab" aria-controls="pills-CSV" aria-selected="false">CSV</a>
-            </li>
-        </ul>
-        <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade active show" id="pills-trendyol" role="tabpanel" aria-labelledby="pills-trendyol">
-                <form asp-controller="CategoryImport" asp-action="ImportFromTrendyol" method="post" >
-                    <div id="trendyol-js-tree">
-                        <ul>
-                            @foreach (var item in Model)
-                            {
-                                <li id="@item.Id">@item.Name
-                                    <partial model="@item.SubCategories" name="_SubCategories"></partial>
-                                </li>
-                            }
-                        </ul>
+<div class="container mt-3">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="simple-tab">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item " role="presentation">
+                            <button class="nav-link active" id="trendyol-button" data-bs-toggle="tab" data-bs-target="#trendyol-tab" type="button" role="tab" aria-controls="trendyol-tab" aria-selected="true" tabindex="-1">Trendyol</button>
+                        </li>
+                        <li class="nav-item " role="presentation">
+                            <button disabled class="nav-link" id="csv-button" data-bs-toggle="tab" data-bs-target="#csv-tab" type="button" role="tab" aria-controls="csv-tab" aria-selected="false" tabindex="-1">CSV</button>
+
+                        </li>
+                        <li class="nav-item " role="presentation">
+                            <button disabled class="nav-link" id="excel-button" data-bs-toggle="tab" data-bs-target="#excel-tab" type="button" role="tab" aria-controls="excel-tab" aria-selected="false" tabindex="-1">Excel</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="trendyol-tab" role="tabpanel" aria-labelledby="trendyol-tab" tabindex="0">
+                            <div class="mt-3">
+                                <p>
+                                    Trendyol kategorilerini getirip seçerek içe aktarmak için lütfen
+                                    <a id="get-button" href="javascript:void(0)">tıklayın</a>
+                                </p>
+                                <div id="spinner" class="d-none mx-auto spinner-border text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <div id="trendyol-tree">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="csv-tab" role="tabpanel" aria-labelledby="csv-tab" tabindex="0">
+                            <p class="mt-3">csv</p>
+                        </div>
+                        <div class="tab-pane fade" id="excel-tab" role="tabpanel" aria-labelledby="excel-tab" tabindex="0">
+                            <p class="mt-3">excel</p>
+                        </div>
                     </div>
-                    <input type="hidden" name="selectedCategories" id="selectedCategories" />
-                    <button type="submit" class="btn btn-gradient-primary mt-3 float-right" > Onayla</button>
-                </form>
-            </div>
-            <div class="tab-pane fade" id="pills-CSV" role="tabpanel" aria-labelledby="pills-CSV">
-                <div class="media mt-4 mb-3">
-                    <img class="mr-3" src="assets/img/90x90.jpg" alt="Generic placeholder image">
-                    <div class="media-body">
-                        Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
-                    </div>
+
                 </div>
-            </div>
-            <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-                <p class="dropcap  dc-outline-primary">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
             </div>
         </div>
     </div>
 </div>
-@section Scripts
-{
-    <script src="~/lib/template/plugins/treeview/jstree.min.js"></script>
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
     <script>
-        $(function() {
-            $('#trendyol-js-tree').jstree({
-                "checkbox" : {
-                    "keep_selected_style" : false
-                },
-                "plugins": ["wholerow", "checkbox"]
-            });
-            $('#trendyol-js-tree').on("changed.jstree", function (e, data) {
-                $('#selectedCategories').val(data.selected);
-            });
-            //$('form').submit(function () {
-            //    var selectedCategories = $('#trendyol-js-tree').jstree().get_selected(true);
-            //    console.log(selectedCategories);
-            //    $('#selectedCategories').val(selectedCategories);
-            //});
+        let trendyolCategories = [];
+        $(document).ready(function () {
+            console.log("Hazır")
+            $("#get-button").click(getTrendyolCategories);
         });
+        function getTrendyolCategories() {
+            if (trendyolCategories.length !== 0)
+                return;
+            $.get('@Url.Action("GetTrendyolCategories")', function (data, status) {
+                console.log(data,status)
+                //gelen veriyi jstree sitesindeki kullanıma göre maple
+                //ardından seçili olarak al ve sisteme import et
+                //seçili olan verileri tekrar seçildiğinde güncelleme işlemi yap.
+            });
+        }
+        function processJsTree(data,status) {
+            console.log(data,status);
+        }
     </script>
 }

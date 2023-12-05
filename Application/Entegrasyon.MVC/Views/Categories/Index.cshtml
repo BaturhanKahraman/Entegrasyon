@@ -5,12 +5,6 @@
     ViewData["Title"] = "Ofis/Depo Listesi";
     ViewData["PageTitle"] = "Ofis/Depo Listesi";
 }
-@{
-    if (ViewData[StringConstant.SuccessAlert] != null)
-    {
-        <div class="alert">@ViewData[StringConstant.SuccessAlert]</div>
-    }
-}
 
 <div class="container">
     <div class="col-lg-12">
@@ -22,7 +16,7 @@
                 <div class="d-flex justify-content-between">
                     @Html.ActionLink("Ekle","Create","Categories",null,new {@class="btn btn-primary"})
                     <span>
-                        @Html.ActionLink("İçe Aktar","Create","Categories",null,new {@class="btn btn-warning disabled"})
+                        @Html.ActionLink("İçe Aktar","Index","CategoryImport",null,new {@class="btn btn-warning"})
                         @Html.ActionLink("Dışa Aktar","Create","Categories",null,new {@class="btn btn-secondary disabled"})
                     </span>
                 </div>

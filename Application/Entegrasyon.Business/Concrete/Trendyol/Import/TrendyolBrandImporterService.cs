@@ -10,7 +10,7 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
 using Shared.Results;
 
-namespace Entegrasyon.Business.Concrete;
+namespace Entegrasyon.Business.Concrete.Trendyol.Import;
 
 public class TrendyolBrandImporterService
 {
@@ -20,7 +20,7 @@ public class TrendyolBrandImporterService
     private readonly RabbitMqPublisherService _brokerHelper;
     private readonly ApplicationLogManager _logService;
     private const int TrendyolId = 1;
-    public TrendyolBrandImporterService(HttpClient httpClient,  BrandMatchService brandMatchService, RabbitMqPublisherService brokerHelper, ApplicationLogManager logService)
+    public TrendyolBrandImporterService(HttpClient httpClient, BrandMatchService brandMatchService, RabbitMqPublisherService brokerHelper, ApplicationLogManager logService)
     {
         _httpClient = httpClient;
         _brandMatchService = brandMatchService;
@@ -30,7 +30,7 @@ public class TrendyolBrandImporterService
 
     public async Task<IResult> QueueImporting()
     {
-        _brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolBrandImportQueueName,null);
+        _brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolBrandImportQueueName, null);
         await _logService.AddLog("Trendyoldan tüm markaları içeri çekme isteği geldi.", LogType.Brand);
         return new SuccessResult(Messages.BrandsImportingQueued);
     }
@@ -52,16 +52,16 @@ public class TrendyolBrandImporterService
                     response = await _httpClient.GetAsync(fullUrl);
                 }
             }
-            if(!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
                 return new ErrorResult(Messages.BrandsImportingInterruptedNull);
             var trendyolBrandRoot = await response.Content.ReadFromJsonAsync<TrendyolBrandRoot>();
             var brands = trendyolBrandRoot!.Brands;
-            if(brands.Count == 0)
+            if (brands.Count == 0)
                 break;
-            var brandMatches = brands.Where(x=>!existedEntities.Contains(x.Id) && !x.Name.All(char.IsDigit)).Select(x => new BrandMarketPlaceMatch
+            var brandMatches = brands.Where(x => !existedEntities.Contains(x.Id) && !x.Name.All(char.IsDigit)).Select(x => new BrandMarketPlaceMatch
             {
                 MarketPlaceId = TrendyolId,
-                ApplicationBrand = new Brand { Name = x.Name,CreatedAt = DateTimeOffset.Now},
+                ApplicationBrand = new Brand { Name = x.Name, CreatedAt = DateTimeOffset.Now },
                 MarketPlaceBrandId = x.Id
             }).ToHashSet();
             brandList.UnionWith(brandMatches);

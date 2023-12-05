@@ -20,6 +20,7 @@ builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
 builder.Services.AddRabbitMQ(builder.Configuration);
 builder.Services.AddApplicationDependencies();
+builder.Services.AddClients();
 builder.Services.AddAutoMapper(x => x.AddProfile<CustomMapProfile>());
 builder.Services.AddFileStorageCore();
 builder.Services.AddBackgroundServices();
@@ -49,7 +50,6 @@ builder.Services.AddSession(x =>
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext();
-builder.Services.AddHttpClient();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
 builder.Services.AddScoped<IMenuService,MenuService>();

@@ -19,6 +19,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using Shared.Security.Jwt;
+using Entegrasyon.Business.Concrete.Trendyol.Import;
+using Entegrasyon.Business.Utility.Constants;
+using static System.Net.WebRequestMethods;
 
 namespace Entegrasyon.Business.Extensions;
 
@@ -85,6 +88,14 @@ public static class ApplicationDependencyExtension
         services.AddAutoMapper(x =>
         {
             x.AddProfile<MapProfiles>();
+        });
+        return services;
+    }
+    public static IServiceCollection AddClients(this IServiceCollection services)
+    {
+        services.AddHttpClient(StringConstants.TrendyolApi, x =>
+        {
+            x.BaseAddress = new Uri("https://api.trendyol.com/sapigw/");
         });
         return services;
     }
