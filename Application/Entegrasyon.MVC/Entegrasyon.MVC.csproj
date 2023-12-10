@@ -49,7 +49,6 @@
 
 	<ItemGroup>
 		<Folder Include="Utility\ToastrNotification\" />
-		<Folder Include="ViewModels\CategoryImport\" />
 		<Folder Include="ViewModels\Office\" />
 		<Folder Include="ViewModels\User\" />
 		<Folder Include="wwwroot\img\auth\" />

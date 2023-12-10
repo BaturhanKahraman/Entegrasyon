@@ -1,6 +1,7 @@
 ﻿using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.MVC.Utility.Attributes;
+using Entegrasyon.MVC.Utility.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -29,7 +30,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             var categoriesResult = await _trendyolCategoryImporterService.GetTrendyolCategories();
             if(categoriesResult.Success)
-                return Json(categoriesResult.Data);
+                return Json(categoriesResult.Data.ToJsTreeList());
             return NotFound(categoriesResult.Message);
         }
         [HttpPost]

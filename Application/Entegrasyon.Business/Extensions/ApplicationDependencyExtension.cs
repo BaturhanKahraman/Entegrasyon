@@ -103,9 +103,9 @@ public static class ApplicationDependencyExtension
     {
         services.AddDbContext<IntegrationDbContext>(x =>
         {
-            var cs = new NpgsqlConnectionStringBuilder
+            var cs = new NpgsqlConnectionStringBuilder()
             {
-                Database = "Baturhan",
+                Database = "IntegrationDb",
                 Host = "db",
                 Port = 5432,
                 Password = "649471",
@@ -114,7 +114,9 @@ public static class ApplicationDependencyExtension
                 Pooling = true,
                 Timeout = 120,
             };
-            x.UseNpgsql(cs.ToString(),npg => npg.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            //"Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;"
+            x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
+            //x.UseInMemoryDatabase("InMemory");
             x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             x.EnableSensitiveDataLogging();
             x.EnableDetailedErrors();

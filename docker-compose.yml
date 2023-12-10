@@ -14,7 +14,7 @@ services:
         - RABBITMQ_ERLANG_COOKIE=mysecretcookie
         - RABBITMQ_MANAGEMENT=true
     healthcheck:
-      test: curl -f http://localhost:15672/ || exit 1
+      test: curl -f http://localhost:15672/
       interval: 10s
       timeout: 10s
       retries: 3
@@ -28,12 +28,13 @@ services:
     volumes:
       - ./data:/data
   db:
-    image: postgres:latest
+    image: postgres:16-bullseye
     container_name: entegrasyon.pg_container
     restart: always
     environment:
       POSTGRES_USER: Baturhan
       POSTGRES_PASSWORD: 649471
+      POSTGRES_DB: IntegrationDb
     ports:
       - 5432:5432
     volumes:

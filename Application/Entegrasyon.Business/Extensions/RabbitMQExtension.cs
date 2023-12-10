@@ -29,18 +29,25 @@ public static class RabbitMQExtension
     private static IConnection TryConnect(ConnectionFactory factory)
     {
         int tryCount = 0;
-        while(true)
+        const int maxAttempts = 10;
+        const int retryIntervalMilliseconds = 10000;
+
+        while (true)
         {
             try
             {
                 tryCount++;
                 return factory.CreateConnection();
             }
-            catch(Exception e)
+            catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException ex)
             {
-                Thread.Sleep(5000);
-                if(tryCount == 5)
-                    throw new Exception("RabbitMQ'ya bağlanamadı." + e.Message);
+                Console.WriteLine($"RabbitMQ'ya bağlanma hatası: {ex.Message}");
+                Thread.Sleep(retryIntervalMilliseconds);
+
+                if (tryCount == maxAttempts)
+                {
+                    throw new Exception($"RabbitMQ'ya bağlanamadı. Son hata: {ex.Message}");
+                }
             }
         }
     }
