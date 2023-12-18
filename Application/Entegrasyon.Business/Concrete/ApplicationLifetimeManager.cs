@@ -16,7 +16,7 @@ public class ApplicationLifetimeManager
 
     public async Task ApplyStartActions()
     {
-        //await MigrateDatabase();
+        await MigrateDatabase();
         _logger.LogInformation("Uygulama başlatıldı.");
     }
     private async Task MigrateDatabase(CancellationToken ct = default)

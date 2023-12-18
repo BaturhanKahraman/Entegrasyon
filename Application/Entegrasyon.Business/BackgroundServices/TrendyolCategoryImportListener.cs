@@ -47,15 +47,15 @@ public class TrendyolCategoryImportListener:BackgroundService
     {
         var body = @event.Body.ToArray();
         var message = Encoding.UTF8.GetString(body);
-        List<TrendyolImport> categories = JsonConvert.DeserializeObject<IEnumerable<TrendyolImport>>(message)!.ToList();
-        var serviceScope = _serviceProvider.CreateScope();
-        var task = Task.Run(()=>serviceScope!.ServiceProvider.GetService<TrendyolCategoryImporterService>()!.Import(categories));
-        task.Wait();
-        if(task.Result.Success)
-            _model.BasicAck(@event.DeliveryTag,false);
-        else
-            _logger.LogWarning("Rabbitmq trendyol hatası : "+task.Result.Message);
-        serviceScope.Dispose();
+        //List<TrendyolImport> categories = JsonConvert.DeserializeObject<IEnumerable<TrendyolImport>>(message)!.ToList();
+        //var serviceScope = _serviceProvider.CreateScope();
+        //var task = Task.Run(()=>serviceScope!.ServiceProvider.GetService<TrendyolCategoryImporterService>()!.Import(categories));
+        //task.Wait();
+        //if(task.Result.Success)
+        //    _model.BasicAck(@event.DeliveryTag,false);
+        //else
+        //    _logger.LogWarning("Rabbitmq trendyol hatası : "+task.Result.Message);
+        //serviceScope.Dispose();
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
