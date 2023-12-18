@@ -21,7 +21,6 @@ using Npgsql;
 using Shared.Security.Jwt;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Utility.Constants;
-using static System.Net.WebRequestMethods;
 
 namespace Entegrasyon.Business.Extensions;
 

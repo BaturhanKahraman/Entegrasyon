@@ -28,7 +28,7 @@ services:
     volumes:
       - ./data:/data
   db:
-    image: postgres:16-bullseye
+    image: postgres:latest
     container_name: entegrasyon.pg_container
     restart: always
     environment:
@@ -37,8 +37,6 @@ services:
       POSTGRES_DB: IntegrationDb
     ports:
       - 5432:5432
-    volumes:
-      - D:\TempData:/var/lib/postgresql/data
   pgadmin:
     container_name: entegrasyon.pgadmin4
     image: dpage/pgadmin4

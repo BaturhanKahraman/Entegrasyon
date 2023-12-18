@@ -22,4 +22,15 @@ public static class TypeConverterExtension
         };
     public static IEnumerable<JsTreeViewModel> ToJsTreeList(this IEnumerable<ImportedTrendyolCategory> catList)
         => catList.Select(c => c?.ToJsTree());
+
+    public static TrendyolSelectedCategory ToTrendyolSelectedCategory(this TrendyolImportViewModel model)
+    {
+        return new TrendyolSelectedCategory
+        {
+            Id = Convert.ToInt32(model.Id),
+            Name = model.Text,
+            ParentId =string.IsNullOrWhiteSpace(model.Parent) ? null : Convert.ToInt32(model.Parent),
+            SubCategories = model.Children.Select(c => c.ToTrendyolSelectedCategory()).ToList()
+        };
+    }
 }
