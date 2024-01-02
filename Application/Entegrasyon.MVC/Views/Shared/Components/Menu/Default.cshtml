@@ -27,20 +27,24 @@
                     </div>
                 </a>
             </li>
-            @foreach(var navItem in orderedModel)
+            @if(orderedModel!=null && orderedModel.Count >0)
             {
-                <li class="menu" active-menu>
-                    <a href="/@navItem.Href" aria-expanded="false" class="dropdown-toggle">
-                        <div class="">
-                            @if(!string.IsNullOrEmpty(navItem.Icon))
-                            {
-                                <i data-feather="@navItem.Icon"></i>
-                            }
-                            <span>@navItem.Name</span>
-                        </div>
-                    </a>
-                </li>
+                @foreach (var navItem in orderedModel)
+                {
+                    <li class="menu" active-menu>
+                        <a href="/@navItem.Href" aria-expanded="false" class="dropdown-toggle">
+                            <div class="">
+                                @if (!string.IsNullOrEmpty(navItem.Icon))
+                                {
+                                    <i data-feather="@navItem.Icon"></i>
+                                }
+                                <span>@navItem.Name</span>
+                            </div>
+                        </a>
+                    </li>
+                }
             }
+            
         </ul>
     </nav>
 </div>

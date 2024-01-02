@@ -38,11 +38,11 @@ public class MenuService : IMenuService
         _session.SetString(CACHE_KEY,JsonSerializer.Serialize(navigationItems));
     }
 
-    public List<NavigationItem> GetMenu()
+    public IEnumerable<NavigationItem> GetMenu()
     {
         string cachedJson = _session.GetString(CACHE_KEY);
-        if(string.IsNullOrEmpty(cachedJson))
-            throw new Exception("CreateMenu çağırılmamış");
+        if (string.IsNullOrEmpty(cachedJson))
+            return Enumerable.Empty<NavigationItem>();
         return JsonSerializer.Deserialize<List<NavigationItem>>(cachedJson);
     }
 }
