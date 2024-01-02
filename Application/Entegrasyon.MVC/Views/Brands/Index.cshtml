@@ -1,0 +1,90 @@
+﻿@using Entegrasyon.MVC.ViewModels.Brand;
+@model Shared.Entity.Pageable<BrandListDetailViewModel>
+
+@{
+    ViewData["Title"] = "Marka Listesi";
+    ViewData["PageTitle"] = "Marka Listesi";
+}
+
+<div class="container">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title">
+                    Eylemler
+                </div>
+                <div class="d-flex justify-content-between">
+                    @Html.ActionLink("Ekle","Create","Categories",null,new {@class="btn btn-primary"})
+                    <span>
+                        @Html.ActionLink("İçe Aktar","Index","CategoryImport",null,new {@class="btn btn-warning"})
+                        @Html.ActionLink("Dışa Aktar","Create","Categories",null,new {@class="btn btn-secondary disabled",@disabled=true})
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <h5 class="card-title">Marka Listesi</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Marka İsmi</th>
+                                <th>Ürün Sayısı</th>
+                                <th>Oluşturulma Tarihi</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model == null || !Model.HasItem)
+                            {
+                                <tr>
+                                    <td colspan="5">
+                                        <span>Herhangi bir marka bulamadık.</span>
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var brand in Model.Items)
+                            {
+                                <tr>
+                                    <td>@brand.Id</td>
+                                    <td>@brand.Name</td>
+                                    <td>@brand.ProductNumber</td>
+                                    <td>@brand.CreatedAt</td>
+                                    <td class="text-center">
+                                        <div class="action-btns">
+                                            <a asp-action="Edit" asp-route-id="@brand.Id">
+                                                <i data-feather="edit-2"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (Model.TotalPageCount > 1)
+                    {
+                        <nav>
+                            <ul class="pagination">
+                                @if (Model.CurrentPageIndex > 0)
+                                {
+                                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex - 1, pageSize = Model.PagingItemCount })">Previous</a></li>
+                                }
+                                @for (int i = 0; i < Model.TotalPageCount; i++)
+                                {
+                                    <li class="@(i == Model.CurrentPageIndex ? "page-item active" : "page-item")"><a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PagingItemCount })">@((i + 1).ToString())</a></li>
+                                }
+                                @if (Model.CurrentPageIndex < Model.TotalPageCount - 1)
+                                {
+                                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex + 1, pageSize = Model.PagingItemCount })">Next</a></li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

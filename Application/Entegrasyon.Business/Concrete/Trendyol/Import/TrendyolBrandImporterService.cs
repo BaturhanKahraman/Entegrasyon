@@ -1,31 +1,43 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using Amazon.Runtime.Internal.Util;
 using AutoMapper;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Brands.Import;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete.Trendyol.Import;
 
 public class TrendyolBrandImporterService
 {
-    private const string UrlAddress = @"https://api.trendyol.com/sapigw/brands";
+    private const string BrandUrlSuffix = "brands";
+    private readonly ILogger<TrendyolBrandImporterService> _logger;
     private readonly HttpClient _httpClient;
     private readonly BrandMatchService _brandMatchService;
     private readonly RabbitMqPublisherService _brokerHelper;
     private readonly ApplicationLogManager _logService;
+    private readonly MarketPlace _trendyolMarketPlace;
+    private readonly IntegrationDbContext _dbContext;
     private const int TrendyolId = 1;
-    public TrendyolBrandImporterService(HttpClient httpClient, BrandMatchService brandMatchService, RabbitMqPublisherService brokerHelper, ApplicationLogManager logService)
+
+    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory, BrandMatchService brandMatchService, RabbitMqPublisherService brokerHelper, ApplicationLogManager logService, IntegrationDbContext dbContext, ILogger<TrendyolBrandImporterService> logger)
     {
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         _brandMatchService = brandMatchService;
         _brokerHelper = brokerHelper;
         _logService = logService;
+        _dbContext = dbContext;
+        _trendyolMarketPlace = dbContext.MarketPlaces.AsTracking().SingleOrDefault(x => string.Equals(x.Name, "Trendyol"));
+        _logger = logger;
     }
 
     public async Task<IResult> QueueImporting()
@@ -37,36 +49,36 @@ public class TrendyolBrandImporterService
     public async Task<IResult> ImportAll()
     {
         int page = -1;
-        HashSet<BrandMarketPlaceMatch> brandList = new();
+        HashSet<BrandMarketPlaceMatch> brandMatchList = new();
         await _logService.AddLog("Trendyoldan tüm markaları içeri çekme işlemine başlandı.", LogType.Brand);
-        var existedEntities = await _brandMatchService.GetMarketPlaceBrandIdsByMarketPlaceId(TrendyolId);
+        var existedEntities = await _brandMatchService.GetMarketPlaceBrandIdsByMarketPlaceId(_trendyolMarketPlace.Id);
         while (true)
         {
-            string fullUrl = UrlAddress + $"?page={page++}&size=1000";
+            string fullUrl = BrandUrlSuffix + $"?page={page++}&size=1000";
             var response = await _httpClient.GetAsync(fullUrl);
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            while (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                while (response.StatusCode != HttpStatusCode.TooManyRequests)
-                {
-                    await Task.Delay(1000);
-                    response = await _httpClient.GetAsync(fullUrl);
-                }
+                await Task.Delay(1000);
+                response = await _httpClient.GetAsync(fullUrl);
             }
             if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Brand importta gelen response hatalı.", response);
                 return new ErrorResult(Messages.BrandsImportingInterruptedNull);
+            }
             var trendyolBrandRoot = await response.Content.ReadFromJsonAsync<TrendyolBrandRoot>();
             var brands = trendyolBrandRoot!.Brands;
             if (brands.Count == 0)
                 break;
-            var brandMatches = brands.Where(x => !existedEntities.Contains(x.Id) && !x.Name.All(char.IsDigit)).Select(x => new BrandMarketPlaceMatch
+            var brandMatches = brands.Where(x => !existedEntities.Contains(x.Id) && !x.Name.All(char.IsDigit)).AsParallel().Select(x => new BrandMarketPlaceMatch
             {
                 MarketPlaceId = TrendyolId,
                 ApplicationBrand = new Brand { Name = x.Name, CreatedAt = DateTimeOffset.Now },
                 MarketPlaceBrandId = x.Id
             }).ToHashSet();
-            brandList.UnionWith(brandMatches);
+            brandMatchList.UnionWith(brandMatches);
         }
-        await _brandMatchService.AddRange(brandList.ToList());
+        await _brandMatchService.AddRange(brandMatchList.ToList());
         await _logService.AddLog("Trendyoldan tüm markalar içeri çekildi.", LogType.Brand);
         return new SuccessResult(Messages.BrandsImportingSuccess);
     }
