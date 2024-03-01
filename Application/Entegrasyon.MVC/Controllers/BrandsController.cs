@@ -8,20 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 
 [Authorize]
 [Breadcrumb("Marka", ViewModels.BreadcrumbUsageType.Controller)]
-public class BrandsController : Controller
+public class BrandsController(BrandManager brandManager) : Controller
 {
-    private readonly BrandManager _brandManager;
-
-    public BrandsController(BrandManager brandManager)
-    {
-        _brandManager = brandManager;
-    }
-
     [Breadcrumb("Liste")]
     public async Task<IActionResult> Index(int page,string search,int itemCount)
     {
-        var result = await _brandManager.GetBrandDetailPageable(new Entity.Dtos.Brand.GetCategoryDetailsPageDto(search));
-        var model = 
+        var result = await brandManager.GetBrandDetailPageable(new Entity.Dtos.Brand.GetCategoryDetailsPageDto(search));
+        //var model = null;
         return View(result.Data);
     }
 
