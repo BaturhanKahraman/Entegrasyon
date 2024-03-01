@@ -4,7 +4,7 @@
 		<Exec Command="npm install" />
 	</Target>
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>d595da3d-8338-48f7-93a6-7d9f61614d22</UserSecretsId>
@@ -31,8 +31,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" Version="12.0.1" />
-		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+		<PackageReference Include="AutoMapper" Version="13.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
 		  <PrivateAssets>all</PrivateAssets>
