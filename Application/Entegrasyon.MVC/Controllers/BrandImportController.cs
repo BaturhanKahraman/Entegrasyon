@@ -5,15 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Entegrasyon.MVC.Controllers
 {
     [Breadcrumb("Marka")]
-    public class BrandImportController : Controller
+    public class BrandImportController(TrendyolBrandImporterService trendyolBrandImporterService) : Controller
     {
-        private readonly TrendyolBrandImporterService _trendyolBrandImporterService;
-
-        public BrandImportController(TrendyolBrandImporterService trendyolBrandImporterService)
-        {
-            _trendyolBrandImporterService = trendyolBrandImporterService;
-        }
-
         [Breadcrumb("İçe Aktarım")]
         public IActionResult Index()
         {
@@ -23,7 +16,7 @@ namespace Entegrasyon.MVC.Controllers
 
         public async Task<IActionResult> GetTrendyolBrands()
         {
-            var result = await _trendyolBrandImporterService.QueueImporting();
+            var result = await trendyolBrandImporterService.QueueImporting();
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);
