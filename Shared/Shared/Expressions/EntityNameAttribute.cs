@@ -5,16 +5,16 @@ namespace Shared.Expressions;
 [AttributeUsage(AttributeTargets.Property)]
 public class EntityNameAttribute:Attribute
 {
-    private readonly string EntityPropertyName;
+    private readonly string _entityPropertyName;
 
     public EntityNameAttribute()
     {
         var propertyType = TypeDescriptor.GetAttributes(this)[0].GetType();
         string name = propertyType.Name;
-        EntityPropertyName = name;
+        _entityPropertyName = name;
     }
     public EntityNameAttribute(string entityPropertyName)
     {
-        EntityPropertyName = entityPropertyName;
+        _entityPropertyName = entityPropertyName;
     }
 }
