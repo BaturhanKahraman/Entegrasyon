@@ -54,27 +54,27 @@ where TLogin:RootLogin,new()
             return result;
         await AddLoginRecord(user.Id);
         return new SuccessDataResult<RootUser>(user);
-        bool isMobile = _httpContextAccessor.HttpContext.IsMobileDevice();
-        var jwtToken = new AccessToken()
-        {
-            ExpiresAt = isMobile ? user.MobileJwtTokenExpiresAt.DateTime : user.WebJwtTokenExpiresAt.DateTime,
-            Token = isMobile ? user.MobileJwtToken : user.WebJwtToken
-        };
-        //if(jwtToken.ExpiresAt > DateTime.Now)
-            //await _jwtBlackListService.AddTokenToBlackList(jwtToken.Token,jwtToken.ExpiresAt,user.Id.ToString());
-        var newToken = _tokenHelper.CreateToken(user);
-        if(isMobile)
-        {
-            user.MobileJwtToken = newToken.Token;
-            user.MobileJwtTokenExpiresAt = newToken.ExpiresAt;
-        }
-        else
-        {
-            user.WebJwtToken = newToken.Token;
-            user.WebJwtTokenExpiresAt = newToken.ExpiresAt;
-        }
-        await _userManager.UpdateUser(user);
-        return new SuccessDataResult<AccessToken>(newToken);
+        //bool isMobile = _httpContextAccessor.HttpContext.IsMobileDevice();
+        //var jwtToken = new AccessToken()
+        //{
+        //    ExpiresAt = isMobile ? user.MobileJwtTokenExpiresAt.DateTime : user.WebJwtTokenExpiresAt.DateTime,
+        //    Token = isMobile ? user.MobileJwtToken : user.WebJwtToken
+        //};
+        ////if(jwtToken.ExpiresAt > DateTime.Now)
+        //    //await _jwtBlackListService.AddTokenToBlackList(jwtToken.Token,jwtToken.ExpiresAt,user.Id.ToString());
+        //var newToken = _tokenHelper.CreateToken(user);
+        //if(isMobile)
+        //{
+        //    user.MobileJwtToken = newToken.Token;
+        //    user.MobileJwtTokenExpiresAt = newToken.ExpiresAt;
+        //}
+        //else
+        //{
+        //    user.WebJwtToken = newToken.Token;
+        //    user.WebJwtTokenExpiresAt = newToken.ExpiresAt;
+        //}
+        //await _userManager.UpdateUser(user);
+        //return new SuccessDataResult<AccessToken>(newToken);
     }
 
     public async Task AddLoginRecord(Guid userId)

@@ -15,14 +15,9 @@ namespace Entegrasyon.MVC.Controllers
     [Route("/category/category-import")]
     [Authorize]
     [Breadcrumb("Kategori Aktarımı",ViewModels.BreadcrumbUsageType.Controller)]
-    public class CategoryImportController : Controller
+    public class CategoryImportController(TrendyolCategoryImporterService trendyolCategoryImporterService)
+        : Controller
     {
-        private readonly TrendyolCategoryImporterService _trendyolCategoryImporterService;
-
-        public CategoryImportController(TrendyolCategoryImporterService trendyolCategoryImporterService)
-        {
-            _trendyolCategoryImporterService = trendyolCategoryImporterService;
-        }
         [HttpGet]
         public IActionResult Index()
         {
@@ -32,7 +27,7 @@ namespace Entegrasyon.MVC.Controllers
         [Route("GetTrendyolCategories")]
         public async Task<IActionResult> GetTrendyolCategories()
         {
-            var categoriesResult = await _trendyolCategoryImporterService.GetTrendyolCategories();
+            var categoriesResult = await trendyolCategoryImporterService.GetTrendyolCategories();
             if(categoriesResult.Success)
                 return Json(categoriesResult.Data.ToJsTreeList());
             return NotFound(categoriesResult.Message);
@@ -41,7 +36,7 @@ namespace Entegrasyon.MVC.Controllers
         [Route("ImportFromTrendyol")]
         public async Task<IActionResult> ImportFromTrendyol([FromBody]List<TrendyolImportViewModel> model)
         {
-            if (model == null || !model.Any())
+            if (model == null || model.Count == 0)
                 return BadRequest("Lütfen en az bir kategori seçin.");
             model.ForEach(x =>
             {
@@ -60,9 +55,9 @@ namespace Entegrasyon.MVC.Controllers
 
             ImmutableList<TrendyolSelectedCategory> categories = hierarchical.Select(h => h.ToTrendyolSelectedCategory()).ToImmutableList();
 
-            var result =await _trendyolCategoryImporterService.Import(categories);
+            await trendyolCategoryImporterService.QueueImporting(categories);
 
-            return result.Success ? Json(result) : BadRequest(result.Message);
+            return Ok();
         }
         [NonAction]
         private static void FlattenCategoryList(List<ImportedTrendyolCategory> categories,ImportedTrendyolCategory category,List<int> flatList)

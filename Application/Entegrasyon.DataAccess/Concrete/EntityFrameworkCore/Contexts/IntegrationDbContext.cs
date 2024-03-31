@@ -16,24 +16,25 @@ using Shared.Entity;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Microsoft.IdentityModel.Tokens;
+using MassTransit;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
-public class IntegrationDbContext : DbContext
+public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options) : DbContext(options)
 {
-    public IntegrationDbContext(DbContextOptions<IntegrationDbContext> options) : base(options)
-    {
-
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.HasCollation("CaseInsensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
         modelBuilder.Seed();
+        //modelBuilder.
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
 
         base.OnModelCreating(modelBuilder);
     }
+    
     
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
@@ -61,7 +62,6 @@ public class IntegrationDbContext : DbContext
     public DbSet<Product> MainProducts { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
     public DbSet<BranchOfficeStock> BranchOfficeStocks { get; set; }
-    
     public DbSet<ChangeProduct> ChangeProducts { get; set; }
     public DbSet<DiscountVoucher> DiscountVouchers { get; set; }
     public DbSet<ReturnProduct> ReturnProducts { get; set; }
@@ -76,7 +76,6 @@ public class IntegrationDbContext : DbContext
     public DbSet<RetailCustomer> RetailCustomers { get; set; }
     public DbSet<CorporateCustomer> CorporateCustomers { get; set; }
     public DbSet<CargoCompany> CargoCompanies { get; set; }
-    
     public DbSet<CategoryAttributeCategory> CategoryAttributeCategories { get; set; }
     public DbSet<TempBarcode> TempBarcodes { get; set; }
     public DbSet<CategoryMarketPlaceMatch> CategoryMarketPlaceMatches { get; set; }

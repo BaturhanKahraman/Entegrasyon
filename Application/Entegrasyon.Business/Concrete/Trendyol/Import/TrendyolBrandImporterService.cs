@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using Amazon.Runtime.Internal.Util;
 using AutoMapper;
 using Entegrasyon.Business.Utility.Constants;
-using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Brands;
@@ -23,17 +22,15 @@ public class TrendyolBrandImporterService
     private readonly ILogger<TrendyolBrandImporterService> _logger;
     private readonly HttpClient _httpClient;
     private readonly BrandMatchService _brandMatchService;
-    private readonly RabbitMqPublisherService _brokerHelper;
     private readonly ApplicationLogManager _logService;
     private readonly MarketPlace _trendyolMarketPlace;
     private readonly IntegrationDbContext _dbContext;
     private const int TrendyolId = 1;
 
-    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory, BrandMatchService brandMatchService, RabbitMqPublisherService brokerHelper, ApplicationLogManager logService, IntegrationDbContext dbContext, ILogger<TrendyolBrandImporterService> logger)
+    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory, BrandMatchService brandMatchService, ApplicationLogManager logService, IntegrationDbContext dbContext, ILogger<TrendyolBrandImporterService> logger)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         _brandMatchService = brandMatchService;
-        _brokerHelper = brokerHelper;
         _logService = logService;
         _dbContext = dbContext;
         _trendyolMarketPlace = dbContext.MarketPlaces.AsTracking().SingleOrDefault(x => string.Equals(x.Name, "Trendyol"));
@@ -42,7 +39,7 @@ public class TrendyolBrandImporterService
 
     public async Task<IResult> QueueImporting()
     {
-        _brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolBrandImportQueueName, null);
+        //_brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolBrandImportQueueName, null);
         await _logService.AddLog("Trendyoldan tüm markaları içeri çekme isteği geldi.", LogType.Brand);
         return new SuccessResult(Messages.BrandsImportingQueued);
     }

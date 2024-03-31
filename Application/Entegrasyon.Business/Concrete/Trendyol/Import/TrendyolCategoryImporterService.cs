@@ -1,15 +1,15 @@
 ﻿using System.Collections.Immutable;
 using System.Net.Http.Json;
 using Entegrasyon.Business.Utility.Constants;
-using Entegrasyon.Business.Utility.MessageBroker.RabbitMQ;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Matches;
+using Entegrasyon.MqContracts.CategoryImport;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete.Trendyol.Import;
@@ -18,18 +18,18 @@ public class TrendyolCategoryImporterService
 {
     private readonly HttpClient _httpClient;
     private readonly IntegrationDbContext _dbContext;
-    private readonly RabbitMqPublisherService _brokerHelper;
     private readonly ILogger<TrendyolCategoryImporterService> _logger;
-    private readonly List<CategoryAttribute> SavedCategoryAttributes = new();
+    private readonly List<CategoryAttribute> _savedCategoryAttributes = [];
     private readonly MarketPlace _trendyolMarketPlace;
     private const string CategoryUrlPostfix = @"product-categories";
+    private readonly IBus _bus;
 
-    public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory, RabbitMqPublisherService brokerHelper, IntegrationDbContext dbContext, ILogger<TrendyolCategoryImporterService> logger)
+    public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory, IntegrationDbContext dbContext, ILogger<TrendyolCategoryImporterService> logger, IBus bus)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
-        _brokerHelper = brokerHelper;
         _dbContext = dbContext;
         _logger = logger;
+        _bus = bus;
         _trendyolMarketPlace = _dbContext
             .MarketPlaces
             .AsTracking()
@@ -48,31 +48,13 @@ public class TrendyolCategoryImporterService
         return new SuccessDataResult<IEnumerable<ImportedTrendyolCategory>>(result.Categories);
     }
 
-    public IResult QueueImportingTrendyolCategories(IEnumerable<TrendyolImport> trendyolImports)
+    public async ValueTask QueueImporting(ImmutableList<TrendyolSelectedCategory> rootCategories)
     {
-        //validate
-        if (trendyolImports == null)
-            return new ErrorResult("Boş obje gönderildi.");
-        _brokerHelper.PublishToQueue(MessageBrokerNames.TrendyolCategoryImportQueueName, trendyolImports);
-        return new SuccessResult(Messages.CategoryImportQueued);
+        if (rootCategories is null || rootCategories.Count == 0)
+            return;
+        var message = new CategoryImported(rootCategories);
+        await _bus.Publish(message);
     }
-
-    public IResult QueueImportByIdList(List<int> ids)
-    {
-        return new SuccessResult();
-    }
-
-    //gelen kategorilerin parentlarını da alıp bakmalıyız
-    public async Task<IResult> ImportCategories(IEnumerable<TrendyolSelectedCategory> selectedCategories)
-    {
-        //validation Instead
-        if (selectedCategories == null)
-            return new ErrorResult();
-        //validation Instead
-
-        return new ErrorResult();
-    }
-
 
     public async Task<IResult> Import(ImmutableList<TrendyolSelectedCategory> rootCategories)
     {
@@ -164,15 +146,15 @@ public class TrendyolCategoryImporterService
             foreach (var categoryAttribute in trendyolCategory.categoryAttributes)
             {
                 var dbCatAttr = await AddAttributes(categoryAttribute, _trendyolMarketPlace);
-                if (!await _dbContext.CategoryAttributes.AnyAsync(x => x.ImportId == dbCatAttr.ImportId) && !SavedCategoryAttributes.Contains(dbCatAttr))
+                if (!await _dbContext.CategoryAttributes.AnyAsync(x => x.ImportId == dbCatAttr.ImportId) && !_savedCategoryAttributes.Contains(dbCatAttr))
                 {
                     foreach (var categoryAttributeAttributeValue in categoryAttribute.AttributeValues)
                     {
                         await AddAttrValues(categoryAttributeAttributeValue, _trendyolMarketPlace, dbCatAttr);
                     }
                 }
-                if (!SavedCategoryAttributes.Contains(dbCatAttr))
-                    SavedCategoryAttributes.Add(dbCatAttr);
+                if (!_savedCategoryAttributes.Contains(dbCatAttr))
+                    _savedCategoryAttributes.Add(dbCatAttr);
 
                 var manyToManyEntity = new CategoryAttributeCategory
                 {
@@ -205,7 +187,7 @@ public class TrendyolCategoryImporterService
         async Task<CategoryAttribute> AddAttributes(TrendyolCategoryAttribute categoryAttribute, MarketPlace marketPlace)
         {
             var dbCatAttr = (await _dbContext.CategoryAttributes.FirstOrDefaultAsync(x =>
-                x.ImportId == categoryAttribute.Attribute.Id) ?? SavedCategoryAttributes.FirstOrDefault(x =>
+                x.ImportId == categoryAttribute.Attribute.Id) ?? _savedCategoryAttributes.FirstOrDefault(x =>
                 x.ImportId == categoryAttribute.Attribute.Id)) ?? new CategoryAttribute
                 {
                     CategoryAttributeKey = categoryAttribute.Attribute.Name,
@@ -215,7 +197,7 @@ public class TrendyolCategoryImporterService
                     CategoryAttributeValues = new List<CategoryAttributeValue>()
                 };
             if (!await _dbContext.CategoryAttributes.AnyAsync(x =>
-                    x.ImportId == categoryAttribute.Attribute.Id) && !SavedCategoryAttributes.Contains(dbCatAttr))
+                    x.ImportId == categoryAttribute.Attribute.Id) && !_savedCategoryAttributes.Contains(dbCatAttr))
             {
                 var dbCatAttrMarketPlaceMatch = new CategoryAttributeMarketPlaceMatch()
                 {
