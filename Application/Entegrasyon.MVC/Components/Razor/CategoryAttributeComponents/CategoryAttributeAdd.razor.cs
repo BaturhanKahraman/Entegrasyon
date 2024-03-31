@@ -105,7 +105,7 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
                     _navigationManager.NavigateTo("/CategoryAttributes/SuccesfullyAdded",true);
                 }
             }
-            catch (Exception e)
+            catch
             {
                 //ignore
             }

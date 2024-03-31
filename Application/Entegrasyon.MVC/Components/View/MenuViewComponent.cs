@@ -15,6 +15,6 @@ public class MenuViewComponent : ViewComponent
     public IViewComponentResult Invoke()
     {
         var items = _menuService.GetMenu();
-        return View(items);
+        return View(items.ToList());
     }
 }

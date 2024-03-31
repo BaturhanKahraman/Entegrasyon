@@ -1,6 +1,5 @@
 using Entegrasyon.Business.Concrete;
-using Entegrasyon.Business.Extensions;
-using Entegrasyon.MVC.Utility.Attributes;
+using Entegrasyon.DependencyResolver;
 using Entegrasyon.MVC.Utility.Mapper;
 using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -18,7 +17,7 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
-builder.Services.AddRabbitMQ(builder.Configuration);
+builder.Services.AddApplicationMassTransit(builder.Configuration);
 builder.Services.AddApplicationDependencies();
 builder.Services.AddClients();
 builder.Services.AddAutoMapper(x => x.AddProfile<CustomMapProfile>());
@@ -43,23 +42,17 @@ builder.Services.AddStackExchangeRedisCache(opt =>
 });
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddMemoryCache();
-builder.Services.AddSession(x =>
-{
-    x.IdleTimeout = TimeSpan.FromHours(1);
-    x.Cookie.IsEssential = true;
-});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
-builder.Services.AddScoped<IMenuService,MenuService>();
+builder.Services.AddSingleton<IMenuService,MenuService>();
 var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
     await using var serviceScope = app.Services.CreateAsyncScope();
     var lifeTimeHandler = serviceScope.ServiceProvider.GetRequiredService<ApplicationLifetimeManager>();
     await lifeTimeHandler.ApplyStartActions();
-    await serviceScope.DisposeAsync();
 });
 // Configure the HTTP request pipeline.
 if(!app.Environment.IsDevelopment())
@@ -81,7 +74,6 @@ app.UseStaticFiles(new StaticFileOptions()
 });
 
 app.UseRouting();
-app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapBlazorHub();

@@ -7,11 +7,11 @@ namespace Entegrasyon.MVC.Utility.Helpers;
 public static class AlertTypeHelper
 {
     private static readonly (string Type, string Class)[] AlertTypes =
-     {
+     [
         (Type: StringConstant.SuccessAlert, Class: "alert-success"),
         (Type: StringConstant.DangerAlert, Class: "alert-danger"),
         (Type: StringConstant.WarningAlert, Class: "alert-warning")
-     };
+     ];
 
     public static IHtmlContent RenderAlerts(this ViewDataDictionary viewData)
     {

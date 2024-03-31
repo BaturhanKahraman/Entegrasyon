@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit.Abstractions" Version="8.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
+    <ProjectReference Include="..\MqContracts\Entegrasyon.MqContracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="CategoryImport\" />
+  </ItemGroup>
+
+</Project>

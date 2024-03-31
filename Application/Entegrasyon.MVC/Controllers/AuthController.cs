@@ -19,13 +19,11 @@ namespace Entegrasyon.MVC.Controllers
     {
         private readonly AuthManager _authManager;
         private readonly HttpContext _httpContext;
-        private readonly IMenuService _menuService;
 
-        public AuthController(AuthManager authManager,IHttpContextAccessor httpContextAccessor,IMenuService menuService)
+        public AuthController(AuthManager authManager,IHttpContextAccessor httpContextAccessor)
         {
             _authManager = authManager;
             _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _menuService = menuService;
         }
 
         [HttpGet]
@@ -76,10 +74,7 @@ namespace Entegrasyon.MVC.Controllers
             var claimsIdentity = new ClaimsIdentity(
                 claims,CookieAuthenticationDefaults.AuthenticationScheme);
             var claimPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-            await Task.WhenAll
-                (_httpContext.SignInAsync(claimPrincipal),
-                Task.Run(() => _menuService.CreateMenu(claimPrincipal)));
+            await _httpContext.SignInAsync(claimPrincipal);
             if(!string.IsNullOrEmpty(model.ReturnUrl))
                 return LocalRedirect(model.ReturnUrl);
             return RedirectToAction("Index","Home");
