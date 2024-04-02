@@ -16,7 +16,7 @@ where T : class, new()
     Task AddRangeAsync(List<T> entities);
     Task RemoveRangeAsync(IEnumerable<T> entities);
     Task<T> GetAsync(Expression<Func<T, bool>> expression, bool isTracking = false);
-    Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
+    Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false,CancellationToken token =default);
     Task<List<T>> FromSqlRaw(string sql);
     Task<bool> Exists(Expression<Func<T, bool>> expression = null);
 

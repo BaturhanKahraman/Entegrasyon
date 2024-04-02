@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.ViewModels.User;
@@ -7,45 +8,36 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Shared.User;
-using Shared.User.Services;
 
 namespace Entegrasyon.MVC.Controllers
 {
     [Authorize]
-    public class UsersController : Controller
+    public class UsersController(
+        ApplicationUserManager userManager,
+        IMapper mapper,
+        BranchOfficeManager branchOfficeManager,
+        RoleManager roleManager)
+        : Controller
     {
-        private readonly ApplicationUserManager _userManager;
-        private readonly BranchOfficeManager _branchOfficeManager;
-        private readonly IRoleManager<RootRole,RootClaim> _roleManager;
-        private readonly IMapper _mapper;
-
-        public UsersController(ApplicationUserManager userManager,IMapper mapper,BranchOfficeManager branchOfficeManager,IRoleManager<RootRole,RootClaim> roleManager)
-        {
-            _userManager = userManager;
-            _mapper = mapper;
-            _branchOfficeManager = branchOfficeManager;
-            _roleManager = roleManager;
-        }
-
         public async Task<IActionResult> Index(int pageIndex = 0,int pageSize = 50)
         {
-            var result = await _userManager.GetPaginatedUserDetails(pageIndex,pageSize);
+            var result = await userManager.GetPaginatedUserDetails(pageIndex,pageSize);
             return View(result.Data);
         }
         [HttpGet]
         [RestoreModelStateFromTempData]
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Edit(Guid? id,CancellationToken token)
         
         {
             if (id == null)
                 return NotFound();
-            var user = await _userManager.GetUserById(id.Value);
+            var user = await userManager.GetUserById(id.Value);
             if (user == null)
                 return NotFound();
-            var model = _mapper.Map<UserEditViewModel>(user);
-            model.BranchOffices ??= (await _branchOfficeManager.GetBranchList()).Data
+            var model = mapper.Map<UserEditViewModel>(user);
+            model.BranchOffices ??= (await branchOfficeManager.GetBranchList(token)).Data
                 .Select(b => new SelectListItem(b.Name,b.Id.ToString())).ToList();
-            model.Roles ??= (await _roleManager.GetRolesSelectList())
+            model.Roles ??= (await roleManager.GetRolesSelectList(token))
                 .Select(role => new SelectListItem(role.Name,role.Id.ToString())).ToList();
             return View(model);
         }
@@ -58,8 +50,8 @@ namespace Entegrasyon.MVC.Controllers
                 return RedirectToAction(nameof(Edit));
             //var dto = new UserEditDto(model.Id, model.BranchOfficeId, model.Name, model.Surname, model.UserName,
             //    model.Email, model.RoleId);
-            var dto = _mapper.Map<UserEditDto>(model);
-            var result = await _userManager.EditUser(dto);
+            var dto = mapper.Map<UserEditDto>(model);
+            var result = await userManager.EditUser(dto);
             if (!result.Success)
             {
                 ModelState.AddModelError(string.Empty,result.Message);
@@ -71,12 +63,12 @@ namespace Entegrasyon.MVC.Controllers
 
         [HttpGet]
         [RestoreModelStateFromTempData]
-        public async Task<IActionResult> Add()//UserAddViewModel model
+        public async Task<IActionResult> Add(CancellationToken token)//UserAddViewModel model
         {
             var model = new UserAddViewModel();
-            model.BranchOffices ??= (await _branchOfficeManager.GetBranchList()).Data
+            model.BranchOffices ??= (await branchOfficeManager.GetBranchList(token)).Data
                 .Select(b => new SelectListItem(b.Name, b.Id.ToString())).ToList();
-            model.Roles ??= (await _roleManager.GetRolesSelectList())
+            model.Roles ??= (await roleManager.GetRolesSelectList(token))
                 .Select(role => new SelectListItem(role.Name, role.Id.ToString())).ToList();
 
             return View(model);
@@ -91,8 +83,8 @@ namespace Entegrasyon.MVC.Controllers
                 return RedirectToAction(nameof(Add),model);
             }
 
-            var dto = _mapper.Map<AddUserDto>(model);
-            var result = await _userManager.AddUser(dto);
+            var dto = mapper.Map<AddUserDto>(model);
+            var result = await userManager.AddUser(dto);
             if(result.Success)
             {
                 return RedirectToAction("Index");
@@ -106,10 +98,10 @@ namespace Entegrasyon.MVC.Controllers
         {
             if (string.IsNullOrEmpty(id))
                 return NotFound();
-            var result = await _userManager.GetUserDetails(id);
+            var result = await userManager.GetUserDetails(id);
             if (!result.Success)
                 return BadRequest(result.Message);
-            var model = _mapper.Map<UserDetailViewModel>(result.Data);
+            var model = mapper.Map<UserDetailViewModel>(result.Data);
             return View(model);
         }
 
@@ -121,7 +113,7 @@ namespace Entegrasyon.MVC.Controllers
             bool isConvertible = Guid.TryParse(fc["id"].ToString(),out var userId);
             if(!isConvertible)
                 return BadRequest();
-            await _userManager.SetPassive(userId);
+            await userManager.SetPassive(userId);
             return RedirectToAction(nameof(Details),new {id=userId.ToString()});
         }
 
@@ -133,7 +125,7 @@ namespace Entegrasyon.MVC.Controllers
             bool isConvertible = Guid.TryParse(fc["id"].ToString(),out var userId);
             if (!isConvertible)
                 return BadRequest();
-            var result = await _userManager.SoftDelete(userId);
+            var result = await userManager.SoftDelete(userId);
             return Json(result);
         }
     }

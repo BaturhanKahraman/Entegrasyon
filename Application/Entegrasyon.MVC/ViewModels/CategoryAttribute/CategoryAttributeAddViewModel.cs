@@ -18,8 +18,6 @@ public class CategoryAttributeAddViewModel
 
 public class CategoryAttributeCreateViewModel
 {
-    private string customValues;
-
     public int? Id { get; set; }
     public bool IsAddedAfterward { get; set; }
     public bool IsExistingAdding { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 

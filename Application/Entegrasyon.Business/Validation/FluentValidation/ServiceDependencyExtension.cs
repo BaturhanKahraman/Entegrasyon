@@ -21,6 +21,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<BranchOffice>,BranchValidator>();
         services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
         services.AddScoped<IValidator<AddUserDto>,AddUserDtoValidator>();
+        services.AddScoped<IValidator<UserEditDto>,UserEditDtoValidator>();
         services.AddScoped<IValidator<Brand>,BrandValidator>();
         services.AddScoped<IValidator<CustomerAddDto>,AddCustomerDtoValidator>();
         services.AddScoped<IValidator<UpdateCustomerDto>,UpdateCustomerDtoValidator>();

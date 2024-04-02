@@ -17,6 +17,7 @@ using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
+using Entegrasyon.Entity.User;
 using Shared.Entity;
 
 namespace Entegrasyon.Business.MapperProfiles;

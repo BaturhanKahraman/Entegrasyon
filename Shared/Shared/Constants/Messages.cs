@@ -19,4 +19,6 @@ public static class Messages
     public const string UserNotFound = "Kullanıcı bulunamadı";
     public const string EmailExists = "Bu mail zaten kullanılmakta";
     public const string OfficeNameAlreadyExists = "Bu ofis isminden zaten var.";
+    public const string RoleExits = "Aynı isimde bir rol zaten bulunmakta.";
+    public const string RoleNotFound = "Rol bulunamadı.";
 }
