@@ -33,5 +33,9 @@ public class Messages
     public const string CategoryDeleted="Kategori silindi.";
     public const string CategoryHasProducts = "Kategoride ürün bulunuyor.";
     public const string CategoryIsSuper="Kategori bir üst kategoridir!";
-    public const string TrendyolCategoryApiError="Trendyol kategorilerini çekerken bir hata meydana geldi.";
+    public const string TrendyolCategoryApiError= "Trendyol kategorilerini çekerken bir hata meydana geldi.";
+    public const string UserSameUsername = "Aynı kullanıcı isminden zaten var.";
+    public const string UserAdded = "Kullanıcı eklenmiştir.";
+    public const string UserNotFound = "Kullanıcı bulunamadı.";
+    public const string UserUpdated = "Kullanıcı güncellendi.";
 }

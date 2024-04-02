@@ -17,6 +17,8 @@ using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Microsoft.IdentityModel.Tokens;
 using MassTransit;
+using Entegrasyon.Entity.Notifications;
+using Entegrasyon.Entity.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -85,9 +87,12 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
     public DbSet<AttributeKeyValue> AttributeKeyValues { get; set; }
     public DbSet<ApplicationUser> Users { get; set; }
-    public DbSet<RootRole> Roles { get; set; }
-    public DbSet<RootClaim> Claims { get; set; }
-    public DbSet<RootLogin> Logins { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<ApplicationClaim> Claims { get; set; }
+    public DbSet<Login> Logins { get; set; }
 
+    //public DbSet<UsersRoles> UsersRoles { get; set; }
+    //public DbSet<UsersClaims> UsersClaims { get; set; }
+    //public DbSet<RolesClaims> RolesClaims { get; set; }
 
 }

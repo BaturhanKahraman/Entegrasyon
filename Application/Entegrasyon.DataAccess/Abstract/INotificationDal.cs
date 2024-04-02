@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Entity;
+﻿using Entegrasyon.Entity.Notifications;
 using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Abstract;

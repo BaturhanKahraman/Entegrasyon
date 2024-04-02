@@ -44,6 +44,7 @@ public class BrandsController(BrandManager brandManager, IMapper mapper) : Contr
     {
         if (!ModelState.IsValid)
             return RedirectToAction(nameof(Edit),vm);
+        await Task.Yield();
         throw new NotImplementedException();
     }
 
@@ -51,6 +52,7 @@ public class BrandsController(BrandManager brandManager, IMapper mapper) : Contr
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(BrandDeleteViewModel vm)
     {
+        await Task.Yield();
         throw new NotImplementedException();
     }
 }

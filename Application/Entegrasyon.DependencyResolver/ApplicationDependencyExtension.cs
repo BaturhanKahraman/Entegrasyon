@@ -3,13 +3,11 @@ using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.MapperProfiles;
-using Entegrasyon.Business.Utility.Auth;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
-using Entegrasyon.Entity;
 using Entegrasyon.MqConsumer.CategoryImport;
 using Entegrasyon.MqConsumer.Product;
 using MassTransit;
@@ -19,8 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Shared.Extensions;
-using Shared.Security.Jwt;
-using Shared.User;
+using Entegrasyon.Business.Concrete.Auth;
 
 namespace Entegrasyon.DependencyResolver
 {
@@ -32,7 +29,7 @@ namespace Entegrasyon.DependencyResolver
             //services.AddScoped<DbContext,IntegrationDbContext>();
 
             services.AddSharedSettings();
-            services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
+            //services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ILogDal, EfLogDal>();
@@ -55,7 +52,7 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<ICategoryAttributeCategoryDal, EfCategoryAttributeCategoryDal>();
 
             services.AddScoped<BranchOfficeManager>();
-            services.AddScoped<ApplicationRoleManager>();
+            services.AddScoped<RoleManager>();
             services.AddScoped<BrandManager>();
             services.AddScoped<CategoryManager>();
             services.AddScoped<ApplicationLogManager>();
@@ -79,7 +76,6 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<CategoryAttributeCategoryManager>();
             services.AddScoped<CategoryAttributeValueManager>();
 
-            services.AddScoped<ITokenHelper, ClaimHelper>();
 
 
             services.AddValidators();
@@ -134,7 +130,6 @@ namespace Entegrasyon.DependencyResolver
         public static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration? configuration = null)
         {
             services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);
-            services.Configure<TokenOptions>(configuration!.GetSection("JwtTokenOptions"));
             return services;
         }
 

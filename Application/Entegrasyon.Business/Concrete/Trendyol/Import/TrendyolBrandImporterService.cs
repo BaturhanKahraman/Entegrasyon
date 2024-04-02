@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using Amazon.Runtime.Internal.Util;
 using AutoMapper;
 using Entegrasyon.Business.Utility.Constants;
@@ -12,6 +13,7 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete.Trendyol.Import;
@@ -60,7 +62,7 @@ public class TrendyolBrandImporterService
             }
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Brand importta gelen response hatalı.", response);
+                _logger.LogWarning("Brand importta gelen response hatalı. {0}", JsonConvert.SerializeObject(response));
                 return new ErrorResult(Messages.BrandsImportingInterruptedNull);
             }
             var trendyolBrandRoot = await response.Content.ReadFromJsonAsync<TrendyolBrandRoot>();

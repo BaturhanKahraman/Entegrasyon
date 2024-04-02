@@ -28,8 +28,8 @@ public class BranchOfficeManager
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IDataResult<List<BranchOffice>>> GetBranchList() =>
-        new SuccessDataResult<List<BranchOffice>>(await _branchOfficeDal.GetAllAsync());
+    public async Task<IDataResult<List<BranchOffice>>> GetBranchList(CancellationToken token=default) =>
+        new SuccessDataResult<List<BranchOffice>>(await _branchOfficeDal.GetAllAsync(token:token));
 
     public async Task<IDataResult<BranchOffice>> AddBranch(BranchOfficeAddDto officeDto)
     {

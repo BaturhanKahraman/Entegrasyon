@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Folder Include="Brands\Import\" />
-    <Folder Include="Dtos\Auth\" />
     <Folder Include="Dtos\CargoCompany\" />
     <Folder Include="Barcode\" />
     <Folder Include="Dtos\Attributes\" />
