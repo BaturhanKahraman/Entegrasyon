@@ -9,7 +9,6 @@ namespace Entegrasyon.MVC.Utility.Services;
 
 public class MenuService : IMenuService
 {
-    private const string CacheKey = "Menu+{0}";
     private readonly IHttpContextAccessor _accessor;
     private readonly IMemoryCache _menuCache;
 
@@ -18,6 +17,8 @@ public class MenuService : IMenuService
         _accessor = accessor;
         _menuCache = menuCache;
     }
+
+    private const string CacheKey = "Menu+{0}";
 
     private List<NavigationItem> CreateMenuItems(ClaimsPrincipal user)
     {
@@ -39,10 +40,10 @@ public class MenuService : IMenuService
     {
         var user = _accessor.HttpContext!.User;
         string cacheKey = string.Format(CacheKey, user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        bool isCached = _menuCache.TryGetValue(cacheKey,out List<NavigationItem> navItems);
-        if (isCached) return navItems;
-        navItems = CreateMenuItems(user);
-        _menuCache.Set(cacheKey, navItems);
-        return navItems;
+        return _menuCache.GetOrCreate(cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            return CreateMenuItems(user);
+        });
     }
 }

@@ -1,6 +1,9 @@
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Notifications;
+using Entegrasyon.Business.Notifications.SignalR;
 using Entegrasyon.DependencyResolver;
 using Entegrasyon.MVC.Utility.Mapper;
+using Entegrasyon.MVC.Utility.Notifications;
 using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
@@ -47,6 +50,11 @@ builder.Services.AddCustomDbContext();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
 builder.Services.AddSingleton<IMenuService,MenuService>();
+builder.Services.AddSignalR();
+builder.Services.AddSignalRSettings();
+builder.Services.AddNotification();
+builder.Services.AddSingleton<IBlazorNotificationSender, BlazorNotificationSender>();
+builder.Services.AddSingleton<INotificationSender, BlazorNotificationSender>();
 var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
@@ -76,6 +84,7 @@ app.UseStaticFiles(new StaticFileOptions()
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<NotificationHub>("/NotificationHub");
 app.MapBlazorHub();
 app.MapControllerRoute(
     name: "default",
