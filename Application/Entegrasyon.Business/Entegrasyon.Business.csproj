@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Notifications\Emails\" />
     <Folder Include="Utility\Auth\" />
   </ItemGroup>
 

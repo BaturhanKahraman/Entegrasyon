@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Entegrasyon.Entity.Notifications;
 using Shared.Entity;
 
 namespace Entegrasyon.Entity.User;
@@ -11,4 +12,6 @@ public class ApplicationClaim : BaseEntity
     public ICollection<Role> Roles { get; set; } = [];
     public ICollection<UsersClaims> UsersClaims { get; set; } = [];
     public ICollection<ApplicationUser> Users { get; set; } = [];
+    public ICollection<NotificationsClaims> NotificationClaims { get; set; } = [];
+    public ICollection<Notification> Notifications { get; set; }
 }

@@ -18,6 +18,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Shared.Extensions;
 using Entegrasyon.Business.Concrete.Auth;
+using Entegrasyon.Business.Notifications;
+using Entegrasyon.Business.Notifications.Emails;
+using Entegrasyon.Business.Notifications.SignalR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Entegrasyon.DependencyResolver
 {
@@ -150,6 +154,20 @@ namespace Entegrasyon.DependencyResolver
                 });
                 
             });
+        }
+        public static IServiceCollection AddCustomUserIdProvider(this IServiceCollection services)
+        {
+            return services.AddSingleton<IUserIdProvider, ApplicationUserIdProvider>();
+        }
+
+        public static IServiceCollection AddSignalRSettings(this IServiceCollection services)
+            => services.AddCustomUserIdProvider();
+
+        public static IServiceCollection AddNotification(this IServiceCollection services)
+        {
+            services.AddSingleton<INotificationSender, SignalRSender>();
+            services.AddSingleton<INotificationSender, EmailSender>();
+            return services;
         }
     }
 }

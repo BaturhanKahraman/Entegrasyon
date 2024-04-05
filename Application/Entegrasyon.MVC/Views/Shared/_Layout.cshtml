@@ -23,7 +23,7 @@
     <link href="~/css/modal.css" rel="stylesheet" />
     <!-- END GLOBAL MANDATORY STYLES -->
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM STYLES -->
-    @await RenderSectionAsync("Styles",required:false)
+    @await RenderSectionAsync("Styles", required: false)
     <!-- END PAGE LEVEL PLUGINS/CUSTOM STYLES -->
     <script src="~/vendor/feather-icons/dist/feather.min.js"></script>
 
@@ -84,9 +84,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
-    @{
-        await RenderSectionAsync("Scripts", required: false);
-    }
+    @(await RenderSectionAsync("Scripts", required: false))
     <!-- END PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
 </body>
 </html>

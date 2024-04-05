@@ -10,10 +10,9 @@ public sealed class Notification : BaseEntity
     public string Header { get; set; }
     public string Content { get; set; }
     public bool IsRead { get; set; }
-    public DateTimeOffset ReadDate { get; set; }
-    public Guid? ApplicationUserId { get; set; }
-    public ApplicationUser ApplicationUser { get; set; }
-
-    public int? ApplicationClaimId { get; set; }
-    public ApplicationClaim ApplicationClaim { get; set; }
+    public DateTimeOffset ReadAt { get; set; }
+    public ICollection<NotificationsUsers> NotificationsUsers { get; set; }
+    public ICollection<ApplicationUser> Users { get; set; } = [];
+    public ICollection<NotificationsClaims> NotificationClaims { get; set; } = [];
+    public ICollection<ApplicationClaim> Claims { get; set; } = [];
 }
