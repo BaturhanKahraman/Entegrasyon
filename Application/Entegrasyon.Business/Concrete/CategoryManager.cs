@@ -10,24 +10,17 @@ using System.Linq.Expressions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager
+    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,FluentValidator fluentValidator,ProductManager productManager)
     {
-        private readonly ICategoryDal _categoryDal;
-        private readonly ApplicationLogManager _applicationLogManager;
-        private readonly IMapper _mapper;
-        private readonly FluentValidator _fluentValidator;
-        private readonly ProductManager _productManager;
-        public CategoryManager(ICategoryDal categoryDal, ApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, ProductManager productManager)
-        {
-            _categoryDal = categoryDal;
-            _applicationLogManager = applicationLogManager;
-            _mapper = mapper;
-            _fluentValidator = fluentValidator;
-            _productManager = productManager;
-        }
+        private readonly ICategoryDal _categoryDal = categoryDal;
+        private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;
+        private readonly IMapper _mapper = mapper;
+        private readonly FluentValidator _fluentValidator = fluentValidator;
+        private readonly ProductManager _productManager = productManager;
 
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
         {

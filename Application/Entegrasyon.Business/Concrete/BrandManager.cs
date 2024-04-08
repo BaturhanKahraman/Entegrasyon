@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
@@ -17,9 +18,9 @@ public class BrandManager
 {
     private readonly IBrandDal _brandDal;
     private readonly FluentValidator _validator;
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
-    public BrandManager(IBrandDal brandDal,FluentValidator validator,ApplicationLogManager applicationLogManager,IMapper mapper)
+    public BrandManager(IBrandDal brandDal,FluentValidator validator,IApplicationLogManager applicationLogManager,IMapper mapper)
     {
         _brandDal = brandDal;
         _validator = validator;

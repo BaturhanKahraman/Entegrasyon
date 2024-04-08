@@ -86,7 +86,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public DbSet<BrandMarketPlaceMatch> BrandMarketPlaceMatches { get; set; }
     public DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
     public DbSet<AttributeKeyValue> AttributeKeyValues { get; set; }
-    public DbSet<ApplicationUser> Users { get; set; }
+    public virtual DbSet<ApplicationUser> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<ApplicationClaim> Claims { get; set; }
     public DbSet<Login> Logins { get; set; }

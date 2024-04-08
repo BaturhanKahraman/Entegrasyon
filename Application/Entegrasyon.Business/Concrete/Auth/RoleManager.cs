@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Business.Extensions;
+﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Users;
@@ -12,7 +13,7 @@ using Shared.Results;
 namespace Entegrasyon.Business.Concrete.Auth
 {
     public class RoleManager(
-        ApplicationLogManager applicationLogManager,
+        IApplicationLogManager applicationLogManager,
         FluentValidator validator,
         IntegrationDbContext context,
         IMemoryCache cache)

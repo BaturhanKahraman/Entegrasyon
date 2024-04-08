@@ -16,12 +16,13 @@ using Microsoft.Extensions.Logging;
 using Shared.Logic;
 using System;
 using Shared.Extensions;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete.Auth;
 
 public class ApplicationUserManager(
     IMapper mapper,
-    ApplicationLogManager applicationLogManager,
+    IApplicationLogManager applicationLogManager,
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
     FluentValidator validator,
     IntegrationDbContext context,

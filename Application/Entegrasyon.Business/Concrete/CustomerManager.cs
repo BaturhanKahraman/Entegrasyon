@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -21,8 +22,8 @@ public class CustomerManager
     private readonly IUnitOfWork _unitOfWork;
     private readonly FluentValidator _fluentValidator;
     private readonly IMapper _mapper;
-    private readonly ApplicationLogManager _applicationLogManager;
-    public CustomerManager(ICustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,ApplicationLogManager applicationLogManager, IUnitOfWork unitOfWork)
+    private readonly IApplicationLogManager _applicationLogManager;
+    public CustomerManager(ICustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,IApplicationLogManager applicationLogManager, IUnitOfWork unitOfWork)
     {
         _customerDal = customerDal;
         _fluentValidator = fluentValidator;

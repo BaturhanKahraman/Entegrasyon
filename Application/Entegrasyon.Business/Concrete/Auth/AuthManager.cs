@@ -1,4 +1,5 @@
-﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.User;
@@ -13,7 +14,7 @@ namespace Entegrasyon.Business.Concrete.Auth;
 
 public class AuthManager(
     IntegrationDbContext context,
-    ApplicationLogManager logger)
+    IApplicationLogManager applicationLogger)
 {
 
     public async Task<IResult> LoginAsync(string userName, string password)
@@ -59,7 +60,7 @@ public class AuthManager(
     public async Task<IResult> CreatePassword(string password, Guid userId, CancellationToken token = default)
     {
         //password rules need to be applied here TODO
-        await logger.AddLog("Şifre oluşturma isteği geldi.", LogType.Auth, LogAction.Update);
+        await applicationLogger.AddLog("Şifre oluşturma isteği geldi.", LogType.Auth, LogAction.Update);
         if (string.IsNullOrEmpty(password))
             return new ErrorResult(Messages.Failed);
         var user = await context.Users.AsTracking().FirstOrDefaultAsync(u=>u.Id==userId,token);

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
@@ -15,9 +16,9 @@ public class CargoCompaniesManager
 {
     private readonly ICargoCompanyDal _cargoDal;
     private readonly FluentValidator _validator;
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
-    public CargoCompaniesManager(ICargoCompanyDal cargoDal,FluentValidator validator,ApplicationLogManager applicationLogManager,IMapper mapper)
+    public CargoCompaniesManager(ICargoCompanyDal cargoDal,FluentValidator validator,IApplicationLogManager applicationLogManager,IMapper mapper)
     {
         _cargoDal = cargoDal;
         _validator = validator;

@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Business.Utility.Constants;
+﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Products;
@@ -10,10 +11,10 @@ namespace Entegrasyon.Business.Concrete;
 
 public class ProductVariantManager
 {
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IProductVariantDal _productVariantDal;
 
-    public ProductVariantManager(IProductVariantDal productVariantDal,ApplicationLogManager applicationLogManager)
+    public ProductVariantManager(IProductVariantDal productVariantDal,IApplicationLogManager applicationLogManager)
     {
         _productVariantDal = productVariantDal;
         _applicationLogManager = applicationLogManager;

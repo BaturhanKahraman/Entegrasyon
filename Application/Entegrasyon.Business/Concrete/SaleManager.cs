@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
@@ -13,12 +14,12 @@ namespace Entegrasyon.Business.Concrete;
 
 public sealed class SaleManager
 {
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
     private readonly FluentValidator _fluentValidator;
     private readonly OfficeStockManager _officeStockManager;
     private readonly ISaleDal _saleDal;
-    public SaleManager(ApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, OfficeStockManager officeStockManager, ISaleDal saleDal)
+    public SaleManager(IApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, OfficeStockManager officeStockManager, ISaleDal saleDal)
     {
         _applicationLogManager = applicationLogManager;
         _mapper = mapper;

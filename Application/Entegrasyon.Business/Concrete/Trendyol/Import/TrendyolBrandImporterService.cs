@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Amazon.Runtime.Internal.Util;
 using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
@@ -24,12 +25,12 @@ public class TrendyolBrandImporterService
     private readonly ILogger<TrendyolBrandImporterService> _logger;
     private readonly HttpClient _httpClient;
     private readonly BrandMatchService _brandMatchService;
-    private readonly ApplicationLogManager _logService;
+    private readonly IApplicationLogManager _logService;
     private readonly MarketPlace _trendyolMarketPlace;
     private readonly IntegrationDbContext _dbContext;
     private const int TrendyolId = 1;
 
-    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory, BrandMatchService brandMatchService, ApplicationLogManager logService, IntegrationDbContext dbContext, ILogger<TrendyolBrandImporterService> logger)
+    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory, BrandMatchService brandMatchService, IApplicationLogManager logService, IntegrationDbContext dbContext, ILogger<TrendyolBrandImporterService> logger)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         _brandMatchService = brandMatchService;
