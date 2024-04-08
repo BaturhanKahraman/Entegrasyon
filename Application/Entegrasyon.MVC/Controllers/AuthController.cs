@@ -17,7 +17,7 @@ using Shared.User.Dto;
 
 namespace Entegrasyon.MVC.Controllers
 {
-    public class AuthController(AuthManager authManager, IHttpContextAccessor httpContextAccessor)
+    public class AuthController(AuthService authManager, IHttpContextAccessor httpContextAccessor)
         : Controller
     {
         private readonly HttpContext _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));
