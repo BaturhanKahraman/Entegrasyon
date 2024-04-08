@@ -151,4 +151,7 @@ public class ProductManager
                         ).ToList()),x => x.Id == id);
         return new SuccessDataResult<ProductEditDetailDto>(productEditDto);
     }
+
+    public Task<int> GetProductCountByCategoryId(int categoryId) => 
+         _productDal.Table.CountAsync(p => p.CategoryId == categoryId);
 }

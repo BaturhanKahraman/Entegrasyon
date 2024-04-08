@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
-using static Amazon.S3.Util.S3EventNotification;
 
 namespace Shared.EntityFrameworkCore;
 
@@ -14,13 +13,13 @@ where T : class, new()
     Task DeleteAsync(T entity);
     Task SoftDeleteAsync<TBaseEntity>(TBaseEntity entity)
         where TBaseEntity : BaseEntity, T;
-    Task AddRange(List<T> entities);
+    Task AddRangeAsync(List<T> entities);
     Task RemoveRangeAsync(IEnumerable<T> entities);
     Task<T> GetAsync(Expression<Func<T, bool>> expression, bool isTracking = false);
-    Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false);
+    Task<List<T>> GetAllAsync(Expression<Func<T, bool>> expression = null, bool isTracking = false,CancellationToken token =default);
     Task<List<T>> FromSqlRaw(string sql);
     Task<bool> Exists(Expression<Func<T, bool>> expression = null);
-    
+
     Task<List<TResult>> GetTransformedEntitiesAsync<TResult>(
         Expression<Func<T, TResult>> selector,
         IEnumerable<(string, string)> orderTuples = null,

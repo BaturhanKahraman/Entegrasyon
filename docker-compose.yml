@@ -3,7 +3,7 @@ version: '3.4'
 services:
   rabbit:
     image: rabbitmq:management
-    container_name: rabbitmq_container
+    container_name: entegrasyon.rabbitmq
     restart: always
     ports:
       - "5672:5672"
@@ -14,14 +14,14 @@ services:
         - RABBITMQ_ERLANG_COOKIE=mysecretcookie
         - RABBITMQ_MANAGEMENT=true
     healthcheck:
-      test: curl -f http://localhost:15672/ || exit 1
+      test: curl -f http://localhost:15672/
       interval: 10s
       timeout: 10s
       retries: 3
   
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: entegrasyon.redis
     restart: always
     ports:
       - 6379:6379
@@ -29,17 +29,16 @@ services:
       - ./data:/data
   db:
     image: postgres:latest
-    container_name: pg_container
+    container_name: entegrasyon.pg_container
     restart: always
     environment:
       POSTGRES_USER: Baturhan
       POSTGRES_PASSWORD: 649471
+      POSTGRES_DB: IntegrationDb
     ports:
       - 5432:5432
-    volumes:
-      - D:\TempData:/var/lib/postgresql/data
   pgadmin:
-    container_name: pgadmin4_container
+    container_name: entegrasyon.pgadmin4
     image: dpage/pgadmin4
     restart: always
     environment:

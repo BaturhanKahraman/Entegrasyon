@@ -1,66 +1,90 @@
 ﻿@model Shared.Entity.Pageable<Entegrasyon.MVC.ViewModels.Category.CategoryDetailListViewModel>
 
+
 @{
     ViewData["Title"] = "Ofis/Depo Listesi";
     ViewData["PageTitle"] = "Ofis/Depo Listesi";
 }
-@{
-    if(ViewData[StringConstant.SuccessAlert] != null)
-    {
-        <div class="alert">@ViewData[StringConstant.SuccessAlert]</div>
-    }
-}
-<div class="table-responsive">
-    <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>İsim</th>
-                <th>Özellik Sayısı</th>
-                <th>Alt Kategori Sayısı</th>
-                <th>Ürün Sayısı</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach(var category in Model.Items)
-            {
-                <tr>
-                    <td>@category.Id</td>
-                    <td>@category.Name</td>
-                    <td>@category.AttributeCount</td>
-                    <td>@category.SubCategoryCount</td>
-                    <td>@category.TotalProductCount</td>
-                    <td class="text-center">
-                        <ul class="table-controls">
-                            <li>
-                                <a asp-action="Details" asp-route-id="@category.Id">
-                                    <i class="flaticon-search  bg-success p-1 text-white br-6 mb-1"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    @if(Model.TotalPageCount > 1)
-    {
-        <nav>
-            <ul class="pagination">
-                @if(Model.CurrentPageIndex > 0)
-                {
-                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex - 1, pageSize = Model.PagingItemCount })">Previous</a></li>
-                }
-                @for(int i = 0;i < Model.TotalPageCount;i++)
-                {
-                    <li class="@(i == Model.CurrentPageIndex ? "page-item active" : "page-item")"><a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PagingItemCount })">@((i + 1).ToString())</a></li>
-                }
-                @if(Model.CurrentPageIndex < Model.TotalPageCount - 1)
-                {
-                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex + 1, pageSize = Model.PagingItemCount })">Next</a></li>
-                }
-            </ul>
-        </nav>
-    }
+
+<div class="container">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title">
+                    Eylemler
+                </div>
+                <div class="d-flex justify-content-between">
+                    @Html.ActionLink("Ekle","Create","Categories",null,new {@class="btn btn-primary"})
+                    <span>
+                        @Html.ActionLink("İçe Aktar","Index","CategoryImport",null,new {@class="btn btn-warning"})
+                        @Html.ActionLink("Dışa Aktar","Create","Categories",null,new {@class="btn btn-secondary disabled"})
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <h5 class="card-title">Kategori Listesi</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped table-checkable table-highlight-head mb-4">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>İsim</th>
+                                <th>Üst Kategori</th>
+                                <th>Alt Kategori Sayısı</th>
+                                <th>Ürün Sayısı</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Model.Items)
+                            {
+                                <tr>
+                                    <td>@category.Id</td>
+                                    <td>@category.Name</td>
+                                    <td>@category.SuperCategoryName</td>
+                                    <td>@category.SubCategoryCount</td>
+                                    <td>@category.TotalProductCount</td>
+                                    <td class="text-center">
+                                        <div class="action-btns">
+                                            <a asp-action="Edit" asp-route-id="@category.Id">
+                                                <i data-feather="edit-2"></i>
+                                            </a>
+                                            @if (category.SubCategoryCount == 0)
+                                            {
+                                                <a asp-controller="CategoryAttributes" asp-action="Upsert" asp-route-categoryId="@category.Id">
+                                                    <i data-feather="trello"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (Model.TotalPageCount > 1)
+                    {
+                        <nav>
+                            <ul class="pagination">
+                                @if (Model.CurrentPageIndex > 0)
+                                {
+                                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex - 1, pageSize = Model.PagingItemCount })">Previous</a></li>
+                                }
+                                @for (int i = 0; i < Model.TotalPageCount; i++)
+                                {
+                                    <li class="@(i == Model.CurrentPageIndex ? "page-item active" : "page-item")"><a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PagingItemCount })">@((i + 1).ToString())</a></li>
+                                }
+                                @if (Model.CurrentPageIndex < Model.TotalPageCount - 1)
+                                {
+                                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.CurrentPageIndex + 1, pageSize = Model.PagingItemCount })">Next</a></li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

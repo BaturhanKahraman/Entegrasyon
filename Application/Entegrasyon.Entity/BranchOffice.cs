@@ -1,4 +1,5 @@
-﻿using Shared.Entity;
+﻿using Entegrasyon.Entity.User;
+using Shared.Entity;
 
 namespace Entegrasyon.Entity;
 

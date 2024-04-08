@@ -3,6 +3,7 @@ using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Users;
+using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
 using Shared.EntityFrameworkCore;
 

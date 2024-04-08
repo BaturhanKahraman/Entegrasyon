@@ -1,9 +1,8 @@
 ﻿namespace Entegrasyon.Entity.Dtos.Category;
 
-public record EditCategoryDto(
+public sealed record EditCategoryDto(
     int Id,
     string Name,
-    List<EditCategoryAttributeDto> CategoryAttributes,
     int? SuperCategoryId,
     bool IsFavorite
     );

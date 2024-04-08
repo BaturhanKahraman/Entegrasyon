@@ -1,13 +1,11 @@
 ﻿using System.Linq.Expressions;
-using EFCore.BulkExtensions;
-//using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.Extensions;
 
 namespace Shared.EntityFrameworkCore;
 
-public class EfEntityRepository<TEntity, TContext> : IEntityRepository<TEntity>
+public abstract class EfEntityRepository<TEntity, TContext> : IEntityRepository<TEntity>
 where TEntity : class, new()
 where TContext : DbContext
 {
@@ -51,14 +49,11 @@ where TContext : DbContext
         await _context.SaveChangesAsync();
     }
 
-    public virtual async Task AddRange(List<TEntity> entities)
+    public virtual async Task AddRangeAsync(List<TEntity> entities)
     {
         await Table.AddRangeAsync(entities).ConfigureAwait(false);
         await _context.SaveChangesAsync().ConfigureAwait(false);
     }
-
-    
-
     public async Task RemoveRangeAsync(IEnumerable<TEntity> entities)
     {
         Table.RemoveRange(entities);
@@ -72,11 +67,11 @@ where TContext : DbContext
             : await Table.AsNoTracking().FirstOrDefaultAsync(expression))!;
     }
 
-    public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity,bool>> expression = null,bool isTracking = false)
+    public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity,bool>> expression = null,bool isTracking = false, CancellationToken token = default)
     {
         var entities = isTracking ? Table : Table.AsNoTracking();
         var result =expression == null ? entities :  entities.Where(expression);
-        return await result.ToListAsync().ConfigureAwait(false);
+        return await result.ToListAsync(token).ConfigureAwait(false);
     }
 
     public async Task<List<TEntity>> FromSqlRaw(string sql)
@@ -135,4 +130,5 @@ where TContext : DbContext
         return entities.Select(selector);
     }
 
+    
 }

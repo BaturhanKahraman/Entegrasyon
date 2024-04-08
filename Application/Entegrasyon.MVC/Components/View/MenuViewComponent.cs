@@ -3,18 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.MVC.Components.View;
 
-public class MenuViewComponent : ViewComponent
+public class MenuViewComponent(IMenuService menuService) : ViewComponent
 {
-    private readonly IMenuService _menuService;
-
-    public MenuViewComponent(IMenuService menuService)
-    {
-        _menuService = menuService;
-    }
-
     public IViewComponentResult Invoke()
     {
-        var items = _menuService.GetMenu();
-        return View(items);
+        var items = menuService.GetMenu();
+        return View(items.ToList());
     }
 }

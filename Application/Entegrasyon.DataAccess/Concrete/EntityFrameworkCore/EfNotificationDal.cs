@@ -1,6 +1,6 @@
 ﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Entegrasyon.Entity;
+using Entegrasyon.Entity.Notifications;
 using Shared.EntityFrameworkCore;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;

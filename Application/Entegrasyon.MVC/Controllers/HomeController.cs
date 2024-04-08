@@ -7,17 +7,9 @@ using Entegrasyon.MVC.Utility.Attributes;
 namespace Entegrasyon.MVC.Controllers
 {
     [Breadcrumb("Anasayfa",BreadcrumbUsageType.Controller)]
-    [Route("Home")]
-    public class HomeController : Controller
+    public class HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHost) : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly IWebHostEnvironment _hostEnvironment;
-
-        public HomeController(ILogger<HomeController> logger,IWebHostEnvironment webHost)
-        {
-            _logger = logger;
-            _hostEnvironment = webHost;
-        }
+        private readonly ILogger<HomeController> _logger = logger;
 
         [Authorize]
         public IActionResult Index()
@@ -31,7 +23,6 @@ namespace Entegrasyon.MVC.Controllers
             return View();
         }
 
-        [Route("error")]
         public IActionResult Error(int code)
         {
             if(code == 0)
@@ -51,7 +42,7 @@ namespace Entegrasyon.MVC.Controllers
 
         public IActionResult DemoPurpose()
         {
-            return Json(new { env = _hostEnvironment.EnvironmentName });
+            return Json(new { env = webHost.EnvironmentName });
         }
     }
 }

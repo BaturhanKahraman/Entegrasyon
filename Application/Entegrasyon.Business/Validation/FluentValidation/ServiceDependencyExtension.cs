@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
+using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Notifications;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -20,6 +22,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<BranchOffice>,BranchValidator>();
         services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
         services.AddScoped<IValidator<AddUserDto>,AddUserDtoValidator>();
+        services.AddScoped<IValidator<UserEditDto>,UserEditDtoValidator>();
         services.AddScoped<IValidator<Brand>,BrandValidator>();
         services.AddScoped<IValidator<CustomerAddDto>,AddCustomerDtoValidator>();
         services.AddScoped<IValidator<UpdateCustomerDto>,UpdateCustomerDtoValidator>();
@@ -30,6 +33,8 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<MakeSaleDto>,MakeSaleValidator>();
         services.AddScoped<IValidator<EditCategoryDto>,EditCategoryDtoValidator>();
         services.AddScoped<IValidator<AddCategoryDtoStepOne>,AddCategoryDtoStepOneValidator>();
+        services.AddScoped<IValidator<AddBrandDto>, AddBrandDtoValidator>();
+        services.AddScoped<IValidator<Notification>, SendNotificationValidator>();
         services.AddScoped<FluentValidator>();
         return services;
     }

@@ -7,7 +7,7 @@ public sealed class Pageable<T>
     public int PagingItemCount { get; set; }
     public int TotalItemCount { get; set; }
     public int TotalPageCount => Convert.ToInt32(Math.Ceiling(TotalItemCount / (double)PagingItemCount));
-    
+    public bool HasItem =>Items.Count > 0;
     public Pageable(IReadOnlyList<T> items, int currentPage, int pagingItemCount, int totalItemCount)
     {
         Items = items;
@@ -19,4 +19,6 @@ public sealed class Pageable<T>
     {
         // Default constructor without arguments
     }
+
+
 }
