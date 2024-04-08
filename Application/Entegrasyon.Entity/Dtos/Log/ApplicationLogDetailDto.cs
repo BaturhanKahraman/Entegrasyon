@@ -1,4 +1,5 @@
 ﻿using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.User;
 
 namespace Entegrasyon.Entity.Dtos.Log
 {

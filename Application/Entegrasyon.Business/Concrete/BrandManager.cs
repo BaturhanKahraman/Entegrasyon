@@ -35,6 +35,7 @@ public class BrandManager
     public async Task<IResult> AddBrand(AddBrandDto brandDto)
     {
         await _applicationLogManager.AddLog("Marka ekleme isteği geldi.",LogType.Brand,LogAction.Add,brandDto);
+        await _validator.ValidateAndThrowAsync(brandDto);
         var brand = _mapper.Map<AddBrandDto,Brand>(brandDto);
         var result = LogicRunner.Run(await CheckIfTheSameNameExits(brand.Name));
         if(result != null)
@@ -42,10 +43,9 @@ public class BrandManager
             await _applicationLogManager.AddLog($"Marka eklenemedi. {result.Message}",LogType.Brand,LogAction.Add,brandDto);
             return new ErrorResult(result.Message);
         }
-        await _validator.ValidateAndThrowAsync(brand);
         await _brandDal.AddAsync(brand);
         await _applicationLogManager.AddLog("Marka başarıyla eklendi.",LogType.Brand,LogAction.Add,brandDto);
-        return new SuccessDataResult<BrandListDetailDto>(await _brandDal.ConvertToBrandDetail(brand));
+        return new SuccessDataResult<Brand>(brand);
     }
     public async Task<IResult> UpdateBrand(Brand brand)
     {
@@ -75,7 +75,7 @@ public class BrandManager
         await _applicationLogManager.AddLog("Marka başarıyla silindi.",LogType.Brand,LogAction.Delete,brand);
         return new SuccessResult();
     }
-    public async Task<IDataResult<Pageable<BrandListDetailDto>>> GetCategoryDetailPageable(GetCategoryDetailsPageDto dto)
+    public async Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(GetCategoryDetailsPageDto dto)
     {
         Expression<Func<Brand,bool>> expr = 
             !string.IsNullOrEmpty(dto.CategoryName)

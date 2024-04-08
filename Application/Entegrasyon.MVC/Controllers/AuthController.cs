@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
 using Amazon.Runtime.Internal;
-using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Auth;
+using Entegrasyon.Entity.User;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.Utility.Constants;
 using Entegrasyon.MVC.Utility.Services;
@@ -15,18 +17,10 @@ using Shared.User.Dto;
 
 namespace Entegrasyon.MVC.Controllers
 {
-    public class AuthController : Controller
+    public class AuthController(AuthManager authManager, IHttpContextAccessor httpContextAccessor)
+        : Controller
     {
-        private readonly AuthManager _authManager;
-        private readonly HttpContext _httpContext;
-        private readonly IMenuService _menuService;
-
-        public AuthController(AuthManager authManager,IHttpContextAccessor httpContextAccessor,IMenuService menuService)
-        {
-            _authManager = authManager;
-            _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _menuService = menuService;
-        }
+        private readonly HttpContext _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));
 
         [HttpGet]
         [RestoreModelStateFromTempData]
@@ -47,7 +41,7 @@ namespace Entegrasyon.MVC.Controllers
             if(!ModelState.IsValid)
                 return RedirectToAction(nameof(Login));
 
-            var result = await _authManager.LoginAsync(model.UserName,model.Password);
+            var result = await authManager.LoginAsync(model.UserName,model.Password);
             if(!result.Success)
             {
                 ModelState.AddModelError(string.Empty,result.Message);
@@ -59,16 +53,16 @@ namespace Entegrasyon.MVC.Controllers
                 return RedirectToAction(nameof(CreateNewPassword),new { userId = dto.Data.UserId });
             }
             //login işlemi
-            var user = (result as SuccessDataResult<ApplicationUser>)!.Data;
+            var user = (result as SuccessDataResult<UserLoginSuccessDto>)!.Data;
             var claims = new List<Claim>()
             {
                 new (ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new (ClaimTypes.Name,user.Name),
                 new (ClaimTypes.Surname,user.Surname),
-                new (ClaimTypes.GivenName,user.UserName),
-                new (ClaimTypes.Role,user.Role.Name),
+                new (ClaimTypes.GivenName,user.Username)
             };
-            user.Role.Claims.ForEach(x =>
+            claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Name)));
+            user.Roles.SelectMany(r=>r.Claims).ToList().ForEach(x =>
             {
                 claims.Add(new Claim(StringConstant.Permission,x.Name));
             });
@@ -76,10 +70,7 @@ namespace Entegrasyon.MVC.Controllers
             var claimsIdentity = new ClaimsIdentity(
                 claims,CookieAuthenticationDefaults.AuthenticationScheme);
             var claimPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-            await Task.WhenAll
-                (_httpContext.SignInAsync(claimPrincipal),
-                Task.Run(() => _menuService.CreateMenu(claimPrincipal)));
+            await _httpContext.SignInAsync(claimPrincipal);
             if(!string.IsNullOrEmpty(model.ReturnUrl))
                 return LocalRedirect(model.ReturnUrl);
             return RedirectToAction("Index","Home");
@@ -101,7 +92,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             if(!ModelState.IsValid)
                 return RedirectToAction(nameof(CreateNewPassword));
-            var result = await _authManager.CreatePassword(model.Password,model.UserId);
+            var result = await authManager.CreatePassword(model.Password,model.UserId);
             if(!result.Success)
             {
                 ModelState.AddModelError("",result.Message);
@@ -131,7 +122,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             if(!ModelState.IsValid)
                 return Json(new ErrorResult("Gönderdiğiniz veride bir hata var lütfen tekrar deneyin."));
-            var result = await _authManager.AssignNewPassword(model.TemporaryPassword,model.UserId);
+            var result = await authManager.AssignNewPassword(model.TemporaryPassword,model.UserId);
             return Json(result);
         }
 

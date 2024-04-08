@@ -1,89 +1,106 @@
-﻿using AutoMapper;
+﻿using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Microsoft.EntityFrameworkCore;
+using Shared.Logic;
+using Shared.Results;
+using System.Collections.Immutable;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class CategoryAttributeCategoryManager
 {
-    private readonly ICategoryAttributeCategoryDal _attributeCategoryDal;
-    private readonly CategoryAttributeManager _attributeManager;
-
-    public CategoryAttributeCategoryManager(ICategoryAttributeCategoryDal attributeCategoryDal, CategoryAttributeManager attributeManager)
+    private readonly IntegrationDbContext _ctx;
+    public CategoryAttributeCategoryManager(IntegrationDbContext ctx)
     {
-        _attributeCategoryDal = attributeCategoryDal;
-        _attributeManager = attributeManager;
+        _ctx = ctx;
     }
 
-    public async Task<List<CategoryAttributeCategory>> UpdateRangeCategoryAttributeCategories(
-        int categoryId, 
-        List<EditCategoryAttributeDto> categoryAttributeManyToManyEntities)
+    public async Task<IResult> AddCategoryAttributeForCategory(int catId, IEnumerable<AddCategoryAttributeDto> dto)
     {
-        var ids = categoryAttributeManyToManyEntities.Select(x => x.Id);
-        var cacList =
-            await _attributeCategoryDal
-                .Table
-                .Where(x => x.CategoryId == categoryId && ids.Contains(x.CategoryAttributeId))
-                .Include(x => x.CategoryAttribute)
-                .ThenInclude(x => x.CategoryAttributeValues)
-                .ToListAsync();
-        foreach (var cac in cacList)
+        var result = LogicRunner.Run(
+            await CategoryExists(catId),
+            await IsSuper(catId));
+        if (result != null)
+            return result;
+        var existingCatAttrs = await GetExistingCategoryAttributes(dto);
+        var existingCatAttrValues = await GetExistingCategoryAttributeValues(dto);
+
+        var catAttrCats = dto.Select(CreateCategoryAttributeCategory(catId, existingCatAttrs, existingCatAttrValues)).ToList();
+        var deletedOnes = await _ctx.CategoryAttributeCategories.Where(x => x.CategoryId == catId).ToListAsync();
+        _ctx.CategoryAttributeCategories.RemoveRange(deletedOnes);
+        _ctx.CategoryAttributeCategories.AddRange(catAttrCats);;
+        await _ctx.SaveChangesAsync();
+        return new SuccessResult();
+    }
+    private async Task<ImmutableDictionary<int, CategoryAttribute>> GetExistingCategoryAttributes(IEnumerable<AddCategoryAttributeDto> dto)
+    {
+        var ids = dto.Select(d => d.Id);
+        return (await _ctx.CategoryAttributes.AsTracking().Where(ca => ids.Contains(ca.Id))
+            .ToListAsync()).ToImmutableDictionary(ca => ca.Id);
+    }
+
+    private async Task<List<CategoryAttributeValue>> GetExistingCategoryAttributeValues(IEnumerable<AddCategoryAttributeDto> dto)
+    {
+        var catAttrValueIds = dto.SelectMany(d => d.CategoryAttributeValues).Select(d => d.Id).ToArray();
+        return await _ctx.CategoryAttributeValues.AsTracking()
+            .Where(cav => catAttrValueIds.Contains(cav.Id))
+            .ToListAsync();
+    }
+    private static Func<AddCategoryAttributeDto, CategoryAttributeCategory> CreateCategoryAttributeCategory(int catId, ImmutableDictionary<int, CategoryAttribute> existingCatAttrs, List<CategoryAttributeValue> existingCatAttrValues)
+    {
+        return catAttr =>
         {
-            var catAttrDto = categoryAttributeManyToManyEntities.Single(x => x.Id == cac.CategoryAttributeId);
-            cac.CategoryAttribute.AllowCustom = catAttrDto.AllowCustom;
-            cac.CategoryAttribute.CategoryAttributeHumanized = catAttrDto.CategoryAttributeHumanized;
-            cac.CategoryAttribute.CategoryAttributeKey = catAttrDto.CategoryAttributeKey;
-            foreach (var value in catAttrDto.CategoryAttributeValues)
+            var catAttrcat = new CategoryAttributeCategory()
             {
-                var existingValue =
-                    cac.CategoryAttribute.CategoryAttributeValues.SingleOrDefault(x => x.Id == value.Id);
-                if (existingValue != null)
-                {
-                    existingValue.Name = value.Name;
-                }
-                else
-                {
-                    cac.CategoryAttribute.CategoryAttributeValues.Add(value);
-                }
+                IsRequired = catAttr.IsRequired,
+                IsSlicer = catAttr.IsSlicer,
+                IsVarianter = catAttr.IsVarianter,
+                CategoryId = catId,
+            };
+            if (catAttr.Id != 0)
+            {
+                var existingCatAttr = existingCatAttrs.GetValueOrDefault(catAttr.Id);
+                existingCatAttr.CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized;
+                existingCatAttr.CategoryAttributeKey = catAttr.CategoryAttributeKey;
+                catAttrcat.CategoryAttribute = existingCatAttr;
             }
-            cac.IsRequired = catAttrDto.IsRequired;
-            cac.IsSlicer = catAttrDto.IsSlicer;
-            cac.IsVarianter = catAttrDto.IsVarianter;
-        }
+            else
+            {
+                catAttrcat.CategoryAttribute = new CategoryAttribute
+                {
+                    Id = catAttr.Id,
+                    CategoryAttributeKey = catAttr.CategoryAttributeKey,
+                    CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized,
+                    CategoryAttributeValues = new()
+                };
+            }
+            foreach (var cav in catAttr.CategoryAttributeValues)
+            {
+                if (existingCatAttrValues.Any(x => x.Id == cav.Id))
+                    catAttrcat.CategoryAttribute.CategoryAttributeValues
+                        .Add(existingCatAttrValues.FirstOrDefault(x => x.Id == cav.Id));
+                else
+                    catAttrcat.CategoryAttribute.CategoryAttributeValues.Add(cav);
+            }
+            return catAttrcat;
+        };
+    }
 
-        return cacList;
-        //await _attributeCategoryDal.UpdateRangeAsync(cacList);
-
+    private async Task<IResult> IsSuper(int categoryId)
+    {
+        var isSuper = await _ctx.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
+        if (isSuper)
+            return new ErrorResult(Messages.CategoryIsSuper);
+        return new SuccessResult();
+    }
+    private async Task<IResult> CategoryExists(int categoryId)
+    {
+        var exits = await _ctx.Categories.AnyAsync(c => c.Id == categoryId);
+        if (!exits)
+            return new ErrorResult(Messages.CategoryNotFound);
+        return new SuccessResult();
     }
 }
-
-
-//await _attributeCategoryDal.GetTransformedEntitiesAsync(x=>
-//    new CategoryAttributeCategory{
-//        CategoryAttribute = new CategoryAttribute
-//        {
-//            IsDeleted = x.IsDeleted,
-//            DeletedAt = x.DeletedAt,
-//            CreatedAt = x.CategoryAttribute.CreatedAt,
-//            UpdatedAt = x.CategoryAttribute.UpdatedAt,
-//            Id = x.CategoryAttribute.Id,
-//            CategoryAttributeKey = x.CategoryAttribute.CategoryAttributeKey,
-//            CategoryAttributeHumanized = x.CategoryAttribute.CategoryAttributeHumanized,
-//            AllowCustom = x.CategoryAttribute.AllowCustom,
-//            ImportId = x.CategoryAttribute.ImportId,
-//            CategoryAttributeValues =
-//                new List<CategoryAttributeValue>(x.CategoryAttribute.CategoryAttributeValues),
-//        },
-//        CategoryAttributeId = x.CategoryAttributeId,
-//        CategoryId = x.CategoryId,
-//        CreatedAt = x.CreatedAt,
-//        DeletedAt = x.DeletedAt,
-//        IsDeleted = x.IsDeleted,
-//        IsRequired = x.IsRequired,
-//        IsVarianter = x.IsVarianter,
-//        IsSlicer = x.IsSlicer,
-//        UpdatedAt = x.UpdatedAt
-//    },null,expression:x =>
-//    x.CategoryId == categoryId && ids.Contains(x.CategoryAttributeId),true);

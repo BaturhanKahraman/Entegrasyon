@@ -5,4 +5,6 @@ public sealed record CategoryDetailDto(int Id,
     string Name,
     int SubCategoryCount,
     bool IsFavorited,
-    int AttributeCount);
+    int AttributeCount,
+    string SuperCategoryName
+    );

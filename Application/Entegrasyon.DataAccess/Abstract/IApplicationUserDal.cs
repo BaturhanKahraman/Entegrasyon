@@ -2,6 +2,7 @@
 using Entegrasyon.Entity.Dtos.Users;
 using Shared.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Entegrasyon.Entity.User;
 
 namespace Entegrasyon.DataAccess.Abstract;
 

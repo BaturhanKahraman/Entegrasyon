@@ -45,7 +45,7 @@ namespace Entegrasyon.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBrandDetailsPage([FromQuery]GetCategoryDetailsPageDto dto)
         {
-            var result = await _brandManager.GetCategoryDetailPageable(dto);
+            var result = await _brandManager.GetBrandDetailPageable(dto);
             if(result.Success)
                 return Ok(result);
             return BadRequest(result.Message);

@@ -12,7 +12,7 @@ public static class HttpContextExtension
         return isMobile;
     }
 
-    public static string? GetUserId(this HttpContext context)=>
+    public static string GetUserId(this HttpContext context)=>
         context?.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
     
     // ReSharper disable once InconsistentNaming

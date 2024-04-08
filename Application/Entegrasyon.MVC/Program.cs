@@ -1,6 +1,9 @@
 using Entegrasyon.Business.Concrete;
-using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Notifications;
+using Entegrasyon.Business.Notifications.SignalR;
+using Entegrasyon.DependencyResolver;
 using Entegrasyon.MVC.Utility.Mapper;
+using Entegrasyon.MVC.Utility.Notifications;
 using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
@@ -17,8 +20,9 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
-builder.Services.AddRabbitMQ(builder.Configuration);
+builder.Services.AddApplicationMassTransit(builder.Configuration);
 builder.Services.AddApplicationDependencies();
+builder.Services.AddClients();
 builder.Services.AddAutoMapper(x => x.AddProfile<CustomMapProfile>());
 builder.Services.AddFileStorageCore();
 builder.Services.AddBackgroundServices();
@@ -41,24 +45,22 @@ builder.Services.AddStackExchangeRedisCache(opt =>
 });
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddMemoryCache();
-builder.Services.AddSession(x =>
-{
-    x.IdleTimeout = TimeSpan.FromHours(1);
-    x.Cookie.IsEssential = true;
-});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext();
-builder.Services.AddHttpClient();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
-builder.Services.AddScoped<IMenuService,MenuService>();
+builder.Services.AddSingleton<IMenuService,MenuService>();
+builder.Services.AddSignalR();
+builder.Services.AddSignalRSettings();
+builder.Services.AddNotification();
+builder.Services.AddSingleton<IBlazorNotificationSender, BlazorNotificationSender>();
+builder.Services.AddSingleton<INotificationSender, BlazorNotificationSender>();
 var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
     await using var serviceScope = app.Services.CreateAsyncScope();
     var lifeTimeHandler = serviceScope.ServiceProvider.GetRequiredService<ApplicationLifetimeManager>();
     await lifeTimeHandler.ApplyStartActions();
-    await serviceScope.DisposeAsync();
 });
 // Configure the HTTP request pipeline.
 if(!app.Environment.IsDevelopment())
@@ -80,9 +82,9 @@ app.UseStaticFiles(new StaticFileOptions()
 });
 
 app.UseRouting();
-app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<NotificationHub>("/NotificationHub");
 app.MapBlazorHub();
 app.MapControllerRoute(
     name: "default",

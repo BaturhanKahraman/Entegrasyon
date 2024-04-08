@@ -8,7 +8,6 @@ public class AddCategoryAttributeDtoValidator:AbstractValidator<AddCategoryAttri
 {
 	public AddCategoryAttributeDtoValidator()
 	{
-		RuleFor(x => x.CategoryId).NotEmpty();
 		RuleFor(x => x.AllowCustom)
 			.NotEqual(false)
 			.When(x => x.CategoryAttributeValues == null || x.CategoryAttributeValues.Count == 0);

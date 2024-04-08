@@ -6,8 +6,8 @@ public class TrendyolSelectedCategory
     public int Id { get; set; }
     public string Name { get; set; }
     public int? ParentId { get; set; }
-    public List<TrendyolSelectedCategory> SubCategories { get; set; } = new();
-    public bool IsParent => SubCategories.Any();
+    public List<TrendyolSelectedCategory> SubCategories { get; set; } = [];
+    public bool IsParent => SubCategories.Count != 0;
 }
 /*
  *   id: number;

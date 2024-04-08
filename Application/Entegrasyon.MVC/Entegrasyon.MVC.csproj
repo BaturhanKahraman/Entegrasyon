@@ -4,7 +4,7 @@
 		<Exec Command="npm install" />
 	</Target>
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>d595da3d-8338-48f7-93a6-7d9f61614d22</UserSecretsId>
@@ -31,24 +31,26 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" Version="12.0.1" />
-		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.5" />
-		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.4" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.6" />
+		<PackageReference Include="AutoMapper" Version="13.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.2" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
+		<ProjectReference Include="..\Entegrasyon.DependencyResolver\Entegrasyon.DependencyResolver.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Utility\ToastrNotification\" />
-		<Folder Include="ViewModels\CategoryImport\" />
 		<Folder Include="ViewModels\Office\" />
 		<Folder Include="ViewModels\User\" />
-		<Folder Include="Views\Categories\CategoryAttributes\" />
 		<Folder Include="wwwroot\img\auth\" />
 	</ItemGroup>
 

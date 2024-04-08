@@ -21,6 +21,7 @@ public class TempBarcodeBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        //bu olayı transactionlar ile yap.
         int delayInMinute = _configuration.GetValue("Barcode:ClearDelay",10);
         while(!stoppingToken.IsCancellationRequested)
         {

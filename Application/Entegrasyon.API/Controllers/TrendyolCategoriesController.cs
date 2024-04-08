@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Microsoft.AspNetCore.Mvc;
 

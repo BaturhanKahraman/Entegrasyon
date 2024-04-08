@@ -19,7 +19,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:CaseInsensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "7.0.4")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -449,7 +449,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<int?>("SuperCategoryId")
                         .HasColumnType("integer");
@@ -460,6 +462,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ImportId");
+
+                    b.HasIndex("Name");
 
                     b.HasIndex("SuperCategoryId");
 
@@ -549,7 +553,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryAttributeId")
+                    b.Property<int>("CategoryAttributeId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -587,7 +591,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<string>("CustomerType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1023,7 +1028,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("CategoryMarketPlaceMatches");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Notification", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.Notification", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1031,11 +1036,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<Guid?>("ApplicationUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Content")
-                        .HasColumnType("text");
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1044,8 +1047,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Header")
-                        .HasMaxLength(60)
-                        .HasColumnType("character varying(60)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -1053,7 +1056,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("ReadDate")
+                    b.Property<DateTimeOffset>("ReadAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -1061,9 +1064,37 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApplicationUserId");
-
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsClaims", b =>
+                {
+                    b.Property<int>("ClaimId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("NotificationId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ClaimId", "NotificationId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.ToTable("NotificationsClaims");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsUsers", b =>
+                {
+                    b.Property<Guid>("ApplicationUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("NotificationId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ApplicationUserId", "NotificationId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.ToTable("NotificationsUsers");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -1435,259 +1466,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("SaleItems");
                 });
 
-            modelBuilder.Entity("RootClaimRootRole", b =>
-                {
-                    b.Property<int>("ClaimsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("RolesId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ClaimsId", "RolesId");
-
-                    b.HasIndex("RolesId");
-
-                    b.ToTable("RootClaimRootRole");
-
-                    b.HasData(
-                        new
-                        {
-                            ClaimsId = 1,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 2,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 3,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 4,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 5,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 6,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 7,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 8,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 9,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 10,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 11,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 12,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 13,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 14,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 15,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 16,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 17,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 18,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 19,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 20,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 21,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 22,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 23,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 24,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 25,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 26,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 27,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 30,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 31,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 32,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 33,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 34,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 35,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 36,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 37,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 38,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 39,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 40,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 41,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 42,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 43,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 44,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 45,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 46,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 47,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 48,
-                            RolesId = 1
-                        },
-                        new
-                        {
-                            ClaimsId = 49,
-                            RolesId = 1
-                        });
-                });
-
-            modelBuilder.Entity("Shared.User.RootClaim", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.User.ApplicationClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1710,15 +1489,17 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(55)
-                        .HasColumnType("character varying(55)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Claims");
+                    b.HasIndex("Name");
+
+                    b.ToTable("Claims", (string)null);
 
                     b.HasData(
                         new
@@ -2193,7 +1974,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Shared.User.RootLogin", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.User.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2202,85 +1983,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("IpAddress")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset>("LoginTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("RootUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RootUserId");
-
-                    b.ToTable("Logins");
-                });
-
-            modelBuilder.Entity("Shared.User.RootRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int?>("DefaultBranchOfficeId")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            IsDeleted = false,
-                            Name = "Admin",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        });
-                });
-
-            modelBuilder.Entity("Shared.User.RootUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .HasMaxLength(100)
@@ -2288,7 +1995,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<string>("FullName")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("text")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
                         .HasComputedColumnSql("\"Name\" || ' ' || \"Surname\"", true);
 
                     b.Property<bool>("IsActive")
@@ -2307,8 +2015,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<bool>("NeedsTakeNewPassword")
                         .HasColumnType("boolean");
@@ -2327,12 +2035,14 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<byte[]>("PasswordSalt")
                         .HasColumnType("bytea");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("integer");
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
 
                     b.Property<string>("Surname")
-                        .HasMaxLength(55)
-                        .HasColumnType("character varying(55)");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("TemporaryPassword")
                         .HasMaxLength(15)
@@ -2353,13 +2063,573 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DefaultBranchOfficeId");
+
+                    b.HasIndex("NormalizedUserName");
+
+                    b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DefaultBranchOfficeId = 1,
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Email = "admin@admin.com",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsTwoFactorAuthActive = false,
+                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Admin",
+                            NeedsTakeNewPassword = true,
+                            NormalizedUserName = "ADMIN",
+                            Surname = "Admin",
+                            TemporaryPassword = "Admin",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UserName = "Admin",
+                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.Login", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("LoginTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Logins");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName");
+
+                    b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            Name = "Admin",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.RolesClaims", b =>
+                {
+                    b.Property<int>("ApplicationClaimId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ApplicationClaimId", "RoleId");
+
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("RolesClaims");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("RootUser");
+                    b.HasData(
+                        new
+                        {
+                            ApplicationClaimId = 1,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 2,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 3,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 4,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 5,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 6,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 7,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 8,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 9,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 10,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 11,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 12,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 13,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 14,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 15,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 16,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 17,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 18,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 19,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 20,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 21,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 22,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 23,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 24,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 25,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 26,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 27,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 30,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 31,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 32,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 33,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 34,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 35,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 36,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 37,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 38,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 39,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 40,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 41,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 42,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 43,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 44,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 45,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 46,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 47,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 48,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            ApplicationClaimId = 49,
+                            RoleId = 1
+                        });
+                });
 
-                    b.UseTphMappingStrategy();
+            modelBuilder.Entity("Entegrasyon.Entity.User.UsersClaims", b =>
+                {
+                    b.Property<int>("ApplicationClaimId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ApplicationUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ApplicationClaimId", "ApplicationUserId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("UsersClaims");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.UsersRoles", b =>
+                {
+                    b.Property<Guid>("ApplicationUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ApplicationUserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UsersRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            ApplicationUserId = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
+                            RoleId = 1
+                        });
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("Consumed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ReceiveCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Received")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("MessageId", "ConsumerId");
+
+                    b.HasIndex("Delivered");
+
+                    b.ToTable("InboxState");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
+                {
+                    b.Property<long>("SequenceNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("SequenceNumber"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DestinationAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("EnqueueTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FaultAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Headers")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("InboxConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InboxMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InitiatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OutboxId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResponseAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("SentTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SourceAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("SequenceNumber");
+
+                    b.HasIndex("EnqueueTime");
+
+                    b.HasIndex("ExpirationTime");
+
+                    b.HasIndex("OutboxId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.ToTable("OutboxMessage");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
+                {
+                    b.Property<Guid>("OutboxId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("OutboxId");
+
+                    b.HasIndex("Created");
+
+                    b.ToTable("OutboxState");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Customers.CorporateCustomer", b =>
@@ -2403,43 +2673,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("RetailSearchVector"), "GIN");
 
                     b.HasDiscriminator().HasValue("Retail");
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
-                {
-                    b.HasBaseType("Shared.User.RootUser");
-
-                    b.Property<int?>("DefaultBranchOfficeId")
-                        .HasColumnType("integer");
-
-                    b.HasIndex("DefaultBranchOfficeId");
-
-                    b.ToTable("Users");
-
-                    b.HasDiscriminator().HasValue("ApplicationUser");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"),
-                            CreatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DeletedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Email = "admin@admin.com",
-                            IsActive = true,
-                            IsDeleted = false,
-                            IsTwoFactorAuthActive = false,
-                            MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Name = "Admin",
-                            NeedsTakeNewPassword = true,
-                            NormalizedUserName = "ADMIN",
-                            RoleId = 1,
-                            Surname = "Admin",
-                            TemporaryPassword = "Admin",
-                            UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            UserName = "Admin",
-                            WebJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DefaultBranchOfficeId = 1
-                        });
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.AttributeKeyValue", b =>
@@ -2497,9 +2730,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Categories.CategoryAttributeValue", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", null)
+                    b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "CategoryAttribute")
                         .WithMany("CategoryAttributeValues")
-                        .HasForeignKey("CategoryAttributeId");
+                        .HasForeignKey("CategoryAttributeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryAttribute");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Customers.Customer", b =>
@@ -2558,7 +2795,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Logs.ApplicationLog", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.ApplicationUser", "ApplicationUser")
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "ApplicationUser")
                         .WithMany()
                         .HasForeignKey("ApplicationUserId");
 
@@ -2660,13 +2897,42 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("MarketPlace");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Notification", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsClaims", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId");
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationClaim", "Claim")
+                        .WithMany("NotificationClaims")
+                        .HasForeignKey("ClaimId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.Notifications.Notification", "Notification")
+                        .WithMany("NotificationClaims")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Claim");
+
+                    b.Navigation("Notification");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsUsers", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "ApplicationUser")
+                        .WithMany("NotificationsUsers")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.Notifications.Notification", "Notification")
+                        .WithMany("NotificationsUsers")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("Notification");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -2866,7 +3132,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .WithMany()
                         .HasForeignKey("DiscountVoucherId");
 
-                    b.HasOne("Entegrasyon.Entity.ApplicationUser", "SalePerson")
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "SalePerson")
                         .WithMany()
                         .HasForeignKey("SalePersonId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2902,44 +3168,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("ProductVariant");
                 });
 
-            modelBuilder.Entity("RootClaimRootRole", b =>
-                {
-                    b.HasOne("Shared.User.RootClaim", null)
-                        .WithMany()
-                        .HasForeignKey("ClaimsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shared.User.RootRole", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Shared.User.RootLogin", b =>
-                {
-                    b.HasOne("Shared.User.RootUser", "RootUser")
-                        .WithMany("Logins")
-                        .HasForeignKey("RootUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RootUser");
-                });
-
-            modelBuilder.Entity("Shared.User.RootUser", b =>
-                {
-                    b.HasOne("Shared.User.RootRole", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("Entegrasyon.Entity.ApplicationUser", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.User.ApplicationUser", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.BranchOffice", "DefaultBranchOffice")
                         .WithMany("Users")
@@ -2947,6 +3176,74 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("DefaultBranchOffice");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.Login", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "User")
+                        .WithMany("Logins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.RolesClaims", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationClaim", "ApplicationClaim")
+                        .WithMany("RolesClaims")
+                        .HasForeignKey("ApplicationClaimId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.User.Role", "Role")
+                        .WithMany("RoleClaims")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationClaim");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.UsersClaims", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationClaim", "ApplicationClaim")
+                        .WithMany("UsersClaims")
+                        .HasForeignKey("ApplicationClaimId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "ApplicationUser")
+                        .WithMany("MyProperty")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationClaim");
+
+                    b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.UsersRoles", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "ApplicationUser")
+                        .WithMany("UsersRoles")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.User.Role", "Role")
+                        .WithMany("UsersRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.BranchOffice", b =>
@@ -2982,6 +3279,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("Sales");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.Notification", b =>
+                {
+                    b.Navigation("NotificationClaims");
+
+                    b.Navigation("NotificationsUsers");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -3006,14 +3310,31 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("SaleItems");
                 });
 
-            modelBuilder.Entity("Shared.User.RootRole", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.User.ApplicationClaim", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("NotificationClaims");
+
+                    b.Navigation("RolesClaims");
+
+                    b.Navigation("UsersClaims");
                 });
 
-            modelBuilder.Entity("Shared.User.RootUser", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.User.ApplicationUser", b =>
                 {
                     b.Navigation("Logins");
+
+                    b.Navigation("MyProperty");
+
+                    b.Navigation("NotificationsUsers");
+
+                    b.Navigation("UsersRoles");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.User.Role", b =>
+                {
+                    b.Navigation("RoleClaims");
+
+                    b.Navigation("UsersRoles");
                 });
 #pragma warning restore 612, 618
         }

@@ -4,6 +4,6 @@
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<int> RootClaims { get; set; }
+        public List<int> Claims { get; set; }
     }
 }
