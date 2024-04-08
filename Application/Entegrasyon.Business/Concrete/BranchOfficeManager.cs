@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
@@ -16,10 +17,10 @@ public class BranchOfficeManager
 {
     private readonly IBranchOfficeDal _branchOfficeDal;
     private readonly FluentValidator _validator;
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    public BranchOfficeManager(IBranchOfficeDal branchOfficeDal,FluentValidator validator,ApplicationLogManager applicationLogManager, IMapper mapper, IUnitOfWork unitOfWork)
+    public BranchOfficeManager(IBranchOfficeDal branchOfficeDal,FluentValidator validator,IApplicationLogManager applicationLogManager, IMapper mapper, IUnitOfWork unitOfWork)
     {
         _branchOfficeDal = branchOfficeDal;
         _validator = validator;

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
@@ -7,21 +8,13 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager
+public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplicationLogManager applicationLogManager,FluentValidator fluentValidator,IMapper mapper,CategoryManager categoryManager)
 {
-    private readonly ICategoryAttributeDal _attributeDal;
-    private readonly ApplicationLogManager _applicationLogManager;
-    private readonly CategoryManager _categoryManager;
-    private readonly FluentValidator _fluentValidator;
-    private readonly IMapper _mapper;
-    public CategoryAttributeManager(ICategoryAttributeDal attributeDal, ApplicationLogManager applicationLogManager, FluentValidator fluentValidator, IMapper mapper, CategoryManager categoryManager)
-    {
-        _attributeDal = attributeDal;
-        _applicationLogManager = applicationLogManager;
-        _fluentValidator = fluentValidator;
-        _mapper = mapper;
-        _categoryManager = categoryManager;
-    }
+    private readonly ICategoryAttributeDal _attributeDal = attributeDal;
+    private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;
+    private readonly CategoryManager _categoryManager = categoryManager;
+    private readonly FluentValidator _fluentValidator = fluentValidator;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {

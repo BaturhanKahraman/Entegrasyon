@@ -8,18 +8,19 @@ using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.DiscountVouchers;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.DiscountVouchers;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class DiscountVoucherManager
 {
     private readonly IDiscountVoucherDal _discountVoucherDal;
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IRandomGenerator _randomGenerator;
     private readonly FluentValidator _fluentValidator;
     private const int CodeLength = 6;
 
-    public DiscountVoucherManager(ApplicationLogManager applicationLogManager, IDiscountVoucherDal discountVoucherDal,
+    public DiscountVoucherManager(IApplicationLogManager applicationLogManager, IDiscountVoucherDal discountVoucherDal,
         IRandomGenerator randomGenerator, FluentValidator fluentValidator)
     {
         _applicationLogManager = applicationLogManager;

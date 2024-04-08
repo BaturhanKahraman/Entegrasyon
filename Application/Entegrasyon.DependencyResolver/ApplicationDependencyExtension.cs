@@ -2,6 +2,7 @@
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -59,7 +60,7 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<RoleManager>();
             services.AddScoped<BrandManager>();
             services.AddScoped<CategoryManager>();
-            services.AddScoped<ApplicationLogManager>();
+            services.AddScoped<IApplicationLogManager,ApplicationLogManager>();
             services.AddScoped<CategoryAttributeManager>();
             services.AddScoped<ApplicationUserManager>();
             services.AddScoped<AuthManager>();

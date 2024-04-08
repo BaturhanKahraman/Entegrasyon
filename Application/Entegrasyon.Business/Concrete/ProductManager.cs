@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
@@ -20,7 +21,7 @@ namespace Entegrasyon.Business.Concrete;
 public class ProductManager
 {
     private readonly IMainProductDal _productDal;
-    private readonly ApplicationLogManager _applicationLogManager;
+    private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
     private readonly FluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
@@ -28,7 +29,7 @@ public class ProductManager
     private readonly AttributeKeyValueManager _attributeKeyValueManager;
     private readonly TempBarcodeManager _barcodeManager;
     public ProductManager(IMainProductDal productDal,
-        ApplicationLogManager applicationLogManager,
+        IApplicationLogManager applicationLogManager,
         IMapper mapper,
         FluentValidator validator,
         OfficeStockManager officeStockManager,

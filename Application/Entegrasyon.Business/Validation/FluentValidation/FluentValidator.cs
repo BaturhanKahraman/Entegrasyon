@@ -1,11 +1,12 @@
-﻿using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Logs;
 using FluentValidation;
 using FluentValidation.Results;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
-public class FluentValidator(IServiceProvider serviceProvider, ApplicationLogManager applicationLogManager)
+public class FluentValidator(IServiceProvider serviceProvider, IApplicationLogManager applicationLogManager)
 {
     public async Task ValidateAndThrowAsync<T>(T entity)
     {
