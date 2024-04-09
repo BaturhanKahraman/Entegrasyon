@@ -1,9 +1,9 @@
 ﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
-using Shared.Constants;
 using Shared.Results;
 using Shared.Security;
 using Shared.User.Dto;
@@ -24,7 +24,8 @@ public class AuthService(
             .FirstOrDefaultAsync(u => string.Equals(u.NormalizedUserName,normalizedUsername));
         if(user is null)
             return new ErrorResult(Messages.LoginFailedWrongPassword);
-
+        if(user.IsActive == false)
+            return new ErrorResult(Messages.UserIsInactive);
         if(user.NeedsTakeNewPassword)
         {
             bool isTempPassword = user.TemporaryPassword == password;
@@ -46,10 +47,10 @@ public class AuthService(
     {
         bool isParsable = Guid.TryParse(userId,out var guidId);
         if(!isParsable)
-            return new ErrorResult(Messages.Failed);
+            return new ErrorResult(Messages.ProcessFailed);
         var user = await context.Users.FindAsync(guidId);
         if(user == null)
-            return new ErrorResult(Messages.Failed);
+            return new ErrorResult(Messages.ProcessFailed);
         user.NeedsTakeNewPassword = true;
         user.TemporaryPassword = password;
         await context.SaveChangesAsync(token);
@@ -61,8 +62,8 @@ public class AuthService(
         //password rules need to be applied here TODO
         await applicationLogger.AddLog("Şifre oluşturma isteği geldi.",LogType.Auth,LogAction.Update);
         if(string.IsNullOrEmpty(password))
-            return new ErrorResult(Messages.Failed);
-        var user = await context.Users.AsTracking().FirstOrDefaultAsync(u => u.Id == userId,token);
+            return new ErrorResult(Messages.ProcessFailed);
+        var user = await context.Users.FindAsync([userId],cancellationToken: token);
         if(user is null)
             return new ErrorResult(Messages.UserNotFound);
         HashingHelper.CreatePasswordHash(password,out var userPasswordHash,out var userPasswordSalt);

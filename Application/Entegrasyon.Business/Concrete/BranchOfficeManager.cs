@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
-using Shared.Constants;
 using Shared.Entity;
 using Shared.Logic;
 using Shared.Results;
