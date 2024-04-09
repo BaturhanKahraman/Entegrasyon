@@ -19,12 +19,6 @@ public class BaseTest
         DbContextOptionsBuilder<IntegrationDbContext> b = new DbContextOptionsBuilder<IntegrationDbContext>();
         
         integrationDbContextMock = new Mock<IntegrationDbContext>(b.Options);
-        //mock httpcontext
-        var httpContext = new DefaultHttpContext();
-        
-        ////mock accessor
-        //var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-        //httpContextAccessorMock.Setup(a => a.HttpContext).Returns(httpContext);
 
         //application logger mock
         applicationLoggerMock = new Mock<IApplicationLogManager>();

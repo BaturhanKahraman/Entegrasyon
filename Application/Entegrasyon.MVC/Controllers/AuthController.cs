@@ -118,7 +118,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             if(!ModelState.IsValid)
                 return Json(new ErrorResult("Gönderdiğiniz veride bir hata var lütfen tekrar deneyin."));
-            var result = await authManager.AssignNewPassword(model.TemporaryPassword,model.UserId);
+            var result = await authManager.AssignTempPassword(model.TemporaryPassword,model.UserId);
             return Json(result);
         }
 

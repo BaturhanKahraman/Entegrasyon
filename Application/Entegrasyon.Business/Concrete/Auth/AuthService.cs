@@ -43,7 +43,7 @@ public class AuthService(
 
         return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id,user.Name,user.Surname,user.UserName,user.Roles));
     }
-    public async Task<IResult> AssignNewPassword(string password,string userId,CancellationToken token = default)
+    public async Task<IResult> AssignTempPassword(string password,string userId,CancellationToken token = default)
     {
         bool isParsable = Guid.TryParse(userId,out var guidId);
         if(!isParsable)
