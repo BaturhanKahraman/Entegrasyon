@@ -8,12 +8,12 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplicationLogManager applicationLogManager,FluentValidator fluentValidator,IMapper mapper,CategoryManager categoryManager)
+public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplicationLogManager applicationLogManager,IFluentValidator fluentValidator,IMapper mapper,CategoryManager categoryManager)
 {
     private readonly ICategoryAttributeDal _attributeDal = attributeDal;
     private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;
     private readonly CategoryManager _categoryManager = categoryManager;
-    private readonly FluentValidator _fluentValidator = fluentValidator;
+    private readonly IFluentValidator _fluentValidator = fluentValidator;
     private readonly IMapper _mapper = mapper;
 
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)

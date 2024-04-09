@@ -15,10 +15,10 @@ namespace Entegrasyon.Business.Concrete;
 public class CargoCompaniesManager
 {
     private readonly ICargoCompanyDal _cargoDal;
-    private readonly FluentValidator _validator;
+    private readonly IFluentValidator _validator;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
-    public CargoCompaniesManager(ICargoCompanyDal cargoDal,FluentValidator validator,IApplicationLogManager applicationLogManager,IMapper mapper)
+    public CargoCompaniesManager(ICargoCompanyDal cargoDal,IFluentValidator validator,IApplicationLogManager applicationLogManager,IMapper mapper)
     {
         _cargoDal = cargoDal;
         _validator = validator;

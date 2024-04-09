@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Dtos.Users;
+﻿using Entegrasyon.Business.Utility.Constants;
+using Entegrasyon.Entity.Dtos.Users;
 using FluentValidation;
 namespace Entegrasyon.Business.Validation.FluentValidation
 {
@@ -6,9 +7,8 @@ namespace Entegrasyon.Business.Validation.FluentValidation
     {
         public AddRoleDtoValidator()
         {
-            RuleFor(x=>x.Name).NotEmpty().WithMessage("Lütfen rol ismini boş bırakmayın.");
-            RuleFor(x => x.Claims).NotNull().WithMessage("Lütfen yetki ekleyin.")
-                .Must(x => x.Any()).When(x=>x!=null).WithMessage("Lütfen yetki ekleyin.");
+            RuleFor(x=>x.Name).NotEmpty().WithMessage(Messages.NoRoleName);
+            RuleFor(x => x.Claims).NotEmpty().WithMessage(Messages.NoClaim);
         }
     }
 }

@@ -17,11 +17,11 @@ public class DiscountVoucherManager
     private readonly IDiscountVoucherDal _discountVoucherDal;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IRandomGenerator _randomGenerator;
-    private readonly FluentValidator _fluentValidator;
+    private readonly IFluentValidator _fluentValidator;
     private const int CodeLength = 6;
 
     public DiscountVoucherManager(IApplicationLogManager applicationLogManager, IDiscountVoucherDal discountVoucherDal,
-        IRandomGenerator randomGenerator, FluentValidator fluentValidator)
+        IRandomGenerator randomGenerator, IFluentValidator fluentValidator)
     {
         _applicationLogManager = applicationLogManager;
         _discountVoucherDal = discountVoucherDal;

@@ -23,7 +23,7 @@ public class ProductManager
     private readonly IMainProductDal _productDal;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
-    private readonly FluentValidator _validator;
+    private readonly IFluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
     private readonly ImageManager _imageManager;
     private readonly AttributeKeyValueManager _attributeKeyValueManager;
@@ -31,7 +31,7 @@ public class ProductManager
     public ProductManager(IMainProductDal productDal,
         IApplicationLogManager applicationLogManager,
         IMapper mapper,
-        FluentValidator validator,
+        IFluentValidator validator,
         OfficeStockManager officeStockManager,
         ImageManager imageManager,
         AttributeKeyValueManager attributeKeyValueManager,

@@ -17,10 +17,10 @@ namespace Entegrasyon.Business.Concrete;
 public class BrandManager
 {
     private readonly IBrandDal _brandDal;
-    private readonly FluentValidator _validator;
+    private readonly IFluentValidator _validator;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
-    public BrandManager(IBrandDal brandDal,FluentValidator validator,IApplicationLogManager applicationLogManager,IMapper mapper)
+    public BrandManager(IBrandDal brandDal,IFluentValidator validator,IApplicationLogManager applicationLogManager,IMapper mapper)
     {
         _brandDal = brandDal;
         _validator = validator;
