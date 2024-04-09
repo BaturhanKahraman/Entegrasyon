@@ -10,14 +10,14 @@ using Entegrasyon.Entity.Dtos.Auth;
 using Shared.User.Dto;
 using Entegrasyon.Business.Utility.Constants;
 
-namespace Entegrasyon.UnitTest
+namespace Entegrasyon.UnitTest.Business
 {
     public class AuthServiceTests : BaseTest
     {
         private readonly IAuthService authService;
         public AuthServiceTests()
         {
-            authService = new AuthService(integrationDbContextMock.Object,applicationLoggerMock.Object);
+            authService = new AuthService(integrationDbContextMock.Object, applicationLoggerMock.Object);
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace Entegrasyon.UnitTest
             //Arrange
             string userName = "test";
             string password = "testPassword";
-            HashingHelper.CreatePasswordHash(password,out var passwordHash,out var passwordSalt);
+            HashingHelper.CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             Guid userId = Guid.NewGuid();
             ApplicationUser user = new ApplicationUser()
             {
@@ -43,7 +43,7 @@ namespace Entegrasyon.UnitTest
             IList<ApplicationUser> users = [user];
             integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
             //Act
-            var result = await authService.LoginAsync(userName,password);
+            var result = await authService.LoginAsync(userName, password);
             //Assert
             result.Should().BeOfType<SuccessDataResult<UserLoginSuccessDto>>();
             result.As<SuccessDataResult<UserLoginSuccessDto>>().Data.Id.Should().Be(userId);
@@ -57,7 +57,7 @@ namespace Entegrasyon.UnitTest
             string userName = "test";
             string expectedUserName = "test1";
             string password = "testPassword";
-            HashingHelper.CreatePasswordHash(password,out var passwordHash,out var passwordSalt);
+            HashingHelper.CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             Guid userId = Guid.NewGuid();
             ApplicationUser user = new ApplicationUser()
             {
@@ -74,7 +74,7 @@ namespace Entegrasyon.UnitTest
             IList<ApplicationUser> users = [user];
             integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
             //Act
-            var result = await authService.LoginAsync(userName,password);
+            var result = await authService.LoginAsync(userName, password);
             //Assert
             result.Should().BeOfType<ErrorResult>();
         }
@@ -85,7 +85,7 @@ namespace Entegrasyon.UnitTest
             string userName = "test";
             string password = "testPassword";
             string expectedPassword = "testpassword1";
-            HashingHelper.CreatePasswordHash(expectedPassword,out var passwordHash,out var passwordSalt);
+            HashingHelper.CreatePasswordHash(expectedPassword, out var passwordHash, out var passwordSalt);
             Guid userId = Guid.NewGuid();
             ApplicationUser user = new ApplicationUser()
             {
@@ -102,7 +102,7 @@ namespace Entegrasyon.UnitTest
             IList<ApplicationUser> users = [user];
             integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
             //Act
-            var result = await authService.LoginAsync(userName,password);
+            var result = await authService.LoginAsync(userName, password);
             //Assert
             result.Should().BeOfType<ErrorResult>();
         }
@@ -114,7 +114,7 @@ namespace Entegrasyon.UnitTest
             string userName = "test";
             string password = "testpassword";
             string tempPassword = "tempPassword";
-            HashingHelper.CreatePasswordHash(password,out var passwordHash,out var passwordSalt);
+            HashingHelper.CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             Guid userId = Guid.NewGuid();
             ApplicationUser user = new ApplicationUser()
             {
@@ -132,7 +132,7 @@ namespace Entegrasyon.UnitTest
             IList<ApplicationUser> users = [user];
             integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
             //act
-            var result = await authService.LoginAsync(userName,tempPassword);
+            var result = await authService.LoginAsync(userName, tempPassword);
             //arrange
             result.Should().BeOfType<SuccessDataResult<LoginNewPasswordDto>>();
             result.As<SuccessDataResult<LoginNewPasswordDto>>().Data.UserId.Should().Be(userId.ToString());
@@ -146,7 +146,7 @@ namespace Entegrasyon.UnitTest
             string password = "testpassword";
             string tempPassword = "tempPassword";
             string wrongTempPassword = "wrongTempPassword";
-            HashingHelper.CreatePasswordHash(password,out var passwordHash,out var passwordSalt);
+            HashingHelper.CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             Guid userId = Guid.NewGuid();
             ApplicationUser user = new ApplicationUser()
             {
@@ -164,7 +164,7 @@ namespace Entegrasyon.UnitTest
             IList<ApplicationUser> users = [user];
             integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
             //act
-            var result = await authService.LoginAsync(userName,wrongTempPassword);
+            var result = await authService.LoginAsync(userName, wrongTempPassword);
             //arrange
             result.Should().BeOfType<ErrorResult>();
         }
@@ -175,7 +175,7 @@ namespace Entegrasyon.UnitTest
             //arrange
             string userName = "test";
             string password = "testpassword";
-            HashingHelper.CreatePasswordHash(password,out var passwordHash,out var passwordSalt);
+            HashingHelper.CreatePasswordHash(password, out var passwordHash, out var passwordSalt);
             Guid userId = Guid.NewGuid();
             ApplicationUser user = new ApplicationUser()
             {
@@ -186,13 +186,13 @@ namespace Entegrasyon.UnitTest
                 NormalizedUserName = userName.ToUpperInvariant(),
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
-                IsActive=false,
+                IsActive = false,
                 Roles = new List<Role>()
             };
             IList<ApplicationUser> users = [user];
             integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
             //act
-            var result = await authService.LoginAsync(userName,password);
+            var result = await authService.LoginAsync(userName, password);
             //arrange
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.UserIsInactive);
@@ -212,12 +212,12 @@ namespace Entegrasyon.UnitTest
             integrationDbContextMock.Setup(c => c.Users.FindAsync(userId)).ReturnsAsync(user);
 
             // Act
-            var result = await authService.AssignNewPassword(password,userId.ToString());
+            var result = await authService.AssignNewPassword(password, userId.ToString());
 
             // Assert
             result.Should().BeOfType<SuccessResult>();
             result.Success.Should().BeTrue();
-            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default),Times.Once);
+            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default), Times.Once);
             user.NeedsTakeNewPassword.Should().BeTrue();
             user.TemporaryPassword.Should().Be(password);
         }
@@ -229,12 +229,12 @@ namespace Entegrasyon.UnitTest
             string invalidUserId = "invalidUserId";
 
             // Act
-            var result = await authService.AssignNewPassword(password,invalidUserId);
+            var result = await authService.AssignNewPassword(password, invalidUserId);
 
             // Assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);
-            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default),Times.Never);
+            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default), Times.Never);
         }
 
         [Fact]
@@ -246,12 +246,12 @@ namespace Entegrasyon.UnitTest
             integrationDbContextMock.Setup(c => c.Users.FindAsync(userId)).ReturnsAsync(null as ApplicationUser);
 
             // Act
-            var result = await authService.AssignNewPassword(password,userId.ToString());
+            var result = await authService.AssignNewPassword(password, userId.ToString());
 
             // Assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);
-            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default),Times.Never);
+            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default), Times.Never);
         }
 
         [Fact]
@@ -270,16 +270,16 @@ namespace Entegrasyon.UnitTest
                 NeedsTakeNewPassword = false,
                 Roles = new List<Role>()
             };
-            integrationDbContextMock.Setup(db => db.Users.FindAsync(new object[] { userId },default)).ReturnsAsync(user);
+            integrationDbContextMock.Setup(db => db.Users.FindAsync(new object[] { userId }, default)).ReturnsAsync(user);
             //act
-            var result = await authService.CreatePassword(password,userId,default);
+            var result = await authService.CreatePassword(password, userId, default);
             //assert
             result.Should().BeOfType<SuccessResult>();
             result.Message.Should().Be(Messages.FirstPasswordAssigned);
             user.PasswordHash.Should().NotBeNull();
             user.PasswordSalt.Should().NotBeNull();
             user.NeedsTakeNewPassword.Should().BeFalse();
-            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default),Times.Once);
+            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default), Times.Once);
         }
         [Fact]
         public async Task CreatePassword_WithNotExistingUser_ReturnErrorResult()
@@ -287,13 +287,13 @@ namespace Entegrasyon.UnitTest
             //Arrange
             string password = "newPassword";
             Guid userId = Guid.NewGuid();
-            integrationDbContextMock.Setup(db => db.Users.FindAsync(new object[] { userId },default)).Returns(null!);
+            integrationDbContextMock.Setup(db => db.Users.FindAsync(new object[] { userId }, default)).Returns(null!);
             //act
-            var result = await authService.CreatePassword(password,userId,default);
+            var result = await authService.CreatePassword(password, userId, default);
             //assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.UserNotFound);
-            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default),Times.Never);
+            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
         }
 
 
@@ -303,11 +303,11 @@ namespace Entegrasyon.UnitTest
         public async Task CreatePassword_WithInvalidPassword_ReturnsErrorResult(string? password)
         {
             //act
-            var result = await authService.CreatePassword(password,default,default);
+            var result = await authService.CreatePassword(password, default, default);
             //assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);
-            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default),Times.Never);
+            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
         }
     }
 }
