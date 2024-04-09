@@ -35,6 +35,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<AddCategoryDtoStepOne>,AddCategoryDtoStepOneValidator>();
         services.AddScoped<IValidator<AddBrandDto>, AddBrandDtoValidator>();
         services.AddScoped<IValidator<Notification>, SendNotificationValidator>();
+        services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<FluentValidator>();
         return services;
     }

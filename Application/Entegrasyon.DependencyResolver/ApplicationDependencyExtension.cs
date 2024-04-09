@@ -63,7 +63,7 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<IApplicationLogManager,ApplicationLogManager>();
             services.AddScoped<CategoryAttributeManager>();
             services.AddScoped<ApplicationUserManager>();
-            services.AddScoped<AuthService>();
+            services.AddScoped<IAuthService,AuthService>();
             services.AddScoped<CargoCompaniesManager>();
             services.AddScoped<CustomerManager>();
             services.AddScoped<ProductManager>();

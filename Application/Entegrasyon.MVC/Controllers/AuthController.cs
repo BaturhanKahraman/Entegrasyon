@@ -1,12 +1,8 @@
 ﻿using System.Security.Claims;
-using Amazon.Runtime.Internal;
-using Entegrasyon.Business.Concrete.Auth;
-using Entegrasyon.Entity;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Auth;
-using Entegrasyon.Entity.User;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.Utility.Constants;
-using Entegrasyon.MVC.Utility.Services;
 using Entegrasyon.MVC.ViewModels.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -17,7 +13,7 @@ using Shared.User.Dto;
 
 namespace Entegrasyon.MVC.Controllers
 {
-    public class AuthController(AuthService authManager, IHttpContextAccessor httpContextAccessor)
+    public class AuthController(IAuthService authManager, IHttpContextAccessor httpContextAccessor)
         : Controller
     {
         private readonly HttpContext _httpContext = httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(httpContextAccessor));

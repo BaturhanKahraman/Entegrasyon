@@ -1,5 +1,6 @@
 ﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Users;
@@ -7,7 +8,6 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Shared.Constants;
 using Shared.Logic;
 using Shared.Results;
 namespace Entegrasyon.Business.Concrete.Auth
