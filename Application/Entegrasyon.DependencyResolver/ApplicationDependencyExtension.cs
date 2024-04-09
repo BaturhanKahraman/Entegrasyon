@@ -57,7 +57,7 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<ICategoryAttributeCategoryDal, EfCategoryAttributeCategoryDal>();
 
             services.AddScoped<BranchOfficeManager>();
-            services.AddScoped<RoleManager>();
+            services.AddScoped<IRoleService,RoleService>();
             services.AddScoped<BrandManager>();
             services.AddScoped<CategoryManager>();
             services.AddScoped<IApplicationLogManager,ApplicationLogManager>();

@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Business.Abstract;
+﻿using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -10,16 +10,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Shared.Logic;
 using Shared.Results;
-namespace Entegrasyon.Business.Concrete.Auth
+namespace Entegrasyon.Business.Abstract
 {
-    public class RoleManager(
+    public class RoleService(
         IApplicationLogManager applicationLogManager,
         FluentValidator validator,
         IntegrationDbContext context,
-        IMemoryCache cache)
+        IMemoryCache cache) : IRoleService
     {
         private const string SelectListCache = "RoleSelectListCache";
-        public async Task<IResult> AddRole(AddRoleDto dto,CancellationToken token = default)
+        public async Task<IResult> AddRole(AddRoleDto dto, CancellationToken token = default)
         {
             var validationResult = await validator.Validate(dto);
             if (!validationResult.IsValid)
@@ -33,7 +33,7 @@ namespace Entegrasyon.Business.Concrete.Auth
             {
                 Name = dto.Name,
                 CreatedAt = DateTimeOffset.UtcNow,
-                NormalizedName =dto.Name.ToUpperInvariant()
+                NormalizedName = dto.Name.ToUpperInvariant()
             };
             await context.Roles.AddAsync(role, token);
             await context.SaveChangesAsync(token);
@@ -44,21 +44,21 @@ namespace Entegrasyon.Business.Concrete.Auth
         private async Task<IResult> CheckIfNameExists(string name, CancellationToken token)
         {
             //normalize
-            if (await context.Roles.AnyAsync(r => string.Equals(r.Name, name),token))
+            if (await context.Roles.AnyAsync(r => string.Equals(r.Name, name), token))
             {
                 return new ErrorResult(Messages.RoleExits);
             }
             return new SuccessResult();
         }
 
-        public async Task<IResult> UpdateRole(EditRoleDto dto,CancellationToken token=default)
+        public async Task<IResult> UpdateRole(EditRoleDto dto, CancellationToken token = default)
         {
             await applicationLogManager.AddLog("Rol güncelleniyor.", LogType.Role, LogAction.Update, dto);
             var dbRole = await context.Roles.FindAsync([dto.Id], token);
-            if(dbRole is null)
+            if (dbRole is null)
                 return new ErrorResult(Messages.RoleNotFound);
-            
-            var result = LogicRunner.Run(await CheckIfSameNameExists(dto.Name,dto.Id, token));
+
+            var result = LogicRunner.Run(await CheckIfSameNameExists(dto.Name, dto.Id, token));
             if (result != null)
                 return result;
 
@@ -71,16 +71,16 @@ namespace Entegrasyon.Business.Concrete.Auth
             await applicationLogManager.AddLog("Rol güncellendi.", LogType.Role, LogAction.Update);
             return new SuccessResult(Messages.RoleUpdated);
         }
-        private async Task<IResult> CheckIfSameNameExists(string name,int id, CancellationToken token)
+        private async Task<IResult> CheckIfSameNameExists(string name, int id, CancellationToken token)
         {
             //normalize
-            if (await context.Roles.AnyAsync(r => string.Equals(r.Name, name) && r.Id!=id, token))
+            if (await context.Roles.AnyAsync(r => string.Equals(r.Name, name) && r.Id != id, token))
             {
                 return new ErrorResult(Messages.RoleExits);
             }
             return new SuccessResult();
         }
-        public async Task<IResult> DeleteRole(int id,CancellationToken token = default)
+        public async Task<IResult> DeleteRole(int id, CancellationToken token = default)
         {
             await applicationLogManager.AddLog("Rol siliniyor.", LogType.Role, LogAction.Delete, new { id });
             var dbRole = await context.Roles.FindAsync([id], token);
