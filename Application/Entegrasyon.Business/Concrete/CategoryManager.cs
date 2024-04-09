@@ -14,12 +14,12 @@ using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,FluentValidator fluentValidator,ProductManager productManager)
+    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,IFluentValidator fluentValidator,ProductManager productManager)
     {
         private readonly ICategoryDal _categoryDal = categoryDal;
         private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;
         private readonly IMapper _mapper = mapper;
-        private readonly FluentValidator _fluentValidator = fluentValidator;
+        private readonly IFluentValidator _fluentValidator = fluentValidator;
         private readonly ProductManager _productManager = productManager;
 
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)

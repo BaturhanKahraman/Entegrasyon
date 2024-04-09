@@ -1,10 +1,7 @@
 using Entegrasyon.Entity.User;
 using Shared.Security;
-using Moq.EntityFrameworkCore;
 using Entegrasyon.Business.Concrete.Auth;
 using Moq;
-using FluentAssertions;
-using Shared.Results;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Auth;
 using Shared.User.Dto;
@@ -17,7 +14,7 @@ namespace Entegrasyon.UnitTest.Business
         private readonly IAuthService authService;
         public AuthServiceTests()
         {
-            authService = new AuthService(integrationDbContextMock.Object, applicationLoggerMock.Object);
+            authService = new AuthService(mockIntegrationDbContext.Object, mockApplicationLogger.Object);
         }
 
         [Fact]
@@ -27,7 +24,7 @@ namespace Entegrasyon.UnitTest.Business
             string userName = "test", password="testpassword";
             ApplicationUser user = CreateUser(userName,password);
             IList<ApplicationUser> users = [user];
-            integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
             //Act
             var result = await authService.LoginAsync(userName,password);
             //Assert
@@ -47,7 +44,7 @@ namespace Entegrasyon.UnitTest.Business
             string password = "testPassword";
             ApplicationUser user = CreateUser(userName,password);
             IList<ApplicationUser> users = [user];
-            integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
             //Act
             var result = await authService.LoginAsync(wrongUserName, password);
             //Assert
@@ -62,7 +59,7 @@ namespace Entegrasyon.UnitTest.Business
             string wrongPassword = "testpassword1";
             ApplicationUser user = CreateUser(userName,password);
             IList<ApplicationUser> users = [user];
-            integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
             //Act
             var result = await authService.LoginAsync(userName,wrongPassword);
             //Assert
@@ -78,7 +75,7 @@ namespace Entegrasyon.UnitTest.Business
             string tempPassword = "tempPassword";
             ApplicationUser user = CreateUser(userName,password,tempPassword,true);
             IList<ApplicationUser> users = [user];
-            integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
             //act
             var result = await authService.LoginAsync(userName, tempPassword);
             //arrange
@@ -96,7 +93,7 @@ namespace Entegrasyon.UnitTest.Business
             string wrongTempPassword = "wrongTempPassword";
             ApplicationUser user = CreateUser(userName,password,tempPassword,true);
             IList<ApplicationUser> users = [user];
-            integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
             //act
             var result = await authService.LoginAsync(userName, wrongTempPassword);
             //arrange
@@ -111,7 +108,7 @@ namespace Entegrasyon.UnitTest.Business
             string password = "testpassword";
             ApplicationUser user = CreateUser(userName,password,isActive: false);
             IList<ApplicationUser> users = [user];
-            integrationDbContextMock.Setup(c => c.Users).ReturnsDbSet(users);
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
             //act
             var result = await authService.LoginAsync(userName, password);
             //arrange
@@ -125,7 +122,7 @@ namespace Entegrasyon.UnitTest.Business
             // Arrange
             string userName = "userName", password="password", newPassword = "newpassword";
             ApplicationUser user = CreateUser(userName,password);
-            integrationDbContextMock.Setup(c => c.Users.FindAsync(user.Id)).ReturnsAsync(user);
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(user.Id)).ReturnsAsync(user);
 
             // Act
             var result = await authService.AssignTempPassword(newPassword,user.Id.ToString());
@@ -133,7 +130,7 @@ namespace Entegrasyon.UnitTest.Business
             // Assert
             result.Should().BeOfType<SuccessResult>();
             result.Success.Should().BeTrue();
-            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default), Times.Once);
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Once);
             user.NeedsTakeNewPassword.Should().BeTrue();
             user.TemporaryPassword.Should().Be(newPassword);
         }
@@ -150,7 +147,7 @@ namespace Entegrasyon.UnitTest.Business
             // Assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);
-            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default), Times.Never);
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
         }
 
         [Fact]
@@ -159,7 +156,7 @@ namespace Entegrasyon.UnitTest.Business
             // Arrange
             string password = "newPassword";
             Guid userId = Guid.NewGuid();
-            integrationDbContextMock.Setup(c => c.Users.FindAsync(userId)).Returns(null!);
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(userId)).Returns(null!);
 
             // Act
             var result = await authService.AssignTempPassword(password, userId.ToString());
@@ -167,7 +164,7 @@ namespace Entegrasyon.UnitTest.Business
             // Assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);
-            integrationDbContextMock.Verify(c => c.SaveChangesAsync(default), Times.Never);
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
         }
 
         [Fact]
@@ -176,7 +173,7 @@ namespace Entegrasyon.UnitTest.Business
             //Arrange
             string userName="test",password="password", newPassword = "newPassword";
             ApplicationUser user = CreateUser(userName,password);
-            integrationDbContextMock.Setup(db => db.Users.FindAsync(new object[] { user.Id}, default)).ReturnsAsync(user);
+            mockIntegrationDbContext.Setup(db => db.Users.FindAsync(new object[] { user.Id}, default)).ReturnsAsync(user);
             //act
             var result = await authService.CreatePassword(password, user.Id, default);
             //assert
@@ -185,7 +182,7 @@ namespace Entegrasyon.UnitTest.Business
             user.PasswordHash.Should().NotBeNull();
             user.PasswordSalt.Should().NotBeNull();
             user.NeedsTakeNewPassword.Should().BeFalse();
-            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default), Times.Once);
+            mockIntegrationDbContext.Verify(ctx => ctx.SaveChangesAsync(default), Times.Once);
         }
         [Fact]
         public async Task CreatePassword_WithNotExistingUser_ReturnErrorResult()
@@ -193,13 +190,13 @@ namespace Entegrasyon.UnitTest.Business
             //Arrange
             string password = "newPassword";
             Guid userId = Guid.NewGuid();
-            integrationDbContextMock.Setup(db => db.Users.FindAsync(new object[] { userId }, default)).Returns(null!);
+            mockIntegrationDbContext.Setup(db => db.Users.FindAsync(new object[] { userId }, default)).Returns(null!);
             //act
             var result = await authService.CreatePassword(password, userId, default);
             //assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.UserNotFound);
-            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
+            mockIntegrationDbContext.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
         }
 
 
@@ -213,7 +210,7 @@ namespace Entegrasyon.UnitTest.Business
             //assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);
-            integrationDbContextMock.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
+            mockIntegrationDbContext.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
         }
 
         private ApplicationUser CreateUser(string userName,string password,string tempPassword="",bool needsToTakePassword=false,bool isActive = true)

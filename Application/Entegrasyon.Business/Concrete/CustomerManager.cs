@@ -20,10 +20,10 @@ public class CustomerManager
 {
     private readonly ICustomerDal _customerDal;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly FluentValidator _fluentValidator;
+    private readonly IFluentValidator _fluentValidator;
     private readonly IMapper _mapper;
     private readonly IApplicationLogManager _applicationLogManager;
-    public CustomerManager(ICustomerDal customerDal,FluentValidator fluentValidator,IMapper mapper,IApplicationLogManager applicationLogManager, IUnitOfWork unitOfWork)
+    public CustomerManager(ICustomerDal customerDal,IFluentValidator fluentValidator,IMapper mapper,IApplicationLogManager applicationLogManager, IUnitOfWork unitOfWork)
     {
         _customerDal = customerDal;
         _fluentValidator = fluentValidator;

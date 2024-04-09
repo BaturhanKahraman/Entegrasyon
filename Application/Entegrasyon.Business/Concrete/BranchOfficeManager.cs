@@ -16,11 +16,11 @@ namespace Entegrasyon.Business.Concrete;
 public class BranchOfficeManager
 {
     private readonly IBranchOfficeDal _branchOfficeDal;
-    private readonly FluentValidator _validator;
+    private readonly IFluentValidator _validator;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    public BranchOfficeManager(IBranchOfficeDal branchOfficeDal,FluentValidator validator,IApplicationLogManager applicationLogManager, IMapper mapper, IUnitOfWork unitOfWork)
+    public BranchOfficeManager(IBranchOfficeDal branchOfficeDal,IFluentValidator validator,IApplicationLogManager applicationLogManager, IMapper mapper, IUnitOfWork unitOfWork)
     {
         _branchOfficeDal = branchOfficeDal;
         _validator = validator;

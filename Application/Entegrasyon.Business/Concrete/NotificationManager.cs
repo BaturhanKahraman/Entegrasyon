@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
-public sealed class NotificationManager(IEnumerable<INotificationSender> notificationSenders, IntegrationDbContext context, FluentValidator validator)
+public sealed class NotificationManager(IEnumerable<INotificationSender> notificationSenders, IntegrationDbContext context, IFluentValidator validator)
 {
     public async Task SendNotification(Notification notification, IEnumerable<SenderType> senderTypes)
     {

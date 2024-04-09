@@ -16,10 +16,10 @@ public sealed class SaleManager
 {
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
-    private readonly FluentValidator _fluentValidator;
+    private readonly IFluentValidator _fluentValidator;
     private readonly OfficeStockManager _officeStockManager;
     private readonly ISaleDal _saleDal;
-    public SaleManager(IApplicationLogManager applicationLogManager, IMapper mapper, FluentValidator fluentValidator, OfficeStockManager officeStockManager, ISaleDal saleDal)
+    public SaleManager(IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, OfficeStockManager officeStockManager, ISaleDal saleDal)
     {
         _applicationLogManager = applicationLogManager;
         _mapper = mapper;

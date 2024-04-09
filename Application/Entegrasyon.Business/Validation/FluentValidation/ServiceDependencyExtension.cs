@@ -21,6 +21,7 @@ public static class ServiceDependencyExtension
     {
         services.AddScoped<IValidator<BranchOffice>,BranchValidator>();
         services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
+        services.AddScoped<IValidator<EditRoleDto>,EditRoleDtoValidator>();
         services.AddScoped<IValidator<AddUserDto>,AddUserDtoValidator>();
         services.AddScoped<IValidator<UserEditDto>,UserEditDtoValidator>();
         services.AddScoped<IValidator<Brand>,BrandValidator>();
@@ -35,8 +36,8 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<AddCategoryDtoStepOne>,AddCategoryDtoStepOneValidator>();
         services.AddScoped<IValidator<AddBrandDto>, AddBrandDtoValidator>();
         services.AddScoped<IValidator<Notification>, SendNotificationValidator>();
-        services.AddScoped<IValidator<string>,PasswordValidator>();
-        services.AddScoped<FluentValidator>();
+        //services.AddScoped<IValidator<string>,PasswordValidator>();
+        services.AddScoped<IFluentValidator,FluentValidator>();
         return services;
     }
 }

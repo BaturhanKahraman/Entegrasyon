@@ -56,4 +56,8 @@ public class Messages
     public const string OfficeNameAlreadyExists = "Bu ofis isminden zaten var.";
     public const string RoleExits = "Aynı isimde bir rol zaten bulunmakta.";
     public const string RoleNotFound = "Rol bulunamadı.";
+    public const string NoRoleName="Rol ismi bulunamadı.";
+    public const string NoClaim ="Yetki bulunamadı.";
+    public const string NotExistingClaim="Böyle bir yetki bulunamadı.";
+    public const string NotNullId="Id boş bırakalamaz.";
 }

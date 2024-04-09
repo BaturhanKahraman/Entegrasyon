@@ -24,7 +24,7 @@ public class ApplicationUserManager(
     IMapper mapper,
     IApplicationLogManager applicationLogManager,
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
-    FluentValidator validator,
+    IFluentValidator validator,
     IntegrationDbContext context,
     ILogger<ApplicationUserManager> logger)
 {
