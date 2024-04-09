@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Entity.Dtos.Users;
@@ -16,7 +17,7 @@ namespace Entegrasyon.MVC.Controllers
         ApplicationUserManager userManager,
         IMapper mapper,
         BranchOfficeManager branchOfficeManager,
-        RoleManager roleManager)
+        RoleService roleManager)
         : Controller
     {
         public async Task<IActionResult> Index(int pageIndex = 0,int pageSize = 50)
