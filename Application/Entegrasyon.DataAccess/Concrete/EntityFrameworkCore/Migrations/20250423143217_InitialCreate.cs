@@ -237,6 +237,26 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Header = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Content = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
+                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
+                    ReadAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
@@ -611,6 +631,30 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NotificationsClaims",
+                columns: table => new
+                {
+                    NotificationId = table.Column<long>(type: "bigint", nullable: false),
+                    ClaimId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationsClaims", x => new { x.ClaimId, x.NotificationId });
+                    table.ForeignKey(
+                        name: "FK_NotificationsClaims_Claims_ClaimId",
+                        column: x => x.ClaimId,
+                        principalTable: "Claims",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_NotificationsClaims_Notifications_NotificationId",
+                        column: x => x.NotificationId,
+                        principalTable: "Notifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RolesClaims",
                 columns: table => new
                 {
@@ -686,35 +730,27 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Notifications",
+                name: "NotificationsUsers",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Header = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    Content = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
-                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
-                    ReadDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ApplicationClaimId = table.Column<int>(type: "integer", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    NotificationId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.PrimaryKey("PK_NotificationsUsers", x => new { x.ApplicationUserId, x.NotificationId });
                     table.ForeignKey(
-                        name: "FK_Notifications_Claims_ApplicationClaimId",
-                        column: x => x.ApplicationClaimId,
-                        principalTable: "Claims",
-                        principalColumn: "Id");
+                        name: "FK_NotificationsUsers_Notifications_NotificationId",
+                        column: x => x.NotificationId,
+                        principalTable: "Notifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Notifications_Users_ApplicationUserId",
+                        name: "FK_NotificationsUsers_Users_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1244,7 +1280,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "DefaultBranchOfficeId", "DeletedAt", "Email", "IsActive", "IsDeleted", "IsTwoFactorAuthActive", "MobileJwtToken", "MobileJwtTokenExpiresAt", "Name", "NeedsTakeNewPassword", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PasswordSalt", "Surname", "TemporaryPassword", "UpdatedAt", "UserName", "WebJwtToken", "WebJwtTokenExpiresAt" },
-                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "Admin", null, null, "Admin", "Admin", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
+                values: new object[] { new Guid("dfda5d4a-f807-408c-9b4d-908830ad5724"), new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), 1, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "admin@admin.com", true, false, false, null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", true, null, "ADMIN", null, null, "Admin", "Admin", new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Admin", null, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
 
             migrationBuilder.InsertData(
                 table: "UsersRoles",
@@ -1401,14 +1437,14 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 .Annotation("Npgsql:IndexMethod", "GIN");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_ApplicationClaimId",
-                table: "Notifications",
-                column: "ApplicationClaimId");
+                name: "IX_NotificationsClaims_NotificationId",
+                table: "NotificationsClaims",
+                column: "NotificationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_ApplicationUserId",
-                table: "Notifications",
-                column: "ApplicationUserId");
+                name: "IX_NotificationsUsers_NotificationId",
+                table: "NotificationsUsers",
+                column: "NotificationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
@@ -1578,7 +1614,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "Logs");
 
             migrationBuilder.DropTable(
-                name: "Notifications");
+                name: "NotificationsClaims");
+
+            migrationBuilder.DropTable(
+                name: "NotificationsUsers");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
@@ -1618,6 +1657,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "MarketPlaces");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Orders");

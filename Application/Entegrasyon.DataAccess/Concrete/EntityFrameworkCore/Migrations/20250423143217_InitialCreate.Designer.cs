@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20240402035959_InitialCreate")]
+    [Migration("20250423143217_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,7 +22,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:CaseInsensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1039,12 +1039,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<int?>("ApplicationClaimId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("ApplicationUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Content")
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)");
@@ -1065,7 +1059,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("ReadDate")
+                    b.Property<DateTimeOffset>("ReadAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -1073,11 +1067,37 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApplicationClaimId");
-
-                    b.HasIndex("ApplicationUserId");
-
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsClaims", b =>
+                {
+                    b.Property<int>("ClaimId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("NotificationId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ClaimId", "NotificationId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.ToTable("NotificationsClaims");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsUsers", b =>
+                {
+                    b.Property<Guid>("ApplicationUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("NotificationId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ApplicationUserId", "NotificationId");
+
+                    b.HasIndex("NotificationId");
+
+                    b.ToTable("NotificationsUsers");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -2066,7 +2086,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             MobileJwtTokenExpiresAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Admin",
                             NeedsTakeNewPassword = true,
-                            NormalizedUserName = "Admin",
+                            NormalizedUserName = "ADMIN",
                             Surname = "Admin",
                             TemporaryPassword = "Admin",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
@@ -2880,19 +2900,42 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("MarketPlace");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Notifications.Notification", b =>
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsClaims", b =>
                 {
-                    b.HasOne("Entegrasyon.Entity.User.ApplicationClaim", "ApplicationClaim")
-                        .WithMany()
-                        .HasForeignKey("ApplicationClaimId");
+                    b.HasOne("Entegrasyon.Entity.User.ApplicationClaim", "Claim")
+                        .WithMany("NotificationClaims")
+                        .HasForeignKey("ClaimId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
+                    b.HasOne("Entegrasyon.Entity.Notifications.Notification", "Notification")
+                        .WithMany("NotificationClaims")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Claim");
+
+                    b.Navigation("Notification");
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.NotificationsUsers", b =>
+                {
                     b.HasOne("Entegrasyon.Entity.User.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId");
+                        .WithMany("NotificationsUsers")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("ApplicationClaim");
+                    b.HasOne("Entegrasyon.Entity.Notifications.Notification", "Notification")
+                        .WithMany("NotificationsUsers")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("Notification");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
@@ -3239,6 +3282,13 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("Sales");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.Notifications.Notification", b =>
+                {
+                    b.Navigation("NotificationClaims");
+
+                    b.Navigation("NotificationsUsers");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -3265,6 +3315,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.User.ApplicationClaim", b =>
                 {
+                    b.Navigation("NotificationClaims");
+
                     b.Navigation("RolesClaims");
 
                     b.Navigation("UsersClaims");
@@ -3275,6 +3327,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("Logins");
 
                     b.Navigation("MyProperty");
+
+                    b.Navigation("NotificationsUsers");
 
                     b.Navigation("UsersRoles");
                 });

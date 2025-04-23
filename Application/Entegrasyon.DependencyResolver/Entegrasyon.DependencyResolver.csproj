@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
     <ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
