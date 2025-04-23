@@ -100,8 +100,10 @@ namespace Entegrasyon.DependencyResolver
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services)
         {
+            
             services.AddDbContext<IntegrationDbContext>(x =>
             {
+                //x.UseInMemoryDatabase("InMemory");
                 var cs = new NpgsqlConnectionStringBuilder()
                 {
                     Database = "IntegrationDb",
