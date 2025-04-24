@@ -23,6 +23,8 @@ using Entegrasyon.MVC.ViewModels.Category;
 using Entegrasyon.MVC.ViewModels.CategoryAttribute;
 using Entegrasyon.MVC.ViewModels.Customer;
 using Shared.Entity;
+using Entegrasyon.MVC.ViewModels.Products;
+
 
 public static class MappingConfig
 {
@@ -31,19 +33,16 @@ public static class MappingConfig
         var config = TypeAdapterConfig.GlobalSettings;
 
         // Generic pageable mapping
-        config.NewConfig(typeof(Pageable<>),typeof(Pageable<>));
+        config.NewConfig(typeof(Pageable<>),typeof(Pageable<>))
+    .ShallowCopyForSameType(true);
 
         // Categories
         config.NewConfig<CategoryDetailDto,CategoryDetailListViewModel>();
         config.NewConfig<Category,CategoryUpsertViewModel>();
         config.NewConfig<CategoryUpsertViewModel,EditCategoryDto>();
-        config.NewConfig<CategoryUpsertViewModel,AddCategoryDto>()
-              .MapToConstructor(true)
-              .Map(dest => dest.CategoryAttributes,src => Enumerable.Empty<AddCategoryAttributeDto>());
+        config.NewConfig<CategoryUpsertViewModel,AddCategoryDto>();
 
         // CategoryAttributes
-        config.NewConfig<CategoryAttributeCreateViewModel,AddCategoryAttributeDto>()
-              .Ignore(dest => dest.CategoryAttributeHumanized);
         config.NewConfig<CategoryAttributeValueViewModel,CategoryAttributeValue>();
 
         // Brand
@@ -55,35 +54,23 @@ public static class MappingConfig
         config.NewConfig<RetailCustomer,CustomerEditViewModel>();
         config.NewConfig<CorporateCustomer,CustomerEditViewModel>();
 
-        config.NewConfig<CustomerAddViewModel,CustomerAddDto>()
-              .Map(dest => dest.FullAddress,src => src.Address)
-              .MapToConstructor(true)
-              .Map(dest => dest.FullAddress,src => src.Address);
-
-        config.NewConfig<CustomerEditViewModel,UpdateCustomerDto>();
-
         // Önceki tanımlar
-        // User mappings
         config.NewConfig<AddUserDto,ApplicationUser>()
               .Map(dest => dest.DefaultBranchOfficeId,src => src.BranchOfficeId);
         config.NewConfig<ApplicationUser,AddUserDto>();
         config.NewConfig<UserEditDto,ApplicationUser>();
 
-        // Brand
         config.NewConfig<AddBrandDto,Brand>();
         config.NewConfig<Brand,AddBrandDto>();
 
-        // Cargo Company
         config.NewConfig<AddCargoCompanyDto,CargoCompany>();
         config.NewConfig<CargoCompany,AddCargoCompanyDto>();
 
-        // Customer Add
         config.NewConfig<CustomerAddDto,RetailCustomer>()
               .Map(dest => dest.NationalIdentity,src => src.NationalIdentity);
         config.NewConfig<CustomerAddDto,CorporateCustomer>()
               .Map(dest => dest.TaxNumber,src => src.NationalIdentity);
 
-        // Customer Detail
         config.NewConfig<Customer,CustomerDetailDto>()
               .Map(dest => dest.SalesCount,src => src.Sales.Count());
         config.NewConfig<RetailCustomer,CustomerDetailDto>()
@@ -91,27 +78,34 @@ public static class MappingConfig
         config.NewConfig<CorporateCustomer,CustomerDetailDto>()
               .Map(dest => dest.NameSurname,src => src.FullName);
 
-        // Product
         config.NewConfig<AddProductDto,Product>();
         config.NewConfig<Product,AddProductDto>();
         config.NewConfig<ProductEditDetailDto,Product>();
+        config.NewConfig<ProductDetailDto,ProductDetailListViewModel>()
+            .MapWith(src => new ProductDetailListViewModel(
+                src.Id,
+                src.Title,
+                src.Description,
+                src.StockCode,
+                src.BrandName,
+                src.CategoryName,
+                src.TotalQuantity,
+                src.TotalSoldQuantity,
+                src.ProductVariantsDetails.Count()
+            ));
 
-        // Product Variant
         config.NewConfig<AddProductVariantDto,ProductVariant>();
         config.NewConfig<ProductVariant,AddProductVariantDto>();
         config.NewConfig<ProductVariantEditDetailDto,ProductVariant>();
 
-        // Branch Office Stock
         config.NewConfig<AddBranchOfficeStockDto,BranchOfficeStock>();
         config.NewConfig<BranchOfficeStock,AddBranchOfficeStockDto>();
         config.NewConfig<EditBranchOfficeStockDto,BranchOfficeStock>();
         config.NewConfig<BranchOfficeStock,EditBranchOfficeStockDto>();
 
-        // Branch Office
         config.NewConfig<BranchOfficeAddDto,BranchOffice>();
         config.NewConfig<BranchOfficeEditDto,BranchOffice>();
 
-        // Category
         config.NewConfig<AddCategoryDto,Category>()
               .Ignore(dest => dest.CategoryAttributes)
               .Map(dest => dest.SuperCategoryId,src => src.SuperCategoryId == 0 ? (int?)null : src.SuperCategoryId);
@@ -124,7 +118,6 @@ public static class MappingConfig
         config.NewConfig<AddCategoryDtoStepOne,Category>();
         config.NewConfig<Category,AddCategoryDtoStepOne>();
 
-        // Category Attribute
         config.NewConfig<CategoryAttribute,AddCategoryAttributeDto>();
         config.NewConfig<AddCategoryAttributeDto,CategoryAttribute>()
               .Ignore(dest => dest.Categories);
@@ -137,7 +130,6 @@ public static class MappingConfig
               .Map(dest => dest.CategoryAttribute.AllowCustom,src => src.AllowCustom)
               .Map(dest => dest.CategoryAttribute.CategoryAttributeKey,src => src.CategoryAttributeKey);
 
-        // Trendyol
         config.NewConfig<TrendyolCategoryAttribute,CategoryAttribute>()
               .Map(dest => dest.CategoryAttributeKey,src => src.Attribute.Name)
               .Map(dest => dest.CategoryAttributeHumanized,src => src.Attribute.Name);
@@ -146,7 +138,6 @@ public static class MappingConfig
         config.NewConfig<TrendyolAttributeValue,CategoryAttributeValue>()
               .Ignore(dest => dest.Id);
 
-        // Sales
         config.NewConfig<SaleItem,SaleItemDto>()
               .Map(dest => dest.DiscountVoucherCode,src => src.UsedDiscountVoucherCode);
         config.NewConfig<SaleItemDto,SaleItem>()

@@ -1,5 +1,6 @@
 ﻿using Entegrasyon.Business.Concrete;
-using Microsoft.AspNetCore.Http;
+using Entegrasyon.MVC.ViewModels.Products;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
 namespace Entegrasyon.MVC.Controllers
@@ -17,7 +18,8 @@ namespace Entegrasyon.MVC.Controllers
         public async Task<ActionResult> Index([FromQuery]SearchablePageDto dto)
         {
             var result = await _productManager.GetProductsDetailsPageable(dto);
-            return View(result.Data);
+            var model = result.Data.Adapt<Shared.Entity.Pageable<ProductDetailListViewModel>>();
+            return View(model);
         }
 
         // GET: ProductsController/Details/5
