@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Abstract;
+﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Logs;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Logic;

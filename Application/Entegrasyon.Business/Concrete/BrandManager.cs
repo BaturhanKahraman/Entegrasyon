@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -7,6 +6,7 @@ using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Logs;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Shared.Entity;
 using Shared.Logic;

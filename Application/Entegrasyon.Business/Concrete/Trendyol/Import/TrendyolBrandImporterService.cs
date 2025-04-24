@@ -1,15 +1,11 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-using Amazon.Runtime.Internal.Util;
-using AutoMapper;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Brands.Import;
-using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
 using Microsoft.EntityFrameworkCore;

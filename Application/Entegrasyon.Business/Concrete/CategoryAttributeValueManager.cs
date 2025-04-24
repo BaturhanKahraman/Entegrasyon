@@ -1,5 +1,4 @@
-﻿using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore;
 

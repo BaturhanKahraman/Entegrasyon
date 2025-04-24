@@ -84,10 +84,7 @@ namespace Entegrasyon.DependencyResolver
 
 
             services.AddValidators();
-            services.AddAutoMapper(x =>
-            {
-                x.AddProfile<MapProfiles>();
-            });
+            services.AddMapping();
             return services;
         }
         public static IServiceCollection AddClients(this IServiceCollection services)
@@ -116,7 +113,7 @@ namespace Entegrasyon.DependencyResolver
                     Timeout = 120,
                 };
                 //"Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;"
-                x.UseNpgsql("Server=localhost;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
+                x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
                 //x.UseInMemoryDatabase("InMemory");
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 x.EnableSensitiveDataLogging();

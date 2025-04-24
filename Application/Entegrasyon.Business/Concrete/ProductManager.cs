@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -9,6 +8,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Shared.DTO;
 using Shared.Entity;
