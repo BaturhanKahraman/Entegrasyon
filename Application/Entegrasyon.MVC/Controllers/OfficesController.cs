@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.ViewModels.Office;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +14,9 @@ namespace Entegrasyon.MVC.Controllers
     {
         // GET: OfficesController
         private readonly BranchOfficeManager _branchOfficeManager;
-        private readonly IMapper _mapper;
-        public OfficesController(BranchOfficeManager branchOfficeManager, IMapper mapper)
+        public OfficesController(BranchOfficeManager branchOfficeManager)
         {
             _branchOfficeManager = branchOfficeManager;
-            _mapper = mapper;
         }
 
         public async Task<IActionResult> Index(int pageIndex=0,int pageSize=10)
@@ -35,7 +33,7 @@ namespace Entegrasyon.MVC.Controllers
                 return BadRequest();
             }
             var dto = await _branchOfficeManager.GetBranchDetailById(id.Value);
-            var model = _mapper.Map<OfficeDetailViewModel>(dto.Data);
+            var model = dto.Data.Adapt<OfficeDetailViewModel>();
             return View(model);
         }
 
@@ -54,7 +52,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             if (!ModelState.IsValid)
                 return RedirectToAction(nameof(Create));
-            var dto = _mapper.Map<BranchOfficeAddDto>(model);
+            var dto = model.Adapt<BranchOfficeAddDto>();
             var result = await _branchOfficeManager.AddBranch(dto);
             if (!result.Success)
             {
@@ -72,7 +70,7 @@ namespace Entegrasyon.MVC.Controllers
             if (!id.HasValue || id == 0)
                 return BadRequest();
             var office = await _branchOfficeManager.GetBranchById(id.Value);
-            var model = _mapper.Map<OfficeEditViewModel>(office);
+            var model = office.Adapt<OfficeEditViewModel>();
             return View(model);
         }
         
@@ -83,7 +81,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             if (!ModelState.IsValid)
                 return RedirectToAction(nameof(Edit));
-            var dto = _mapper.Map<BranchOfficeEditDto>(model);
+            var dto = model.Adapt<BranchOfficeEditDto>();
             var result = await _branchOfficeManager.Update(dto);
             if (!result.Success)
             {

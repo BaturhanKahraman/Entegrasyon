@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.MVC.Utility.Extensions;
-using Entegrasyon.MVC.ViewModels.Category;
 using Entegrasyon.MVC.ViewModels.CategoryAttribute;
+using Mapster;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -26,8 +25,6 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
         private NavigationManager _navigationManager { get; set; }
         [Inject]
         private IJSRuntime _js { get; set; }
-        [Inject]
-        private IMapper _mapper { get; set; }
         [Inject]
         private CategoryAttributeCategoryManager _cacManager { get; set; }
         [Inject]
@@ -94,7 +91,7 @@ namespace Entegrasyon.MVC.Components.Razor.CategoryAttributeComponents
                             .Select(x=>new CategoryAttributeValueViewModel(x.id,x.value)).ToList();
                 }
             });
-            var dto = _mapper.Map<List<AddCategoryAttributeDto>>(Model.CategoryAttributeList);
+            var dto = Model.CategoryAttributeList.Adapt<List<AddCategoryAttributeDto>>();
             Shared.Results.IResult result;
             try
             {

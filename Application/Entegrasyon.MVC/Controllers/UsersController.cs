@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Abstract;
+﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.ViewModels.User;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -15,7 +15,6 @@ namespace Entegrasyon.MVC.Controllers
     [Authorize]
     public class UsersController(
         ApplicationUserManager userManager,
-        IMapper mapper,
         BranchOfficeManager branchOfficeManager,
         RoleService roleManager)
         : Controller
@@ -35,7 +34,7 @@ namespace Entegrasyon.MVC.Controllers
             var user = await userManager.GetUserById(id.Value);
             if (user == null)
                 return NotFound();
-            var model = mapper.Map<UserEditViewModel>(user);
+            var model = user.Adapt<UserEditViewModel>();
             model.BranchOffices ??= (await branchOfficeManager.GetBranchList(token)).Data
                 .Select(b => new SelectListItem(b.Name,b.Id.ToString())).ToList();
             model.Roles ??= (await roleManager.GetRolesSelectList(token))
@@ -51,7 +50,7 @@ namespace Entegrasyon.MVC.Controllers
                 return RedirectToAction(nameof(Edit));
             //var dto = new UserEditDto(model.Id, model.BranchOfficeId, model.Name, model.Surname, model.UserName,
             //    model.Email, model.RoleId);
-            var dto = mapper.Map<UserEditDto>(model);
+            var dto = model.Adapt<UserEditDto>();
             var result = await userManager.EditUser(dto);
             if (!result.Success)
             {
@@ -84,7 +83,7 @@ namespace Entegrasyon.MVC.Controllers
                 return RedirectToAction(nameof(Add),model);
             }
 
-            var dto = mapper.Map<AddUserDto>(model);
+            var dto = model.Adapt<AddUserDto>();
             var result = await userManager.AddUser(dto);
             if(result.Success)
             {
@@ -102,7 +101,7 @@ namespace Entegrasyon.MVC.Controllers
             var result = await userManager.GetUserDetails(id);
             if (!result.Success)
                 return BadRequest(result.Message);
-            var model = mapper.Map<UserDetailViewModel>(result.Data);
+            var model = result.Adapt<UserDetailViewModel>();
             return View(model);
         }
 

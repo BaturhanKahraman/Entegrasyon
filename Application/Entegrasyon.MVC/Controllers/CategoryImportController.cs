@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.MVC.Utility.Attributes;
@@ -15,7 +16,7 @@ namespace Entegrasyon.MVC.Controllers
     [Route("/category/category-import")]
     [Authorize]
     [Breadcrumb("Kategori Aktarımı",ViewModels.BreadcrumbUsageType.Controller)]
-    public class CategoryImportController(TrendyolCategoryImporterService trendyolCategoryImporterService)
+    public class CategoryImportController(ITrendyolCategoryImportService trendyolCategoryImporterService)
         : Controller
     {
         [HttpGet]

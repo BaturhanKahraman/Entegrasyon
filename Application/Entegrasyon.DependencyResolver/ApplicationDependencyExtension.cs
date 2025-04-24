@@ -9,9 +9,6 @@ using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore;
-using Entegrasyon.MqConsumer.CategoryImport;
-using Entegrasyon.MqConsumer.Product;
-using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -73,9 +70,8 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<DiscountVoucherManager>();
             services.AddScoped<AttributeKeyValueManager>();
             services.AddScoped<SaleManager>();
-            services.AddScoped<ApplicationLifetimeManager>();
-            services.AddScoped<TrendyolCategoryImporterService>();
-            services.AddScoped<TrendyolBrandImporterService>();
+            services.AddScoped<ITrendyolCategoryImportService,TrendyolCategoryImporterService>();
+            services.AddScoped<ITrendyolBrandImporterService,TrendyolBrandImporterService>();
             services.AddScoped<TempBarcodeManager>();
             services.AddScoped<BrandMatchService>();
             services.AddScoped<CategoryAttributeCategoryManager>();
@@ -84,7 +80,7 @@ namespace Entegrasyon.DependencyResolver
 
 
             services.AddValidators();
-            services.AddMapping();
+            services.AddBusinessMapping();
             return services;
         }
         public static IServiceCollection AddClients(this IServiceCollection services)
@@ -135,25 +131,6 @@ namespace Entegrasyon.DependencyResolver
         {
             services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);
             return services;
-        }
-
-        public static IServiceCollection AddApplicationMassTransit(this IServiceCollection services, IConfiguration configuration)
-        {
-            return services.AddMassTransit(x =>
-            {
-                x.AddEntityFrameworkOutbox<IntegrationDbContext>(z =>
-                {
-                    z.UsePostgres();
-                    z.UseBusOutbox();
-                });
-                x.AddConsumersFromNamespaceContaining<ProductCreatedConsumer>();
-                x.AddConsumer<CategoryImportConsumer>();
-                x.UsingInMemory((ctx, config) =>
-                {
-                    config.ConfigureEndpoints(ctx);
-                });
-                
-            });
         }
         public static IServiceCollection AddCustomUserIdProvider(this IServiceCollection services)
         {
