@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Concrete;
+﻿using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.ViewModels.Customer;
-using Entegrasyon.MVC.ViewModels.Office;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +13,9 @@ public class CustomersController : Controller
 {
     // GET
     private readonly CustomerManager _customerManager;
-    private readonly IMapper _mapper;
-
-    public CustomersController(CustomerManager customerManager, IMapper mapper)
+    public CustomersController(CustomerManager customerManager)
     {
         _customerManager = customerManager;
-        _mapper = mapper;
     }
 
     public async Task<IActionResult> Index(string searchKey,int pageIndex = 0,int pageSize = 50)
@@ -36,7 +32,8 @@ public class CustomersController : Controller
         }
 
         var result =await _customerManager.GetCustomerDetailById(id.Value);
-        var model = _mapper.Map<CustomerDetailViewModel>(result.Data);
+        var model = result.Data.Adapt<CustomerDetailViewModel>();
+        
         return View(model);
     }
 
@@ -54,7 +51,7 @@ public class CustomersController : Controller
     {
         if(!ModelState.IsValid)
             return RedirectToAction(nameof(Add));
-        var dto = _mapper.Map<CustomerAddDto>(model);
+        var dto = model.Adapt<CustomerAddDto>();
         var result = await _customerManager.AddCustomer(dto);
         if(!result.Success)
         {
@@ -71,7 +68,7 @@ public class CustomersController : Controller
         if(id is null or 0)
             return BadRequest();
         var result = await _customerManager.GetCustomerById(id.Value);
-        var model = _mapper.Map<CustomerEditViewModel>(result.Data);
+        var model = result.Data.Adapt<CustomerEditViewModel>();
         return View(model);
     }
 
@@ -82,7 +79,7 @@ public class CustomersController : Controller
     {
         if(!ModelState.IsValid)
             return RedirectToAction(nameof(Edit));
-        var dto = _mapper.Map<UpdateCustomerDto>(model);
+        var dto = model.Adapt<UpdateCustomerDto>();
         var result = await _customerManager.UpdateCustomer(dto);
         if(!result.Success)
         {

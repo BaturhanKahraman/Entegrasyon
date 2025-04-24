@@ -9,16 +9,14 @@
   <ItemGroup>
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-    <PackageReference Include="MassTransit" Version="8.1.3" />
-    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.1.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
-    <ProjectReference Include="..\MqContracts\Entegrasyon.MqContracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="NewFolder\" />
     <Folder Include="Notifications\Emails\" />
     <Folder Include="Utility\Auth\" />
   </ItemGroup>

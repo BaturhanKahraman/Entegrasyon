@@ -8,15 +8,12 @@ using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
-using Shared.User;
 using System.Reflection;
 using Entegrasyon.Entity.Barcode;
 using Entegrasyon.Entity.Brands;
 using Shared.Entity;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
-using Microsoft.IdentityModel.Tokens;
-using MassTransit;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.User;
 
@@ -29,10 +26,6 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.HasCollation("CaseInsensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
         modelBuilder.Seed();
-        //modelBuilder.
-        modelBuilder.AddInboxStateEntity();
-        modelBuilder.AddOutboxMessageEntity();
-        modelBuilder.AddOutboxStateEntity();
 
         base.OnModelCreating(modelBuilder);
     }

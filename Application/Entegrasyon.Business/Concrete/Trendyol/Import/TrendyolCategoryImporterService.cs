@@ -1,20 +1,19 @@
 ﻿using System.Collections.Immutable;
 using System.Net.Http.Json;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Matches;
-using Entegrasyon.MqContracts.CategoryImport;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete.Trendyol.Import;
 
-public class TrendyolCategoryImporterService
+public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
 {
     private readonly HttpClient _httpClient;
     private readonly IntegrationDbContext _dbContext;
@@ -22,14 +21,12 @@ public class TrendyolCategoryImporterService
     private readonly List<CategoryAttribute> _savedCategoryAttributes = [];
     private readonly MarketPlace _trendyolMarketPlace;
     private const string CategoryUrlPostfix = @"product-categories";
-    private readonly IBus _bus;
 
-    public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory, IntegrationDbContext dbContext, ILogger<TrendyolCategoryImporterService> logger, IBus bus)
+    public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory, IntegrationDbContext dbContext, ILogger<TrendyolCategoryImporterService> logger)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         _dbContext = dbContext;
         _logger = logger;
-        _bus = bus;
         _trendyolMarketPlace = _dbContext
             .MarketPlaces
             .AsTracking()
@@ -52,8 +49,7 @@ public class TrendyolCategoryImporterService
     {
         if (rootCategories is null || rootCategories.Count == 0)
             return;
-        var message = new CategoryImported(rootCategories);
-        await _bus.Publish(message);
+        throw new NotImplementedException("Queue import işlemi yapılmadı.");
     }
 
     public async Task<IResult> Import(ImmutableList<TrendyolSelectedCategory> rootCategories)

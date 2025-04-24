@@ -2,7 +2,6 @@ using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
 using Entegrasyon.DependencyResolver;
-using Entegrasyon.MVC.Utility.Mapper;
 using Entegrasyon.MVC.Utility.Notifications;
 using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,10 +19,14 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
-builder.Services.AddApplicationMassTransit(builder.Configuration);
+builder.Host.UseDefaultServiceProvider((host,options) =>
+{
+    options.ValidateOnBuild = host.HostingEnvironment.IsDevelopment();
+    options.ValidateScopes = host.HostingEnvironment.IsDevelopment();
+});
 builder.Services.AddApplicationDependencies();
+builder.Services.AddModelViewMapping();
 builder.Services.AddClients();
-builder.Services.AddAutoMapper(x => x.AddProfile<CustomMapProfile>());
 builder.Services.AddFileStorageCore();
 builder.Services.AddBackgroundServices();
 builder.Services.AddLocalFileStorage(builder.Configuration.GetSection("LocalFileStorageOptions"));
