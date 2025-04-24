@@ -1,5 +1,4 @@
 ﻿using Entegrasyon.Business.Abstract;
-using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Log;
 using Entegrasyon.Entity.Logs;

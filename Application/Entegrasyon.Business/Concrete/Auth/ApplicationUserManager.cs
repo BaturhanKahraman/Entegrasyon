@@ -1,9 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Security.Claims;
-using AutoMapper;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
-using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.User;
@@ -14,9 +12,9 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Logic;
-using System;
 using Shared.Extensions;
 using Entegrasyon.Business.Abstract;
+using MapsterMapper;
 
 namespace Entegrasyon.Business.Concrete.Auth;
 

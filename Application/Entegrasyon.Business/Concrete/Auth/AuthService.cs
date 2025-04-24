@@ -71,6 +71,7 @@ public class AuthService(
         user.PasswordSalt = userPasswordSalt;
         user.UpdatedAt = DateTimeOffset.UtcNow;
         user.NeedsTakeNewPassword = false;
+        context.Update(user);
         await context.SaveChangesAsync(token);
         return new SuccessResult(Messages.FirstPasswordAssigned);
     }

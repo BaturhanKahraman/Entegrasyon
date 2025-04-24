@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Abstract;
+﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Sales;
+using MapsterMapper;
 using Shared.Entity;
 using Shared.Expressions;
 using Shared.Results;

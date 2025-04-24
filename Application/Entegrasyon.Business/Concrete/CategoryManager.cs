@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Entegrasyon.DataAccess.Abstract;
+﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
@@ -11,6 +10,7 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
 using Entegrasyon.Business.Abstract;
+using MapsterMapper;
 
 namespace Entegrasyon.Business.Concrete
 {

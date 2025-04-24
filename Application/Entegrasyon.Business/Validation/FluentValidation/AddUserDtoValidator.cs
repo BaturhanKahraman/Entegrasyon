@@ -1,5 +1,4 @@
 ﻿using Entegrasyon.Entity.Dtos.Users;
-using Entegrasyon.Entity.User;
 using FluentValidation;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;

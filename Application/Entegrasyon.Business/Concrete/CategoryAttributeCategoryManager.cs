@@ -1,5 +1,4 @@
 ﻿using Entegrasyon.Business.Utility.Constants;
-using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;

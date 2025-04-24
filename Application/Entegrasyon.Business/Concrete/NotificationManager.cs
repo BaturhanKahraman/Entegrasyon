@@ -2,7 +2,6 @@
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Notifications;
-using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;

@@ -1,9 +1,9 @@
-﻿using AutoMapper;
-using Entegrasyon.Business.Abstract;
+﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
+using MapsterMapper;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
