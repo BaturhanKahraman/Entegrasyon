@@ -25,7 +25,6 @@ builder.Host.UseDefaultServiceProvider((host,options) =>
     options.ValidateScopes = host.HostingEnvironment.IsDevelopment();
 });
 builder.Services.AddApplicationDependencies();
-builder.Services.AddModelViewMapping();
 builder.Services.AddClients();
 builder.Services.AddFileStorageCore();
 builder.Services.AddBackgroundServices();

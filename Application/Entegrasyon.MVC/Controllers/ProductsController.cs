@@ -1,8 +1,11 @@
 ﻿using Entegrasyon.Business.Concrete;
+using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.MVC.Utility.Mapper;
 using Entegrasyon.MVC.ViewModels.Products;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
+using Shared.Entity;
 namespace Entegrasyon.MVC.Controllers
 {
     public class ProductsController : Controller
@@ -18,7 +21,8 @@ namespace Entegrasyon.MVC.Controllers
         public async Task<ActionResult> Index([FromQuery]SearchablePageDto dto)
         {
             var result = await _productManager.GetProductsDetailsPageable(dto);
-            var model = result.Data.Adapt<Shared.Entity.Pageable<ProductDetailListViewModel>>();
+            // Updated line in the Index method to explicitly specify type arguments
+            var model = result.Data.MapItems(Mappings.ToListViewModel);
             return View(model);
         }
 
