@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using Entegrasyon.Business.Abstract;
+﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.MVC.Utility.Attributes;
@@ -54,7 +53,7 @@ namespace Entegrasyon.MVC.Controllers
             List<TrendyolImportViewModel> hierarchical =
                 model.Where(x => !model.Select(s => s.Id).Contains(x.Parent)).ToList();
 
-            ImmutableList<TrendyolSelectedCategory> categories = hierarchical.Select(h => h.ToTrendyolSelectedCategory()).ToImmutableList();
+            ImmutableList<TrendyolSelectedCategory> categories = [.. hierarchical.Select(h => h.ToTrendyolSelectedCategory())];
 
             await trendyolCategoryImporterService.QueueImporting(categories);
 

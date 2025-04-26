@@ -2,12 +2,13 @@ using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
 using Entegrasyon.DependencyResolver;
+using Entegrasyon.MessageQueue.Handler.Trendyol.Import;
 using Entegrasyon.MVC.Utility.Notifications;
 using Entegrasyon.MVC.Utility.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
-using Shared.FileStorage;
 using Shared.Logger.Serilog;
+using Wolverine;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -16,6 +17,11 @@ var mvcBuilder = builder.Services.AddControllersWithViews();
 mvcBuilder.AddRazorRuntimeCompilation();
 #endif
 builder.Services.AddServerSideBlazor();
+
+builder.Host.UseWolverine(opt =>
+{
+    opt.Discovery.IncludeAssembly(typeof(TrendyolCategoryImportedCommandHandler).Assembly);
+});
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
@@ -26,9 +32,7 @@ builder.Host.UseDefaultServiceProvider((host,options) =>
 });
 builder.Services.AddApplicationDependencies();
 builder.Services.AddClients();
-builder.Services.AddFileStorageCore();
 builder.Services.AddBackgroundServices();
-builder.Services.AddLocalFileStorage(builder.Configuration.GetSection("LocalFileStorageOptions"));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
 {

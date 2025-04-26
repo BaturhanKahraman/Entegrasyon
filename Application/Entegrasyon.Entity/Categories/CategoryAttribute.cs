@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Shared.Entity;
+﻿using Shared.Entity;
 
 namespace Entegrasyon.Entity.Categories;
 
@@ -13,11 +12,4 @@ public sealed class CategoryAttribute : BaseEntity
     public int ImportId { get; set; }
     public List<CategoryAttributeValue> CategoryAttributeValues { get; set; } = new();
     public IEnumerable<CategoryAttributeCategory> Categories { get; set; }
-
-    [NotMapped]
-    public bool IsRequired { get; set; }
-    [NotMapped]
-    public bool IsVarianter { get; set; }
-    [NotMapped]
-    public bool IsSlicer { get; set; }
 }

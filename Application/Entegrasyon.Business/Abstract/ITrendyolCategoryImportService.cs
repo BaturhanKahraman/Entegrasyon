@@ -7,6 +7,7 @@ namespace Entegrasyon.Business.Abstract
     public interface ITrendyolCategoryImportService
     {
         Task<IDataResult<IEnumerable<ImportedTrendyolCategory>>> GetTrendyolCategories();
+        Task<IResult> Import(ImmutableList<TrendyolSelectedCategory> rootCategories);
         ValueTask QueueImporting(ImmutableList<TrendyolSelectedCategory> rootCategories);
     }
 }

@@ -66,7 +66,7 @@ namespace Entegrasyon.DependencyResolver
             services.AddScoped<ProductManager>();
             services.AddScoped<OfficeStockManager>();
             services.AddScoped<ProductVariantManager>();
-            services.AddScoped<ImageManager>();
+            //services.AddScoped<ImageManager>();
             services.AddScoped<DiscountVoucherManager>();
             services.AddScoped<AttributeKeyValueManager>();
             services.AddScoped<SaleManager>();
