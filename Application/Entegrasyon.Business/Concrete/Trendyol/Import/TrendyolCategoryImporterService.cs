@@ -20,7 +20,7 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
     private readonly ILogger<TrendyolCategoryImporterService> _logger;
     private readonly List<CategoryAttribute> _savedCategoryAttributes = [];
     private readonly MarketPlace _trendyolMarketPlace;
-    private const string CategoryUrlPostfix = @"product-categories";
+    private const string CategoryUrlPostfix = @"product/product-categories";
 
     public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory, IntegrationDbContext dbContext, ILogger<TrendyolCategoryImporterService> logger)
     {

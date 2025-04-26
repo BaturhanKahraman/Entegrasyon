@@ -85,9 +85,10 @@ namespace Entegrasyon.DependencyResolver
         }
         public static IServiceCollection AddClients(this IServiceCollection services)
         {
+        
             services.AddHttpClient(StringConstants.TrendyolApi, x =>
             {
-                x.BaseAddress = new Uri("https://api.trendyol.com/sapigw/");
+                x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/");
             });
             return services;
         }
