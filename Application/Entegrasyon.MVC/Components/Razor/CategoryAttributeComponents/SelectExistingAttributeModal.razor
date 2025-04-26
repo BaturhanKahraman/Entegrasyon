@@ -1,6 +1,6 @@
 ﻿@using Entegrasyon.MVC.Components.Razor.Common.Modal
 
-<Modal Title="Modal Başlığı" @ref="_modalRef">
+<Modal Title="Özellik Seçin" @ref="_modalRef">
     <ChildContent>
         <select multiple @bind="_selectedCategoryAttributesAsString" title="Kategori özellikleri" class="w-100">
             @if(_categoryAttributes is null || !_categoryAttributes.Any())

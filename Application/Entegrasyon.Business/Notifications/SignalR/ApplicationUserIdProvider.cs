@@ -7,7 +7,7 @@ public class ApplicationUserIdProvider : IUserIdProvider
 {
     public string GetUserId(HubConnectionContext connection)
     {
-        return connection.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)!.Value;
+        return connection.User?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)!.Value!;
     }
 }
 
