@@ -3,12 +3,11 @@ using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.MVC.Utility.Attributes;
 using Entegrasyon.MVC.Utility.Attributes.ModelState;
 using Entegrasyon.MVC.Utility.Constants;
+using Entegrasyon.MVC.Utility.Mapper;
 using Entegrasyon.MVC.ViewModels.Category;
-using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Shared.Entity;
 
 namespace Entegrasyon.MVC.Controllers
 {
@@ -27,7 +26,7 @@ namespace Entegrasyon.MVC.Controllers
         public async Task<ActionResult> Index(int pageIndex = 0,int pageSize = 10)
         {
             var result = await _categoryManager.GetCategoryDetailPageable(pageIndex,pageSize);
-            var modelData = result.Data.Adapt<Pageable<CategoryDetailListViewModel>>();
+            var modelData = result.Data.MapItems(Mappings.ToCategoryListViewModel);
             return View(modelData);
         }
 
@@ -49,7 +48,7 @@ namespace Entegrasyon.MVC.Controllers
             {
                 return RedirectToAction(nameof(Create),model);
             }
-            var dto = model.Adapt<AddCategoryDto>();
+            var dto = Mappings.ToAddCategoryDto(model);
             var result = await _categoryManager.AddCategory(dto);
             if(!result.Success)
             {
@@ -67,7 +66,7 @@ namespace Entegrasyon.MVC.Controllers
             var result = await _categoryManager.GetCategoryEditDetail(id);
             if(result.Data == null || !result.Success)
                 return BadRequest();
-            var model = result.Data.Adapt<CategoryUpsertViewModel>();
+            var model = Mappings.ToCategoryUpsertViewModel(result.Data);
             await AddIfNotSuperCategoriesExists(model,id);
             return View(model);
         }
@@ -79,7 +78,7 @@ namespace Entegrasyon.MVC.Controllers
         {
             if(!ModelState.IsValid)
                 return RedirectToAction(nameof(Edit),model);
-            var editDto = model.Adapt<EditCategoryDto>();
+            var editDto = Mappings.ToEditCategoryDto(model);
             var result = await _categoryManager.UpdateCategory(editDto);
             if(result.Success)
             {
