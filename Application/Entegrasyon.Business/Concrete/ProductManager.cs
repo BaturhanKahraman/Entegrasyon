@@ -25,7 +25,7 @@ public class ProductManager
     private readonly IMapper _mapper;
     private readonly IFluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
-    private readonly ImageManager _imageManager;
+    //private readonly ImageManager _imageManager;
     private readonly AttributeKeyValueManager _attributeKeyValueManager;
     private readonly TempBarcodeManager _barcodeManager;
     public ProductManager(IMainProductDal productDal,
@@ -33,7 +33,7 @@ public class ProductManager
         IMapper mapper,
         IFluentValidator validator,
         OfficeStockManager officeStockManager,
-        ImageManager imageManager,
+        //ImageManager imageManager,
         AttributeKeyValueManager attributeKeyValueManager,
         TempBarcodeManager barcodeManager)
     {
@@ -42,7 +42,7 @@ public class ProductManager
         _mapper = mapper;
         _validator = validator;
         _officeStockManager = officeStockManager;
-        _imageManager = imageManager;
+        //_imageManager = imageManager;
         _attributeKeyValueManager = attributeKeyValueManager;
         _barcodeManager = barcodeManager;
     }
@@ -64,7 +64,7 @@ public class ProductManager
         _attributeKeyValueManager.ClearEmptyAttributes(product);
         await _productDal.AddAsync(product);
         await _barcodeManager.MarkAddedBarcodes(product.ProductVariants.Select(pv => pv.Barcode));
-        await _imageManager.AddProductImages(dto,product);
+        //await _imageManager.AddProductImages(dto,product);
         await _applicationLogManager.AddLog("Ürün başarı ile eklendi",LogType.Product,LogAction.Add);
         return new SuccessResult(Messages.ProductAdded);
     }

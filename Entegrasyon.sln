@@ -35,6 +35,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entegrasyon.MVC", "Applicat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.DependencyResolver", "Application\Entegrasyon.DependencyResolver\Entegrasyon.DependencyResolver.csproj", "{7358CADA-A034-41C8-960A-037B1707F41A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.MessageQueue.Handler", "Application\Entegrasyon.MessageQueue\Entegrasyon.MessageQueue.Handler.csproj", "{1096FC04-D74E-4021-ABD1-78351E1716C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.MessageQueue.Commands", "Application\Entegrasyon.MessageQueue.Commands\Entegrasyon.MessageQueue.Commands.csproj", "{374AC8D3-60F3-4F0B-A281-9A844022CF00}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +81,14 @@ Global
 		{7358CADA-A034-41C8-960A-037B1707F41A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7358CADA-A034-41C8-960A-037B1707F41A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7358CADA-A034-41C8-960A-037B1707F41A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1096FC04-D74E-4021-ABD1-78351E1716C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1096FC04-D74E-4021-ABD1-78351E1716C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1096FC04-D74E-4021-ABD1-78351E1716C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1096FC04-D74E-4021-ABD1-78351E1716C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{374AC8D3-60F3-4F0B-A281-9A844022CF00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{374AC8D3-60F3-4F0B-A281-9A844022CF00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{374AC8D3-60F3-4F0B-A281-9A844022CF00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{374AC8D3-60F3-4F0B-A281-9A844022CF00}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +102,8 @@ Global
 		{D775F283-94F2-410F-896E-1079BBBF3A76} = {1DB52DB0-B1F3-47C9-9BE5-8ECF3DD7E378}
 		{12A8C4E3-1F84-4D2D-B40F-8A15087CC790} = {D4B50D90-1542-49FB-83D4-A17DEC4E3795}
 		{7358CADA-A034-41C8-960A-037B1707F41A} = {D4B50D90-1542-49FB-83D4-A17DEC4E3795}
+		{1096FC04-D74E-4021-ABD1-78351E1716C0} = {D4B50D90-1542-49FB-83D4-A17DEC4E3795}
+		{374AC8D3-60F3-4F0B-A281-9A844022CF00} = {D4B50D90-1542-49FB-83D4-A17DEC4E3795}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4F1B4C1A-D095-4E59-A429-B92A56E97A43}

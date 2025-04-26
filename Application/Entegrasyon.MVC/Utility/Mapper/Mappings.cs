@@ -57,4 +57,5 @@ public static class Mappings
         };
     public static Func<CategoryUpsertViewModel,EditCategoryDto> ToEditCategoryDto =>
         vm => new EditCategoryDto(vm.Id,vm.Name,vm.SuperCategoryId,vm.IsFavorite);
+
 }

@@ -1,5 +1,4 @@
-﻿using EFCore.BulkExtensions;
-using Entegrasyon.DataAccess.Abstract;
+﻿using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Matches;
 using Microsoft.EntityFrameworkCore;

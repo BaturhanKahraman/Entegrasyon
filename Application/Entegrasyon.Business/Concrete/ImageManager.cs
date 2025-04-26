@@ -1,50 +1,48 @@
-﻿using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.Entity;
-using Entegrasyon.Entity.Dtos.Product;
-using Entegrasyon.Entity.Products;
-using Shared.FileStorage;
-using Shared.Results;
+﻿//using Entegrasyon.DataAccess.Abstract;
+//using Entegrasyon.Entity;
+//using Entegrasyon.Entity.Dtos.Product;
+//using Entegrasyon.Entity.Products;
+//using Shared.FileStorage;
+//using Shared.Results;
 
-namespace Entegrasyon.Business.Concrete;
+//namespace Entegrasyon.Business.Concrete;
 
-public class ImageManager
-{
-    private readonly IImageDal _imageDal;
-    private readonly IFileStorage _fileStorage;
+//public class ImageManager
+//{
+//    private readonly IImageDal _imageDal;
 
-    public ImageManager(IImageDal imageDal, IFileStorage fileStorage)
-    {
-        _imageDal = imageDal;
-        _fileStorage = fileStorage;
-    }
+//    public ImageManager(IImageDal imageDal)
+//    {
+//        _imageDal = imageDal;
+//    }
     
-    public async Task<IResult> AddProductImages(AddProductDto dto,Product addedProduct)
-    {
-        var images = new List<Image>();
-        foreach(var productVariant in addedProduct.ProductVariants)
-        {
-            var productVariantDto =
-                dto.ProductVariants.FirstOrDefault(x => x.Barcode == productVariant.Barcode);
-            if(productVariantDto!.UploadedImages == null)
-                continue;
-            foreach(var formFile in productVariantDto.UploadedImages)
-            {
-                string containerName = Path.Combine("images",productVariant.Id.ToString());
-                string extension = formFile.UploadedImageFile.FileName.Split('.').LastOrDefault();
-                string imageName = Path.GetRandomFileName() + "." + extension;
-                string imageUrl = await _fileStorage.UploadFile(formFile.UploadedImageFile.OpenReadStream(),imageName,
-                    containerName);
-                var image = new Image()
-                {
-                    ProductVariant = productVariant,
-                    Src = imageUrl,
-                    AlternativeText = formFile.UploadedImageFile.FileName,
-                    FileStorageType = _fileStorage.FileStorageType
-                };
-                images.Add(image);
-            }
-        }
-        await _imageDal.AddRange(images);
-        return new SuccessResult();
-    }
-}
+//    public async Task<IResult> AddProductImages(AddProductDto dto,Product addedProduct)
+//    {
+//        var images = new List<Image>();
+//        foreach(var productVariant in addedProduct.ProductVariants)
+//        {
+//            var productVariantDto =
+//                dto.ProductVariants.FirstOrDefault(x => x.Barcode == productVariant.Barcode);
+//            if(productVariantDto!.UploadedImages == null)
+//                continue;
+//            foreach(var formFile in productVariantDto.UploadedImages)
+//            {
+//                string containerName = Path.Combine("images",productVariant.Id.ToString());
+//                string extension = formFile.UploadedImageFile.FileName.Split('.').LastOrDefault();
+//                string imageName = Path.GetRandomFileName() + "." + extension;
+//                //string imageUrl = await _fileStorage.UploadFile(formFile.UploadedImageFile.OpenReadStream(),imageName,
+//                    containerName);
+//                var image = new Image()
+//                {
+//                    ProductVariant = productVariant,
+//                    Src = imageUrl,
+//                    AlternativeText = formFile.UploadedImageFile.FileName,
+//                    FileStorageType = _fileStorage.FileStorageType
+//                };
+//                images.Add(image);
+//            }
+//        }
+//        await _imageDal.AddRange(images);
+//        return new SuccessResult();
+//    }
+//}

@@ -9,14 +9,15 @@
   <ItemGroup>
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
+    <PackageReference Include="WolverineFx" Version="3.12.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
+    <ProjectReference Include="..\Entegrasyon.MessageQueue.Commands\Entegrasyon.MessageQueue.Commands.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="NewFolder\" />
     <Folder Include="Notifications\Emails\" />
     <Folder Include="Utility\Auth\" />
   </ItemGroup>
