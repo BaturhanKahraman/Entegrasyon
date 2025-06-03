@@ -22,7 +22,7 @@ public class RoleServiceTests : BaseTest
 
     [Theory]
     [MemberData(nameof(invalidMembers))]
-    ///please see file addroledtovalidatortests.cs
+    /// Please see file AddRoleDtoValidatorTests.cs
     public async Task AddRole_InvalidDto_ReturnsErrorResult(AddRoleDto dto)
     {
         //act
