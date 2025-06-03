@@ -39,6 +39,7 @@ public class AddRoleDtoValidatorTests
         var result = await validator.TestValidateAsync(dto);
 
         // Assert
+        result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
         result.Errors.Should().Contain(x => x.ErrorMessage == Messages.NoClaim);
     }
