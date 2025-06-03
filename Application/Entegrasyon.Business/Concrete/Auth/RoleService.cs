@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Shared.Logic;
 using Shared.Results;
-namespace Entegrasyon.Business.Abstract
+namespace Entegrasyon.Business.Concrete.Auth
 {
     public class RoleService(
         IApplicationLogManager applicationLogManager,
