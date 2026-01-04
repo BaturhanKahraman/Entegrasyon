@@ -93,3 +93,11 @@ applyTo: '**/*.razor, **/*.razor.cs, **/*.razor.css'
 ## Repo-specific notes
 
 - Follow repository-specific conventions and critical rules described in `copilot-instructions.md`. When repository guidance conflicts with generic instructions here, prefer the repository guidance and check with maintainers.
+
+## Code Quality Enhancements (Added for Component Usage, Performance, and Readability)
+
+- **Component Size Limits**: Keep components under 100 lines. Split larger ones into sub-components to maintain readability and modularity.
+- **Avoid Long Methods**: No method in code-behind should exceed 20 lines. Extract logic into services or smaller methods.
+- **Performance-First Rendering**: Use lazy loading for heavy components and memoization (e.g., via custom logic) to prevent unnecessary re-renders.
+- **Readability Rules**: Prefer composition over complex inheritance. Add comments to performance-critical sections. Refactor if code isn't understandable quickly.
+- See `code-quality.instructions.md` for detailed best practices on avoiding long/unreadable code.
