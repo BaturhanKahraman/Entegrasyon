@@ -157,3 +157,11 @@ docker build -t entegrasyonblazor:local -f Dockerfile .
 dotnet watch run --project Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj
 ```
 
+## Code Quality Enhancements (Added for Readability and Maintainability)
+
+- **Class and Method Size Limits**: Classes should not exceed 300 lines; methods should not exceed 20 lines. Use Extract Method refactoring for long logic.
+- **SOLID Principles**: Ensure single responsibility; use Dependency Injection for loose coupling. Avoid deep inheritance hierarchies.
+- **Readability Rules**: Add comments to complex logic; use meaningful names. Refactor switch/if blocks into strategies if they grow long.
+- **Performance with Clarity**: Optimize queries and caching, but keep code readable. Avoid premature optimization that complicates maintenance.
+- See `code-quality.instructions.md` for detailed best practices on avoiding long/unreadable code.
+
