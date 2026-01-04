@@ -14,5 +14,7 @@ public sealed class CategoryUpsertViewModel
     public int? SuperCategoryId { get; set; }
     [Display(Name = "Favori Durumu", Description = "Favori mi ?")]
     public bool IsFavorite { get; set; } = false;
+    [Display(Name = "İçe Aktarıldı")]
+    public bool IsImported { get; set; } = false;
     public List<SelectListItem> SuperCategories { get; set; } = new();
 }

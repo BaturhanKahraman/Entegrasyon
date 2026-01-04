@@ -1,5 +1,7 @@
 @using Entegrasyon.Business.Concrete
+@using MudBlazor
 @using Entegrasyon.Entity.Categories
+@using Entegrasyon.Entity.Dtos.Category
 @inject CategoryManager CategoryManager
 @inject ISnackbar Snackbar
 
@@ -8,28 +10,28 @@
         <MudForm @ref="_form" @bind-IsValid="@_isValid">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_model.Name" 
-                                  Label="Kategori Adı" 
+                    <MudTextField @bind-Value="_model.Name"
+                                  Label="Kategori Adı"
                                   Required="true"
                                   RequiredError="Kategori adı gerekli" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudCheckBox @bind-Value="_model.IsFavorite" 
-                                 Label="Favori Kategori" 
+                    <MudCheckBox @bind-Value="_model.IsFavorite"
+                                 Label="Favori Kategori"
                                  Color="Color.Warning" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudCheckBox @bind-Value="_model.IsImported" 
-                                 Label="İçe Aktarıldı" 
+                    <MudCheckBox @bind-Value="_model.IsImported"
+                                 Label="İçe Aktarıldı"
                                  Color="Color.Info" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudSelect T="int?" 
-                               @bind-Value="_model.ParentCategoryId" 
-                               Label="Üst Kategori (Opsiyonel)" 
+                    <MudSelect T="int?"
+                               @bind-Value="_model.ParentCategoryId"
+                               Label="Üst Kategori (Opsiyonel)"
                                Clearable="true">
                         <MudSelectItem Value="@((int?)null)">Ana Kategori</MudSelectItem>
                         @foreach (var cat in _availableCategories)
@@ -41,25 +43,25 @@
 
                 <MudItem xs="12">
                     <MudText Typo="Typo.h6" Class="mt-2">Kategori Özellikleri</MudText>
-                    <MudButton OnClick="AddAttribute" 
-                               StartIcon="@Icons.Material.Filled.Add" 
-                               Color="Color.Primary" 
-                               Size="Size.Small" 
+                    <MudButton OnClick="AddAttribute"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Color="Color.Primary"
+                               Size="Size.Small"
                                Class="mb-2">
                         Özellik Ekle
                     </MudButton>
-                    
+
                     @foreach (var (attr, index) in _model.Attributes.Select((a, i) => (a, i)))
                     {
                         <MudPaper Class="pa-2 mb-2">
                             <MudGrid>
                                 <MudItem xs="5">
-                                    <MudTextField @bind-Value="attr.Name" 
+                                    <MudTextField @bind-Value="attr.Name"
                                                   Label="Özellik Adı" />
                                 </MudItem>
                                 <MudItem xs="3">
-                                    <MudSelect T="string" 
-                                               @bind-Value="attr.Type" 
+                                    <MudSelect T="string"
+                                               @bind-Value="attr.Type"
                                                Label="Tip">
                                         <MudSelectItem Value="@("Text")">Metin</MudSelectItem>
                                         <MudSelectItem Value="@("Number")">Sayı</MudSelectItem>
@@ -68,12 +70,12 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="3">
-                                    <MudCheckBox @bind-Value="attr.IsRequired" 
+                                    <MudCheckBox @bind-Value="attr.IsRequired"
                                                  Label="Zorunlu" />
                                 </MudItem>
                                 <MudItem xs="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                                   Color="Color.Error" 
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
                                                    OnClick="@(() => RemoveAttribute(index))" />
                                 </MudItem>
                             </MudGrid>
@@ -84,24 +86,22 @@
                 @if (!IsEditMode)
                 {
                     <MudItem xs="12">
-                        <MudFileUpload T="IBrowserFile" 
-                                       FilesChanged="OnFileChanged" 
+                        <MudFileUpload T="IBrowserFile"
+                                       FilesChanged="OnFileChanged"
                                        Accept=".jpg,.jpeg,.png">
-                            <ButtonTemplate>
-                                <MudButton HtmlTag="label"
-                                           Variant="Variant.Outlined"
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Outlined"
                                            Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.CloudUpload"
-                                           for="@context.Id">
+                                           StartIcon="@Icons.Material.Filled.CloudUpload">
                                     Kategori Görseli Yükle
                                 </MudButton>
-                            </ButtonTemplate>
+                            </ActivatorContent>
                         </MudFileUpload>
                         @if (_selectedFile != null)
                         {
-                            <MudChip Color="Color.Success" 
-                                     Size="Size.Small" 
-                                     OnClose="ClearFile" 
+                            <MudChip T="string" Color="Color.Success"
+                                     Size="Size.Small"
+                                     OnClose="ClearFile"
                                      Class="mt-2">
                                 @_selectedFile.Name
                             </MudChip>
@@ -113,8 +113,8 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">İptal</MudButton>
-        <MudButton Color="Color.Primary" 
-                   Variant="Variant.Filled" 
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
                    OnClick="Submit"
                    Disabled="@(!_isValid || _saving)">
             @if (_saving)
@@ -130,7 +130,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] IDialogReference? MudDialog { get; set; }
     [Parameter] public Category? Category { get; set; }
     [Parameter] public bool IsEditMode { get; set; }
 
@@ -144,7 +144,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
-        
+
         if (IsEditMode && Category != null)
         {
             _model = new CategoryFormModel
@@ -210,17 +210,58 @@
         _saving = true;
         try
         {
-            // TODO: Implement save logic with CategoryManager
             if (IsEditMode)
             {
-                Snackbar.Add("Kategori güncellendi", Severity.Success);
+                // Edit mode - update existing category
+                var editDto = new EditCategoryDto(
+                    Id: _model.Id,
+                    Name: _model.Name,
+                    SuperCategoryId: _model.ParentCategoryId,
+                    IsFavorite: _model.IsFavorite,
+                    IsImported: _model.IsImported
+                );
+
+                var result = await CategoryManager.UpdateCategory(editDto);
+                if (result.Success)
+                {
+                    Snackbar.Add("Kategori güncellendi", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Kategori güncellenirken hata oluştu", Severity.Error);
+                }
             }
             else
             {
-                Snackbar.Add("Kategori eklendi", Severity.Success);
+                // Add mode - create new category
+                var addDto = new AddCategoryDto(
+                    Name: _model.Name,
+                    CategoryAttributes: _model.Attributes.Select(a => new AddCategoryAttributeDto(
+                        0, // Id
+                        a.IsRequired, // IsRequired
+                        true, // AllowCustom
+                        false, // IsVarianter
+                        a.Name.ToLower().Replace(" ", "_"), // CategoryAttributeKey
+                        false, // IsSlicer
+                        a.Name, // CategoryAttributeHumanized
+                        new List<CategoryAttributeValue>() // CategoryAttributeValues
+                    )),
+                    SuperCategoryId: _model.ParentCategoryId,
+                    IsFavorite: _model.IsFavorite
+                );
+
+                var result = await CategoryManager.AddCategory(addDto);
+                if (result.Success)
+                {
+                    Snackbar.Add("Kategori eklendi", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    Snackbar.Add(result.Message ?? "Kategori eklenirken hata oluştu", Severity.Error);
+                }
             }
-            
-            MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {
@@ -232,7 +273,7 @@
         }
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => MudDialog?.Close(DialogResult.Cancel());
 
     private class CategoryFormModel
     {

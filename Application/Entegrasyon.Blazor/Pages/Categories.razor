@@ -8,6 +8,7 @@
 @inject EventChannel<CategoryUpdatedEvent> CategoryEventChannel
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Kategoriler</PageTitle>
 
@@ -18,86 +19,65 @@
         <MudPaper Class="pa-4" Style="height: 700px; overflow-y: auto;">
             <div class="d-flex justify-space-between align-center mb-4">
                 <MudText Typo="Typo.h6">Kategori Ağacı</MudText>
-                <MudButton Variant="Variant.Filled" 
-                           Color="Color.Primary" 
-                           StartIcon="@Icons.Material.Filled.Add" 
-                           Size="Size.Small"
-                           OnClick="OpenAddCategoryDialog">
-                    Yeni
-                </MudButton>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Info"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               Size="Size.Small"
+                               OnClick="@(() => NavigationManager.NavigateTo("/categories/import"))">
+                        İçe Aktar
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Size="Size.Small"
+                               OnClick="OpenAddCategoryDialog">
+                        Yeni
+                    </MudButton>
+                </div>
             </div>
-            
-            <MudTextField @bind-Value="_searchString" 
-                          Placeholder="Kategori ara..." 
-                          Adornment="Adornment.Start" 
-                          AdornmentIcon="@Icons.Material.Filled.Search" 
+
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Kategori ara..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
                           Immediate="true"
                           Class="mb-4" />
-            
+
             @if (_loading)
             {
                 <MudProgressCircular Indeterminate="true" />
             }
             else if (_treeItems.Any())
             {
-                <MudTreeView T="CategoryTreeItem" 
-                             Items="@(_treeItems.ToHashSet())" 
+                <MudTreeView T="CategoryTreeItem"
+                             Items="@GetTreeItemsForView()"
                              Hover="true"
                              SelectedValueChanged="OnCategorySelected">
                     <ItemTemplate Context="item">
-                        <MudTreeViewItem @bind-Expanded="@item.IsExpanded" 
-                                         Value="@item"
-                                         Icon="@GetCategoryIcon(item)"
-                                         IconColor="@GetCategoryIconColor(item)"
-                                         CanExpand="@item.Children.Any()">
-                            <BodyContent>
-                                <div class="d-flex align-center justify-space-between" style="width: 100%">
-                                    <MudText>@item.Category.Name</MudText>
-                                    <div class="d-flex gap-1">
-                                        @if (item.Category.IsFavorite)
-                                        {
-                                            <MudIcon Icon="@Icons.Material.Filled.Star" 
-                                                     Color="Color.Warning" 
-                                                     Size="Size.Small" />
-                                        }
-                                        @if (item.Category.IsImported)
-                                        {
-                                            <MudIcon Icon="@Icons.Material.Filled.CloudDownload" 
-                                                     Color="Color.Info" 
-                                                     Size="Size.Small" />
-                                        }
-                                        @if (item.Children.Any())
-                                        {
-                                            <MudChip Size="Size.Small" Color="Color.Default">
-                                                @item.Children.Count
-                                            </MudChip>
-                                        }
-                                    </div>
-                                </div>
-                            </BodyContent>
-                            <ChildContent>
-                                @foreach (var child in item.Children)
+                        <div class="d-flex align-center justify-space-between" style="width: 100%">
+                            <MudText>@item.Value?.Category.Name</MudText>
+                            <div class="d-flex gap-1">
+                                @if (item.Value?.Category.IsFavorite == true)
                                 {
-                                    <MudTreeViewItem @bind-Expanded="@child.IsExpanded" 
-                                                     Value="@child"
-                                                     Icon="@GetCategoryIcon(child)"
-                                                     IconColor="@GetCategoryIconColor(child)"
-                                                     CanExpand="@child.Children.Any()">
-                                        <BodyContent>
-                                            <div class="d-flex align-center justify-space-between" style="width: 100%">
-                                                <MudText>@child.Category.Name</MudText>
-                                                @if (child.Children.Any())
-                                                {
-                                                    <MudChip Size="Size.Small" Color="Color.Default">
-                                                        @child.Children.Count
-                                                    </MudChip>
-                                                }
-                                            </div>
-                                        </BodyContent>
-                                    </MudTreeViewItem>
+                                    <MudIcon Icon="@Icons.Material.Filled.Star"
+                                             Color="Color.Warning"
+                                             Size="Size.Small" />
                                 }
-                            </ChildContent>
-                        </MudTreeViewItem>
+                                @if (item.Value?.Category.IsImported == true)
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.CloudDownload"
+                                             Color="Color.Info"
+                                             Size="Size.Small" />
+                                }
+                                @if (item.Value?.Children.Any() == true)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                        @item.Value.Children.Count
+                                    </MudChip>
+                                }
+                            </div>
+                        </div>
                     </ItemTemplate>
                 </MudTreeView>
             }
@@ -107,7 +87,7 @@
             }
         </MudPaper>
     </MudItem>
-    
+
     <MudItem xs="12" md="7">
         <MudPaper Class="pa-4" Style="min-height: 700px;">
             @if (_selectedCategory != null)
@@ -115,15 +95,15 @@
                 <div class="d-flex justify-space-between align-center mb-4">
                     <MudText Typo="Typo.h6">Kategori Detayları</MudText>
                     <div class="d-flex gap-2">
-                        <MudButton Variant="Variant.Filled" 
-                                   Color="Color.Primary" 
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.Edit"
                                    Size="Size.Small"
                                    OnClick="EditSelectedCategory">
                             Düzenle
                         </MudButton>
-                        <MudButton Variant="Variant.Filled" 
-                                   Color="Color.Error" 
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Error"
                                    StartIcon="@Icons.Material.Filled.Delete"
                                    Size="Size.Small"
                                    OnClick="DeleteSelectedCategory">
@@ -131,7 +111,7 @@
                         </MudButton>
                     </div>
                 </div>
-                
+
                 <MudGrid>
                     <MudItem xs="12">
                         <MudCard Elevation="0" Outlined="true">
@@ -140,23 +120,23 @@
                                 <div class="d-flex gap-2 mb-4">
                                     @if (_selectedCategory.IsFavorite)
                                     {
-                                        <MudChip Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Star">
+                                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Star">
                                             Favori
                                         </MudChip>
                                     }
                                     @if (_selectedCategory.IsImported)
                                     {
-                                        <MudChip Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.CloudDownload">
+                                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.CloudDownload">
                                             İçe Aktarıldı
                                         </MudChip>
                                     }
                                 </div>
-                                
+
                                 <MudDivider Class="my-3" />
-                                
+
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Kategori ID</MudText>
                                 <MudText Typo="Typo.body1" Class="mb-3">@_selectedCategory.Id</MudText>
-                                
+
                                 @if (_selectedCategory.SuperCategoryId.HasValue)
                                 {
                                     <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Üst Kategori</MudText>
@@ -167,7 +147,7 @@
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
-                    
+
                     <MudItem xs="12" Class="mt-4">
                         <MudCard Elevation="0" Outlined="true">
                             <MudCardHeader>
@@ -175,7 +155,7 @@
                                     <MudText Typo="Typo.h6">Kategori Özellikleri</MudText>
                                 </CardHeaderContent>
                                 <CardHeaderActions>
-                                    <MudChip Color="Color.Info" Size="Size.Small">
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small">
                                         @(_selectedCategory.CategoryAttributes?.Count ?? 0) özellik
                                     </MudChip>
                                 </CardHeaderActions>
@@ -183,13 +163,13 @@
                             <MudCardContent>
                                 @if (_selectedCategory.CategoryAttributes?.Any() == true)
                                 {
-                                    <MudList Dense="true">
+                                    <MudList T="string" Dense="true">
                                         @foreach (var attr in _selectedCategory.CategoryAttributes)
                                         {
-                                            <MudListItem Icon="@Icons.Material.Filled.Label">
+                                            <MudListItem T="string" Icon="@Icons.Material.Filled.Label">
                                                 <div class="d-flex justify-space-between">
                                                     <MudText>@(attr.CategoryAttribute?.CategoryAttributeHumanized ?? "N/A")</MudText>
-                                                    <MudChip Size="Size.Small">
+                                                    <MudChip T="string" Size="Size.Small">
                                                         @(attr.IsRequired ? "Zorunlu" : "Opsiyonel")
                                                     </MudChip>
                                                 </div>
@@ -202,6 +182,58 @@
                                     <MudText Align="Align.Center" Color="Color.Secondary">
                                         Bu kategoriye özellik eklenmemiş
                                     </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mt-4">
+                        <MudCard Elevation="0" Outlined="true">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">Pazaryeri Eşleşmeleri</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small">
+                                        @(_selectedCategory.MarketplaceLinks?.Count ?? 0) eşleşme
+                                    </MudChip>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                @if (_selectedCategory.MarketplaceLinks?.Any() == true)
+                                {
+                                    <MudList T="string" Dense="true">
+                                        @foreach (var link in _selectedCategory.MarketplaceLinks)
+                                        {
+                                            <MudListItem T="string" Icon="@Icons.Material.Filled.Link">
+                                                <div class="d-flex justify-space-between align-center" style="width: 100%">
+                                                    <div>
+                                                        <MudText>@(link.MarketPlace?.Name ?? "N/A")</MudText>
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                            @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
+                                                        </MudText>
+                                                    </div>
+                                                    <MudChip T="string" Size="Size.Small" Color="@(link.IsActive ? Color.Success : Color.Default)">
+                                                        @(link.IsActive ? "Aktif" : "Pasif")
+                                                    </MudChip>
+                                                </div>
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center" Color="Color.Secondary">
+                                        Pazaryeri eşleşmesi yok
+                                    </MudText>
+                                    <div class="d-flex justify-center mt-2">
+                                        <MudButton Variant="Variant.Text"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.Add"
+                                                   Href="/categories/import">
+                                            Kategorileri İçe Aktar
+                                        </MudButton>
+                                    </div>
                                 }
                             </MudCardContent>
                         </MudCard>
@@ -261,19 +293,18 @@
         _loading = true;
         try
         {
-            // TODO: Implement actual category loading
-            // var result = await CategoryManager.GetAllCategoriesAsync();
-            // if (result.Success)
-            // {
-            //     _categories = result.Data.ToList();
-            //     BuildCategoryTree();
-            // }
-            
-            // Mock data
-            _categories = new List<Category>();
-            BuildCategoryTree();
-            
-            Snackbar.Add("Kategoriler yüklendi", Severity.Success);
+            var result = await CategoryManager.GetCategoryDetailList();
+            if (result.Success && result.Data != null)
+            {
+                // CategoryDetailDto'dan Category'ye dönüştürme işlemi için
+                // Ayrı bir query kullanıyoruz
+                _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
+                BuildCategoryTree();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Kategoriler yüklenemedi", Severity.Warning);
+            }
         }
         catch (Exception ex)
         {
@@ -308,13 +339,11 @@
     private void OnCategorySelected(CategoryTreeItem item)
     {
         _selectedCategory = item.Category;
-        StateHasChanged();
     }
 
     private void SelectCategory(Category category)
     {
         _selectedCategory = category;
-        StateHasChanged();
     }
 
     private async Task OpenAddCategoryDialog()
@@ -324,8 +353,8 @@
             { x => x.IsEditMode, false }
         };
 
-        var options = new DialogOptions 
-        { 
+        var options = new DialogOptions
+        {
             MaxWidth = MaxWidth.Medium,
             FullWidth = true,
             CloseButton = true
@@ -350,8 +379,8 @@
             { x => x.IsEditMode, true }
         };
 
-        var options = new DialogOptions 
-        { 
+        var options = new DialogOptions
+        {
             MaxWidth = MaxWidth.Medium,
             FullWidth = true,
             CloseButton = true
@@ -370,6 +399,14 @@
     {
         if (_selectedCategory == null) return;
 
+        // Alt kategori kontrolü
+        var hasSubCategories = _categories.Any(c => c.SuperCategoryId == _selectedCategory.Id);
+        if (hasSubCategories)
+        {
+            Snackbar.Add("Bu kategorinin alt kategorileri var. Önce alt kategorileri silmeniz gerekir.", Severity.Warning);
+            return;
+        }
+
         var confirm = await DialogService.ShowMessageBox(
             "Uyarı",
             $"'{_selectedCategory.Name}' kategorisini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
@@ -379,17 +416,18 @@
         {
             try
             {
-                // TODO: Implement actual deletion
-                // var result = await CategoryManager.DeleteCategory(_selectedCategory.Id);
-                // if (result.Success)
-                // {
-                //     Snackbar.Add(result.Message, Severity.Success);
-                //     await LoadCategories();
-                //     await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(_selectedCategory.Id, "Deleted"));
-                // }
-                
-                Snackbar.Add($"Kategori silindi: {_selectedCategory.Name} (Mock)", Severity.Info);
-                _selectedCategory = null;
+                var result = await CategoryManager.SoftDelete(_selectedCategory.Id);
+                if (result.Success)
+                {
+                    Snackbar.Add(result.Message, Severity.Success);
+                    await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(_selectedCategory.Id, "Deleted"));
+                    _selectedCategory = null;
+                    await LoadCategories();
+                }
+                else
+                {
+                    Snackbar.Add(result.Message, Severity.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -422,6 +460,22 @@
     private int GetSubcategoryCount(int categoryId)
     {
         return _categories.Count(c => c.SuperCategoryId == categoryId);
+    }
+
+    private IReadOnlyCollection<TreeItemData<CategoryTreeItem>> GetTreeItemsForView()
+    {
+        return _treeItems.Select(ConvertToTreeItemData).ToList();
+    }
+
+    private TreeItemData<CategoryTreeItem> ConvertToTreeItemData(CategoryTreeItem item)
+    {
+        return new TreeItemData<CategoryTreeItem>
+        {
+            Value = item,
+            Children = item.Children.Select(ConvertToTreeItemData).ToList(),
+            Expandable = item.Children.Any(),
+            Expanded = item.IsExpanded
+        };
     }
 
     private class CategoryTreeItem

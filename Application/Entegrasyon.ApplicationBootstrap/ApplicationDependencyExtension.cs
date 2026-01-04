@@ -2,6 +2,7 @@
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Utility.Constants;
@@ -76,6 +77,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<BrandMatchService>();
             services.AddScoped<CategoryAttributeCategoryManager>();
             services.AddScoped<CategoryAttributeValueManager>();
+            
+            // Yeni Import Servisleri
+            services.AddScoped<TrendyolCategoryImporter>();
 
 
 

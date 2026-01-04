@@ -4,5 +4,6 @@ public sealed record EditCategoryDto(
     int Id,
     string Name,
     int? SuperCategoryId,
-    bool IsFavorite
+    bool IsFavorite,
+    bool IsImported
     );

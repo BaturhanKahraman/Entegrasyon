@@ -1,8 +1,7 @@
 ---
 description: 'Blazor component and application patterns'
-applyTo: '**/*.razor, **/*.razor.cs, **/*.razor.css'
+applyTo: '**'
 ---
-
 ## Blazor Code Style and Structure
 
 - Write idiomatic and efficient Blazor and C# code.

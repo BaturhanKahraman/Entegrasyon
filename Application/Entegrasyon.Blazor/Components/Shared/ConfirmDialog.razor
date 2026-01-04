@@ -1,3 +1,4 @@
+@using MudBlazor
 @typeparam T
 
 <MudDialog>
@@ -10,8 +11,8 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">@CancelText</MudButton>
-        <MudButton Color="@ConfirmColor" 
-                   Variant="Variant.Filled" 
+        <MudButton Color="@ConfirmColor"
+                   Variant="Variant.Filled"
                    OnClick="Confirm">
             @ConfirmText
         </MudButton>
@@ -19,8 +20,8 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
-    
+    [CascadingParameter] IDialogReference? MudDialog { get; set; }
+
     [Parameter] public string Title { get; set; } = "Onay";
     [Parameter] public string Message { get; set; } = "Bu işlemi yapmak istediğinize emin misiniz?";
     [Parameter] public string Icon { get; set; } = Icons.Material.Filled.Help;
@@ -30,6 +31,6 @@
     [Parameter] public Color ConfirmColor { get; set; } = Color.Primary;
     [Parameter] public T? Data { get; set; }
 
-    private void Confirm() => MudDialog.Close(DialogResult.Ok((object?)Data ?? true));
-    private void Cancel() => MudDialog.Cancel();
+    private void Confirm() => MudDialog?.Close(DialogResult.Ok((object?)Data ?? true));
+    private void Cancel() => MudDialog?.Close(DialogResult.Cancel());
 }

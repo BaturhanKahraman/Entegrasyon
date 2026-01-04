@@ -54,6 +54,7 @@ namespace Entegrasyon.Business.Concrete
             dbCategory.SuperCategoryId = dto.SuperCategoryId;
             dbCategory.Name = dto.Name;
             dbCategory.IsFavorite = dto.IsFavorite;
+            dbCategory.IsImported = dto.IsImported;
             await _categoryDal.UpdateAsync(dbCategory);
             return new SuccessResult(Messages.CategoryUpdated);
         }
@@ -213,6 +214,33 @@ namespace Entegrasyon.Business.Concrete
 
         public Task<bool> IsSuper(int? categoryId) => _categoryDal
                 .Exists(c => c.Id == categoryId && c.SubCategories.Any());
+
+        /// <summary>
+        /// Tüm kategorileri hiyerarşi bilgisiyle birlikte getirir
+        /// </summary>
+        public async Task<List<Category>> GetAllCategoriesWithHierarchyAsync()
+        {
+            return await _categoryDal.Table
+                .AsNoTracking()
+                .Include(c => c.CategoryAttributes)
+                    .ThenInclude(ca => ca.CategoryAttribute)
+                .Include(c => c.MarketplaceLinks)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Belirli bir kategorinin marketplace eşleşmelerini getirir
+        /// </summary>
+        public async Task<List<CategoryMarketplace>> GetCategoryMarketplaceLinksAsync(int categoryId)
+        {
+            return await _categoryDal.Table
+                .AsNoTracking()
+                .Where(c => c.Id == categoryId)
+                .SelectMany(c => c.MarketplaceLinks)
+                .Include(cm => cm.MarketPlace)
+                .ToListAsync();
+        }
 
     }
 }
