@@ -29,6 +29,8 @@
 		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.13.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="4.13.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
 		  <PrivateAssets>all</PrivateAssets>
@@ -41,7 +43,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
-		<ProjectReference Include="..\Entegrasyon.DependencyResolver\Entegrasyon.DependencyResolver.csproj" />
+		<ProjectReference Include="..\Entegrasyon.ApplicationBootstrap\Entegrasyon.ApplicationBootstrap.csproj" />
 		<ProjectReference Include="..\Entegrasyon.MessageQueue\Entegrasyon.MessageQueue.Handler.csproj" />
 	</ItemGroup>
 

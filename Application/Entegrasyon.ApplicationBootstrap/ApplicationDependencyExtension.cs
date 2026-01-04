@@ -21,9 +21,9 @@ using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Entegrasyon.DependencyResolver
+namespace Entegrasyon.ApplicationBootstrap
 {
-    public static class DependencyInjectionExtensions
+    public static class ApplicationBootstrapExtensions
     {
         public static IServiceCollection AddApplicationDependencies(this IServiceCollection services)
         {
@@ -92,26 +92,15 @@ namespace Entegrasyon.DependencyResolver
             });
             return services;
         }
-        public static IServiceCollection AddCustomDbContext(this IServiceCollection services)
+        public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("Main") 
+                ?? configuration.GetConnectionString("DefaultConnection")
+                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;";
             
             services.AddDbContext<IntegrationDbContext>(x =>
             {
-                //x.UseInMemoryDatabase("InMemory");
-                var cs = new NpgsqlConnectionStringBuilder()
-                {
-                    Database = "IntegrationDb",
-                    Host = "db",
-                    Port = 5432,
-                    Password = "649471",
-                    Username = "Baturhan",
-                    IncludeErrorDetail = true,
-                    Pooling = true,
-                    Timeout = 120,
-                };
-                //"Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;"
-                x.UseNpgsql("Server=db;Port=5432;Database=IntegrationDb;User Id=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;");
-                //x.UseInMemoryDatabase("InMemory");
+                x.UseNpgsql(connectionString);
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                 x.EnableSensitiveDataLogging();
                 x.EnableDetailedErrors();

@@ -24,6 +24,7 @@ applyTo: '**/*.razor, **/*.razor.cs, **/*.razor.css'
 - Leverage Dependency Injection for services in Blazor.
 - Structure Blazor components and services following Separation of Concerns.
 - Always use the latest version C#, currently C# 13 features like record types, pattern matching, and global usings.
+ - Use a C# language version compatible with the project's TargetFramework (this repository targets `net8.0`). Before adopting newer C# language features, get approval from the project owner or maintainers.
 
 ## Error Handling and Validation
 
@@ -61,7 +62,8 @@ applyTo: '**/*.razor, **/*.razor.cs, **/*.razor.css'
 ## Testing and Debugging in Visual Studio
 
 - All unit testing and integration testing should be done in Visual Studio Enterprise.
-- Test Blazor components and services using xUnit, NUnit, or MSTest.
+ - Use a suitable test environment/IDE (Visual Studio, VS Code, Rider) and CI runners. Tests should run in CI via `dotnet test`.
+ - Test Blazor components and services using xUnit, NUnit, or MSTest.
 - Use Moq or NSubstitute for mocking dependencies during tests.
 - Debug Blazor UI issues using browser developer tools and Visual Studio's debugging tools for backend and server-side issues.
 - For performance profiling and optimization, rely on Visual Studio's diagnostics tools.
@@ -75,3 +77,19 @@ applyTo: '**/*.razor, **/*.razor.cs, **/*.razor.css'
 
 - Use Swagger/OpenAPI for API documentation for your backend API services.
 - Ensure XML documentation for models and API methods for enhancing Swagger documentation.
+
+## Architecture & Layering (Blazor-specific)
+
+- Follow the repository's layered architecture: `Entegrasyon.Blazor` is the presentation layer and must not reference `Entegrasyon.DataAccess` or other lower layers directly. Use `Entegrasyon.Business` (or `Shared` abstractions) to access data and business logic.
+- Place UI-specific helpers and view models in the Blazor project; business rules and validations must live in the Business layer.
+- When adding new services to be used by Blazor, register them via the DI registration project (see Dependency Resolver guidance). Keep Blazor registrations scoped to UI concerns.
+
+## AI Model Guidance for Blazor
+
+- AI agents must respect layering rules and avoid generating code that creates cross-layer references. If a generated change would violate layering, provide a refactor suggestion (e.g., create `IProductService` in `Entegrasyon.Business` and implement it in the Business project).
+- If uncertain, AI should create a short design note and open an issue/PR for maintainers rather than making breaking structural changes.
+
+
+## Repo-specific notes
+
+- Follow repository-specific conventions and critical rules described in `copilot-instructions.md`. When repository guidance conflicts with generic instructions here, prefer the repository guidance and check with maintainers.

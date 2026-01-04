@@ -1,7 +1,7 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
-using Entegrasyon.DependencyResolver;
+using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services.Channels;
@@ -54,7 +54,7 @@ builder.Services.AddStackExchangeRedisCache(opt =>
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddCustomDbContext();
+builder.Services.AddCustomDbContext(builder.Configuration);
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
 builder.Services.AddSingleton<IMenuService,MenuService>();
