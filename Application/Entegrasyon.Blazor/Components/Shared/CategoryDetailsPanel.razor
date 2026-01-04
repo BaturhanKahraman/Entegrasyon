@@ -188,10 +188,10 @@
     [Parameter] public int SubcategoryCount { get; set; }
     [Parameter] public EventCallback OnEditClicked { get; set; }
     [Parameter] public EventCallback OnDeleteClicked { get; set; }
-    [Parameter] public Func<int, string>? GetParentCategoryName { get; set; }
+    [Parameter] public Func<int, string>? GetParentCategoryNameFunc { get; set; }
 
     private string GetParentCategoryName(int parentId)
     {
-        return GetParentCategoryName?.Invoke(parentId) ?? "N/A";
+        return GetParentCategoryNameFunc?.Invoke(parentId) ?? "N/A";
     }
 }

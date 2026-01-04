@@ -77,6 +77,57 @@ applyTo: '**'
 - Use Swagger/OpenAPI for API documentation for your backend API services.
 - Ensure XML documentation for models and API methods for enhancing Swagger documentation.
 
+## Component File Organization (Standard)
+
+**All Razor components MUST follow this three-file separation pattern:**
+
+1. **Component.razor** - Markup only (@page, @inject, HTML/Razor markup)
+2. **Component.razor.cs** - Code-behind with @code logic (if logic exists)
+3. **Component.razor.css** - Scoped CSS (if custom styles exist)
+
+**When to separate:**
+- **Code-behind**: Separate if component has >30 lines of @code logic OR contains business logic, event handlers, or service calls
+- **CSS**: Separate if component has inline `<style>` tags OR requires scoped CSS beyond MudBlazor defaults
+- **Keep inline**: Simple presentational components with only parameters (<30 lines), pure layout components, or reusable micro-components
+
+**Code-Behind Template:**
+```csharp
+namespace Entegrasyon.Blazor.Pages; // or Components.Dialogs, etc.
+
+using System;
+using Microsoft.AspNetCore.Components;
+// ... other usings
+
+public partial class ComponentName
+{
+    [Parameter] public string? PropertyName { get; set; }
+    [Inject] private IService? Service { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Lifecycle and initialization logic
+    }
+    
+    private async Task HandleEvent()
+    {
+        // Event handlers
+    }
+}
+```
+
+**CSS Scoping:**
+- Use `.razor.css` files for component-scoped styles (auto-scoped by Blazor)
+- Avoid `<style>` tags in markup; always separate to `.razor.css`
+- Reference scoped CSS by class name; Blazor auto-applies `b-{component-hash}` prefix
+
+**Example File Structure:**
+```
+Pages/
+  Products.razor      (markup + @inject + @page)
+  Products.razor.cs   (code logic: filtering, CRUD, lifecycle)
+  Products.razor.css  (component-scoped styles)
+```
+
 ## Architecture & Layering (Blazor-specific)
 
 - Follow the repository's layered architecture: `Entegrasyon.Blazor` is the presentation layer and must not reference `Entegrasyon.DataAccess` or other lower layers directly. Use `Entegrasyon.Business` (or `Shared` abstractions) to access data and business logic.
@@ -87,11 +138,12 @@ applyTo: '**'
 
 - AI agents must respect layering rules and avoid generating code that creates cross-layer references. If a generated change would violate layering, provide a refactor suggestion (e.g., create `IProductService` in `Entegrasyon.Business` and implement it in the Business project).
 - If uncertain, AI should create a short design note and open an issue/PR for maintainers rather than making breaking structural changes.
-
+- **Component file separation is mandatory**: Always create separate `.razor.cs` and `.razor.css` files for components with >30 lines of code or inline styles. Keep component.razor focused on markup only.
 
 ## Repo-specific notes
 
 - Follow repository-specific conventions and critical rules described in `copilot-instructions.md`. When repository guidance conflicts with generic instructions here, prefer the repository guidance and check with maintainers.
+
 
 ## Code Quality Enhancements (Added for Component Usage, Performance, and Readability)
 

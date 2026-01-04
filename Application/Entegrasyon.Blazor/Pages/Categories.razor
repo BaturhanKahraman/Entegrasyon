@@ -17,10 +17,10 @@
 
 <MudGrid>
     <MudItem xs="12" md="5">
-        <CategoryTreePanel TreeItems="@GetTreeItemsForView().ToList()"
+        <CategoryTreePanel TreeItems="@GetTreeItemsForView()"
                           Loading="@_loading"
                           SearchString="@_searchString"
-                          CategorySelected="@OnCategorySelected"
+                          CategorySelected="@(EventCallback.Factory.Create<Category>(this, OnCategorySelected))"
                           OnAddClicked="@OpenAddCategoryDialog"
                           OnImportClicked="@(() => NavigationManager.NavigateTo("/categories/import"))"
                           FilterChanged="@((searchString) => _searchString = searchString)" />
@@ -31,7 +31,7 @@
                              SubcategoryCount="@(_selectedCategory != null ? GetSubcategoryCount(_selectedCategory.Id) : 0)"
                              OnEditClicked="@EditSelectedCategory"
                              OnDeleteClicked="@DeleteSelectedCategory"
-                             GetParentCategoryName="@GetParentCategoryName" />
+                             GetParentCategoryNameFunc="@GetParentCategoryName" />
     </MudItem>
 </MudGrid>
 
@@ -97,9 +97,9 @@
         return item;
     }
 
-    private void OnCategorySelected(CategoryTreeItem item)
+    private void OnCategorySelected(Category item)
     {
-        _selectedCategory = item.Category;
+        _selectedCategory = item;
     }
 
     private void SelectCategory(Category category)
@@ -223,20 +223,9 @@
         return _categories.Count(c => c.SuperCategoryId == categoryId);
     }
 
-    private IReadOnlyCollection<TreeItemData<CategoryTreeItem>> GetTreeItemsForView()
+    private List<Category> GetTreeItemsForView()
     {
-        return _treeItems.Select(ConvertToTreeItemData).ToList();
-    }
-
-    private TreeItemData<CategoryTreeItem> ConvertToTreeItemData(CategoryTreeItem item)
-    {
-        return new TreeItemData<CategoryTreeItem>
-        {
-            Value = item,
-            Children = item.Children.Select(ConvertToTreeItemData).ToList(),
-            Expandable = item.Children.Any(),
-            Expanded = item.IsExpanded
-        };
+        return _categories.Where(c => c.SuperCategoryId == null).ToList();
     }
 
     private class CategoryTreeItem
