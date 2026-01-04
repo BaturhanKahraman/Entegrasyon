@@ -1,0 +1,279 @@
+@page "/marketplace/sync"
+@using Entegrasyon.Blazor.Services.BackgroundServices
+@inject ISnackbar Snackbar
+
+<PageTitle>Pazaryeri Senkronizasyonu</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Pazaryeri Senkronizasyonu</MudText>
+<MudText Class="mb-4" Color="Color.Secondary">
+    Pazaryerlerinizle ürün ve sipariş senkronizasyonunu yönetin
+</MudText>
+
+<MudGrid>
+    <!-- Trendyol -->
+    <MudItem xs="12" md="6" lg="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Primary" Size="Size.Large">
+                        <MudIcon Icon="@Icons.Material.Filled.Store" />
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Trendyol</MudText>
+                    <MudChip Size="Size.Small" Color="@GetStatusColor(_trendyolStatus)">
+                        @_trendyolStatus
+                    </MudChip>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Update">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Son Senkronizasyon:</MudText>
+                            <MudText Typo="Typo.body2">@_trendyolLastSync</MudText>
+                        </div>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Inventory">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Senkronize Ürün:</MudText>
+                            <MudText Typo="Typo.body2">1,234</MudText>
+                        </div>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.ShoppingBag">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Bekleyen Sipariş:</MudText>
+                            <MudText Typo="Typo.body2">15</MudText>
+                        </div>
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Sync"
+                           OnClick="@(() => SyncMarketplace("Trendyol"))"
+                           Disabled="@_syncing">
+                    Şimdi Senkronize Et
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Info" 
+                           StartIcon="@Icons.Material.Filled.Settings"
+                           OnClick="@(() => ConfigureMarketplace("Trendyol"))">
+                    Ayarlar
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- Hepsiburada -->
+    <MudItem xs="12" md="6" lg="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" />
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Hepsiburada</MudText>
+                    <MudChip Size="Size.Small" Color="Color.Success">
+                        Aktif
+                    </MudChip>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Update">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Son Senkronizasyon:</MudText>
+                            <MudText Typo="Typo.body2">30 dk önce</MudText>
+                        </div>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Inventory">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Senkronize Ürün:</MudText>
+                            <MudText Typo="Typo.body2">856</MudText>
+                        </div>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.ShoppingBag">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Bekleyen Sipariş:</MudText>
+                            <MudText Typo="Typo.body2">8</MudText>
+                        </div>
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Sync"
+                           OnClick="@(() => SyncMarketplace("Hepsiburada"))"
+                           Disabled="@_syncing">
+                    Şimdi Senkronize Et
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Info" 
+                           StartIcon="@Icons.Material.Filled.Settings"
+                           OnClick="@(() => ConfigureMarketplace("Hepsiburada"))">
+                    Ayarlar
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- N11 -->
+    <MudItem xs="12" md="6" lg="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Info" Size="Size.Large">
+                        <MudIcon Icon="@Icons.Material.Filled.Storefront" />
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">N11</MudText>
+                    <MudChip Size="Size.Small" Color="Color.Warning">
+                        Beklemede
+                    </MudChip>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Update">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Son Senkronizasyon:</MudText>
+                            <MudText Typo="Typo.body2">2 saat önce</MudText>
+                        </div>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Inventory">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Senkronize Ürün:</MudText>
+                            <MudText Typo="Typo.body2">542</MudText>
+                        </div>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.ShoppingBag">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Typo="Typo.body2">Bekleyen Sipariş:</MudText>
+                            <MudText Typo="Typo.body2">3</MudText>
+                        </div>
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Sync"
+                           OnClick="@(() => SyncMarketplace("N11"))"
+                           Disabled="@_syncing">
+                    Şimdi Senkronize Et
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Info" 
+                           StartIcon="@Icons.Material.Filled.Settings"
+                           OnClick="@(() => ConfigureMarketplace("N11"))">
+                    Ayarlar
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- Sync History -->
+    <MudItem xs="12">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Senkronizasyon Geçmişi</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTable Items="@_syncHistory" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Pazaryeri</MudTh>
+                        <MudTh>İşlem Tipi</MudTh>
+                        <MudTh>Durum</MudTh>
+                        <MudTh>Ürün Sayısı</MudTh>
+                        <MudTh>Başlangıç</MudTh>
+                        <MudTh>Bitiş</MudTh>
+                        <MudTh>Süre</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Pazaryeri">@context.Marketplace</MudTd>
+                        <MudTd DataLabel="İşlem Tipi">@context.Type</MudTd>
+                        <MudTd DataLabel="Durum">
+                            <MudChip Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                @context.Status
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Ürün Sayısı">@context.ItemCount</MudTd>
+                        <MudTd DataLabel="Başlangıç">@context.StartTime</MudTd>
+                        <MudTd DataLabel="Bitiş">@context.EndTime</MudTd>
+                        <MudTd DataLabel="Süre">@context.Duration</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private bool _syncing;
+    private string _trendyolStatus = "Aktif";
+    private string _trendyolLastSync = "15 dk önce";
+    private List<SyncHistoryItem> _syncHistory = new();
+
+    protected override void OnInitialized()
+    {
+        _syncHistory = new List<SyncHistoryItem>
+        {
+            new("Trendyol", "Ürün Senkronizasyonu", "Başarılı", 1234, "14:30", "14:45", "15 dk"),
+            new("Hepsiburada", "Ürün Senkronizasyonu", "Başarılı", 856, "14:00", "14:12", "12 dk"),
+            new("N11", "Sipariş Senkronizasyonu", "Başarılı", 25, "13:45", "13:48", "3 dk"),
+            new("Trendyol", "Stok Güncelleme", "Başarılı", 450, "13:00", "13:05", "5 dk"),
+        };
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Aktif" or "Başarılı" => Color.Success,
+        "Beklemede" => Color.Warning,
+        "Hatalı" => Color.Error,
+        _ => Color.Info
+    };
+
+    private async Task SyncMarketplace(string marketplace)
+    {
+        _syncing = true;
+        Snackbar.Add($"{marketplace} senkronizasyonu başlatıldı", Severity.Info);
+        
+        try
+        {
+            // TODO: Trigger actual sync via background service
+            await Task.Delay(2000);
+            Snackbar.Add($"{marketplace} senkronizasyonu tamamlandı", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Senkronizasyon hatası: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _syncing = false;
+        }
+    }
+
+    private void ConfigureMarketplace(string marketplace)
+    {
+        Snackbar.Add($"{marketplace} ayarları yakında gelecek", Severity.Info);
+    }
+
+    private record SyncHistoryItem(
+        string Marketplace,
+        string Type,
+        string Status,
+        int ItemCount,
+        string StartTime,
+        string EndTime,
+        string Duration
+    );
+}

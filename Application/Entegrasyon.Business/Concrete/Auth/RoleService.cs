@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Business.Concrete.Auth;
+﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;

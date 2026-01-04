@@ -1,0 +1,73 @@
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+        Ana Sayfa
+    </MudNavLink>
+    
+    <MudDivider Class="my-2" />
+    
+    <MudNavGroup Title="Yönetim" Icon="@Icons.Material.Filled.Business" Expanded="true">
+        <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory">
+            Ürünler
+        </MudNavLink>
+        <MudNavLink Href="/categories" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Category">
+            Kategoriler
+        </MudNavLink>
+        <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale">
+            Satış (POS)
+        </MudNavLink>
+    </MudNavGroup>
+    
+    <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="false">
+        <MudNavLink Href="/marketplace/sync" Icon="@Icons.Material.Filled.Sync">
+            Senkronizasyon
+        </MudNavLink>
+        <MudNavLink Href="/marketplace/matching" Icon="@Icons.Material.Filled.Link">
+            Ürün Eşleştirme
+        </MudNavLink>
+        <MudNavLink Href="/marketplace/orders" Icon="@Icons.Material.Filled.ShoppingBag">
+            Siparişler
+        </MudNavLink>
+    </MudNavGroup>
+    
+    <MudNavGroup Title="Müşteriler & Satış" Icon="@Icons.Material.Filled.People" Expanded="false">
+        <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.Person">
+            Müşteriler
+        </MudNavLink>
+        <MudNavLink Href="/orders" Icon="@Icons.Material.Filled.Receipt">
+            Siparişler
+        </MudNavLink>
+        <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.Description">
+            Faturalar
+        </MudNavLink>
+    </MudNavGroup>
+    
+    <MudNavGroup Title="Raporlar" Icon="@Icons.Material.Filled.Assessment" Expanded="false">
+        <MudNavLink Href="/reports/sales" Icon="@Icons.Material.Filled.TrendingUp">
+            Satış Raporları
+        </MudNavLink>
+        <MudNavLink Href="/reports/inventory" Icon="@Icons.Material.Filled.Warehouse">
+            Stok Raporları
+        </MudNavLink>
+        <MudNavLink Href="/reports/marketplace" Icon="@Icons.Material.Filled.Analytics">
+            Pazaryeri Raporları
+        </MudNavLink>
+    </MudNavGroup>
+    
+    <MudDivider Class="my-2" />
+    
+    <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SupervisedUserCircle">
+        Kullanıcılar
+    </MudNavLink>
+    
+    <MudNavGroup Title="Ayarlar" Icon="@Icons.Material.Filled.Settings" Expanded="false">
+        <MudNavLink Href="/settings/general" Icon="@Icons.Material.Filled.Tune">
+            Genel Ayarlar
+        </MudNavLink>
+        <MudNavLink Href="/settings/notifications" Icon="@Icons.Material.Filled.NotificationsActive">
+            Bildirimler
+        </MudNavLink>
+        <MudNavLink Href="/settings/integrations" Icon="@Icons.Material.Filled.Extension">
+            Entegrasyonlar
+        </MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>
