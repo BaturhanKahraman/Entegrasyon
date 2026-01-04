@@ -1,4 +1,5 @@
 @using Entegrasyon.Business.Concrete
+@using MudBlazor
 @using Entegrasyon.Entity.Products
 @using Entegrasyon.Entity.Dtos.Product
 @inject ProductManager ProductManager
@@ -11,29 +12,29 @@
         <MudForm @ref="_form" @bind-IsValid="@_isValid">
             <MudGrid>
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_model.StockCode" 
-                                  Label="Stok Kodu" 
+                    <MudTextField @bind-Value="_model.StockCode"
+                                  Label="Stok Kodu"
                                   Required="true"
                                   RequiredError="Stok kodu gerekli" />
                 </MudItem>
-                
+
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_model.Title" 
-                                  Label="Ürün Adı" 
+                    <MudTextField @bind-Value="_model.Title"
+                                  Label="Ürün Adı"
                                   Required="true"
                                   RequiredError="Ürün adı gerekli" />
                 </MudItem>
 
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_model.Description" 
-                                  Label="Açıklama" 
+                    <MudTextField @bind-Value="_model.Description"
+                                  Label="Açıklama"
                                   Lines="3" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int" 
-                               @bind-Value="_model.BrandId" 
-                               Label="Marka" 
+                    <MudSelect T="int"
+                               @bind-Value="_model.BrandId"
+                               Label="Marka"
                                Required="true"
                                RequiredError="Marka seçimi gerekli">
                         @foreach (var brand in _brands)
@@ -44,9 +45,9 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudSelect T="int" 
-                               @bind-Value="_model.CategoryId" 
-                               Label="Kategori" 
+                    <MudSelect T="int"
+                               @bind-Value="_model.CategoryId"
+                               Label="Kategori"
                                Required="true"
                                RequiredError="Kategori seçimi gerekli">
                         @foreach (var category in _categories)
@@ -57,12 +58,12 @@
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_model.Season" 
+                    <MudTextField @bind-Value="_model.Season"
                                   Label="Sezon" />
                 </MudItem>
 
                 <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_model.Year" 
+                    <MudTextField @bind-Value="_model.Year"
                                      Label="Yıl" />
                 </MudItem>
 
@@ -70,35 +71,35 @@
                 {
                     <MudItem xs="12">
                         <MudText Typo="Typo.h6" Class="mt-4">Ürün Varyantları</MudText>
-                        <MudButton OnClick="AddVariant" 
-                                   StartIcon="@Icons.Material.Filled.Add" 
-                                   Color="Color.Primary" 
-                                   Size="Size.Small" 
+                        <MudButton OnClick="AddVariant"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
                                    Class="mb-2">
                             Varyant Ekle
                         </MudButton>
-                        
+
                         @foreach (var (variant, index) in _model.ProductVariants.Select((v, i) => (v, i)))
                         {
                             <MudPaper Class="pa-2 mb-2">
                                 <MudGrid>
                                     <MudItem xs="4">
-                                        <MudTextField @bind-Value="variant.Size" 
-                                                      Label="Beden" 
+                                        <MudTextField @bind-Value="variant.Size"
+                                                      Label="Beden"
                                                       Required="true" />
                                     </MudItem>
                                     <MudItem xs="4">
-                                        <MudTextField @bind-Value="variant.Barcode" 
+                                        <MudTextField @bind-Value="variant.Barcode"
                                                       Label="Barkod" />
                                     </MudItem>
                                     <MudItem xs="3">
-                                        <MudNumericField @bind-Value="variant.ListPrice" 
-                                                         Label="Liste Fiyatı" 
+                                        <MudNumericField @bind-Value="variant.ListPrice"
+                                                         Label="Liste Fiyatı"
                                                          Min="0" />
                                     </MudItem>
                                     <MudItem xs="1">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                                       Color="Color.Error" 
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
                                                        OnClick="@(() => RemoveVariant(index))" />
                                     </MudItem>
                                 </MudGrid>
@@ -111,8 +112,8 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">İptal</MudButton>
-        <MudButton Color="Color.Primary" 
-                   Variant="Variant.Filled" 
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
                    OnClick="Submit"
                    Disabled="@(!_isValid || _saving)">
             @if (_saving)
@@ -128,7 +129,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [CascadingParameter] IDialogReference? MudDialog { get; set; }
     [Parameter] public Product? Product { get; set; }
     [Parameter] public bool IsEditMode { get; set; }
 
@@ -142,7 +143,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadLookupData();
-        
+
         if (IsEditMode && Product != null)
         {
             _model = new ProductFormModel
@@ -171,7 +172,7 @@
             // TODO: Implement actual data loading
             // var brandsResult = await BrandManager.GetAllBrandsAsync();
             // var categoriesResult = await CategoryManager.GetAllCategoriesAsync();
-            
+
             // Mock data
             _brands = new List<BrandDto>();
             _categories = new List<CategoryDto>();
@@ -234,7 +235,7 @@
                 // {
                 //     Snackbar.Add(result.Message, Severity.Error);
                 // }
-                
+
                 Snackbar.Add("Ürün eklendi (Mock)", Severity.Info);
                 MudDialog.Close(DialogResult.Ok(true));
             }
@@ -249,7 +250,7 @@
         }
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => MudDialog?.Close(DialogResult.Cancel());
 
     private class ProductFormModel
     {

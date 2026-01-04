@@ -10,15 +10,15 @@
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
         <MudItem xs="12" md="8">
-            <MudTextField @bind-Value="_searchString" 
-                          Placeholder="Kullanıcı ara..." 
-                          Adornment="Adornment.Start" 
-                          AdornmentIcon="@Icons.Material.Filled.Search" 
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Kullanıcı ara..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
                           Immediate="true" />
         </MudItem>
         <MudItem xs="12" md="4" Class="d-flex justify-end">
-            <MudButton Variant="Variant.Filled" 
-                       Color="Color.Primary" 
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.PersonAdd"
                        OnClick="OpenAddUserDialog">
                 Yeni Kullanıcı
@@ -27,9 +27,9 @@
     </MudGrid>
 </MudPaper>
 
-<MudDataGrid T="ApplicationUser" 
-             Items="@_users" 
-             Filterable="true" 
+<MudDataGrid T="ApplicationUser"
+             Items="@_users"
+             Filterable="true"
              SortMode="SortMode.Multiple"
              Hover="true"
              Loading="@_loading"
@@ -66,19 +66,24 @@
         </TemplateColumn>
         <TemplateColumn CellClass="d-flex justify-end" Title="İşlemler">
             <CellTemplate>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                               Color="Color.Primary" 
-                               Size="Size.Small" 
-                               OnClick="@(() => EditUser(context.Item))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Lock" 
-                               Color="Color.Warning" 
-                               Size="Size.Small" 
-                               OnClick="@(() => ResetPassword(context.Item))"
-                               Title="Şifre Sıfırla" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                               Color="Color.Error" 
-                               Size="Size.Small" 
-                               OnClick="@(() => DeleteUser(context.Item))" />
+                <MudTooltip Text="Düzenle">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => EditUser(context.Item))" />
+                </MudTooltip>
+                <MudTooltip Text="Şifre Sıfırla">
+                    <MudIconButton Icon="@Icons.Material.Filled.Lock"
+                                   Color="Color.Warning"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ResetPassword(context.Item))" />
+                </MudTooltip>
+                <MudTooltip Text="Sil">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   OnClick="@(() => DeleteUser(context.Item))" />
+                </MudTooltip>
             </CellTemplate>
         </TemplateColumn>
     </Columns>
@@ -108,10 +113,10 @@
             // {
             //     _users = result.Data.ToList();
             // }
-            
+
             // Temporary: Empty list
             _users = new List<ApplicationUser>();
-            
+
             Snackbar.Add("Kullanıcılar yüklendi", Severity.Success);
         }
         catch (Exception ex)
@@ -144,7 +149,7 @@
         var result = await DialogService.ShowMessageBox(
             "Kullanıcı Sil",
             $"{user.FullName} kullanıcısını silmek istediğinizden emin misiniz?",
-            yesText: "Sil", 
+            yesText: "Sil",
             cancelText: "İptal");
 
         if (result == true)

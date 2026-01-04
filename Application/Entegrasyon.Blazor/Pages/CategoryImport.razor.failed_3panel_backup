@@ -1,0 +1,590 @@
+@page "/categories/import"
+@using Entegrasyon.Business.Abstract
+@using Entegrasyon.Business.Concrete.Import
+@using Entegrasyon.Entity.Categories
+@using Entegrasyon.Blazor.Services.Channels
+@using Entegrasyon.Blazor.Services.Channels.Events
+@inject TrendyolCategoryImporter TrendyolImporter
+@inject EventChannel<CategoryUpdatedEvent> CategoryEventChannel
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Kategori İçe Aktar</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Kategori İçe Aktar</MudText>
+<MudText Class="mb-4" Color="Color.Secondary">
+    Pazaryerlerinden kategorileri içe aktararak ürün kategorilerinizi oluşturun
+</MudText>
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="mb-4">
+    <MudTabPanel Text="Trendyol" Icon="@Icons.Material.Filled.Store">
+        <MudPaper Class="pa-4">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6">Trendyol Kategorileri</MudText>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="LoadTrendyolCategoriesAsync"
+                               Disabled="@_loading">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Kategorileri Yükle
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="ImportSelectedCategoriesAsync"
+                               Disabled="@(_importing || !_selectedCategories.Any())">
+                        @if (_importing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Seçilenleri İçe Aktar (@_selectedCategories.Count)
+                    </MudButton>
+                </div>
+            </div>
+
+            @if (_loading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+                <MudText Align="Align.Center" Color="Color.Secondary">Kategoriler yükleniyor...</MudText>
+            }
+            else if (!_rootCategories.Any())
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">
+                    Kategorileri görüntülemek için "Kategorileri Yükle" butonuna tıklayın.
+                </MudAlert>
+            }
+            else
+            {
+                <MudGrid>
+                    <!-- Ana Kategoriler Paneli (Sol) -->
+                    <MudItem xs="12" md="4">
+                        <MudPaper Elevation="0" Outlined="true" Class="pa-3" Style="height: 600px; overflow-y: auto;">
+                            <MudText Typo="Typo.subtitle1" Class="mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Class="mr-1" />
+                                Ana Kategoriler (@_rootCategories.Count)
+                            </MudText>
+                            <MudTextField @bind-Value="_rootSearchQuery"
+                                          Placeholder="Ana kategori ara..."
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          Immediate="true"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Class="mb-3" />
+
+                            <MudList T="string" Dense="true">
+                                @foreach (var category in GetFilteredRootCategories())
+                                {
+                                    var isSelected = _selectedRootCategory?.ExternalId == category.ExternalId;
+                                    var hasSelectedChildren = HasSelectedChildren(category);
+
+                                    <MudListItem T="string"
+                                                 OnClick="@(() => SelectRootCategory(category))"
+                                                 Style="@(isSelected ? "background-color: var(--mud-palette-primary-lighten); cursor: pointer;" : "cursor: pointer;")">
+                                        <div class="d-flex align-center justify-space-between" style="width: 100%">
+                                            <div class="d-flex align-center">
+                                                <div @onclick="@(() => { ToggleRootCategoryWithChildren(category, !IsRootCategoryFullySelected(category)); })" @onclick:stopPropagation="true" style="cursor: pointer; display: flex; align-items: center;">
+                                                    <MudCheckBox T="bool"
+                                                                 Checked="@IsRootCategoryFullySelected(category)"
+                                                                 Color="Color.Primary"
+                                                                 Dense="true"
+                                                                 Class="mr-2" />
+                                                </div>
+                                                <MudIcon Icon="@Icons.Material.Filled.Folder" Size="Size.Small" Class="mr-2" />
+                                                <MudText>@category.Name</MudText>
+                                            </div>
+                                            <MudBadge Content="@category.Children.Count"
+                                                      Color="@(hasSelectedChildren ? Color.Success : Color.Default)"
+                                                      Overlap="true"
+                                                      Class="ml-2">
+                                                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
+                                            </MudBadge>
+                                        </div>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Alt Kategoriler Paneli (Orta) -->
+                    <MudItem xs="12" md="5">
+                        <MudPaper Elevation="0" Outlined="true" Class="pa-3" Style="height: 600px; overflow-y: auto;">
+                            @if (_selectedRootCategory != null)
+                            {
+                                <!-- Breadcrumb Navigation -->
+                                @if (_breadcrumb.Any() || _currentCategory != null)
+                                {
+                                    <div class="d-flex align-center mb-2" style="flex-wrap: wrap;">
+                                        <MudChip T="string"
+                                                 Size="Size.Small"
+                                                 Color="Color.Primary"
+                                                 OnClick="@(() => NavigateToBreadcrumb(_selectedRootCategory.ExternalId))"
+                                                 Style="cursor: pointer;">
+                                            @_selectedRootCategory.Name
+                                        </MudChip>
+                                        @foreach (var crumb in _breadcrumb)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Class="mx-1" />
+                                            <MudChip T="string"
+                                                     Size="Size.Small"
+                                                     Color="Color.Primary"
+                                                     Variant="Variant.Outlined"
+                                                     OnClick="@(() => NavigateToBreadcrumb(crumb.ExternalId))"
+                                                     Style="cursor: pointer;">
+                                                @crumb.Name
+                                            </MudChip>
+                                        }
+                                        @if (_currentCategory != null)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Class="mx-1" />
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                                @_currentCategory.Name
+                                            </MudChip>
+                                        }
+                                    </div>
+                                }
+
+                                <MudText Typo="Typo.subtitle1" Class="mb-3">
+                                    <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="mr-1" />
+                                    @(_currentCategory?.Name ?? _selectedRootCategory.Name) (@GetCurrentChildren().Count() alt kategori)
+                                </MudText>
+                                <MudTextField @bind-Value="_childSearchQuery"
+                                              Placeholder="Alt kategori ara..."
+                                              Adornment="Adornment.Start"
+                                              AdornmentIcon="@Icons.Material.Filled.Search"
+                                              Immediate="true"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Class="mb-3" />
+
+                                <div class="mb-3">
+                                    <MudButton Size="Size.Small"
+                                               Variant="Variant.Text"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.SelectAll"
+                                               OnClick="@(() => SelectAllChildCategories(true))">
+                                        Tümünü Seç
+                                    </MudButton>
+                                    <MudButton Size="Size.Small"
+                                               Variant="Variant.Text"
+                                               Color="Color.Default"
+                                               StartIcon="@Icons.Material.Filled.Deselect"
+                                               OnClick="@(() => SelectAllChildCategories(false))">
+                                        Hiçbirini Seçme
+                                    </MudButton>
+                                </div>
+
+                                <MudList T="string" Dense="true">
+                                    @foreach (var child in GetFilteredChildCategories())
+                                    {
+                                        var isSelected = _selectedCategories.Contains(child);
+
+                                        <MudListItem T="string">
+                                            <div class="d-flex align-center justify-space-between" style="width: 100%">
+                                                <div class="d-flex align-center flex-grow-1">
+                                                    <div @onclick="@(() => ToggleCategorySelection(child, !isSelected))" @onclick:stopPropagation="true" style="cursor: pointer; display: flex; align-items: center;">
+                                                        <MudCheckBox T="bool"
+                                                                     Checked="@isSelected"
+                                                                     Color="Color.Primary"
+                                                                     Dense="true"
+                                                                     Class="mr-2" />
+                                                    </div>
+                                                    <MudIcon Icon="@(child.Children.Any() ? Icons.Material.Filled.Folder : Icons.Material.Filled.Category)" Size="Size.Small" Class="mr-2" />
+                                                    <MudText>@child.Name</MudText>
+                                                </div>
+                                                @if (child.Children.Any())
+                                                {
+                                                    <MudButton Size="Size.Small"
+                                                               Variant="Variant.Text"
+                                                               Color="Color.Primary"
+                                                               EndIcon="@Icons.Material.Filled.ChevronRight"
+                                                               OnClick="@(() => DrillDownToCategory(child))">
+                                                        @child.Children.Count
+                                                    </MudButton>
+                                                }
+                                            </div>
+                                        </MudListItem>
+                                    }
+                                </MudList>
+                            }
+                            else
+                            {
+                                <div class="d-flex flex-column align-center justify-center" style="height: 100%">
+                                    <MudIcon Icon="@Icons.Material.Filled.TouchApp" Size="Size.Large" Color="Color.Default" Class="mb-3" />
+                                    <MudText Align="Align.Center" Color="Color.Secondary">
+                                        Soldaki listeden bir ana kategori seçin
+                                    </MudText>
+                                </div>
+                            }
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Seçilenler Paneli (Sağ) -->
+                    <MudItem xs="12" md="3">
+                        <MudPaper Elevation="0" Outlined="true" Class="pa-3" Style="height: 600px; overflow-y: auto;">
+                            <MudText Typo="Typo.subtitle1" Class="mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-1" />
+                                Seçilen Kategoriler (@_selectedCategories.Count)
+                            </MudText>
+
+                            @if (_selectedCategories.Any())
+                            {
+                                <MudButton Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Clear"
+                                           OnClick="ClearAllSelections"
+                                           Class="mb-3">
+                                    Tümünü Temizle
+                                </MudButton>
+
+                                <MudList T="string" Dense="true">
+                                    @foreach (var category in _selectedCategories.OrderBy(c => c.Name))
+                                    {
+                                        <MudListItem T="string">
+                                            <div class="d-flex align-center justify-space-between" style="width: 100%">
+                                                <div class="d-flex align-center flex-grow-1" style="min-width: 0">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="mr-2" />
+                                                    <MudText Style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                        @category.Name
+                                                    </MudText>
+                                                </div>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                               Size="Size.Small"
+                                                               Color="Color.Default"
+                                                               OnClick="@(() => RemoveCategorySelection(category))" />
+                                            </div>
+                                        </MudListItem>
+                                    }
+                                </MudList>
+                            }
+                            else
+                            {
+                                <div class="d-flex flex-column align-center justify-center" style="height: 80%">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckBox" Size="Size.Large" Color="Color.Default" Class="mb-3" />
+                                    <MudText Align="Align.Center" Color="Color.Secondary">
+                                        Henüz kategori seçilmedi
+                                    </MudText>
+                                </div>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudPaper>
+    </MudTabPanel>
+
+    <MudTabPanel Text="CSV/Excel" Icon="@Icons.Material.Filled.UploadFile" Disabled="true">
+        <MudAlert Severity="Severity.Info">
+            CSV ve Excel ile içe aktarma özelliği yakında eklenecek.
+        </MudAlert>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private List<CategoryTreeNode> _allCategories = new();
+    private List<CategoryTreeNode> _rootCategories = new();
+    private HashSet<CategoryTreeNode> _selectedCategories = new();
+    private CategoryTreeNode? _selectedRootCategory;
+    private CategoryTreeNode? _currentCategory; // Orta panelde gösterilen kategori
+    private List<CategoryTreeNode> _breadcrumb = new(); // Navigation için breadcrumb
+    private bool _loading;
+    private bool _importing;
+    private string _rootSearchQuery = string.Empty;
+    private string _childSearchQuery = string.Empty;
+
+    private async Task LoadTrendyolCategoriesAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            var result = await TrendyolImporter.GetExternalCategoriesAsync();
+
+            if (result.Success && result.Data != null)
+            {
+                _allCategories = result.Data.Select(MapToTreeNode).ToList();
+                BuildCategoryHierarchy();
+                Snackbar.Add($"{CountAllCategories(_allCategories)} kategori yüklendi.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Kategoriler yüklenemedi.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void BuildCategoryHierarchy()
+    {
+        // API zaten hierarchical structure döndürüyor, sadece root kategorileri al
+        _rootCategories = _allCategories
+            .Where(c => string.IsNullOrEmpty(c.ParentExternalId))
+            .OrderBy(c => c.Name)
+            .ToList();
+
+        // Tüm kategorileri flat list'e çevir (arama ve seçim için)
+        FlattenCategories(_allCategories);
+    }
+
+    private void FlattenCategories(IEnumerable<CategoryTreeNode> categories)
+    {
+        foreach (var category in categories)
+        {
+            if (!_allCategories.Contains(category))
+            {
+                _allCategories.Add(category);
+            }
+            if (category.Children.Any())
+            {
+                FlattenCategories(category.Children);
+            }
+        }
+    }
+
+    private void SelectRootCategory(CategoryTreeNode category)
+    {
+        _selectedRootCategory = category;
+        _currentCategory = null; // Root'a dön
+        _breadcrumb.Clear(); // Breadcrumb'ı sıfırla
+        _childSearchQuery = string.Empty;
+    }
+
+    private void DrillDownToCategory(CategoryTreeNode category)
+    {
+        _breadcrumb.Add(_currentCategory ?? _selectedRootCategory!);
+        _currentCategory = category;
+        _childSearchQuery = string.Empty;
+    }
+
+    private void NavigateToBreadcrumb(string categoryId)
+    {
+        if (categoryId == _selectedRootCategory?.ExternalId)
+        {
+            // Root'a dön
+            _currentCategory = null;
+            _breadcrumb.Clear();
+        }
+        else
+        {
+            // Breadcrumb'daki bir kategoriye git
+            var targetIndex = _breadcrumb.FindIndex(b => b.ExternalId == categoryId);
+            if (targetIndex >= 0)
+            {
+                _currentCategory = _breadcrumb[targetIndex];
+                _breadcrumb = _breadcrumb.Take(targetIndex).ToList();
+            }
+        }
+        _childSearchQuery = string.Empty;
+    }
+
+    private IEnumerable<CategoryTreeNode> GetCurrentChildren()
+    {
+        return _currentCategory?.Children ?? _selectedRootCategory?.Children ?? Enumerable.Empty<CategoryTreeNode>();
+    }
+
+    private IEnumerable<CategoryTreeNode> GetFilteredRootCategories()
+    {
+        if (string.IsNullOrWhiteSpace(_rootSearchQuery))
+            return _rootCategories;
+
+        return _rootCategories.Where(c =>
+            c.Name.Contains(_rootSearchQuery, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private IEnumerable<CategoryTreeNode> GetFilteredChildCategories()
+    {
+        var children = GetCurrentChildren().OrderBy(c => c.Name);
+
+        if (string.IsNullOrWhiteSpace(_childSearchQuery))
+            return children;
+
+        return children.Where(c =>
+            c.Name.Contains(_childSearchQuery, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ToggleCategorySelection(CategoryTreeNode category, bool selected)
+    {
+        Console.WriteLine($"ToggleCategorySelection: {category.Name}, Selected: {selected}");
+
+        if (selected)
+        {
+            _selectedCategories.Add(category);
+            Console.WriteLine($"Added {category.Name} to selection. Total: {_selectedCategories.Count}");
+            // Alt kategorileri de ekle
+            AddAllChildren(category);
+        }
+        else
+        {
+            _selectedCategories.Remove(category);
+            Console.WriteLine($"Removed {category.Name} from selection. Total: {_selectedCategories.Count}");
+            // Alt kategorileri de çıkar
+            RemoveAllChildren(category);
+        }
+
+        Console.WriteLine($"Final selection count: {_selectedCategories.Count}");
+        StateHasChanged(); // Force UI update
+    }
+
+    private void AddAllChildren(CategoryTreeNode category)
+    {
+        foreach (var child in category.Children)
+        {
+            _selectedCategories.Add(child);
+            AddAllChildren(child);
+        }
+    }
+
+    private void RemoveAllChildren(CategoryTreeNode category)
+    {
+        foreach (var child in category.Children)
+        {
+            _selectedCategories.Remove(child);
+            RemoveAllChildren(child);
+        }
+    }
+
+    private void ToggleRootCategoryWithChildren(CategoryTreeNode rootCategory, bool selected)
+    {
+        ToggleCategorySelection(rootCategory, selected);
+    }
+
+    private bool IsRootCategoryFullySelected(CategoryTreeNode rootCategory)
+    {
+        // Sadece kategorinin kendisinin seçili olup olmadığını kontrol et
+        return _selectedCategories.Contains(rootCategory);
+    }
+
+    private bool AllChildrenSelected(CategoryTreeNode category)
+    {
+        foreach (var child in category.Children)
+        {
+            if (!_selectedCategories.Contains(child))
+                return false;
+            if (!AllChildrenSelected(child))
+                return false;
+        }
+        return true;
+    }
+
+    private bool HasSelectedChildren(CategoryTreeNode category)
+    {
+        return _selectedCategories.Contains(category) ||
+               category.Children.Any(c => HasSelectedChildren(c));
+    }
+
+    private void SelectAllChildCategories(bool select)
+    {
+        foreach (var child in GetCurrentChildren())
+        {
+            ToggleCategorySelection(child, select);
+        }
+    }
+
+    private void RemoveCategorySelection(CategoryTreeNode category)
+    {
+        ToggleCategorySelection(category, false);
+    }
+
+    private void ClearAllSelections()
+    {
+        _selectedCategories.Clear();
+        StateHasChanged();
+    }
+
+    private async Task ImportSelectedCategoriesAsync()
+    {
+        if (!_selectedCategories.Any())
+        {
+            Snackbar.Add("Lütfen en az bir kategori seçin.", Severity.Warning);
+            return;
+        }
+
+        _importing = true;
+
+        try
+        {
+            var importRequests = _selectedCategories.Select(MapToImportRequest).ToList();
+            var result = await TrendyolImporter.ImportCategoriesAsync(importRequests);
+
+            if (result.Success)
+            {
+                Snackbar.Add($"{_selectedCategories.Count} kategori başarıyla içe aktarıldı.", Severity.Success);
+                await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(0, "Imported"));
+                ClearAllSelections();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "İçe aktarma başarısız.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _importing = false;
+        }
+    }
+
+    private int CountAllCategories(IEnumerable<CategoryTreeNode> nodes)
+    {
+        return nodes.Sum(n => 1 + CountAllCategories(n.Children));
+    }
+
+    private CategoryTreeNode MapToTreeNode(ExternalCategoryDto dto)
+    {
+        return new CategoryTreeNode
+        {
+            ExternalId = dto.ExternalId,
+            Name = dto.Name,
+            ParentExternalId = dto.ParentExternalId,
+            Children = dto.Children.Select(MapToTreeNode).ToHashSet()
+        };
+    }
+
+    private ExternalCategoryImportRequest MapToImportRequest(CategoryTreeNode node)
+    {
+        return new ExternalCategoryImportRequest
+        {
+            ExternalId = node.ExternalId,
+            Name = node.Name,
+            ParentExternalId = node.ParentExternalId,
+            Children = node.Children
+                .Where(c => _selectedCategories.Contains(c))
+                .Select(MapToImportRequest)
+                .ToList()
+        };
+    }
+
+    private class CategoryTreeNode
+    {
+        public string ExternalId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? ParentExternalId { get; set; }
+        public HashSet<CategoryTreeNode> Children { get; set; } = new();
+
+        public override bool Equals(object? obj)
+        {
+            return obj is CategoryTreeNode node && ExternalId == node.ExternalId;
+        }
+
+        public override int GetHashCode()
+        {
+            return ExternalId.GetHashCode();
+        }
+    }
+}

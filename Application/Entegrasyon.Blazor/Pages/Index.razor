@@ -32,7 +32,7 @@
             </MudCardContent>
         </MudCard>
     </MudItem>
-    
+
     <MudItem xs="12" sm="6" md="3">
         <MudCard Elevation="2" Class="hover-card">
             <MudCardContent>
@@ -47,7 +47,7 @@
             </MudCardContent>
         </MudCard>
     </MudItem>
-    
+
     <MudItem xs="12" sm="6" md="3">
         <MudCard Elevation="2" Class="hover-card">
             <MudCardContent>
@@ -61,7 +61,7 @@
             </MudCardContent>
         </MudCard>
     </MudItem>
-    
+
     <MudItem xs="12" sm="6" md="3">
         <MudCard Elevation="2" Class="hover-card">
             <MudCardContent>
@@ -85,10 +85,10 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudChart ChartType="ChartType.Line" 
-                          ChartSeries="@_salesChartData" 
-                          XAxisLabels="@_xAxisLabels" 
-                          Width="100%" 
+                <MudChart ChartType="ChartType.Line"
+                          ChartSeries="@_salesChartData"
+                          XAxisLabels="@_xAxisLabels"
+                          Width="100%"
                           Height="300px"
                           ChartOptions="@_chartOptions" />
             </MudCardContent>
@@ -104,17 +104,17 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudList Clickable="true">
-                    <MudListItem Icon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Href="/products">
+                <MudList T="string">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Href="/products">
                         Yeni Ürün Ekle
                     </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" Href="/sales">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" Href="/sales">
                         Satış Yap
                     </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Sync" IconColor="Color.Info" OnClick="@SyncMarketplaces">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Sync" IconColor="Color.Info" OnClick="@SyncMarketplaces">
                         Pazaryeri Senkronize
                     </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Secondary" Href="/reports">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Secondary" Href="/reports">
                         Raporları Görüntüle
                     </MudListItem>
                 </MudList>
@@ -131,10 +131,10 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudList Dense="true">
+                <MudList T="string" Dense="true">
                     @foreach (var marketplace in _marketplaceStatuses)
                     {
-                        <MudListItem>
+                        <MudListItem T="string">
                             <div class="d-flex justify-space-between align-center" style="width: 100%">
                                 <div class="d-flex align-center gap-2">
                                     <MudAvatar Color="@marketplace.Color" Size="Size.Small">
@@ -142,7 +142,7 @@
                                     </MudAvatar>
                                     <MudText>@marketplace.Name</MudText>
                                 </div>
-                                <MudChip Size="Size.Small" Color="@marketplace.StatusColor">
+                                <MudChip T="string" Size="Size.Small" Color="@marketplace.StatusColor">
                                     @marketplace.Status
                                 </MudChip>
                             </div>
@@ -210,7 +210,7 @@
             // Load stats from managers
             // var productsCount = await ProductManager.GetProductsCount();
             // var todaySales = await SaleManager.GetTodaySalesAsync();
-            
+
             // Mock data for now
             _stats = new DashboardStats
             {

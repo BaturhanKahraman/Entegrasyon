@@ -11,19 +11,18 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj"
-            ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "silent",        // Hata yoksa terminal fırlamasın
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false, // <-- O sinir bozucu mesajı kapatır
+                "clear": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

@@ -19,17 +19,17 @@
         <MudPaper Class="pa-4 mb-4">
             <MudGrid>
                 <MudItem xs="12" md="9">
-                    <MudTextField @bind-Value="_barcodeSearch" 
-                                  Label="Barkod Okut veya Ürün Ara" 
-                                  Adornment="Adornment.Start" 
+                    <MudTextField @bind-Value="_barcodeSearch"
+                                  Label="Barkod Okut veya Ürün Ara"
+                                  Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.QrCodeScanner"
                                   OnKeyDown="HandleBarcodeSearch"
                                   Immediate="true"
                                   Placeholder="Barkod okutun veya ürün adı girin..." />
                 </MudItem>
                 <MudItem xs="12" md="3">
-                    <MudButton Variant="Variant.Filled" 
-                               Color="Color.Info" 
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Info"
                                StartIcon="@Icons.Material.Filled.PersonSearch"
                                FullWidth="true"
                                OnClick="OpenCustomerSearch">
@@ -37,11 +37,11 @@
                     </MudButton>
                 </MudItem>
             </MudGrid>
-            
+
             @if (_selectedCustomer != null)
             {
-                <MudChip Color="Color.Success" 
-                         Size="Size.Small" 
+                <MudChip T="string" Color="Color.Success"
+                         Size="Size.Small"
                          OnClose="ClearCustomer"
                          Class="mt-2">
                     Müşteri: @_selectedCustomer.Name
@@ -51,7 +51,7 @@
 
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.h6" Class="mb-4">Sepet</MudText>
-            
+
             @if (_cartItems.Any())
             {
                 <MudTable Items="@_cartItems" Hover="true" Dense="true">
@@ -68,19 +68,19 @@
                         <MudTd DataLabel="Ürün">@context.ProductName</MudTd>
                         <MudTd DataLabel="Beden">@context.Size</MudTd>
                         <MudTd DataLabel="Adet">
-                            <MudNumericField @bind-Value="context.Quantity" 
-                                           Min="1" 
-                                           Step="1" 
+                            <MudNumericField @bind-Value="context.Quantity"
+                                           Min="1"
+                                           Step="1"
                                            Immediate="true"
                                            OnBlur="RecalculateTotal"
                                            Style="width: 80px;" />
                         </MudTd>
                         <MudTd DataLabel="Birim Fiyat">₺@context.UnitPrice.ToString("F2")</MudTd>
                         <MudTd DataLabel="İndirim">
-                            <MudNumericField @bind-Value="context.DiscountPercent" 
-                                           Min="0" 
+                            <MudNumericField @bind-Value="context.DiscountPercent"
+                                           Min="0"
                                            Max="100"
-                                           Step="5" 
+                                           Step="5"
                                            Immediate="true"
                                            Adornment="Adornment.End"
                                            AdornmentText="%"
@@ -89,8 +89,8 @@
                         </MudTd>
                         <MudTd DataLabel="Toplam">₺@context.TotalPrice.ToString("F2")</MudTd>
                         <MudTd>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                         Size="Size.Small" 
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                         Size="Size.Small"
                                          Color="Color.Error"
                                          OnClick="@(() => RemoveFromCart(context))" />
                         </MudTd>
@@ -112,37 +112,37 @@
     <MudItem xs="12" md="4">
         <MudPaper Class="pa-4 mb-4">
             <MudText Typo="Typo.h6" Class="mb-4">Ödeme Özeti</MudText>
-            
-            <MudList Dense="true">
-                <MudListItem>
+
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText>Ara Toplam:</MudText>
                         <MudText Typo="Typo.h6">₺@_subtotal.ToString("F2")</MudText>
                     </div>
                 </MudListItem>
-                
+
                 @if (_totalDiscount > 0)
                 {
-                    <MudListItem>
+                    <MudListItem T="string">
                         <div class="d-flex justify-space-between" style="width: 100%">
                             <MudText Color="Color.Success">İndirim:</MudText>
                             <MudText Color="Color.Success">-₺@_totalDiscount.ToString("F2")</MudText>
                         </div>
                     </MudListItem>
                 }
-                
+
                 <MudDivider />
-                
-                <MudListItem>
+
+                <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText>KDV (%20):</MudText>
                         <MudText Typo="Typo.body1">₺@_tax.ToString("F2")</MudText>
                     </div>
                 </MudListItem>
-                
+
                 <MudDivider />
-                
-                <MudListItem>
+
+                <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText Typo="Typo.h5">Toplam:</MudText>
                         <MudText Typo="Typo.h4" Color="Color.Primary">₺@_total.ToString("F2")</MudText>
@@ -152,9 +152,9 @@
 
             <MudDivider Class="my-4" />
 
-            <MudSelect T="string" 
-                       @bind-Value="_paymentMethod" 
-                       Label="Ödeme Yöntemi" 
+            <MudSelect T="string"
+                       @bind-Value="_paymentMethod"
+                       Label="Ödeme Yöntemi"
                        Variant="Variant.Outlined"
                        Class="mb-4">
                 <MudSelectItem Value="@("Nakit")">💵 Nakit</MudSelectItem>
@@ -163,8 +163,8 @@
                 <MudSelectItem Value="@("Havale/EFT")">🔄 Havale/EFT</MudSelectItem>
             </MudSelect>
 
-            <MudButton Variant="Variant.Filled" 
-                       Color="Color.Success" 
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
                        FullWidth="true"
                        Size="Size.Large"
                        Disabled="@(!_cartItems.Any() || _processing)"
@@ -181,8 +181,8 @@
                 }
             </MudButton>
 
-            <MudButton Variant="Variant.Outlined" 
-                       Color="Color.Error" 
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Error"
                        FullWidth="true"
                        Class="mt-2"
                        Disabled="@(!_cartItems.Any())"
@@ -195,14 +195,14 @@
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.h6" Class="mb-2">Bugünkü Satışlar</MudText>
             <MudDivider Class="mb-3" />
-            <MudList Dense="true">
-                <MudListItem>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText Typo="Typo.body2">Toplam Satış:</MudText>
-                        <MudChip Color="Color.Info" Size="Size.Small">0 adet</MudChip>
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">0 adet</MudChip>
                     </div>
                 </MudListItem>
-                <MudListItem>
+                <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText Typo="Typo.body2">Toplam Gelir:</MudText>
                         <MudText Typo="Typo.h6">₺0.00</MudText>
@@ -219,7 +219,7 @@
     private bool _processing;
     private List<CartItem> _cartItems = new();
     private CustomerDto? _selectedCustomer;
-    
+
     private decimal _subtotal => _cartItems.Sum(x => x.Quantity * x.UnitPrice);
     private decimal _totalDiscount => _cartItems.Sum(x => (x.Quantity * x.UnitPrice) * ((decimal)x.DiscountPercent / 100));
     private decimal _subtotalAfterDiscount => _subtotal - _totalDiscount;
@@ -254,7 +254,7 @@
             // {
             //     Snackbar.Add("Barkoda ait ürün bulunamadı", Severity.Warning);
             // }
-            
+
             Snackbar.Add($"Barkod aranıyor: {barcode}", Severity.Info);
         }
         catch (Exception ex)
@@ -266,7 +266,7 @@
     private void AddToCart(string productName, string size, decimal price, Guid variantId)
     {
         var existingItem = _cartItems.FirstOrDefault(x => x.ProductVariantId == variantId);
-        
+
         if (existingItem != null)
         {
             existingItem.Quantity++;
@@ -283,7 +283,7 @@
                 DiscountPercent = 0
             });
         }
-        
+
         RecalculateTotal();
         Snackbar.Add($"Sepete eklendi: {productName}", Severity.Success);
     }
@@ -297,7 +297,7 @@
 
     private void RecalculateTotal()
     {
-        StateHasChanged();
+        // Total is calculated via property getter, no explicit re-render needed
     }
 
     private void ClearCart()
@@ -342,17 +342,17 @@
             //         DiscountPercent = item.DiscountPercent
             //     }).ToList()
             // };
-            
+
             // var result = await SaleManager.MakeSale(saleDto);
-            
+
             // if (result.Success)
             // {
             //     await ShowReceiptDialog();
             //     ClearCart();
             // }
-            
+
             await Task.Delay(1000); // Simulate processing
-            
+
             var confirm = await DialogService.ShowMessageBox(
                 "Satış Tamamlandı",
                 $"Satış başarıyla tamamlandı!\n\nToplam: ₺{_total:F2}\nÖdeme: {_paymentMethod}\n\nFiş yazdırılsın mı?",
@@ -363,7 +363,7 @@
                 Snackbar.Add("Fiş yazdırılıyor...", Severity.Info);
                 // TODO: Implement receipt printing
             }
-            
+
             Snackbar.Add($"Satış tamamlandı! Toplam: ₺{_total:F2}", Severity.Success);
             ClearCart();
         }
