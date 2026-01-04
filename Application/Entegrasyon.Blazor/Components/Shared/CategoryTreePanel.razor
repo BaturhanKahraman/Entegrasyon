@@ -1,0 +1,89 @@
+@using Entegrasyon.Entity.Categories
+@using Entegrasyon.Blazor.ViewModels
+
+<MudPaper Class="pa-4" Style="height: 700px; overflow-y: auto;">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h6">Kategori Ağacı</MudText>
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Info"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       Size="Size.Small"
+                       OnClick="OnImportClicked">
+                İçe Aktar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Small"
+                       OnClick="OnAddClicked">
+                Yeni
+            </MudButton>
+        </div>
+    </div>
+
+    <MudTextField @bind-Value="SearchString"
+                  Placeholder="Kategori ara..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  ValueChanged="@((_) => FilterChanged.InvokeAsync(SearchString))"
+                  Class="mb-4" />
+
+    @if (Loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (TreeItems?.Any() == true)
+    {
+        <MudTreeView T="CategoryTreeItem"
+                     Items="@TreeItems"
+                     Hover="true"
+                     SelectedValueChanged="OnCategorySelectedInternal">
+            <ItemTemplate Context="item">
+                <div class="d-flex align-center justify-space-between" style="width: 100%">
+                    <MudText>@item.Value?.Category.Name</MudText>
+                    <div class="d-flex gap-1">
+                        @if (item.Value?.Category.IsFavorite == true)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Star"
+                                     Color="Color.Warning"
+                                     Size="Size.Small" />
+                        }
+                        @if (item.Value?.Category.IsImported == true)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CloudDownload"
+                                     Color="Color.Info"
+                                     Size="Size.Small" />
+                        }
+                        @if (item.Value?.Children.Any() == true)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                @item.Value.Children.Count
+                            </MudChip>
+                        }
+                    </div>
+                </div>
+            </ItemTemplate>
+        </MudTreeView>
+    }
+    else
+    {
+        <MudText Align="Align.Center" Color="Color.Secondary">Kategori bulunamadı</MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public List<CategoryTreeItem>? TreeItems { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string SearchString { get; set; } = string.Empty;
+    [Parameter] public EventCallback<CategoryTreeItem> CategorySelected { get; set; }
+    [Parameter] public EventCallback OnAddClicked { get; set; }
+    [Parameter] public EventCallback OnImportClicked { get; set; }
+    [Parameter] public EventCallback<string> FilterChanged { get; set; }
+
+    private async Task OnCategorySelectedInternal(CategoryTreeItem item)
+    {
+        await CategorySelected.InvokeAsync(item);
+    }
+}
