@@ -1,0 +1,23 @@
+@page "/Error"
+@using Microsoft.AspNetCore.Diagnostics
+
+<PageTitle>Hata</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-16">
+    <MudPaper Elevation="3" Class="pa-8">
+        <MudText Typo="Typo.h4" Color="Color.Error" GutterBottom="true">
+            <MudIcon Icon="@Icons.Material.Filled.Error" Class="mr-2" />
+            Bir Hata Oluştu
+        </MudText>
+        <MudText Class="mb-4">
+            İşleminiz sırasında beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">
+            Ana Sayfaya Dön
+        </MudButton>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    
+}

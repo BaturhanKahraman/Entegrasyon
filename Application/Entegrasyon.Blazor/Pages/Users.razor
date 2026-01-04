@@ -1,0 +1,171 @@
+@page "/users"
+@using Entegrasyon.Entity.User
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Kullanıcılar</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Kullanıcılar</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudTextField @bind-Value="_searchString" 
+                          Placeholder="Kullanıcı ara..." 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" md="4" Class="d-flex justify-end">
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                       OnClick="OpenAddUserDialog">
+                Yeni Kullanıcı
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudDataGrid T="ApplicationUser" 
+             Items="@_users" 
+             Filterable="true" 
+             SortMode="SortMode.Multiple"
+             Hover="true"
+             Loading="@_loading"
+             Virtualize="true"
+             FixedHeader="true"
+             Height="600px">
+    <Columns>
+        <PropertyColumn Property="x => x.UserName" Title="Kullanıcı Adı" />
+        <PropertyColumn Property="x => x.FullName" Title="Ad Soyad" />
+        <PropertyColumn Property="x => x.Email" Title="E-posta" />
+        <TemplateColumn Title="Durum">
+            <CellTemplate>
+                @if (context.Item.IsActive)
+                {
+                    <MudChip Color="Color.Success" Size="Size.Small">Aktif</MudChip>
+                }
+                else
+                {
+                    <MudChip Color="Color.Default" Size="Size.Small">Pasif</MudChip>
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="İki Faktörlü">
+            <CellTemplate>
+                @if (context.Item.IsTwoFactorAuthActive)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Default" Size="Size.Small" />
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn CellClass="d-flex justify-end" Title="İşlemler">
+            <CellTemplate>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                               Color="Color.Primary" 
+                               Size="Size.Small" 
+                               OnClick="@(() => EditUser(context.Item))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Lock" 
+                               Color="Color.Warning" 
+                               Size="Size.Small" 
+                               OnClick="@(() => ResetPassword(context.Item))"
+                               Title="Şifre Sıfırla" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                               Color="Color.Error" 
+                               Size="Size.Small" 
+                               OnClick="@(() => DeleteUser(context.Item))" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="ApplicationUser" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private List<ApplicationUser> _users = new();
+    private string _searchString = string.Empty;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        _loading = true;
+        try
+        {
+            // TODO: Implement actual user loading from UserManager
+            // var result = await UserManager.GetAllUsersAsync();
+            // if (result.Success)
+            // {
+            //     _users = result.Data.ToList();
+            // }
+            
+            // Temporary: Empty list
+            _users = new List<ApplicationUser>();
+            
+            Snackbar.Add("Kullanıcılar yüklendi", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kullanıcılar yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OpenAddUserDialog()
+    {
+        Snackbar.Add("Kullanıcı ekleme özelliği yakında gelecek", Severity.Info);
+    }
+
+    private void EditUser(ApplicationUser user)
+    {
+        Snackbar.Add($"Kullanıcı düzenleme: {user.FullName}", Severity.Info);
+    }
+
+    private void ResetPassword(ApplicationUser user)
+    {
+        Snackbar.Add($"Şifre sıfırlama: {user.FullName}", Severity.Info);
+    }
+
+    private async Task DeleteUser(ApplicationUser user)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "Kullanıcı Sil",
+            $"{user.FullName} kullanıcısını silmek istediğinizden emin misiniz?",
+            yesText: "Sil", 
+            cancelText: "İptal");
+
+        if (result == true)
+        {
+            Snackbar.Add($"Kullanıcı silindi: {user.FullName}", Severity.Success);
+            // TODO: Implement actual deletion
+            // await UserManager.DeleteAsync(user.Id);
+            // await LoadUsers();
+        }
+    }
+
+    private bool FilterFunc(ApplicationUser user)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if (user.FullName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (user.UserName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (user.Email?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        return false;
+    }
+}

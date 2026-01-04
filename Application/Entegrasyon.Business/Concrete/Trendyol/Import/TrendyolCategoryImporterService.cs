@@ -11,7 +11,6 @@ using Entegrasyon.MessageQueue.Commands.Trendyol.Import;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Results;
-using Wolverine;
 
 namespace Entegrasyon.Business.Concrete.Trendyol.Import;
 
@@ -22,10 +21,9 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
     private readonly ILogger<TrendyolCategoryImporterService> _logger;
     private readonly List<CategoryAttribute> _savedCategoryAttributes = [];
     private readonly MarketPlace _trendyolMarketPlace;
-    private readonly IMessageBus _bus;
     private const string CategoryUrlPostfix = @"product/product-categories";
 
-    public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory,IntegrationDbContext dbContext,ILogger<TrendyolCategoryImporterService> logger,IMessageBus bus)
+    public TrendyolCategoryImporterService(IHttpClientFactory httpClientFactory,IntegrationDbContext dbContext,ILogger<TrendyolCategoryImporterService> logger)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         _dbContext = dbContext;
@@ -34,7 +32,6 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
             .MarketPlaces
             .AsTracking()
             .FirstOrDefault(x => string.Equals(x.Name,"Trendyol"));
-        _bus = bus;
     }
 
     public async Task<IDataResult<IEnumerable<ImportedTrendyolCategory>>> GetTrendyolCategories()
@@ -53,8 +50,8 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
     {
         if (rootCategories is null || rootCategories.Count == 0)
             return;
-        await _bus.PublishAsync(new TrendyolCategoryImportCommand(rootCategories));
-        
+        // Direct import since we're not using RabbitMQ anymore
+        await Import(rootCategories);
     }
 
     public async Task<IResult> Import(ImmutableList<TrendyolSelectedCategory> rootCategories)

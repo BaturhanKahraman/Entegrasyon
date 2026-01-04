@@ -1,14 +1,13 @@
 version: '3.4'
 
 services:
-  entegrasyon.mvc:
+  entegrasyon.blazor:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      # Port configuration moved to main docker-compose.yml
+      #- ASPNETCORE_URLS=http://+:80
       #- ASPNETCORE_URLS=https://+:443;http://+:80
-    ports:
-      - "8080:80"
-      #- "44444:443"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    #ports:
+    #  - "8080:80"
+    #  - "44444:443"
+    # Windows-specific volumes removed for Linux/Fedora compatibility

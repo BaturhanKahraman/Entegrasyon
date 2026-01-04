@@ -1,0 +1,201 @@
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<MudThemeProvider Theme="_theme" IsDarkMode="@_isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h6">Entegrasyon - E-Commerce Platform</MudText>
+        <MudSpacer />
+        
+        <!-- Theme Toggle -->
+        <MudTooltip Text="@(_isDarkMode ? "Açık Tema" : "Koyu Tema")">
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                           Color="Color.Inherit" 
+                           OnClick="ToggleTheme" />
+        </MudTooltip>
+        
+        <!-- Notifications -->
+        <MudBadge Content="_notificationCount" Color="Color.Error" Overlap="true" Visible="@(_notificationCount > 0)">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
+                           Color="Color.Inherit" 
+                           OnClick="ToggleNotificationPanel" />
+        </MudBadge>
+        
+        <!-- User Profile -->
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AnchorOrigin="Origin.BottomRight">
+            <MudMenuItem Icon="@Icons.Material.Filled.Person">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.body1">Admin User</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">admin@test.com</MudText>
+                </div>
+            </MudMenuItem>
+            <MudDivider />
+            <MudMenuItem Icon="@Icons.Material.Filled.Settings" Href="/settings">Ayarlar</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Help" Href="/help">Yardım</MudMenuItem>
+            <MudDivider />
+            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout" IconColor="Color.Error">
+                Çıkış Yap
+            </MudMenuItem>
+        </MudMenu>
+    </MudAppBar>
+    
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" ClipMode="DrawerClipMode.Always">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Menü</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    
+    <!-- Notification Panel -->
+    <MudDrawer @bind-Open="_notificationPanelOpen" Anchor="Anchor.End" Elevation="2" Variant="DrawerVariant.Temporary">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Bildirimler</MudText>
+        </MudDrawerHeader>
+        <MudDivider />
+        <div class="pa-4">
+            @if (_notifications.Any())
+            {
+                <MudList Clickable="true">
+                    @foreach (var notification in _notifications)
+                    {
+                        <MudListItem Icon="@GetNotificationIcon(notification.Type)" 
+                                     IconColor="@GetNotificationColor(notification.Type)">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2">@notification.Message</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@notification.Time</MudText>
+                            </div>
+                        </MudListItem>
+                        <MudDivider />
+                    }
+                </MudList>
+                <MudButton Variant="Variant.Text" 
+                           Color="Color.Primary" 
+                           FullWidth="true" 
+                           Class="mt-2"
+                           OnClick="ClearNotifications">
+                    Tümünü Temizle
+                </MudButton>
+            }
+            else
+            {
+                <MudText Align="Align.Center" Color="Color.Secondary" Class="py-8">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Large" Class="mb-2" />
+                    <br />
+                    Yeni bildirim yok
+                </MudText>
+            }
+        </div>
+    </MudDrawer>
+    
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-4">
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent Context="exception">
+                    <MudAlert Severity="Severity.Error" Class="my-4">
+                        <MudText Typo="Typo.h6">Bir hata oluştu</MudText>
+                        <MudText Typo="Typo.body2">@exception.Message</MudText>
+                    </MudAlert>
+                </ErrorContent>
+            </ErrorBoundary>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _notificationPanelOpen = false;
+    private bool _isDarkMode = false;
+    private int _notificationCount = 3;
+    private MudTheme _theme = new();
+    private List<NotificationItem> _notifications = new();
+
+    protected override void OnInitialized()
+    {
+        // Initialize theme
+        _theme = new MudTheme
+        {
+            Palette = new PaletteLight
+            {
+                Primary = "#1976D2",
+                Secondary = "#424242",
+                Success = "#4CAF50",
+                Info = "#2196F3",
+                Warning = "#FF9800",
+                Error = "#F44336",
+                AppbarBackground = "#1976D2",
+            },
+            PaletteDark = new PaletteDark
+            {
+                Primary = "#90CAF9",
+                Secondary = "#BDBDBD",
+                Success = "#81C784",
+                Info = "#64B5F6",
+                Warning = "#FFB74D",
+                Error = "#E57373",
+                AppbarBackground = "#212121",
+            }
+        };
+
+        // Mock notifications
+        _notifications = new List<NotificationItem>
+        {
+            new("Yeni sipariş alındı: #TR-12345", "5 dk önce", NotificationType.Info),
+            new("Stok uyarısı: 5 ürün kritik seviyede", "1 saat önce", NotificationType.Warning),
+            new("Trendyol senkronizasyonu tamamlandı", "2 saat önce", NotificationType.Success)
+        };
+    }
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void ToggleNotificationPanel()
+    {
+        _notificationPanelOpen = !_notificationPanelOpen;
+    }
+
+    private void ToggleTheme()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    private void ClearNotifications()
+    {
+        _notifications.Clear();
+        _notificationCount = 0;
+        _notificationPanelOpen = false;
+    }
+
+    private string GetNotificationIcon(NotificationType type) => type switch
+    {
+        NotificationType.Success => Icons.Material.Filled.CheckCircle,
+        NotificationType.Warning => Icons.Material.Filled.Warning,
+        NotificationType.Error => Icons.Material.Filled.Error,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private Color GetNotificationColor(NotificationType type) => type switch
+    {
+        NotificationType.Success => Color.Success,
+        NotificationType.Warning => Color.Warning,
+        NotificationType.Error => Color.Error,
+        _ => Color.Info
+    };
+
+    private void HandleLogout()
+    {
+        // TODO: Implement actual logout
+        NavigationManager.NavigateTo("/auth/login", forceLoad: true);
+    }
+
+    private record NotificationItem(string Message, string Time, NotificationType Type);
+    private enum NotificationType { Info, Success, Warning, Error }
+}

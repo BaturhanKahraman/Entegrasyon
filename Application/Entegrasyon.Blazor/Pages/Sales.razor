@@ -1,0 +1,392 @@
+@page "/sales"
+@using Entegrasyon.Business.Concrete
+@using Entegrasyon.Entity.Products
+@using Entegrasyon.Entity.Dtos.Product
+@inject ProductManager ProductManager
+@inject TempBarcodeManager TempBarcodeManager
+@inject SaleManager SaleManager
+@inject CustomerManager CustomerManager
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Satış - POS</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Satış Noktası (POS)</MudText>
+
+<MudGrid>
+    <!-- Left Panel: Product Search & Cart -->
+    <MudItem xs="12" md="8">
+        <MudPaper Class="pa-4 mb-4">
+            <MudGrid>
+                <MudItem xs="12" md="9">
+                    <MudTextField @bind-Value="_barcodeSearch" 
+                                  Label="Barkod Okut veya Ürün Ara" 
+                                  Adornment="Adornment.Start" 
+                                  AdornmentIcon="@Icons.Material.Filled.QrCodeScanner"
+                                  OnKeyDown="HandleBarcodeSearch"
+                                  Immediate="true"
+                                  Placeholder="Barkod okutun veya ürün adı girin..." />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Info" 
+                               StartIcon="@Icons.Material.Filled.PersonSearch"
+                               FullWidth="true"
+                               OnClick="OpenCustomerSearch">
+                        Müşteri Seç
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+            
+            @if (_selectedCustomer != null)
+            {
+                <MudChip Color="Color.Success" 
+                         Size="Size.Small" 
+                         OnClose="ClearCustomer"
+                         Class="mt-2">
+                    Müşteri: @_selectedCustomer.Name
+                </MudChip>
+            }
+        </MudPaper>
+
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-4">Sepet</MudText>
+            
+            @if (_cartItems.Any())
+            {
+                <MudTable Items="@_cartItems" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Ürün</MudTh>
+                        <MudTh>Beden</MudTh>
+                        <MudTh>Adet</MudTh>
+                        <MudTh>Birim Fiyat</MudTh>
+                        <MudTh>İndirim</MudTh>
+                        <MudTh>Toplam</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Ürün">@context.ProductName</MudTd>
+                        <MudTd DataLabel="Beden">@context.Size</MudTd>
+                        <MudTd DataLabel="Adet">
+                            <MudNumericField @bind-Value="context.Quantity" 
+                                           Min="1" 
+                                           Step="1" 
+                                           Immediate="true"
+                                           OnBlur="RecalculateTotal"
+                                           Style="width: 80px;" />
+                        </MudTd>
+                        <MudTd DataLabel="Birim Fiyat">₺@context.UnitPrice.ToString("F2")</MudTd>
+                        <MudTd DataLabel="İndirim">
+                            <MudNumericField @bind-Value="context.DiscountPercent" 
+                                           Min="0" 
+                                           Max="100"
+                                           Step="5" 
+                                           Immediate="true"
+                                           Adornment="Adornment.End"
+                                           AdornmentText="%"
+                                           OnBlur="RecalculateTotal"
+                                           Style="width: 90px;" />
+                        </MudTd>
+                        <MudTd DataLabel="Toplam">₺@context.TotalPrice.ToString("F2")</MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                         Size="Size.Small" 
+                                         Color="Color.Error"
+                                         OnClick="@(() => RemoveFromCart(context))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudText Align="Align.Center" Color="Color.Secondary" Class="py-8">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Class="mb-2" />
+                    <br />
+                    Sepet boş. Ürün eklemek için barkod okutun.
+                </MudText>
+            }
+        </MudPaper>
+    </MudItem>
+
+    <!-- Right Panel: Summary & Payment -->
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-4">Ödeme Özeti</MudText>
+            
+            <MudList Dense="true">
+                <MudListItem>
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText>Ara Toplam:</MudText>
+                        <MudText Typo="Typo.h6">₺@_subtotal.ToString("F2")</MudText>
+                    </div>
+                </MudListItem>
+                
+                @if (_totalDiscount > 0)
+                {
+                    <MudListItem>
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Color="Color.Success">İndirim:</MudText>
+                            <MudText Color="Color.Success">-₺@_totalDiscount.ToString("F2")</MudText>
+                        </div>
+                    </MudListItem>
+                }
+                
+                <MudDivider />
+                
+                <MudListItem>
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText>KDV (%20):</MudText>
+                        <MudText Typo="Typo.body1">₺@_tax.ToString("F2")</MudText>
+                    </div>
+                </MudListItem>
+                
+                <MudDivider />
+                
+                <MudListItem>
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText Typo="Typo.h5">Toplam:</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Primary">₺@_total.ToString("F2")</MudText>
+                    </div>
+                </MudListItem>
+            </MudList>
+
+            <MudDivider Class="my-4" />
+
+            <MudSelect T="string" 
+                       @bind-Value="_paymentMethod" 
+                       Label="Ödeme Yöntemi" 
+                       Variant="Variant.Outlined"
+                       Class="mb-4">
+                <MudSelectItem Value="@("Nakit")">💵 Nakit</MudSelectItem>
+                <MudSelectItem Value="@("Kredi Kartı")">💳 Kredi Kartı</MudSelectItem>
+                <MudSelectItem Value="@("Banka Kartı")">🏦 Banka Kartı</MudSelectItem>
+                <MudSelectItem Value="@("Havale/EFT")">🔄 Havale/EFT</MudSelectItem>
+            </MudSelect>
+
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Success" 
+                       FullWidth="true"
+                       Size="Size.Large"
+                       Disabled="@(!_cartItems.Any() || _processing)"
+                       OnClick="CompleteSale"
+                       StartIcon="@Icons.Material.Filled.ShoppingCart">
+                @if (_processing)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    <span class="ml-2">İşleniyor...</span>
+                }
+                else
+                {
+                    <span>Satışı Tamamla (₺@_total.ToString("F2"))</span>
+                }
+            </MudButton>
+
+            <MudButton Variant="Variant.Outlined" 
+                       Color="Color.Error" 
+                       FullWidth="true"
+                       Class="mt-2"
+                       Disabled="@(!_cartItems.Any())"
+                       OnClick="ClearCart">
+                Sepeti Temizle
+            </MudButton>
+        </MudPaper>
+
+        <!-- Recent Sales -->
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-2">Bugünkü Satışlar</MudText>
+            <MudDivider Class="mb-3" />
+            <MudList Dense="true">
+                <MudListItem>
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText Typo="Typo.body2">Toplam Satış:</MudText>
+                        <MudChip Color="Color.Info" Size="Size.Small">0 adet</MudChip>
+                    </div>
+                </MudListItem>
+                <MudListItem>
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText Typo="Typo.body2">Toplam Gelir:</MudText>
+                        <MudText Typo="Typo.h6">₺0.00</MudText>
+                    </div>
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private string _barcodeSearch = string.Empty;
+    private string _paymentMethod = "Nakit";
+    private bool _processing;
+    private List<CartItem> _cartItems = new();
+    private CustomerDto? _selectedCustomer;
+    
+    private decimal _subtotal => _cartItems.Sum(x => x.Quantity * x.UnitPrice);
+    private decimal _totalDiscount => _cartItems.Sum(x => (x.Quantity * x.UnitPrice) * ((decimal)x.DiscountPercent / 100));
+    private decimal _subtotalAfterDiscount => _subtotal - _totalDiscount;
+    private decimal _tax => _subtotalAfterDiscount * 0.20m;
+    private decimal _total => _subtotalAfterDiscount + _tax;
+
+    private async Task HandleBarcodeSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_barcodeSearch))
+        {
+            await SearchAndAddProduct(_barcodeSearch);
+            _barcodeSearch = string.Empty;
+        }
+    }
+
+    private async Task SearchAndAddProduct(string barcode)
+    {
+        try
+        {
+            // TODO: Implement actual product search by barcode
+            // var result = await ProductManager.GetProductByBarcode(barcode);
+            // if (result.Success && result.Data is ProductsDetailDto product)
+            // {
+            //     var variant = product.ProductVariants.FirstOrDefault(v => v.Barcode == barcode);
+            //     if (variant != null)
+            //     {
+            //         AddToCart(product.Title, variant.Size, variant.ListPrice, variant.Id);
+            //         Snackbar.Add($"Ürün eklendi: {product.Title}", Severity.Success);
+            //     }
+            // }
+            // else
+            // {
+            //     Snackbar.Add("Barkoda ait ürün bulunamadı", Severity.Warning);
+            // }
+            
+            Snackbar.Add($"Barkod aranıyor: {barcode}", Severity.Info);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ürün arama hatası: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void AddToCart(string productName, string size, decimal price, Guid variantId)
+    {
+        var existingItem = _cartItems.FirstOrDefault(x => x.ProductVariantId == variantId);
+        
+        if (existingItem != null)
+        {
+            existingItem.Quantity++;
+        }
+        else
+        {
+            _cartItems.Add(new CartItem
+            {
+                ProductVariantId = variantId,
+                ProductName = productName,
+                Size = size,
+                Quantity = 1,
+                UnitPrice = price,
+                DiscountPercent = 0
+            });
+        }
+        
+        RecalculateTotal();
+        Snackbar.Add($"Sepete eklendi: {productName}", Severity.Success);
+    }
+
+    private void RemoveFromCart(CartItem item)
+    {
+        _cartItems.Remove(item);
+        RecalculateTotal();
+        Snackbar.Add("Ürün sepetten çıkarıldı", Severity.Info);
+    }
+
+    private void RecalculateTotal()
+    {
+        StateHasChanged();
+    }
+
+    private void ClearCart()
+    {
+        _cartItems.Clear();
+        _selectedCustomer = null;
+        Snackbar.Add("Sepet temizlendi", Severity.Info);
+    }
+
+    private async Task OpenCustomerSearch()
+    {
+        // TODO: Implement customer search dialog
+        Snackbar.Add("Müşteri arama özelliği yakında gelecek", Severity.Info);
+    }
+
+    private void ClearCustomer()
+    {
+        _selectedCustomer = null;
+    }
+
+    private async Task CompleteSale()
+    {
+        if (!_cartItems.Any())
+        {
+            Snackbar.Add("Sepet boş!", Severity.Warning);
+            return;
+        }
+
+        _processing = true;
+        try
+        {
+            // TODO: Implement actual sale completion with SaleManager
+            // var saleDto = new MakeSaleDto
+            // {
+            //     CustomerId = _selectedCustomer?.Id,
+            //     PaymentMethod = _paymentMethod,
+            //     SaleItems = _cartItems.Select(item => new SaleItemDto
+            //     {
+            //         ProductVariantId = item.ProductVariantId,
+            //         Quantity = item.Quantity,
+            //         UnitPrice = item.UnitPrice,
+            //         DiscountPercent = item.DiscountPercent
+            //     }).ToList()
+            // };
+            
+            // var result = await SaleManager.MakeSale(saleDto);
+            
+            // if (result.Success)
+            // {
+            //     await ShowReceiptDialog();
+            //     ClearCart();
+            // }
+            
+            await Task.Delay(1000); // Simulate processing
+            
+            var confirm = await DialogService.ShowMessageBox(
+                "Satış Tamamlandı",
+                $"Satış başarıyla tamamlandı!\n\nToplam: ₺{_total:F2}\nÖdeme: {_paymentMethod}\n\nFiş yazdırılsın mı?",
+                yesText: "Yazdır", cancelText: "Kapat");
+
+            if (confirm == true)
+            {
+                Snackbar.Add("Fiş yazdırılıyor...", Severity.Info);
+                // TODO: Implement receipt printing
+            }
+            
+            Snackbar.Add($"Satış tamamlandı! Toplam: ₺{_total:F2}", Severity.Success);
+            ClearCart();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Satış hatası: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+
+    private class CartItem
+    {
+        public Guid ProductVariantId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string Size { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public int DiscountPercent { get; set; }
+        public decimal TotalPrice => Quantity * UnitPrice * (1 - ((decimal)DiscountPercent / 100));
+    }
+
+    private record CustomerDto(Guid Id, string Name, string Phone);
+}

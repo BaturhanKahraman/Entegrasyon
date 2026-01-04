@@ -1,0 +1,17 @@
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Sayfa Bulunamadı</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <MudContainer Class="mt-16 mb-16">
+                <MudText Typo="Typo.h4" Align="Align.Center">Üzgünüz, bu sayfayı bulamadık.</MudText>
+                <MudText Align="Align.Center" Class="mt-4">
+                    <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">Ana Sayfaya Dön</MudButton>
+                </MudText>
+            </MudContainer>
+        </LayoutView>
+    </NotFound>
+</Router>

@@ -1,0 +1,284 @@
+@page "/"
+@using Entegrasyon.Business.Concrete
+@using Entegrasyon.Blazor.Services.Channels
+@using Entegrasyon.Blazor.Services.Channels.Events
+@inject ProductManager ProductManager
+@inject SaleManager SaleManager
+@inject ISnackbar Snackbar
+@implements IAsyncDisposable
+
+<PageTitle>Ana Sayfa - Dashboard</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Dashboard</MudText>
+<MudText Class="mb-4" Color="Color.Secondary">E-Commerce Entegrasyon Platformuna Hoş Geldiniz</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+<MudGrid>
+    <!-- Stats Cards -->
+    <MudItem xs="12" sm="6" md="3">
+        <MudCard Elevation="2" Class="hover-card">
+            <MudCardContent>
+                <div class="d-flex justify-space-between align-center">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Ürün</MudText>
+                        <MudText Typo="Typo.h4">@_stats.TotalProducts</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+        <MudCard Elevation="2" Class="hover-card">
+            <MudCardContent>
+                <div class="d-flex justify-space-between align-center">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bugünkü Satışlar</MudText>
+                        <MudText Typo="Typo.h4">@_stats.TodaySales</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Success">₺@_stats.TodayRevenue.ToString("N2")</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Success" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+        <MudCard Elevation="2" Class="hover-card">
+            <MudCardContent>
+                <div class="d-flex justify-space-between align-center">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bekleyen Sipariş</MudText>
+                        <MudText Typo="Typo.h4">@_stats.PendingOrders</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Warning" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+        <MudCard Elevation="2" Class="hover-card">
+            <MudCardContent>
+                <div class="d-flex justify-space-between align-center">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Düşük Stok</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Error">@_stats.LowStockProducts</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Error" />
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Sales Chart -->
+    <MudItem xs="12" md="8">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Haftalık Satış Grafiği</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudChart ChartType="ChartType.Line" 
+                          ChartSeries="@_salesChartData" 
+                          XAxisLabels="@_xAxisLabels" 
+                          Width="100%" 
+                          Height="300px"
+                          ChartOptions="@_chartOptions" />
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Quick Actions -->
+    <MudItem xs="12" md="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList Clickable="true">
+                    <MudListItem Icon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Href="/products">
+                        Yeni Ürün Ekle
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" Href="/sales">
+                        Satış Yap
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Sync" IconColor="Color.Info" OnClick="@SyncMarketplaces">
+                        Pazaryeri Senkronize
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Secondary" Href="/reports">
+                        Raporları Görüntüle
+                    </MudListItem>
+                </MudList>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Marketplace Sync Status -->
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Pazaryeri Durumu</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList Dense="true">
+                    @foreach (var marketplace in _marketplaceStatuses)
+                    {
+                        <MudListItem>
+                            <div class="d-flex justify-space-between align-center" style="width: 100%">
+                                <div class="d-flex align-center gap-2">
+                                    <MudAvatar Color="@marketplace.Color" Size="Size.Small">
+                                        <MudIcon Icon="@marketplace.Icon" Size="Size.Small" />
+                                    </MudAvatar>
+                                    <MudText>@marketplace.Name</MudText>
+                                </div>
+                                <MudChip Size="Size.Small" Color="@marketplace.StatusColor">
+                                    @marketplace.Status
+                                </MudChip>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Recent Activity -->
+    <MudItem xs="12" md="6">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Son Aktiviteler</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
+                    @foreach (var activity in _recentActivities)
+                    {
+                        <MudTimelineItem Color="@activity.Color" Size="Size.Small">
+                            <ItemContent>
+                                <MudText Typo="Typo.body2">@activity.Message</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Time</MudText>
+                            </ItemContent>
+                        </MudTimelineItem>
+                    }
+                </MudTimeline>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+    }
+</style>
+
+@code {
+    private bool _loading = true;
+    private DashboardStats _stats = new();
+    private List<ChartSeries> _salesChartData = new();
+    private string[] _xAxisLabels = Array.Empty<string>();
+    private ChartOptions _chartOptions = new() { YAxisTicks = 1000, MaxNumYAxisTicks = 10 };
+    private List<MarketplaceStatus> _marketplaceStatuses = new();
+    private List<ActivityItem> _recentActivities = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        _loading = true;
+        try
+        {
+            // TODO: Implement actual data loading
+            // Load stats from managers
+            // var productsCount = await ProductManager.GetProductsCount();
+            // var todaySales = await SaleManager.GetTodaySalesAsync();
+            
+            // Mock data for now
+            _stats = new DashboardStats
+            {
+                TotalProducts = 1250,
+                TodaySales = 45,
+                TodayRevenue = 12450.50m,
+                PendingOrders = 8,
+                LowStockProducts = 12
+            };
+
+            // Sales chart data (last 7 days)
+            _xAxisLabels = new[] { "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz" };
+            _salesChartData = new List<ChartSeries>
+            {
+                new ChartSeries { Name = "Satışlar", Data = new double[] { 15000, 18000, 22000, 19000, 25000, 28000, 24000 } }
+            };
+
+            // Marketplace statuses
+            _marketplaceStatuses = new List<MarketplaceStatus>
+            {
+                new("Trendyol", Icons.Material.Filled.Store, Color.Primary, "Aktif", Color.Success),
+                new("Hepsiburada", Icons.Material.Filled.ShoppingCart, Color.Secondary, "Aktif", Color.Success),
+                new("N11", Icons.Material.Filled.Storefront, Color.Info, "Senkronize Ediliyor", Color.Warning),
+                new("Amazon", Icons.Material.Filled.LocalMall, Color.Tertiary, "Beklemede", Color.Default)
+            };
+
+            // Recent activities
+            _recentActivities = new List<ActivityItem>
+            {
+                new("Yeni ürün eklendi: Lacoste Polo T-Shirt", "2 dk önce", Color.Success),
+                new("Trendyol siparişi alındı: #TR-12345", "15 dk önce", Color.Info),
+                new("Stok güncellendi: 125 ürün", "1 saat önce", Color.Primary),
+                new("Yeni kullanıcı kaydı: Ahmet Y.", "2 saat önce", Color.Secondary),
+                new("Pazaryeri senkronizasyonu tamamlandı", "3 saat önce", Color.Success)
+            };
+
+            await Task.Delay(500); // Simulate loading
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Dashboard yüklenirken hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SyncMarketplaces()
+    {
+        Snackbar.Add("Pazaryeri senkronizasyonu başlatıldı", Severity.Info);
+        // TODO: Trigger marketplace sync
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
+
+    private record DashboardStats
+    {
+        public int TotalProducts { get; init; }
+        public int TodaySales { get; init; }
+        public decimal TodayRevenue { get; init; }
+        public int PendingOrders { get; init; }
+        public int LowStockProducts { get; init; }
+    }
+
+    private record MarketplaceStatus(string Name, string Icon, Color Color, string Status, Color StatusColor);
+    private record ActivityItem(string Message, string Time, Color Color);
+}
