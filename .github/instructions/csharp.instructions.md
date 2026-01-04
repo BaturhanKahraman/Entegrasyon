@@ -6,7 +6,7 @@ applyTo: '**/*.cs'
 # C# Development
 
 ## C# Instructions
-- Always use the latest version C#, currently C# 14 features.
+- Use the C# language version compatible with the project's TargetFramework (this repository targets `net8.0`). Before adopting newer C# language features, get approval from the project owner or maintainers.
 - Write clear and concise comments for each function.
 
 ## General Instructions
@@ -25,7 +25,7 @@ applyTo: '**/*.cs'
 
 - Apply code-formatting style defined in `.editorconfig`.
 - Prefer file-scoped namespace declarations and single-line using directives.
-- Insert a newline before the opening curly brace of any code block (e.g., after `if`, `for`, `while`, `foreach`, `using`, `try`, etc.).
+- Follow the project's `.editorconfig` for brace and formatting rules; do not hard-enforce an unrelated brace placement style in these instructions.
 - Ensure that the final return statement of a method is on its own line.
 - Use pattern matching and switch expressions wherever possible.
 - Use `nameof` instead of string literals when referring to member names.
@@ -37,7 +37,7 @@ applyTo: '**/*.cs'
 - Explain the purpose of each generated file and folder to build understanding of the project structure.
 - Demonstrate how to organize code using feature folders or domain-driven design principles.
 - Show proper separation of concerns with models, services, and data access layers.
-- Explain the Program.cs and configuration system in ASP.NET Core 10 including environment-specific settings.
+ - Explain the Program.cs and configuration system in ASP.NET Core (align examples with the repository's target framework, e.g., .NET 8) including environment-specific settings.
 
 ## Nullable Reference Types
 
@@ -112,3 +112,48 @@ applyTo: '**/*.cs'
 - Demonstrate deployment to Azure App Service, Azure Container Apps, or other hosting options.
 - Show how to implement health checks and readiness probes.
 - Explain environment-specific configurations for different deployment stages.
+
+## Architecture & Layering (Repository Conventions)
+
+- Enforce a layered architecture: Presentation (Blazor) → Business → DataAccess → Entity/Shared. Dependencies must only point "down" the stack. For example, `Entegrasyon.Blazor` can depend on `Entegrasyon.Business`, `Entegrasyon.DependencyResolver`, and `Shared`, but it must never reference types from `Entegrasyon.DataAccess` or `Entegrasyon.Entity` directly.
+- Communication between layers must use interfaces and service abstractions defined in the appropriate layer (e.g., business-facing interfaces in `Entegrasyon.Business` or `Shared`). If a different layering is required, create a design proposal and notify maintainers.
+- If code needs to call into another layer not allowed by the rules, add a clear justification comment and open an issue/PR describing the rationale.
+
+## AI Model Guidance for Repo Rules
+
+- These repository rules are authoritative for any AI assistant or automated tool operating on this codebase. When generating code or suggestions, ensure the output adheres to the layering rules above.
+- Actions AI should take when encountering a layering violation:
+	- Halt code generation that would introduce a cross-layer reference.
+	- Suggest adding a service/interface in the appropriate layer instead, and provide a small template.
+	- If the user insists that cross-layer access is required, create a PR with an explicit design note and label it for architecture review.
+
+## Dependency Resolver Naming Guidance
+
+- The current `Entegrasyon.DependencyResolver` was intended to register services and orchestrate DI for the application. If the project's `DependencyResolver` contains code beyond simple DI registration (e.g., configuration, environment wiring, bootstrap logic), rename it to better reflect its role. Suggested names by scope:
+	- DI-only registrars: `Application.DependencyRegistration` or `ServiceRegistration`
+	- Bootstrap + config: `Application.Bootstrap` or `Application.StartupHelpers`
+	- If it is an IoC composition root with multiple responsibilities: `Application.CompositionRoot`
+- Document the chosen name and update all project references and README notes.
+
+## Examples
+
+- Run EF Core migrations (from the project that contains the DbContext):
+
+```bash
+dotnet ef migrations add AddMyEntity -p ../Entegrasyon.DataAccess/ -s ../Application/Entegrasyon.Blazor/
+dotnet ef database update -p ../Entegrasyon.DataAccess/ -s ../Application/Entegrasyon.Blazor/
+```
+
+- Build and publish a Linux container image (example):
+
+```bash
+dotnet publish -c Release -o out
+docker build -t entegrasyonblazor:local -f Dockerfile .
+```
+
+- Run the application in watch mode:
+
+```bash
+dotnet watch run --project Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj
+```
+

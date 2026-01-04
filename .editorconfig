@@ -1,0 +1,48 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+file_scoped_namespace = true
+
+# Brace placement: Allman style (newline before opening brace)
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# Spacing
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+
+# Naming conventions
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+
+dotnet_naming_rule.interface_rule.severity = warning
+dotnet_naming_rule.interface_rule.style = pascal_case_style
+dotnet_naming_rule.interface_rule.symbols = interface
+
+dotnet_naming_rule.type_rule.severity = warning
+dotnet_naming_rule.type_rule.style = pascal_case_style
+dotnet_naming_rule.type_rule.symbols = type
+
+dotnet_naming_rule.method_rule.severity = warning
+dotnet_naming_rule.method_rule.style = pascal_case_style
+dotnet_naming_rule.method_rule.symbols = method
+
+dotnet_naming_rule.field_rule.severity = warning
+dotnet_naming_rule.field_rule.style = camel_case_style
+dotnet_naming_rule.field_rule.symbols = field
+
+dotnet_naming_symbols.interface.applicable_kinds = interface
+dotnet_naming_symbols.type.applicable_kinds = class,struct,enum,delegate
+dotnet_naming_symbols.method.applicable_kinds = method
+dotnet_naming_symbols.field.applicable_kinds = field

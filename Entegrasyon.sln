@@ -28,7 +28,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entegrasyon.Blazor", "Appli
 		{FDEF9CD2-4484-4BF2-A930-B64B4676491B} = {FDEF9CD2-4484-4BF2-A930-B64B4676491B}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.DependencyResolver", "Application\Entegrasyon.DependencyResolver\Entegrasyon.DependencyResolver.csproj", "{7358CADA-A034-41C8-960A-037B1707F41A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.ApplicationBootstrap", "Application\Entegrasyon.ApplicationBootstrap\Entegrasyon.ApplicationBootstrap.csproj", "{7358CADA-A034-41C8-960A-037B1707F41A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entegrasyon.MessageQueue.Handler", "Application\Entegrasyon.MessageQueue\Entegrasyon.MessageQueue.Handler.csproj", "{1096FC04-D74E-4021-ABD1-78351E1716C0}"
 EndProject
