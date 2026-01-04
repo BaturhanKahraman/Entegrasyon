@@ -102,12 +102,12 @@ public partial class ComponentName
 {
     [Parameter] public string? PropertyName { get; set; }
     [Inject] private IService? Service { get; set; }
-    
+
     protected override async Task OnInitializedAsync()
     {
         // Lifecycle and initialization logic
     }
-    
+
     private async Task HandleEvent()
     {
         // Event handlers
