@@ -1,0 +1,14 @@
+.category-tree-paper {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-tree-loading {
+    flex: 1;
+}
+
+.category-tree-container {
+    flex: 1;
+    overflow-y: auto;
+}

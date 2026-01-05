@@ -44,6 +44,6 @@ public class MenuService : IMenuService
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
             return CreateMenuItems(user);
-        });
+        })!;
     }
 }

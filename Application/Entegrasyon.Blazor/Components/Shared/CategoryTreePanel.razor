@@ -33,31 +33,14 @@
     }
     else if (TreeItems?.Any() == true)
     {
-        <MudStack Spacing="0">
-            @foreach (var item in TreeItems)
+        <div class="category-tree" style="max-height: 600px; overflow-y: auto;">
+            @foreach (var category in TreeItems)
             {
-                <div class="d-flex align-center justify-space-between pa-2 cursor-pointer"
-                     @onclick="() => OnCategorySelectedInternal(item)">
-                    <MudText>@item.Name</MudText>
-                    @if (item.IsFavorite)
-                    {
-                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
-                    }
-                </div>
-                @if (item.SubCategories?.Any() == true)
-                {
-                    <div style="margin-left: 20px;">
-                        @foreach (var subItem in item.SubCategories)
-                        {
-                            <div class="d-flex align-center justify-space-between pa-2 cursor-pointer"
-                                 @onclick="() => OnCategorySelectedInternal(subItem)">
-                                <MudText>→ @subItem.Name</MudText>
-                            </div>
-                        }
-                    </div>
-                }
+                <CategoryTreeItem Category="category"
+                                  AllCategories="AllCategories"
+                                  OnCategorySelected="OnCategorySelectedInternal" />
             }
-        </MudStack>
+        </div>
     }
     else
     {
@@ -67,6 +50,7 @@
 
 @code {
     [Parameter] public List<Category>? TreeItems { get; set; }
+    [Parameter] public List<Category>? AllCategories { get; set; }
     [Parameter] public bool Loading { get; set; }
     [Parameter] public string SearchString { get; set; } = string.Empty;
     [Parameter] public EventCallback<Category> CategorySelected { get; set; }
@@ -77,5 +61,26 @@
     private Task OnCategorySelectedInternal(Category item)
     {
         return CategorySelected.InvokeAsync(item);
+    }
+
+    private string GetCategoryIcon(Category category)
+    {
+        if (GetSubcategories(category).Any())
+            return Icons.Material.Filled.Folder;
+        return Icons.Material.Filled.Category;
+    }
+
+    private Color GetCategoryIconColor(Category category)
+    {
+        if (category.IsFavorite)
+            return Color.Warning;
+        if (category.IsImported)
+            return Color.Info;
+        return GetSubcategories(category).Any() ? Color.Primary : Color.Default;
+    }
+
+    private IEnumerable<Category> GetSubcategories(Category category)
+    {
+        return AllCategories?.Where(c => c.SuperCategoryId == category.Id) ?? Enumerable.Empty<Category>();
     }
 }

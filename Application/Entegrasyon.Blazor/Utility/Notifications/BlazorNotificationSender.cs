@@ -6,7 +6,7 @@ namespace Entegrasyon.Blazor.Utility.Notifications;
 public sealed class BlazorNotificationSender : IBlazorNotificationSender
 {
     public SenderType Type => SenderType.RealTime;
-    public event Action<Notification, Guid> NotificationSent;
+    public event Action<Notification, Guid>? NotificationSent;
 
     public Task SendNotification(Notification message, IEnumerable<Guid> userIds)
     {

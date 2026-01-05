@@ -11,9 +11,9 @@ namespace Entegrasyon.Blazor.Utility.Attributes.Validations
         }
         public EnsureAtLeastOne(string errorMessage):base(errorMessage)
         {
-            
+
         }
-        public override bool IsValid(object value)
+        public override bool IsValid(object? value)
         {
             if(value is ICollection values)
                 return values.Count > 0;

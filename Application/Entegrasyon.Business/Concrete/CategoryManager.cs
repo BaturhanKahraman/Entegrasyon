@@ -225,6 +225,7 @@ namespace Entegrasyon.Business.Concrete
                 .Include(c => c.CategoryAttributes)
                     .ThenInclude(ca => ca.CategoryAttribute)
                 .Include(c => c.MarketplaceLinks)
+                    .ThenInclude(ml => ml.MarketPlace)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }

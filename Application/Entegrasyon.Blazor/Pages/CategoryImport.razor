@@ -1,18 +1,5 @@
 @page "/categories/import"
-@using Entegrasyon.Business.Abstract
-@using Entegrasyon.Business.Concrete.Import
-@using Entegrasyon.Entity.Categories
-@using Entegrasyon.Blazor.Services.Channels
-@using Entegrasyon.Blazor.Services.Channels.Events
-@using Entegrasyon.Blazor.ViewModels
 @using Entegrasyon.Blazor.Components.Import
-@using Shared.Results
-@inject TrendyolCategoryImporter TrendyolImporter
-@inject EventChannel<CategoryUpdatedEvent> CategoryEventChannel
-@inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
-@inject ILogger<CategoryImport> Logger
-
 <PageTitle>Kategori İçe Aktar</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Kategori İçe Aktar</MudText>
@@ -30,8 +17,8 @@
                                Color="Color.Primary"
                                StartIcon="@Icons.Material.Filled.Refresh"
                                OnClick="LoadTrendyolCategoriesAsync"
-                               Disabled="@_loading">
-                        @if (_loading)
+                               Disabled="@loading">
+                        @if (loading)
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                         }
@@ -41,22 +28,22 @@
                                Color="Color.Success"
                                StartIcon="@Icons.Material.Filled.Download"
                                OnClick="ShowImportConfirmationAsync"
-                               Disabled="@(_importing || _selectedNodes == null || !_selectedNodes.Any())">
-                        @if (_importing)
+                               Disabled="@(importing || selectedNodes == null || !selectedNodes.Any())">
+                        @if (importing)
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                         }
-                        Seçilenleri İçe Aktar (@(_selectedNodes?.Count ?? 0))
+                        Seçilenleri İçe Aktar (@(selectedNodes?.Count ?? 0))
                     </MudButton>
                 </div>
             </div>
 
-            @if (_loading)
+            @if (loading)
             {
                 <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
                 <MudText Align="Align.Center" Color="Color.Secondary">Kategoriler yükleniyor...</MudText>
             }
-            else if (!_categories.Any())
+            else if (!categories.Any())
             {
                 <MudAlert Severity="Severity.Info" Class="mb-4">
                     Kategorileri görüntülemek için "Kategorileri Yükle" butonuna tıklayın.
@@ -66,13 +53,13 @@
             {
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                        <TrendyolCategoryTreeView Categories="@_categories"
-                                                  @bind-SelectedNodes="_selectedNodes"
-                                                  @bind-SearchQuery="_searchQuery"
-                                                  Loading="@_loading" />
+                        <TrendyolCategoryTreeView Categories="@categories"
+                                                  @bind-SelectedNodes="selectedNodes"
+                                                  @bind-SearchQuery="searchQuery"
+                                                  Loading="@loading" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <SelectedCategoriesPanel SelectedCategories="@_selectedNodes"
+                        <SelectedCategoriesPanel SelectedCategories="@selectedNodes"
                                                  OnRemove="@RemoveSelectedCategory"
                                                  OnClearAll="@ClearSelection" />
                     </MudItem>
@@ -98,7 +85,7 @@
     </MudTabPanel>
 </MudTabs>
 
-@if (_importing)
+@if (importing)
 {
     <MudOverlay Visible="true" DarkBackground="true" ZIndex="9999">
         <MudCard Class="pa-4">
@@ -111,136 +98,4 @@
             </MudCardContent>
         </MudCard>
     </MudOverlay>
-}
-
-@code {
-    private List<CategoryTreeNode> _categories = new();
-    private IReadOnlyCollection<CategoryTreeNode>? _selectedNodes;
-    private bool _loading;
-    private bool _importing;
-    private string _searchQuery = string.Empty;
-
-    private async Task LoadTrendyolCategoriesAsync()
-    {
-        _loading = true;
-        try
-        {
-            var result = await LoadCategoriesWithRetryAsync();
-            if (result.Success && result.Data != null)
-            {
-                _categories = result.Data.Select(MapToTreeNode).ToList();
-                var totalCount = CountAllCategories(_categories);
-                Snackbar.Add($"{totalCount} kategori yüklendi.", Severity.Success);
-            }
-            else
-            {
-                Snackbar.Add(result.Message ?? "Kategoriler yüklenemedi.", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Category loading failed");
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _loading = false;
-        }
-    }
-
-    private async Task<IDataResult<IEnumerable<ExternalCategoryDto>>> LoadCategoriesWithRetryAsync()
-    {
-        const int maxRetries = 3;
-        for (int attempt = 0; attempt < maxRetries; attempt++)
-        {
-            try
-            {
-                return await TrendyolImporter.GetExternalCategoriesAsync();
-            }
-            catch (HttpRequestException ex) when (attempt < maxRetries - 1)
-            {
-                Logger.LogWarning(ex, "API call failed, attempt {Attempt}/{MaxRetries}", attempt + 1, maxRetries);
-                await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, attempt)));
-            }
-        }
-        return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, "API çağrısı başarısız oldu.");
-    }
-
-    private async Task ShowImportConfirmationAsync()
-    {
-        if (_selectedNodes == null || !_selectedNodes.Any())
-        {
-            Snackbar.Add("Lütfen en az bir kategori seçin.", Severity.Warning);
-            return;
-        }
-
-        await ImportSelectedCategoriesAsync();
-    }
-
-    private async Task ImportSelectedCategoriesAsync()
-    {
-        _importing = true;
-        try
-        {
-            var importRequests = _selectedNodes!.Select(MapToImportRequest).ToList();
-            var result = await TrendyolImporter.ImportCategoriesAsync(importRequests);
-
-            if (result.Success)
-            {
-                Snackbar.Add($"{_selectedNodes.Count} kategori başarıyla içe aktarıldı.", Severity.Success);
-                await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(0, "Imported"));
-                NavigationManager.NavigateTo("/categories");
-            }
-            else
-            {
-                Snackbar.Add(result.Message ?? "İçe aktarma başarısız.", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Category import failed");
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _importing = false;
-        }
-    }
-
-    private void RemoveSelectedCategory(CategoryTreeNode node)
-    {
-        if (_selectedNodes != null)
-        {
-            var list = _selectedNodes.ToList();
-            list.Remove(node);
-            _selectedNodes = list;
-        }
-    }
-
-    private void ClearSelection()
-    {
-        _selectedNodes = null;
-    }
-
-    private int CountAllCategories(IEnumerable<CategoryTreeNode> nodes) =>
-        nodes.Sum(n => 1 + CountAllCategories(n.Children));
-
-    private CategoryTreeNode MapToTreeNode(ExternalCategoryDto dto) => new()
-    {
-        ExternalId = dto.ExternalId,
-        Name = dto.Name,
-        ParentExternalId = dto.ParentExternalId,
-        Children = dto.Children.Select(MapToTreeNode).ToHashSet()
-    };
-
-    private ExternalCategoryImportRequest MapToImportRequest(CategoryTreeNode node) => new()
-    {
-        ExternalId = node.ExternalId,
-        Name = node.Name,
-        ParentExternalId = node.ParentExternalId,
-        Children = node.Children
-            .Where(c => _selectedNodes?.Contains(c) == true)
-            .Select(MapToImportRequest)
-            .ToList()
-    };
 }

@@ -11,7 +11,7 @@ public static class ModelStateExtension
         var dict = modelState.Select(kvp => new ModelStateTransferValue()
         {
             Key = kvp.Key,
-            AttemptedValue = kvp.Value.AttemptedValue,
+            AttemptedValue = kvp.Value!.AttemptedValue,
             RawValue = kvp.Value.RawValue,
             ErrorMessages = kvp.Value.Errors.Select(err => err.ErrorMessage).ToList(),
         });
@@ -23,10 +23,10 @@ public static class ModelStateExtension
         modelState.Clear();
         foreach(var item in errorList!)
         {
-            modelState.SetModelValue(item.Key,item.RawValue,item.AttemptedValue);
+            modelState.SetModelValue(item.Key!,item.RawValue,item.AttemptedValue);
             foreach(var error in item.ErrorMessages)
             {
-                modelState.AddModelError(item.Key,error);
+                modelState.AddModelError(item.Key!,error);
             }
         }
     }

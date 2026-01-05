@@ -18,7 +18,7 @@ public class HasAccesTagHelper : TagHelper
         var attr = context.AllAttributes.FirstOrDefault(a => a.Name.StartsWith("has-access"));
         string postFix = attr!.Name.Remove(0, "has-access".Length);
         var permissions = _context.User.Claims.Where(c => c.Type == StringConstant.Permission).Select(c => c.Value);
-        string requiredPermission = attr.Value.ToString();
+        string requiredPermission = attr.Value.ToString()!;
         if (string.IsNullOrEmpty(requiredPermission))
             throw new Exception("Tag Helper kullanımı yanlış");
         if (permissions.Contains(requiredPermission, StringComparer.InvariantCultureIgnoreCase))

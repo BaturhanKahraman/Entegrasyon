@@ -40,10 +40,10 @@ public class CategoryAttributeCreateViewModel
     [MaxLength(55, ErrorMessage = "Özellik ismi 55 karakterden fazla olamaz.")]
     [MinLength(2, ErrorMessage = "Özellik ismi 2 karakterden az olamaz.")]
     [Display(Name = "Kategori Özellik İsmi", Prompt = "Kategori İsmi")]
-    public string CategoryAttributeKey { get; set; }
+    public string? CategoryAttributeKey { get; set; }
     [Display(Name = "Değerler")]
-    public string CustomValues { get; set; }
-    public string FormUniqueId { get; set; }
+    public string? CustomValues { get; set; }
+    public string? FormUniqueId { get; set; }
     public List<CategoryAttributeValueViewModel> CategoryAttributeValues { get; set; } = new();
 }
 public sealed record TagifyValue(int id, string value);

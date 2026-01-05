@@ -9,22 +9,22 @@ namespace Entegrasyon.Blazor.Utility.Attributes
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class,AllowMultiple = false,Inherited = false)]
     public class BreadcrumbAttribute : ActionFilterAttribute
     {
-        private readonly string _name;
-        private readonly Type _resourceType;
-        private readonly string _titleKey;
-        private readonly BreadcrumbUsageType _bcUsageType;
+        private readonly string? name;
+        private readonly Type? resourceType;
+        private readonly string? titleKey;
+        private readonly BreadcrumbUsageType bcUsageType;
 
         public BreadcrumbAttribute(string name,BreadcrumbUsageType type = BreadcrumbUsageType.Action)
         {
-            _name = name;
-            _bcUsageType = type;
+            this.name = name;
+            bcUsageType = type;
         }
 
         public BreadcrumbAttribute(string titleKey,Type resource,BreadcrumbUsageType type = BreadcrumbUsageType.Action)
         {
-            _titleKey = titleKey;
-            _resourceType = resource;
-            _bcUsageType = type;
+            this.titleKey = titleKey;
+            resourceType = resource;
+            bcUsageType = type;
         }
 
         public override void OnActionExecuted(ActionExecutedContext context)
@@ -33,11 +33,11 @@ namespace Entegrasyon.Blazor.Utility.Attributes
                 return;
             var routeData = context.HttpContext.GetRouteData();
             List<BreadcrumbModel> models = vr.ViewData[StringConstant.Breadcrumb] as List<BreadcrumbModel> ?? new List<BreadcrumbModel>();
-            if(!string.IsNullOrEmpty(_name))
+            if(!string.IsNullOrEmpty(name))
             {
-                models.Add(new BreadcrumbModel(_name,GetFullUrl(routeData),_bcUsageType));
+                models.Add(new BreadcrumbModel(name,GetFullUrl(routeData),bcUsageType));
             }
-            else if(!string.IsNullOrEmpty(_titleKey) && _resourceType is not null)
+            else if(!string.IsNullOrEmpty(titleKey) && resourceType is not null)
             {
                 throw new NotImplementedException();
             }
@@ -46,9 +46,9 @@ namespace Entegrasyon.Blazor.Utility.Attributes
 
         private string GetFullUrl(RouteData routeData)
         {
-            string controller = routeData.Values["controller"].ToString();
-            string action = _bcUsageType == BreadcrumbUsageType.Action
-                ? routeData.Values["action"].ToString()
+            string controller = routeData.Values["controller"]!.ToString()!;
+            string action = bcUsageType == BreadcrumbUsageType.Action
+                ? routeData.Values["action"]!.ToString()!
                 : string.Empty;
             return @$"/{controller}/{action}";
         }
