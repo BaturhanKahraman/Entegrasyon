@@ -12,7 +12,7 @@ COPY ["Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj", "Application/E
 COPY ["Application/Entegrasyon.Business/Entegrasyon.Business.csproj", "Application/Entegrasyon.Business/"]
 COPY ["Application/Entegrasyon.DataAccess/Entegrasyon.DataAccess.csproj", "Application/Entegrasyon.DataAccess/"]
 COPY ["Application/Entegrasyon.Entity/Entegrasyon.Entity.csproj", "Application/Entegrasyon.Entity/"]
-COPY ["Application/Entegrasyon.DependencyResolver/Entegrasyon.DependencyResolver.csproj", "Application/Entegrasyon.DependencyResolver/"]
+COPY ["Application/Entegrasyon.ApplicationBootstrap/Entegrasyon.ApplicationBootstrap.csproj", "Application/Entegrasyon.ApplicationBootstrap/"]
 COPY ["Application/Entegrasyon.MessageQueue/Entegrasyon.MessageQueue.Handler.csproj", "Application/Entegrasyon.MessageQueue/"]
 COPY ["Application/Entegrasyon.MessageQueue.Commands/Entegrasyon.MessageQueue.Commands.csproj", "Application/Entegrasyon.MessageQueue.Commands/"]
 COPY ["Shared/Shared/Shared.csproj", "Shared/Shared/"]

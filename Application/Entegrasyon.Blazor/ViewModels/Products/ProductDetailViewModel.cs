@@ -16,7 +16,7 @@ namespace Entegrasyon.Blazor.ViewModels.Products
     {
         [Display(Name = "Stoktaki Ürün")]
         public int ProductsInStock => TotalQuantity - TotalSoldQuantity;
-        IEnumerable<ProductVariantDetailDto> ProductVariantsDetails { get; set; }
-        IEnumerable<AttributeKeyValueDetailDto> AttributeKeyValueDetails { get; set; }
+        IEnumerable<ProductVariantDetailDto>? ProductVariantsDetails { get; set; }
+        IEnumerable<AttributeKeyValueDetailDto>? AttributeKeyValueDetails { get; set; }
     }
 }

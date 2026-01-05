@@ -111,7 +111,7 @@ public partial class Products
         );
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             await LoadProducts();
         }
@@ -146,7 +146,7 @@ public partial class Products
         );
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             await LoadProducts();
         }

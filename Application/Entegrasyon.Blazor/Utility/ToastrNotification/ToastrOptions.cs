@@ -6,9 +6,9 @@ public class ToastrOption
     public bool Debug { get; set; } = false;
     public bool NewestOnTop { get; set; } = false;
     public bool ProgressBar { get; set; } = false;
-    public string PositionClass { get; set; }
+    public string? PositionClass { get; set; }
     public bool PreventDuplicates { get; set; } = false;
-    public object Onclick { get; set; }
+    public object? Onclick { get; set; }
     public string ShowDuration { get; set; } = "300";
     public string HideDuration { get; set; }="1000";
     public string TimeOut { get; set; }="5000";

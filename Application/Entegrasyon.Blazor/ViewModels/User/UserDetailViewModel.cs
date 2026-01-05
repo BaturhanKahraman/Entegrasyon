@@ -9,16 +9,16 @@ public class UserDetailViewModel
     public Guid Id { get; set; }
 
     [Display(Name = "Kullanıcı Adı")]
-    public string UserName { get; set; }
+    public string? UserName { get; set; }
 
     [Display(Name = "E-posta Adresi")]
-    public string Email { get; set; }
-    
+    public string? Email { get; set; }
+
     [Display(Name = "İsim")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [Display(Name = "Soyisim")]
-    public string Surname { get; set; }
+    public string? Surname { get; set; }
 
     [Display(Name = "Kayıt Tarihi")]
     public DateTimeOffset CreatedAt { get; set; }
@@ -31,8 +31,8 @@ public class UserDetailViewModel
     public bool IsActive { get; set; }
 
     [Display(Name = "Ofis/Depo")]
-    public string BranchOfficeName { get; set; }
-    
+    public string? BranchOfficeName { get; set; }
+
     [Display(Name = "Rol")]
-    public string RoleName { get; set; }
+    public string? RoleName { get; set; }
 }

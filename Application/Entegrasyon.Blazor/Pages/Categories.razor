@@ -18,6 +18,7 @@
 <MudGrid>
     <MudItem xs="12" md="5">
         <CategoryTreePanel TreeItems="@GetTreeItemsForView()"
+                          AllCategories="@_categories"
                           Loading="@_loading"
                           SearchString="@_searchString"
                           CategorySelected="@(EventCallback.Factory.Create<Category>(this, OnCategorySelected))"
@@ -38,7 +39,6 @@
 @code {
     #nullable enable
     private List<Category> _categories = new();
-    private List<CategoryTreeItem> _treeItems = new();
     private Category? _selectedCategory;
     private bool _loading = true;
     private string _searchString = string.Empty;
@@ -60,7 +60,6 @@
                 // CategoryDetailDto'dan Category'ye dönüştürme işlemi için
                 // Ayrı bir query kullanıyoruz
                 _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
-                BuildCategoryTree();
             }
             else
             {
@@ -75,26 +74,6 @@
         {
             _loading = false;
         }
-    }
-
-    private void BuildCategoryTree()
-    {
-        var rootCategories = _categories.Where(c => !c.SuperCategoryId.HasValue).ToList();
-        _treeItems = rootCategories.Select(c => BuildTreeItem(c)).ToList();
-    }
-
-    private CategoryTreeItem BuildTreeItem(Category category)
-    {
-        var item = new CategoryTreeItem
-        {
-            Category = category,
-            IsExpanded = false
-        };
-
-        var children = _categories.Where(c => c.SuperCategoryId == category.Id).ToList();
-        item.Children = children.Select(c => BuildTreeItem(c)).ToList();
-
-        return item;
     }
 
     private void OnCategorySelected(Category item)
@@ -197,22 +176,6 @@
         }
     }
 
-    private string GetCategoryIcon(CategoryTreeItem item)
-    {
-        if (item.Children.Any())
-            return item.IsExpanded ? Icons.Material.Filled.Folder : Icons.Material.Filled.Folder;
-        return Icons.Material.Filled.Category;
-    }
-
-    private Color GetCategoryIconColor(CategoryTreeItem item)
-    {
-        if (item.Category.IsFavorite)
-            return Color.Warning;
-        if (item.Category.IsImported)
-            return Color.Info;
-        return item.Children.Any() ? Color.Primary : Color.Default;
-    }
-
     private string GetParentCategoryName(int parentId)
     {
         return _categories.FirstOrDefault(c => c.Id == parentId)?.Name ?? "N/A";
@@ -226,12 +189,5 @@
     private List<Category> GetTreeItemsForView()
     {
         return _categories.Where(c => c.SuperCategoryId == null).ToList();
-    }
-
-    private class CategoryTreeItem
-    {
-        public Category Category { get; set; } = null!;
-        public List<CategoryTreeItem> Children { get; set; } = new();
-        public bool IsExpanded { get; set; }
     }
 }

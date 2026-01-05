@@ -27,112 +27,16 @@
     }
     else
     {
-        <div style="flex: 1; overflow-y: auto;">
-            <MudTreeView T="CategoryTreeNode"
-                         Items="@FilteredItems"
-                         @bind-SelectedValues="SelectedNodesInternal"
-                         SelectionMode="SelectionMode.MultiSelection"
-                         CheckBoxColor="Color.Primary"
-                         ExpandOnClick="true"
-                         Hover="true">
-                <ItemTemplate>
-                    <MudTreeViewItem @bind-Expanded="@context.Expanded"
-                                     Items="@context.Children"
-                                     Value="@context.Value"
-                                     Icon="@(context.Value.HasChildren ? Icons.Material.Filled.Folder : Icons.Material.Filled.Category)"
-                                     Text="@context.Value.Name"
-                                     EndText="@(context.Value.HasChildren ? context.Value.Children.Count.ToString() : null)"
-                                     EndTextTypo="@Typo.caption" />
-                </ItemTemplate>
-            </MudTreeView>
+        <div style="overflow-y: auto;">
+            <MudVirtualize Items="@VisibleNodes" Context="node" ItemSize="48" OverscanCount="5">
+                <CategoryTreeNodeTemplate Node="node"
+                                        Level="node.Level"
+                                        OnToggle="ToggleNode"
+                                        OnSelect="SelectNode"
+                                        IsSelected="GetSelectionState(node.Node)"
+                                        IsIndeterminate="GetIndeterminateState(node.Node)" />
+            </MudVirtualize>
         </div>
     }
 </MudPaper>
 
-@code {
-    [Parameter]
-    public List<CategoryTreeNode> Categories { get; set; } = new();
-
-    [Parameter]
-    public IReadOnlyCollection<CategoryTreeNode>? SelectedNodes { get; set; }
-
-    [Parameter]
-    public EventCallback<IReadOnlyCollection<CategoryTreeNode>?> SelectedNodesChanged { get; set; }
-
-    [Parameter]
-    public bool Loading { get; set; }
-
-    [Parameter]
-    public string SearchQuery { get; set; } = string.Empty;
-
-    [Parameter]
-    public EventCallback<string> SearchQueryChanged { get; set; }
-
-    private IReadOnlyCollection<TreeItemData<CategoryTreeNode>> FilteredItems { get; set; } =
-        new List<TreeItemData<CategoryTreeNode>>();
-
-    private IReadOnlyCollection<CategoryTreeNode>? SelectedNodesInternal
-    {
-        get => SelectedNodes;
-        set
-        {
-            if (!Equals(SelectedNodes, value))
-            {
-                SelectedNodesChanged.InvokeAsync(value);
-            }
-        }
-    }
-
-    private readonly Dictionary<string, TreeItemData<CategoryTreeNode>> _treeItemCache = new();
-
-    protected override void OnParametersSet()
-    {
-        UpdateFilteredItems();
-    }
-
-    private async Task OnSearchChanged()
-    {
-        await SearchQueryChanged.InvokeAsync(SearchQuery);
-        UpdateFilteredItems();
-    }
-
-    private void UpdateFilteredItems()
-    {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            FilteredItems = Categories.Select(ConvertToTreeItemData).ToList();
-        }
-        else
-        {
-            var filtered = Categories.Where(c => MatchesSearch(c, SearchQuery)).ToList();
-            FilteredItems = filtered.Select(ConvertToTreeItemData).ToList();
-        }
-    }
-
-    private bool MatchesSearch(CategoryTreeNode node, string query)
-    {
-        if (node.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        return node.Children.Any(c => MatchesSearch(c, query));
-    }
-
-    private TreeItemData<CategoryTreeNode> ConvertToTreeItemData(CategoryTreeNode node)
-    {
-        if (_treeItemCache.TryGetValue(node.ExternalId, out var cached))
-        {
-            return cached;
-        }
-
-        var treeItem = new TreeItemData<CategoryTreeNode>
-        {
-            Value = node,
-            Children = node.Children.Select(ConvertToTreeItemData).ToList(),
-            Expandable = node.HasChildren,
-            Expanded = node.IsExpanded
-        };
-
-        _treeItemCache[node.ExternalId] = treeItem;
-        return treeItem;
-    }
-}

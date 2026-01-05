@@ -1,2 +1,19 @@
+@using Microsoft.AspNetCore.Components.Web
+
+@inherits ComponentBase
+
 @* Blazor Server automatic reconnection UI is hidden by default in blazor-error-ui (see _Host.cshtml) *@
-@* This component is kept for future custom reconnection logic if needed *@
+@* This component provides custom reconnection logic *@
+
+<ReconnectionHandler>
+    <Reconnecting>
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText>Yeniden bağlanıyor...</MudText>
+    </Reconnecting>
+    <Reconnected>
+        <MudText>Yeniden bağlandı!</MudText>
+    </Reconnected>
+    <ReconnectFailed>
+        <MudText>Yeniden bağlanma başarısız. Lütfen sayfayı yenileyin.</MudText>
+    </ReconnectFailed>
+</ReconnectionHandler>

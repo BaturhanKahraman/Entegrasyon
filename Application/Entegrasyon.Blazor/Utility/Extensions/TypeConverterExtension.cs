@@ -12,7 +12,7 @@ public static class TypeConverterExtension
     public static TagifyValue ToTagifyValue(this CategoryAttributeValueViewModel vm)
         => new TagifyValue(vm.Id ?? 0, vm.Name);
     public static List<TagifyValue> ToTagifyValue(this List<CategoryAttributeValueViewModel> vm)
-       => vm.Select(v=>v?.ToTagifyValue()).ToList();
+       => vm.Select(v=>v?.ToTagifyValue()).ToList()!;
     public static JsTreeViewModel ToJsTree(this ImportedTrendyolCategory cat)
         => new()
         {
@@ -21,7 +21,7 @@ public static class TypeConverterExtension
             Children=cat.SubCategories.Select(sc=>sc.ToJsTree()).ToArray()
         };
     public static IEnumerable<JsTreeViewModel> ToJsTreeList(this IEnumerable<ImportedTrendyolCategory> catList)
-        => catList.Select(c => c?.ToJsTree());
+        => catList.Select(c => c?.ToJsTree())!;
 
     public static TrendyolSelectedCategory ToTrendyolSelectedCategory(this TrendyolImportViewModel model)
     {
