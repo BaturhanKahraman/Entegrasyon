@@ -59,31 +59,18 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {
-            // Tüm import edilecek kategorilerin ID'lerini topla
-            var allCategoryIds = new HashSet<long>();
-            CollectCategoryIds(rootCategories, allCategoryIds);
-
-            // Var olan kategorileri tek sorguda çek
-            var existingCategories = await _dbContext.Categories
-                .AsTracking()
-                .Include(c => c.CategoryAttributes)
-                .Where(c => c.ImportId.HasValue && allCategoryIds.Contains((long)c.ImportId.Value))
-                .ToDictionaryAsync(c => (long)c.ImportId!.Value, c => c);
-
             var leafCategories = new List<Category>();
 
             foreach (var trendyolSelectedCategory in rootCategories)
             {
-                await AddDb(trendyolSelectedCategory, null, leafCategories, existingCategories);
+                await AddDb(trendyolSelectedCategory, null, leafCategories);
             }
 
             await _dbContext.SaveChangesAsync();
 
-            // Attributes'ları sırayla çek (paralel DbContext sorununu önlemek için)
-            foreach (var category in leafCategories)
-            {
-                await AddAttributesForCategory(category, true);
-            }
+            // Paralel olarak attributes çek ve ekle
+            var attributeTasks = leafCategories.Select(category => AddAttributesForCategory(category, true)).ToList();
+            await Task.WhenAll(attributeTasks);
 
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -101,21 +88,22 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
         }
     }
 
-    private void CollectCategoryIds(IReadOnlyCollection<TrendyolSelectedCategory> categories, HashSet<long> ids)
+    private async Task AddDb(TrendyolSelectedCategory importObj, Category superCategory, List<Category> leafCategories)
     {
-        foreach (var category in categories)
+        var category = await _dbContext
+            .Categories
+            .AsTracking()
+            .Include(c => c.CategoryAttributes)
+            .FirstOrDefaultAsync(c => c.ImportId.Value == importObj.Id); //toplu çekilebilir
+        bool isNew = false;
+        if (category != null)
         {
-            ids.Add(category.Id);
-            if (category.SubCategories.Any())
-            {
-                CollectCategoryIds(category.SubCategories, ids);
-            }
+            category.Name = importObj.Name;
+            category.ImportId = importObj.Id;
+            category.IsImported = true;
+            category.SuperCategory = superCategory;
         }
-    }
-
-    private async Task AddDb(TrendyolSelectedCategory importObj, Category superCategory, List<Category> leafCategories, Dictionary<long, Category> existingCategories)
-    {
-        if (!existingCategories.TryGetValue(importObj.Id, out var category))
+        else
         {
             category = new Category
             {
@@ -125,26 +113,18 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
                 SuperCategory = superCategory
             };
             await AddTrendyolCategoryMatch(category);
+            isNew = true;
             await _dbContext.Categories.AddAsync(category);
-            existingCategories[importObj.Id] = category; // Cache'e ekle
-        }
-        else
-        {
-            // Var olan kategoriyi güncelle
-            category.Name = importObj.Name;
-            category.ImportId = importObj.Id;
-            category.IsImported = true;
-            category.SuperCategory = superCategory;
         }
 
         if (!importObj.IsParent)
         {
-            leafCategories.Add(category);
+            if (isNew) leafCategories.Add(category);
             return;
         }
 
         foreach (var sc in importObj.SubCategories)
-            await AddDb(sc, category, leafCategories, existingCategories);
+            await AddDb(sc, category, leafCategories);
     }
 
     private async Task AddTrendyolCategoryMatch(Category category)
@@ -167,20 +147,11 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
         if (trendyolCategory == null || !trendyolCategory.categoryAttributes.Any())
             return;
 
-        // Tüm attribute ID'lerini topla
-        var attributeIds = trendyolCategory.categoryAttributes.Select(ca => (long)ca.Attribute.Id).ToHashSet();
-
-        // Var olan attributes'ları tek sorguda çek
-        var existingAttributes = await _dbContext.CategoryAttributes
-            .AsTracking()
-            .Where(ca => attributeIds.Contains((long)ca.ImportId))
-            .ToDictionaryAsync(ca => (long)ca.ImportId, ca => ca);
-
         List<CategoryAttributeCategory> categoryAttributes = new();
 
         foreach (var categoryAttribute in trendyolCategory.categoryAttributes)
         {
-            var dbCatAttr = await AddAttributes(categoryAttribute, _trendyolMarketPlace, existingAttributes);
+            var dbCatAttr = await AddAttributes(categoryAttribute, _trendyolMarketPlace);
             if (!await _dbContext.CategoryAttributes.AnyAsync(x => x.ImportId == dbCatAttr.ImportId) && !_savedCategoryAttributes.Contains(dbCatAttr))
             {
                 foreach (var categoryAttributeAttributeValue in categoryAttribute.AttributeValues)
@@ -218,29 +189,26 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
             await _dbContext.CategoryAttributeValueMarketPlaceMatches.AddAsync(dbCatAttrValueMp);
         }
 
-        async Task<CategoryAttribute> AddAttributes(TrendyolCategoryAttribute categoryAttribute, MarketPlace marketPlace, Dictionary<long, CategoryAttribute> existingAttrs)
+        async Task<CategoryAttribute> AddAttributes(TrendyolCategoryAttribute categoryAttribute, MarketPlace marketPlace)
         {
-            if (!existingAttrs.TryGetValue(categoryAttribute.Attribute.Id, out var dbCatAttr))
-            {
-                dbCatAttr = _savedCategoryAttributes.FirstOrDefault(x => x.ImportId == (int)categoryAttribute.Attribute.Id) ?? new CategoryAttribute
+            var dbCatAttr = (await _dbContext.CategoryAttributes.FirstOrDefaultAsync(x =>
+                x.ImportId == categoryAttribute.Attribute.Id) ?? _savedCategoryAttributes.FirstOrDefault(x =>
+                x.ImportId == categoryAttribute.Attribute.Id)) ?? new CategoryAttribute
                 {
                     CategoryAttributeKey = categoryAttribute.Attribute.Name,
                     CategoryAttributeHumanized = categoryAttribute.Attribute.Name,
-                    ImportId = (int)categoryAttribute.Attribute.Id,
+                    ImportId = categoryAttribute.Attribute.Id,
                     AllowCustom = categoryAttribute.AllowCustom,
                     CategoryAttributeValues = new List<CategoryAttributeValue>()
                 };
-                existingAttrs[categoryAttribute.Attribute.Id] = dbCatAttr;
-            }
-
             if (!await _dbContext.CategoryAttributes.AnyAsync(x =>
-                    x.ImportId == (int)categoryAttribute.Attribute.Id) && !_savedCategoryAttributes.Contains(dbCatAttr))
+                    x.ImportId == categoryAttribute.Attribute.Id) && !_savedCategoryAttributes.Contains(dbCatAttr))
             {
                 var dbCatAttrMarketPlaceMatch = new CategoryAttributeMarketPlaceMatch()
                 {
                     MarketPlace = marketPlace,
                     ApplicationCategoryAttribute = dbCatAttr,
-                    MarketPlaceCategoryAttributeId = (int)categoryAttribute.Attribute.Id
+                    MarketPlaceCategoryAttributeId = categoryAttribute.Attribute.Id
                 };
                 await _dbContext.CategoryAttributeMarketPlaceMatches.AddAsync(dbCatAttrMarketPlaceMatch);
             }
