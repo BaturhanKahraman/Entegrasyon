@@ -105,14 +105,17 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
 
     private async Task SendNotificationAsync(INotificationManager notificationManager, string header, string content, IEnumerable<Guid> userIds)
     {
+        // Notification'ı Users collection'ı boş şekilde oluştur
+        // (Users'ları kurgulamak veritabanında olmayan user referans'larına neden oluyor)
         var notification = new Notification
         {
             Header = header,
             Content = content,
-            Users = userIds.Distinct().Select(id => new ApplicationUser { Id = id }).ToList(),
+            Users = new List<ApplicationUser>(), // Boş - SignalR için kullanıcılara bildirim gönderilen sırada handle ediliyor
             CreatedAt = DateTimeOffset.UtcNow
         };
 
+        // Notification'ı kaydet (Users collection boş olduğu için no foreign key issues)
         await notificationManager.SendNotification(notification, new[] { SenderType.RealTime });
     }
 }
