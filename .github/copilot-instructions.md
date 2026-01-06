@@ -230,8 +230,8 @@ http://localhost:7070
 ### Naming & Style
 - **PascalCase**: Classes, methods, public properties
 - **camelCase**: Private fields (`_fieldName`), local variables
-- **Interfaces**: Prefix with `I` (e.g., `IProductDal`)
-- **Managers**: Business logic classes end with `Manager` (e.g., `ProductManager`)
+- **Interfaces**: Prefix with `I` (e.g., `IProductDal`, `IProductManager`)
+- **Managers**: Business logic classes end with `Manager` and implement `IManager` interfaces (e.g., `ProductManager : IProductManager`)
 - **DAL**: Data access layer interfaces end with `Dal`
 
 ### File Organization

@@ -18,7 +18,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ProductManager
+public class ProductManager : IProductManager
 {
     private readonly IMainProductDal _productDal;
     private readonly IApplicationLogManager _applicationLogManager;
@@ -153,6 +153,6 @@ public class ProductManager
         return new SuccessDataResult<ProductEditDetailDto>(productEditDto);
     }
 
-    public Task<int> GetProductCountByCategoryId(int categoryId) => 
+    public Task<int> GetProductCountByCategoryId(int categoryId) =>
          _productDal.Table.CountAsync(p => p.CategoryId == categoryId);
 }

@@ -12,7 +12,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public sealed class SaleManager
+public sealed class SaleManager : ISaleManager
 {
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
@@ -35,8 +35,8 @@ public sealed class SaleManager
         //business logic control
         //mapper koy
         var sale = _mapper.Map<Sale>(dto);
-        
-        var decreaseStockResult = await _officeStockManager.DecreaseProductsStock(dto.SaleItems.Select(x => 
+
+        var decreaseStockResult = await _officeStockManager.DecreaseProductsStock(dto.SaleItems.Select(x =>
             new DecreaseStockDto(x.ProductVariantId,dto.BranchOfficeId,x.Quantity)).ToList());
         if (!decreaseStockResult.Success)
         {
@@ -71,6 +71,6 @@ public sealed class SaleManager
             ), orderBy,expression);
         return new SuccessDataResult<Pageable<SaleListDetailDto>>(result);
     }
-    
-    
+
+
 }

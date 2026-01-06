@@ -2,10 +2,11 @@
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Products;
 using Shared.Results;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class AttributeKeyValueManager
+public class AttributeKeyValueManager : IAttributeKeyValueManager
 {
     private readonly IAttributeKeyValueDal _attributeKeyValueDal;
 

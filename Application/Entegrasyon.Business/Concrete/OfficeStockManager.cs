@@ -5,10 +5,11 @@ using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
 using Shared.Logic;
 using Shared.Results;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class OfficeStockManager
+public class OfficeStockManager : IOfficeStockManager
 {
     private readonly IBranchOfficeStockDal _branchOfficeStockDal;
     private readonly BranchOfficeManager _branchOfficeManager;

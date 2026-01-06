@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
     <ProjectReference Include="..\Entegrasyon.MessageQueue.Commands\Entegrasyon.MessageQueue.Commands.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

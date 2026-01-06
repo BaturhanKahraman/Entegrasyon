@@ -1,0 +1,9 @@
+/* NotificationList.razor.css */
+
+.notification-item {
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: var(--mud-palette-surface-variant);
+}

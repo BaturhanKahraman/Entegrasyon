@@ -6,10 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Logic;
 using Shared.Results;
 using System.Collections.Immutable;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeCategoryManager
+public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManager
 {
     private readonly IntegrationDbContext _ctx;
     public CategoryAttributeCategoryManager(IntegrationDbContext ctx)

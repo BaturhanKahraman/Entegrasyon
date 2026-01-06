@@ -1,13 +1,13 @@
 version: '3.4'
 
 services:
-  entegrasyon.blazor:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      # Port configuration moved to main docker-compose.yml
-      #- ASPNETCORE_URLS=http://+:80
-      #- ASPNETCORE_URLS=https://+:443;http://+:80
-    #ports:
-    #  - "8080:80"
-    #  - "44444:443"
-    # Windows-specific volumes removed for Linux/Fedora compatibility
+  # entegrasyon.blazor:
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     # Port configuration moved to main docker-compose.yml
+  #     #- ASPNETCORE_URLS=http://+:80
+  #     #- ASPNETCORE_URLS=https://+:443;http://+:80
+  #   #ports:
+  #   #  - "8080:80"
+  #   #  - "44444:443"
+  #   # Windows-specific volumes removed for Linux/Fedora compatibility

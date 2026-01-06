@@ -14,7 +14,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandManager
+public class BrandManager : IBrandManager
 {
     private readonly IBrandDal _brandDal;
     private readonly IFluentValidator _validator;
@@ -78,7 +78,7 @@ public class BrandManager
     }
     public async Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(GetCategoryDetailsPageDto dto)
     {
-        Expression<Func<Brand,bool>> expr = 
+        Expression<Func<Brand,bool>> expr =
             !string.IsNullOrEmpty(dto.CategoryName)
                 ? x => EF.Functions.ILike(x.Name,@$"%{dto.CategoryName}%")
                 :null;

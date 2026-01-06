@@ -7,7 +7,7 @@
 
 //namespace Entegrasyon.Business.Concrete;
 
-//public class ImageManager
+//public class ImageManager : IImageManager
 //{
 //    private readonly IImageDal _imageDal;
 
@@ -15,7 +15,7 @@
 //    {
 //        _imageDal = imageDal;
 //    }
-    
+
 //    public async Task<IResult> AddProductImages(AddProductDto dto,Product addedProduct)
 //    {
 //        var images = new List<Image>();
