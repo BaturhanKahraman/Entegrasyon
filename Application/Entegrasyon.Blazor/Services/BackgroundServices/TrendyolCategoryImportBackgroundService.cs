@@ -109,7 +109,7 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
         {
             Header = header,
             Content = content,
-            Users = userIds.Select(id => new ApplicationUser { Id = id }).ToList(),
+            Users = userIds.Distinct().Select(id => new ApplicationUser { Id = id }).ToList(),
             CreatedAt = DateTimeOffset.UtcNow
         };
 
