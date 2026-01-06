@@ -14,7 +14,7 @@ using MapsterMapper;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,IFluentValidator fluentValidator,ProductManager productManager)
+    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,IFluentValidator fluentValidator,ProductManager productManager) : ICategoryManager
     {
         private readonly ICategoryDal _categoryDal = categoryDal;
         private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;

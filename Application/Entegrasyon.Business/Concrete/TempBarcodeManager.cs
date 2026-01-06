@@ -2,10 +2,11 @@
 using Entegrasyon.DataAccess.Abstract;
 using Entegrasyon.Entity.Barcode;
 using Shared.Results;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class TempBarcodeManager
+public class TempBarcodeManager : ITempBarcodeManager
 {
     private readonly ITempBarcodeDal _tempBarcodeDal;
     private readonly ProductVariantManager _productVariantManager;

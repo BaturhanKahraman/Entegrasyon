@@ -24,7 +24,7 @@ public class ApplicationUserManager(
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
     IFluentValidator validator,
     IntegrationDbContext context,
-    ILogger<ApplicationUserManager> logger)
+    ILogger<ApplicationUserManager> logger) : IApplicationUserManager
 {
     public async Task<IResult> AddUser(AddUserDto dto, CancellationToken token = default)
     {
@@ -105,7 +105,7 @@ public class ApplicationUserManager(
         return new SuccessDataResult<UserDetailDto>(result);
     }
 
-    public async ValueTask<IDataResult<UserDetailDto>> GetUserDetails(string id)
+    public async Task<IDataResult<UserDetailDto>> GetUserDetails(string id)
     {
         var convertable = Guid.TryParse(id, out var guidId);
         if (!convertable)

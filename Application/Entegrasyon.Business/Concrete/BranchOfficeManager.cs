@@ -12,7 +12,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BranchOfficeManager
+public class BranchOfficeManager : IBranchOfficeManager
 {
     private readonly IBranchOfficeDal _branchOfficeDal;
     private readonly IFluentValidator _validator;

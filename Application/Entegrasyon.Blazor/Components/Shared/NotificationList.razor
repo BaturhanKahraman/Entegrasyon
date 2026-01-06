@@ -1,0 +1,44 @@
+@using Entegrasyon.Entity.Notifications
+
+<MudPaper Class="pa-4" Elevation="1">
+    <MudText Typo="Typo.h6" Class="mb-4">Bildirimler</MudText>
+
+    @if (_notifications.Any())
+    {
+        <MudList T="Notification">
+            @foreach (var notification in _notifications)
+            {
+                <MudListItem T="Notification">
+                    <div class="d-flex align-center">
+                        @if (!notification.IsRead)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Primary" Class="mr-2" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Default" Class="mr-2" />
+                        }
+                        <div class="flex-grow-1">
+                            <MudText Typo="Typo.body2" Class="font-weight-medium">@notification.Header</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@notification.Content</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@notification.CreatedAt.ToLocalTime().ToString("g")</MudText>
+                        </div>
+                        @if (!notification.IsRead)
+                        {
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" OnClick="() => MarkAsRead(notification.Id)">
+                                Okundu
+                            </MudButton>
+                        }
+                    </div>
+                </MudListItem>
+                <MudDivider />
+            }
+        </MudList>
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+            Henüz bildirim yok.
+        </MudText>
+    }
+</MudPaper>

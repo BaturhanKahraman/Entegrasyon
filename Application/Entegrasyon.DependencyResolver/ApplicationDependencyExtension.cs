@@ -55,27 +55,28 @@ namespace Entegrasyon.ApplicationBootstrap
 
             services.AddScoped<BranchOfficeManager>();
             services.AddScoped<IRoleService,RoleService>();
-            services.AddScoped<BrandManager>();
-            services.AddScoped<CategoryManager>();
+            services.AddScoped<IBrandManager, BrandManager>();
+            services.AddScoped<ICategoryManager, CategoryManager>();
             services.AddScoped<IApplicationLogManager,ApplicationLogManager>();
-            services.AddScoped<CategoryAttributeManager>();
+            services.AddScoped<ICategoryAttributeManager, CategoryAttributeManager>();
             services.AddScoped<ApplicationUserManager>();
             services.AddScoped<IAuthService,AuthService>();
-            services.AddScoped<CargoCompaniesManager>();
-            services.AddScoped<CustomerManager>();
-            services.AddScoped<ProductManager>();
+            services.AddScoped<ICargoCompaniesManager, CargoCompaniesManager>();
+            services.AddScoped<ICustomerManager, CustomerManager>();
+            services.AddScoped<IProductManager, ProductManager>();
             services.AddScoped<OfficeStockManager>();
             services.AddScoped<ProductVariantManager>();
             //services.AddScoped<ImageManager>();
             services.AddScoped<DiscountVoucherManager>();
             services.AddScoped<AttributeKeyValueManager>();
-            services.AddScoped<SaleManager>();
+            services.AddScoped<ISaleManager, SaleManager>();
             services.AddScoped<ITrendyolCategoryImportService,TrendyolCategoryImporterService>();
             services.AddScoped<ITrendyolBrandImporterService,TrendyolBrandImporterService>();
             services.AddScoped<TempBarcodeManager>();
             services.AddScoped<BrandMatchService>();
             services.AddScoped<CategoryAttributeCategoryManager>();
             services.AddScoped<CategoryAttributeValueManager>();
+            services.AddScoped<INotificationManager, NotificationManager>();
 
 
 

@@ -12,7 +12,7 @@ using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class DiscountVoucherManager
+public class DiscountVoucherManager : IDiscountVoucherManager
 {
     private readonly IDiscountVoucherDal _discountVoucherDal;
     private readonly IApplicationLogManager _applicationLogManager;
@@ -39,8 +39,8 @@ public class DiscountVoucherManager
             LogAction.Add,
             dto);
         await _fluentValidator.ValidateAndThrowAsync(dto);
-        //bl 
-        
+        //bl
+
         var discountVoucher = new DiscountVoucher
             { Amount = dto.Amount, ExpiringDate = dto.ExpiringDay, CustomerId = dto.CustomerId };
         string code = _randomGenerator.GetRandomCode(CodeLength, true, true, false);
@@ -82,7 +82,7 @@ public class DiscountVoucherManager
             new("CreatedAt", "desc")
         };
         Expression<Func<DiscountVoucher, bool>> expression = !string.IsNullOrEmpty(searchParam)
-            ? x => 
+            ? x =>
                 string.Equals(x.Code, searchParam) || x.Customer.FullName.Contains(searchParam)
             : null;
 

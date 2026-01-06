@@ -8,7 +8,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplicationLogManager applicationLogManager,IFluentValidator fluentValidator,IMapper mapper,CategoryManager categoryManager)
+public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplicationLogManager applicationLogManager,IFluentValidator fluentValidator,IMapper mapper,CategoryManager categoryManager) : ICategoryAttributeManager
 {
     private readonly ICategoryAttributeDal _attributeDal = attributeDal;
     private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;

@@ -14,6 +14,9 @@ public static class ChannelExtensions
         services.AddSingleton<EventChannel<CategoryUpdatedEvent>>();
         services.AddSingleton<EventChannel<OrderCreatedEvent>>();
         services.AddSingleton<EventChannel<MarketplaceSyncEvent>>();
+        services.AddSingleton<EventChannel<NotificationEvent>>();
+        services.AddSingleton<EventChannel<CategoryImportRequestedEvent>>();
+        services.AddSingleton<EventChannel<CategoryImportCompletedEvent>>();
 
         return services;
     }

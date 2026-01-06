@@ -1,10 +1,11 @@
 ﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public sealed class CategoryAttributeValueManager
+public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManager
 {
     private readonly IntegrationDbContext _ctx;
     public CategoryAttributeValueManager(IntegrationDbContext ctx)

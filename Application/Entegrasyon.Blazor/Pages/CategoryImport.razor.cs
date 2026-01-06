@@ -1,8 +1,10 @@
+using Entegrasyon.Blazor.Services.Channels;
 using Entegrasyon.Blazor.Services.Channels.Events;
 using Entegrasyon.Blazor.ViewModels;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Import;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using Shared.Results;
 
@@ -21,6 +23,15 @@ public partial class CategoryImport
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = null!;
+
+    [Inject]
+    private EventChannel<CategoryImportRequestedEvent> ImportRequestedChannel { get; set; } = null!;
+
+    [Inject]
+    private EventChannel<CategoryImportCompletedEvent> ImportCompletedChannel { get; set; } = null!;
+
+    [Inject]
+    private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
      private List<CategoryTreeNode> categories = new();
     private IReadOnlyCollection<CategoryTreeNode>? selectedNodes;
@@ -91,24 +102,33 @@ public partial class CategoryImport
         importing = true;
         try
         {
-            var importRequests = selectedNodes!.Select(MapToImportRequest).ToList();
-            var result = await TrendyolImporter.ImportCategoriesAsync(importRequests);
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-        if (result.Success && selectedNodes != null)
-        {
-            Snackbar.Add($"{selectedNodes.Count} kategori başarıyla içe aktarıldı.", Severity.Success);
-            //this should go to a better place later
-            //await categoryEventChannel.PublishAsync(new CategoryUpdatedEvent(0, "Imported"));
+            if (!user.Identity?.IsAuthenticated == true)
+            {
+                Snackbar.Add("Kullanıcı girişi gerekli.", Severity.Error);
+                return;
+            }
+
+            // Mock user ID for now
+            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+            var importRequests = selectedNodes!.Select(MapToImportRequest).ToList();
+
+            // Publish import request event
+            var importEvent = new CategoryImportRequestedEvent("Trendyol", importRequests, userId);
+            await ImportRequestedChannel.PublishAsync(importEvent);
+
+            Snackbar.Add("Kategori içe aktarma işlemi başlatıldı. Tamamlandığında bildirim alacaksınız.", Severity.Info);
+
+            // Clear selection and navigate
+            selectedNodes = null;
             NavigationManager.NavigateTo("/categories");
-        }
-        else
-        {
-            Snackbar.Add("Seçilen kategoriler boş veya null.", Severity.Warning);
-        }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Category import failed");
+            Logger.LogError(ex, "Category import request failed");
             Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
         }
         finally

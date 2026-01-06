@@ -9,7 +9,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ProductVariantManager
+public class ProductVariantManager : IProductVariantManager
 {
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IProductVariantDal _productVariantDal;
@@ -63,7 +63,7 @@ public class ProductVariantManager
             x.Product.Category.Name
         ),orderTuple,
             x => x.BranchOfficeStocks.Sum(stck=>stck.CurrentStock)>0 &&
-                 (x.Product.SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery())) 
+                 (x.Product.SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
                   || string.Equals(x.Barcode,fullTextSearch)
                   )
             );

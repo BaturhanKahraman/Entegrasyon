@@ -12,7 +12,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CargoCompaniesManager
+public class CargoCompaniesManager : ICargoCompaniesManager
 {
     private readonly ICargoCompanyDal _cargoDal;
     private readonly IFluentValidator _validator;
@@ -38,7 +38,7 @@ public class CargoCompaniesManager
             .WhereIf(!string.IsNullOrEmpty(cargoCompanySearchParam),x=>x.SearchVector.Matches(cargoCompanySearchParam.ToFullTextSearchQuery()))
             .ToListAsync();
         return new SuccessDataResult<List<CargoCompany>>(result);
-    } 
+    }
 
     public async Task<IResult> AddCargoCompany(AddCargoCompanyDto cargoCompanyDto)
     {

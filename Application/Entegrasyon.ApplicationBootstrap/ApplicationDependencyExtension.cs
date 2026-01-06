@@ -77,7 +77,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<BrandMatchService>();
             services.AddScoped<CategoryAttributeCategoryManager>();
             services.AddScoped<CategoryAttributeValueManager>();
-            
+            services.AddScoped<INotificationManager, NotificationManager>();
+
             // Yeni Import Servisleri
             services.AddScoped<TrendyolCategoryImporter>();
 
@@ -89,7 +90,7 @@ namespace Entegrasyon.ApplicationBootstrap
         }
         public static IServiceCollection AddClients(this IServiceCollection services)
         {
-        
+
             services.AddHttpClient(StringConstants.TrendyolApi, x =>
             {
                 x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/");
@@ -98,10 +99,10 @@ namespace Entegrasyon.ApplicationBootstrap
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("Main") 
+            var connectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection")
                 ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;";
-            
+
             services.AddDbContext<IntegrationDbContext>(x =>
             {
                 x.UseNpgsql(connectionString);
@@ -117,7 +118,7 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             //services.AddHostedService<TrendyolCategoryImportListener>();
             //services.AddHostedService<TrendyolBrandImportListener>();
-            
+
             services.AddHostedService<TempBarcodeBackgroundService>();
             return services;
         }

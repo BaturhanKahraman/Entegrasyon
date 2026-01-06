@@ -1,0 +1,18 @@
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Branches;
+using Shared.Entity;
+using Shared.Results;
+
+namespace Entegrasyon.Business.Abstract;
+
+public interface IBranchOfficeManager
+{
+    Task<IDataResult<List<BranchOffice>>> GetBranchList(CancellationToken token = default);
+    Task<IDataResult<BranchOffice>> AddBranch(BranchOfficeAddDto officeDto);
+    Task<IDataResult<BranchDetailDto>> GetBranchDetailById(int branchId);
+    Task<IDataResult<BranchOffice>> Update(BranchOfficeEditDto dto);
+    Task<IResult> Delete(int id);
+    Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds);
+    Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(int pageIndex = 0, int pageSize = 50);
+    Task<BranchOffice> GetBranchById(int id);
+}

@@ -1,10 +1,11 @@
 ﻿using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ApplicationLifetimeManager
+public class ApplicationLifetimeManager : IApplicationLifetimeManager
 {
     private readonly IntegrationDbContext _context;
     private readonly ILogger<ApplicationLifetimeManager> _logger;

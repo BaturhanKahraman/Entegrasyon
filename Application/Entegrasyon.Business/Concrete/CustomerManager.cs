@@ -16,7 +16,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CustomerManager
+public class CustomerManager : ICustomerManager
 {
     private readonly ICustomerDal _customerDal;
     private readonly IUnitOfWork _unitOfWork;

@@ -5,6 +5,7 @@ using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services.Channels;
+using Entegrasyon.Blazor.Services;
 using Entegrasyon.Blazor.Services.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MudBlazor.Services;
@@ -36,6 +37,7 @@ builder.Services.AddEventChannels();
 // Add new background services that use Channels
 builder.Services.AddHostedService<ProductSyncBackgroundService>();
 builder.Services.AddHostedService<MarketplaceSyncBackgroundService>();
+builder.Services.AddHostedService<TrendyolCategoryImportBackgroundService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
 {
@@ -73,6 +75,9 @@ builder.Services.AddSignalRSettings();
 builder.Services.AddNotification();
 builder.Services.AddSingleton<IBlazorNotificationSender, BlazorNotificationSender>();
 builder.Services.AddSingleton<INotificationSender, BlazorNotificationSender>();
+
+// Register notification event publisher
+builder.Services.AddSingleton<NotificationEventPublisher>();
 
 var app = builder.Build();
 
