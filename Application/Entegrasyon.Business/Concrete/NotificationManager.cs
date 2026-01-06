@@ -14,19 +14,29 @@ public sealed class NotificationManager(IEnumerable<INotificationSender> notific
         await validator.ValidateAndThrowAsync(notification);
         notification.CreatedAt = DateTimeOffset.UtcNow;
 
+        // Duplicate Users'ları kaldır
+        if (notification.Users.Any())
+        {
+            notification.Users = notification.Users.DistinctBy(u => u.Id).ToList();
+        }
+
         await context.Notifications.AddAsync(notification);
         await context.SaveChangesAsync();
 
         IEnumerable<Guid> userIds = notification.Users.Any()
-            ? notification.Users.Select(u => u.Id)
-            : context.Claims.Include(c => c.Users).Where(c => notification.Claims.Contains(c)).SelectMany(c => c.Users)
-                .Select(u => u.Id);
+            ? notification.Users.Select(u => u.Id).Distinct()
+            : context.Claims
+                .Include(c => c.Users)
+                .Where(c => notification.Claims.Contains(c))
+                .SelectMany(c => c.Users)
+                .Select(u => u.Id)
+                .Distinct();
 
-        Parallel.ForEach(notificationSenders.Where(ns => senderTypes.Contains(ns.Type)), async notificationSender =>
+        var targetSenders = notificationSenders.Where(ns => senderTypes.Contains(ns.Type)).ToArray();
+        if (userIds.Any() && targetSenders.Length > 0)
         {
-            if (userIds is not null)
-                await notificationSender.SendNotification(notification, userIds);
-        });
+            await Task.WhenAll(targetSenders.Select(ns => ns.SendNotification(notification, userIds)));
+        }
     }
 
     public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false)
