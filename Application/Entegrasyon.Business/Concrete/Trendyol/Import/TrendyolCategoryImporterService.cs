@@ -59,19 +59,10 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {
-            var leafCategories = new List<Category>();
-
             foreach (var trendyolSelectedCategory in rootCategories)
             {
-                await AddDb(trendyolSelectedCategory, null, leafCategories);
+                await AddDb(trendyolSelectedCategory, null);
             }
-
-            await _dbContext.SaveChangesAsync();
-
-            // Paralel olarak attributes çek ve ekle
-            var attributeTasks = leafCategories.Select(category => AddAttributesForCategory(category, true)).ToList();
-            await Task.WhenAll(attributeTasks);
-
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
             return new SuccessResult();
@@ -88,7 +79,7 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
         }
     }
 
-    private async Task AddDb(TrendyolSelectedCategory importObj, Category superCategory, List<Category> leafCategories)
+    private async Task AddDb(TrendyolSelectedCategory importObj, Category superCategory)
     {
         var category = await _dbContext
             .Categories
@@ -119,12 +110,12 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
 
         if (!importObj.IsParent)
         {
-            if (isNew) leafCategories.Add(category);
+            await AddAttributesForCategory(category, isNew);
             return;
         }
 
         foreach (var sc in importObj.SubCategories)
-            await AddDb(sc, category, leafCategories);
+            await AddDb(sc, category);
     }
 
     private async Task AddTrendyolCategoryMatch(Category category)
@@ -146,33 +137,35 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
         var trendyolCategory = await _httpClient.GetFromJsonAsync<TrendyolCategory>(attrUrl);
         if (trendyolCategory == null || !trendyolCategory.categoryAttributes.Any())
             return;
-
-        List<CategoryAttributeCategory> categoryAttributes = new();
-
-        foreach (var categoryAttribute in trendyolCategory.categoryAttributes)
+        if (newEntity)
         {
-            var dbCatAttr = await AddAttributes(categoryAttribute, _trendyolMarketPlace);
-            if (!await _dbContext.CategoryAttributes.AnyAsync(x => x.ImportId == dbCatAttr.ImportId) && !_savedCategoryAttributes.Contains(dbCatAttr))
-            {
-                foreach (var categoryAttributeAttributeValue in categoryAttribute.AttributeValues)
-                {
-                    await AddAttrValues(categoryAttributeAttributeValue, _trendyolMarketPlace, dbCatAttr);
-                }
-            }
-            if (!_savedCategoryAttributes.Contains(dbCatAttr))
-                _savedCategoryAttributes.Add(dbCatAttr);
+            List<CategoryAttributeCategory> categoryAttributes = new();
 
-            var manyToManyEntity = new CategoryAttributeCategory
+            foreach (var categoryAttribute in trendyolCategory.categoryAttributes)
             {
-                Category = category,
-                CategoryAttribute = dbCatAttr,
-                IsRequired = categoryAttribute.Required,
-                IsSlicer = categoryAttribute.Slicer,
-                IsVarianter = categoryAttribute.Varianter
-            };
-            categoryAttributes.Add(manyToManyEntity);
+                var dbCatAttr = await AddAttributes(categoryAttribute, _trendyolMarketPlace);
+                if (!await _dbContext.CategoryAttributes.AnyAsync(x => x.ImportId == dbCatAttr.ImportId) && !_savedCategoryAttributes.Contains(dbCatAttr))
+                {
+                    foreach (var categoryAttributeAttributeValue in categoryAttribute.AttributeValues)
+                    {
+                        await AddAttrValues(categoryAttributeAttributeValue, _trendyolMarketPlace, dbCatAttr);
+                    }
+                }
+                if (!_savedCategoryAttributes.Contains(dbCatAttr))
+                    _savedCategoryAttributes.Add(dbCatAttr);
+
+                var manyToManyEntity = new CategoryAttributeCategory
+                {
+                    Category = category,
+                    CategoryAttribute = dbCatAttr,
+                    IsRequired = categoryAttribute.Required,
+                    IsSlicer = categoryAttribute.Slicer,
+                    IsVarianter = categoryAttribute.Varianter
+                };
+                categoryAttributes.Add(manyToManyEntity);
+            }
+            await _dbContext.CategoryAttributeCategories.AddRangeAsync(categoryAttributes);
         }
-        await _dbContext.CategoryAttributeCategories.AddRangeAsync(categoryAttributes);
 
 
         async Task AddAttrValues(TrendyolAttributeValue categoryAttributeAttributeValue, MarketPlace marketPlace,
