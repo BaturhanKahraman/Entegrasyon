@@ -102,14 +102,14 @@ public partial class CategoryImport
         importing = true;
         try
         {
-            // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            // var user = authState.User;
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-            // if (!user.Identity?.IsAuthenticated == true)
-            // {
-            //     Snackbar.Add("Kullanıcı girişi gerekli.", Severity.Error);
-            //     return;
-            // }
+            if (!user.Identity?.IsAuthenticated == true)
+            {
+                Snackbar.Add("Kullanıcı girişi gerekli.", Severity.Error);
+                return;
+            }
 
             // Mock user ID for now
             var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
