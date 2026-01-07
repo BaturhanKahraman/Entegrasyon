@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.EntityConfigurations;
 
-public class ApplicationClaimEntityConfiguration:IEntityTypeConfiguration<ApplicationClaim>
+public class ApplicationClaimEntityConfiguration : IEntityTypeConfiguration<ApplicationClaim>
 {
     public void Configure(EntityTypeBuilder<ApplicationClaim> builder)
     {
@@ -20,5 +20,6 @@ public class ApplicationClaimEntityConfiguration:IEntityTypeConfiguration<Applic
             .UsingEntity<UsersClaims>();
         builder.HasMany(c => c.Roles).WithMany(r => r.Claims)
             .UsingEntity<RolesClaims>();
+
     }
 }

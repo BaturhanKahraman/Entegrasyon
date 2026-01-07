@@ -20,12 +20,6 @@
                                  Color="Color.Warning" />
                 </MudItem>
 
-                <MudItem xs="12" md="6">
-                    <MudCheckBox @bind-Value="_model.IsImported"
-                                 Label="İçe Aktarıldı"
-                                 Color="Color.Info" />
-                </MudItem>
-
                 <MudItem xs="12">
                     <MudSelect T="int?"
                                @bind-Value="_model.ParentCategoryId"
@@ -39,71 +33,59 @@
                     </MudSelect>
                 </MudItem>
 
-                <MudItem xs="12">
-                    <MudText Typo="Typo.h6" Class="mt-2">Kategori Özellikleri</MudText>
-                    <MudButton OnClick="AddAttribute"
-                               StartIcon="@Icons.Material.Filled.Add"
-                               Color="Color.Primary"
-                               Size="Size.Small"
-                               Class="mb-2">
-                        Özellik Ekle
-                    </MudButton>
-
-                    @foreach (var (attr, index) in _model.Attributes.Select((a, i) => (a, i)))
-                    {
-                        <MudPaper Class="pa-2 mb-2">
-                            <MudGrid>
-                                <MudItem xs="5">
-                                    <MudTextField @bind-Value="attr.Name"
-                                                  Label="Özellik Adı" />
-                                </MudItem>
-                                <MudItem xs="3">
-                                    <MudSelect T="string"
-                                               @bind-Value="attr.Type"
-                                               Label="Tip">
-                                        <MudSelectItem Value="@("Text")">Metin</MudSelectItem>
-                                        <MudSelectItem Value="@("Number")">Sayı</MudSelectItem>
-                                        <MudSelectItem Value="@("Boolean")">Evet/Hayır</MudSelectItem>
-                                        <MudSelectItem Value="@("List")">Liste</MudSelectItem>
-                                    </MudSelect>
-                                </MudItem>
-                                <MudItem xs="3">
-                                    <MudCheckBox @bind-Value="attr.IsRequired"
-                                                 Label="Zorunlu" />
-                                </MudItem>
-                                <MudItem xs="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Color="Color.Error"
-                                                   OnClick="@(() => RemoveAttribute(index))" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudPaper>
-                    }
-                </MudItem>
-
-                @if (!IsEditMode)
+                @if (_isLeafCategory)
                 {
                     <MudItem xs="12">
-                        <MudFileUpload T="IBrowserFile"
-                                       FilesChanged="OnFileChanged"
-                                       Accept=".jpg,.jpeg,.png">
-                            <ActivatorContent>
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.CloudUpload">
-                                    Kategori Görseli Yükle
-                                </MudButton>
-                            </ActivatorContent>
-                        </MudFileUpload>
-                        @if (_selectedFile != null)
+                        <MudText Typo="Typo.h6" Class="mt-2">Kategori Özellikleri</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Info" Class="mb-2">
+                            Bu kategori en alt seviyede olduğu için özellik ekleyebilirsiniz.
+                        </MudText>
+                        <MudButton OnClick="AddAttribute"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Class="mb-2">
+                            Özellik Ekle
+                        </MudButton>
+
+                        @foreach (var (attr, index) in _model.Attributes.Select((a, i) => (a, i)))
                         {
-                            <MudChip T="string" Color="Color.Success"
-                                     Size="Size.Small"
-                                     OnClose="ClearFile"
-                                     Class="mt-2">
-                                @_selectedFile.Name
-                            </MudChip>
+                            <MudPaper Class="pa-2 mb-2">
+                                <MudGrid>
+                                    <MudItem xs="5">
+                                        <MudTextField @bind-Value="attr.Name"
+                                                      Label="Özellik Adı" />
+                                    </MudItem>
+                                    <MudItem xs="3">
+                                        <MudSelect T="string"
+                                                   @bind-Value="attr.Type"
+                                                   Label="Tip">
+                                            <MudSelectItem Value="@("Text")">Metin</MudSelectItem>
+                                            <MudSelectItem Value="@("Number")">Sayı</MudSelectItem>
+                                            <MudSelectItem Value="@("Boolean")">Evet/Hayır</MudSelectItem>
+                                            <MudSelectItem Value="@("List")">Liste</MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="3">
+                                        <MudCheckBox @bind-Value="attr.IsRequired"
+                                                     Label="Zorunlu" />
+                                    </MudItem>
+                                    <MudItem xs="1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => RemoveAttribute(index))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudPaper>
                         }
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Class="mt-2">
+                            Bu kategorinin alt kategorileri var. Kategori özellikleri sadece en alt seviyedeki kategorilere eklenebilir.
+                        </MudAlert>
                     </MudItem>
                 }
             </MudGrid>
@@ -113,7 +95,7 @@
         <MudButton OnClick="Cancel">İptal</MudButton>
         <MudButton Color="Color.Primary"
                    Variant="Variant.Filled"
-                   OnClick="Submit"
+                   OnClick="@(async () => await Submit())"
                    Disabled="@(!_isValid || _saving)">
             @if (_saving)
             {

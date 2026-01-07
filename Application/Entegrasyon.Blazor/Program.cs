@@ -22,7 +22,7 @@ builder.Services.AddMudServices();
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
-builder.Host.UseDefaultServiceProvider((host,options) =>
+builder.Host.UseDefaultServiceProvider((host, options) =>
 {
     options.ValidateOnBuild = host.HostingEnvironment.IsDevelopment();
     options.ValidateScopes = host.HostingEnvironment.IsDevelopment();
@@ -59,7 +59,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext(builder.Configuration);
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
-builder.Services.AddSingleton<IMenuService,MenuService>();
+builder.Services.AddSingleton<IMenuService, MenuService>();
 
 // SignalR configuration
 builder.Services.AddSignalR(options =>
@@ -89,7 +89,7 @@ app.Lifetime.ApplicationStarted.Register(async () =>
 });
 
 // Configure the HTTP request pipeline.
-if(!app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseStatusCodePagesWithRedirects("~/error?code={0}");

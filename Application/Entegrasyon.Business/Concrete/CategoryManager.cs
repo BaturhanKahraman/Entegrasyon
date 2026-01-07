@@ -229,7 +229,16 @@ namespace Entegrasyon.Business.Concrete
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
-
+        /// <summary>
+        /// Kategorileri sadece Id ve Name bilgileriyle getirir (CategoryAttributes olmadan)
+        /// </summary>
+        public async Task<List<Category>> GetAllCategoriesWithoutAttributesAsync()
+        {
+            return await _categoryDal.Table
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
         /// <summary>
         /// Belirli bir kategorinin marketplace eşleşmelerini getirir
         /// </summary>

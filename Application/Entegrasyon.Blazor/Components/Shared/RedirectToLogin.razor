@@ -1,0 +1,11 @@
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        // ReturnUrl parametresini yakalamak için querystring kontrolü yapılabilir
+        var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+        NavigationManager.NavigateTo($"/auth/login?returnUrl={returnUrl}", forceLoad: true);
+    }
+}

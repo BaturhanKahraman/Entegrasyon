@@ -8,7 +8,7 @@ using MudBlazor;
 public partial class ProductDialog
 {
     [CascadingParameter]
-    public IDialogReference? MudDialog { get; set; }
+    public IMudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
     public Product? Product { get; set; }

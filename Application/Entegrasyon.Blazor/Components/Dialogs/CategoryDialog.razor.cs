@@ -11,7 +11,7 @@ using MudBlazor;
 public partial class CategoryDialog
 {
     [CascadingParameter]
-    public IDialogReference? MudDialog { get; set; }
+    public IMudDialogInstance  MudDialog { get; set; }
 
     [Parameter]
     public Category? Category { get; set; }
@@ -30,7 +30,7 @@ public partial class CategoryDialog
     private bool _saving;
     private CategoryFormModel _model = new();
     private List<Category> _availableCategories = new();
-    private IBrowserFile? _selectedFile;
+    private bool _isLeafCategory = true; // Yeni kategoriler için varsayılan true
 
     protected override async Task OnInitializedAsync()
     {
@@ -38,12 +38,14 @@ public partial class CategoryDialog
 
         if (IsEditMode && Category != null)
         {
+            // Kategorinin alt kategorisi var mı kontrol et
+            _isLeafCategory = Category.SubCategories == null || !Category.SubCategories.Any();
+
             _model = new CategoryFormModel
             {
                 Id = Category.Id,
                 Name = Category.Name,
                 IsFavorite = Category.IsFavorite,
-                IsImported = Category.IsImported,
                 ParentCategoryId = Category.SuperCategoryId,
                 Attributes = Category.CategoryAttributes?.Select(a => new AttributeModel
                 {
@@ -53,14 +55,30 @@ public partial class CategoryDialog
                 }).ToList() ?? new List<AttributeModel>()
             };
         }
+        else
+        {
+            // Yeni kategori eklerken, varsayılan olarak en alt seviye kabul et
+            _isLeafCategory = true;
+        }
     }
 
     private async Task LoadCategories()
     {
         try
         {
-            // TODO: Load categories excluding current one if editing
-            _availableCategories = new List<Category>();
+            var allCategories = await CategoryManager!.GetAllCategoriesWithoutAttributesAsync();
+
+            // Exclude current category if editing to prevent circular references
+            if (IsEditMode && Category?.Id > 0)
+            {
+                _availableCategories = allCategories
+                    .Where(c => c.Id != Category.Id)
+                    .ToList();
+            }
+            else
+            {
+                _availableCategories = allCategories;
+            }
         }
         catch (Exception ex)
         {
@@ -83,16 +101,6 @@ public partial class CategoryDialog
         _model.Attributes.RemoveAt(index);
     }
 
-    private void OnFileChanged(IBrowserFile file)
-    {
-        _selectedFile = file;
-    }
-
-    private void ClearFile()
-    {
-        _selectedFile = null;
-    }
-
     private async Task Submit()
     {
         await _form.Validate();
@@ -110,7 +118,7 @@ public partial class CategoryDialog
                     Name: _model.Name,
                     SuperCategoryId: _model.ParentCategoryId,
                     IsFavorite: _model.IsFavorite,
-                    IsImported: _model.IsImported
+                    IsImported: false
                 );
 
                 var result = await CategoryManager!.UpdateCategory(editDto);
@@ -118,6 +126,7 @@ public partial class CategoryDialog
                 {
                     Snackbar?.Add("Kategori güncellendi", Severity.Success);
                     MudDialog?.Close(DialogResult.Ok(true));
+                    StateHasChanged();
                 }
                 else
                 {
@@ -153,6 +162,7 @@ public partial class CategoryDialog
                 {
                     Snackbar?.Add("Kategori eklendi", Severity.Success);
                     MudDialog?.Close(DialogResult.Ok(true));
+                    StateHasChanged();
                 }
                 else
                 {
@@ -180,7 +190,6 @@ public partial class CategoryDialog
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsFavorite { get; set; }
-        public bool IsImported { get; set; }
         public int? ParentCategoryId { get; set; }
         public List<AttributeModel> Attributes { get; set; } = new();
     }

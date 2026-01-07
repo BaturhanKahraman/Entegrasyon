@@ -29,13 +29,33 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
 
         base.OnModelCreating(modelBuilder);
     }
-    
-    
+
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
-        foreach(var entry in ChangeTracker.Entries<BaseEntity>())
+        // Tüm DateTimeOffset alanlarını UTC'ye dönüştür (PostgreSQL uyumluluğu için)
+        foreach (var entry in ChangeTracker.Entries())
         {
-            switch(entry.State)
+            var entity = entry.Entity;
+            var properties = entity.GetType().GetProperties();
+
+            foreach (var property in properties)
+            {
+                if (property.PropertyType == typeof(DateTimeOffset) || property.PropertyType == typeof(DateTimeOffset?))
+                {
+                    var value = property.GetValue(entity);
+                    if (value is DateTimeOffset dto && dto.Offset != TimeSpan.Zero)
+                    {
+                        // UTC'ye dönüştür
+                        property.SetValue(entity, new DateTimeOffset(dto.UtcDateTime, TimeSpan.Zero));
+                    }
+                }
+            }
+        }
+
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            switch (entry.State)
             {
                 case EntityState.Added:
                     entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
