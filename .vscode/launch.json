@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Launch Blazor (Debug)",
-            "type": "coreclr",
+            // "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/Application/Entegrasyon.Blazor/bin/Debug/net8.0/Entegrasyon.Blazor.dll",
@@ -27,7 +27,7 @@
         },
         {
             "name": "Attach to Blazor",
-            "type": "coreclr",
+            // "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
         }

@@ -55,13 +55,13 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeCategoryDal, EfCategoryAttributeCategoryDal>();
 
             services.AddScoped<BranchOfficeManager>();
-            services.AddScoped<IRoleService,RoleService>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<BrandManager>();
             services.AddScoped<CategoryManager>();
-            services.AddScoped<IApplicationLogManager,ApplicationLogManager>();
+            services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
             services.AddScoped<CategoryAttributeManager>();
             services.AddScoped<ApplicationUserManager>();
-            services.AddScoped<IAuthService,AuthService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<CargoCompaniesManager>();
             services.AddScoped<CustomerManager>();
             services.AddScoped<ProductManager>();
@@ -71,8 +71,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<DiscountVoucherManager>();
             services.AddScoped<AttributeKeyValueManager>();
             services.AddScoped<SaleManager>();
-            services.AddScoped<ITrendyolCategoryImportService,TrendyolCategoryImporterService>();
-            services.AddScoped<ITrendyolBrandImporterService,TrendyolBrandImporterService>();
+            services.AddScoped<ITrendyolCategoryImportService, TrendyolCategoryImporterService>();
+            services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
             services.AddScoped<TempBarcodeManager>();
             services.AddScoped<BrandMatchService>();
             services.AddScoped<CategoryAttributeCategoryManager>();
