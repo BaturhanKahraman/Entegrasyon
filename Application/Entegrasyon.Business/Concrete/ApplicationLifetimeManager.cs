@@ -22,8 +22,6 @@ public class ApplicationLifetimeManager : IApplicationLifetimeManager
     }
     private async Task MigrateDatabase(CancellationToken ct = default)
     {
-        //handle multiple databases.
-        //you can use connection string placeholder but need to handle multiple database when needed.
         var db = _context.Database;
         var pendingMigrations = await db.GetPendingMigrationsAsync(ct);
         if (pendingMigrations.Any())
@@ -31,5 +29,4 @@ public class ApplicationLifetimeManager : IApplicationLifetimeManager
             await db.MigrateAsync(ct);
         }
     }
-
 }

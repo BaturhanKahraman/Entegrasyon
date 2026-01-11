@@ -1,14 +1,17 @@
 @inherits LayoutComponentBase
-@using MudBlazor
 
-<MudThemeProvider Theme="_theme" />
+<MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
     <MudMainContent Class="d-flex justify-center align-center" Style="height: 100vh; background-color: #f5f5f5;">
-        <MudContainer MaxWidth="MaxWidth.Small">
+        <MudPaper Elevation="3" Class="pa-8" Style="min-width: 400px; max-width: 500px; width: 100%;">
+            <div class="d-flex justify-center mb-6">
+                <!-- You can add a logo here -->
+                <MudText Typo="Typo.h4" Color="Color.Primary" Align="Align.Center">Entegrasyon</MudText>
+            </div>
             @Body
-        </MudContainer>
+        </MudPaper>
     </MudMainContent>
 </MudLayout>

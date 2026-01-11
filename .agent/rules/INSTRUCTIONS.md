@@ -1,13 +1,12 @@
 # Entegrasyon E-commerce Platform - Developer & AI Instructions
 
-> **⚠️ CRITICAL SOURCE OF TRUTH**: This file contains the definitive rules for the project. 
+> **⚠️ CRITICAL SOURCE OF TRUTH**: This file contains the definitive rules for the project.
 > **MAINTENANCE**: Developers and AI Agents MUST keep this file updated. If a new pattern is adopted or an architectural change is made, update this file immediately.
 > **AI AGENTS**: Read this file at the start of every session.
 
 ## 1. Project Identity
 - **Name**: Entegrasyon
 - **Architecture**: Pure Blazor Server (.NET 8)
-- **UI Framework**: MudBlazor 6.11.2 (Strict)
 - **Status**: Modernized (Old MVC/API projects are Deprecated/Deleted)
 
 ## 2. Solution Structure & Naming
@@ -53,7 +52,7 @@ Application/
 - **Parent-Child**: Use `EventCallback` for simple component communication.
 
 ## 4. Domain Workflows (Do Not Confuse)
-1.  **Category Import** (Sync from Marketplace): 
+1.  **Category Import** (Sync from Marketplace):
     - Creates **NEW** categories from a source (e.g., Trendyol).
     - Sets `IsImported = true`.
 2.  **Marketplace Matching** (Manual Mapping):
@@ -63,7 +62,7 @@ Application/
 - **Operating System**: Fedora Linux.
     - **Package Management**: Use `dnf` or `flatpak` for system dependencies.
 - **Infra Containerization**: The project uses **Podman** instead of Docker for managing core services (PostgreSQL, Redis).
-- **Run Workflow**: 
+- **Run Workflow**:
   1. Start core services: `podman-compose up -d`
   2. Run the Blazor application: `cd Application/Entegrasyon.Blazor && dotnet run`
 - **Config**: `docker-compose.yml` (used by Podman) environment variables invoke the correct connection strings.

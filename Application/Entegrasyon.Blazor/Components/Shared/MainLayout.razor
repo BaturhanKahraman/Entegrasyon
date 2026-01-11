@@ -1,5 +1,8 @@
 @inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using Entegrasyon.Blazor.Services
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
 <MudThemeProvider Theme="_theme" IsDarkMode="@_isDarkMode" />
 <MudPopoverProvider />
@@ -27,21 +30,27 @@
         </MudBadge>
 
         <!-- User Profile -->
-        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AnchorOrigin="Origin.BottomRight">
-            <MudMenuItem Icon="@Icons.Material.Filled.Person">
-                <div class="d-flex flex-column">
-                    <MudText Typo="Typo.body1">Admin User</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">admin@test.com</MudText>
-                </div>
-            </MudMenuItem>
-            <MudDivider />
-            <MudMenuItem Icon="@Icons.Material.Filled.Settings" Href="/settings">Ayarlar</MudMenuItem>
-            <MudMenuItem Icon="@Icons.Material.Filled.Help" Href="/help">Yardım</MudMenuItem>
-            <MudDivider />
-            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout" IconColor="Color.Error">
-                Çıkış Yap
-            </MudMenuItem>
-        </MudMenu>
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AnchorOrigin="Origin.BottomRight">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Person">
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.body1">@context.User.Identity?.Name</MudText>
+                        </div>
+                    </MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Settings" Href="/settings">Ayarlar</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Help" Href="/help">Yardım</MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout" IconColor="Color.Error">
+                        Çıkış Yap
+                    </MudMenuItem>
+                </MudMenu>
+            </Authorized>
+            <NotAuthorized>
+                <MudIconButton Icon="@Icons.Material.Filled.Login" Color="Color.Inherit" Href="/auth/login" />
+            </NotAuthorized>
+        </AuthorizeView>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2" ClipMode="DrawerClipMode.Always">
@@ -119,7 +128,6 @@
 
     protected override void OnInitialized()
     {
-        // Initialize theme
         _theme = new MudTheme
         {
             PaletteLight = new PaletteLight
@@ -144,7 +152,6 @@
             }
         };
 
-        // Mock notifications
         _notifications = new List<NotificationItem>
         {
             new("Yeni sipariş alındı: #TR-12345", "5 dk önce", NotificationType.Info),
@@ -153,21 +160,9 @@
         };
     }
 
-    private void ToggleDrawer()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
-    private void ToggleNotificationPanel()
-    {
-        _notificationPanelOpen = !_notificationPanelOpen;
-    }
-
-    private void ToggleTheme()
-    {
-        _isDarkMode = !_isDarkMode;
-    }
-
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+    private void ToggleNotificationPanel() => _notificationPanelOpen = !_notificationPanelOpen;
+    private void ToggleTheme() => _isDarkMode = !_isDarkMode;
     private void ClearNotifications()
     {
         _notifications.Clear();
@@ -191,9 +186,12 @@
         _ => Color.Info
     };
 
-    private void HandleLogout()
+    private async Task HandleLogout()
     {
-        // TODO: Implement actual logout
+        if (AuthStateProvider is CustomAuthenticationStateProvider customAuthStateProvider)
+        {
+            await customAuthStateProvider.UpdateAuthenticationState(null);
+        }
         NavigationManager.NavigateTo("/auth/login", forceLoad: true);
     }
 

@@ -1,14 +1,19 @@
+@using global::Shared.Extensions.Constants
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
         Ana Sayfa
     </MudNavLink>
-    
+
     <MudDivider Class="my-2" />
-    
+
     <MudNavGroup Title="Yönetim" Icon="@Icons.Material.Filled.Business" Expanded="true">
-        <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory">
-            Ürünler
-        </MudNavLink>
+        <AuthorizeView Policy="@AppPermissions.Products.View">
+            <Authorized>
+                <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory">
+                    Ürünler
+                </MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="/categories" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Category">
             Kategoriler
         </MudNavLink>
@@ -16,7 +21,7 @@
             Satış (POS)
         </MudNavLink>
     </MudNavGroup>
-    
+
     <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="false">
         <MudNavLink Href="/marketplace/sync" Icon="@Icons.Material.Filled.Sync">
             Senkronizasyon
@@ -28,7 +33,7 @@
             Siparişler
         </MudNavLink>
     </MudNavGroup>
-    
+
     <MudNavGroup Title="Müşteriler & Satış" Icon="@Icons.Material.Filled.People" Expanded="false">
         <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.Person">
             Müşteriler
@@ -40,7 +45,7 @@
             Faturalar
         </MudNavLink>
     </MudNavGroup>
-    
+
     <MudNavGroup Title="Raporlar" Icon="@Icons.Material.Filled.Assessment" Expanded="false">
         <MudNavLink Href="/reports/sales" Icon="@Icons.Material.Filled.TrendingUp">
             Satış Raporları
@@ -52,13 +57,26 @@
             Pazaryeri Raporları
         </MudNavLink>
     </MudNavGroup>
-    
+
     <MudDivider Class="my-2" />
-    
-    <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SupervisedUserCircle">
-        Kullanıcılar
-    </MudNavLink>
-    
+
+    <AuthorizeView Policy="@AppPermissions.Users.View">
+        <Authorized>
+            <MudNavGroup Title="Kullanıcı Yönetimi" Icon="@Icons.Material.Filled.SupervisedUserCircle" Expanded="true">
+                <AuthorizeView Policy="@AppPermissions.Users.View" Context="userContext">
+                    <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">
+                        Kullanıcılar
+                    </MudNavLink>
+                </AuthorizeView>
+                <AuthorizeView Policy="@AppPermissions.Roles.View" Context="roleContext">
+                    <MudNavLink Href="/roles" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Security">
+                        Roller
+                    </MudNavLink>
+                </AuthorizeView>
+            </MudNavGroup>
+        </Authorized>
+    </AuthorizeView>
+
     <MudNavGroup Title="Ayarlar" Icon="@Icons.Material.Filled.Settings" Expanded="false">
         <MudNavLink Href="/settings/general" Icon="@Icons.Material.Filled.Tune">
             Genel Ayarlar

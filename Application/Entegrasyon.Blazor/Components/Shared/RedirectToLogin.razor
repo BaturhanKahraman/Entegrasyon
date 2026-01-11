@@ -2,10 +2,12 @@
 @inject NavigationManager NavigationManager
 
 @code {
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        // ReturnUrl parametresini yakalamak için querystring kontrolü yapılabilir
-        var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
-        NavigationManager.NavigateTo($"/auth/login?returnUrl={returnUrl}", forceLoad: true);
+        if (firstRender)
+        {
+            var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+            NavigationManager.NavigateTo($"/auth/login?returnUrl={returnUrl}");
+        }
     }
 }

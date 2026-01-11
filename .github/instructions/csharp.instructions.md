@@ -3,7 +3,9 @@ description: 'Guidelines for building C# applications'
 applyTo: '**/*.cs'
 ---
 
-# C# Development
+# C# DEVELOPMENT GUIDELINES
+
+**📚 RELATED**: See [CORE-ARCHITECTURE-RULES.md](../CORE-ARCHITECTURE-RULES.md) for architecture, layering, and entity models.
 
 ## C# Instructions
 - Use the C# language version compatible with the project's TargetFramework (this repository targets `net8.0`). Before adopting newer C# language features, get approval from the project owner or maintainers.

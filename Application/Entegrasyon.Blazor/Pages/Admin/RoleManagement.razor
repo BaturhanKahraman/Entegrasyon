@@ -1,0 +1,171 @@
+@using Shared.Extensions.Constants
+@attribute [Authorize(Policy = AppPermissions.Roles.View)]
+@using Entegrasyon.Entity.User
+@using Entegrasyon.Entity.Dtos.Users
+@using Entegrasyon.Business.Abstract
+@using Entegrasyon.Business.Concrete.Auth // For IRoleService namespace check
+@using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts
+@using Microsoft.EntityFrameworkCore
+@using Entegrasyon.Blazor.Pages.Admin
+
+@inject IRoleService RoleService
+@inject IntegrationDbContext DbContext
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Rol Yönetimi</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Rol Yönetimi</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="12" Class="d-flex justify-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                OnClick="OpenAddRoleDialog">
+                Yeni Rol
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="@_roles" Hover="true" Loading="@_loading">
+    <HeaderContent>
+        <MudTh>Rol Adı</MudTh>
+        <MudTh>Yetkiler</MudTh>
+        <MudTh Style="text-align:right">İşlemler</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Rol Adı">@context.Name</MudTd>
+        <MudTd DataLabel="Yetkiler">
+            <!-- Fetching claims for each role might be expensive if lazy loading triggers. 
+                 But GetRolesSelectList returned Role entities. 
+                 They might optionally include Claims? 
+                 If not, we can't show count easily without fetching. -->
+            @if (context.Claims != null)
+            {
+                <MudChip T="string" Size="Size.Small">@context.Claims.Count yetki</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="İşlemler" Style="text-align:right">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary"
+                OnClick="@(() => EditRole(context))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                OnClick="@(() => DeleteRole(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Role> _roles = new();
+    private List<ApplicationClaim> _allClaims = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            // Fetch Roles
+            // GetRolesSelectList might not include Claims details.
+            // We might need to fetch manually from DbContext if Service doesn't provide enough details for Edit (Claims Ids).
+            // Actually RoleService checks for duplicates etc. logic is there.
+
+            _roles = await DbContext.Roles.Include(r => r.Claims).ToListAsync();
+            _allClaims = await DbContext.Claims.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Veri yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenAddRoleDialog()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("IsEdit", false);
+        parameters.Add("AllClaims", _allClaims);
+
+        var dialog = await DialogService.ShowAsync<RoleDialog>("Yeni Rol", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is RoleDialog.RoleDto dto)
+        {
+            var roleDto = new AddRoleDto(dto.Name, dto.ClaimIds);
+
+            var serviceResult = await RoleService.AddRole(roleDto);
+            if (serviceResult.Success)
+            {
+                Snackbar.Add(serviceResult.Message, Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(serviceResult.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task EditRole(Role role)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("IsEdit", true);
+        parameters.Add("AllClaims", _allClaims);
+        parameters.Add("Model", new RoleDialog.RoleDto
+            {
+                Id = role.Id,
+                Name = role.Name,
+                ClaimIds = role.Claims?.Select(c => c.Id).ToList() ?? new List<int>()
+            });
+
+        var dialog = await DialogService.ShowAsync<RoleDialog>("Rol Düzenle", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is RoleDialog.RoleDto dto)
+        {
+            var editDto = new EditRoleDto(dto.Id, dto.Name, dto.ClaimIds);
+
+            var serviceResult = await RoleService.UpdateRole(editDto);
+            if (serviceResult.Success)
+            {
+                Snackbar.Add(serviceResult.Message, Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(serviceResult.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task DeleteRole(Role role)
+    {
+        var result = await DialogService.ShowMessageBox(
+        "Rol Sil",
+        $"{role.Name} rolünü silmek istediğinizden emin misiniz?",
+        yesText: "Sil",
+        cancelText: "İptal");
+
+        if (result == true)
+        {
+            var serviceResult = await RoleService.DeleteRole(role.Id);
+            if (serviceResult.Success)
+            {
+                Snackbar.Add(serviceResult.Message, Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add(serviceResult.Message, Severity.Error);
+            }
+        }
+    }
+}

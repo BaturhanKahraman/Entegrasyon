@@ -2468,9 +2468,6 @@ New Contributors
 @Kaerlon made their first contribution in #7896
 @REDECODE made their first contribution in #7940
 @jacob7395 made their first contribution in #7866
-Full Changelog: v6.11.2...v6.12.0
-
-Version v6.11.2
 Released on Aralık 18, 2023
 
 What's Changed
@@ -2496,7 +2493,7 @@ New Contributors
 @danielchalmers made their first contribution in #7848
 @Nooppi69 made their first contribution in #6267
 @peterthorpe81 made their first contribution in #7632
-Full Changelog: v6.11.1...v6.11.2
+Full Changelog: v6.11.1...v
 
 Version v6.11.1
 Released on Kasım 21, 2023

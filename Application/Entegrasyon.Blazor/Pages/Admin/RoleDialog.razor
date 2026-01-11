@@ -1,0 +1,74 @@
+@using Entegrasyon.Entity.Dtos.Users
+@using Entegrasyon.Entity.User
+@using Shared.Extensions.Constants
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_success">
+            <MudTextField @bind-Value="Model.Name" Label="Rol Adı" Required="true" RequiredError="Rol adı gerekli" />
+
+            <MudText Typo="Typo.subtitle1" Class="mt-4">Yetkiler</MudText>
+            <MudGrid Class="mt-2" Style="max-height: 300px; overflow-y: auto;">
+                @foreach (var claim in AllClaims)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudCheckBox T="bool" Label="@claim.Description" Value="@(SelectedClaimIds.Contains(claim.Id))"
+                            ValueChanged="@((bool v) => OnClaimChanged(claim.Id, v))" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!_success)">Kaydet</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public RoleDto Model { get; set; } = new();
+    [Parameter] public bool IsEdit { get; set; }
+    [Parameter] public List<ApplicationClaim> AllClaims { get; set; } = new();
+
+    public HashSet<int> SelectedClaimIds { get; set; } = new();
+
+    private MudForm _form;
+    private bool _success;
+
+    protected override void OnParametersSet()
+    {
+        if (Model.ClaimIds != null)
+        {
+            SelectedClaimIds = new HashSet<int>(Model.ClaimIds);
+        }
+    }
+
+    private void OnClaimChanged(int claimId, bool isChecked)
+    {
+        if (isChecked)
+            SelectedClaimIds.Add(claimId);
+        else
+            SelectedClaimIds.Remove(claimId);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Submit()
+    {
+        _form.Validate();
+        if (!_success) return;
+
+        Model.ClaimIds = SelectedClaimIds.ToList();
+        MudDialog.Close(DialogResult.Ok(Model));
+    }
+
+    public class RoleDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public List<int> ClaimIds { get; set; } = new();
+    }
+}
