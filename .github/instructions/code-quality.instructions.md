@@ -3,7 +3,9 @@ applyTo: '**/*.razor, **/*.razor.cs, **/*.cs'
 description: 'Code quality best practices for maintainable, performant, and readable code in Blazor and C# projects. Focuses on avoiding long/unreadable classes, functions, and components.'
 ---
 
-# Code Quality Best Practices
+# CODE QUALITY BEST PRACTICES
+
+**📚 RELATED**: See [CORE-ARCHITECTURE-RULES.md](../CORE-ARCHITECTURE-RULES.md) for architecture and naming conventions.
 
 ## Introduction
 

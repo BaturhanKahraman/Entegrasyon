@@ -2,6 +2,11 @@
 description: 'Blazor component and application patterns'
 applyTo: '**'
 ---
+
+# BLAZOR COMPONENT AND APPLICATION PATTERNS
+
+**📚 RELATED**: See [CORE-ARCHITECTURE-RULES.md](../CORE-ARCHITECTURE-RULES.md) Section 8 for Blazor lifecycle and component structure.
+
 ## Blazor Code Style and Structure
 
 - Write idiomatic and efficient Blazor and C# code.

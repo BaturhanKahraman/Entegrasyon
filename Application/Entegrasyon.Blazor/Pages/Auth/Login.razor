@@ -1,0 +1,120 @@
+@page "/auth/login"
+@layout Layouts.AuthLayout
+@attribute [AllowAnonymous]
+@using Entegrasyon.Blazor.Services
+@using Entegrasyon.Business.Abstract
+@using Entegrasyon.Entity.Dtos.Auth
+@using Shared.User.Dto
+@using Microsoft.AspNetCore.Components.Authorization
+@using Shared.Results
+@using Entegrasyon.Entity.User
+
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Giriş Yap</MudText>
+
+<MudForm @bind-IsValid="@_isValid">
+    <MudTextField @bind-Value="@_username" Label="Kullanıcı Adı" Variant="Variant.Outlined" Class="mb-3" Required="true"
+        RequiredError="Kullanıcı adı gereklidir." />
+    <MudTextField @bind-Value="@_password" Label="Şifre" Variant="Variant.Outlined" InputType="InputType.Password"
+        Class="mb-3" Required="true" RequiredError="Şifre gereklidir." />
+
+    <div class="d-flex justify-end mb-4">
+        <MudLink Href="/auth/forgot-password" Color="Color.Secondary" Underline="Underline.Hover">Şifremi Unuttum
+        </MudLink>
+    </div>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="LoginAsync"
+        Disabled="@(!_isValid || _isLoading)">
+        @if (_isLoading)
+        {
+            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+            <MudText Class="ms-2">Giriş Yapılıyor...</MudText>
+        }
+        else
+        {
+            <MudText>Giriş Yap</MudText>
+        }
+    </MudButton>
+</MudForm>
+
+@code {
+    private string _username;
+    private string _password;
+    private bool _isValid;
+    private bool _isLoading;
+
+    private async Task LoginAsync()
+    {
+        if (!_isValid) return;
+
+        _isLoading = true;
+        try
+        {
+            var result = await AuthService.LoginAsync(_username, _password);
+            if (result.Success)
+            {
+                if (result is SuccessDataResult<UserLoginSuccessDto> successResult)
+                {
+                    var user = successResult.Data;
+                    var permissions = new List<string>();
+
+                    if (user.Roles != null)
+                    {
+                        foreach (var role in user.Roles)
+                        {
+                            if (role.RoleClaims != null)
+                            {
+                                // RoleClaims is a linking entity, we might need to access ApplicationClaim directly if mapped
+                                // But Role.cs has `public ICollection<ApplicationClaim> Claims { get; set; }`
+                                if (role.Claims != null)
+                                {
+                                    permissions.AddRange(role.Claims.Select(c => c.Name));
+                                }
+                            }
+                        }
+                    }
+
+                    var session = new UserSession
+                        {
+                            UserId = user.Id.ToString(),
+                            UserName = user.Username,
+                            Email = $"{user.Name} {user.Surname}", // Assuming Email is not in DTO check, using Name as placeholder
+                            Token = Guid.NewGuid().ToString(), // Dummy token for session
+                            Roles = user.Roles?.Select(r => r.Name).ToList() ?? new List<string>(),
+                            Permissions = permissions.Distinct().ToList()
+                        };
+
+                    var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+                    await customAuthStateProvider.UpdateAuthenticationState(session);
+
+                    NavigationManager.NavigateTo("/", true);
+                }
+                else if (result is SuccessDataResult<LoginNewPasswordDto> newPasswordResult)
+                {
+                    // Handle force password change
+                    NavigationManager.NavigateTo($"/auth/reset-password?userId={newPasswordResult.Data.UserId}");
+                }
+                else
+                {
+                    Snackbar.Add(result.Message, Severity.Error);
+                }
+            }
+            else
+            {
+                Snackbar.Add(result.Message, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Bir hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

@@ -60,7 +60,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<CategoryManager>();
             services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
             services.AddScoped<CategoryAttributeManager>();
-            services.AddScoped<ApplicationUserManager>();
+            services.AddScoped<IApplicationUserManager, ApplicationUserManager>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<CargoCompaniesManager>();
             services.AddScoped<CustomerManager>();

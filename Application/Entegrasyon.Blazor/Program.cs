@@ -8,6 +8,7 @@ using Entegrasyon.Blazor.Services.Channels;
 using Entegrasyon.Blazor.Services;
 using Entegrasyon.Blazor.Services.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using Shared.Logger.Serilog;
 
@@ -39,15 +40,24 @@ builder.Services.AddHostedService<ProductSyncBackgroundService>();
 builder.Services.AddHostedService<MarketplaceSyncBackgroundService>();
 builder.Services.AddHostedService<TrendyolCategoryImportBackgroundService>();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
+// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
+// {
+//     x.SlidingExpiration = true;
+//     x.ExpireTimeSpan = TimeSpan.FromHours(1);
+//     x.LoginPath = "/auth/login";
+//     x.AccessDeniedPath = "/access-denied";
+//     x.LogoutPath = "/auth/logout";
+// });
+
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddAuthorization(options =>
 {
-    x.SlidingExpiration = true;
-    x.ExpireTimeSpan = TimeSpan.FromHours(1);
-    x.LoginPath = "/auth/login";
-    x.AccessDeniedPath = "/access-denied";
-    x.LogoutPath = "/auth/logout";
+    foreach (var permission in Shared.Extensions.Constants.AppPermissions.GetAllPermissions())
+    {
+        options.AddPolicy(permission, policy => policy.RequireClaim("Permission", permission));
+    }
 });
-builder.Services.AddAuthorization();
 builder.Services.AddStackExchangeRedisCache(opt =>
 {
     opt.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
