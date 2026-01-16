@@ -55,7 +55,10 @@ builder.Services.AddAuthorization(options =>
 {
     foreach (var permission in Shared.Extensions.Constants.AppPermissions.GetAllPermissions())
     {
-        options.AddPolicy(permission, policy => policy.RequireClaim("Permission", permission));
+        options.AddPolicy(permission, policy =>
+            policy.RequireAssertion(ctx =>
+                ctx.User.IsInRole("Admin") || ctx.User.HasClaim("Permission", permission))
+        );
     }
 });
 builder.Services.AddStackExchangeRedisCache(opt =>

@@ -23,14 +23,7 @@ public sealed class NotificationManager(IEnumerable<INotificationSender> notific
         await context.Notifications.AddAsync(notification);
         await context.SaveChangesAsync();
 
-        IEnumerable<Guid> userIds = notification.Users.Any()
-            ? notification.Users.Select(u => u.Id).Distinct()
-            : context.Claims
-                .Include(c => c.Users)
-                .Where(c => notification.Claims.Contains(c))
-                .SelectMany(c => c.Users)
-                .Select(u => u.Id)
-                .Distinct();
+        IEnumerable<Guid> userIds = notification.Users.Select(u => u.Id).Distinct();
 
         var targetSenders = notificationSenders.Where(ns => senderTypes.Contains(ns.Type)).ToArray();
         if (userIds.Any() && targetSenders.Length > 0)
@@ -43,9 +36,7 @@ public sealed class NotificationManager(IEnumerable<INotificationSender> notific
     {
         var query = context.Notifications
             .Include(n => n.Users)
-            .Include(n => n.Claims)
-            .Where(n => n.Users.Any(u => u.Id == userId) ||
-                       n.Claims.Any(c => c.Users.Any(u => u.Id == userId)));
+            .Where(n => n.Users.Any(u => u.Id == userId));
 
         if (onlyUnread)
         {

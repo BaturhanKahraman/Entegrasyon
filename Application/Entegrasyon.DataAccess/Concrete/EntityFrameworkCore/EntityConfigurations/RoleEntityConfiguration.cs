@@ -18,6 +18,5 @@ public class RoleEntityConfiguration:IEntityTypeConfiguration<Role>
         builder.Property(r => r.NormalizedName).HasMaxLength(100);
 
         builder.HasMany(r => r.Users).WithMany(u => u.Roles).UsingEntity<UsersRoles>();
-        builder.HasMany(r => r.Claims).WithMany(c => c.Roles).UsingEntity<RolesClaims>();
     }
 }

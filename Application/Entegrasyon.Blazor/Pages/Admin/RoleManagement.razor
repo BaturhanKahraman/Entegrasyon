@@ -7,6 +7,7 @@
 @using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts
 @using Microsoft.EntityFrameworkCore
 @using Entegrasyon.Blazor.Pages.Admin
+@using Entegrasyon.Blazor.Models
 
 @inject IRoleService RoleService
 @inject IntegrationDbContext DbContext
@@ -37,13 +38,14 @@
     <RowTemplate>
         <MudTd DataLabel="Rol Adı">@context.Name</MudTd>
         <MudTd DataLabel="Yetkiler">
-            <!-- Fetching claims for each role might be expensive if lazy loading triggers. 
-                 But GetRolesSelectList returned Role entities. 
-                 They might optionally include Claims? 
-                 If not, we can't show count easily without fetching. -->
-            @if (context.Claims != null)
+            <!-- Display count of permissions assigned to this role -->
+            @if (context.RoleClaims != null && context.RoleClaims.Count > 0)
             {
-                <MudChip T="string" Size="Size.Small">@context.Claims.Count yetki</MudChip>
+                <MudChip T="string" Size="Size.Small">@context.RoleClaims.Count yetki</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Size="Size.Small">Yetki yok</MudChip>
             }
         </MudTd>
         <MudTd DataLabel="İşlemler" Style="text-align:right">
@@ -57,7 +59,7 @@
 
 @code {
     private List<Role> _roles = new();
-    private List<ApplicationClaim> _allClaims = new();
+    private List<PermissionModel> _allPermissions = new();
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
@@ -70,13 +72,14 @@
         _loading = true;
         try
         {
-            // Fetch Roles
-            // GetRolesSelectList might not include Claims details.
-            // We might need to fetch manually from DbContext if Service doesn't provide enough details for Edit (Claims Ids).
-            // Actually RoleService checks for duplicates etc. logic is there.
+            // Fetch Roles with their role claims (permissions)
+            _roles = await DbContext.Roles.Include(r => r.RoleClaims).ToListAsync();
 
-            _roles = await DbContext.Roles.Include(r => r.Claims).ToListAsync();
-            _allClaims = await DbContext.Claims.ToListAsync();
+            // Convert static permissions to PermissionModel list for display
+            var allPermissions = AppPermissions.GetAllPermissions();
+            _allPermissions = allPermissions
+                .Select(p => new PermissionModel(p, FormatPermissionName(p)))
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -88,18 +91,40 @@
         }
     }
 
+    private string FormatPermissionName(string permission)
+    {
+        // Convert "Permissions.Users.View" to "Kullanıcılar - Görüntüle"
+        var parts = permission.Split('.');
+        if (parts.Length >= 3)
+        {
+            var action = parts[2];
+            var actionName = action switch
+            {
+                "View" => "Görüntüle",
+                "Create" => "Oluştur",
+                "Edit" => "Düzenle",
+                "Delete" => "Sil",
+                _ => action
+            };
+
+            // Assuming format is Permissions.{Category}.{Action}
+            return $"{parts[1]} - {actionName}";
+        }
+        return permission;
+    }
+
     private async Task OpenAddRoleDialog()
     {
         var parameters = new DialogParameters();
         parameters.Add("IsEdit", false);
-        parameters.Add("AllClaims", _allClaims);
+        parameters.Add("AllPermissions", _allPermissions);
 
         var dialog = await DialogService.ShowAsync<RoleDialog>("Yeni Rol", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is RoleDialog.RoleDto dto)
         {
-            var roleDto = new AddRoleDto(dto.Name, dto.ClaimIds);
+            var roleDto = new AddRoleDto(dto.Name, dto.PermissionNames);
 
             var serviceResult = await RoleService.AddRole(roleDto);
             if (serviceResult.Success)
@@ -118,12 +143,12 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("IsEdit", true);
-        parameters.Add("AllClaims", _allClaims);
+        parameters.Add("AllPermissions", _allPermissions);
         parameters.Add("Model", new RoleDialog.RoleDto
             {
                 Id = role.Id,
                 Name = role.Name,
-                ClaimIds = role.Claims?.Select(c => c.Id).ToList() ?? new List<int>()
+                PermissionNames = role.RoleClaims?.Select(c => c.Permission).ToList() ?? new List<string>()
             });
 
         var dialog = await DialogService.ShowAsync<RoleDialog>("Rol Düzenle", parameters);
@@ -131,7 +156,7 @@
 
         if (!result.Canceled && result.Data is RoleDialog.RoleDto dto)
         {
-            var editDto = new EditRoleDto(dto.Id, dto.Name, dto.ClaimIds);
+            var editDto = new EditRoleDto(dto.Id, dto.Name, dto.PermissionNames);
 
             var serviceResult = await RoleService.UpdateRole(editDto);
             if (serviceResult.Success)

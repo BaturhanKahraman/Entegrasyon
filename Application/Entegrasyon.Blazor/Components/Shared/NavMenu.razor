@@ -35,9 +35,13 @@
     </MudNavGroup>
 
     <MudNavGroup Title="Müşteriler & Satış" Icon="@Icons.Material.Filled.People" Expanded="false">
-        <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.Person">
-            Müşteriler
-        </MudNavLink>
+        <AuthorizeView Policy="@AppPermissions.Customers.View">
+            <Authorized>
+                <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.Person">
+                    Müşteriler
+                </MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="/orders" Icon="@Icons.Material.Filled.Receipt">
             Siparişler
         </MudNavLink>
