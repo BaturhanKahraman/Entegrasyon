@@ -2,6 +2,7 @@
 @using Entegrasyon.Entity.User
 @using Shared.Extensions.Constants
 @using MudBlazor
+@using Entegrasyon.Blazor.Models
 
 <MudDialog>
     <DialogContent>
@@ -10,11 +11,11 @@
 
             <MudText Typo="Typo.subtitle1" Class="mt-4">Yetkiler</MudText>
             <MudGrid Class="mt-2" Style="max-height: 300px; overflow-y: auto;">
-                @foreach (var claim in AllClaims)
+                @foreach (var permission in AllPermissions)
                 {
                     <MudItem xs="12" sm="6">
-                        <MudCheckBox T="bool" Label="@claim.Description" Value="@(SelectedClaimIds.Contains(claim.Id))"
-                            ValueChanged="@((bool v) => OnClaimChanged(claim.Id, v))" />
+                        <MudCheckBox T="bool" Label="@permission.DisplayName" Value="@(SelectedPermissions.Contains(permission.Name))"
+                            ValueChanged="@((bool v) => OnPermissionChanged(permission.Name, v))" />
                     </MudItem>
                 }
             </MudGrid>
@@ -31,27 +32,27 @@
 
     [Parameter] public RoleDto Model { get; set; } = new();
     [Parameter] public bool IsEdit { get; set; }
-    [Parameter] public List<ApplicationClaim> AllClaims { get; set; } = new();
+    [Parameter] public List<PermissionModel> AllPermissions { get; set; } = new();
 
-    public HashSet<int> SelectedClaimIds { get; set; } = new();
+    public HashSet<string> SelectedPermissions { get; set; } = new();
 
     private MudForm _form;
     private bool _success;
 
     protected override void OnParametersSet()
     {
-        if (Model.ClaimIds != null)
+        if (Model.PermissionNames != null)
         {
-            SelectedClaimIds = new HashSet<int>(Model.ClaimIds);
+            SelectedPermissions = new HashSet<string>(Model.PermissionNames);
         }
     }
 
-    private void OnClaimChanged(int claimId, bool isChecked)
+    private void OnPermissionChanged(string permission, bool isChecked)
     {
         if (isChecked)
-            SelectedClaimIds.Add(claimId);
+            SelectedPermissions.Add(permission);
         else
-            SelectedClaimIds.Remove(claimId);
+            SelectedPermissions.Remove(permission);
     }
 
     private void Cancel() => MudDialog.Cancel();
@@ -61,7 +62,7 @@
         _form.Validate();
         if (!_success) return;
 
-        Model.ClaimIds = SelectedClaimIds.ToList();
+        Model.PermissionNames = SelectedPermissions.ToList();
         MudDialog.Close(DialogResult.Ok(Model));
     }
 
@@ -69,6 +70,6 @@
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<int> ClaimIds { get; set; } = new();
+        public List<string> PermissionNames { get; set; } = new();
     }
 }

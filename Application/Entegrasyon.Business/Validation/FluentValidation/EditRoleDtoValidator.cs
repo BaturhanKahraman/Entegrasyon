@@ -10,6 +10,6 @@ public class EditRoleDtoValidator:AbstractValidator<EditRoleDto>
     {
         RuleFor(r => r.Id).NotEmpty().NotEqual(0).WithMessage(Messages.NotNullId);
         RuleFor(r => r.Name).NotEmpty().WithMessage(Messages.NoRoleName);
-        RuleFor(r => r.Claims).NotEmpty().WithMessage(Messages.NoClaim);
+        RuleFor(r => r.PermissionNames).NotEmpty().WithMessage(Messages.NoClaim);
     }
 }

@@ -27,7 +27,6 @@ public class ApplicationUserEntityConfiguration : IEntityTypeConfiguration<Appli
         builder.HasOne(u => u.DefaultBranchOffice).WithMany(bo => bo.Users).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
         builder.HasMany(x => x.Logins).WithOne(x => x.User);
         builder.HasMany(u => u.Roles).WithMany(r => r.Users).UsingEntity<UsersRoles>();
-        builder.HasMany(u => u.Claims).WithMany(c => c.Users)
-            .UsingEntity<UsersClaims>();
+
     }
 }

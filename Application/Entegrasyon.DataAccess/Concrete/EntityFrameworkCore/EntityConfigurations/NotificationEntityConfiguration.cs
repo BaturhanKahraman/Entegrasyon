@@ -13,6 +13,5 @@ public class NotificationEntityConfiguration:IEntityTypeConfiguration<Notificati
         builder.HasKey(x => x.Id);
 
         builder.HasMany(n => n.Users).WithMany(u => u.Notifications).UsingEntity<NotificationsUsers>();
-        builder.HasMany(n => n.Claims).WithMany(c => c.Notifications).UsingEntity<NotificationsClaims>();
     }
 }

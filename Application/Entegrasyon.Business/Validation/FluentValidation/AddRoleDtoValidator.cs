@@ -8,7 +8,7 @@ namespace Entegrasyon.Business.Validation.FluentValidation
         public AddRoleDtoValidator()
         {
             RuleFor(x=>x.Name).NotEmpty().WithMessage(Messages.NoRoleName);
-            RuleFor(x => x.Claims).NotEmpty().WithMessage(Messages.NoClaim);
+            RuleFor(x => x.PermissionNames).NotEmpty().WithMessage(Messages.NoClaim);
         }
     }
 }

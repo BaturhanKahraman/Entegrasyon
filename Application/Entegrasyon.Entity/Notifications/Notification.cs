@@ -14,5 +14,4 @@ public sealed class Notification : BaseEntity
     public ICollection<NotificationsUsers> NotificationsUsers { get; set; }
     public ICollection<ApplicationUser> Users { get; set; } = [];
     public ICollection<NotificationsClaims> NotificationClaims { get; set; } = [];
-    public ICollection<ApplicationClaim> Claims { get; set; } = [];
 }

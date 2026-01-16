@@ -6,6 +6,6 @@ public class UsersClaims
 {
     public Guid ApplicationUserId { get; set; }
     public ApplicationUser ApplicationUser { get; set; }
-    public int ApplicationClaimId { get; set; }
-    public ApplicationClaim ApplicationClaim { get; set; }
+    public int? ApplicationClaimId { get; set; }  // Legacy - deprecated in favor of Permission
+    public string? Permission { get; set; }  // New: string-based permission name (e.g., "Permissions.Users.View")
 }

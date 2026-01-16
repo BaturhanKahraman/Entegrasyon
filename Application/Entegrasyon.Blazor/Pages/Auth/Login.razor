@@ -68,12 +68,11 @@
                         {
                             if (role.RoleClaims != null)
                             {
-                                // RoleClaims is a linking entity, we might need to access ApplicationClaim directly if mapped
-                                // But Role.cs has `public ICollection<ApplicationClaim> Claims { get; set; }`
-                                if (role.Claims != null)
-                                {
-                                    permissions.AddRange(role.Claims.Select(c => c.Name));
-                                }
+                                // Extract permission names from RoleClaims junction table
+                                permissions.AddRange(role.RoleClaims
+                                    .Where(rc => !string.IsNullOrEmpty(rc.Permission))
+                                    .Select(rc => rc.Permission!)
+                                );
                             }
                         }
                     }

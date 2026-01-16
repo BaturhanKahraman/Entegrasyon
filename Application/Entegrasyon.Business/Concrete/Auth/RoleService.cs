@@ -26,10 +26,9 @@ namespace Entegrasyon.Business.Concrete.Auth
             var validationResult = await addRoleDtoValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
                 return validationResult.ToResult();
-            //TODO 
+            //TODO
             var result = LogicRunner.Run(
-                await CheckIfNameExists(dto.Name, token),
-                await CheckIfClaimsExists(dto.Claims));
+                await CheckIfNameExists(dto.Name, token));
             if (result != null)
                 return result;
             await applicationLogManager.AddLog("Rol ekleniyor.", LogType.Role, LogAction.Add, dto);
@@ -44,11 +43,12 @@ namespace Entegrasyon.Business.Concrete.Auth
             await applicationLogManager.AddLog("Rol eklendi.", LogType.Role, LogAction.Add);
             return new SuccessResult(Messages.RoleAdded);
         }
-        private async Task<IResult> CheckIfClaimsExists(IEnumerable<int> claimsId)
-        {
-            var hasAll= await context.Claims.AllAsync(c=>claimsId.Contains(c.Id));
-            return hasAll ? new SuccessResult() : new ErrorResult(Messages.NotExistingClaim);
-        }
+        // private async Task<IResult> CheckIfClaimsExists(IEnumerable<int> claimsId)
+        // {
+        //     var hasAll= Shared.Extensions.Constants.AppPermissions.GetAll().
+        //         Any(p => claimsId.Contains(p.Id)) || !claimsId.Any();
+        //     return hasAll ? new SuccessResult() : new ErrorResult(Messages.NotExistingClaim);
+        // }
         private async Task<IResult> CheckIfNameExists(string name, CancellationToken token)
         {
             //normalize
@@ -75,7 +75,6 @@ namespace Entegrasyon.Business.Concrete.Auth
 
             dbRole.Name = dto.Name;
             dbRole.NormalizedName = dto.Name.ToUpperInvariant();
-            dbRole.Claims = dto.Claims.Select(c => new ApplicationClaim() { Id = c }).ToList();
 
             await context.SaveChangesAsync(token);
 

@@ -31,7 +31,6 @@ public class ApplicationUser : BaseEntity
     public ICollection<UsersRoles> UsersRoles { get; set; }
     public ICollection<Role> Roles { get; set; } = [];
     public ICollection<UsersClaims> MyProperty { get; set; }
-    public ICollection<ApplicationClaim> Claims { get; set; } = [];
     public ICollection<NotificationsUsers> NotificationsUsers { get; set; }
     public ICollection<Notification> Notifications { get; set; } = [];
     public int? DefaultBranchOfficeId { get; set; }
