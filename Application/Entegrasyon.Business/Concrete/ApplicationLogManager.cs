@@ -11,22 +11,18 @@ using System.Text.Json;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ApplicationLogManager:IApplicationLogManager
+public class ApplicationLogManager(IntegrationDbContext context, IHttpContextAccessor httpContextAccessor)
+    : IApplicationLogManager
 {
-    private readonly IntegrationDbContext _context;
-    private readonly HttpContext _httpContext;
-    public ApplicationLogManager(IntegrationDbContext context,IHttpContextAccessor httpContextAccessor)
-    {
-        _context = context;
-        _httpContext = httpContextAccessor.HttpContext;
-    }
+    private readonly HttpContext httpContext = httpContextAccessor.HttpContext;
+
     public async Task AddLog(string content,LogType type,LogAction action = LogAction.None,object obj = null,CancellationToken token = default)
     {
         var log = new ApplicationLog()
         {
             Content = content,
             CreatedAt = DateTimeOffset.UtcNow,
-            IpAddress = _httpContext.GetIPAddress(),
+            IpAddress = httpContext.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type,
             LogAction = action
@@ -37,25 +33,25 @@ public class ApplicationLogManager:IApplicationLogManager
             log.Object = JsonSerializer.Serialize(obj);
         }
 
-        await _context.Logs.AddAsync(log,token);
-        await _context.SaveChangesAsync(token);
+        await context.Logs.AddAsync(log,token);
+        await context.SaveChangesAsync(token);
     }
 
     private Guid? GetUserId()
     {
-        var canParseId = Guid.TryParse(_httpContext.GetUserId(),out Guid userId);
+        var canParseId = Guid.TryParse(httpContext.GetUserId(),out Guid userId);
         if(canParseId)
             return userId;
         return null;
     }
-  
+
     public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int pageIndex = 0,int itemCount = 50,
         LogType? logType = null,LogAction? logAction = null,CancellationToken token=default)
     {
         var logs = await
-            _context.Logs.OrderByDescending(x => x.Id)
-                .WhereIf(logType != null,x => x.LogType == logType)
-                .WhereIf(logAction != null,x => x.LogAction == logAction)
+            context.Logs.OrderByDescending(x => x.Id)
+                .Where(x => x.LogType == logType)
+                .Where(x => x.LogAction == logAction)
                 .Include(x => x.ApplicationUser).Skip((pageIndex - 1) * itemCount).Take(itemCount)
                 .Select(x => new ApplicationLogDetailDto
                 {
@@ -67,7 +63,7 @@ public class ApplicationLogManager:IApplicationLogManager
                     LogType = x.LogType,
                     UserInfos = x.ApplicationUser.UserName + ' ' + x.ApplicationUser.Name + ' ' + x.ApplicationUser.Surname
                 }).ToListAsync(token);
-        int totalItemCount = await _context.Logs.CountAsync(token);
+        int totalItemCount = await context.Logs.CountAsync(token);
         var logResult = new Pageable<ApplicationLogDetailDto>(logs, pageIndex, itemCount, totalItemCount);
         return new SuccessDataResult<Pageable<ApplicationLogDetailDto>>(logResult);
     }

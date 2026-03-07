@@ -1,0 +1,128 @@
+@page "/products"
+@using Shared.Extensions.Constants
+@attribute [Authorize(Policy = AppPermissions.Products.View)]
+@using Entegrasyon.Business.Concrete
+@using Entegrasyon.Entity.Products
+@using Entegrasyon.Blazor.Services.Channels
+@using Entegrasyon.Blazor.Services.Channels.Events
+@using Entegrasyon.Blazor.Components.Dialogs
+
+<PageTitle>Ürünler</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Ürün Yönetimi</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="searchString" Placeholder="Ürün ara (isim, stok kodu, barkod)..."
+                Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                OnKeyUp="@(e => OnSearchChanged())" Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" md="6" Class="d-flex justify-end gap-2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.FilterAlt"
+                OnClick="ToggleFilters">
+                Filtreler
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Download"
+                OnClick="ExportToExcel" Disabled="@(!products.Any())">
+                Excel'e Aktar
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                OnClick="OpenAddProductDialog">
+                Yeni Ürün
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    @if (showFilters)
+    {
+        <MudDivider Class="my-4" />
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int?" @bind-Value="filterBrandId" Label="Marka" Clearable="true"
+                    OnClearButtonClick="@(() => { filterBrandId = null; ApplyFilters(); })">
+                    <MudSelectItem Value="@((int?)null)">Tümü</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int?" @bind-Value="filterCategoryId" Label="Kategori" Clearable="true"
+                    OnClearButtonClick="@(() => { filterCategoryId = null; ApplyFilters(); })">
+                    <MudSelectItem Value="@((int?)null)">Tümü</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="ApplyFilters">
+                    Filtrele
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
+    </MudPaper>
+
+    <MudDataGrid T="Product" Items="@filteredProducts" Filterable="true" SortMode="SortMode.Multiple" Hover="true"
+        Loading="@loading" Virtualize="true" FixedHeader="true" Height="600px" RowsPerPage="25">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Ürünler</MudText>
+            <MudSpacer />
+            <MudChip Color="Color.Info" Size="Size.Small">
+                Toplam: @filteredProducts.Count ürün
+            </MudChip>
+        </ToolBarContent>
+        <Columns>
+            <SelectColumn T="Product" />
+            <TemplateColumn Title="Görsel" Sortable="false">
+                <CellTemplate>
+                    <MudAvatar Color="Color.Secondary" Size="Size.Small">
+                        <MudIcon Icon="@Icons.Material.Filled.Image" />
+                    </MudAvatar>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.StockCode" Title="Stok Kodu" />
+            <PropertyColumn Property="x => x.Title" Title="Ürün Adı" />
+            <TemplateColumn Title="Marka" Sortable="true">
+                <CellTemplate>
+                    @(context.Item.Brand?.Name ?? "N/A")
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Kategori" Sortable="true">
+            <CellTemplate>
+                @(context.Item.Category?.Name ?? "N/A")
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Property="x => x.Season" Title="Sezon" />
+        <PropertyColumn Property="x => x.Year" Title="Yıl" />
+        <TemplateColumn Title="Varyant" Sortable="false">
+            <CellTemplate>
+                <MudChip Size="Size.Small" Color="Color.Primary">
+                    @(context.Item.ProductVariants?.Count() ?? 0) adet
+                </MudChip>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn CellClass="d-flex justify-end" Title="İşlemler" Sortable="false">
+            <CellTemplate>
+                <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Visibility"
+                        OnClick="@(async () => await ViewProduct(context.Item))">
+                        Görüntüle
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Edit"
+                        OnClick="@(async () => await EditProduct(context.Item))">
+                        Düzenle
+                    </MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.ContentCopy"
+                        OnClick="@(async () => await DuplicateProduct(context.Item))">
+                        Kopyala
+                    </MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error"
+                        OnClick="@(async () => await DeleteProduct(context.Item))">
+                        Sil
+                    </MudMenuItem>
+                </MudMenu>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="Product" />
+    </PagerContent>
+</MudDataGrid>

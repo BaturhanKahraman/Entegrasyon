@@ -1,20 +1,13 @@
-﻿using Entegrasyon.DataAccess.Abstract;
-using Entegrasyon.Entity.Categories;
+﻿using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Products;
 using Shared.Results;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class AttributeKeyValueManager : IAttributeKeyValueManager
+public class AttributeKeyValueManager(IntegrationDbContext attributeKeyValueDal) : IAttributeKeyValueManager
 {
-    private readonly IAttributeKeyValueDal _attributeKeyValueDal;
-
-    public AttributeKeyValueManager(IAttributeKeyValueDal attributeKeyValueDal)
-    {
-        _attributeKeyValueDal = attributeKeyValueDal;
-    }
-
     public void ClearEmptyAttributes(Product product)
     {
         product.AttributeKeyValues = product.AttributeKeyValues
@@ -24,10 +17,12 @@ public class AttributeKeyValueManager : IAttributeKeyValueManager
 
     public async Task<IResult> ValidateAttributeKeyValues(IEnumerable<AttributeKeyValue> kv)
     {
-        var errorKeys = (await _attributeKeyValueDal.ValidateKeyValues(kv)).ToList();
-        if(errorKeys.Any())
-            return new ErrorResult(string.Join(' ',errorKeys) + " özellikleri eksiksiz doldurulmalıdır.");
-        return new SuccessResult();
+        //todo
+        throw new NotImplementedException();
+        // var errorKeys = (await attributeKeyValueDal.ValidateKeyValues(kv)).ToList();
+        // if(errorKeys.Any())
+        //     return new ErrorResult(string.Join(' ',errorKeys) + " özellikleri eksiksiz doldurulmalıdır.");
+        // return new SuccessResult();
     }
 
 }

@@ -83,7 +83,7 @@
                             UserName = user.Username,
                             Email = $"{user.Name} {user.Surname}", // Assuming Email is not in DTO check, using Name as placeholder
                             Token = Guid.NewGuid().ToString(), // Dummy token for session
-                            Roles = user.Roles?.Select(r => r.Name).ToList() ?? new List<string>(),
+                            Roles = user.Roles?.Select(r => r.Name).ToList() ?? [],
                             Permissions = permissions.Distinct().ToList()
                         };
 

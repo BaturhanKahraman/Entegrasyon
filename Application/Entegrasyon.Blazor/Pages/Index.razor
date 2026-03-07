@@ -9,7 +9,7 @@
 <MudText Typo="Typo.h3" GutterBottom="true">Dashboard</MudText>
 <MudText Class="mb-4" Color="Color.Secondary">E-Commerce Entegrasyon Platformuna Hoş Geldiniz</MudText>
 
-@if (_loading)
+@if (loading)
 {
     <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
 }
@@ -22,7 +22,7 @@
                 <div class="d-flex justify-space-between align-center">
                     <div>
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Ürün</MudText>
-                        <MudText Typo="Typo.h4">@_stats.TotalProducts</MudText>
+                        <MudText Typo="Typo.h4">@stats.TotalProducts</MudText>
                     </div>
                     <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" />
                 </div>
@@ -36,8 +36,8 @@
                 <div class="d-flex justify-space-between align-center">
                     <div>
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bugünkü Satışlar</MudText>
-                        <MudText Typo="Typo.h4">@_stats.TodaySales</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Success">₺@_stats.TodayRevenue.ToString("N2")</MudText>
+                        <MudText Typo="Typo.h4">@stats.TodaySales</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Success">₺@stats.TodayRevenue.ToString("N2")</MudText>
                     </div>
                     <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Success" />
                 </div>
@@ -51,7 +51,7 @@
                 <div class="d-flex justify-space-between align-center">
                     <div>
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bekleyen Sipariş</MudText>
-                        <MudText Typo="Typo.h4">@_stats.PendingOrders</MudText>
+                        <MudText Typo="Typo.h4">@stats.PendingOrders</MudText>
                     </div>
                     <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Warning" />
                 </div>
@@ -65,7 +65,7 @@
                 <div class="d-flex justify-space-between align-center">
                     <div>
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Düşük Stok</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Error">@_stats.LowStockProducts</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Error">@stats.LowStockProducts</MudText>
                     </div>
                     <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Error" />
                 </div>
@@ -83,11 +83,11 @@
             </MudCardHeader>
             <MudCardContent>
                 <MudChart ChartType="ChartType.Line"
-                          ChartSeries="@_salesChartData"
-                          XAxisLabels="@_xAxisLabels"
+                          ChartSeries="@salesChartData"
+                          XAxisLabels="@xAxisLabels"
                           Width="100%"
                           Height="300px"
-                          ChartOptions="@_chartOptions" />
+                          ChartOptions="@chartOptions" />
             </MudCardContent>
         </MudCard>
     </MudItem>
@@ -129,7 +129,7 @@
             </MudCardHeader>
             <MudCardContent>
                 <MudList T="string" Dense="true">
-                    @foreach (var marketplace in _marketplaceStatuses)
+                    @foreach (var marketplace in marketplaceStatuses)
                     {
                         <MudListItem T="string">
                             <div class="d-flex justify-space-between align-center" style="width: 100%">
@@ -160,7 +160,7 @@
             </MudCardHeader>
             <MudCardContent>
                 <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
-                    @foreach (var activity in _recentActivities)
+                    @foreach (var activity in recentActivities)
                     {
                         <MudTimelineItem Color="@activity.Color" Size="Size.Small">
                             <ItemContent>

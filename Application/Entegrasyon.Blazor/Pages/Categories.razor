@@ -5,7 +5,8 @@
 @using Entegrasyon.Blazor.Services.Channels.Events
 @using Entegrasyon.Blazor.Components.Dialogs
 @using Entegrasyon.Blazor.Components.Shared
-@inject CategoryManager CategoryManager
+@using Entegrasyon.Business.Abstract
+@inject ICategoryService CategoryManager
 @inject EventChannel<CategoryUpdatedEvent> CategoryEventChannel
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -38,7 +39,7 @@
 
 @code {
     #nullable enable
-    private List<Category> _categories = new();
+    private List<Category> _categories = [];
     private Category? _selectedCategory;
     private bool _loading = true;
     private string _searchString = string.Empty;

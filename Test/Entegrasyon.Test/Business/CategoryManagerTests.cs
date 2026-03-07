@@ -20,7 +20,7 @@ namespace Entegrasyon.UnitTest.Business;
 
 public class CategoryManagerTests : BaseTest
 {
-    private readonly ICategoryManager _categoryManager;
+    private readonly ICategoryService _categoryManager;
     private readonly Mock<ICategoryDal> _mockCategoryDal;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IFluentValidator> _mockValidator;
@@ -33,9 +33,9 @@ public class CategoryManagerTests : BaseTest
         _mockMapper = new Mock<IMapper>();
         _mockValidator = new Mock<IFluentValidator>();
         _mockProductDal = new Mock<IMainProductDal>();
-        
+
         _productManager = new ProductManager(
-            _mockProductDal.Object, 
+            _mockProductDal.Object,
             null!, // IApplicationLogManager
             null!, // IMapper
             _mockValidator.Object,
@@ -80,9 +80,9 @@ public class CategoryManagerTests : BaseTest
         // Arrange
         int categoryId = 1;
         var category = new Category { Id = categoryId, Name = "Test" };
-        
+
         _mockCategoryDal.Setup(d => d.GetAsync(It.IsAny<Expression<Func<Category, bool>>>(), false)).ReturnsAsync(category);
-        
+
         var products = new List<Product> { new Product { Id = Guid.NewGuid(), CategoryId = categoryId } };
         _mockProductDal.Setup(d => d.Table).ReturnsDbSet(products);
 
@@ -101,9 +101,9 @@ public class CategoryManagerTests : BaseTest
         // Arrange
         int categoryId = 1;
         var category = new Category { Id = categoryId, Name = "Test" };
-        
+
         _mockCategoryDal.Setup(d => d.GetAsync(It.IsAny<Expression<Func<Category, bool>>>(), false)).ReturnsAsync(category);
-        
+
         var products = new List<Product>();
         _mockProductDal.Setup(d => d.Table).ReturnsDbSet(products);
         _mockCategoryDal.Setup(d => d.SoftDeleteAsync(category)).Returns(Task.CompletedTask);

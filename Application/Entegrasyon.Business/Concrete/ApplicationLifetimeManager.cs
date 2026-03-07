@@ -5,24 +5,17 @@ using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ApplicationLifetimeManager : IApplicationLifetimeManager
+public class ApplicationLifetimeManager(IntegrationDbContext context, ILogger<ApplicationLifetimeManager> logger)
+    : IApplicationLifetimeManager
 {
-    private readonly IntegrationDbContext _context;
-    private readonly ILogger<ApplicationLifetimeManager> _logger;
-    public ApplicationLifetimeManager(IntegrationDbContext context, ILogger<ApplicationLifetimeManager> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task ApplyStartActions()
     {
         await MigrateDatabase();
-        _logger.LogInformation("Uygulama başlatıldı.");
+        logger.LogInformation("Uygulama başlatıldı.");
     }
     private async Task MigrateDatabase(CancellationToken ct = default)
     {
-        var db = _context.Database;
+        var db = context.Database;
         var pendingMigrations = await db.GetPendingMigrationsAsync(ct);
         if (pendingMigrations.Any())
         {

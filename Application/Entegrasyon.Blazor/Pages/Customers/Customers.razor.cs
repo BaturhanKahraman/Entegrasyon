@@ -16,15 +16,15 @@ public partial class Customers
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
-    private MudDataGrid<CustomerDetailDto> _dataGrid;
-    private string _searchString;
+    private MudDataGrid<CustomerDetailDto> dataGrid;
+    private string searchString;
 
     private async Task<GridData<CustomerDetailDto>> ServerData(GridState<CustomerDetailDto> state)
     {
         var page = state.Page;
         var pageSize = state.PageSize;
 
-        var result = await CustomerManager.GetCustomerDetailPageable(_searchString, page, pageSize);
+        var result = await CustomerManager.GetCustomerDetailPageable(searchString, page, pageSize);
 
         if (result.Success && result.Data != null)
         {
@@ -44,8 +44,8 @@ public partial class Customers
 
     private Task OnSearch(string text)
     {
-        _searchString = text;
-        return _dataGrid.ReloadServerData();
+        searchString = text;
+        return dataGrid.ReloadServerData();
     }
 
     private async Task OpenDialogAsync(CustomerDetailDto? customer = null)
@@ -80,7 +80,7 @@ public partial class Customers
 
         if (!result.Canceled)
         {
-            await _dataGrid.ReloadServerData();
+            await dataGrid.ReloadServerData();
         }
     }
 
@@ -108,7 +108,7 @@ public partial class Customers
             if (result.Success)
             {
                 Snackbar.Add("Müşteri başarıyla silindi.", Severity.Success);
-                await _dataGrid.ReloadServerData();
+                await dataGrid.ReloadServerData();
             }
             else
             {

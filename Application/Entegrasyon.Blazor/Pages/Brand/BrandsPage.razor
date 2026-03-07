@@ -1,0 +1,43 @@
+@page "/Brands"
+@using Entegrasyon.Entity.Dtos.Brand
+@using MudBlazor
+@attribute [StreamRendering]
+
+<h3>Brands</h3>
+
+
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">
+        @errorMessage
+    </MudAlert>
+}
+@if (isLoading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudDataGrid T="BrandListDetailDto"  Items="@brandList" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilter"
+                 Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Periodic Elements</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <SelectColumn T="Element" />
+            <PropertyColumn Property="x => x.Number" Title="Nr" Sortable="false" Filterable="false" />
+            <PropertyColumn Property="x => x.Sign" />
+            <PropertyColumn Property="x => x.Name" SortBy="@_sortBy" />
+            <PropertyColumn Property="x => x.Position" />
+            <PropertyColumn Property="x => x.Molar" Title="Molar mass" />
+            <PropertyColumn Property="x => x.Group" Title="Category" />
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Element" />
+        </PagerContent>
+    </MudDataGrid>
+}

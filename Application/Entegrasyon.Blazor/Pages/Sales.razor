@@ -13,7 +13,7 @@
         <MudPaper Class="pa-4 mb-4">
             <MudGrid>
                 <MudItem xs="12" md="9">
-                    <MudTextField @bind-Value="_barcodeSearch"
+                    <MudTextField @bind-Value="barcodeSearch"
                                   Label="Barkod Okut veya Ürün Ara"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.QrCodeScanner"
@@ -32,13 +32,13 @@
                 </MudItem>
             </MudGrid>
 
-            @if (_selectedCustomer != null)
+            @if (selectedCustomer != null)
             {
                 <MudChip T="string" Color="Color.Success"
                          Size="Size.Small"
                          OnClose="ClearCustomer"
                          Class="mt-2">
-                    Müşteri: @_selectedCustomer.Name
+                    Müşteri: @selectedCustomer.Name
                 </MudChip>
             }
         </MudPaper>
@@ -46,9 +46,9 @@
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.h6" Class="mb-4">Sepet</MudText>
 
-            @if (_cartItems.Any())
+            @if (cartItems.Any())
             {
-                <MudTable Items="@_cartItems" Hover="true" Dense="true">
+                <MudTable Items="@cartItems" Hover="true" Dense="true">
                     <HeaderContent>
                         <MudTh>Ürün</MudTh>
                         <MudTh>Beden</MudTh>
@@ -111,16 +111,16 @@
                 <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText>Ara Toplam:</MudText>
-                        <MudText Typo="Typo.h6">₺@_subtotal.ToString("F2")</MudText>
+                        <MudText Typo="Typo.h6">₺@Subtotal.ToString("F2")</MudText>
                     </div>
                 </MudListItem>
 
-                @if (_totalDiscount > 0)
+                @if (TotalDiscount > 0)
                 {
                     <MudListItem T="string">
                         <div class="d-flex justify-space-between" style="width: 100%">
                             <MudText Color="Color.Success">İndirim:</MudText>
-                            <MudText Color="Color.Success">-₺@_totalDiscount.ToString("F2")</MudText>
+                            <MudText Color="Color.Success">-₺@TotalDiscount.ToString("F2")</MudText>
                         </div>
                     </MudListItem>
                 }
@@ -130,7 +130,7 @@
                 <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText>KDV (%20):</MudText>
-                        <MudText Typo="Typo.body1">₺@_tax.ToString("F2")</MudText>
+                        <MudText Typo="Typo.body1">₺@Tax.ToString("F2")</MudText>
                     </div>
                 </MudListItem>
 
@@ -139,7 +139,7 @@
                 <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
                         <MudText Typo="Typo.h5">Toplam:</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Primary">₺@_total.ToString("F2")</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Primary">₺@Total.ToString("F2")</MudText>
                     </div>
                 </MudListItem>
             </MudList>
@@ -147,7 +147,7 @@
             <MudDivider Class="my-4" />
 
             <MudSelect T="string"
-                       @bind-Value="_paymentMethod"
+                       @bind-Value="paymentMethod"
                        Label="Ödeme Yöntemi"
                        Variant="Variant.Outlined"
                        Class="mb-4">
@@ -161,17 +161,17 @@
                        Color="Color.Success"
                        FullWidth="true"
                        Size="Size.Large"
-                       Disabled="@(!_cartItems.Any() || _processing)"
+                       Disabled="@(!cartItems.Any() || processing)"
                        OnClick="CompleteSale"
                        StartIcon="@Icons.Material.Filled.ShoppingCart">
-                @if (_processing)
+                @if (processing)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" />
                     <span class="ml-2">İşleniyor...</span>
                 }
                 else
                 {
-                    <span>Satışı Tamamla (₺@_total.ToString("F2"))</span>
+                    <span>Satışı Tamamla (₺@Total.ToString("F2"))</span>
                 }
             </MudButton>
 
@@ -179,7 +179,7 @@
                        Color="Color.Error"
                        FullWidth="true"
                        Class="mt-2"
-                       Disabled="@(!_cartItems.Any())"
+                       Disabled="@(!cartItems.Any())"
                        OnClick="ClearCart">
                 Sepeti Temizle
             </MudButton>

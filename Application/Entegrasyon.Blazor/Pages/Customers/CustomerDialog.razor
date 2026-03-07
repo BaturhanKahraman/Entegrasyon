@@ -1,6 +1,6 @@
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="_form" @bind-IsValid="@_success" @bind-Errors="@_errors">
+        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
             <MudRadioGroup @bind-Value="Model.CustomerType" Class="mb-4">
                 <MudRadio Value="@("Retail")" Color="Color.Primary">Bireysel</MudRadio>
                 <MudRadio Value="@("Corporate")" Color="Color.Secondary">Kurumsal</MudRadio>
@@ -30,6 +30,6 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">İptal</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!_success)">Kaydet</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!success)">Kaydet</MudButton>
     </DialogActions>
 </MudDialog>

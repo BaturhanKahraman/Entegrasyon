@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Users;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Shared.Logic;
 using Shared.Extensions;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Requests;
 using MapsterMapper;
 
 namespace Entegrasyon.Business.Concrete.Auth;
@@ -24,11 +24,11 @@ public class ApplicationUserManager(
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
     IFluentValidator validator,
     IntegrationDbContext context,
-    ILogger<ApplicationUserManager> logger) : IApplicationUserManager
+    ILogger<ApplicationUserManager> logger)
 {
     public async Task<IResult> AddUser(AddUserDto dto, CancellationToken token = default)
     {
-        await applicationLogManager.AddLog("Kullanıcı ekleniyor...", LogType.User, LogAction.Add, dto);
+        await applicationLogManager.AddLog("Kullanıcı ekleniyor...", LogType.User, LogAction.Add, dto, token);
         var validationResult = await validator.Validate(dto);
         if (!validationResult.IsValid)
             return validationResult.ToResult();
@@ -45,7 +45,7 @@ public class ApplicationUserManager(
         await context.Users.AddAsync(user, token);
         await context.SaveChangesAsync(token);
 
-        await applicationLogManager.AddLog("Kullanıcı eklendi.", LogType.User, LogAction.Add);
+        await applicationLogManager.AddLog("Kullanıcı eklendi.", LogType.User, LogAction.Add, token: token);
         return new SuccessResult(Messages.UserAdded);
     }
 
@@ -57,7 +57,7 @@ public class ApplicationUserManager(
 
     public async Task<IResult> EditUser(UserEditDto dto, CancellationToken token = default)
     {
-        await applicationLogManager.AddLog("Kullanıcı güncelleniyor...", LogType.User, LogAction.Update, dto);
+        await applicationLogManager.AddLog("Kullanıcı güncelleniyor...", LogType.User, LogAction.Update, dto, token);
         var validationResult = await validator.Validate(dto);
         if (!validationResult.IsValid)
             return validationResult.ToResult();
@@ -80,20 +80,30 @@ public class ApplicationUserManager(
             logger.LogError(e, "Concurrency Exception");
             return new ErrorResult("Bu kayıt güncellenmiş ve sizdeki versiyonu eski olabilir. Lütfen tekrar deneyin");
         }
-        await applicationLogManager.AddLog("Kullanıcı güncellendi...", LogType.User, LogAction.Update, dto);
+        await applicationLogManager.AddLog("Kullanıcı güncellendi...", LogType.User, LogAction.Update, dto, token);
         return new SuccessResult(Messages.UserUpdated);
     }
 
-    public async Task<IDataResult<Pageable<UserDetailListDto>>> GetPaginatedUserDetails(int pageIndex = 0, int itemCount = 50)
+    public async Task<IDataResult<Pageable<UserDetailListDto>>> GetPaginatedUserDetails(UserPaginatedRequest request)
     {
-        Expression<Func<ApplicationUser, UserDetailListDto>> selector = x => new UserDetailListDto(x.Id, x.Name, x.Surname, x.UserName,
-            x.IsActive, x.IsTwoFactorAuthActive, x.NeedsTakeNewPassword, x.CreatedAt, x.DefaultBranchOffice.Name);
-        var orders = new List<(string, string)>(1) { ("CreatedAt", "desc") };
-        var result =
-            await context.Users
-                .OrderByDescending(u => u.CreatedAt)
-                .Select(selector)
-                .ToPage(pageIndex, itemCount);
+        var result = await context.Users.AsNoTracking().ApplyGlobalSearch(request.SearchTerm,
+            nameof(ApplicationUser.FullName),
+            nameof(ApplicationUser.NormalizedUserName),
+            nameof(ApplicationUser.NormalizedEmail))
+            //TODO mapping yapılacak
+            .Select(u=>
+                new UserDetailListDto(u.Id,
+                    u.Name,
+                    u.Surname,
+                    u.UserName,
+                    u.IsActive,
+                    u.IsTwoFactorAuthActive,
+                    u.NeedsTakeNewPassword,
+                    u.CreatedAt,
+                    u.DefaultBranchOffice.Name
+                    ))
+            .ToPageableAsync(request);
+
         return new SuccessDataResult<Pageable<UserDetailListDto>>(result);
     }
 

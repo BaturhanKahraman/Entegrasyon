@@ -6,7 +6,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Abstract;
 
-public interface IProductManager
+public interface IProductService
 {
     Task<IResult> AddProduct(AddProductDto dto);
     Task<IResult> GetProductByBarcode(string barcode);

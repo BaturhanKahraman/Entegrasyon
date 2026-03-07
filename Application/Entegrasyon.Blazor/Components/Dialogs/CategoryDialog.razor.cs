@@ -1,3 +1,5 @@
+using Entegrasyon.Business.Abstract;
+
 namespace Entegrasyon.Blazor.Components.Dialogs;
 
 using Entegrasyon.Business.Concrete;
@@ -20,7 +22,7 @@ public partial class CategoryDialog
     public bool IsEditMode { get; set; }
 
     [Inject]
-    private CategoryManager? CategoryManager { get; set; }
+    private ICategoryService? CategoryManager { get; set; }
 
     [Inject]
     private ISnackbar? Snackbar { get; set; }
