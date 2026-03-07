@@ -14,13 +14,13 @@ using MapsterMapper;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,IFluentValidator fluentValidator,ProductManager productManager) : ICategoryManager
+    public class CategoryManager(ICategoryDal categoryDal,IApplicationLogManager applicationLogManager,IMapper mapper,IFluentValidator fluentValidator,IProductService productService) : ICategoryService
     {
         private readonly ICategoryDal _categoryDal = categoryDal;
         private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;
         private readonly IMapper _mapper = mapper;
         private readonly IFluentValidator _fluentValidator = fluentValidator;
-        private readonly ProductManager _productManager = productManager;
+        private readonly IProductService _productService = productService;
 
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
         {
@@ -76,7 +76,7 @@ namespace Entegrasyon.Business.Concrete
             var category = await _categoryDal.GetAsync(x => x.Id == categoryId);
             if (category == null)
                 return new ErrorResult(Messages.CategoryNotFound);
-            int productCount = await _productManager.GetProductCountByCategoryId(categoryId);
+            int productCount = await _productService.GetProductCountByCategoryId(categoryId);
             if (productCount > 0)
                 return new ErrorResult(Messages.CategoryHasProducts);
             await _categoryDal.SoftDeleteAsync(category);

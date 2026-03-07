@@ -3,7 +3,7 @@
 @using Shared.Extensions.Constants
 @attribute [Authorize(Policy = AppPermissions.Customers.View)]
 
-<MudDataGrid @ref="_dataGrid" T="CustomerDetailDto" ServerData="ServerData" Filterable="false">
+<MudDataGrid @ref="dataGrid" T="CustomerDetailDto" ServerData="ServerData" Filterable="false">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Müşteriler</MudText>
         <MudSpacer />

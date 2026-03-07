@@ -33,7 +33,7 @@ public partial class CategoryImport
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
-     private List<CategoryTreeNode> categories = new();
+     private List<CategoryTreeNode> categories = [];
     private IReadOnlyCollection<CategoryTreeNode>? selectedNodes;
     private bool loading;
     private bool importing;

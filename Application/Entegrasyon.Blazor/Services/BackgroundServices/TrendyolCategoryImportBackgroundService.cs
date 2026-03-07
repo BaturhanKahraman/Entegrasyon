@@ -116,6 +116,14 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
         };
 
         // Notification'ı kaydet (Users collection boş olduğu için no foreign key issues)
-        await notificationManager.SendNotification(notification, new[] { SenderType.RealTime });
+        try
+        {
+            await notificationManager.SendNotification(notification, new[] { SenderType.RealTime });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send notification for user(s): {UserIds}", string.Join(',', userIds));
+            // swallow exception to avoid stopping the background service host
+        }
     }
 }

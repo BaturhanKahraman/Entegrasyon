@@ -18,7 +18,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ProductManager : IProductManager
+public class ProductManager : IProductService
 {
     private readonly IMainProductDal _productDal;
     private readonly IApplicationLogManager _applicationLogManager;

@@ -7,7 +7,7 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Abstract;
 
-public interface ICategoryManager
+public interface ICategoryService
 {
     Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto);
     Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto);

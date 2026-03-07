@@ -58,8 +58,8 @@
 </MudTable>
 
 @code {
-    private List<Role> _roles = new();
-    private List<PermissionModel> _allPermissions = new();
+    private List<Role> _roles = [];
+    private List<PermissionModel> _allPermissions = [];
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
@@ -148,7 +148,7 @@
             {
                 Id = role.Id,
                 Name = role.Name,
-                PermissionNames = role.RoleClaims?.Select(c => c.Permission).ToList() ?? new List<string>()
+                PermissionNames = role.RoleClaims?.Select(c => c.Permission).ToList() ?? []
             });
 
         var dialog = await DialogService.ShowAsync<RoleDialog>("Rol Düzenle", parameters);

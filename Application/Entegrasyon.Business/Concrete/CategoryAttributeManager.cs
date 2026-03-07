@@ -8,13 +8,8 @@ using Shared.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplicationLogManager applicationLogManager,IFluentValidator fluentValidator,IMapper mapper,CategoryManager categoryManager) : ICategoryAttributeManager
+public class CategoryAttributeManager(IApplicationLogManager applicationLogManager,IFluentValidator fluentValidator,IMapper mapper,ICategoryService categoryService) : ICategoryAttributeManager
 {
-    private readonly ICategoryAttributeDal _attributeDal = attributeDal;
-    private readonly IApplicationLogManager _applicationLogManager = applicationLogManager;
-    private readonly CategoryManager _categoryManager = categoryManager;
-    private readonly IFluentValidator _fluentValidator = fluentValidator;
-    private readonly IMapper _mapper = mapper;
 
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {
@@ -63,8 +58,8 @@ public class CategoryAttributeManager(ICategoryAttributeDal attributeDal,IApplic
 
     public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
-        await _fluentValidator.ValidateAndThrowAsync(dto);
-        var categoryAttr = _mapper.Map<CategoryAttribute>(dto);
+        await fluentValidator.ValidateAndThrowAsync(dto);
+        var categoryAttr = mapper.Map<CategoryAttribute>(dto);
 
         await _attributeDal.AddAsync(categoryAttr);
         return new SuccessResult();

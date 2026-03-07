@@ -18,9 +18,9 @@ public partial class CustomerDialog
     [Parameter] public bool IsEdit { get; set; }
 
     private CustomerViewModel Model { get; set; } = new();
-    private MudForm _form;
-    private bool _success;
-    private string[] _errors = { };
+    private MudForm form;
+    private bool success;
+    private string[] errors = [];
 
     protected override void OnInitialized()
     {
@@ -71,8 +71,8 @@ public partial class CustomerDialog
 
     private async Task Submit()
     {
-        _form.Validate();
-        if (!_success) return;
+        form.Validate();
+        if (!success) return;
 
         if (IsEdit)
         {

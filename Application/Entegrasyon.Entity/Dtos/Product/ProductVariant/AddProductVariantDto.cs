@@ -11,7 +11,7 @@ public sealed class AddProductVariantDto
     public decimal ListPrice { get; set; }
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }
-    public IEnumerable<ProductVariantAttribute> ProductVariantAttributes { get; set; }
+    public List<ProductVariantAttribute> ProductVariantAttributes { get; set; }
     public IEnumerable<AddBranchOfficeStockDto> BranchOfficeStocks { get; set; }
     public IEnumerable<UploadedImage> UploadedImages { get; set; }
 

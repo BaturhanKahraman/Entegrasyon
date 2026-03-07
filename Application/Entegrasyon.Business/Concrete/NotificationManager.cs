@@ -2,6 +2,7 @@
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Notifications;
+using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Abstract;
 
@@ -14,16 +15,35 @@ public sealed class NotificationManager(IEnumerable<INotificationSender> notific
         await validator.ValidateAndThrowAsync(notification);
         notification.CreatedAt = DateTimeOffset.UtcNow;
 
-        // Duplicate Users'ları kaldır
-        if (notification.Users.Any())
+        // Ensure Users collection exists
+        if (notification.Users == null)
         {
-            notification.Users = notification.Users.DistinctBy(u => u.Id).ToList();
+            notification.Users = new List<ApplicationUser>();
         }
+
+        // Deduplicate incoming users by Id
+        var incomingUserIds = notification.Users
+            .Where(u => u != null && u.Id != Guid.Empty)
+            .Select(u => u.Id)
+            .Distinct()
+            .ToList();
+
+        // Resolve existing users from the DB and attach them to avoid EF trying to INSERT duplicates
+        List<ApplicationUser> trackedUsers = new();
+        if (incomingUserIds.Any())
+        {
+            trackedUsers = await context.Users
+                .Where(u => incomingUserIds.Contains(u.Id))
+                .ToListAsync();
+        }
+
+        // Replace notification.Users with the tracked entities (only link existing users)
+        notification.Users = trackedUsers;
 
         await context.Notifications.AddAsync(notification);
         await context.SaveChangesAsync();
 
-        IEnumerable<Guid> userIds = notification.Users.Select(u => u.Id).Distinct();
+        IEnumerable<Guid> userIds = notification.Users?.Select(u => u.Id).Distinct() ?? Enumerable.Empty<Guid>();
 
         var targetSenders = notificationSenders.Where(ns => senderTypes.Contains(ns.Type)).ToArray();
         if (userIds.Any() && targetSenders.Length > 0)

@@ -1,0 +1,154 @@
+@page "/products/add"
+@using Entegrasyon.Entity.Dtos.Product
+@using Entegrasyon.Entity.Dtos.Product.ProductVariant
+
+<PageTitle>Yeni Ürün Ekle</PageTitle>
+
+<MudPaper Class="pa-3 mb-3" Outlined="true">
+    <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="2">
+        <MudIcon Icon="@Icons.Material.Filled.AddBox" Size="Size.Large" Color="Color.Primary" />
+        <MudStack Spacing="0">
+            <MudText Typo="Typo.h5">Yeni Ürün Ekle</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Ürün bilgilerini adım adım tamamlayın.</MudText>
+        </MudStack>
+    </MudStack>
+</MudPaper>
+
+<MudPaper Class="pa-4">
+    <MudStepper @bind-ActiveIndex="stepIndex" Elevation="0" Linear="true">
+        <MudStep Label="Genel">
+            <StepContent>
+                <MudForm @ref="formStep1">
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Label="Ürün Başlığı" @bind-Value="title" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Label="Stok Kodu" @bind-Value="stockCode" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect T="int" Label="Marka" @bind-Value="brandId">
+                                @foreach (var b in brands)
+                                {
+                                    <MudSelectItem Value="@b.Id">@b.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect T="int" Label="Kategori" Value="categoryId" ValueChanged="OnCategoryChanged">
+                                @foreach (var c in categories)
+                                {
+                                    <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Label="Açıklama" Lines="4" @bind-Value="description" />
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </StepContent>
+        </MudStep>
+
+        <MudStep Label="Varyant Seçimi">
+            <StepContent>
+                @if (varianterAttributes is null || !varianterAttributes.Any())
+                {
+                    <MudText>Bu kategori için varyant belirleyici attribute bulunamadı. Manuel varyant ekleyebilirsiniz.</MudText>
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="AddVariant">Manuel Varyant Ekle</MudButton>
+                }
+                else
+                {
+                    <div class="varianter-list">
+                        @foreach (var attr in varianterAttributes)
+                        {
+                            <MudPaper Class="pa-3 mb-3">
+                                <MudText Typo="Typo.subtitle1">@attr.AttributeName</MudText>
+                                <MudSelect T="int" MultiSelection="true" Label="Değerleri seçin"
+                                           SelectedValues="@attr.SelectedValueIds" SelectedValuesChanged="@(vals => OnSelectedValuesChanged(attr, vals))">
+                                    @foreach (var val in attr.Values)
+                                    {
+                                        <MudSelectItem Value="@val.Id">@val.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudPaper>
+                        }
+                        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GenerateVariants">Seçilenlerden Varyant Oluştur</MudButton>
+                    </div>
+                }
+            </StepContent>
+        </MudStep>
+
+        <MudStep Label="Varyantlar & Özet">
+            <StepContent>
+                <div class="variants-section">
+                    @if (!variants.Any())
+                    {
+                        <MudText>Henüz varyant yok. Lütfen önce varyant oluşturun veya manuel ekleyin.</MudText>
+                        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="AddVariant">Manuel Varyant Ekle</MudButton>
+                    }
+                    @foreach (var (variant, idx) in variants.Select((v, i) => (v, i)))
+                    {
+                        <MudPaper Class="pa-3 mt-3 variant-card">
+                            <MudGrid>
+                                <MudItem xs="12" md="3">
+                                    <MudTextField Label="Barkod" @bind-Value="variant.Barcode" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <MudNumericField Label="Liste Fiyatı" @bind-Value="variant.ListPrice" Min="0" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <MudNumericField Label="Satış Fiyatı" @bind-Value="variant.SalePrice" Min="0" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <MudNumericField Label="Maliyet" @bind-Value="variant.CostPrice" Min="0" />
+                                </MudItem>
+                                <MudItem xs="12" md="2">
+                                    <MudNumericField Label="Hacim Ağırlığı" @bind-Value="variant.DimensionalWeight" Min="0" />
+                                </MudItem>
+                                <MudItem xs="12" md="1" Class="d-flex align-center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveVariant(idx))" />
+                                </MudItem>
+                            </MudGrid>
+                            @if (variant.ProductVariantAttributes?.Any() == true)
+                            {
+                                <div class="mt-2">
+                                    <MudText Typo="Typo.subtitle2">Özellikler:</MudText>
+                                    <ul>
+                                        @foreach (var pva in variant.ProductVariantAttributes)
+                                        {
+                                            <li>@(pva.CategoryAttributeValue ?? pva.CustomValue)</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </MudPaper>
+                    }
+
+                    <div class="mt-3">
+                        <MudText Typo="Typo.h6">Özet</MudText>
+                        <MudPaper Class="pa-3 mt-2">
+                            <div><b>Başlık:</b> @title</div>
+                            <div><b>Stok Kodu:</b> @stockCode</div>
+                            <div><b>Marka:</b> @brands.FirstOrDefault(b => b.Id == brandId)?.Name</div>
+                            <div><b>Kategori:</b> @categories.FirstOrDefault(c => c.Id == categoryId)?.Name</div>
+                            <div class="mt-2"><b>Varyant Sayısı:</b> @variants.Count</div>
+                        </MudPaper>
+                    </div>
+                </div>
+            </StepContent>
+        </MudStep>
+    </MudStepper>
+
+    <div class="actions mt-4 d-flex justify-between">
+        <MudButton Variant="Variant.Outlined" OnClick="PreviousStep" Disabled="@(stepIndex==0)">Geri</MudButton>
+        @if (stepIndex < 2)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">İleri</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Submit">Kaydet</MudButton>
+        }
+    </div>
+</MudPaper>

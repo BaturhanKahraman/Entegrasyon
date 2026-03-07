@@ -59,7 +59,7 @@
 
     [Parameter] public UserViewModel Model { get; set; } = new();
     [Parameter] public bool IsEdit { get; set; }
-    [Parameter] public List<Role> Roles { get; set; } = new();
+    [Parameter] public List<Role> Roles { get; set; } = [];
 
     public string NewUserPassword { get; set; }
     public IEnumerable<int> SelectedRoleIds { get; set; } = new HashSet<int>();

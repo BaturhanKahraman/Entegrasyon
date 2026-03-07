@@ -1,12 +1,10 @@
 ﻿namespace Shared.Entity;
 
-public sealed record PageRequest<T> where T: class
+public abstract record PaginatedRequest(
+    int PageIndex = 0,
+    int PageSize = 10,
+    string? SearchTerm = null
+)
 {
-    public int CurrentPageIndex => CurrentPage - 1;
-    public int CurrentPage { get; set; }
-    public int PageCount => ItemCount / ShowedItemSize;
-    public int ItemCount { get; set; }
-    public int ShowedItemSize { get; set; } = 50;
-
-
+    public List<string> OrderBy { get; init; } = new();
 }

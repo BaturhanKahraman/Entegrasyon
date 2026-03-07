@@ -32,9 +32,9 @@
 
     [Parameter] public RoleDto Model { get; set; } = new();
     [Parameter] public bool IsEdit { get; set; }
-    [Parameter] public List<PermissionModel> AllPermissions { get; set; } = new();
+    [Parameter] public List<PermissionModel> AllPermissions { get; set; } = [];
 
-    public HashSet<string> SelectedPermissions { get; set; } = new();
+    public HashSet<string> SelectedPermissions { get; set; } = [];
 
     private MudForm _form;
     private bool _success;
@@ -70,6 +70,6 @@
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<string> PermissionNames { get; set; } = new();
+        public List<string> PermissionNames { get; set; } = [];
     }
 }

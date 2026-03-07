@@ -1,3 +1,5 @@
+using Entegrasyon.Business.Abstract;
+
 namespace Entegrasyon.Blazor.Pages;
 
 using System;
@@ -9,17 +11,17 @@ using Entegrasyon.Business.Concrete;
 
 public partial class Index : IAsyncDisposable
 {
-    [Inject] private ProductManager? ProductManager { get; set; }
+    [Inject] private IProductService? ProductManager { get; set; }
     [Inject] private SaleManager? SaleManager { get; set; }
     [Inject] private ISnackbar? Snackbar { get; set; }
 
-    private bool _loading = true;
-    private DashboardStats _stats = new();
-    private List<ChartSeries> _salesChartData = new();
-    private string[] _xAxisLabels = [];
-    private ChartOptions _chartOptions = new() { YAxisTicks = 1000, MaxNumYAxisTicks = 10 };
-    private List<MarketplaceStatus> _marketplaceStatuses = new();
-    private List<ActivityItem> _recentActivities = new();
+    private bool loading = true;
+    private DashboardStats stats = new();
+    private List<ChartSeries> salesChartData = [];
+    private string[] xAxisLabels = [];
+    private readonly ChartOptions chartOptions = new() { YAxisTicks = 1000, MaxNumYAxisTicks = 10 };
+    private List<MarketplaceStatus> marketplaceStatuses = [];
+    private List<ActivityItem> recentActivities = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -28,7 +30,7 @@ public partial class Index : IAsyncDisposable
 
     private async Task LoadDashboardData()
     {
-        _loading = true;
+        loading = true;
         try
         {
             // TODO: Implement actual data loading
@@ -37,7 +39,7 @@ public partial class Index : IAsyncDisposable
             // var todaySales = await SaleManager.GetTodaySalesAsync();
 
             // Mock data for now
-            _stats = new DashboardStats
+            stats = new DashboardStats
             {
                 TotalProducts = 1250,
                 TodaySales = 45,
@@ -47,14 +49,14 @@ public partial class Index : IAsyncDisposable
             };
 
             // Sales chart data (last 7 days)
-            _xAxisLabels = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-            _salesChartData =
+            xAxisLabels = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+            salesChartData =
             [
-                new ChartSeries { Name = "Satışlar", Data = new double[] { 15000, 18000, 22000, 19000, 25000, 28000, 24000 } }
+                new ChartSeries { Name = "Satışlar", Data = [15000, 18000, 22000, 19000, 25000, 28000, 24000] }
             ];
 
             // Marketplace statuses
-            _marketplaceStatuses =
+            marketplaceStatuses =
             [
                 new("Trendyol", Icons.Material.Filled.Store, Color.Primary, "Aktif", Color.Success),
                 new("Hepsiburada", Icons.Material.Filled.ShoppingCart, Color.Secondary, "Aktif", Color.Success),
@@ -63,7 +65,7 @@ public partial class Index : IAsyncDisposable
             ];
 
             // Recent activities
-            _recentActivities =
+            recentActivities =
             [
                 new("Yeni ürün eklendi: Lacoste Polo T-Shirt", "2 dk önce", Color.Success),
                 new("Trendyol siparişi alındı: #TR-12345", "15 dk önce", Color.Info),
@@ -80,7 +82,7 @@ public partial class Index : IAsyncDisposable
         }
         finally
         {
-            _loading = false;
+            loading = false;
         }
     }
 

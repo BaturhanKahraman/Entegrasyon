@@ -13,24 +13,24 @@ public partial class Sales
     [Inject]
     private ISnackbar? Snackbar { get; set; }
 
-    private string _barcodeSearch = string.Empty;
-    private string _paymentMethod = "Nakit";
-    private bool _processing;
-    private List<CartItem> _cartItems = new();
-    private CustomerDto? _selectedCustomer;
+    private string barcodeSearch = string.Empty;
+    private string paymentMethod = "Nakit";
+    private bool processing;
+    private readonly List<CartItem> cartItems = [];
+    private CustomerDto? selectedCustomer;
 
-    private decimal _subtotal => _cartItems.Sum(x => x.Quantity * x.UnitPrice);
-    private decimal _totalDiscount => _cartItems.Sum(x => (x.Quantity * x.UnitPrice) * ((decimal)x.DiscountPercent / 100));
-    private decimal _subtotalAfterDiscount => _subtotal - _totalDiscount;
-    private decimal _tax => _subtotalAfterDiscount * 0.20m;
-    private decimal _total => _subtotalAfterDiscount + _tax;
+    private decimal Subtotal => cartItems.Sum(x => x.Quantity * x.UnitPrice);
+    private decimal TotalDiscount => cartItems.Sum(x => (x.Quantity * x.UnitPrice) * ((decimal)x.DiscountPercent / 100));
+    private decimal SubtotalAfterDiscount => Subtotal - TotalDiscount;
+    private decimal Tax => SubtotalAfterDiscount * 0.20m;
+    private decimal Total => SubtotalAfterDiscount + Tax;
 
     private async Task HandleBarcodeSearch(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_barcodeSearch))
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(barcodeSearch))
         {
-            await SearchAndAddProduct(_barcodeSearch);
-            _barcodeSearch = string.Empty;
+            await SearchAndAddProduct(barcodeSearch);
+            barcodeSearch = string.Empty;
         }
     }
 
@@ -64,7 +64,7 @@ public partial class Sales
 
     private void AddToCart(string productName, string size, decimal price, Guid variantId)
     {
-        var existingItem = _cartItems.FirstOrDefault(x => x.ProductVariantId == variantId);
+        var existingItem = cartItems.FirstOrDefault(x => x.ProductVariantId == variantId);
 
         if (existingItem != null)
         {
@@ -72,7 +72,7 @@ public partial class Sales
         }
         else
         {
-            _cartItems.Add(new CartItem
+            cartItems.Add(new CartItem
             {
                 ProductVariantId = variantId,
                 ProductName = productName,
@@ -89,7 +89,7 @@ public partial class Sales
 
     private void RemoveFromCart(CartItem item)
     {
-        _cartItems.Remove(item);
+        cartItems.Remove(item);
         RecalculateTotal();
         Snackbar?.Add("Ürün sepetten çıkarıldı", Severity.Info);
     }
@@ -101,8 +101,8 @@ public partial class Sales
 
     private void ClearCart()
     {
-        _cartItems.Clear();
-        _selectedCustomer = null;
+        cartItems.Clear();
+        selectedCustomer = null;
         Snackbar?.Add("Sepet temizlendi", Severity.Info);
     }
 
@@ -114,18 +114,18 @@ public partial class Sales
 
     private void ClearCustomer()
     {
-        _selectedCustomer = null;
+        selectedCustomer = null;
     }
 
     private async Task CompleteSale()
     {
-        if (!_cartItems.Any())
+        if (!cartItems.Any())
         {
             Snackbar?.Add("Sepet boş!", Severity.Warning);
             return;
         }
 
-        _processing = true;
+        processing = true;
         try
         {
             // TODO: Implement actual sale completion with SaleManager
@@ -154,7 +154,7 @@ public partial class Sales
 
             var confirm = await DialogService!.ShowMessageBox(
                 "Satış Tamamlandı",
-                $"Satış başarıyla tamamlandı!\n\nToplam: ₺{_total:F2}\nÖdeme: {_paymentMethod}\n\nFiş yazdırılsın mı?",
+                $"Satış başarıyla tamamlandı!\n\nToplam: ₺{Total:F2}\nÖdeme: {paymentMethod}\n\nFiş yazdırılsın mı?",
                 yesText: "Yazdır",
                 cancelText: "Kapat"
             );
@@ -165,7 +165,7 @@ public partial class Sales
                 // TODO: Implement receipt printing
             }
 
-            Snackbar?.Add($"Satış tamamlandı! Toplam: ₺{_total:F2}", Severity.Success);
+            Snackbar?.Add($"Satış tamamlandı! Toplam: ₺{Total:F2}", Severity.Success);
             ClearCart();
         }
         catch (Exception ex)
@@ -174,7 +174,7 @@ public partial class Sales
         }
         finally
         {
-            _processing = false;
+            processing = false;
         }
     }
 

@@ -10,17 +10,7 @@ namespace Entegrasyon.Blazor.Utility.Mapper;
 
 public static class Mappings
 {
-    public static Pageable<TDestination> MapItems<TSource, TDestination>(
-       this Pageable<TSource> source,
-       Func<TSource,TDestination> mapFunc)
-    {
-        return new Pageable<TDestination>(
-            [.. source.Items.Select(mapFunc)],
-            source.CurrentPageIndex + 1,
-            source.PagingItemCount,
-            source.TotalItemCount
-        );
-    }
+
 
     public static Func<ProductsDetailDto,ProductDetailListViewModel> ToListViewModel =>
     item => new ProductDetailListViewModel(

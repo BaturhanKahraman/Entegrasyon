@@ -88,10 +88,10 @@
 </MudDataGrid>
 
 @code {
-    private List<UserDetailListDto> _users = new();
+    private List<UserDetailListDto> _users = [];
     private string _searchString = string.Empty;
     private bool _loading = true;
-    private List<Role> _roles = new();
+    private List<Role> _roles = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,10 +136,10 @@
         parameters.Add("IsEdit", false);
         parameters.Add("Roles", _roles);
 
-        var dialog = DialogService.Show<UserDialog>("Yeni Kullanıcı", parameters);
+        var dialog = await DialogService.ShowAsync<UserDialog>("Yeni Kullanıcı", parameters);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is UserDialog.UserDialogResult dialogResult)
+        if (!result!.Canceled && result.Data is UserDialog.UserDialogResult dialogResult)
         {
             // Map dialogResult to AddUserDto
             var addUserDto = new AddUserDto
@@ -201,10 +201,10 @@
         // If UserDetailDto doesn't have Email, we have a problem.
         // But let's proceed assuming we can update it or fetch it.
 
-        var dialog = DialogService.Show<UserDialog>("Kullanıcı Düzenle", parameters);
+        var dialog =await  DialogService.ShowAsync<UserDialog>("Kullanıcı Düzenle", parameters);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is UserDialog.UserDialogResult dialogResult)
+        if (!result!.Canceled && result.Data is UserDialog.UserDialogResult dialogResult)
         {
             var editDto = new UserEditDto
                 {
