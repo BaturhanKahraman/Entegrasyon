@@ -6,5 +6,6 @@ public enum FileStorageType
     Aws,
     Azure,
     GoogleCloud,
-    DigitalOcean
+    DigitalOcean,
+    Minio
 }

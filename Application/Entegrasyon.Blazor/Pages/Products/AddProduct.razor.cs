@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Products;
+using BrandEntity = Entegrasyon.Entity.Brands.Brand;
 
 namespace Entegrasyon.Blazor.Pages.Products;
 
@@ -20,7 +20,7 @@ public partial class AddProduct
     private int brandId;
     private int categoryId;
 
-    private List<Brand> brands = [];
+    private List<BrandEntity> brands = [];
     private List<Category> categories = [];
 
     private readonly List<AddProductVariantDto> variants = [];
@@ -53,7 +53,7 @@ public partial class AddProduct
                 var brandsResult = await BrandManager.GetBrandListDetails();
                 if (brandsResult?.Data is not null)
                 {
-                    brands = brandsResult.Data.Select(b => new Brand { Id = b.Id, Name = b.Name }).ToList();
+                    brands = brandsResult.Data.Select(b => new BrandEntity { Id = b.Id, Name = b.Name }).ToList();
                 }
             }
         }
@@ -160,7 +160,6 @@ public partial class AddProduct
         if (cat is null)
             return;
 
-        // CategoryAttributes is a junction; we need those marked as varianter
         foreach (var cac in cat.CategoryAttributes ?? [])
         {
             if (!cac.IsVarianter)
@@ -219,7 +218,7 @@ public partial class AddProduct
                 ProductVariantAttributes = [],
                 BranchOfficeStocks = []
             };
-                for (int i = 0; i < combo.Count; i++)
+            for (int i = 0; i < combo.Count; i++)
             {
                 var attrVm = varianterAttributes.ElementAt(i);
                 var valueId = combo[i];

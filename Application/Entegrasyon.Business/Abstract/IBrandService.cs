@@ -1,6 +1,6 @@
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
-using Shared.DTO;
+using Entegrasyon.Entity.Requests;
 using Shared.Entity;
 using Shared.Results;
 
@@ -12,7 +12,7 @@ public interface IBrandService
     Task<IResult> AddBrand(AddBrandDto brandDto);
     Task<IResult> UpdateBrand(Brand brand);
     Task<IResult> DeleteBrand(int id);
-    Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(GetBrandDetailsPageDto dto);
+    Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(BrandDetailPaginatedRequest request);
     Task<IDataResult<Brand>> GetBrandById(int id);
     Task<IDataResult<BrandDetailDto>> GetBrandDetail(int id);
 }

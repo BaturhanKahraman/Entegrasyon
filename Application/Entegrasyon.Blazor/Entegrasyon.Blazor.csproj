@@ -58,4 +58,8 @@
 		<None Include="compilerconfig.json" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Remove="Services\Channels\Events\ImageEvents.cs" />
+	</ItemGroup>
+
 </Project>

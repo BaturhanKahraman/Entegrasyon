@@ -35,6 +35,7 @@ private readonly DbSet<BranchOffice> branchOffices = dbContext.BranchOffices;
             return new ErrorDataResult<BranchOffice>(null, result.Message);
         var office = mapper.Map<BranchOffice>(officeDto);
         await branchOffices.AddAsync(office);
+        await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog($"Ofis ekleme işlemi başarıyla tamamlandı. {office.Name}",LogType.Branch,LogAction.Add);
         return new SuccessDataResult<BranchOffice>(office,Messages.BranchAdded);
     }
@@ -87,12 +88,30 @@ private readonly DbSet<BranchOffice> branchOffices = dbContext.BranchOffices;
         return existingCount == officeIdArray.Length;
     }
 
-    public async Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(BranchPaginatedRequest request)
+    public async Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(int pageIndex = 0, int pageSize = 50)
     {
-        var result =await branchOffices..Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name, b.Users.Count())
-            ,new List<(string, string)>(){new ("CreatedAt","desc")});
-        return new SuccessDataResult<Pageable<BranchListDetailDto>>(result);
+        int total = await branchOffices.CountAsync();
+        var items = await branchOffices
+            .OrderByDescending(b => b.CreatedAt)
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name, b.Users.Count()))
+            .ToListAsync();
+        return new SuccessDataResult<Pageable<BranchListDetailDto>>(new Pageable<BranchListDetailDto>(items, pageIndex, pageSize, total));
     }
 
-    public Task<BranchOffice> GetBranchById(int id) => _branchOfficeDal.GetAsync(x => x.Id == id);
+    public async Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(BranchPaginatedRequest request)
+    {
+        int total = await branchOffices.CountAsync();
+        var items = await branchOffices
+            .OrderByDescending(b => b.CreatedAt)
+            .Skip(request.PageIndex * request.PageSize)
+            .Take(request.PageSize)
+            .Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name, b.Users.Count()))
+            .ToListAsync();
+        return new SuccessDataResult<Pageable<BranchListDetailDto>>(new Pageable<BranchListDetailDto>(items, request.PageIndex, request.PageSize, total));
+    }
+
+    public Task<BranchOffice> GetBranchById(int id) =>
+        branchOffices.FirstOrDefaultAsync(x => x.Id == id);
 }

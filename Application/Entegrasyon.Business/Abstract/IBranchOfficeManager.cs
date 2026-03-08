@@ -1,5 +1,6 @@
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
+using Entegrasyon.Entity.Requests;
 using Shared.Entity;
 using Shared.Results;
 
@@ -14,5 +15,6 @@ public interface IBranchOfficeManager
     Task<IResult> Delete(int id);
     Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds);
     Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(int pageIndex = 0, int pageSize = 50);
+    Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(BranchPaginatedRequest request);
     Task<BranchOffice> GetBranchById(int id);
 }

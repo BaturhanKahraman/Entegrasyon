@@ -3,9 +3,7 @@
 @using MudBlazor
 @attribute [StreamRendering]
 
-<h3>Brands</h3>
-
-
+<MudText Typo="Typo.h5" Class="mb-4">Markalar</MudText>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -19,25 +17,20 @@
 }
 else
 {
-    <MudDataGrid T="BrandListDetailDto"  Items="@brandList" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilter"
-                 Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+    <MudDataGrid T="BrandListDetailDto" Items="@brandList" SortMode="SortMode.Multiple"
+                 Filterable="true" Hideable="true">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Periodic Elements</MudText>
+            <MudText Typo="Typo.h6">Marka Listesi</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <Columns>
-            <SelectColumn T="Element" />
-            <PropertyColumn Property="x => x.Number" Title="Nr" Sortable="false" Filterable="false" />
-            <PropertyColumn Property="x => x.Sign" />
-            <PropertyColumn Property="x => x.Name" SortBy="@_sortBy" />
-            <PropertyColumn Property="x => x.Position" />
-            <PropertyColumn Property="x => x.Molar" Title="Molar mass" />
-            <PropertyColumn Property="x => x.Group" Title="Category" />
+            <PropertyColumn Property="x => x.Id" Title="ID" />
+            <PropertyColumn Property="x => x.Name" Title="Marka Adı" />
+            <PropertyColumn Property="x => x.ProductNumber" Title="Ürün Sayısı" />
+            <PropertyColumn Property="x => x.CreatedAt" Title="Oluşturma Tarihi" Format="dd.MM.yyyy" />
         </Columns>
         <PagerContent>
-            <MudDataGridPager T="Element" />
+            <MudDataGridPager T="BrandListDetailDto" />
         </PagerContent>
     </MudDataGrid>
 }

@@ -1,8 +1,8 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
-using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
@@ -20,139 +20,144 @@ namespace Entegrasyon.Business.Concrete;
 
 public class ProductManager : IProductService
 {
-    private readonly IMainProductDal _productDal;
+    private readonly IntegrationDbContext _dbContext;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
     private readonly IFluentValidator _validator;
     private readonly OfficeStockManager _officeStockManager;
-    //private readonly ImageManager _imageManager;
     private readonly AttributeKeyValueManager _attributeKeyValueManager;
     private readonly TempBarcodeManager _barcodeManager;
-    public ProductManager(IMainProductDal productDal,
+
+    public ProductManager(
+        IntegrationDbContext dbContext,
         IApplicationLogManager applicationLogManager,
         IMapper mapper,
         IFluentValidator validator,
         OfficeStockManager officeStockManager,
-        //ImageManager imageManager,
         AttributeKeyValueManager attributeKeyValueManager,
         TempBarcodeManager barcodeManager)
     {
-        _productDal = productDal;
+        _dbContext = dbContext;
         _applicationLogManager = applicationLogManager;
         _mapper = mapper;
         _validator = validator;
         _officeStockManager = officeStockManager;
-        //_imageManager = imageManager;
         _attributeKeyValueManager = attributeKeyValueManager;
         _barcodeManager = barcodeManager;
     }
 
     public async Task<IResult> AddProduct(AddProductDto dto)
     {
-        await _applicationLogManager.AddLog("Ürün ekleme isteği geldi.",LogType.Product,LogAction.Add,dto);
+        await _applicationLogManager.AddLog("Ürün ekleme isteği geldi.", LogType.Product, LogAction.Add, dto);
         await _validator.ValidateAndThrowAsync(dto);
         var result = LogicRunner.Run(
-            //await _officeStockManager.CheckIfOfficeExists(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks.Select(y => y.BranchOfficeId)).ToArray()),
             _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
-            //await _attributeKeyValueManager.ValidateAttributeKeyValues(dto.AttributeKeyValues)
-            );
-        if(result != null)
+        );
+        if (result != null)
             return result;
-        foreach(var productVariantDto in dto.ProductVariants.Where(productVariantDto => string.IsNullOrEmpty(productVariantDto.Barcode)))
+        foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = (await _barcodeManager.GetBarcode())?.Barcode;
         var product = _mapper.Map<Product>(dto);
         _attributeKeyValueManager.ClearEmptyAttributes(product);
-        await _productDal.AddAsync(product);
+        _dbContext.MainProducts.Add(product);
+        await _dbContext.SaveChangesAsync();
         await _barcodeManager.MarkAddedBarcodes(product.ProductVariants.Select(pv => pv.Barcode));
-        //await _imageManager.AddProductImages(dto,product);
-        await _applicationLogManager.AddLog("Ürün başarı ile eklendi",LogType.Product,LogAction.Add);
+        await _applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add);
         return new SuccessResult(Messages.ProductAdded);
     }
 
     public async Task<IResult> GetProductByBarcode(string barcode)
     {
-        if(string.IsNullOrEmpty(barcode))
+        if (string.IsNullOrEmpty(barcode))
             return new ErrorResult("Barkod boş olamaz.");
-        var product = await _productDal.GetAsync(x => x.ProductVariants.Any(pv => pv.Barcode == barcode));
-        if(product == null)
+        var product = await _dbContext.MainProducts
+            .FirstOrDefaultAsync(x => x.ProductVariants.Any(pv => pv.Barcode == barcode));
+        if (product == null)
             return new ErrorResult("Barkoda ait ürün bulunamadı.");
         return new SuccessDataResult<ProductsDetailDto>(_mapper.Map<ProductsDetailDto>(product));
     }
 
     public async Task<IResult> UpdateProduct(ProductEditDetailDto dto)
     {
-        //TODO
-        await _applicationLogManager.AddLog("Ürün güncelleniyor.",LogType.Product,LogAction.Update,dto);
-        var product = _mapper.Map<Product>(dto);//tam olarak eşleşmesi gerekiyor
-        //silinmiş fotoğrafların silinmesi ve yeni gelen foto varsa yüklenmesi gerek
-
-        await _productDal.UpdateAsync(product);
-        await _applicationLogManager.AddLog("Ürün güncellendi.",LogType.Product,LogAction.Update,dto);
+        await _applicationLogManager.AddLog("Ürün güncelleniyor.", LogType.Product, LogAction.Update, dto);
+        var product = _mapper.Map<Product>(dto);
+        _dbContext.MainProducts.Update(product);
+        await _dbContext.SaveChangesAsync();
+        await _applicationLogManager.AddLog("Ürün güncellendi.", LogType.Product, LogAction.Update, dto);
         return new SuccessResult();
     }
 
     public async Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId)
     {
-        var result = await _productDal.GetTransformedEntity(p =>
-            new ProductDetailDto(p.Id,
-                p.Title,
-                p.Description,
-                p.StockCode,
-                p.Brand.Name,
-                p.Category.Name,
+        var result = await _dbContext.MainProducts
+            .Where(p => p.Id == productId)
+            .Select(p => new ProductDetailDto(
+                p.Id, p.Title, p.Description, p.StockCode, p.Brand.Name, p.Category.Name,
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
-                p.ProductVariants.Select(pv => new ProductVariantDetailDto
-                (pv.Id,pv.Barcode,pv.DimensionalWeight,pv.CurrencyType,pv.ListPrice,pv.SalePrice,pv.CostPrice,pv.VatRate,
-                pv.Images.Select(img => img.Src).ToArray(),
-                pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name,stck.CurrentStock,stck.SoldQuantity,stck.FirstTotalStock))
+                p.ProductVariants.Select(pv => new ProductVariantDetailDto(
+                    pv.Id, pv.Barcode, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.VatRate,
+                    pv.Images.Select(img => img.Src).ToArray(),
+                    pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
                 )),
-                p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(kv.CategoryAttribute.CategoryAttributeKey,kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue))
-            ),expression: x => x.Id == productId);
+                p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
+                    kv.CategoryAttribute.CategoryAttributeKey,
+                    kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue))
+            ))
+            .FirstOrDefaultAsync();
         return new SuccessDataResult<ProductDetailDto>(result);
     }
+
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)
     {
-        var orderTupleList = new List<(string, string)> { new("CreatedAt","desc"),new("UpdatedAt","desc") };
-        Expression<Func<Product,bool>> expression =
-            string.IsNullOrEmpty(dto.FullTextSearchKey) ? null : x =>
-            x.SearchVector.Matches(dto.FullTextSearchKey.ToFullTextSearchQuery()) || x.ProductVariants.Any(pv => pv.Barcode.Contains(dto.FullTextSearchKey));
-        var result = await _productDal.GetPaginatedTransformedEntities(dto.PageIndex,
-            dto.PageSize,
-            x => new ProductsDetailDto(x.Id,x.Title,x.Description,x.StockCode,x.Brand.Name,x.Category.Name,
+        var query = _dbContext.MainProducts.AsQueryable();
+        if (!string.IsNullOrEmpty(dto.FullTextSearchKey))
+            query = query.Where(x =>
+                x.SearchVector.Matches(dto.FullTextSearchKey.ToFullTextSearchQuery()) ||
+                x.ProductVariants.Any(pv => pv.Barcode.Contains(dto.FullTextSearchKey)));
+
+        int total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.UpdatedAt)
+            .Skip(dto.PageIndex * dto.PageSize)
+            .Take(dto.PageSize)
+            .Select(x => new ProductsDetailDto(
+                x.Id, x.Title, x.Description, x.StockCode, x.Brand.Name, x.Category.Name,
                 x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
-                x.ProductVariants.Count()),
-            orderTupleList
-            ,expression
-            );
-        return new SuccessDataResult<Pageable<ProductsDetailDto>>(result);
-    }
+                x.ProductVariants.Count()))
+            .ToListAsync();
 
+        return new SuccessDataResult<Pageable<ProductsDetailDto>>(new Pageable<ProductsDetailDto>(items, dto.PageIndex, dto.PageSize, total));
+    }
 
     public async Task<IDataResult<ProductEditDetailDto>> GetProductEditDetailById(Guid id)
     {
-        var productEditDto = await _productDal.GetTransformedEntity(p =>
-            new ProductEditDetailDto(
-                p.Id,p.Title,p.Description,p.StockCode,p.BrandId!.Value,p.CategoryId,
-                    p.ProductVariants.Select(pv => new ProductVariantEditDetailDto(pv.Id,pv.DimensionalWeight,pv.CurrencyType,pv.Barcode,pv.ListPrice,
-                        pv.SalePrice,pv.CostPrice,pv.VatRate,pv.BranchOfficeStocks
-                            .Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId,bos.FirstTotalStock)).ToList(),
-                        pv.Images.Select(img => new EditableImageDto(img.Id,img.Src,img.IsCoverImage,img.IsDeleted)).ToList(),
-                        pv.ProductVariantAttributes
-                            .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId,pva.CategoryAttributeValue,pva.CustomValue,pva.IsVarianter,pva.IsSlicer))
-                            .ToList()
-                        )).ToList(),
-                    p.AttributeKeyValues.Select(akv => new AttributeKeyValueDto(
-                            akv.CategoryAttributeId,
-                            akv.CategoryAttribute.CategoryAttributeKey,
-                            akv.AttributeValueId,
-                            akv.AttributeValue.Name,
-                            akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId).IsRequired,akv.CustomValue)
-                        ).ToList()),x => x.Id == id);
-        return new SuccessDataResult<ProductEditDetailDto>(productEditDto);
+        var result = await _dbContext.MainProducts
+            .Where(p => p.Id == id)
+            .Select(p => new ProductEditDetailDto(
+                p.Id, p.Title, p.Description, p.StockCode, p.BrandId!.Value, p.CategoryId,
+                p.ProductVariants.Select(pv => new ProductVariantEditDetailDto(
+                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode, pv.ListPrice,
+                    pv.SalePrice, pv.CostPrice, pv.VatRate,
+                    pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId, bos.FirstTotalStock)).ToList(),
+                    pv.Images.Select(img => new EditableImageDto(img.Id, img.Src, img.IsCoverImage, img.IsDeleted)).ToList(),
+                    pv.ProductVariantAttributes
+                        .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId, pva.CategoryAttributeValue, pva.CustomValue, pva.IsVarianter, pva.IsSlicer))
+                        .ToList()
+                )).ToList(),
+                p.AttributeKeyValues.Select(akv => new AttributeKeyValueDto(
+                    akv.CategoryAttributeId,
+                    akv.CategoryAttribute.CategoryAttributeKey,
+                    akv.AttributeValueId,
+                    akv.AttributeValue.Name,
+                    akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId).IsRequired,
+                    akv.CustomValue)
+                ).ToList()))
+            .FirstOrDefaultAsync();
+        return new SuccessDataResult<ProductEditDetailDto>(result);
     }
 
     public Task<int> GetProductCountByCategoryId(int categoryId) =>
-         _productDal.Table.CountAsync(p => p.CategoryId == categoryId);
+        _dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
 }

@@ -1,7 +1,6 @@
-﻿using Entegrasyon.Business.Utility.Constants;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Users;
-using Entegrasyon.Entity.User;
 using FluentValidation.TestHelper;
 
 namespace Entegrasyon.UnitTest.Business.ValidationRules;
@@ -19,7 +18,7 @@ public class AddRoleDtoValidatorTests
     public async Task Validate_WhenNameIsEmpty_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default,default) { Name = "" };
+        var dto = new AddRoleDto(default, default) { Name = "" };
 
         // Act
         var result = await validator.TestValidateAsync(dto);
@@ -30,10 +29,10 @@ public class AddRoleDtoValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WhenClaimsIsNull_ShouldHaveErrorMessage()
+    public async Task Validate_WhenPermissionNamesIsNull_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default,default) { Name = "Admin",Claims = null };
+        var dto = new AddRoleDto(default, default) { Name = "Admin", PermissionNames = null };
 
         // Act
         var result = await validator.TestValidateAsync(dto);
@@ -44,10 +43,10 @@ public class AddRoleDtoValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WhenClaimsIsEmpty_ShouldHaveErrorMessage()
+    public async Task Validate_WhenPermissionNamesIsEmpty_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default,default) { Name = "Admin",Claims = [] };
+        var dto = new AddRoleDto(default, default) { Name = "Admin", PermissionNames = [] };
 
         // Act
         var result = await validator.TestValidateAsync(dto);
@@ -58,13 +57,13 @@ public class AddRoleDtoValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WhenClaimsIsNotNullAndNotEmpty_ShouldNotHaveError()
+    public async Task Validate_WhenPermissionNamesIsNotNullAndNotEmpty_ShouldNotHaveError()
     {
         // Arrange
-        var dto = new AddRoleDto(default,default) { Name = "Admin",Claims = [1] };
+        var dto = new AddRoleDto(default, default) { Name = "Admin", PermissionNames = ["Products.Read"] };
 
         // Act
-        var result =await validator.TestValidateAsync(dto);
+        var result = await validator.TestValidateAsync(dto);
 
         // Assert
         result.IsValid.Should().BeTrue();

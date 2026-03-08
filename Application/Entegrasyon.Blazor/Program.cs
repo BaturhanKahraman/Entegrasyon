@@ -40,6 +40,8 @@ builder.Services.AddHostedService<ProductSyncBackgroundService>();
 builder.Services.AddHostedService<MarketplaceSyncBackgroundService>();
 builder.Services.AddHostedService<TrendyolCategoryImportBackgroundService>();
 
+builder.Services.AddStorageServices(builder.Configuration);
+
 // builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
 // {
 //     x.SlidingExpiration = true;
