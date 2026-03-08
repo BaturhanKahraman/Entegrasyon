@@ -22,6 +22,8 @@ using Microsoft.AspNetCore.SignalR;
 using Shared.FileStorage;
 using Shared.FileStorage.ImageProcessing;
 using Shared.FileStorage.Options;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.BackgroundServices;
 
 namespace Entegrasyon.ApplicationBootstrap
 {
@@ -42,17 +44,17 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
             services.AddScoped<CategoryAttributeManager>();
-            services.AddScoped< ApplicationUserManager>();
+            services.AddScoped<ApplicationUserManager>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<CargoCompaniesManager>();
             services.AddScoped<CustomerManager>();
             services.AddScoped<IProductService,ProductManager>();
-            services.AddScoped<OfficeStockManager>();
-            services.AddScoped<ProductVariantManager>();
+            services.AddScoped<IOfficeStockManager,OfficeStockManager>();
+            services.AddScoped<IProductVariantManager,ProductVariantManager>();
             services.AddScoped<IImageManager, ImageManager>();
             services.AddScoped<DiscountVoucherManager>();
             services.AddScoped<AttributeKeyValueManager>();
-            services.AddScoped<SaleManager>();
+            services.AddScoped<ISaleManager,SaleManager>();
             services.AddScoped<ITrendyolCategoryImportService, TrendyolCategoryImporterService>();
             services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
             services.AddScoped<TempBarcodeManager>();
@@ -66,6 +68,7 @@ namespace Entegrasyon.ApplicationBootstrap
 
 
 
+            services.AddEventChannels();
             services.AddValidators();
             services.AddBusinessMapping();
             return services;
@@ -98,10 +101,9 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
         {
-            //services.AddHostedService<TrendyolCategoryImportListener>();
-            //services.AddHostedService<TrendyolBrandImportListener>();
-
             services.AddHostedService<TempBarcodeBackgroundService>();
+            services.AddHostedService<TrendyolCategoryImportBackgroundService>();
+            services.AddHostedService<TrendyolProductPublishBackgroundService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)

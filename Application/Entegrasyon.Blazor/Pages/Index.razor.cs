@@ -12,7 +12,7 @@ using Entegrasyon.Business.Concrete;
 public partial class Index : IAsyncDisposable
 {
     [Inject] private IProductService? ProductManager { get; set; }
-    [Inject] private SaleManager? SaleManager { get; set; }
+    [Inject] private ISaleManager? SaleManager { get; set; }
     [Inject] private ISnackbar? Snackbar { get; set; }
 
     private bool loading = true;

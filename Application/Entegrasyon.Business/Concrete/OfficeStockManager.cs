@@ -12,10 +12,10 @@ namespace Entegrasyon.Business.Concrete;
 public class OfficeStockManager : IOfficeStockManager
 {
     private readonly IntegrationDbContext _dbContext;
-    private readonly BranchOfficeManager _branchOfficeManager;
-    private readonly ProductVariantManager _productVariantManager;
+    private readonly IBranchOfficeManager _branchOfficeManager;
+    private readonly IProductVariantManager _productVariantManager;
 
-    public OfficeStockManager(IntegrationDbContext dbContext, BranchOfficeManager branchOfficeManager, ProductVariantManager productVariantManager)
+    public OfficeStockManager(IntegrationDbContext dbContext, IBranchOfficeManager branchOfficeManager, IProductVariantManager productVariantManager)
     {
         _dbContext = dbContext;
         _branchOfficeManager = branchOfficeManager;
