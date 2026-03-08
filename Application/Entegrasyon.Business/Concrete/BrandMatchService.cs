@@ -1,24 +1,28 @@
-﻿using Entegrasyon.DataAccess.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Matches;
 using Entegrasyon.Business.Abstract;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class BrandMatchService : IBrandMatchService
 {
-    private readonly IBrandMarketPlaceMatchDal _dal;
+    private readonly IntegrationDbContext _dbContext;
 
-    public BrandMatchService(IBrandMarketPlaceMatchDal dal)
+    public BrandMatchService(IntegrationDbContext dbContext)
     {
-        _dal = dal;
+        _dbContext = dbContext;
     }
 
     public async Task AddRange(List<BrandMarketPlaceMatch> entities)
     {
-        await _dal.AddRangeAsync(entities);
+        _dbContext.BrandMarketPlaceMatches.AddRange(entities);
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Task<List<int>> GetMarketPlaceBrandIdsByMarketPlaceId(int marketPlaceId)=>
-        _dal.GetTransformedEntitiesAsync(x=>x.MarketPlaceBrandId,null,expression :x=> x.MarketPlaceId == marketPlaceId);
-
+    public Task<List<int>> GetMarketPlaceBrandIdsByMarketPlaceId(int marketPlaceId) =>
+        _dbContext.BrandMarketPlaceMatches
+            .Where(x => x.MarketPlaceId == marketPlaceId)
+            .Select(x => x.MarketPlaceBrandId)
+            .ToListAsync();
 }

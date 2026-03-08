@@ -7,7 +7,7 @@ using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Matches;
-using Entegrasyon.MessageQueue.Commands.Trendyol.Import;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Results;

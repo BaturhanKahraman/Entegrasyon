@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Requests;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.Entity;
@@ -10,27 +11,28 @@ public partial class BrandsPage : ComponentBase
 {
     [Inject] private IBrandService brandService { get; set; }
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
-    [Parameter] private int PageIndex { get; set; } = 1;
-    [Parameter] private int PageSize { get; set; } = 50;
-    [Parameter] private string BrandName { get; set; } = string.Empty;
+    [Parameter] public int PageIndex { get; set; } = 0;
+    [Parameter] public int PageSize { get; set; } = 50;
+    [Parameter] public string BrandName { get; set; } = string.Empty;
     private IEnumerable<BrandListDetailDto> brandList;
     private string? errorMessage;
     private bool isLoading;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData(new GetBrandDetailsPageDto(BrandName, PageIndex, PageSize));
+        await LoadData(new BrandDetailPaginatedRequest { SearchTerm = BrandName });
     }
 
-    private async Task LoadData(GetBrandDetailsPageDto dto)
+    private async Task LoadData(BrandDetailPaginatedRequest request)
     {
         isLoading = true;
         errorMessage = null;
 
-        var result = await brandService.GetBrandDetailPageable(dto);
+        var result = await brandService.GetBrandDetailPageable(request);
         if (result.Success)
         {
-            brandList = result.Data;
+            brandList = result.Data.Items;
+            isLoading = false;
             return;
         }
 
@@ -39,7 +41,6 @@ public partial class BrandsPage : ComponentBase
             : result.Message;
         Snackbar.Add(errorMessage, Severity.Error);
         brandList = null!;
-
         isLoading = false;
     }
 }

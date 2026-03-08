@@ -2,15 +2,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Entegrasyon.Business.Abstract;
+using Shared.FileStorage;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class ApplicationLifetimeManager(IntegrationDbContext context, ILogger<ApplicationLifetimeManager> logger)
+public class ApplicationLifetimeManager(
+    IntegrationDbContext context,
+    ILogger<ApplicationLifetimeManager> logger,
+    IMinioFileStorage minioFileStorage)
     : IApplicationLifetimeManager
 {
     public async Task ApplyStartActions()
     {
         await MigrateDatabase();
+        await minioFileStorage.EnsureBucketExistsAsync();
         logger.LogInformation("Uygulama başlatıldı.");
     }
     private async Task MigrateDatabase(CancellationToken ct = default)

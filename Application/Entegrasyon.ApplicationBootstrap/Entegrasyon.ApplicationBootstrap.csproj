@@ -15,7 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
     <ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
-    <ProjectReference Include="..\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
+
   </ItemGroup>
 
 </Project>

@@ -19,6 +19,9 @@ using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
+using Shared.FileStorage;
+using Shared.FileStorage.ImageProcessing;
+using Shared.FileStorage.Options;
 
 namespace Entegrasyon.ApplicationBootstrap
 {
@@ -46,7 +49,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IProductService,ProductManager>();
             services.AddScoped<OfficeStockManager>();
             services.AddScoped<ProductVariantManager>();
-            //services.AddScoped<ImageManager>();
+            services.AddScoped<IImageManager, ImageManager>();
             services.AddScoped<DiscountVoucherManager>();
             services.AddScoped<AttributeKeyValueManager>();
             services.AddScoped<SaleManager>();
@@ -101,6 +104,14 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TempBarcodeBackgroundService>();
             return services;
         }
+        public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<MinioOptions>(configuration.GetSection("Minio"));
+            services.AddSingleton<IMinioFileStorage, MinioFileStorage>();
+            services.AddSingleton<IImageProcessingService, ImageProcessingService>();
+            return services;
+        }
+
         public static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration? configuration = null)
         {
             services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);
