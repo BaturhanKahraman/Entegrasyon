@@ -9,7 +9,6 @@ using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using Entegrasyon.Entity.Barcode;
 using Entegrasyon.Entity.Brands;
 using Shared.Entity;
 using Entegrasyon.Entity.Customers;
@@ -92,7 +91,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<CorporateCustomer> CorporateCustomers { get; set; }
     public virtual DbSet<CargoCompany> CargoCompanies { get; set; }
     public virtual DbSet<CategoryAttributeCategory> CategoryAttributeCategories { get; set; }
-    public virtual DbSet<TempBarcode> TempBarcodes { get; set; }
+    public virtual DbSet<ProductMarketplace> ProductMarketplaces { get; set; }
     public virtual DbSet<CategoryMarketPlaceMatch> CategoryMarketPlaceMatches { get; set; }
     public virtual DbSet<CategoryAttributeMarketPlaceMatch> CategoryAttributeMarketPlaceMatches { get; set; }
     public virtual DbSet<CategoryAttributeValueMarketPlaceMatch> CategoryAttributeValueMarketPlaceMatches { get; set; }

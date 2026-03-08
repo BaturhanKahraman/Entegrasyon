@@ -1,36 +1,55 @@
-@page "/Brands"
+@page "/brands"
 @using Entegrasyon.Entity.Dtos.Brand
 @using MudBlazor
-@attribute [StreamRendering]
+@using Entegrasyon.Blazor.Components.Dialogs
 
 <MudText Typo="Typo.h5" Class="mb-4">Markalar</MudText>
 
-@if (!string.IsNullOrWhiteSpace(errorMessage))
+@if (_loading)
 {
-    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">
-        @errorMessage
-    </MudAlert>
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
 }
-@if (isLoading)
-{
-    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-}
-else
-{
-    <MudDataGrid T="BrandListDetailDto" Items="@brandList" SortMode="SortMode.Multiple"
-                 Filterable="true" Hideable="true">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Marka Listesi</MudText>
-            <MudSpacer />
-        </ToolBarContent>
-        <Columns>
-            <PropertyColumn Property="x => x.Id" Title="ID" />
-            <PropertyColumn Property="x => x.Name" Title="Marka Adı" />
-            <PropertyColumn Property="x => x.ProductNumber" Title="Ürün Sayısı" />
-            <PropertyColumn Property="x => x.CreatedAt" Title="Oluşturma Tarihi" Format="dd.MM.yyyy" />
-        </Columns>
-        <PagerContent>
-            <MudDataGridPager T="BrandListDetailDto" />
-        </PagerContent>
-    </MudDataGrid>
-}
+
+<MudDataGrid T="BrandListDetailDto" Items="@_brands" SortMode="SortMode.Multiple"
+             QuickFilter="@QuickFilter" Hover="true" Striped="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Marka Listesi</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="_searchTerm"
+                      Placeholder="Marka ara..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      IconSize="Size.Medium"
+                      Class="mt-0 mr-4"
+                      Clearable="true" />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenAddDialog">
+            Marka Ekle
+        </MudButton>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Name" Title="Marka Adı" Sortable="true" />
+        <PropertyColumn Property="x => x.ProductNumber" Title="Ürün Sayısı" Sortable="true" />
+        <PropertyColumn Property="x => x.CreatedAt" Title="Eklenme Tarihi" Format="dd.MM.yyyy" Sortable="true" />
+        <TemplateColumn Title="İşlemler" Sortable="false">
+            <CellTemplate>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               OnClick="@(() => OpenEditDialog(context.Item))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => DeleteAsync(context.Item))" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="BrandListDetailDto" />
+    </PagerContent>
+    <NoRecordsContent>
+        <MudText Class="my-4">Henüz marka eklenmedi.</MudText>
+    </NoRecordsContent>
+</MudDataGrid>

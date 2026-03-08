@@ -1,10 +1,10 @@
-using Entegrasyon.Entity.Dtos.Product;
-using Entegrasyon.Entity.Products;
 using Shared.Results;
 
 namespace Entegrasyon.Business.Abstract;
 
+public record VariantImageStream(Guid VariantId, Stream ImageStream, string FileName, bool IsMain);
+
 public interface IImageManager
 {
-    Task<IResult> AddProductImages(AddProductDto dto, Product addedProduct);
+    Task<IResult> AddProductImages(Guid productId, IEnumerable<VariantImageStream> images);
 }

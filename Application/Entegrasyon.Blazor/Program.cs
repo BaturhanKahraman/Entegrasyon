@@ -1,12 +1,11 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
+using Entegrasyon.Business.Channels;
 using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
-using Entegrasyon.Blazor.Services.Channels;
 using Entegrasyon.Blazor.Services;
-using Entegrasyon.Blazor.Services.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
@@ -32,13 +31,7 @@ builder.Services.AddApplicationDependencies();
 builder.Services.AddClients();
 builder.Services.AddBackgroundServices();
 
-// Add event channels for in-process messaging
-builder.Services.AddEventChannels();
-
-// Add new background services that use Channels
-builder.Services.AddHostedService<ProductSyncBackgroundService>();
-builder.Services.AddHostedService<MarketplaceSyncBackgroundService>();
-builder.Services.AddHostedService<TrendyolCategoryImportBackgroundService>();
+// Event channels and background services are registered via AddEventChannels() and AddBackgroundServices()
 
 builder.Services.AddStorageServices(builder.Configuration);
 

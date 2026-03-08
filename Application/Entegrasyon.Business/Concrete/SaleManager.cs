@@ -19,9 +19,9 @@ public sealed class SaleManager : ISaleManager
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
     private readonly IFluentValidator _fluentValidator;
-    private readonly OfficeStockManager _officeStockManager;
+    private readonly IOfficeStockManager _officeStockManager;
 
-    public SaleManager(IntegrationDbContext dbContext, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, OfficeStockManager officeStockManager)
+    public SaleManager(IntegrationDbContext dbContext, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, IOfficeStockManager officeStockManager)
     {
         _dbContext = dbContext;
         _applicationLogManager = applicationLogManager;

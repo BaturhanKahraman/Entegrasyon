@@ -24,18 +24,18 @@ public class ProductManager : IProductService
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly IMapper _mapper;
     private readonly IFluentValidator _validator;
-    private readonly OfficeStockManager _officeStockManager;
-    private readonly AttributeKeyValueManager _attributeKeyValueManager;
-    private readonly TempBarcodeManager _barcodeManager;
+    private readonly IOfficeStockManager _officeStockManager;
+    private readonly IAttributeKeyValueManager _attributeKeyValueManager;
+    private readonly IBarcodeService _barcodeService;
 
     public ProductManager(
         IntegrationDbContext dbContext,
         IApplicationLogManager applicationLogManager,
         IMapper mapper,
         IFluentValidator validator,
-        OfficeStockManager officeStockManager,
-        AttributeKeyValueManager attributeKeyValueManager,
-        TempBarcodeManager barcodeManager)
+        IOfficeStockManager officeStockManager,
+        IAttributeKeyValueManager attributeKeyValueManager,
+        IBarcodeService barcodeService)
     {
         _dbContext = dbContext;
         _applicationLogManager = applicationLogManager;
@@ -43,27 +43,26 @@ public class ProductManager : IProductService
         _validator = validator;
         _officeStockManager = officeStockManager;
         _attributeKeyValueManager = attributeKeyValueManager;
-        _barcodeManager = barcodeManager;
+        _barcodeService = barcodeService;
     }
 
-    public async Task<IResult> AddProduct(AddProductDto dto)
+    public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
         await _applicationLogManager.AddLog("Ürün ekleme isteği geldi.", LogType.Product, LogAction.Add, dto);
         await _validator.ValidateAndThrowAsync(dto);
-        var result = LogicRunner.Run(
+        var check = LogicRunner.Run(
             _officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
         );
-        if (result != null)
-            return result;
+        if (check != null)
+            return new ErrorDataResult<Product>(null!, check.Message);
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
-            productVariantDto.Barcode = (await _barcodeManager.GetBarcode())?.Barcode;
+            productVariantDto.Barcode = await _barcodeService.GenerateAsync();
         var product = _mapper.Map<Product>(dto);
         _attributeKeyValueManager.ClearEmptyAttributes(product);
         _dbContext.MainProducts.Add(product);
         await _dbContext.SaveChangesAsync();
-        await _barcodeManager.MarkAddedBarcodes(product.ProductVariants.Select(pv => pv.Barcode));
         await _applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add);
-        return new SuccessResult(Messages.ProductAdded);
+        return new SuccessDataResult<Product>(product, Messages.ProductAdded);
     }
 
     public async Task<IResult> GetProductByBarcode(string barcode)

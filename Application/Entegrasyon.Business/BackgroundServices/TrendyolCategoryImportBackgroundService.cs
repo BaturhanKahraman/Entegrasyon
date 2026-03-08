@@ -1,12 +1,15 @@
-using Entegrasyon.Blazor.Services.Channels;
-using Entegrasyon.Blazor.Services.Channels.Events;
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events;
 using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.User;
-using Entegrasyon.Business.Abstract;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace Entegrasyon.Blazor.Services.BackgroundServices;
+namespace Entegrasyon.Business.BackgroundServices;
 
 public class TrendyolCategoryImportBackgroundService : BackgroundService
 {
@@ -39,48 +42,32 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                 _logger.LogInformation("Starting category import for user {UserId}, {Count} categories",
                     importEvent.UserId, importEvent.Categories.Count());
 
-                // Create a scope to resolve scoped services
                 using var scope = _scopeFactory.CreateScope();
                 var trendyolImporter = scope.ServiceProvider.GetRequiredService<TrendyolCategoryImporter>();
                 var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
 
-                // Send notification that import started
-                await SendNotificationAsync(
-                    notificationManager,
-                    $"Trendyol kategori içe aktarma işlemi başladı",
+                await SendNotificationAsync(notificationManager,
+                    "Trendyol kategori içe aktarma işlemi başladı",
                     $"{importEvent.Categories.Count()} kategori içe aktarılıyor...",
-                    new[] { importEvent.UserId });
+                    [importEvent.UserId]);
 
-                // Perform the import
                 var result = await trendyolImporter.ImportCategoriesAsync(importEvent.Categories, stoppingToken);
 
-                // Send completion event
-                var completedEvent = new CategoryImportCompletedEvent(
+                await _importCompletedChannel.PublishAsync(new CategoryImportCompletedEvent(
                     importEvent.MarketplaceName,
                     importEvent.Categories.Count(),
                     result.Success,
                     result.Success ? null : result.Message,
-                    importEvent.UserId);
+                    importEvent.UserId));
 
-                await _importCompletedChannel.PublishAsync(completedEvent);
+                var header = result.Success
+                    ? "Trendyol kategori içe aktarma tamamlandı"
+                    : "Trendyol kategori içe aktarma hatası";
+                var content = result.Success
+                    ? $"{importEvent.Categories.Count()} kategori başarıyla içe aktarıldı."
+                    : $"İçe aktarma başarısız: {result.Message}";
 
-                // Send completion notification
-                if (result.Success)
-                {
-                    await SendNotificationAsync(
-                        notificationManager,
-                        "Trendyol kategori içe aktarma tamamlandı",
-                        $"{importEvent.Categories.Count()} kategori başarıyla içe aktarıldı.",
-                        new[] { importEvent.UserId });
-                }
-                else
-                {
-                    await SendNotificationAsync(
-                        notificationManager,
-                        "Trendyol kategori içe aktarma hatası",
-                        $"İçe aktarma başarısız: {result.Message}",
-                        new[] { importEvent.UserId });
-                }
+                await SendNotificationAsync(notificationManager, header, content, [importEvent.UserId]);
 
                 _logger.LogInformation("Category import completed for user {UserId}: {Success}",
                     importEvent.UserId, result.Success);
@@ -88,42 +75,32 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Category import failed for user {UserId}", importEvent.UserId);
-
-                // Create a scope for error notification
                 using var scope = _scopeFactory.CreateScope();
                 var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
-
-                // Send error notification
-                await SendNotificationAsync(
-                    notificationManager,
+                await SendNotificationAsync(notificationManager,
                     "Trendyol kategori içe aktarma hatası",
                     $"Beklenmeyen hata: {ex.Message}",
-                    new[] { importEvent.UserId });
+                    [importEvent.UserId]);
             }
         }
     }
 
     private async Task SendNotificationAsync(INotificationManager notificationManager, string header, string content, IEnumerable<Guid> userIds)
     {
-        // Notification'ı Users collection'ı boş şekilde oluştur
-        // (Users'ları kurgulamak veritabanında olmayan user referans'larına neden oluyor)
-        var notification = new Notification
-        {
-            Header = header,
-            Content = content,
-            Users = new List<ApplicationUser>(), // Boş - SignalR için kullanıcılara bildirim gönderilen sırada handle ediliyor
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-
-        // Notification'ı kaydet (Users collection boş olduğu için no foreign key issues)
         try
         {
-            await notificationManager.SendNotification(notification, new[] { SenderType.RealTime });
+            var notification = new Notification
+            {
+                Header = header,
+                Content = content,
+                Users = new List<ApplicationUser>(),
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            await notificationManager.SendNotification(notification, [SenderType.RealTime]);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send notification for user(s): {UserIds}", string.Join(',', userIds));
-            // swallow exception to avoid stopping the background service host
+            _logger.LogError(ex, "Failed to send notification");
         }
     }
 }
