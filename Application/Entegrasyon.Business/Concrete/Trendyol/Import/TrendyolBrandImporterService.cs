@@ -20,13 +20,13 @@ public class TrendyolBrandImporterService : ITrendyolBrandImporterService
     private const string BrandUrlSuffix = "brands";
     private readonly ILogger<TrendyolBrandImporterService> _logger;
     private readonly HttpClient _httpClient;
-    private readonly BrandMatchService _brandMatchService;
+    private readonly IBrandMatchService _brandMatchService;
     private readonly IApplicationLogManager _logService;
     private readonly MarketPlace _trendyolMarketPlace;
     private readonly IntegrationDbContext _dbContext;
     private const int TrendyolId = 1;
 
-    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory,BrandMatchService brandMatchService,IApplicationLogManager logService,IntegrationDbContext dbContext,ILogger<TrendyolBrandImporterService> logger)
+    public TrendyolBrandImporterService(IHttpClientFactory httpClientFactory,IBrandMatchService brandMatchService,IApplicationLogManager logService,IntegrationDbContext dbContext,ILogger<TrendyolBrandImporterService> logger)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         _brandMatchService = brandMatchService;

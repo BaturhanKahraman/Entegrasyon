@@ -1,5 +1,5 @@
-using Entegrasyon.Blazor.Services.Channels;
-using Entegrasyon.Blazor.Services.Channels.Events;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Entity.Notifications;
 
