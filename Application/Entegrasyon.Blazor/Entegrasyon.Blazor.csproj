@@ -44,7 +44,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
 		<ProjectReference Include="..\Entegrasyon.ApplicationBootstrap\Entegrasyon.ApplicationBootstrap.csproj" />
-		<ProjectReference Include="..\Entegrasyon.MessageQueue\Entegrasyon.MessageQueue.Handler.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -58,8 +57,5 @@
 		<None Include="compilerconfig.json" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Remove="Services\Channels\Events\ImageEvents.cs" />
-	</ItemGroup>
 
 </Project>

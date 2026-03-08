@@ -10,10 +10,10 @@ namespace Entegrasyon.Business.Concrete;
 public class TempBarcodeManager : ITempBarcodeManager
 {
     private readonly IntegrationDbContext _dbContext;
-    private readonly ProductVariantManager _productVariantManager;
+    private readonly IProductVariantManager _productVariantManager;
     private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
-    public TempBarcodeManager(IntegrationDbContext dbContext, ProductVariantManager productVariantManager)
+    public TempBarcodeManager(IntegrationDbContext dbContext, IProductVariantManager productVariantManager)
     {
         _dbContext = dbContext;
         _productVariantManager = productVariantManager;
