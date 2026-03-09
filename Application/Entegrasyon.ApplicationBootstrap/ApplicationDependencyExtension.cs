@@ -54,7 +54,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IImageManager, ImageManager>();
             services.AddScoped<IDiscountVoucherManager,DiscountVoucherManager>();
             services.AddScoped<IAttributeKeyValueManager,AttributeKeyValueManager>();
-            services.AddScoped<ISaleManager,SaleManager>();
+            services.AddScoped<ISaleManager,ISaleManager,SaleManager>();
             services.AddScoped<ITrendyolCategoryImportService, TrendyolCategoryImporterService>();
             services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
             services.AddScoped<IBarcodeService, BarcodeService>();
