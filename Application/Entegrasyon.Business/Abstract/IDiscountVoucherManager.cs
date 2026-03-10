@@ -1,6 +1,6 @@
 using Entegrasyon.Entity.Dtos.DiscountVouchers;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
 
 namespace Entegrasyon.Business.Abstract;
 

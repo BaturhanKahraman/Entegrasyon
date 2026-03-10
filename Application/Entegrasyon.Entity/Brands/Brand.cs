@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Entegrasyon.Entity.Products;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity.Brands;
 

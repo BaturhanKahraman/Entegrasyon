@@ -5,7 +5,7 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

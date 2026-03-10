@@ -1,7 +1,7 @@
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.User;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
 
 namespace Entegrasyon.Business.Abstract;
 

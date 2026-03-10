@@ -1,11 +1,11 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 using System.Linq.Expressions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;

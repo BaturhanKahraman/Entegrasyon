@@ -1,4 +1,4 @@
-﻿using Shared.DTO;
+﻿using Entegrasyon.Entity.Dtos;
 
 namespace Entegrasyon.Entity.Dtos.Sale;
 

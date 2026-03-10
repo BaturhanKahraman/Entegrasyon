@@ -1,4 +1,4 @@
-﻿using Shared.MVC.Attributes;
+using Entegrasyon.Blazor.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace Entegrasyon.Blazor.ViewModels.Customer;

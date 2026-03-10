@@ -1,9 +1,9 @@
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Products;
-using Shared.DTO;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos;
 
 namespace Entegrasyon.Business.Abstract;
 

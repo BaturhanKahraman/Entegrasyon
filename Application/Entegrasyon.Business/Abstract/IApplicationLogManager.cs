@@ -1,7 +1,7 @@
 ﻿using Entegrasyon.Entity.Dtos.Log;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Logs;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Abstract
 {

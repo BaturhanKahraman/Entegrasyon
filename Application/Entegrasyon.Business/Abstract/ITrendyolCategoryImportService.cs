@@ -1,5 +1,5 @@
 ﻿using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 using System.Collections.Immutable;
 
 namespace Entegrasyon.Business.Abstract

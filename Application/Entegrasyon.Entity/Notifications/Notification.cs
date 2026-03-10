@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Entegrasyon.Entity.User;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity.Notifications;
 

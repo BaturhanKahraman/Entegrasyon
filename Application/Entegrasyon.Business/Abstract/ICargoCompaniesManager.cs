@@ -1,6 +1,6 @@
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.CargoCompany;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Abstract;
 

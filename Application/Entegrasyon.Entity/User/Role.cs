@@ -1,6 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using Shared.Entity;
-using Shared.User;
 
 namespace Entegrasyon.Entity.User;
 

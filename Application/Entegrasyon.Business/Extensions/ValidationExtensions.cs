@@ -1,5 +1,5 @@
 ﻿using FluentValidation.Results;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Extensions;
 

@@ -9,8 +9,8 @@ using Entegrasyon.Entity.User;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 namespace Entegrasyon.Business.Concrete.Auth
 {
     public class RoleService(

@@ -1,8 +1,8 @@
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Requests;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
 
 namespace Entegrasyon.Business.Abstract;
 

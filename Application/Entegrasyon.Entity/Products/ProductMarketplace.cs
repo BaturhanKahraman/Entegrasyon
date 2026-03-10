@@ -1,4 +1,3 @@
-using Shared.Entity;
 
 namespace Entegrasyon.Entity.Products;
 

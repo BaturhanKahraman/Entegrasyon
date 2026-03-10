@@ -1,5 +1,3 @@
-﻿using Shared.Entity;
-using Shared.User;
 
 namespace Entegrasyon.Entity.User;
 public class Login:BaseEntity

@@ -28,7 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Application\Entegrasyon.Business\Entegrasyon.Business.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
-    <ProjectReference Include="..\..\Shared\Shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>

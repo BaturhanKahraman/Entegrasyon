@@ -1,6 +1,6 @@
 ﻿using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Products;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 

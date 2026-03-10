@@ -1,5 +1,4 @@
-﻿using Castle.Core.Internal;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Entegrasyon.Blazor.Utility.Attributes.Validations;
 
@@ -26,7 +25,7 @@ public class ExclusiveBooleanAttribute : ValidationAttribute
             otherPropertyValue != boolValue)
             return ValidationResult.Success!;
         //take display names
-        string comparedObjName = otherPropertyInfo.GetAttribute<DisplayAttribute>()?.GetName() ?? otherPropertyInfo.Name;
+        string comparedObjName = otherPropertyInfo.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault() is DisplayAttribute displayAttr ? displayAttr.GetName() ?? otherPropertyInfo.Name : otherPropertyInfo.Name;
         return new ValidationResult($"{comparedObjName} değeri ve {validationContext.DisplayName} özelliklerinin ikisi de aynı anda açık olamaz.");
     }
 }

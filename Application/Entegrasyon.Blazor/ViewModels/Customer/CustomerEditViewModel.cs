@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Shared.MVC.Attributes;
+using Entegrasyon.Blazor.Attributes;
 
 namespace Entegrasyon.Blazor.ViewModels.Customer;
 

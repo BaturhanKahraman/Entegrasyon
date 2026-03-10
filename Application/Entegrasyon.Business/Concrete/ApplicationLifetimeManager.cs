@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Entegrasyon.Business.Abstract;
-using Shared.FileStorage;
+using Entegrasyon.Business.FileStorage;
 
 namespace Entegrasyon.Business.Concrete;
 

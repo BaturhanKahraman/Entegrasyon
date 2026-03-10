@@ -13,15 +13,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Shared.Extensions;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
-using Shared.FileStorage;
-using Shared.FileStorage.ImageProcessing;
-using Shared.FileStorage.Options;
+using Entegrasyon.ApplicationBootstrap.FileStorage;
+using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.BackgroundServices;
 
@@ -34,7 +33,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ApplicationLifetimeManager>();
             //services.AddScoped<DbContext,IntegrationDbContext>();
 
-            services.AddSharedSettings();
+            services.AddSingleton<IRandomGenerator, RandomGenerator>();
             //services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
 
             services.AddScoped<IBranchOfficeManager,BranchOfficeManager>();
@@ -54,7 +53,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IImageManager, ImageManager>();
             services.AddScoped<IDiscountVoucherManager,DiscountVoucherManager>();
             services.AddScoped<IAttributeKeyValueManager,AttributeKeyValueManager>();
-            services.AddScoped<ISaleManager,ISaleManager,SaleManager>();
+            services.AddScoped<ISaleManager,SaleManager>();
             services.AddScoped<ITrendyolCategoryImportService, TrendyolCategoryImporterService>();
             services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
             services.AddScoped<IBarcodeService, BarcodeService>();

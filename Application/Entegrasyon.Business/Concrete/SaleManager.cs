@@ -3,13 +3,13 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Sales;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Entity;
-using Shared.Expressions;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

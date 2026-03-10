@@ -1,7 +1,6 @@
 ﻿using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Categories;
 using NpgsqlTypes;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity.Products;
 

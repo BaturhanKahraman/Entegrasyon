@@ -1,9 +1,8 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
-using Shared.FileStorage;
-using Shared.FileStorage.ImageProcessing;
-using Shared.Results;
+using Entegrasyon.Business.FileStorage;
+using Entegrasyon.Entity.Results;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.Concrete;

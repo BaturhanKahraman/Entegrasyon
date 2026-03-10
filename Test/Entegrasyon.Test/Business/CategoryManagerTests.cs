@@ -5,7 +5,6 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using MapsterMapper;
 using Moq;
-using Shared.Results;
 using Xunit;
 using FluentAssertions;
 using Entegrasyon.Business.Utility.Constants;

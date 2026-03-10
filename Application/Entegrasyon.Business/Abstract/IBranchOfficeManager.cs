@@ -1,8 +1,7 @@
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Requests;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Abstract;
 

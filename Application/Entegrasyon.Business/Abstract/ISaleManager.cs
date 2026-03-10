@@ -1,7 +1,6 @@
 using Entegrasyon.Entity.Dtos.Sale;
-using Shared.DTO;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
 
 namespace Entegrasyon.Business.Abstract;
 

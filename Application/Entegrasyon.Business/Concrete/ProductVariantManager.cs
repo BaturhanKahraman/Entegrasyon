@@ -4,8 +4,8 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

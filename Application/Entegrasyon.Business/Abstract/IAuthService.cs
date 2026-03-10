@@ -1,4 +1,4 @@
-﻿using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Abstract
 {

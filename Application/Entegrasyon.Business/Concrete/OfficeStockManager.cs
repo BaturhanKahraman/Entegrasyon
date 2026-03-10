@@ -3,8 +3,8 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;

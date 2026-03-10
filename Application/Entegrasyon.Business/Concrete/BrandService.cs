@@ -3,16 +3,16 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Brands;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Shared.Entity;
-using Shared.Extensions;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

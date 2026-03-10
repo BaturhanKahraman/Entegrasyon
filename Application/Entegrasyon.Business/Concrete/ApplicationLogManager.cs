@@ -1,12 +1,12 @@
 ﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Log;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Logs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Shared.Entity;
-using Shared.Extensions;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Entity.Results;
 using System.Text.Json;
 
 namespace Entegrasyon.Business.Concrete;
