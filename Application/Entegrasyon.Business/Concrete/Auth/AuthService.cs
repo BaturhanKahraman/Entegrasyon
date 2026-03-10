@@ -4,9 +4,9 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
-using Shared.Results;
-using Shared.Security;
-using Shared.User.Dto;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Dtos.Auth;
 
 namespace Entegrasyon.Business.Concrete.Auth;
 

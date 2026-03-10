@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Entegrasyon.Entity;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Shared.User;
 
 namespace Entegrasyon.Blazor.ViewModels.User;
 

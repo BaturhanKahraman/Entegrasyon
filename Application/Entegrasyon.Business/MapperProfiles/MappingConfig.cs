@@ -19,7 +19,6 @@ using Entegrasyon.Entity.Sales;
 using Entegrasyon.Entity.User;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Entity;
 
 namespace Entegrasyon.Business.MapperProfiles;
 

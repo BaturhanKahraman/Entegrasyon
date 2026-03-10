@@ -1,9 +1,8 @@
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
-using Shared.DTO;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
 
 namespace Entegrasyon.Business.Abstract;
 

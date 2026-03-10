@@ -4,9 +4,8 @@ using Entegrasyon.Entity.Customers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
-using Shared.Extensions.Constants;
-using Shared.Entity;
-using Shared.Results;
+using Entegrasyon.ApplicationBootstrap.Security;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Blazor.Pages.Customers;
 

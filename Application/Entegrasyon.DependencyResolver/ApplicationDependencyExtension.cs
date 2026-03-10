@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Shared.Extensions;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.Emails;

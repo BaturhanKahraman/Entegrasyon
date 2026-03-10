@@ -4,7 +4,6 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Blazor.ViewModels.Category;
 using Entegrasyon.Blazor.ViewModels.Products;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Shared.Entity;
 
 namespace Entegrasyon.Blazor.Utility.Mapper;
 

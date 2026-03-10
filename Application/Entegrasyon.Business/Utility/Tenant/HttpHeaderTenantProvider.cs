@@ -7,7 +7,7 @@ public class HttpHeaderTenantProvider:ITenantProvider
     private readonly HttpContext _context;
     private const string HeaderName = "Tenant";
 
-    public HttpHeaderTenantProvider(HttpContextAccessor contextAccessor)
+    public HttpHeaderTenantProvider(IHttpContextAccessor contextAccessor)
     {
         _context = contextAccessor.HttpContext;
     }

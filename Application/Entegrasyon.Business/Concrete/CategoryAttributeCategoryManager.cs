@@ -3,8 +3,8 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Microsoft.EntityFrameworkCore;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 using System.Collections.Immutable;
 using Entegrasyon.Business.Abstract;
 

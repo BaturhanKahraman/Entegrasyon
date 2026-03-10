@@ -1,8 +1,8 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Customers;
-using Shared.Entity;
-using Shared.Helpers;
-using Shared.Results;
+using Entegrasyon.Entity;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 using System.Linq.Expressions;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.DiscountVouchers;

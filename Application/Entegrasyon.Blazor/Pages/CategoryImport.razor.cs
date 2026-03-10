@@ -6,7 +6,7 @@ using Entegrasyon.Business.Concrete.Import;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Blazor.Pages;
 

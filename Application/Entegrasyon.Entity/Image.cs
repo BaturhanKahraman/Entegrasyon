@@ -1,7 +1,5 @@
 ﻿﻿using System.ComponentModel.DataAnnotations;
 using Entegrasyon.Entity.Products;
-using Shared.Entity;
-using Shared.FileStorage;
 
 namespace Entegrasyon.Entity;
 

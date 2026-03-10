@@ -4,7 +4,7 @@ using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete.Import;
 

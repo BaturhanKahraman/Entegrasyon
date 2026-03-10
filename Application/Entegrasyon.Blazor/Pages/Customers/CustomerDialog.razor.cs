@@ -2,7 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 

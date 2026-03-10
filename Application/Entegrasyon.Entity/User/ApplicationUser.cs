@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Entegrasyon.Entity.Notifications;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity.User;
 public class ApplicationUser : BaseEntity

@@ -1,6 +1,6 @@
 ﻿using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.User;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete.Auth
 {

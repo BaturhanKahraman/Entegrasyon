@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity;
 

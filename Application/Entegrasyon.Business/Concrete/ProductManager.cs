@@ -10,11 +10,11 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.DTO;
-using Shared.Entity;
-using Shared.Extensions;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos;
 
 namespace Entegrasyon.Business.Concrete;
 

@@ -8,9 +8,8 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Entity;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

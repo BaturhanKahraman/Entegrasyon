@@ -1,0 +1,20 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+
+namespace Entegrasyon.Business.Extensions;
+
+public static class HttpContextExtension
+{
+    public static bool IsMobileDevice(this HttpContext context)
+    {
+        var userAgent = context.Request.Headers["User-Agent"].ToString();
+        var isMobile = userAgent.Contains("Android") || userAgent.Contains("iPhone");
+        return isMobile;
+    }
+
+    public static string GetUserId(this HttpContext context)=>
+        context?.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
+
+    public static string GetIPAddress(this HttpContext context) =>
+        context==null ? string.Empty: context!.Connection.RemoteIpAddress?.ToString() ?? "";
+}

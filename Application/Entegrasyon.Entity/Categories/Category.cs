@@ -1,4 +1,3 @@
-﻿using Shared.Entity;
 using Entegrasyon.Entity.Products;
 
 namespace Entegrasyon.Entity.Categories;

@@ -6,9 +6,9 @@ using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Logs;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
-using Shared.Logic;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Utilities;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

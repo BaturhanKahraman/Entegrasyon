@@ -1,10 +1,10 @@
 using Entegrasyon.Entity.User;
-using Shared.Security;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
 using Moq;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Auth;
-using Shared.User.Dto;
+using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Business.Utility.Constants;
 
 namespace Entegrasyon.UnitTest.Business

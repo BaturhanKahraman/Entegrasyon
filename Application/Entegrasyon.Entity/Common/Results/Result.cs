@@ -1,0 +1,25 @@
+using System.Text.Json;
+
+namespace Entegrasyon.Entity.Results
+{
+    public class Result : IResult
+    {
+        public bool Success { get; }
+        public string Message { get; }
+
+        public Result(bool success)
+        {
+            Success = success;
+        }
+
+        public Result(bool success,string message) : this(success)
+        {
+            Message = message;
+        }
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
+    }
+}

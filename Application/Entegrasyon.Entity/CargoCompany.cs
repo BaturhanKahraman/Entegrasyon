@@ -1,5 +1,4 @@
 ﻿using NpgsqlTypes;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity;
 

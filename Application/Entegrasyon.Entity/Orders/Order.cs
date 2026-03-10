@@ -1,4 +1,3 @@
-﻿using Shared.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Entegrasyon.Entity.Orders;

@@ -1,5 +1,5 @@
 using Entegrasyon.Entity.Categories;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Abstract;
 

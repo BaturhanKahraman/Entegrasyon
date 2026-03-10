@@ -9,7 +9,7 @@ using Entegrasyon.Blazor.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
-using Shared.Logger.Serilog;
+using Entegrasyon.ApplicationBootstrap.Logger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +48,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddAuthorization(options =>
 {
-    foreach (var permission in Shared.Extensions.Constants.AppPermissions.GetAllPermissions())
+    foreach (var permission in Entegrasyon.ApplicationBootstrap.Security.AppPermissions.GetAllPermissions())
     {
         options.AddPolicy(permission, policy =>
             policy.RequireAssertion(ctx =>

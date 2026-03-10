@@ -5,14 +5,14 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Customers;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Logs;
 using FluentValidation;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Entity;
-using Shared.Extensions;
-using Shared.Results;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 

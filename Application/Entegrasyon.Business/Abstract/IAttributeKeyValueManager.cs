@@ -1,6 +1,6 @@
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Products;
-using Shared.Results;
+using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Abstract;
 

@@ -1,7 +1,6 @@
 ﻿using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.User;
-using Shared.Entity;
 
 namespace Entegrasyon.Entity.Sales
 {

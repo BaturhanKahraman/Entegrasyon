@@ -10,7 +10,6 @@ using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Entegrasyon.Entity.Brands;
-using Shared.Entity;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.Notifications;
