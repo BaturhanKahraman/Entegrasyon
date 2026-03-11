@@ -1,0 +1,50 @@
+@using Entegrasyon.Entity.Categories
+
+<MudPaper Class="pa-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h6">Kategori Ağacı</MudText>
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Info"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       Size="Size.Small"
+                       OnClick="OnImportClicked">
+                İçe Aktar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Small"
+                       OnClick="OnAddClicked">
+                Yeni
+            </MudButton>
+        </div>
+    </div>
+
+    <MudTextField @bind-Value="SearchString"
+                  Placeholder="Kategori ara..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Class="mb-4" />
+
+    @if (Loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (TreeItems?.Any() == true)
+    {
+        <div class="category-tree" style="max-height: 600px; overflow-y: auto;">
+            @foreach (var category in TreeItems)
+            {
+                <CategoryTreeItem Category="category"
+                                  AllCategories="AllCategories"
+                                  OnCategorySelected="OnCategorySelectedInternal" />
+            }
+        </div>
+    }
+    else
+    {
+        <MudText Align="Align.Center" Color="Color.Secondary">Kategori bulunamadı</MudText>
+    }
+</MudPaper>
+

@@ -1,0 +1,40 @@
+@using Entegrasyon.Entity.User
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_success">
+            <MudTextField @bind-Value="Model.UserName" Label="Kullanıcı Adı" Required="true"
+                RequiredError="Kullanıcı adı gerekli" />
+            <MudTextField @bind-Value="Model.Email" Label="E-posta" Required="true" RequiredError="E-posta gerekli"
+                InputType="InputType.Email" />
+
+            @if (IsEdit)
+            {
+                <MudTextField @bind-Value="Model.Name" Label="Ad" />
+                <MudTextField @bind-Value="Model.Surname" Label="Soyad" />
+            }
+            else
+            {
+                <MudTextField @bind-Value="Model.Name" Label="Ad" Required="true" />
+                <MudTextField @bind-Value="Model.Surname" Label="Soyad" Required="true" />
+                <MudTextField @bind-Value="NewUserPassword" Label="Geçici Şifre" Required="true"
+                    InputType="InputType.Password" />
+            }
+
+            <!-- Role Selection can be added here if roles are fetched -->
+            <MudSelect T="int" Label="Roller" @bind-SelectedValues="SelectedRoleIds" MultiSelection="true"
+                AnchorOrigin="Origin.BottomCenter">
+                @foreach (var role in Roles)
+                {
+                    <MudSelectItem Value="@role.Id">@role.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!_success)">Kaydet</MudButton>
+    </DialogActions>
+</MudDialog>

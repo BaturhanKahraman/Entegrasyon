@@ -1,0 +1,28 @@
+@page "/categories"
+@using Entegrasyon.Entity.Categories
+
+<PageTitle>Kategoriler</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Kategori Yönetimi</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="5">
+        <CategoryTreePanel TreeItems="@GetTreeItemsForView()"
+                          AllCategories="@_categories"
+                          Loading="@_loading"
+                          SearchString="@_searchString"
+                          CategorySelected="@(EventCallback.Factory.Create<Category>(this, OnCategorySelected))"
+                          OnAddClicked="@OpenAddCategoryDialog"
+                          OnImportClicked="@(() => NavigationManager.NavigateTo("/categories/import"))"
+                          FilterChanged="@((searchString) => _searchString = searchString)" />
+    </MudItem>
+
+    <MudItem xs="12" md="7">
+        <CategoryDetailsPanel SelectedCategory="@_selectedCategory"
+                             SubcategoryCount="@(_selectedCategory != null ? GetSubcategoryCount(_selectedCategory.Id) : 0)"
+                             OnEditClicked="@EditSelectedCategory"
+                             OnDeleteClicked="@DeleteSelectedCategory"
+                             GetParentCategoryNameFunc="@GetParentCategoryName" />
+    </MudItem>
+</MudGrid>
+

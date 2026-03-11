@@ -1,0 +1,32 @@
+@page "/auth/login"
+@layout Layouts.AuthLayout
+@attribute [AllowAnonymous]
+@using Entegrasyon.Entity.Results
+@using Entegrasyon.Entity.User
+
+<MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Giriş Yap</MudText>
+
+<MudForm @bind-IsValid="@_isValid">
+    <MudTextField @bind-Value="@_username" Label="Kullanıcı Adı" Variant="Variant.Outlined" Class="mb-3" Required="true"
+        RequiredError="Kullanıcı adı gereklidir." />
+    <MudTextField @bind-Value="@_password" Label="Şifre" Variant="Variant.Outlined" InputType="InputType.Password"
+        Class="mb-3" Required="true" RequiredError="Şifre gereklidir." />
+
+    <div class="d-flex justify-end mb-4">
+        <MudLink Href="/auth/forgot-password" Color="Color.Secondary" Underline="Underline.Hover">Şifremi Unuttum
+        </MudLink>
+    </div>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="LoginAsync"
+        Disabled="@(!_isValid || _isLoading)">
+        @if (_isLoading)
+        {
+            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+            <MudText Class="ms-2">Giriş Yapılıyor...</MudText>
+        }
+        else
+        {
+            <MudText>Giriş Yap</MudText>
+        }
+    </MudButton>
+</MudForm>

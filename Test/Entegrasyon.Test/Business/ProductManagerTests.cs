@@ -1,0 +1,171 @@
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+using Entegrasyon.Entity.Products;
+using MapsterMapper;
+
+namespace Entegrasyon.UnitTest.Business;
+
+public class ProductManagerTests : BaseTest
+{
+    private readonly IProductService _productManager;
+    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
+    private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
+    private readonly Mock<IBarcodeService> _mockBarcodeService = new();
+
+    public ProductManagerTests()
+    {
+        MockValidator = new Mock<IFluentValidator>();
+        MockValidator
+            .Setup(v => v.ValidateAndThrowAsync(It.IsAny<AddProductDto>()))
+            .Returns(Task.CompletedTask);
+
+        mockIntegrationDbContext
+            .Setup(x => x.MainProducts)
+            .ReturnsDbSet(new List<Product>());
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        _productManager = new ProductManager(
+            mockIntegrationDbContext.Object,
+            mockApplicationLogger.Object,
+            _mockMapper.Object,
+            MockValidator.Object,
+            _mockOfficeStockManager.Object,
+            _mockAttributeKeyValueManager.Object,
+            _mockBarcodeService.Object
+        );
+    }
+
+    private static AddProductDto BuildValidDto(string barcode = "1234567890123") => new()
+    {
+        Title = "Test Ürün",
+        Description = "Test açıklama",
+        StockCode = "TST-001",
+        CategoryId = 1,
+        BrandId = 1,
+        AttributeKeyValues = [],
+        ProductVariants =
+        [
+            new AddProductVariantDto
+            {
+                Barcode = barcode,
+                ListPrice = 100,
+                SalePrice = 90,
+                BranchOfficeStocks = [new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = 5 }]
+            }
+        ]
+    };
+
+    [Fact]
+    public async Task AddProduct_ShouldReturnError_WhenAllStocksAreZero()
+    {
+        // Arrange
+        var dto = BuildValidDto();
+        _mockOfficeStockManager
+            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
+            .Returns(new ErrorResult("Lütfen en az bir stok girin."));
+
+        // Act
+        var result = await _productManager.AddProduct(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Lütfen en az bir stok girin.");
+    }
+
+    [Fact]
+    public async Task AddProduct_ShouldSucceed_WithValidDto()
+    {
+        // Arrange
+        var dto = BuildValidDto();
+        var mappedProduct = new Product { AttributeKeyValues = [] };
+
+        _mockOfficeStockManager
+            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
+            .Returns(new SuccessResult());
+        _mockMapper
+            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
+            .Returns(mappedProduct);
+
+        // Act
+        var result = await _productManager.AddProduct(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Message.Should().Be(Messages.ProductAdded);
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddProduct_ShouldGenerateBarcode_WhenVariantBarcodeIsEmpty()
+    {
+        // Arrange
+        var dto = BuildValidDto(barcode: string.Empty);
+        var mappedProduct = new Product { AttributeKeyValues = [] };
+
+        _mockOfficeStockManager
+            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
+            .Returns(new SuccessResult());
+        _mockMapper
+            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
+            .Returns(mappedProduct);
+        _mockBarcodeService
+            .Setup(b => b.GenerateAsync())
+            .ReturnsAsync("9780000000001");
+
+        // Act
+        await _productManager.AddProduct(dto);
+
+        // Assert
+        _mockBarcodeService.Verify(b => b.GenerateAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddProduct_ShouldNotGenerateBarcode_WhenBarcodeAlreadySet()
+    {
+        // Arrange
+        var dto = BuildValidDto(barcode: "9780000000001");
+        var mappedProduct = new Product { AttributeKeyValues = [] };
+
+        _mockOfficeStockManager
+            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
+            .Returns(new SuccessResult());
+        _mockMapper
+            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
+            .Returns(mappedProduct);
+
+        // Act
+        await _productManager.AddProduct(dto);
+
+        // Assert
+        _mockBarcodeService.Verify(b => b.GenerateAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddProduct_ShouldCallClearEmptyAttributes()
+    {
+        // Arrange
+        var dto = BuildValidDto();
+        var mappedProduct = new Product { AttributeKeyValues = [] };
+
+        _mockOfficeStockManager
+            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
+            .Returns(new SuccessResult());
+        _mockMapper
+            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
+            .Returns(mappedProduct);
+
+        // Act
+        await _productManager.AddProduct(dto);
+
+        // Assert
+        _mockAttributeKeyValueManager.Verify(
+            a => a.ClearEmptyAttributes(It.IsAny<Product>()),
+            Times.Once);
+    }
+}
