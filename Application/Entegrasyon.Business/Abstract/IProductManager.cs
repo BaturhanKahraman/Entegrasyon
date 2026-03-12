@@ -16,4 +16,5 @@ public interface IProductService
     Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto);
     Task<IDataResult<ProductEditDetailDto>> GetProductEditDetailById(Guid id);
     Task<int> GetProductCountByCategoryId(int categoryId);
+    Task<bool> HasSoldProductsInCategory(int categoryId);
 }

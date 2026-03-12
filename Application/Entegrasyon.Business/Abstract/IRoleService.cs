@@ -10,5 +10,6 @@ namespace Entegrasyon.Business.Concrete.Auth
         Task<IResult> DeleteRole(int id,CancellationToken token = default);
         ValueTask<IEnumerable<Role>> GetRolesSelectList(CancellationToken token = default);
         Task<IResult> UpdateRole(EditRoleDto dto,CancellationToken token = default);
+        Task<List<Role>> GetRolesWithClaimsAsync(CancellationToken token = default);
     }
 }

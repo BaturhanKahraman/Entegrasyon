@@ -20,8 +20,10 @@ public partial class NotificationBell : ComponentBase, IDisposable
     private List<Notification> _recentNotifications = [];
     private int _unreadCount;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var userIdClaim = authState.User.FindFirst(
             System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -34,6 +36,7 @@ public partial class NotificationBell : ComponentBase, IDisposable
         _unreadCount = _recentNotifications.Count(n => !n.IsRead);
 
         DeliveryService.Subscribe(_userId, HandleNotification);
+        StateHasChanged();
     }
 
     // ÖNEMLI: Member method referansı — lambda kullanılmaz (Unsubscribe çalışmaz)
@@ -78,7 +81,6 @@ public partial class NotificationBell : ComponentBase, IDisposable
         {
             n.IsRead = true;
             _unreadCount = Math.Max(0, _unreadCount - 1);
-            StateHasChanged();
         }
     }
 

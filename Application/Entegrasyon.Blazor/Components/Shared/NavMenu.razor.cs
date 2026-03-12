@@ -15,7 +15,7 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
     private static readonly Dictionary<string, List<string>> sectionRoutes = new()
     {
         { "admin", ["products", "categories", "attributes", "brands", "sales"] },
-        { "marketplace", ["brand-mapping", "marketplace"] },
+        { "marketplace", ["marketplace"] },
         { "customers", ["customers", "orders", "invoices"] },
         { "reports", ["reports"] },
         { "users", ["users", "roles"] },
@@ -26,6 +26,11 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
     /// Tracks which menu sections are currently expanded/collapsed.
     /// </summary>
     private Dictionary<string, bool> ExpandedSections { get; set; } = null!;
+
+    /// <summary>
+    /// Tracks whether the nested "Senkronizasyon" sub-group is expanded.
+    /// </summary>
+    private bool _syncExpanded;
 
     protected override void OnInitialized()
     {
@@ -67,6 +72,8 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
                 break;
             }
         }
+
+        _syncExpanded = uri.Contains("/marketplace/sync");
 
         var newActive = ExpandedSections.FirstOrDefault(x => x.Value).Key;
         return previousActive != newActive;

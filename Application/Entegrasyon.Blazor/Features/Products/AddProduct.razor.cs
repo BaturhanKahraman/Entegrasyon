@@ -63,6 +63,7 @@ public partial class AddProduct
     [Inject] private EventChannel<ProductCreatedForMarketplaceEvent>? MarketplaceChannel { get; set; }
     [Inject] private NavigationManager? NavigationManager { get; set; }
     [Inject] private IBarcodeService? BarcodeService { get; set; }
+    [Inject] private IDialogService? DialogService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,24 +118,48 @@ public partial class AddProduct
         foreach (var (k, v) in newImages) _variantImages[k] = v;
     }
 
-    private async Task OnVariantImagesChanged(int variantIdx, IReadOnlyList<IBrowserFile> files)
+    private async Task OpenImageDialog()
     {
-        if (!_variantImages.TryGetValue(variantIdx, out var existing))
+        if (DialogService is null) return;
+
+        var variantInfos = variants.Select((v, i) => new ImageUploadDialog.VariantInfo
         {
-            existing = [];
-            _variantImages[variantIdx] = existing;
-        }
-        foreach (var file in files)
+            Index = i,
+            Label = GetVariantLabel(v, i)
+        }).ToList();
+
+        var existingImages = _variantImages.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value.Select(img => new ImageUploadDialog.ImageItem
+            {
+                File = img.File,
+                PreviewUrl = img.PreviewUrl,
+                IsPrimary = img.IsPrimary
+            }).ToList()
+        );
+
+        var parameters = new DialogParameters<ImageUploadDialog>
         {
-            // Skip duplicates (same name + size heuristic)
-            if (existing.Any(e => e.File.Name == file.Name && e.File.Size == file.Size)) continue;
-            using var ms = new MemoryStream();
-            await file.OpenReadStream(maxAllowedSize: 5_242_880).CopyToAsync(ms);
-            var previewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
-            bool isPrimary = !existing.Any();  // first image overall is primary
-            existing.Add(new VariantImageItem { File = file, PreviewUrl = previewUrl, IsPrimary = isPrimary });
+            { x => x.Variants, variantInfos },
+            { x => x.ExistingImages, existingImages }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.Show<ImageUploadDialog>("Görsel Yönetimi", parameters, options).Result;
+
+        if (!dialog!.Canceled && dialog.Data is Dictionary<int, List<ImageUploadDialog.ImageItem>> result)
+        {
+            _variantImages.Clear();
+            foreach (var (idx, items) in result)
+            {
+                _variantImages[idx] = items.Select(item => new VariantImageItem
+                {
+                    File = item.File,
+                    PreviewUrl = item.PreviewUrl,
+                    IsPrimary = item.IsPrimary
+                }).ToList();
+            }
         }
-        StateHasChanged();
     }
 
     private async Task GenerateBarcodeForVariant(int idx)
@@ -143,18 +168,6 @@ public partial class AddProduct
         variants[idx].Barcode = await BarcodeService.GenerateAsync();
     }
 
-    private void SetPrimaryImage(int variantIdx, VariantImageItem item)
-    {
-        if (!_variantImages.TryGetValue(variantIdx, out var list)) return;
-        foreach (var img in list) img.IsPrimary = false;
-        item.IsPrimary = true;
-    }
-
-    private void RemoveImage(int variantIdx, VariantImageItem item)
-    {
-        if (_variantImages.TryGetValue(variantIdx, out var list))
-            list.Remove(item);
-    }
 
     private static string GetVariantLabel(AddProductVariantDto variant, int idx)
     {
@@ -194,7 +207,7 @@ public partial class AddProduct
             }
         }
 
-        if (stepIndex == 1 && _showVariantGrid && variants.Count == 0)
+        if (stepIndex == 1 && varianterAttributes.Count > 0 && variants.Count == 0)
         {
             Snackbar?.Add("Lütfen önce varyant seçimini onaylayın.", Severity.Warning);
             return;
@@ -315,6 +328,7 @@ public partial class AddProduct
 
             foreach (var item in items)
             {
+                if (item.File is null) continue;
                 result.Add(new VariantImageStream(
                     savedVariant.Id,
                     item.File.OpenReadStream(maxAllowedSize: 10_000_000),
@@ -490,7 +504,7 @@ public partial class AddProduct
 
     private class VariantImageItem
     {
-        public IBrowserFile File { get; set; } = default!;
+        public IBrowserFile? File { get; set; }
         public string PreviewUrl { get; set; } = string.Empty;
         public bool IsPrimary { get; set; }
     }

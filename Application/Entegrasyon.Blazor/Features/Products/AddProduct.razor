@@ -1,7 +1,7 @@
 @page "/products/add"
 @using Entegrasyon.Entity.Dtos.Product
 @using Entegrasyon.Entity.Dtos.Product.ProductVariant
-@using Microsoft.AspNetCore.Components.Forms
+
 
 <PageTitle>Yeni Ürün Ekle</PageTitle>
 
@@ -211,6 +211,15 @@
                     {
                         <MudAlert Severity="Severity.Warning">Henüz varyant yok. Lütfen geri dönüp varyant oluşturun.</MudAlert>
                     }
+                    else
+                    {
+                        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.PhotoLibrary"
+                                   OnClick="OpenImageDialog" Class="mb-3">
+                            Görselleri Yönet
+                        </MudButton>
+                    }
+
                     @foreach (var (variant, idx) in variants.Select((v, i) => (v, i)))
                     {
                         <MudPaper Class="pa-3 mt-3 variant-card">
@@ -270,51 +279,26 @@
                                     </MudItem>
                                 }
 
-                                @* Image upload for this variant *@
-                                <MudItem xs="12">
-                                    <MudText Typo="Typo.subtitle2" Class="mb-1">Görseller</MudText>
-                                    <MudFileUpload T="IReadOnlyList<IBrowserFile>"
-                                                   FilesChanged="@(files => OnVariantImagesChanged(idx, files))"
-                                                   Accept=".jpg,.jpeg,.png,.webp"
-                                                   Multiple="true">
-                                        <ActivatorContent>
-                                            <MudButton Variant="Variant.Outlined"
-                                                       StartIcon="@Icons.Material.Filled.Image"
-                                                       Size="Size.Small">
-                                                Görsel Seç
-                                            </MudButton>
-                                        </ActivatorContent>
-                                    </MudFileUpload>
-
-                                    @if (_variantImages.TryGetValue(idx, out var imgs) && imgs.Count > 0)
-                                    {
-                                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+                                @* Read-only image preview for this variant *@
+                                @if (_variantImages.TryGetValue(idx, out var imgs) && imgs.Count > 0)
+                                {
+                                    <MudItem xs="12">
+                                        <MudText Typo="Typo.subtitle2" Class="mb-1">Görseller</MudText>
+                                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
                                             @foreach (var img in imgs)
                                             {
-                                                <div style="position:relative;width:80px;height:80px;">
-                                                    <img src="@img.PreviewUrl" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />
+                                                <div style="position:relative;width:64px;height:64px;">
+                                                    <img src="@img.PreviewUrl" style="width:64px;height:64px;object-fit:cover;border-radius:4px;" />
                                                     @if (img.IsPrimary)
                                                     {
                                                         <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"
-                                                                 Style="position:absolute;top:2px;left:2px;font-size:16px;" />
+                                                                 Style="position:absolute;top:1px;left:1px;font-size:14px;" />
                                                     }
-                                                    <div style="position:absolute;top:0;right:0;display:flex;flex-direction:column;">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Star"
-                                                                       Color="@(img.IsPrimary ? Color.Warning : Color.Default)"
-                                                                       Size="Size.Small"
-                                                                       OnClick="@(() => SetPrimaryImage(idx, img))"
-                                                                       title="Ana görsel yap" />
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                                                       Color="Color.Error"
-                                                                       Size="Size.Small"
-                                                                       OnClick="@(() => RemoveImage(idx, img))"
-                                                                       title="Kaldır" />
-                                                    </div>
                                                 </div>
                                             }
                                         </div>
-                                    }
-                                </MudItem>
+                                    </MudItem>
+                                }
                             </MudGrid>
                         </MudPaper>
                     }

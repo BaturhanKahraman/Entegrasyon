@@ -94,7 +94,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 x.EnableSensitiveDataLogging();
                 x.EnableDetailedErrors();
                 x.LogTo(z => Debug.WriteLine(z));
-            });
+            },ServiceLifetime.Scoped);
             return services;
         }
 

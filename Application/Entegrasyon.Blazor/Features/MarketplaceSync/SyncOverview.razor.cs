@@ -3,7 +3,7 @@ using MudBlazor;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
-public partial class MarketplaceSync
+public partial class SyncOverview
 {
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 

@@ -164,4 +164,19 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids) =>
         await dbContext.CategoryAttributes.Where(x => ids.Contains(x.Id)).ToListAsync();
+
+    public async Task<Dictionary<int, AttributeMarketPlaceMatchDto>> GetAttributeMarketPlaceMatchesAsync()
+    {
+        return await dbContext.CategoryAttributeMarketPlaceMatches
+            .AsNoTracking()
+            .Include(m => m.MarketPlace)
+            .GroupBy(m => m.ApplicationCategoryAttributeId)
+            .Select(g => g.First())
+            .ToDictionaryAsync(
+                m => m.ApplicationCategoryAttributeId,
+                m => new AttributeMarketPlaceMatchDto(
+                    m.ApplicationCategoryAttributeId,
+                    m.MarketPlace.Name,
+                    m.MarketPlaceCategoryAttributeId));
+    }
 }

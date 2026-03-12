@@ -30,4 +30,5 @@ public interface ICategoryService
     Task<List<Category>> GetAllCategoriesWithHierarchyAsync();
     Task<List<Category>> GetAllCategoriesWithoutAttributesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync();
+    Task<List<Category>> GetValidParentCandidatesAsync(int? excludeCategoryId);
 }

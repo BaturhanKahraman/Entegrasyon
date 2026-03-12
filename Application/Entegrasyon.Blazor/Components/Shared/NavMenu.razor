@@ -32,12 +32,20 @@
     </MudNavGroup>
 
     <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="@ExpandedSections["marketplace"]">
-        <MudNavLink Href="/brand-mapping" Icon="@Icons.Material.Filled.ShoppingCart">
-            Marka Eşleştirme
-        </MudNavLink>
-        <MudNavLink Href="/marketplace/sync" Icon="@Icons.Material.Filled.Sync">
-            Senkronizasyon
-        </MudNavLink>
+        <MudNavGroup Title="Senkronizasyon" Icon="@Icons.Material.Filled.Sync" Expanded="@_syncExpanded">
+            <MudNavLink Href="/marketplace/sync" Icon="@Icons.Material.Filled.Dashboard">
+                Genel Bakış
+            </MudNavLink>
+            <MudNavLink Href="/marketplace/sync/categories" Icon="@Icons.Material.Filled.Category">
+                Kategori Eşleştirme
+            </MudNavLink>
+            <MudNavLink Href="/marketplace/sync/attributes" Icon="@Icons.Material.Filled.Tune">
+                Özellik Eşleştirme
+            </MudNavLink>
+            <MudNavLink Href="/marketplace/sync/brands" Icon="@Icons.Material.Filled.Label">
+                Marka Eşleştirme
+            </MudNavLink>
+        </MudNavGroup>
         <MudNavLink Href="/marketplace/matching" Icon="@Icons.Material.Filled.Link">
             Ürün Eşleştirme
         </MudNavLink>

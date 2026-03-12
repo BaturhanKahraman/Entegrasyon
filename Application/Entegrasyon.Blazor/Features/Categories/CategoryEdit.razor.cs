@@ -7,58 +7,109 @@ using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
 
 namespace Entegrasyon.Blazor.Features.Categories;
 
-public partial class CategoryDialog
+public partial class CategoryEdit
 {
-    [CascadingParameter]
-    public IMudDialogInstance MudDialog { get; set; } = null!;
-
-    [Parameter]
-    public Category? Category { get; set; }
-
-    [Parameter]
-    public bool IsEditMode { get; set; }
+    [Parameter] public int Id { get; set; }
 
     [Inject] private ICategoryService CategoryManager { get; set; } = null!;
     [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ICategoryAttributeCategoryManager AttributeCategoryManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private IProductService ProductManager { get; set; } = null!;
 
     private MudForm _form = null!;
     private bool _isValid;
     private bool _saving;
+    private bool _loading = true;
+    private Category? _category;
     private CategoryFormModel _model = new();
     private List<Category> _availableCategories = [];
     private List<AppCategoryAttribute> _allAttributes = [];
     private bool _isLeafCategory = true;
+    private bool _hasSoldProducts;
+    private bool _hasProducts;
+
+    private int _tempIdCounter = -1;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCategories();
-        await LoadAllAttributes();
-
-        if (IsEditMode && Category != null)
+        _loading = true;
+        try
         {
-            _isLeafCategory = Category.SubCategories == null || !Category.SubCategories.Any();
+            await LoadCategory();
+            await LoadCategories();
+            await LoadAllAttributes();
 
-            _model = new CategoryFormModel
+            if (_category != null)
             {
-                Id = Category.Id,
-                Name = Category.Name,
-                IsFavorite = Category.IsFavorite,
-                ParentCategoryId = Category.SuperCategoryId,
-                Attributes = Category.CategoryAttributes?.Select(a => new AttributeModel
+                await LoadCategoryAttributes();
+                _hasSoldProducts = await ProductManager.HasSoldProductsInCategory(Id);
+                _hasProducts = await ProductManager.GetProductCountByCategoryId(Id) > 0;
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadCategory()
+    {
+        try
+        {
+            var result = await CategoryManager.GetCategoryEditDetail(Id);
+            if (result.Success && result.Data is not null)
+            {
+                _category = result.Data;
+
+                var allCategories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
+                _isLeafCategory = !allCategories.Any(c => c.SuperCategoryId == _category.Id);
+
+                _model = new CategoryFormModel
                 {
-                    ExistingAttributeId = a.CategoryAttributeId,
-                    SelectedAttribute = a.CategoryAttribute,
-                    Name = a.CategoryAttribute?.CategoryAttributeHumanized ?? string.Empty,
+                    Id = _category.Id,
+                    Name = _category.Name,
+                    IsFavorite = _category.IsFavorite,
+                    ParentCategoryId = _category.SuperCategoryId
+                };
+            }
+            else
+            {
+                Snackbar.Add("Kategori bulunamadı", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kategori yüklenirken hata: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadCategoryAttributes()
+    {
+        try
+        {
+            var result = await AttributeManager.GetCategoryAttributesByCategory(Id);
+            if (result.Success && result.Data is not null)
+            {
+                _model.Attributes = result.Data.Select(a => new AttributeModel
+                {
+                    ExistingAttributeId = a.Id,
+                    Name = a.CategoriyAttributeHumanized,
                     IsRequired = a.IsRequired,
                     IsVarianter = a.IsVarianter,
                     IsSlicer = a.IsSlicer,
-                    AllowCustom = a.CategoryAttribute?.AllowCustom ?? true,
-                    IsExisting = true
-                }).ToList() ?? []
-            };
+                    AllowCustom = a.AllowCustom,
+                    IsExisting = true,
+                    Values = a.CategoryAttributeValues?.ToList() ?? [],
+                    SelectedAttribute = _allAttributes.FirstOrDefault(x => x.Id == a.Id)
+                }).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kategori özellikleri yüklenirken hata: {ex.Message}", Severity.Error);
         }
     }
 
@@ -66,8 +117,7 @@ public partial class CategoryDialog
     {
         try
         {
-            _availableCategories = await CategoryManager.GetValidParentCandidatesAsync(
-                IsEditMode ? Category?.Id : null);
+            _availableCategories = await CategoryManager.GetValidParentCandidatesAsync(Id);
         }
         catch (Exception ex)
         {
@@ -111,11 +161,12 @@ public partial class CategoryDialog
         model.ExistingAttributeId = attr.Id;
         model.Name = attr.CategoryAttributeHumanized;
         model.AllowCustom = attr.AllowCustom;
+        model.Values = attr.CategoryAttributeValues?.ToList() ?? [];
     }
 
     private async Task OnVarianterChanged(bool value, AttributeModel model)
     {
-        if (IsEditMode && value != model.IsVarianter)
+        if (value != model.IsVarianter)
         {
             var confirm = await DialogService.ShowMessageBox(
                 "Uyarı", "Bu değişiklik mevcut ürünleri etkileyebilir. Devam etmek istiyor musunuz?",
@@ -134,7 +185,7 @@ public partial class CategoryDialog
 
     private async Task OnSlicerChanged(bool value, AttributeModel model)
     {
-        if (IsEditMode && value != model.IsSlicer)
+        if (value != model.IsSlicer)
         {
             var confirm = await DialogService.ShowMessageBox(
                 "Uyarı", "Bu değişiklik mevcut ürünleri etkileyebilir. Devam etmek istiyor musunuz?",
@@ -166,7 +217,28 @@ public partial class CategoryDialog
                         a.CategoryAttributeHumanized.Contains(value, StringComparison.OrdinalIgnoreCase)));
     }
 
-    private async Task Submit()
+    private Task AddValue(AttributeModel attr)
+    {
+        if (string.IsNullOrWhiteSpace(attr.NewValueName)) return Task.CompletedTask;
+
+        var newValue = new CategoryAttributeValue
+        {
+            Id = _tempIdCounter--,
+            Name = attr.NewValueName.Trim(),
+            CategoryAttributeId = attr.ExistingAttributeId
+        };
+
+        attr.Values.Add(newValue);
+        attr.NewValueName = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private void RemoveValue(AttributeModel attr, CategoryAttributeValue value)
+    {
+        attr.Values.Remove(value);
+    }
+
+    private async Task Save()
     {
         await _form.Validate();
         if (!_isValid) return;
@@ -174,10 +246,37 @@ public partial class CategoryDialog
         _saving = true;
         try
         {
-            if (IsEditMode)
-                await SubmitEdit();
-            else
-                await SubmitAdd();
+            var editDto = new EditCategoryDto(
+                Id: _model.Id,
+                Name: _model.Name,
+                SuperCategoryId: _model.ParentCategoryId,
+                IsFavorite: _model.IsFavorite,
+                IsImported: _category?.IsImported ?? false
+            );
+
+            var result = await CategoryManager.UpdateCategory(editDto);
+            if (!result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Kategori güncellenirken hata oluştu", Severity.Error);
+                return;
+            }
+
+            if (_isLeafCategory)
+            {
+                var attrDtos = _model.Attributes.Select(ToAddCategoryAttributeDto);
+                var attrResult = await AttributeCategoryManager.AddCategoryAttributeForCategory(
+                    _model.Id, attrDtos);
+
+                if (!attrResult.Success)
+                {
+                    Snackbar.Add($"Kategori güncellendi fakat özellikler kaydedilemedi: {attrResult.Message}", Severity.Warning);
+                    NavigationManager.NavigateTo("/categories");
+                    return;
+                }
+            }
+
+            Snackbar.Add("Kategori güncellendi", Severity.Success);
+            NavigationManager.NavigateTo("/categories");
         }
         catch (Exception ex)
         {
@@ -187,75 +286,6 @@ public partial class CategoryDialog
         {
             _saving = false;
         }
-    }
-
-    private async Task SubmitAdd()
-    {
-        var addDto = new AddCategoryDto(
-            Name: _model.Name,
-            CategoryAttributes: [],
-            SuperCategoryId: _model.ParentCategoryId,
-            IsFavorite: _model.IsFavorite
-        );
-
-        var result = await CategoryManager.AddCategory(addDto);
-        if (!result.Success)
-        {
-            Snackbar.Add(result.Message ?? "Kategori eklenirken hata oluştu", Severity.Error);
-            return;
-        }
-
-        if (_model.Attributes.Count > 0 && result.Data is not null)
-        {
-            var attrDtos = _model.Attributes.Select(ToAddCategoryAttributeDto);
-            var attrResult = await AttributeCategoryManager.AddCategoryAttributeForCategory(
-                result.Data.Id, attrDtos);
-
-            if (!attrResult.Success)
-            {
-                Snackbar.Add($"Kategori eklendi fakat özellikler kaydedilemedi: {attrResult.Message}", Severity.Warning);
-                MudDialog.Close(DialogResult.Ok(true));
-                return;
-            }
-        }
-
-        Snackbar.Add("Kategori eklendi", Severity.Success);
-        MudDialog.Close(DialogResult.Ok(true));
-    }
-
-    private async Task SubmitEdit()
-    {
-        var editDto = new EditCategoryDto(
-            Id: _model.Id,
-            Name: _model.Name,
-            SuperCategoryId: _model.ParentCategoryId,
-            IsFavorite: _model.IsFavorite,
-            IsImported: false
-        );
-
-        var result = await CategoryManager.UpdateCategory(editDto);
-        if (!result.Success)
-        {
-            Snackbar.Add(result.Message ?? "Kategori güncellenirken hata oluştu", Severity.Error);
-            return;
-        }
-
-        if (_isLeafCategory)
-        {
-            var attrDtos = _model.Attributes.Select(ToAddCategoryAttributeDto);
-            var attrResult = await AttributeCategoryManager.AddCategoryAttributeForCategory(
-                _model.Id, attrDtos);
-
-            if (!attrResult.Success)
-            {
-                Snackbar.Add($"Kategori güncellendi fakat özellikler kaydedilemedi: {attrResult.Message}", Severity.Warning);
-                MudDialog.Close(DialogResult.Ok(true));
-                return;
-            }
-        }
-
-        Snackbar.Add("Kategori güncellendi", Severity.Success);
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private static AddCategoryAttributeDto ToAddCategoryAttributeDto(AttributeModel a) => new(
@@ -268,10 +298,10 @@ public partial class CategoryDialog
             : a.Name.ToLower().Replace(" ", "_"),
         isSlicer: a.IsSlicer,
         categoryAttributeHumanized: a.Name,
-        categoryAttributeValues: a.SelectedAttribute?.CategoryAttributeValues?.ToList() ?? []
+        categoryAttributeValues: a.Values
     );
 
-    private void Cancel() => MudDialog.Close(DialogResult.Cancel());
+    private void GoBack() => NavigationManager.NavigateTo("/categories");
 
     private class CategoryFormModel
     {
@@ -292,5 +322,7 @@ public partial class CategoryDialog
         public bool IsVarianter { get; set; }
         public bool IsSlicer { get; set; }
         public bool AllowCustom { get; set; } = true;
+        public List<CategoryAttributeValue> Values { get; set; } = [];
+        public string NewValueName { get; set; } = string.Empty;
     }
 }

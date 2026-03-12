@@ -14,10 +14,12 @@
     </div>
     @if (!Notification.IsRead)
     {
-        <MudIconButton Icon="@Icons.Material.Filled.MarkEmailRead"
-                       Size="Size.Small"
-                       Color="Color.Primary"
-                       OnClick="@(() => OnMarkAsRead.InvokeAsync(Notification.Id))"
-                       Title="Okundu işaretle" />
+        <span @onclick:stopPropagation="true">
+            <MudIconButton Icon="@Icons.Material.Filled.MarkEmailRead"
+                           Size="Size.Small"
+                           Color="Color.Primary"
+                           OnClick="HandleMarkAsRead"
+                           Title="Okundu işaretle" />
+        </span>
     }
 </div>
