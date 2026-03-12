@@ -47,10 +47,19 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                 var trendyolImporter = scope.ServiceProvider.GetRequiredService<TrendyolCategoryImporter>();
                 var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
 
-                await SendNotificationAsync(notificationManager,
-                    "Trendyol kategori içe aktarma işlemi başladı",
-                    $"{importEvent.Categories.Count()} kategori içe aktarılıyor...",
-                    [importEvent.UserId]);
+                try
+                {
+                    await notificationManager.SendNotification(
+                        header: "Trendyol kategori içe aktarma işlemi başladı",
+                        content: $"{importEvent.Categories.Count()} kategori içe aktarılıyor...",
+                        severity: NotificationSeverity.Info,
+                        category: NotificationCategory.Pazaryeri,
+                        userIds: [importEvent.UserId]);
+                }
+                catch (Exception notifEx)
+                {
+                    _logger.LogError(notifEx, "Failed to send start notification");
+                }
 
                 var result = await trendyolImporter.ImportCategoriesAsync(importEvent.Categories, stoppingToken);
 
@@ -68,7 +77,20 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                     ? $"{importEvent.Categories.Count()} kategori başarıyla içe aktarıldı."
                     : $"İçe aktarma başarısız: {result.Message}";
 
-                await SendNotificationAsync(notificationManager, header, content, [importEvent.UserId]);
+                try
+                {
+                    await notificationManager.SendNotification(
+                        header: header,
+                        content: content,
+                        severity: result.Success ? NotificationSeverity.Success : NotificationSeverity.Error,
+                        category: NotificationCategory.Pazaryeri,
+                        userIds: [importEvent.UserId],
+                        actionUrl: result.Success ? "/marketplace/sync" : null);
+                }
+                catch (Exception notifEx)
+                {
+                    _logger.LogError(notifEx, "Failed to send result notification");
+                }
 
                 _logger.LogInformation("Category import completed for user {UserId}: {Success}",
                     importEvent.UserId, result.Success);
@@ -78,30 +100,20 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                 _logger.LogError(ex, "Category import failed for user {UserId}", importEvent.UserId);
                 using var scope = _scopeFactory.CreateScope();
                 var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
-                await SendNotificationAsync(notificationManager,
-                    "Trendyol kategori içe aktarma hatası",
-                    $"Beklenmeyen hata: {ex.Message}",
-                    [importEvent.UserId]);
+                try
+                {
+                    await notificationManager.SendNotification(
+                        header: "Trendyol kategori içe aktarma hatası",
+                        content: $"Beklenmeyen hata: {ex.Message}",
+                        severity: NotificationSeverity.Error,
+                        category: NotificationCategory.Pazaryeri,
+                        userIds: [importEvent.UserId]);
+                }
+                catch (Exception notifEx)
+                {
+                    _logger.LogError(notifEx, "Failed to send error notification");
+                }
             }
-        }
-    }
-
-    private async Task SendNotificationAsync(INotificationManager notificationManager, string header, string content, IEnumerable<Guid> userIds)
-    {
-        try
-        {
-            var notification = new Notification
-            {
-                Header = header,
-                Content = content,
-                Users = new List<ApplicationUser>(),
-                CreatedAt = DateTimeOffset.UtcNow
-            };
-            await notificationManager.SendNotification(notification, [SenderType.RealTime]);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send notification");
         }
     }
 }

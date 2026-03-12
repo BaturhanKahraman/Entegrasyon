@@ -81,11 +81,12 @@ builder.Services.AddSignalR(options =>
 });
 builder.Services.AddSignalRSettings();
 builder.Services.AddNotification();
-builder.Services.AddSingleton<IBlazorNotificationSender, BlazorNotificationSender>();
-builder.Services.AddSingleton<INotificationSender, BlazorNotificationSender>();
-
-// Register notification event publisher
-builder.Services.AddSingleton<NotificationEventPublisher>();
+builder.Services.AddSingleton<InProcessNotificationDeliveryService>();
+builder.Services.AddSingleton<INotificationDeliveryService>(
+    sp => sp.GetRequiredService<InProcessNotificationDeliveryService>());
+builder.Services.AddSingleton<INotificationChannel>(
+    sp => sp.GetRequiredService<InProcessNotificationDeliveryService>());
+builder.Services.AddHostedService<NotificationEventPublisher>();
 
 var app = builder.Build();
 

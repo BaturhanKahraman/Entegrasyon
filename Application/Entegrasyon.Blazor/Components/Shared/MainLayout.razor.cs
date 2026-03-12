@@ -13,11 +13,8 @@ public partial class MainLayout : IDisposable
 
     private ErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
-    private bool _notificationPanelOpen = false;
     private bool _isDarkMode = false;
-    private int _notificationCount = 3;
     private MudTheme _theme = new();
-    private List<NotificationItem> _notifications = [];
 
     protected override void OnInitialized()
     {
@@ -45,13 +42,6 @@ public partial class MainLayout : IDisposable
                 AppbarBackground = "#212121",
             }
         };
-
-        _notifications =
-        [
-            new("Yeni sipariş alındı: #TR-12345", "5 dk önce", NotificationType.Info),
-            new("Stok uyarısı: 5 ürün kritik seviyede", "1 saat önce", NotificationType.Warning),
-            new("Trendyol senkronizasyonu tamamlandı", "2 saat önce", NotificationType.Success)
-        ];
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
@@ -61,31 +51,7 @@ public partial class MainLayout : IDisposable
         => NavigationManager.LocationChanged -= OnLocationChanged;
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
-    private void ToggleNotificationPanel() => _notificationPanelOpen = !_notificationPanelOpen;
     private void ToggleTheme() => _isDarkMode = !_isDarkMode;
-
-    private void ClearNotifications()
-    {
-        _notifications.Clear();
-        _notificationCount = 0;
-        _notificationPanelOpen = false;
-    }
-
-    private static string GetNotificationIcon(NotificationType type) => type switch
-    {
-        NotificationType.Success => Icons.Material.Filled.CheckCircle,
-        NotificationType.Warning => Icons.Material.Filled.Warning,
-        NotificationType.Error => Icons.Material.Filled.Error,
-        _ => Icons.Material.Filled.Info
-    };
-
-    private static Color GetNotificationColor(NotificationType type) => type switch
-    {
-        NotificationType.Success => Color.Success,
-        NotificationType.Warning => Color.Warning,
-        NotificationType.Error => Color.Error,
-        _ => Color.Info
-    };
 
     private async Task HandleLogout()
     {
@@ -95,15 +61,5 @@ public partial class MainLayout : IDisposable
         }
 
         NavigationManager.NavigateTo("/auth/login", forceLoad: true);
-    }
-
-    private record NotificationItem(string Message, string Time, NotificationType Type);
-
-    private enum NotificationType
-    {
-        Info,
-        Success,
-        Warning,
-        Error
     }
 }

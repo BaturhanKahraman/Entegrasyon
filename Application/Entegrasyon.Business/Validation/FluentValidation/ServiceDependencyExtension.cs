@@ -12,6 +12,7 @@ using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Notifications;
+using Entegrasyon.Business.Notifications;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -38,7 +39,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<EditCategoryAttributeDto>,EditCategoryAttributeDtoValidator>();
         services.AddScoped<IValidator<AddBrandDto>, AddBrandDtoValidator>();
         services.AddScoped<IValidator<CreateBrandMarketPlaceMatchDto>, CreateBrandMarketPlaceMatchDtoValidator>();
-        services.AddScoped<IValidator<Notification>, SendNotificationValidator>();
+        services.AddScoped<IValidator<SendNotificationRequest>, SendNotificationValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;

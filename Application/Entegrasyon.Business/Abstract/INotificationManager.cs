@@ -1,11 +1,18 @@
 using Entegrasyon.Entity.Notifications;
-using Entegrasyon.Business.Notifications;
 
 namespace Entegrasyon.Business.Abstract;
 
 public interface INotificationManager
 {
-    Task SendNotification(Notification notification, IEnumerable<SenderType> senderTypes);
+    Task SendNotification(
+        string header,
+        string content,
+        NotificationSeverity severity,
+        NotificationCategory category,
+        IEnumerable<Guid> userIds,
+        string? actionUrl = null);
+
     Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false);
     Task MarkAsRead(long notificationId, Guid userId);
+    Task MarkAllAsRead(Guid userId);
 }
