@@ -1,0 +1,40 @@
+@using Entegrasyon.Entity.Dtos.Brand
+@using MudBlazor
+
+@if (Mappings == null || Mappings.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">
+        Henüz mapping oluşturulmamıştır.
+    </MudAlert>
+}
+else
+{
+    <div style="overflow-x: auto;">
+        <MudTable Items="Mappings" Hover="true" Striped="true">
+            <HeaderContent>
+                <MudTh>Brand Adı</MudTh>
+                <MudTh>Trendyol Brand ID</MudTh>
+                <MudTh>Trendyol Brand Adı</MudTh>
+                <MudTh Align="Align.Right">İşlemler</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Brand Adı">@context.ApplicationBrandName</MudTd>
+                <MudTd DataLabel="Trendyol Brand ID">@context.MarketPlaceBrandId</MudTd>
+                <MudTd DataLabel="Trendyol Brand Adı">
+                    <MudText Typo="Typo.body2">
+                        @(string.IsNullOrEmpty(context.MarketPlaceBrandName) ? "--" : context.MarketPlaceBrandName)
+                    </MudText>
+                </MudTd>
+                <MudTd DataLabel="İşlemler" Align="Align.Right">
+                    <MudButton 
+                        Variant="Variant.Text" 
+                        Color="Color.Error" 
+                        Size="Size.Small"
+                        OnClick="@(() => HandleDeleteClick(context))">
+                        Sil
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </div>
+}

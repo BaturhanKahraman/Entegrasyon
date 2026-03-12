@@ -1,0 +1,90 @@
+@page "/brand-mapping"
+@using Entegrasyon.Entity.Dtos.Brand
+@using MudBlazor
+
+<PageTitle>Brand Marketplace Mapping - Entegrasyon</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    <MudPaper Elevation="0" Class="mb-6">
+        <MudText Typo="Typo.h5" Class="mb-4">Marka Eşleştirme</MudText>
+
+        <!-- Summary Stats -->
+        <MudGrid Spacing="2" Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.subtitle2">Toplam Marka</MudText>
+                    <MudText Typo="Typo.h5"  Class="mt-2">@MappingSummary.TotalBrands</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirme Yapılan</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@MappingSummary.MappedBrands</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirme Yapılmayan</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@MappingSummary.UnmappedBrands</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Info">Tamamlanma %</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Info" Class="mt-2">
+                        @(MappingSummary.TotalBrands > 0 ? Math.Round((double)MappingSummary.MappedBrands / MappingSummary.TotalBrands * 100, 0) : 0)%
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" Class="mt-8" @bind-ActivePanelIndex="SelectedTabIndex">
+
+        <!-- Tab 1: Mappings List -->
+        <MudTabPanel Text="Mapping'ler Listesi" Icon="@Icons.Material.Filled.List">
+            <MudPaper Class="pa-4">
+                @if (IsLoading)
+                {
+                    <MudProgressCircular Indeterminate="true" Class="mx-auto my-4" />
+                }
+                else if (BrandMappings.Count == 0)
+                {
+                    <MudAlert Severity="Severity.Info" Class="mt-4">
+                        Henüz eşleştirme oluşturulmamıştır. Aşağıdaki sekmelerden bir eşleştirme ekleyin.
+                    </MudAlert>
+                }
+                else
+                {
+                    <BrandMappingList Mappings="BrandMappings" OnDelete="DeleteMapping" />
+                }
+            </MudPaper>
+        </MudTabPanel>
+
+        <!-- Tab 2: Manual Mapping -->
+        <MudTabPanel Text="Manuel Eşleştirme Ekle" Icon="@Icons.Material.Filled.Add">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.subtitle1" Class="mb-4">Yeni Marka Eşleştirme Oluştur</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenMappingDialog">
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" />
+                    Eşleştirme Oluştur
+                </MudButton>
+            </MudPaper>
+        </MudTabPanel>
+
+        <!-- Tab 3: Import -->
+        <MudTabPanel Text="Trendyol Marka'larını İçe Aktar" Icon="@Icons.Material.Filled.Download">
+            <MudPaper Class="pa-4">
+                <MudAlert Severity="Severity.Warning" Class="mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" />
+                    Bu işlev henüz implement edilmemiştir. Lütfen daha sonra tekrar deneyiniz.
+                </MudAlert>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ImportBrands" Disabled="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Download" Class="mr-2" />
+                    Trendyol Marka'larını İndir
+                </MudButton>
+            </MudPaper>
+        </MudTabPanel>
+
+    </MudTabs>
+</MudContainer>

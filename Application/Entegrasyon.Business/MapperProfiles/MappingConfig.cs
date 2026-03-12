@@ -14,6 +14,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Dtos.Users;
+using Entegrasyon.Entity.Matches;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Entegrasyon.Entity.User;
@@ -41,6 +42,13 @@ public static class MappingConfig
         // Brand
         config.NewConfig<AddBrandDto,Brand>();
         config.NewConfig<Brand,AddBrandDto>();
+        
+        // Brand Marketplace Matching
+        config.NewConfig<BrandMarketPlaceMatch, BrandMarketPlaceMatchDto>()
+              .Map(dest => dest.ApplicationBrandName, src => src.ApplicationBrand.Name)
+              .Map(dest => dest.MarketPlaceBrandName, src => ""); // TODO: Get from external API or local cache
+
+        config.NewConfig<CreateBrandMarketPlaceMatchDto, BrandMarketPlaceMatch>();
 
         // Cargo Company
         config.NewConfig<AddCargoCompanyDto,CargoCompany>();
