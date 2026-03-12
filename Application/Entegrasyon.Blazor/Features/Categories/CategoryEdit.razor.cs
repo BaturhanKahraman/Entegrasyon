@@ -42,12 +42,10 @@ public partial class CategoryEdit
 
             if (_category != null)
             {
-                // All independent — run in parallel
-                await Task.WhenAll(
-                    LoadCategories(),
-                    LoadAllAttributes(),
-                    LoadCategoryAttributes(),
-                    LoadProductStatus());
+                await LoadCategories();
+                await LoadAllAttributes();
+                await LoadCategoryAttributes();
+                await LoadProductStatus();
             }
         }
         finally
