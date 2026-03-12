@@ -25,7 +25,7 @@
                                @bind-Value="_model.ParentCategoryId"
                                Label="Üst Kategori (Opsiyonel)"
                                Clearable="true">
-                        <MudSelectItem Value="@((int?)null)">Ana Kategori</MudSelectItem>
+                        <MudSelectItem Value="@((int?)null)" Disabled>Bir üst kategori seçebilirsiniz.</MudSelectItem>
                         @foreach (var cat in _availableCategories)
                         {
                             <MudSelectItem Value="@((int?)cat.Id)">@cat.Name</MudSelectItem>
