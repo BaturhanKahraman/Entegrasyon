@@ -1,5 +1,7 @@
 using System.Linq.Expressions;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -27,6 +29,7 @@ public class ProductManager : IProductService
     private readonly IOfficeStockManager _officeStockManager;
     private readonly IAttributeKeyValueManager _attributeKeyValueManager;
     private readonly IBarcodeService _barcodeService;
+    private readonly EventChannel<ProductAddedEvent> _productAddedChannel;
 
     public ProductManager(
         IntegrationDbContext dbContext,
@@ -35,7 +38,8 @@ public class ProductManager : IProductService
         IFluentValidator validator,
         IOfficeStockManager officeStockManager,
         IAttributeKeyValueManager attributeKeyValueManager,
-        IBarcodeService barcodeService)
+        IBarcodeService barcodeService,
+        EventChannel<ProductAddedEvent> productAddedChannel)
     {
         _dbContext = dbContext;
         _applicationLogManager = applicationLogManager;
@@ -44,6 +48,7 @@ public class ProductManager : IProductService
         _officeStockManager = officeStockManager;
         _attributeKeyValueManager = attributeKeyValueManager;
         _barcodeService = barcodeService;
+        _productAddedChannel = productAddedChannel;
     }
 
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
@@ -62,6 +67,7 @@ public class ProductManager : IProductService
         _dbContext.MainProducts.Add(product);
         await _dbContext.SaveChangesAsync();
         await _applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add);
+        _productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title));
         return new SuccessDataResult<Product>(product, Messages.ProductAdded);
     }
 

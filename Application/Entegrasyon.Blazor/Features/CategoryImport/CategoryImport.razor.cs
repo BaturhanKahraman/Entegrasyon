@@ -1,5 +1,5 @@
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events;
+using Entegrasyon.Business.Channels.Events.Categories;
 using Entegrasyon.Blazor.ViewModels;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Import;

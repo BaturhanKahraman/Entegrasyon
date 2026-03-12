@@ -1,7 +1,9 @@
 {
     "chat.tools.terminal.autoApprove": {
         "dotnet build": true,
-        "dotnet run": true
+        "dotnet run": true,
+        "lsof": true,
+        "netstat": true
     },
     "workbench.commandPalette.experimental.suggestCommands": true
 }

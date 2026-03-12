@@ -1,6 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events;
+using Entegrasyon.Business.Channels.Events.Categories;
 using Entegrasyon.Entity.Categories;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
