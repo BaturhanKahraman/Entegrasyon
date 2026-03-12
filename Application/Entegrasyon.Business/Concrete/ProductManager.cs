@@ -165,4 +165,7 @@ public class ProductManager : IProductService
 
     public Task<int> GetProductCountByCategoryId(int categoryId) =>
         _dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
+
+    public Task<bool> HasSoldProductsInCategory(int categoryId) =>
+        _dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
 }

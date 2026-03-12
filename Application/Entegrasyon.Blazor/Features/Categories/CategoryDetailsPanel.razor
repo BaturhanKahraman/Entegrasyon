@@ -102,58 +102,6 @@
                 <MudCard Elevation="0" Outlined="true">
                     <MudCardHeader>
                         <CardHeaderContent>
-                            <MudText Typo="Typo.h6">Pazaryeri Eşleşmeleri</MudText>
-                        </CardHeaderContent>
-                        <CardHeaderActions>
-                            <MudChip T="string" Color="Color.Success" Size="Size.Small">
-                                @(SelectedCategory.MarketplaceLinks?.Count ?? 0) eşleşme
-                            </MudChip>
-                        </CardHeaderActions>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        @if (SelectedCategory.MarketplaceLinks?.Any() == true)
-                        {
-                            <MudList T="string" Dense="true">
-                                @foreach (var link in SelectedCategory.MarketplaceLinks)
-                                {
-                                    <MudListItem T="string" Icon="@Icons.Material.Filled.Link">
-                                        <div class="d-flex justify-space-between align-center" style="width: 100%">
-                                            <div>
-                                                <MudText>@(link.MarketPlace?.Name ?? "N/A")</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                    @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
-                                                </MudText>
-                                            </div>
-                                            <MudChip T="string" Size="Size.Small" Color="@(link.IsActive ? Color.Success : Color.Default)">
-                                                @(link.IsActive ? "Aktif" : "Pasif")
-                                            </MudChip>
-                                        </div>
-                                    </MudListItem>
-                                }
-                            </MudList>
-                        }
-                        else
-                        {
-                            <MudText Align="Align.Center" Color="Color.Secondary">
-                                Pazaryeri eşleşmesi yok
-                            </MudText>
-                            <div class="d-flex justify-center mt-2">
-                                <MudButton Variant="Variant.Text"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.Add"
-                                           Href="/categories/import">
-                                    Kategorileri İçe Aktar
-                                </MudButton>
-                            </div>
-                        }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-
-            <MudItem xs="12" Class="mt-4">
-                <MudCard Elevation="0" Outlined="true">
-                    <MudCardHeader>
-                        <CardHeaderContent>
                             <MudText Typo="Typo.h6">İstatistikler</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>

@@ -1,0 +1,124 @@
+@page "/marketplace/sync/categories"
+@using Entegrasyon.Entity.Categories
+
+<PageTitle>Kategori Senkronizasyonu - Entegrasyon</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudText Typo="Typo.h5">Kategori Eşleştirme</MudText>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Download"
+                   Href="/categories/import">
+            Trendyol'dan Kategori İçe Aktar
+        </MudButton>
+    </MudStack>
+
+    <MudGrid Spacing="2" Class="mb-6">
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudText Typo="Typo.subtitle2">Toplam Kategori</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2">@_categories.Count</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirilmiş</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_categories.Count(c => c.MarketplaceLinks?.Any() == true)</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirilmemiş</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@_categories.Count(c => c.MarketplaceLinks == null || !c.MarketplaceLinks.Any())</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudPaper Elevation="1" Class="pa-4">
+            <MudStack Row="true" Spacing="2" Class="mb-4">
+                <MudSwitch @bind-Value="_showUnmappedOnly" Label="Sadece eşleşmesi olmayanlar" Color="Color.Primary" />
+                <MudSwitch @bind-Value="_showLeafOnly" Label="Sadece alt kategoriler (leaf)" Color="Color.Primary" />
+            </MudStack>
+
+            <MudDataGrid T="Category" Items="FilteredCategories" Dense="true" Hover="true" Striped="true"
+                         FixedHeader="true" Height="500px">
+                <Columns>
+                    <PropertyColumn Property="x => x.Name" Title="Kategori Adı" />
+                    <TemplateColumn Title="Üst Kategori">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2">
+                                @(GetParentName(context.Item))
+                            </MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tip">
+                        <CellTemplate>
+                            @if (IsLeaf(context.Item))
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">Leaf</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Parent</MudChip>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Eşleşme Durumu">
+                        <CellTemplate>
+                            @if (context.Item.MarketplaceLinks?.Any() == true)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">
+                                    @context.Item.MarketplaceLinks.Count eşleşme
+                                </MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">Eşleşme yok</MudChip>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Marketplace Detayları">
+                        <CellTemplate>
+                            @if (context.Item.MarketplaceLinks?.Any() == true)
+                            {
+                                @foreach (var link in context.Item.MarketplaceLinks)
+                                {
+                                    <MudText Typo="Typo.caption">
+                                        @(link.MarketPlace?.Name ?? "N/A") - @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
+                                    </MudText>
+                                }
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Son Senkronizasyon">
+                        <CellTemplate>
+                            @{
+                                var lastSync = context.Item.MarketplaceLinks?
+                                    .Where(l => l.LastSyncedAt.HasValue)
+                                    .MaxBy(l => l.LastSyncedAt)?.LastSyncedAt;
+                            }
+                            @if (lastSync.HasValue)
+                            {
+                                <MudText Typo="Typo.body2">@lastSync.Value.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="Category" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudPaper>
+    }
+</MudContainer>

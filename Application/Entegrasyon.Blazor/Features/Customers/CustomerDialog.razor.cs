@@ -20,6 +20,7 @@ public partial class CustomerDialog
     private CustomerViewModel Model { get; set; } = new();
     private MudForm form;
     private bool success;
+    private bool _saving;
     private string[] errors = [];
 
     protected override void OnInitialized()
@@ -74,53 +75,61 @@ public partial class CustomerDialog
         form.Validate();
         if (!success) return;
 
-        if (IsEdit)
+        _saving = true;
+        try
         {
-            var dto = new UpdateCustomerDto(
-                Model.Id,
-                Model.PhoneNumber,
-                Model.CustomerType,
-                Model.Name,
-                Model.Surname,
-                Model.NationalIdentity,
-                Model.TaxNumber,
-                Model.CorporateName
-            );
-
-            var result = await CustomerManager.UpdateCustomer(dto);
-            if (result.Success)
+            if (IsEdit)
             {
-                Snackbar.Add("Müşteri güncellendi.", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
+                var dto = new UpdateCustomerDto(
+                    Model.Id,
+                    Model.PhoneNumber,
+                    Model.CustomerType,
+                    Model.Name,
+                    Model.Surname,
+                    Model.NationalIdentity,
+                    Model.TaxNumber,
+                    Model.CorporateName
+                );
+
+                var result = await CustomerManager.UpdateCustomer(dto);
+                if (result.Success)
+                {
+                    Snackbar.Add("Müşteri güncellendi.", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    Snackbar.Add(result.Message, Severity.Error);
+                }
             }
             else
             {
-                Snackbar.Add(result.Message, Severity.Error);
+                var dto = new CustomerAddDto(
+                    Model.NationalIdentity,
+                    Model.TaxNumber,
+                    Model.Name,
+                    Model.Surname,
+                    Model.CorporateName,
+                    Model.PhoneNumber,
+                    Model.FullAddress,
+                    Model.CustomerType
+                );
+
+                var result = await CustomerManager.AddCustomer(dto);
+                if (result.Success)
+                {
+                    Snackbar.Add("Müşteri eklendi.", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else
+                {
+                    Snackbar.Add(result.Message, Severity.Error);
+                }
             }
         }
-        else
+        finally
         {
-            var dto = new CustomerAddDto(
-                Model.NationalIdentity,
-                Model.TaxNumber,
-                Model.Name,
-                Model.Surname,
-                Model.CorporateName,
-                Model.PhoneNumber,
-                Model.FullAddress,
-                Model.CustomerType
-            );
-
-            var result = await CustomerManager.AddCustomer(dto);
-            if (result.Success)
-            {
-                Snackbar.Add("Müşteri eklendi.", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-            else
-            {
-                Snackbar.Add(result.Message, Severity.Error);
-            }
+            _saving = false;
         }
     }
 }

@@ -102,6 +102,13 @@ namespace Entegrasyon.Business.Concrete.Auth
             return new SuccessResult(Messages.RoleDeleted);
         }
 
+        public async Task<List<Role>> GetRolesWithClaimsAsync(CancellationToken token = default)
+        {
+            return await context.Roles
+                .Include(r => r.RoleClaims)
+                .ToListAsync(token);
+        }
+
         public async ValueTask<IEnumerable<Role>> GetRolesSelectList(CancellationToken token = default)
         {
             bool isCached = cache.TryGetValue(SelectListCache, out IEnumerable<Role> roles);

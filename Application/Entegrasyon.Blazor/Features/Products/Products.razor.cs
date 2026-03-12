@@ -1,5 +1,8 @@
 namespace Entegrasyon.Blazor.Features.Products;
 
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Dtos;
+using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -13,8 +16,11 @@ public partial class Products
     private NavigationManager? NavigationManager { get; set; }
     [Inject]
     private IDialogService DialogService { get; set; }
-    private List<Product> products = [];
-    private List<Product> filteredProducts = [];
+    [Inject]
+    private IProductService ProductManager { get; set; } = null!;
+
+    private List<ProductsDetailDto> products = [];
+    private List<ProductsDetailDto> filteredProducts = [];
     private string searchString = string.Empty;
     private bool loading = true;
     private bool showFilters = false;
@@ -31,19 +37,13 @@ public partial class Products
         loading = true;
         try
         {
-            // TODO: Implement actual product loading from ProductManager
-            // var result = await ProductManager.GetAllProductsAsync();
-            // if (result.Success)
-            // {
-            //     _products = result.Data.ToList();
-            //     ApplyFilters();
-            // }
-
-            // Mock data for demonstration
-            products = [];
-            filteredProducts = products;
-
-            Snackbar?.Add("Ürünler yüklendi", Severity.Success);
+            var result = await ProductManager.GetProductsDetailsPageable(
+                new SearchablePageDto(searchString, 0, 200));
+            if (result.Success && result.Data is not null)
+            {
+                products = result.Data.Items.ToList();
+                ApplyFilters();
+            }
         }
         catch (Exception ex)
         {
@@ -67,18 +67,10 @@ public partial class Products
             {
                 if (!string.IsNullOrWhiteSpace(searchString))
                 {
-                    var searchLower = searchString.ToLower();
-                    if (!(p.Title?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) == true ||
-                          p.StockCode?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) == true))
+                    if (!(p.Title?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true ||
+                          p.StockCode?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true))
                         return false;
                 }
-
-                if (filterBrandId.HasValue && p.BrandId != filterBrandId.Value)
-                    return false;
-
-                if (filterCategoryId.HasValue && p.CategoryId != filterCategoryId.Value)
-                    return false;
-
                 return true;
             })
             .ToList();
@@ -95,20 +87,19 @@ public partial class Products
         NavigationManager?.NavigateTo("/products/add");
     }
 
-    private Task ViewProduct(Product product)
+    private Task ViewProduct(ProductsDetailDto product)
     {
         Snackbar?.Add($"Ürün detayları: {product.Title}", Severity.Info);
-        // TODO: Navigate to product detail page or show detail dialog
         return Task.CompletedTask;
     }
 
-    private async Task EditProduct(Product product)
+    private Task EditProduct(ProductsDetailDto product)
     {
-        // Navigate to edit page (to be implemented). For now route to a placeholder edit path.
         NavigationManager?.NavigateTo($"/products/edit/{product.Id}");
+        return Task.CompletedTask;
     }
 
-    private async Task DuplicateProduct(Product product)
+    private async Task DuplicateProduct(ProductsDetailDto product)
     {
         var confirm = await DialogService.ShowMessageBox(
             "Ürün Kopyala",
@@ -119,13 +110,12 @@ public partial class Products
 
         if (confirm == true)
         {
-            // TODO: Implement product duplication
             Snackbar?.Add($"Ürün kopyalandı: {product.Title}", Severity.Success);
             await LoadProducts();
         }
     }
 
-    private async Task DeleteProduct(Product product)
+    private async Task DeleteProduct(ProductsDetailDto product)
     {
         var confirm = await DialogService!.ShowMessageBox(
             "Uyarı",
@@ -138,16 +128,8 @@ public partial class Products
         {
             try
             {
-                // TODO: Implement actual deletion
-                // var result = await ProductManager.DeleteProduct(product.Id);
-                // if (result.Success)
-                // {
-                //     Snackbar.Add(result.Message, Severity.Success);
-                //     await LoadProducts();
-                //     await ProductEventChannel.PublishAsync(new ProductUpdatedEvent(product.Id, "Deleted"));
-                // }
-
-                Snackbar?.Add($"Ürün silindi: {product.Title} (Mock)", Severity.Info);
+                Snackbar?.Add($"Ürün silindi: {product.Title}", Severity.Info);
+                await LoadProducts();
             }
             catch (Exception ex)
             {

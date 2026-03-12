@@ -32,4 +32,9 @@ public partial class NotificationItem : ComponentBase
         NotificationCategory.Stok      => "Stok",
         _                              => "Sistem"
     };
+
+    private async Task HandleMarkAsRead()
+    {
+        await OnMarkAsRead.InvokeAsync(Notification.Id);
+    }
 }

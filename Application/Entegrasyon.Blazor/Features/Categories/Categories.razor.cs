@@ -30,15 +30,7 @@ public partial class Categories
         _loading = true;
         try
         {
-            var result = await CategoryManager.GetCategoryDetailList();
-            if (result.Success && result.Data != null)
-            {
-                _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
-            }
-            else
-            {
-                Snackbar.Add(result.Message ?? "Kategoriler yüklenemedi", Severity.Warning);
-            }
+            _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
         }
         catch (Exception ex)
         {
@@ -83,30 +75,11 @@ public partial class Categories
         }
     }
 
-    private async Task EditSelectedCategory()
+    private Task EditSelectedCategory()
     {
-        if (_selectedCategory == null) return;
-
-        var parameters = new DialogParameters<CategoryDialog>
-        {
-            { x => x.Category, _selectedCategory },
-            { x => x.IsEditMode, true }
-        };
-
-        var options = new DialogOptions
-        {
-            MaxWidth = MaxWidth.Medium,
-            FullWidth = true,
-            CloseButton = true
-        };
-
-        var dialog = await DialogService.ShowAsync<CategoryDialog>($"Kategori Düzenle: {_selectedCategory.Name}", parameters, options);
-        var result = await dialog.Result;
-
-        if (!result!.Canceled)
-        {
-            await LoadCategories();
-        }
+        if (_selectedCategory == null) return Task.CompletedTask;
+        NavigationManager.NavigateTo($"/categories/edit/{_selectedCategory.Id}");
+        return Task.CompletedTask;
     }
 
     private async Task DeleteSelectedCategory()

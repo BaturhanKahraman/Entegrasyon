@@ -222,7 +222,6 @@ namespace Entegrasyon.Business.Concrete
         public async Task<List<Category>> GetAllCategoriesWithHierarchyAsync()
         {
             return await dbContext.Categories
-                .AsNoTracking()
                 .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
                 .Include(c => c.MarketplaceLinks).ThenInclude(ml => ml.MarketPlace)
                 .OrderBy(c => c.Name)
@@ -246,6 +245,44 @@ namespace Entegrasyon.Business.Concrete
                 .Where(c => !c.CategoryAttributes.Any())
                 .OrderBy(c => c.Name)
                 .ToListAsync();
+        }
+
+        public async Task<List<Category>> GetValidParentCandidatesAsync(int? excludeCategoryId)
+        {
+            if (excludeCategoryId is null or <= 0)
+                return await GetValidParentCandidatesAsync();
+
+            var allCategories = await dbContext.Categories
+                .AsNoTracking()
+                .ToListAsync();
+
+            var excludeIds = GetDescendantIds(allCategories, excludeCategoryId.Value);
+            excludeIds.Add(excludeCategoryId.Value);
+
+            return allCategories
+                .Where(c => !excludeIds.Contains(c.Id))
+                .Where(c => c.CategoryAttributes == null || !c.CategoryAttributes.Any())
+                .OrderBy(c => c.Name)
+                .ToList();
+        }
+
+        private static HashSet<int> GetDescendantIds(List<Category> allCategories, int parentId)
+        {
+            var descendants = new HashSet<int>();
+            var queue = new Queue<int>();
+            queue.Enqueue(parentId);
+
+            while (queue.Count > 0)
+            {
+                var currentId = queue.Dequeue();
+                foreach (var child in allCategories.Where(c => c.SuperCategoryId == currentId))
+                {
+                    if (descendants.Add(child.Id))
+                        queue.Enqueue(child.Id);
+                }
+            }
+
+            return descendants;
         }
 
         public async Task<List<CategoryMarketplace>> GetCategoryMarketplaceLinksAsync(int categoryId)

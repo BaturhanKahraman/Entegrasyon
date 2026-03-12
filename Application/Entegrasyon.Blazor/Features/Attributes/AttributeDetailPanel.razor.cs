@@ -18,6 +18,7 @@ public partial class AttributeDetailPanel
 
     private bool _isEditing = false;
     private bool _saving = false;
+    private bool _deleting = false;
     private string _editHumanized = string.Empty;
     private string _editKey = string.Empty;
     private bool _editAllowCustom = false;
@@ -93,15 +94,23 @@ public partial class AttributeDetailPanel
             cancelText: "İptal");
         if (confirmed != true) return;
 
-        var result = await AttributeManager.DeleteCategoryAttribute(SelectedAttribute.Id);
-        if (result.Success)
+        _deleting = true;
+        try
         {
-            Snackbar.Add(result.Message ?? "Özellik silindi.", Severity.Success);
-            await OnAttributeChanged.InvokeAsync();
+            var result = await AttributeManager.DeleteCategoryAttribute(SelectedAttribute.Id);
+            if (result.Success)
+            {
+                Snackbar.Add(result.Message ?? "Özellik silindi.", Severity.Success);
+                await OnAttributeChanged.InvokeAsync();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Silme başarısız.", Severity.Error);
+            }
         }
-        else
+        finally
         {
-            Snackbar.Add(result.Message ?? "Silme başarısız.", Severity.Error);
+            _deleting = false;
         }
     }
 

@@ -2,11 +2,9 @@ using Entegrasyon.ApplicationBootstrap.Security;
 using Entegrasyon.Blazor.Models;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Auth;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.User;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
 namespace Entegrasyon.Blazor.Features.Admin;
@@ -14,7 +12,6 @@ namespace Entegrasyon.Blazor.Features.Admin;
 public partial class RoleManagement
 {
     [Inject] private IRoleService RoleService { get; set; } = null!;
-    [Inject] private IntegrationDbContext DbContext { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
@@ -32,7 +29,7 @@ public partial class RoleManagement
         _loading = true;
         try
         {
-            _roles = await DbContext.Roles.Include(r => r.RoleClaims).ToListAsync();
+            _roles = await RoleService.GetRolesWithClaimsAsync();
 
             var allPermissions = AppPermissions.GetAllPermissions();
             _allPermissions = allPermissions

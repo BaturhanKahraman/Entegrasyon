@@ -3,7 +3,7 @@ using Entegrasyon.Entity.Dtos.Brand;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-namespace Entegrasyon.Blazor.Features.BrandMapping;
+namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
 public partial class BrandMappingPage : ComponentBase
 {

@@ -80,9 +80,16 @@ else
                     @(SelectedAttribute.AllowCustom ? "Özel değere izin var" : "Yalnızca liste değerleri")
                 </MudChip>
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
-                               OnClick="StartEdit" Title="Düzenle" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                               OnClick="DeleteAttribute" Title="Sil" />
+                               OnClick="StartEdit" Disabled="@(_saving || _deleting)" Title="Düzenle" />
+                @if (_deleting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Error" Class="ml-1" />
+                }
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                   OnClick="DeleteAttribute" Disabled="@_saving" Title="Sil" />
+                }
             </MudStack>
         </MudStack>
 
@@ -120,14 +127,6 @@ else
                 </MudGrid>
             </MudTabPanel>
 
-            <MudTabPanel Text="Trendyol">
-                <MudStack Class="mt-4" AlignItems="AlignItems.Center" Spacing="2">
-                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Default" />
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Trendyol eşleştirme bilgileri yakında eklenecek
-                    </MudText>
-                </MudStack>
-            </MudTabPanel>
         </MudTabs>
     </MudPaper>
 }

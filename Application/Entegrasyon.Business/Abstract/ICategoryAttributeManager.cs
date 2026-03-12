@@ -18,4 +18,5 @@ public interface ICategoryAttributeManager
     Task RemoveAllAttributesByCategoryId(int categoryId);
     Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs);
     Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids);
+    Task<Dictionary<int, AttributeMarketPlaceMatchDto>> GetAttributeMarketPlaceMatchesAsync();
 }

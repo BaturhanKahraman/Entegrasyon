@@ -20,20 +20,50 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
 
     public async Task<IResult> AddCategoryAttributeForCategory(int catId, IEnumerable<AddCategoryAttributeDto> dto)
     {
+        var dtoList = dto.ToList();
+
+        if (dtoList.Count(d => d.IsVarianter) > 1)
+            return new ErrorResult("Bir kategoride en fazla 1 adet varyant özelliği olabilir.");
+
+        if (dtoList.Count(d => d.IsSlicer) > 1)
+            return new ErrorResult("Bir kategoride en fazla 1 adet dilimleyici özellik olabilir.");
+
+        if (dtoList.Any(d => d.IsVarianter && d.IsSlicer))
+            return new ErrorResult("Bir özellik hem varyant hem de dilimleyici olamaz.");
+
         var result = LogicRunner.Run(
             await CategoryExists(catId),
             await IsSuper(catId));
         if (result != null)
             return result;
-        var existingCatAttrs = await GetExistingCategoryAttributes(dto);
-        var existingCatAttrValues = await GetExistingCategoryAttributeValues(dto);
 
-        var catAttrCats = dto.Select(CreateCategoryAttributeCategory(catId, existingCatAttrs, existingCatAttrValues)).ToList();
-        var deletedOnes = await _ctx.CategoryAttributeCategories.Where(x => x.CategoryId == catId).ToListAsync();
-        _ctx.CategoryAttributeCategories.RemoveRange(deletedOnes);
-        _ctx.CategoryAttributeCategories.AddRange(catAttrCats);;
-        await _ctx.SaveChangesAsync();
-        return new SuccessResult();
+        await using var transaction = await _ctx.Database.BeginTransactionAsync();
+        try
+        {
+            // 1. Mevcut junction kayıtlarını sil ve flush et
+            var deletedOnes = await _ctx.CategoryAttributeCategories
+                .Where(x => x.CategoryId == catId)
+                .ToListAsync();
+            _ctx.CategoryAttributeCategories.RemoveRange(deletedOnes);
+            await _ctx.SaveChangesAsync();
+
+            // 2. Yeni kayıtları oluştur ve ekle
+            var existingCatAttrs = await GetExistingCategoryAttributes(dtoList);
+            var existingCatAttrValues = await GetExistingCategoryAttributeValues(dtoList);
+            var catAttrCats = dtoList
+                .Select(CreateCategoryAttributeCategory(catId, existingCatAttrs, existingCatAttrValues))
+                .ToList();
+            _ctx.CategoryAttributeCategories.AddRange(catAttrCats);
+            await _ctx.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return new SuccessResult();
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
     private async Task<ImmutableDictionary<int, CategoryAttribute>> GetExistingCategoryAttributes(IEnumerable<AddCategoryAttributeDto> dto)
     {

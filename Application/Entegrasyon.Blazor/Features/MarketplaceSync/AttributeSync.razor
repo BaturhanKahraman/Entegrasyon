@@ -1,0 +1,77 @@
+@page "/marketplace/sync/attributes"
+@using Entegrasyon.Entity.Categories
+@using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute
+
+<PageTitle>Özellik Senkronizasyonu - Entegrasyon</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    <MudText Typo="Typo.h5" Class="mb-4">Özellik Eşleştirme</MudText>
+
+    <MudGrid Spacing="2" Class="mb-6">
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudText Typo="Typo.subtitle2">Toplam Özellik</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2">@_attributes.Count</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirilmiş</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_matchedCount</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirilmemiş</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@(_attributes.Count - _matchedCount)</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudPaper Elevation="1" Class="pa-4">
+            <MudSwitch @bind-Value="_showUnmappedOnly" Label="Sadece eşleşmesi olmayanlar" Color="Color.Primary" Class="mb-4" />
+
+            <MudDataGrid T="AttributeSyncRow" Items="FilteredRows" Dense="true" Hover="true" Striped="true"
+                         FixedHeader="true" Height="500px">
+                <Columns>
+                    <PropertyColumn Property="x => x.Humanized" Title="Özellik Adı" />
+                    <PropertyColumn Property="x => x.Key" Title="Anahtar" />
+                    <PropertyColumn Property="x => x.ValueCount" Title="Değer Sayısı" />
+                    <TemplateColumn Title="Eşleşme Durumu">
+                        <CellTemplate>
+                            @if (context.Item.HasMatch)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Success">Eşleştirilmiş</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">Eşleşme yok</MudChip>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Marketplace">
+                        <CellTemplate>
+                            @if (context.Item.MarketplaceName is not null)
+                            {
+                                <MudText Typo="Typo.body2">@context.Item.MarketplaceName (ID: @context.Item.MarketplaceAttributeId)</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="AttributeSyncRow" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudPaper>
+    }
+</MudContainer>
