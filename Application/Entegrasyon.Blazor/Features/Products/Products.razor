@@ -1,10 +1,7 @@
 @page "/products"
 @using Entegrasyon.ApplicationBootstrap.Security
 @attribute [Authorize(Policy = AppPermissions.Products.View)]
-@using Entegrasyon.Entity.Products
 @using Entegrasyon.Entity.Dtos.Product
-@using Entegrasyon.Business.Channels
-@using Entegrasyon.Business.Channels.Events
 
 <PageTitle>Ürünler</PageTitle>
 
@@ -15,13 +12,9 @@
         <MudItem xs="12" md="6">
             <MudTextField @bind-Value="searchString" Placeholder="Ürün ara (isim, stok kodu, barkod)..."
                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                OnKeyUp="@(e => OnSearchChanged())" Immediate="true" />
+                OnKeyUp="@(async e => await OnSearchChanged())" Immediate="true" />
         </MudItem>
         <MudItem xs="12" md="6" Class="d-flex justify-end gap-2">
-            <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.FilterAlt"
-                OnClick="ToggleFilters">
-                Filtreler
-            </MudButton>
             <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Download"
                 OnClick="ExportToExcel" Disabled="@(!products.Any())">
                 Excel'e Aktar
@@ -32,30 +25,6 @@
             </MudButton>
         </MudItem>
     </MudGrid>
-
-    @if (showFilters)
-    {
-        <MudDivider Class="my-4" />
-        <MudGrid>
-            <MudItem xs="12" md="4">
-                <MudSelect T="int?" @bind-Value="filterBrandId" Label="Marka" Clearable="true"
-                    OnClearButtonClick="@(() => { filterBrandId = null; ApplyFilters(); })">
-                    <MudSelectItem Value="@((int?)null)">Tümü</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudSelect T="int?" @bind-Value="filterCategoryId" Label="Kategori" Clearable="true"
-                    OnClearButtonClick="@(() => { filterCategoryId = null; ApplyFilters(); })">
-                    <MudSelectItem Value="@((int?)null)">Tümü</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="ApplyFilters">
-                    Filtrele
-                </MudButton>
-            </MudItem>
-        </MudGrid>
-    }
     </MudPaper>
 
     <MudDataGrid T="ProductsDetailDto" Items="@filteredProducts.AsEnumerable()" Filterable="true" SortMode="SortMode.Multiple" Hover="true"

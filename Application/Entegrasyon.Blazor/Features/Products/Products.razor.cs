@@ -3,7 +3,6 @@ namespace Entegrasyon.Blazor.Features.Products;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Product;
-using Entegrasyon.Entity.Products;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -23,9 +22,6 @@ public partial class Products
     private List<ProductsDetailDto> filteredProducts = [];
     private string searchString = string.Empty;
     private bool loading = true;
-    private bool showFilters = false;
-    private int? filterBrandId;
-    private int? filterCategoryId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -42,7 +38,7 @@ public partial class Products
             if (result.Success && result.Data is not null)
             {
                 products = result.Data.Items.ToList();
-                ApplyFilters();
+                filteredProducts = products;
             }
         }
         catch (Exception ex)
@@ -55,30 +51,9 @@ public partial class Products
         }
     }
 
-    private void OnSearchChanged()
+    private async Task OnSearchChanged()
     {
-        ApplyFilters();
-    }
-
-    private void ApplyFilters()
-    {
-        filteredProducts = products
-            .Where(p =>
-            {
-                if (!string.IsNullOrWhiteSpace(searchString))
-                {
-                    if (!(p.Title?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true ||
-                          p.StockCode?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true))
-                        return false;
-                }
-                return true;
-            })
-            .ToList();
-    }
-
-    private void ToggleFilters()
-    {
-        showFilters = !showFilters;
+        await LoadProducts();
     }
 
     private async Task OpenAddProductDialog()
@@ -126,15 +101,8 @@ public partial class Products
 
         if (confirm == true)
         {
-            try
-            {
-                Snackbar?.Add($"Ürün silindi: {product.Title}", Severity.Info);
-                await LoadProducts();
-            }
-            catch (Exception ex)
-            {
-                Snackbar?.Add($"Ürün silinirken hata: {ex.Message}", Severity.Error);
-            }
+            // TODO: Implement actual deletion via ProductManager
+            Snackbar?.Add("Ürün silme henüz uygulanmadı.", Severity.Warning);
         }
     }
 
