@@ -38,7 +38,7 @@ public class BrandMatchService(
     public async Task<BrandMappingSummaryDto> GetBrandMappingsSummaryAsync()
     {
         const int trendyolMarketPlaceId = 1;
-        
+
         var totalBrands = await dbContext.Brands
             .Where(x => !x.IsDeleted)
             .CountAsync();
@@ -86,7 +86,7 @@ public class BrandMatchService(
     public async Task<IResult> CreateBrandMappingAsync(CreateBrandMarketPlaceMatchDto dto)
     {
         await applicationLogManager.AddLog("Brand mapping oluşturma isteği", LogType.Brand, LogAction.Add, dto);
-        
+
         // Validation
         await validator.ValidateAndThrowAsync(dto);
 
@@ -100,8 +100,8 @@ public class BrandMatchService(
         }
 
         var existingMapping = await dbContext.BrandMarketPlaceMatches
-            .FirstOrDefaultAsync(x => 
-                x.ApplicationBrandId == dto.ApplicationBrandId && 
+            .FirstOrDefaultAsync(x =>
+                x.ApplicationBrandId == dto.ApplicationBrandId &&
                 x.MarketPlaceId == dto.MarketPlaceId);
 
         if (existingMapping != null)
@@ -131,8 +131,8 @@ public class BrandMatchService(
         await applicationLogManager.AddLog($"Brand mapping silme isteği (BrandId: {brandId})", LogType.Brand, LogAction.Delete);
 
         var mapping = await dbContext.BrandMarketPlaceMatches
-            .FirstOrDefaultAsync(x => 
-                x.ApplicationBrandId == brandId && 
+            .FirstOrDefaultAsync(x =>
+                x.ApplicationBrandId == brandId &&
                 x.MarketPlaceId == marketPlaceId);
 
         if (mapping == null)
