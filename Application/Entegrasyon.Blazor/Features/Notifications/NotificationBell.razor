@@ -1,0 +1,43 @@
+@using Entegrasyon.Entity.Notifications
+@using Entegrasyon.Blazor.Features.Notifications
+
+<MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true">
+    <ActivatorContent>
+        <MudBadge Content="@_unreadCount" Color="Color.Error" Overlap="true"
+                  Visible="@(_unreadCount > 0)">
+            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
+                           Color="Color.Inherit" />
+        </MudBadge>
+    </ActivatorContent>
+    <ChildContent>
+        <MudPaper Class="pa-0" Style="min-width:320px;max-width:400px">
+            <div class="d-flex align-center justify-space-between pa-3">
+                <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Bildirimler</MudText>
+                <MudButton Variant="Variant.Text" Size="Size.Small"
+                           Href="/notifications" Color="Color.Primary">
+                    Tümünü Gör
+                </MudButton>
+            </div>
+            <MudDivider />
+            @if (_recentNotifications.Any())
+            {
+                <MudList T="Notification" Dense="true">
+                    @foreach (var notification in _recentNotifications)
+                    {
+                        <MudListItem T="Notification" Class="@(notification.IsRead ? "" : "mud-background-gray")">
+                            <NotificationItem Notification="@notification"
+                                              OnMarkAsRead="MarkAsRead" />
+                        </MudListItem>
+                        <MudDivider />
+                    }
+                </MudList>
+            }
+            else
+            {
+                <div class="pa-4 d-flex justify-center">
+                    <MudText Color="Color.Secondary" Typo="Typo.body2">Bildirim yok</MudText>
+                </div>
+            }
+        </MudPaper>
+    </ChildContent>
+</MudMenu>

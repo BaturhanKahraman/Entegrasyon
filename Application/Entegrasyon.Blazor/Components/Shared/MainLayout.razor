@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @using Entegrasyon.Blazor.Services
+@using Entegrasyon.Blazor.Features.Notifications
 
 <MudThemeProvider Theme="_theme" IsDarkMode="@_isDarkMode" />
 <MudPopoverProvider />
@@ -21,11 +22,7 @@
         </MudTooltip>
 
         <!-- Notifications -->
-        <MudBadge Content="_notificationCount" Color="Color.Error" Overlap="true" Visible="@(_notificationCount > 0)">
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications"
-                           Color="Color.Inherit"
-                           OnClick="ToggleNotificationPanel" />
-        </MudBadge>
+        <NotificationBell />
 
         <!-- User Profile -->
         <AuthorizeView>
@@ -56,47 +53,6 @@
             <MudText Typo="Typo.h6">Menü</MudText>
         </MudDrawerHeader>
         <NavMenu />
-    </MudDrawer>
-
-    <!-- Notification Panel -->
-    <MudDrawer @bind-Open="_notificationPanelOpen" Anchor="Anchor.End" Elevation="2" Variant="DrawerVariant.Temporary">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">Bildirimler</MudText>
-        </MudDrawerHeader>
-        <MudDivider />
-        <div class="pa-4">
-            @if (_notifications.Any())
-            {
-                <MudList T="NotificationItem">
-                    @foreach (var notification in _notifications)
-                    {
-                        <MudListItem T="NotificationItem" Value="@notification" Icon="@GetNotificationIcon(notification.Type)"
-                                     IconColor="@GetNotificationColor(notification.Type)">
-                            <div class="d-flex flex-column">
-                                <MudText Typo="Typo.body2">@notification.Message</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@notification.Time</MudText>
-                            </div>
-                        </MudListItem>
-                        <MudDivider />
-                    }
-                </MudList>
-                <MudButton Variant="Variant.Text"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           Class="mt-2"
-                           OnClick="ClearNotifications">
-                    Tümünü Temizle
-                </MudButton>
-            }
-            else
-            {
-                <MudText Align="Align.Center" Color="Color.Secondary" Class="py-8">
-                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Size="Size.Large" Class="mb-2" />
-                    <br />
-                    Yeni bildirim yok
-                </MudText>
-            }
-        </div>
     </MudDrawer>
 
     <MudMainContent>

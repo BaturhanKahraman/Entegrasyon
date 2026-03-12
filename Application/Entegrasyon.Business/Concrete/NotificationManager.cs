@@ -1,55 +1,67 @@
-﻿using Entegrasyon.Business.Notifications;
+﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events.Notifications;
+using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
-using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
 
-public sealed class NotificationManager(IEnumerable<INotificationSender> notificationSenders, IntegrationDbContext context, IFluentValidator validator) : INotificationManager
+public sealed class NotificationManager(
+    IEnumerable<INotificationSender> notificationSenders,
+    IntegrationDbContext context,
+    IFluentValidator validator,
+    EventChannel<NotificationEvent> eventChannel) : INotificationManager
 {
-    public async Task SendNotification(Notification notification, IEnumerable<SenderType> senderTypes)
+    public async Task SendNotification(
+        string header,
+        string content,
+        NotificationSeverity severity,
+        NotificationCategory category,
+        IEnumerable<Guid> userIds,
+        string? actionUrl = null)
     {
-        await validator.ValidateAndThrowAsync(notification);
-        notification.CreatedAt = DateTimeOffset.UtcNow;
+        // 1. Validation
+        var userIdList = userIds.ToList();
+        var request = new SendNotificationRequest(header, content, severity, category, userIdList, actionUrl);
+        await validator.ValidateAndThrowAsync(request);
 
-        // Ensure Users collection exists
-        if (notification.Users == null)
+        // 2. Business Rules — (genişleme noktası)
+
+        // 3. Execution
+
+        var trackedUsers = await context.Users
+            .Where(u => userIdList.Contains(u.Id))
+            .ToListAsync();
+
+        var notification = new Notification
         {
-            notification.Users = new List<ApplicationUser>();
-        }
+            Header = header,
+            Content = content,
+            Severity = severity,
+            Category = category,
+            ActionUrl = actionUrl,
+            Users = trackedUsers
+        };
 
-        // Deduplicate incoming users by Id
-        var incomingUserIds = notification.Users
-            .Where(u => u != null && u.Id != Guid.Empty)
-            .Select(u => u.Id)
-            .Distinct()
-            .ToList();
-
-        // Resolve existing users from the DB and attach them to avoid EF trying to INSERT duplicates
-        List<ApplicationUser> trackedUsers = new();
-        if (incomingUserIds.Any())
-        {
-            trackedUsers = await context.Users
-                .Where(u => incomingUserIds.Contains(u.Id))
-                .ToListAsync();
-        }
-
-        // Replace notification.Users with the tracked entities (only link existing users)
-        notification.Users = trackedUsers;
-
-        await context.Notifications.AddAsync(notification);
+        context.Notifications.Add(notification);
         await context.SaveChangesAsync();
 
-        IEnumerable<Guid> userIds = notification.Users?.Select(u => u.Id).Distinct() ?? Enumerable.Empty<Guid>();
-
-        var targetSenders = notificationSenders.Where(ns => senderTypes.Contains(ns.Type)).ToArray();
-        if (userIds.Any() && targetSenders.Length > 0)
+        // Tüm sender'ları tetikle (email, signalr stub'ları — filtre yok)
+        if (trackedUsers.Count > 0)
         {
-            await Task.WhenAll(targetSenders.Select(ns => ns.SendNotification(notification, userIds)));
+            var trackedUserIds = trackedUsers.Select(u => u.Id).ToList();
+            await Task.WhenAll(notificationSenders.Select(s =>
+                s.SendNotification(notification, trackedUserIds)));
         }
+
+        // EventChannel'a yaz → NotificationEventPublisher → INotificationDeliveryService
+        var evt = new NotificationEvent(
+            notification.Id, header, content, userIdList, severity, category, actionUrl);
+        await eventChannel.Writer.WriteAsync(evt);
     }
 
     public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false)
@@ -59,9 +71,7 @@ public sealed class NotificationManager(IEnumerable<INotificationSender> notific
             .Where(n => n.Users.Any(u => u.Id == userId));
 
         if (onlyUnread)
-        {
             query = query.Where(n => !n.IsRead);
-        }
 
         return await query.OrderByDescending(n => n.CreatedAt).ToListAsync();
     }
@@ -72,12 +82,19 @@ public sealed class NotificationManager(IEnumerable<INotificationSender> notific
             .Include(n => n.Users)
             .FirstOrDefaultAsync(n => n.Id == notificationId && n.Users.Any(u => u.Id == userId));
 
-        if (notification != null)
-        {
-            notification.IsRead = true;
-            notification.ReadAt = DateTimeOffset.UtcNow;
-            await context.SaveChangesAsync();
-        }
+        if (notification is null) return;
+
+        notification.IsRead = true;
+        notification.ReadAt = DateTimeOffset.UtcNow;
+        await context.SaveChangesAsync();
     }
 
+    public async Task MarkAllAsRead(Guid userId)
+    {
+        await context.Notifications
+            .Where(n => n.Users.Any(u => u.Id == userId) && !n.IsRead)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(n => n.IsRead, true)
+                .SetProperty(n => n.ReadAt, DateTimeOffset.UtcNow));
+    }
 }
