@@ -42,7 +42,7 @@ public static class MappingConfig
         // Brand
         config.NewConfig<AddBrandDto,Brand>();
         config.NewConfig<Brand,AddBrandDto>();
-        
+
         // Brand Marketplace Matching
         config.NewConfig<BrandMarketPlaceMatch, BrandMarketPlaceMatchDto>()
               .Map(dest => dest.ApplicationBrandName, src => src.ApplicationBrand.Name)
