@@ -34,7 +34,8 @@ public partial class CategoryDialog
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(LoadCategories(), LoadAllAttributes());
+        await LoadCategories();
+        await LoadAllAttributes();
 
         if (IsEditMode && Category != null)
         {
