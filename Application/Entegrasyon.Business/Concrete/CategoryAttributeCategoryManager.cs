@@ -81,6 +81,8 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
     }
     private static Func<AddCategoryAttributeDto, CategoryAttributeCategory> CreateCategoryAttributeCategory(int catId, ImmutableDictionary<int, CategoryAttribute> existingCatAttrs, List<CategoryAttributeValue> existingCatAttrValues)
     {
+        var valuesById = existingCatAttrValues.ToDictionary(v => v.Id);
+
         return catAttr =>
         {
             var catAttrcat = new CategoryAttributeCategory()
@@ -109,11 +111,8 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
             }
             foreach (var cav in catAttr.CategoryAttributeValues)
             {
-                if (existingCatAttrValues.Any(x => x.Id == cav.Id))
-                    catAttrcat.CategoryAttribute.CategoryAttributeValues
-                        .Add(existingCatAttrValues.FirstOrDefault(x => x.Id == cav.Id));
-                else
-                    catAttrcat.CategoryAttribute.CategoryAttributeValues.Add(cav);
+                catAttrcat.CategoryAttribute.CategoryAttributeValues
+                    .Add(valuesById.TryGetValue(cav.Id, out var existing) ? existing : cav);
             }
             return catAttrcat;
         };

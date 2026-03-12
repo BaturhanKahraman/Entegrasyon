@@ -39,14 +39,15 @@ public partial class CategoryEdit
         try
         {
             await LoadCategory();
-            await LoadCategories();
-            await LoadAllAttributes();
 
             if (_category != null)
             {
-                await LoadCategoryAttributes();
-                _hasSoldProducts = await ProductManager.HasSoldProductsInCategory(Id);
-                _hasProducts = await ProductManager.GetProductCountByCategoryId(Id) > 0;
+                // All independent — run in parallel
+                await Task.WhenAll(
+                    LoadCategories(),
+                    LoadAllAttributes(),
+                    LoadCategoryAttributes(),
+                    LoadProductStatus());
             }
         }
         finally
@@ -63,9 +64,7 @@ public partial class CategoryEdit
             if (result.Success && result.Data is not null)
             {
                 _category = result.Data;
-
-                var allCategories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
-                _isLeafCategory = !allCategories.Any(c => c.SuperCategoryId == _category.Id);
+                _isLeafCategory = !await CategoryManager.IsSuper(Id);
 
                 _model = new CategoryFormModel
                 {
@@ -84,6 +83,15 @@ public partial class CategoryEdit
         {
             Snackbar.Add($"Kategori yüklenirken hata: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task LoadProductStatus()
+    {
+        _hasSoldProducts = await ProductManager.HasSoldProductsInCategory(Id);
+        if (!_hasSoldProducts)
+            _hasProducts = await ProductManager.GetProductCountByCategoryId(Id) > 0;
+        else
+            _hasProducts = true; // sold products implies products exist
     }
 
     private async Task LoadCategoryAttributes()
