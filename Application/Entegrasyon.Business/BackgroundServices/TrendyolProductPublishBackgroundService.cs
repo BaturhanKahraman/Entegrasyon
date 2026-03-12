@@ -1,5 +1,5 @@
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events;
+using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;

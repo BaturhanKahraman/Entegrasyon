@@ -6,7 +6,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events;
+using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Dtos.Category;
@@ -45,7 +45,7 @@ public partial class AddProduct
 
     // Feature 4: Branch offices for stock entry in Step 2
     private List<BranchOffice> _branchOffices = [];
-    private readonly Dictionary<(int variantIdx, int officeId), int> _stockValues = new();
+    private readonly Dictionary<(int variantIdx, int officeId), int?> _stockValues = new();
 
     // Images per variant index — with preview support
     private readonly Dictionary<int, List<VariantImageItem>> _variantImages = new();
@@ -98,20 +98,6 @@ public partial class AddProduct
         {
             // ignore; fall back to empty lists
         }
-    }
-
-    private void AddVariant()
-    {
-        variants.Add(new AddProductVariantDto
-        {
-            Barcode = string.Empty,
-            CurrencyType = "TRY",
-            DimensionalWeight = 0,
-            ListPrice = 0,
-            SalePrice = 0,
-            CostPrice = 0,
-            BranchOfficeStocks = []
-        });
     }
 
     private void RemoveVariant(int index)
@@ -243,7 +229,7 @@ public partial class AddProduct
                 .Select(o => new AddBranchOfficeStockDto
                 {
                     BranchOfficeId = o.Id,
-                    FirstTotalStock = _stockValues.TryGetValue((vi, o.Id), out var s) ? s : 0
+                    FirstTotalStock = _stockValues.GetValueOrDefault((vi, o.Id)) ?? 0
                 })
                 .ToList();
         }
@@ -383,6 +369,7 @@ public partial class AddProduct
                     AttributeName = attr.CategoriyAttributeHumanized ?? attr.CategoryAttributeKey,
                     IsVarianter = attr.IsVarianter,
                     IsSlicer = attr.IsSlicer,
+                    AllowCustom = attr.AllowCustom,
                     Values = values,
                     SelectedValueIds = []
                 });
@@ -397,7 +384,7 @@ public partial class AddProduct
 
         // Kategori varyant özelliği içermiyorsa tek boş varyant otomatik ekle
         if (varianterAttributes.Count == 0)
-            AddVariant();
+            variants.Add(new AddProductVariantDto { Barcode = string.Empty, CurrencyType = "TRY", BranchOfficeStocks = [] });
     }
 
     private void OnSelectedValuesChanged(VarianterAttributeViewModel attr, IEnumerable<int> selected)
@@ -405,14 +392,34 @@ public partial class AddProduct
 
     private void GenerateVariants()
     {
-        var activeAttrs = varianterAttributes
-            .Where(a => a.SelectedValueIds != null && a.SelectedValueIds.Count > 0)
-            .ToList();
+        // Her attr için (valueId?, valueName) listesi oluştur
+        var selections = new List<(VarianterAttributeViewModel Attr, List<(int? ValueId, string ValueName)> Values)>();
 
-        if (activeAttrs.Count == 0) return;
+        foreach (var attr in varianterAttributes)
+        {
+            if (attr.AllowCustom)
+            {
+                var customVals = attr.CustomValueText
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .Select(v => ((int?)null, v))
+                    .ToList();
+                if (customVals.Count > 0)
+                    selections.Add((attr, customVals));
+            }
+            else
+            {
+                if (attr.SelectedValueIds == null || attr.SelectedValueIds.Count == 0) continue;
+                var vals = attr.SelectedValueIds
+                    .Select(id => ((int?)id, attr.Values.FirstOrDefault(v => v.Id == id)?.Name ?? id.ToString()))
+                    .ToList();
+                selections.Add((attr, vals));
+            }
+        }
 
-        var lists = activeAttrs.Select(a => a.SelectedValueIds!.ToList()).ToList();
-        var total = lists.Aggregate(1, (acc, l) => acc * Math.Max(1, l.Count));
+        if (selections.Count == 0) return;
+
+        var total = selections.Aggregate(1, (acc, s) => acc * s.Values.Count);
         if (total > 500)
         {
             Snackbar?.Add($"Seçilen kombinasyon sayısı çok büyük: {total}. Lütfen azaltın.", Severity.Warning);
@@ -421,28 +428,24 @@ public partial class AddProduct
 
         _generatedVariantRows.Clear();
 
-        foreach (var combo in CartesianProduct(lists))
+        foreach (var combo in CartesianProduct(selections.Select(s => s.Values).ToList()))
         {
             var variant = new AddProductVariantDto
             {
                 Barcode = string.Empty,
                 CurrencyType = "TRY",
-                DimensionalWeight = 0,
-                ListPrice = 0,
-                SalePrice = 0,
-                CostPrice = 0,
                 ProductVariantAttributes = [],
                 BranchOfficeStocks = []
             };
             for (int i = 0; i < combo.Count; i++)
             {
-                var attrVm = activeAttrs[i];
-                var valueId = combo[i];
-                var value = attrVm.Values.FirstOrDefault(v => v.Id == valueId);
+                var (valueId, valueName) = combo[i];
+                var attrVm = selections[i].Attr;
                 variant.ProductVariantAttributes.Add(new ProductVariantAttribute
                 {
                     CategoryAttributeValueId = valueId,
-                    CategoryAttributeValue = value?.Name,
+                    CategoryAttributeValue = valueId.HasValue ? valueName : null,
+                    CustomValue = valueId.HasValue ? null : valueName,
                     IsVarianter = attrVm.IsVarianter,
                     IsSlicer = attrVm.IsSlicer
                 });
@@ -468,10 +471,10 @@ public partial class AddProduct
         _showVariantGrid = false;
     }
 
-    private static List<List<int>> CartesianProduct(List<List<int>> sequences)
+    private static List<List<(int?, string)>> CartesianProduct(List<List<(int?, string)>> sequences)
     {
-        var result = new List<List<int>>();
-        void Recurse(int depth, List<int> current)
+        var result = new List<List<(int?, string)>>();
+        void Recurse(int depth, List<(int?, string)> current)
         {
             if (depth == sequences.Count) { result.Add([.. current]); return; }
             foreach (var item in sequences[depth])
@@ -498,6 +501,8 @@ public partial class AddProduct
         public string? AttributeName { get; set; }
         public bool IsVarianter { get; set; }
         public bool IsSlicer { get; set; }
+        public bool AllowCustom { get; set; }
+        public string CustomValueText { get; set; } = string.Empty;
         public List<AttributeValueItem> Values { get; set; } = [];
         public HashSet<int>? SelectedValueIds { get; set; } = [];
     }
@@ -515,9 +520,9 @@ public partial class AddProduct
         public AddProductVariantDto Variant { get; set; } = null!;
     }
 
-    private int GetStock(int variantIdx, int officeId)
-        => _stockValues.TryGetValue((variantIdx, officeId), out var v) ? v : 0;
+    private int? GetStock(int variantIdx, int officeId)
+        => _stockValues.GetValueOrDefault((variantIdx, officeId));
 
-    private void SetStock(int variantIdx, int officeId, int value)
+    private void SetStock(int variantIdx, int officeId, int? value)
         => _stockValues[(variantIdx, officeId)] = value;
 }

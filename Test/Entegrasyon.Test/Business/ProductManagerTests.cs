@@ -1,4 +1,6 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Product;
@@ -15,6 +17,7 @@ public class ProductManagerTests : BaseTest
     private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
+    private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
 
     public ProductManagerTests()
     {
@@ -37,7 +40,8 @@ public class ProductManagerTests : BaseTest
             MockValidator.Object,
             _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,
-            _mockBarcodeService.Object
+            _mockBarcodeService.Object,
+            _productAddedChannel
         );
     }
 

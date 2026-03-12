@@ -6,7 +6,7 @@
 
     <MudDivider Class="my-2" />
 
-    <MudNavGroup Title="Yönetim" Icon="@Icons.Material.Filled.Business" Expanded="true">
+    <MudNavGroup Title="Yönetim" Icon="@Icons.Material.Filled.Business" Expanded="@ExpandedSections["admin"]">
         <AuthorizeView Policy="@AppPermissions.Products.View">
             <Authorized>
                 <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory">
@@ -28,7 +28,7 @@
         </MudNavLink>
     </MudNavGroup>
 
-    <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="false">
+    <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="@ExpandedSections["marketplace"]">
         <MudNavLink Href="/brand-mapping" Icon="@Icons.Material.Filled.ShoppingCart">
             Marka Eşleştirme
         </MudNavLink>
@@ -43,7 +43,7 @@
         </MudNavLink>
     </MudNavGroup>
 
-    <MudNavGroup Title="Müşteriler & Satış" Icon="@Icons.Material.Filled.People" Expanded="false">
+    <MudNavGroup Title="Müşteriler & Satış" Icon="@Icons.Material.Filled.People" Expanded="@ExpandedSections["customers"]">
         <AuthorizeView Policy="@AppPermissions.Customers.View">
             <Authorized>
                 <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.Person">
@@ -59,7 +59,7 @@
         </MudNavLink>
     </MudNavGroup>
 
-    <MudNavGroup Title="Raporlar" Icon="@Icons.Material.Filled.Assessment" Expanded="false">
+    <MudNavGroup Title="Raporlar" Icon="@Icons.Material.Filled.Assessment" Expanded="@ExpandedSections["reports"]">
         <MudNavLink Href="/reports/sales" Icon="@Icons.Material.Filled.TrendingUp">
             Satış Raporları
         </MudNavLink>
@@ -75,7 +75,7 @@
 
     <AuthorizeView Policy="@AppPermissions.Users.View">
         <Authorized>
-            <MudNavGroup Title="Kullanıcı Yönetimi" Icon="@Icons.Material.Filled.SupervisedUserCircle" Expanded="true">
+            <MudNavGroup Title="Kullanıcı Yönetimi" Icon="@Icons.Material.Filled.SupervisedUserCircle" Expanded="@ExpandedSections["users"]">
                 <AuthorizeView Policy="@AppPermissions.Users.View" Context="userContext">
                     <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">
                         Kullanıcılar
@@ -90,7 +90,7 @@
         </Authorized>
     </AuthorizeView>
 
-    <MudNavGroup Title="Ayarlar" Icon="@Icons.Material.Filled.Settings" Expanded="false">
+    <MudNavGroup Title="Ayarlar" Icon="@Icons.Material.Filled.Settings" Expanded="@ExpandedSections["settings"]">
         <MudNavLink Href="/settings/general" Icon="@Icons.Material.Filled.Tune">
             Genel Ayarlar
         </MudNavLink>

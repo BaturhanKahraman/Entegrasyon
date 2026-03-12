@@ -1,5 +1,5 @@
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events;
+using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Notifications;
 using Microsoft.AspNetCore.Components;

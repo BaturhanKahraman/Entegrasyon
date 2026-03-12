@@ -138,25 +138,29 @@
                                         <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">Dilimleyici</MudChip>
                                     }
                                 </MudStack>
-                                <MudSelect T="int" MultiSelection="true" Label="Değerleri seçin"
-                                           SelectedValues="@attr.SelectedValueIds" SelectedValuesChanged="@(vals => OnSelectedValuesChanged(attr, vals))">
-                                    @foreach (var val in attr.Values)
-                                    {
-                                        <MudSelectItem Value="@val.Id">@val.Name</MudSelectItem>
-                                    }
-                                </MudSelect>
+                                @if (attr.AllowCustom)
+                                {
+                                    <MudTextField Label="Değerleri girin (virgülle ayırın)"
+                                                  @bind-Value="attr.CustomValueText"
+                                                  HelperText="Örn: Kırmızı, Mavi, Yeşil" />
+                                }
+                                else
+                                {
+                                    <MudSelect T="int" MultiSelection="true" Label="Değerleri seçin"
+                                               SelectedValues="@attr.SelectedValueIds"
+                                               SelectedValuesChanged="@(vals => OnSelectedValuesChanged(attr, vals))"
+                                               MultiSelectionTextFunc="@(ids => string.Join(", ", ids.Select(id => attr.Values.FirstOrDefault(v => v.Id.ToString() == id)?.Name ?? id)))">
+                                        @foreach (var val in attr.Values)
+                                        {
+                                            <MudSelectItem Value="@val.Id">@val.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
                             </MudPaper>
                         }
-                        <MudStack Row="true" Spacing="2" Class="mb-3">
-                            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GenerateVariants">
-                                Seçilenlerden Varyant Oluştur
-                            </MudButton>
-                            <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
-                                       StartIcon="@Icons.Material.Filled.Add"
-                                       OnClick="AddVariant">
-                                + Boş Varyant Ekle
-                            </MudButton>
-                        </MudStack>
+                        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="GenerateVariants" Class="mb-3">
+                            Seçilenlerden Varyant Oluştur
+                        </MudButton>
                         @if (_showVariantGrid && _generatedVariantRows.Any())
                         {
                             <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1">
@@ -227,22 +231,22 @@
                                                   AdornmentAriaLabel="Barkod Oluştur" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudNumericField Label="Liste Fiyatı" @bind-Value="variant.ListPrice" Min="0"
+                                    <MudNumericField T="decimal?" Label="Liste Fiyatı" @bind-Value="variant.ListPrice"
                                                      HideSpinButtons="true"
                                                      Adornment="Adornment.Start" AdornmentText="₺" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudNumericField Label="Satış Fiyatı" @bind-Value="variant.SalePrice" Min="0"
+                                    <MudNumericField T="decimal?" Label="Satış Fiyatı" @bind-Value="variant.SalePrice"
                                                      HideSpinButtons="true"
                                                      Adornment="Adornment.Start" AdornmentText="₺" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
-                                    <MudNumericField Label="Maliyet" @bind-Value="variant.CostPrice" Min="0"
+                                    <MudNumericField T="decimal?" Label="Maliyet" @bind-Value="variant.CostPrice"
                                                      HideSpinButtons="true"
                                                      Adornment="Adornment.Start" AdornmentText="₺" />
                                 </MudItem>
                                 <MudItem xs="12" md="3">
-                                    <MudNumericField Label="Hacim Ağırlığı" @bind-Value="variant.DimensionalWeight" Min="0" />
+                                    <MudNumericField T="decimal?" Label="Hacim Ağırlığı" @bind-Value="variant.DimensionalWeight" />
                                 </MudItem>
 
                                 @* Branch office stock entry *@
@@ -254,7 +258,7 @@
                                             @foreach (var office in _branchOffices)
                                             {
                                                 <MudItem xs="12" sm="6" md="3">
-                                                    <MudNumericField T="int"
+                                                    <MudNumericField T="int?"
                                                                      Label="@office.Name"
                                                                      Value="@GetStock(idx, office.Id)"
                                                                      ValueChanged="@(v => SetStock(idx, office.Id, v))"
@@ -368,7 +372,7 @@
                     {
                         <MudDivider Class="my-2" />
                         <MudText Typo="Typo.subtitle2">@GetVariantLabel(v, i)</MudText>
-                        <MudText Typo="Typo.caption">Satış Fiyatı: ₺@v.SalePrice.ToString("N2")</MudText>
+                        <MudText Typo="Typo.caption">Satış Fiyatı: ₺@(v.SalePrice?.ToString("N2") ?? "-")</MudText>
                         @if (_variantImages.TryGetValue(i, out var imgs) && imgs.Count > 0)
                         {
                             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">

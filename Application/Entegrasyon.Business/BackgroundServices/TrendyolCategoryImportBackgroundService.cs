@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events;
+using Entegrasyon.Business.Channels.Events.Categories;
+using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Entity.Notifications;
