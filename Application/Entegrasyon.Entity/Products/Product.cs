@@ -20,8 +20,8 @@ public sealed class Product : BaseEntity
     public Brand Brand { get; set; }
     public int CategoryId { get; set; }
     public Category Category { get; set; }
-    public IEnumerable<ProductVariant> ProductVariants { get; set; }
-    public IEnumerable<AttributeKeyValue> AttributeKeyValues { get; set; }
+    public ICollection<ProductVariant> ProductVariants { get; set; }
+    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
     public NpgsqlTsVector SearchVector { get; set; }
 
 

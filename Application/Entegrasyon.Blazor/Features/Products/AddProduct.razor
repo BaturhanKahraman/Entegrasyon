@@ -60,6 +60,53 @@
                         </MudItem>
                     </MudGrid>
                 </MudForm>
+
+                @* Regular (non-varianter, non-slicer) category attributes — animated on category select *@
+                <MudCollapse Expanded="_regularAttrsVisible">
+                    <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Kategori Özellikleri</MudText>
+                    <MudGrid>
+                        @foreach (var attr in _regularAttributes)
+                        {
+                            <MudItem xs="12" md="6">
+                                @if (attr.CategoryAttributeValues.Count > 0 && !attr.AllowCustom)
+                                {
+                                    <MudSelect T="int?" Label="@attr.CategoriyAttributeHumanized"
+                                               Required="@attr.IsRequired"
+                                               Value="@(_regularAttrValueIds.TryGetValue(attr.Id, out var sv) ? sv : null)"
+                                               ValueChanged="@((int? v) => _regularAttrValueIds[attr.Id] = v)"
+                                               Clearable="true">
+                                        @foreach (var val in attr.CategoryAttributeValues)
+                                        {
+                                            <MudSelectItem Value="@((int?)val.Id)">@val.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else if (attr.CategoryAttributeValues.Count > 0 && attr.AllowCustom)
+                                {
+                                    <MudSelect T="int?" Label="@attr.CategoriyAttributeHumanized"
+                                               Value="@(_regularAttrValueIds.TryGetValue(attr.Id, out var sv2) ? sv2 : null)"
+                                               ValueChanged="@((int? v) => _regularAttrValueIds[attr.Id] = v)"
+                                               Clearable="true">
+                                        @foreach (var val in attr.CategoryAttributeValues)
+                                        {
+                                            <MudSelectItem Value="@((int?)val.Id)">@val.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudTextField Label="Veya özel değer girin" Class="mt-1"
+                                                  Value="@(_regularAttrCustomValues.TryGetValue(attr.Id, out var cv2) ? cv2 : null)"
+                                                  ValueChanged="@((string? v) => _regularAttrCustomValues[attr.Id] = v)" />
+                                }
+                                else
+                                {
+                                    <MudTextField Label="@attr.CategoriyAttributeHumanized"
+                                                  Required="@attr.IsRequired"
+                                                  Value="@(_regularAttrCustomValues.TryGetValue(attr.Id, out var cv) ? cv : null)"
+                                                  ValueChanged="@((string? v) => _regularAttrCustomValues[attr.Id] = v)" />
+                                }
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudCollapse>
             </StepContent>
         </MudStep>
 
@@ -68,22 +115,10 @@
             <StepContent>
                 @if (!varianterAttributes.Any())
                 {
-                    @* Case A — no varianter attributes *@
+                    @* Case A — no varianter attributes: single default variant already added *@
                     <MudAlert Severity="Severity.Info" Class="mb-3">
-                        Bu kategori varyant özelliği içermiyor. Ürün tek varyantlı olarak eklenebilir veya manuel varyant ekleyebilirsiniz.
+                        Bu kategori varyant özelliği içermiyor. Tek varyant olarak devam edilecek.
                     </MudAlert>
-                    <MudStack Row="true" Spacing="2" Class="mb-3">
-                        <MudButton Color="Color.Primary" Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.CheckCircle"
-                                   OnClick="SingleVariantAndNext">
-                            Tek Varyant ile Devam
-                        </MudButton>
-                        <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
-                                   StartIcon="@Icons.Material.Filled.Add"
-                                   OnClick="AddVariant">
-                            + Varyant Ekle
-                        </MudButton>
-                    </MudStack>
                 }
                 else
                 {
@@ -92,7 +127,17 @@
                         @foreach (var attr in varianterAttributes)
                         {
                             <MudPaper Class="pa-3 mb-3">
-                                <MudText Typo="Typo.subtitle1">@attr.AttributeName</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+                                    <MudText Typo="Typo.subtitle1">@attr.AttributeName</MudText>
+                                    @if (attr.IsVarianter)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Varyant</MudChip>
+                                    }
+                                    @if (attr.IsSlicer)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">Dilimleyici</MudChip>
+                                    }
+                                </MudStack>
                                 <MudSelect T="int" MultiSelection="true" Label="Değerleri seçin"
                                            SelectedValues="@attr.SelectedValueIds" SelectedValuesChanged="@(vals => OnSelectedValuesChanged(attr, vals))">
                                     @foreach (var val in attr.Values)
@@ -109,14 +154,32 @@
                             <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
                                        StartIcon="@Icons.Material.Filled.Add"
                                        OnClick="AddVariant">
-                                + Manuel Varyant Ekle
+                                + Boş Varyant Ekle
                             </MudButton>
                         </MudStack>
-                        @if (_generatedCount.HasValue)
+                        @if (_showVariantGrid && _generatedVariantRows.Any())
                         {
-                            <MudAlert Severity="Severity.Success" Class="mb-2">
-                                @_generatedCount varyant oluşturuldu.
-                            </MudAlert>
+                            <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1">
+                                @_generatedVariantRows.Count kombinasyon oluştu — eklemek istediklerinizi seçin:
+                            </MudText>
+                            <MudDataGrid T="GeneratedVariantRow" Items="_generatedVariantRows.AsEnumerable()" Dense="true">
+                                <Columns>
+                                    <TemplateColumn Title="" CellStyle="width:48px">
+                                        <CellTemplate>
+                                            <MudCheckBox @bind-Value="context.Item.IsSelected" />
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                    <PropertyColumn Property="x => x.Label" Title="Kombinasyon" />
+                                </Columns>
+                            </MudDataGrid>
+                            <MudStack Row="true" Spacing="2" Class="mt-2">
+                                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ConfirmVariantSelection">
+                                    Seçimi Onayla
+                                </MudButton>
+                                <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="@(() => _showVariantGrid = false)">
+                                    İptal
+                                </MudButton>
+                            </MudStack>
                         }
                     </div>
                 }
@@ -181,6 +244,27 @@
                                 <MudItem xs="12" md="3">
                                     <MudNumericField Label="Hacim Ağırlığı" @bind-Value="variant.DimensionalWeight" Min="0" />
                                 </MudItem>
+
+                                @* Branch office stock entry *@
+                                @if (_branchOffices.Any())
+                                {
+                                    <MudItem xs="12">
+                                        <MudText Typo="Typo.subtitle2" Class="mt-2 mb-1">Şube Stokları</MudText>
+                                        <MudGrid Spacing="2">
+                                            @foreach (var office in _branchOffices)
+                                            {
+                                                <MudItem xs="12" sm="6" md="3">
+                                                    <MudNumericField T="int"
+                                                                     Label="@office.Name"
+                                                                     Value="@GetStock(idx, office.Id)"
+                                                                     ValueChanged="@(v => SetStock(idx, office.Id, v))"
+                                                                     Min="0"
+                                                                     HideSpinButtons="true" />
+                                                </MudItem>
+                                            }
+                                        </MudGrid>
+                                    </MudItem>
+                                }
 
                                 @* Image upload for this variant *@
                                 <MudItem xs="12">

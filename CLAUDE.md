@@ -45,6 +45,13 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → Blazor:
 ```csharp
 public class ProductManager(IntegrationDbContext dbContext) : IProductService
 ```
+**Business Layer Method Structure (Strict Rule):**
+Tüm Business Manager (`XxxManager.cs`) metodları KESİNLİKLE aşağıdaki 3 adımlı "Pipeline" akışını takip etmelidir. Asla bu sırayı bozma:
+
+1. **Validation:** İşleme başlamadan önce `FluentValidation` ile DTO/objeyi doğrula. Başarısızsa, validasyon hatalarını içeren bir sonuç (Result) dön.
+2. **Business Rules:** Validasyon geçerse, iş kurallarını (örn: stok kontrolü, benzersiz isim kontrolü vb.) `LogicRunner` ile kontrol et. Başarısızsa iş kuralı hatalarını dön.
+3. **Execution:** Sadece üstteki iki adım başarılı olursa asıl işleme geç.
+
 
 **Manager/Interface pattern:** Her business servisi için `Abstract/IXxxManager.cs` + `Concrete/XxxManager.cs`. Tümü `ApplicationDependencyExtension.cs` üzerinden DI'a kaydedilir.
 

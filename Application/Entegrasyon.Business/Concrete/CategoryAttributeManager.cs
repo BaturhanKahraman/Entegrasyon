@@ -33,7 +33,10 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
     }
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes() =>
-        new SuccessDataResult<List<CategoryAttribute>>(await dbContext.CategoryAttributes.ToListAsync());
+        new SuccessDataResult<List<CategoryAttribute>>(
+            await dbContext.CategoryAttributes
+                .Include(x => x.CategoryAttributeValues)
+                .ToListAsync());
 
     public async Task<IDataResult<List<CategoryAttributeDto>>> GetCategoryAttributesByCategory(int categoryId)
     {
@@ -51,6 +54,85 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
                 x.CategoryAttributeValues.ToList()))
             .ToListAsync();
         return new SuccessDataResult<List<CategoryAttributeDto>>(result);
+    }
+
+    public async Task<IDataResult<CategoryAttribute>> GetCategoryAttributeById(int id)
+    {
+        var attr = await dbContext.CategoryAttributes
+            .Include(x => x.CategoryAttributeValues)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (attr is null)
+            return new ErrorDataResult<CategoryAttribute>(null, "Özellik bulunamadı.");
+        return new SuccessDataResult<CategoryAttribute>(attr);
+    }
+
+    public async Task<IResult> UpdateCategoryAttribute(EditCategoryAttributeDto dto)
+    {
+        await fluentValidator.ValidateAndThrowAsync(dto);
+        var attr = await dbContext.CategoryAttributes
+            .AsTracking()
+            .Include(x => x.CategoryAttributeValues)
+            .FirstOrDefaultAsync(x => x.Id == dto.Id);
+        if (attr is null)
+            return new ErrorResult("Özellik bulunamadı.");
+
+        attr.CategoryAttributeKey = dto.CategoryAttributeKey;
+        attr.CategoryAttributeHumanized = dto.CategoryAttributeHumanized;
+        attr.AllowCustom = dto.AllowCustom;
+
+        // Diff predefined values: remove deleted, add new
+        var incomingIds = dto.CategoryAttributeValues?.Select(v => v.Id).Where(id => id > 0).ToHashSet() ?? [];
+        var toRemove = attr.CategoryAttributeValues.Where(v => !incomingIds.Contains(v.Id)).ToList();
+        if (toRemove.Count > 0)
+            dbContext.CategoryAttributeValues.RemoveRange(toRemove);
+
+        var existingIds = attr.CategoryAttributeValues.Select(v => v.Id).ToHashSet();
+        var toAdd = dto.CategoryAttributeValues?.Where(v => v.Id <= 0 || !existingIds.Contains(v.Id)).ToList() ?? [];
+        foreach (var val in toAdd)
+        {
+            val.CategoryAttributeId = attr.Id;
+            attr.CategoryAttributeValues.Add(val);
+        }
+
+        // Update junction table flags if category context is provided
+        if (dto.CategoryId > 0)
+        {
+            var junction = await dbContext.CategoryAttributeCategories
+                .AsTracking()
+                .FirstOrDefaultAsync(x => x.CategoryAttributeId == dto.Id && x.CategoryId == dto.CategoryId);
+            if (junction is not null)
+            {
+                junction.IsRequired = dto.IsRequired;
+                junction.IsVarianter = dto.IsVarianter;
+                junction.IsSlicer = dto.IsSlicer;
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Özellik başarıyla güncellendi.");
+    }
+
+    public async Task<IResult> DeleteCategoryAttribute(int id)
+    {
+        bool inUse = await dbContext.AttributeKeyValues.AnyAsync(x => x.CategoryAttributeId == id);
+        if (inUse)
+        {
+            // Soft-delete: FK referansları bozulmaz, mevcut ürünler etkilenmez
+            var attr = await dbContext.CategoryAttributes.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
+            if (attr is null)
+                return new ErrorResult("Özellik bulunamadı.");
+            attr.IsDeleted = true;
+            attr.DeletedAt = DateTimeOffset.UtcNow;
+            await dbContext.SaveChangesAsync();
+            return new SuccessResult("Özellik ürünlerde kullanıldığından arşivlendi.");
+        }
+
+        var attrToDelete = await dbContext.CategoryAttributes.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (attrToDelete is null)
+            return new ErrorResult("Özellik bulunamadı.");
+        dbContext.CategoryAttributes.Remove(attrToDelete);
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Özellik silindi.");
     }
 
     public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)

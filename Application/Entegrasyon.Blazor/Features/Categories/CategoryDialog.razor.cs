@@ -68,7 +68,7 @@ public partial class CategoryDialog
     {
         try
         {
-            var allCategories = await CategoryManager!.GetAllCategoriesWithoutAttributesAsync();
+            var allCategories = await CategoryManager!.GetValidParentCandidatesAsync();
 
             // Exclude current category if editing to prevent circular references
             if (IsEditMode && Category?.Id > 0)

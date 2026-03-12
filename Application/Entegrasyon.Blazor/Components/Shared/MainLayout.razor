@@ -101,14 +101,14 @@
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-4">
-            <ErrorBoundary>
+            <ErrorBoundary @ref="_errorBoundary">
                 <ChildContent>
                     @Body
                 </ChildContent>
                 <ErrorContent Context="exception">
                     <MudAlert Severity="Severity.Error" Class="my-4">
-                        <MudText Typo="Typo.h6">Bir hata oluştu</MudText>
-                        <MudText Typo="Typo.body2">@exception.Message</MudText>
+                        <MudText Typo="Typo.h6">Beklenmeyen bir hata oluştu</MudText>
+                        <MudText Typo="Typo.body2">Farklı bir sayfaya geçerek devam edebilirsiniz.</MudText>
                     </MudAlert>
                 </ErrorContent>
             </ErrorBoundary>

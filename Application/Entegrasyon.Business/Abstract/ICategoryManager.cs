@@ -29,4 +29,5 @@ public interface ICategoryService
     Task<bool> IsSuper(int? categoryId);
     Task<List<Category>> GetAllCategoriesWithHierarchyAsync();
     Task<List<Category>> GetAllCategoriesWithoutAttributesAsync();
+    Task<List<Category>> GetValidParentCandidatesAsync();
 }
