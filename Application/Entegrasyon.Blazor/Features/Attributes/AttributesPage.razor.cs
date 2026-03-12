@@ -52,4 +52,10 @@ public partial class AttributesPage
     {
         _selectedAttribute = attribute;
     }
+
+    private async Task OnAttributeChanged()
+    {
+        _selectedAttribute = null;
+        await LoadAttributes();
+    }
 }

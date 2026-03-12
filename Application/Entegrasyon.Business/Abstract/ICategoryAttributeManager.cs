@@ -11,7 +11,10 @@ public interface ICategoryAttributeManager
     Task<bool> CheckIfExits(string name);
     Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes();
     Task<IDataResult<List<CategoryAttributeDto>>> GetCategoryAttributesByCategory(int categoryId);
+    Task<IDataResult<CategoryAttribute>> GetCategoryAttributeById(int id);
     Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto);
+    Task<IResult> UpdateCategoryAttribute(EditCategoryAttributeDto dto);
+    Task<IResult> DeleteCategoryAttribute(int id);
     Task RemoveAllAttributesByCategoryId(int categoryId);
     Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs);
     Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids);

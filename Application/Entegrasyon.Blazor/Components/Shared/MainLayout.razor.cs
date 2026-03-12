@@ -1,15 +1,17 @@
 using Entegrasyon.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
 namespace Entegrasyon.Blazor.Components.Shared;
 
-public partial class MainLayout
+public partial class MainLayout : IDisposable
 {
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
 
+    private ErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
     private bool _notificationPanelOpen = false;
     private bool _isDarkMode = false;
@@ -19,6 +21,7 @@ public partial class MainLayout
 
     protected override void OnInitialized()
     {
+        NavigationManager.LocationChanged += OnLocationChanged;
         _theme = new MudTheme
         {
             PaletteLight = new PaletteLight
@@ -50,6 +53,12 @@ public partial class MainLayout
             new("Trendyol senkronizasyonu tamamlandı", "2 saat önce", NotificationType.Success)
         ];
     }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        => _errorBoundary?.Recover();
+
+    public void Dispose()
+        => NavigationManager.LocationChanged -= OnLocationChanged;
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
     private void ToggleNotificationPanel() => _notificationPanelOpen = !_notificationPanelOpen;

@@ -34,6 +34,15 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto)
         {
             await applicationLogManager.AddLog("Kategori ekleniyor.", LogType.Category, LogAction.Add, dto);
+
+            if (dto.SuperCategoryId is > 0)
+            {
+                bool parentHasAttrs = await dbContext.CategoryAttributeCategories
+                    .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value);
+                if (parentHasAttrs)
+                    return new ErrorDataResult<CategoryDetailDto>(null, "Seçilen üst kategori özellik içerdiğinden alt kategori eklenemez.");
+            }
+
             var category = mapper.Map<Category>(dto);
             dbContext.Categories.Add(category);
             await dbContext.SaveChangesAsync();
@@ -52,6 +61,15 @@ namespace Entegrasyon.Business.Concrete
             var dbCategory = await dbContext.Categories.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id);
             if (dbCategory == null)
                 return new ErrorDataResult<CategoryDetailDto>(null, "Kategori bulunamadı.");
+
+            if (dto.SuperCategoryId is > 0)
+            {
+                bool parentHasAttrs = await dbContext.CategoryAttributeCategories
+                    .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value);
+                if (parentHasAttrs)
+                    return new ErrorResult("Seçilen üst kategori özellik içerdiğinden bu işlem yapılamaz.");
+            }
+
             dbCategory.SuperCategoryId = dto.SuperCategoryId;
             dbCategory.Name = dto.Name;
             dbCategory.IsFavorite = dto.IsFavorite;
@@ -219,6 +237,15 @@ namespace Entegrasyon.Business.Concrete
             var result = await dbContext.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync();
             cache.Set(CategoryListCacheKey, result, TimeSpan.FromMinutes(30));
             return result;
+        }
+
+        public async Task<List<Category>> GetValidParentCandidatesAsync()
+        {
+            return await dbContext.Categories
+                .AsNoTracking()
+                .Where(c => !c.CategoryAttributes.Any())
+                .OrderBy(c => c.Name)
+                .ToListAsync();
         }
 
         public async Task<List<CategoryMarketplace>> GetCategoryMarketplaceLinksAsync(int categoryId)

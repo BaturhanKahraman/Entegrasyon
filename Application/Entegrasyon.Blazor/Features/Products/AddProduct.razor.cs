@@ -9,6 +9,8 @@ using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity;
 
 namespace Entegrasyon.Blazor.Features.Products;
 
@@ -31,8 +33,19 @@ public partial class AddProduct
     private readonly List<AddProductVariantDto> variants = [];
     private List<VarianterAttributeViewModel> varianterAttributes = [];
 
-    // After GenerateVariants, show how many were generated
-    private int? _generatedCount;
+    // Feature 3: Regular (non-varianter, non-slicer) category attributes for Step 0
+    private List<CategoryAttributeDto> _regularAttributes = [];
+    private readonly Dictionary<int, int?> _regularAttrValueIds = new();
+    private readonly Dictionary<int, string?> _regularAttrCustomValues = new();
+    private bool _regularAttrsVisible = false;
+
+    // Feature 4: Generated variant selection grid
+    private List<GeneratedVariantRow> _generatedVariantRows = [];
+    private bool _showVariantGrid = false;
+
+    // Feature 4: Branch offices for stock entry in Step 2
+    private List<BranchOffice> _branchOffices = [];
+    private readonly Dictionary<(int variantIdx, int officeId), int> _stockValues = new();
 
     // Images per variant index — with preview support
     private readonly Dictionary<int, List<VariantImageItem>> _variantImages = new();
@@ -42,6 +55,8 @@ public partial class AddProduct
 
     [Inject] private IBrandService? BrandManager { get; set; }
     [Inject] private ICategoryService? CategoryManager { get; set; }
+    [Inject] private ICategoryAttributeManager? AttributeManager { get; set; }
+    [Inject] private IBranchOfficeManager? BranchOfficeManager { get; set; }
     [Inject] private ISnackbar? Snackbar { get; set; }
     [Inject] private IProductService? ProductManager { get; set; }
     [Inject] private IImageManager? ImageManager { get; set; }
@@ -60,9 +75,9 @@ public partial class AddProduct
         {
             if (CategoryManager is not null)
             {
-                var cats = await CategoryManager.GetAllCategoriesWithoutAttributesAsync();
-                if (cats is not null)
-                    categories = cats;
+                var cats = await CategoryManager.GetSubCategories();
+                if (cats?.Data is not null)
+                    categories = cats.Data.Select(d => new Category { Id = d.Id, Name = d.Name }).ToList();
             }
 
             if (BrandManager is not null)
@@ -70,6 +85,13 @@ public partial class AddProduct
                 var brandsResult = await BrandManager.GetBrandListDetails();
                 if (brandsResult?.Data is not null)
                     brands = brandsResult.Data;
+            }
+
+            if (BranchOfficeManager is not null)
+            {
+                var branchResult = await BranchOfficeManager.GetBranchList();
+                if (branchResult?.Data is not null)
+                    _branchOffices = branchResult.Data;
             }
         }
         catch
@@ -148,11 +170,11 @@ public partial class AddProduct
             list.Remove(item);
     }
 
-    private string GetVariantLabel(AddProductVariantDto variant, int idx)
+    private static string GetVariantLabel(AddProductVariantDto variant, int idx)
     {
-        if (variant.ProductVariantAttributes?.Any() == true)
+        if (variant.ProductVariantAttributes?.Count > 0)
             return string.Join(" / ", variant.ProductVariantAttributes
-                .Where(a => a.IsVarianter)
+                .Where(a => a.IsVarianter || a.IsSlicer)
                 .Select(a => a.CategoryAttributeValue ?? a.CustomValue ?? "?"));
         return $"Varyant {idx + 1}";
     }
@@ -169,23 +191,30 @@ public partial class AddProduct
                 return;
             }
             // Ensure attributes are loaded if user never triggered a change event
-            if (varianterAttributes.Count == 0 && categoryId != 0)
+            if (varianterAttributes.Count == 0 && _regularAttributes.Count == 0 && categoryId != 0)
                 await LoadVarianterAttributes();
+
+            // Validate required regular attributes
+            var missingRequired = _regularAttributes
+                .Where(a => a.IsRequired)
+                .Where(a => !(_regularAttrValueIds.TryGetValue(a.Id, out var vid) && vid.HasValue) &&
+                            !(_regularAttrCustomValues.TryGetValue(a.Id, out var cv) && !string.IsNullOrWhiteSpace(cv)))
+                .Select(a => a.CategoriyAttributeHumanized)
+                .ToList();
+            if (missingRequired.Count > 0)
+            {
+                Snackbar?.Add($"Zorunlu özellikler eksik: {string.Join(", ", missingRequired)}", Severity.Warning);
+                return;
+            }
         }
 
-        if (stepIndex == 1 && variants.Count == 0)
+        if (stepIndex == 1 && _showVariantGrid && variants.Count == 0)
         {
-            // Auto-add one default variant (single-SKU path)
-            AddVariant();
+            Snackbar?.Add("Lütfen önce varyant seçimini onaylayın.", Severity.Warning);
+            return;
         }
 
         if (stepIndex < 3) stepIndex++;
-    }
-
-    private async Task SingleVariantAndNext()
-    {
-        AddVariant();
-        await NextStep();
     }
 
     private void PreviousStep()
@@ -207,6 +236,29 @@ public partial class AddProduct
             return;
         }
 
+        // Map stock values into each variant's BranchOfficeStocks
+        for (int vi = 0; vi < variants.Count; vi++)
+        {
+            variants[vi].BranchOfficeStocks = _branchOffices
+                .Select(o => new AddBranchOfficeStockDto
+                {
+                    BranchOfficeId = o.Id,
+                    FirstTotalStock = _stockValues.TryGetValue((vi, o.Id), out var s) ? s : 0
+                })
+                .ToList();
+        }
+
+        // Map regular attributes to AttributeKeyValues
+        var attributeKeyValues = _regularAttributes
+            .Select(a => new AttributeKeyValue
+            {
+                CategoryAttributeId = a.Id,
+                AttributeValueId = _regularAttrValueIds.TryGetValue(a.Id, out var vid) ? vid : null,
+                CustomValue = _regularAttrCustomValues.TryGetValue(a.Id, out var cv) ? cv : null
+            })
+            .Where(akv => akv.AttributeValueId.HasValue || !string.IsNullOrWhiteSpace(akv.CustomValue))
+            .ToList();
+
         _isSaving = true;
         try
         {
@@ -218,6 +270,7 @@ public partial class AddProduct
                 StockCode = stockCode,
                 BrandId = brandId,
                 CategoryId = categoryId,
+                AttributeKeyValues = attributeKeyValues,
                 ProductVariants = variants
             };
 
@@ -244,6 +297,14 @@ public partial class AddProduct
 
             Snackbar?.Add("Ürün oluşturuldu. Pazaryeri senkronizasyonu arka planda başlatıldı.", Severity.Success);
             NavigationManager?.NavigateTo("/products");
+        }
+        catch (FluentValidation.ValidationException vex)
+        {
+            Snackbar?.Add(string.Join(" | ", vex.Errors.Select(e => e.ErrorMessage)), Severity.Warning);
+        }
+        catch (Exception ex)
+        {
+            Snackbar?.Add($"Beklenmeyen hata: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -288,36 +349,55 @@ public partial class AddProduct
     private async Task OnCategoryChanged(int newCategoryId)
     {
         categoryId = newCategoryId;
-        // Clear previously generated/added variants when category changes
         variants.Clear();
         _variantImages.Clear();
-        _generatedCount = null;
+        _generatedVariantRows.Clear();
+        _showVariantGrid = false;
+        _regularAttributes = [];
+        _regularAttrValueIds.Clear();
+        _regularAttrCustomValues.Clear();
+        _regularAttrsVisible = false;
+        _stockValues.Clear();
+        StateHasChanged();
         await LoadVarianterAttributes();
     }
 
     private async Task LoadVarianterAttributes()
     {
         varianterAttributes = [];
-        if (categoryId == 0 || CategoryManager is null) return;
+        _regularAttributes = [];
+        if (categoryId == 0 || AttributeManager is null) return;
 
-        var cat = await CategoryManager.GetCategoryWithAttrById(categoryId);
-        if (cat is null) return;
+        var result = await AttributeManager.GetCategoryAttributesByCategory(categoryId);
+        if (!result.Success || result.Data is null) return;
 
-        foreach (var cac in cat.CategoryAttributes ?? [])
+        foreach (var attr in result.Data)
         {
-            if (!cac.IsVarianter) continue;
-            var attr = cac.CategoryAttribute;
-            if (attr is null) continue;
-            var values = attr.CategoryAttributeValues?
-                .Select(v => new AttributeValueItem { Id = v.Id, Name = v.Name }).ToList() ?? [];
-            varianterAttributes.Add(new VarianterAttributeViewModel
+            if (attr.IsVarianter || attr.IsSlicer)
             {
-                AttributeId = attr.Id,
-                AttributeName = attr.CategoryAttributeHumanized ?? attr.CategoryAttributeKey,
-                Values = values,
-                SelectedValueIds = []
-            });
+                var values = attr.CategoryAttributeValues
+                    .Select(v => new AttributeValueItem { Id = v.Id, Name = v.Name }).ToList();
+                varianterAttributes.Add(new VarianterAttributeViewModel
+                {
+                    AttributeId = attr.Id,
+                    AttributeName = attr.CategoriyAttributeHumanized ?? attr.CategoryAttributeKey,
+                    IsVarianter = attr.IsVarianter,
+                    IsSlicer = attr.IsSlicer,
+                    Values = values,
+                    SelectedValueIds = []
+                });
+            }
+            else
+            {
+                _regularAttributes.Add(attr);
+            }
         }
+
+        _regularAttrsVisible = _regularAttributes.Count > 0;
+
+        // Kategori varyant özelliği içermiyorsa tek boş varyant otomatik ekle
+        if (varianterAttributes.Count == 0)
+            AddVariant();
     }
 
     private void OnSelectedValuesChanged(VarianterAttributeViewModel attr, IEnumerable<int> selected)
@@ -325,13 +405,13 @@ public partial class AddProduct
 
     private void GenerateVariants()
     {
-        var lists = varianterAttributes
-            .Where(a => a.SelectedValueIds != null && a.SelectedValueIds.Any())
-            .Select(a => a.SelectedValueIds!.ToList())
+        var activeAttrs = varianterAttributes
+            .Where(a => a.SelectedValueIds != null && a.SelectedValueIds.Count > 0)
             .ToList();
 
-        if (!lists.Any()) return;
+        if (activeAttrs.Count == 0) return;
 
+        var lists = activeAttrs.Select(a => a.SelectedValueIds!.ToList()).ToList();
         var total = lists.Aggregate(1, (acc, l) => acc * Math.Max(1, l.Count));
         if (total > 500)
         {
@@ -339,8 +419,7 @@ public partial class AddProduct
             return;
         }
 
-        variants.Clear();
-        _variantImages.Clear();
+        _generatedVariantRows.Clear();
 
         foreach (var combo in CartesianProduct(lists))
         {
@@ -357,20 +436,36 @@ public partial class AddProduct
             };
             for (int i = 0; i < combo.Count; i++)
             {
-                var attrVm = varianterAttributes.ElementAt(i);
+                var attrVm = activeAttrs[i];
                 var valueId = combo[i];
                 var value = attrVm.Values.FirstOrDefault(v => v.Id == valueId);
                 variant.ProductVariantAttributes.Add(new ProductVariantAttribute
                 {
                     CategoryAttributeValueId = valueId,
                     CategoryAttributeValue = value?.Name,
-                    IsVarianter = true
+                    IsVarianter = attrVm.IsVarianter,
+                    IsSlicer = attrVm.IsSlicer
                 });
             }
-            variants.Add(variant);
+            _generatedVariantRows.Add(new GeneratedVariantRow
+            {
+                IsSelected = true,
+                Label = GetVariantLabel(variant, _generatedVariantRows.Count),
+                Variant = variant
+            });
         }
 
-        _generatedCount = variants.Count;
+        _showVariantGrid = true;
+    }
+
+    private void ConfirmVariantSelection()
+    {
+        variants.Clear();
+        _variantImages.Clear();
+        _stockValues.Clear();
+        foreach (var row in _generatedVariantRows.Where(r => r.IsSelected))
+            variants.Add(row.Variant);
+        _showVariantGrid = false;
     }
 
     private static List<List<int>> CartesianProduct(List<List<int>> sequences)
@@ -401,6 +496,8 @@ public partial class AddProduct
     {
         public int AttributeId { get; set; }
         public string? AttributeName { get; set; }
+        public bool IsVarianter { get; set; }
+        public bool IsSlicer { get; set; }
         public List<AttributeValueItem> Values { get; set; } = [];
         public HashSet<int>? SelectedValueIds { get; set; } = [];
     }
@@ -410,4 +507,17 @@ public partial class AddProduct
         public int Id { get; set; }
         public string? Name { get; set; }
     }
+
+    private class GeneratedVariantRow
+    {
+        public bool IsSelected { get; set; } = true;
+        public string Label { get; set; } = string.Empty;
+        public AddProductVariantDto Variant { get; set; } = null!;
+    }
+
+    private int GetStock(int variantIdx, int officeId)
+        => _stockValues.TryGetValue((variantIdx, officeId), out var v) ? v : 0;
+
+    private void SetStock(int variantIdx, int officeId, int value)
+        => _stockValues[(variantIdx, officeId)] = value;
 }

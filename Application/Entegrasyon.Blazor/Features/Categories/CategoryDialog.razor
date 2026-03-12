@@ -31,6 +31,9 @@
                             <MudSelectItem Value="@((int?)cat.Id)">@cat.Name</MudSelectItem>
                         }
                     </MudSelect>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                        Yalnızca özellik içermeyen kategoriler üst kategori olabilir.
+                    </MudText>
                 </MudItem>
 
                 @if (_isLeafCategory)
