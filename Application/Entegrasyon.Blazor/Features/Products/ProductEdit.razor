@@ -62,6 +62,11 @@
                 @(_saving ? "Kaydediliyor..." : "Kaydet")
             </MudButton>
             <MudButton Variant="Variant.Outlined" OnClick="Cancel">İptal</MudButton>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Color="Color.Error"
+                       StartIcon="@Icons.Material.Filled.Delete" OnClick="Delete">
+                Sil
+            </MudButton>
         </MudStack>
     }
 </MudContainer>

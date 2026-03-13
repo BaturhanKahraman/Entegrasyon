@@ -7,6 +7,8 @@ public sealed record ProductDetailDto(
         string Title,
         string Description,
         string StockCode,
+        string Season,
+        string Year,
         string BrandName,
         string CategoryName,
         int TotalQuantity,

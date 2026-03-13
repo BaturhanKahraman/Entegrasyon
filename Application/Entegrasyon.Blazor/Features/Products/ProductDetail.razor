@@ -1,0 +1,173 @@
+@page "/products/{Id:guid}"
+@using Entegrasyon.Entity.Dtos.Product.ProductVariant
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (_product is null)
+    {
+        <MudAlert Severity="Severity.Error">Ürün bulunamadı.</MudAlert>
+    }
+    else
+    {
+        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+            <MudText Typo="Typo.h5">@_product.Title</MudText>
+            <MudChip T="string" Size="Size.Small" Color="Color.Default">@_product.StockCode</MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@_product.BrandName</MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@_product.CategoryName</MudChip>
+        </MudStack>
+
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard Elevation="1">
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6">Genel Bilgiler</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.body2" Color="Color.Dark">Açıklama</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(_product.Description) ? "—" : _product.Description)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.body2" Color="Color.Dark">Sezon</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(_product.Season) ? "—" : _product.Season)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.body2" Color="Color.Dark">Yıl</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(_product.Year) ? "—" : _product.Year)</MudText>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.body2" Color="Color.Dark">Toplam Stok</MudText>
+                                <MudText Typo="Typo.body1">@_product.TotalQuantity</MudText>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.body2" Color="Color.Dark">Satılan</MudText>
+                                <MudText Typo="Typo.body1">@_product.TotalSoldQuantity</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            @if (_product.AttributeKeyValueDetails.Any())
+            {
+                <MudItem xs="12">
+                    <MudCard Elevation="1">
+                        <MudCardHeader>
+                            <MudText Typo="Typo.h6">Özellikler</MudText>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                @foreach (var attr in _product.AttributeKeyValueDetails)
+                                {
+                                    <MudItem xs="12" sm="6">
+                                        <MudText Typo="Typo.body2" Color="Color.Dark">@attr.AttributeKey</MudText>
+                                        <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(attr.AttributeValue) ? "—" : attr.AttributeValue)</MudText>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+
+            <MudItem xs="12">
+                <MudCard Elevation="1">
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6">Varyantlar</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudExpansionPanels MultiExpansion="true">
+                            @foreach (var variant in _product.ProductVariantsDetails)
+                            {
+                                <MudExpansionPanel Text="@variant.Barcode">
+                                    <MudGrid>
+                                        <MudItem xs="12">
+                                            <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Liste Fiyatı</th>
+                                                        <th>Satış Fiyatı</th>
+                                                        <th>Maliyet</th>
+                                                        <th>E-Ticaret Fiyatı</th>
+                                                        <th>KDV (%)</th>
+                                                        <th>Desi</th>
+                                                        <th>Para Birimi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>@variant.ListPrice.ToString("N2")</td>
+                                                        <td>@variant.SalePrice.ToString("N2")</td>
+                                                        <td>@variant.CostPrice.ToString("N2")</td>
+                                                        <td>@variant.ECommercePrice.ToString("N2")</td>
+                                                        <td>@variant.VatRate.ToString("N0")</td>
+                                                        <td>@variant.DeminsionalWeight.ToString("N2")</td>
+                                                        <td>@variant.CurrencyType</td>
+                                                    </tr>
+                                                </tbody>
+                                            </MudSimpleTable>
+                                        </MudItem>
+
+                                        @if (variant.imageLinks.Any())
+                                        {
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.subtitle2" Class="mb-2">Görseller</MudText>
+                                                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                                                    @foreach (var img in variant.imageLinks)
+                                                    {
+                                                        <MudImage Src="@img" Width="120" Height="120" ObjectFit="ObjectFit.Cover"
+                                                                  Elevation="1" Class="rounded-lg" />
+                                                    }
+                                                </MudStack>
+                                            </MudItem>
+                                        }
+
+                                        @if (variant.StockDetails.Any())
+                                        {
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.subtitle2" Class="mb-2">Stok Durumu</MudText>
+                                                <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Şube</th>
+                                                            <th>Mevcut Stok</th>
+                                                            <th>Satılan</th>
+                                                            <th>İlk Stok</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var stock in variant.StockDetails)
+                                                        {
+                                                            <tr>
+                                                                <td>@stock.OfficeName</td>
+                                                                <td>@stock.CurrentStock</td>
+                                                                <td>@stock.SoldQuantity</td>
+                                                                <td>@stock.FirstTotalStock</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </MudSimpleTable>
+                                            </MudItem>
+                                        }
+                                    </MudGrid>
+                                </MudExpansionPanel>
+                            }
+                        </MudExpansionPanels>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <MudStack Row="true" Class="mt-4" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="GoToEdit" StartIcon="@Icons.Material.Filled.Edit">
+                Düzenle
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" OnClick="GoBack">Geri</MudButton>
+        </MudStack>
+    }
+</MudContainer>
