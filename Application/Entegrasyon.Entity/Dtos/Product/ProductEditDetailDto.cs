@@ -1,4 +1,3 @@
-﻿using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
@@ -9,8 +8,10 @@ public sealed record ProductEditDetailDto(
     string Title,
     string Description,
     string StockCode,
+    string Season,
+    string Year,
     int BrandId,
-    int CategoryId ,
+    int CategoryId,
     List<ProductVariantEditDetailDto> ProductVariants,
     List<AttributeKeyValueDto> AttributeKeyValues
 );

@@ -141,12 +141,16 @@ public class ProductManager : IProductService
         var result = await _dbContext.MainProducts
             .Where(p => p.Id == id)
             .Select(p => new ProductEditDetailDto(
-                p.Id, p.Title, p.Description, p.StockCode, p.BrandId!.Value, p.CategoryId,
+                p.Id, p.Title, p.Description, p.StockCode,
+                p.Season, p.Year,
+                p.BrandId!.Value, p.CategoryId,
                 p.ProductVariants.Select(pv => new ProductVariantEditDetailDto(
-                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode, pv.ListPrice,
-                    pv.SalePrice, pv.CostPrice, pv.VatRate,
+                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode,
+                    pv.ListPrice, pv.SalePrice, pv.CostPrice,
+                    pv.ECommercePrice,
+                    pv.VatRate,
                     pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId, bos.FirstTotalStock)).ToList(),
-                    pv.Images.Select(img => new EditableImageDto(img.Id, img.Src, img.IsCoverImage, img.IsDeleted)).ToList(),
+                    pv.Images.Select(img => new EditableImageDto(img.Id, img.Src, img.IsMain, img.IsDeleted)).ToList(),
                     pv.ProductVariantAttributes
                         .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId, pva.CategoryAttributeValue, pva.CustomValue, pva.IsVarianter, pva.IsSlicer))
                         .ToList()
@@ -156,10 +160,12 @@ public class ProductManager : IProductService
                     akv.CategoryAttribute.CategoryAttributeKey,
                     akv.AttributeValueId,
                     akv.AttributeValue.Name,
-                    akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId).IsRequired,
+                    akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId) == null ? false : akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId).IsRequired,
                     akv.CustomValue)
                 ).ToList()))
             .FirstOrDefaultAsync();
+        if (result is null)
+            return new ErrorDataResult<ProductEditDetailDto>(null!, "Ürün bulunamadı.");
         return new SuccessDataResult<ProductEditDetailDto>(result);
     }
 
