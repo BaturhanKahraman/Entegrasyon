@@ -33,26 +33,16 @@ public partial class Users
     private async Task LoadUsers()
     {
         _loading = true;
-        try
+        var result = await UserManager.GetPaginatedUserDetails(0, 1000);
+        if (result.Success)
         {
-            var result = await UserManager.GetPaginatedUserDetails(0, 1000);
-            if (result.Success)
-            {
-                _users = result.Data.Items.ToList();
-            }
-            else
-            {
-                Snackbar.Add(result.Message, Severity.Error);
-            }
+            _users = result.Data.Items.ToList();
         }
-        catch (Exception ex)
+        else
         {
-            Snackbar.Add($"Kullanıcılar yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add(result.Message, Severity.Error);
         }
-        finally
-        {
-            _loading = false;
-        }
+        _loading = false;
     }
 
     private async Task OpenAddUserDialog()

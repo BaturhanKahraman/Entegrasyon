@@ -1,0 +1,247 @@
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events.Products;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Results;
+using Microsoft.EntityFrameworkCore;
+
+namespace Entegrasyon.Business.Concrete;
+
+public sealed class ProductSyncManager(
+    IntegrationDbContext dbContext,
+    EventChannel<ProductCreatedForMarketplaceEvent> eventChannel) : IProductSyncManager
+{
+    public async Task<ProductSyncSummaryDto> GetSyncSummaryAsync(int marketPlaceId)
+    {
+        var totalProducts = await dbContext.MainProducts.CountAsync();
+
+        var statusCounts = await dbContext.ProductMarketplaces
+            .Where(pm => pm.MarketPlaceId == marketPlaceId)
+            .GroupBy(pm => pm.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        var syncedCount = statusCounts
+            .Where(s => s.Status == MarketplaceProductStatus.Published)
+            .Sum(s => s.Count);
+        var pendingCount = statusCounts
+            .Where(s => s.Status == MarketplaceProductStatus.Pending)
+            .Sum(s => s.Count);
+        var failedCount = statusCounts
+            .Where(s => s.Status is MarketplaceProductStatus.Failed or MarketplaceProductStatus.Rejected)
+            .Sum(s => s.Count);
+        var neverSyncedCount = totalProducts - syncedCount - pendingCount - failedCount;
+
+        return new ProductSyncSummaryDto(totalProducts, syncedCount, pendingCount, failedCount, neverSyncedCount);
+    }
+
+    public async Task<DataResult<Pageable<ProductSyncListItemDto>>> GetProductSyncListAsync(
+        int marketPlaceId, MarketplaceSyncState? stateFilter, string searchKey, int pageIndex, int pageSize)
+    {
+        var query = dbContext.MainProducts
+            .Select(p => new
+            {
+                Product = p,
+                Marketplace = p.ProductMarketplaces
+                    .FirstOrDefault(pm => pm.MarketPlaceId == marketPlaceId)
+            });
+
+        // Arama filtresi
+        if (!string.IsNullOrWhiteSpace(searchKey))
+        {
+            var search = searchKey.ToLower();
+            query = query.Where(x =>
+                x.Product.Title.ToLower().Contains(search) ||
+                x.Product.StockCode.ToLower().Contains(search));
+        }
+
+        // Durum filtresi
+        if (stateFilter.HasValue)
+        {
+            query = stateFilter.Value switch
+            {
+                MarketplaceSyncState.NeverSynced => query.Where(x => x.Marketplace == null),
+                MarketplaceSyncState.Waiting => query.Where(x =>
+                    x.Marketplace != null &&
+                    x.Marketplace.Status == MarketplaceProductStatus.Pending &&
+                    x.Marketplace.BatchRequestId == null),
+                MarketplaceSyncState.Processing => query.Where(x =>
+                    x.Marketplace != null &&
+                    x.Marketplace.Status == MarketplaceProductStatus.Pending &&
+                    x.Marketplace.BatchRequestId != null),
+                MarketplaceSyncState.Synced => query.Where(x =>
+                    x.Marketplace != null &&
+                    x.Marketplace.Status == MarketplaceProductStatus.Published &&
+                    x.Product.UpdatedAt <= x.Marketplace.LastSyncedAt),
+                MarketplaceSyncState.OutOfSync => query.Where(x =>
+                    x.Marketplace != null &&
+                    x.Marketplace.Status == MarketplaceProductStatus.Published &&
+                    x.Product.UpdatedAt > x.Marketplace.LastSyncedAt),
+                MarketplaceSyncState.Failed => query.Where(x =>
+                    x.Marketplace != null &&
+                    x.Marketplace.Status == MarketplaceProductStatus.Failed),
+                MarketplaceSyncState.Rejected => query.Where(x =>
+                    x.Marketplace != null &&
+                    x.Marketplace.Status == MarketplaceProductStatus.Rejected),
+                _ => query
+            };
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderBy(x => x.Product.Title)
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .Select(x => new
+            {
+                x.Product.Id,
+                x.Product.Title,
+                x.Product.StockCode,
+                BrandName = x.Product.Brand != null ? x.Product.Brand.Name : "",
+                CategoryName = x.Product.Category != null ? x.Product.Category.Name : "",
+                VariantCount = x.Product.ProductVariants.Count(),
+                x.Product.UpdatedAt,
+                Marketplace = x.Marketplace
+            })
+            .ToListAsync();
+
+        var dtoItems = items.Select(x => new ProductSyncListItemDto(
+            x.Id, x.Title, x.StockCode, x.BrandName, x.CategoryName, x.VariantCount,
+            MapSyncState(x.Marketplace, x.UpdatedAt),
+            x.Marketplace?.LastSyncedAt,
+            x.Marketplace?.StatusMessage)).ToList();
+
+        var pageable = new Pageable<ProductSyncListItemDto>(dtoItems, pageIndex, pageSize, totalCount);
+        return new SuccessDataResult<Pageable<ProductSyncListItemDto>>(pageable);
+    }
+
+    public async Task<IResult> SyncProductAsync(Guid productId, int marketPlaceId)
+    {
+        var product = await dbContext.MainProducts.FindAsync(productId);
+        if (product is null)
+            return new ErrorResult("Ürün bulunamadı.");
+
+        var marketplace = await dbContext.ProductMarketplaces
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId && pm.MarketPlaceId == marketPlaceId);
+
+        if (marketplace is null)
+        {
+            marketplace = new ProductMarketplace
+            {
+                ProductId = productId,
+                MarketPlaceId = marketPlaceId,
+                Status = MarketplaceProductStatus.Pending
+            };
+            dbContext.ProductMarketplaces.Add(marketplace);
+        }
+        else
+        {
+            marketplace.Status = MarketplaceProductStatus.Pending;
+            marketplace.BatchRequestId = null;
+            marketplace.StatusMessage = null;
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+
+        return new SuccessResult("Ürün senkronizasyon kuyruğuna eklendi.");
+    }
+
+    public async Task<IResult> RetryFailedAsync(Guid productId, int marketPlaceId)
+    {
+        var marketplace = await dbContext.ProductMarketplaces
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId && pm.MarketPlaceId == marketPlaceId);
+
+        if (marketplace is null)
+            return new ErrorResult("Pazaryeri kaydı bulunamadı.");
+
+        if (marketplace.Status is not (MarketplaceProductStatus.Failed or MarketplaceProductStatus.Rejected))
+            return new ErrorResult("Sadece başarısız veya reddedilmiş ürünler tekrarlanabilir.");
+
+        marketplace.Status = MarketplaceProductStatus.Pending;
+        marketplace.BatchRequestId = null;
+        marketplace.StatusMessage = null;
+        await dbContext.SaveChangesAsync();
+
+        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+
+        return new SuccessResult("Ürün yeniden kuyruğa eklendi.");
+    }
+
+    public async Task<IResult> SyncAllPendingAsync(int marketPlaceId)
+    {
+        var unsyncedProductIds = await dbContext.MainProducts
+            .Where(p => !p.ProductMarketplaces.Any(pm => pm.MarketPlaceId == marketPlaceId))
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        foreach (var productId in unsyncedProductIds)
+        {
+            dbContext.ProductMarketplaces.Add(new ProductMarketplace
+            {
+                ProductId = productId,
+                MarketPlaceId = marketPlaceId,
+                Status = MarketplaceProductStatus.Pending
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+        foreach (var productId in unsyncedProductIds)
+        {
+            await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+        }
+
+        return new SuccessResult($"{unsyncedProductIds.Count} ürün senkronizasyon kuyruğuna eklendi.");
+    }
+
+    public async Task<IResult> RetryAllFailedAsync(int marketPlaceId)
+    {
+        var failedRecords = await dbContext.ProductMarketplaces
+            .Where(pm => pm.MarketPlaceId == marketPlaceId &&
+                         (pm.Status == MarketplaceProductStatus.Failed || pm.Status == MarketplaceProductStatus.Rejected))
+            .ToListAsync();
+
+        foreach (var record in failedRecords)
+        {
+            record.Status = MarketplaceProductStatus.Pending;
+            record.BatchRequestId = null;
+            record.StatusMessage = null;
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+        foreach (var record in failedRecords)
+        {
+            await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName]));
+        }
+
+        return new SuccessResult($"{failedRecords.Count} hatalı ürün yeniden kuyruğa eklendi.");
+    }
+
+    private static MarketplaceSyncState MapSyncState(ProductMarketplace? marketplace, DateTimeOffset productUpdatedAt)
+    {
+        if (marketplace is null)
+            return MarketplaceSyncState.NeverSynced;
+
+        return marketplace.Status switch
+        {
+            MarketplaceProductStatus.Pending when marketplace.BatchRequestId is null => MarketplaceSyncState.Waiting,
+            MarketplaceProductStatus.Pending => MarketplaceSyncState.Processing,
+            MarketplaceProductStatus.Published when productUpdatedAt > marketplace.LastSyncedAt => MarketplaceSyncState.OutOfSync,
+            MarketplaceProductStatus.Published => MarketplaceSyncState.Synced,
+            MarketplaceProductStatus.Failed => MarketplaceSyncState.Failed,
+            MarketplaceProductStatus.Rejected => MarketplaceSyncState.Rejected,
+            _ => MarketplaceSyncState.NeverSynced
+        };
+    }
+}

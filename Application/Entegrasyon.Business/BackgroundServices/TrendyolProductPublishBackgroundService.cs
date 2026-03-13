@@ -10,36 +10,34 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
-/// Listens for ProductCreatedForMarketplaceEvent and publishes products to selected marketplaces.
-/// Currently supports Trendyol. Other marketplaces are placeholders.
+/// EventChannel'dan ProductCreatedForMarketplaceEvent okur ve ilgili pazaryeri API'sini çağırır.
+/// ProductMarketplace kaydı zaten ProductSyncManager tarafından oluşturulmuş olmalı.
+///
+/// Akış:
+///   ProductSyncManager → ProductMarketplace (Pending) + Event yayınla
+///   Bu servis → Event al → API çağır → Durumu Published/Failed güncelle
+///
+/// TODO: ProductAddedEvent consumer'ı oluşturulmalı — ürün eklendikten sonra otomatik olarak
+/// konfigüre edilmiş pazaryerlerine ProductCreatedForMarketplaceEvent yayınlamalı.
+/// Bu sayede AddProduct → ProductAddedEvent → [consumer] → ProductCreatedForMarketplaceEvent → bu servis
+/// akışı ile ürünler otomatik sync kuyruğuna girecek.
 /// </summary>
-public class TrendyolProductPublishBackgroundService : BackgroundService
+public class TrendyolProductPublishBackgroundService(
+    EventChannel<ProductCreatedForMarketplaceEvent> channel,
+    IServiceScopeFactory scopeFactory,
+    ILogger<TrendyolProductPublishBackgroundService> logger) : BackgroundService
 {
-    private readonly EventChannel<ProductCreatedForMarketplaceEvent> _channel;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<TrendyolProductPublishBackgroundService> _logger;
-
-    public TrendyolProductPublishBackgroundService(
-        EventChannel<ProductCreatedForMarketplaceEvent> channel,
-        IServiceScopeFactory scopeFactory,
-        ILogger<TrendyolProductPublishBackgroundService> logger)
-    {
-        _channel = channel;
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var evt in _channel.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var evt in channel.Reader.ReadAllAsync(stoppingToken))
         {
             try
             {
-                _logger.LogInformation(
-                    "Publishing product {ProductId} to marketplaces: {Marketplaces}",
+                logger.LogInformation(
+                    "Processing marketplace publish for product {ProductId}: {Marketplaces}",
                     evt.ProductId, string.Join(", ", evt.Marketplaces));
 
-                using var scope = _scopeFactory.CreateScope();
+                await using var scope = scopeFactory.CreateAsyncScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
 
                 foreach (var marketplace in evt.Marketplaces)
@@ -50,45 +48,41 @@ public class TrendyolProductPublishBackgroundService : BackgroundService
                             await HandleTrendyolAsync(dbContext, evt.ProductId, stoppingToken);
                             break;
                         default:
-                            _logger.LogWarning("Unsupported marketplace: {Marketplace}", marketplace);
+                            logger.LogWarning("Unsupported marketplace: {Marketplace}", marketplace);
                             break;
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to publish product {ProductId} to marketplace", evt.ProductId);
+                logger.LogError(ex, "Failed to publish product {ProductId} to marketplace", evt.ProductId);
             }
         }
     }
 
     private async Task HandleTrendyolAsync(IntegrationDbContext dbContext, Guid productId, CancellationToken ct)
     {
-        var trendyolMarketplace = await dbContext.MarketPlaces
-            .FirstOrDefaultAsync(x => x.Name == "Trendyol", ct);
+        var record = await dbContext.ProductMarketplaces
+            .Include(pm => pm.Product)
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId &&
+                                       pm.MarketPlace.Name == "Trendyol", ct);
 
-        if (trendyolMarketplace is null)
+        if (record is null)
         {
-            _logger.LogWarning("Trendyol marketplace not found in database.");
+            logger.LogWarning("ProductMarketplace record not found for ProductId={ProductId}, Trendyol", productId);
             return;
         }
 
-        var existing = await dbContext.ProductMarketplaces
-            .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == trendyolMarketplace.Id, ct);
+        // TODO: ITrendyolProductService.PublishProduct(productId) çağrılacak
+        // Başarılı:
+        //   record.Status = MarketplaceProductStatus.Published;
+        //   record.LastSyncedAt = DateTimeOffset.UtcNow;
+        //   record.BatchRequestId = response.BatchRequestId;
+        // Başarısız:
+        //   record.Status = MarketplaceProductStatus.Failed;
+        //   record.StatusMessage = error.Message;
+        // await dbContext.SaveChangesAsync(ct);
 
-        if (existing is null)
-        {
-            dbContext.ProductMarketplaces.Add(new ProductMarketplace
-            {
-                ProductId = productId,
-                MarketPlaceId = trendyolMarketplace.Id,
-                Status = MarketplaceProductStatus.Pending
-            });
-            await dbContext.SaveChangesAsync(ct);
-            _logger.LogInformation("ProductMarketplace Pending record created for ProductId={ProductId}", productId);
-        }
-
-        // TODO: Inject and call ITrendyolProductService.PublishProduct(productId)
-        _logger.LogInformation("Trendyol product publish queued for ProductId={ProductId}", productId);
+        logger.LogInformation("Trendyol publish pending for ProductId={ProductId} — API integration not yet implemented", productId);
     }
 }

@@ -310,9 +310,14 @@ namespace Entegrasyon.Business.Concrete
 
             var excludeIds = GetDescendantIds(allCategories, categoryId);
             excludeIds.Add(categoryId);
+            var categoriesWithAttributes = await dbContext.CategoryAttributeCategories
+                .Select(cac => cac.CategoryId)
+                .Distinct()
+                .ToListAsync();
+            var categoriesWithAttributesSet = categoriesWithAttributes.ToHashSet();
             var validParents = allCategories
                 .Where(c => !excludeIds.Contains(c.Id))
-                .Where(c => !dbContext.CategoryAttributeCategories.Any(cac => cac.CategoryId == c.Id))
+                .Where(c => !categoriesWithAttributesSet.Contains(c.Id))
                 .OrderBy(c => c.Name)
                 .ToList();
 

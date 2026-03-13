@@ -33,7 +33,7 @@
 
     <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="@ExpandedSections["marketplace"]">
         <MudNavGroup Title="Senkronizasyon" Icon="@Icons.Material.Filled.Sync" Expanded="@_syncExpanded">
-            <MudNavLink Href="/marketplace/sync" Icon="@Icons.Material.Filled.Dashboard">
+            <MudNavLink Href="/marketplace/sync" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
                 Genel Bakış
             </MudNavLink>
             <MudNavLink Href="/marketplace/sync/categories" Icon="@Icons.Material.Filled.Category">

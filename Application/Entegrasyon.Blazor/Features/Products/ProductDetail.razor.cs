@@ -19,26 +19,17 @@ public partial class ProductDetail
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        try
+        var result = await ProductManager.GetProductDetailById(Id);
+        if (!result.Success || result.Data is null)
         {
-            var result = await ProductManager.GetProductDetailById(Id);
-            if (!result.Success || result.Data is null)
-            {
-                Snackbar.Add("Ürün bulunamadı.", Severity.Error);
-                NavigationManager.NavigateTo("/products");
-                return;
-            }
-
-            _product = result.Data;
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Sayfa yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
+            Snackbar.Add("Ürün bulunamadı.", Severity.Error);
             _loading = false;
+            NavigationManager.NavigateTo("/products");
+            return;
         }
+
+        _product = result.Data;
+        _loading = false;
     }
 
     private void GoToEdit() => NavigationManager.NavigateTo($"/products/edit/{Id}");

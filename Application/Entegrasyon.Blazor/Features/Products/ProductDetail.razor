@@ -12,6 +12,11 @@
     }
     else
     {
+        <MudButton OnClick="GoBack" StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Variant="Variant.Text" Color="Color.Default" Class="mb-2">
+            Ürünlere geri dön
+        </MudButton>
+
         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
             <MudText Typo="Typo.h5">@_product.Title</MudText>
             <MudChip T="string" Size="Size.Small" Color="Color.Default">@_product.StockCode</MudChip>

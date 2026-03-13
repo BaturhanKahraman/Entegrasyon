@@ -37,30 +37,20 @@ public partial class BrandMappingDialog : ComponentBase
 
     private async Task LoadBrands()
     {
-        try
+        IsLoading = true;
+        var result = await BrandService.GetBrandListDetails();
+        if (result.Success)
         {
-            IsLoading = true;
-            var result = await BrandService.GetBrandListDetails();
-            if (result.Success)
-            {
-                AllBrands = result.Data?
-                    .Select(x => new BrandDto { Id = x.Id, Name = x.Name })
-                    .OrderBy(x => x.Name)
-                    .ToList() ?? [];
-            }
-            else
-            {
-                Snackbar.Add("Brand'lar yüklenirken hata oluştu.", Severity.Error);
-            }
+            AllBrands = result.Data?
+                .Select(x => new BrandDto { Id = x.Id, Name = x.Name })
+                .OrderBy(x => x.Name)
+                .ToList() ?? [];
         }
-        catch (Exception ex)
+        else
         {
-            Snackbar.Add($"Brand yükleme hatası: {ex.Message}", Severity.Error);
+            Snackbar.Add("Brand'lar yüklenirken hata oluştu.", Severity.Error);
         }
-        finally
-        {
-            IsLoading = false;
-        }
+        IsLoading = false;
     }
 
     public async Task SubmitForm()

@@ -61,6 +61,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
+            services.AddScoped<IProductSyncManager, ProductSyncManager>();
 
             // Yeni Import Servisleri
             services.AddScoped<TrendyolCategoryImporter>();
@@ -127,8 +128,10 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddNotification(this IServiceCollection services)
         {
-            services.AddSingleton<INotificationSender, SignalRSender>();
-            services.AddSingleton<INotificationSender, EmailSender>();
+            // TODO: SignalRSender ve EmailSender henüz implemente edilmedi.
+            // Implemente edildiklerinde buraya kayıt eklenecek:
+            // services.AddSingleton<INotificationSender, SignalRSender>();
+            // services.AddSingleton<INotificationSender, EmailSender>();
             return services;
         }
     }

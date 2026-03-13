@@ -62,18 +62,19 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
         foreach (var key in ExpandedSections.Keys)
             ExpandedSections[key] = false;
 
-        var uri = NavigationManager.Uri.ToLower();
+        var relativePath = new Uri(NavigationManager.Uri).AbsolutePath.ToLower().TrimStart('/');
+        var firstSegment = relativePath.Split('/')[0];
 
         foreach (var section in sectionRoutes)
         {
-            if (section.Value.Any(route => uri.Contains("/" + route)))
+            if (section.Value.Any(route => firstSegment == route))
             {
                 ExpandedSections[section.Key] = true;
                 break;
             }
         }
 
-        _syncExpanded = uri.Contains("/marketplace/sync");
+        _syncExpanded = relativePath.StartsWith("marketplace/sync");
 
         var newActive = ExpandedSections.FirstOrDefault(x => x.Value).Key;
         return previousActive != newActive;

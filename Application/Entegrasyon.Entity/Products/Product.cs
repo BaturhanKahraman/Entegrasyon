@@ -22,6 +22,7 @@ public sealed class Product : BaseEntity
     public Category Category { get; set; }
     public ICollection<ProductVariant> ProductVariants { get; set; }
     public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; }
+    public ICollection<ProductMarketplace> ProductMarketplaces { get; set; } = [];
     public NpgsqlTsVector SearchVector { get; set; }
 
 

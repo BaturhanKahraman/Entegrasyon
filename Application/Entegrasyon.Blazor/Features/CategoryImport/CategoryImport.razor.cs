@@ -42,30 +42,19 @@ public partial class CategoryImport
     private async Task LoadTrendyolCategoriesAsync()
     {
         loading = true;
-        try
+        var result = await LoadCategoriesWithRetryAsync();
+        if (result.Success && result.Data != null)
         {
-            var result = await LoadCategoriesWithRetryAsync();
-            if (result.Success && result.Data != null)
-            {
-                categories = result.Data.Select(MapToTreeNode).ToList();
-                var totalCount = CountAllCategories(categories);
-                Logger.LogInformation("Loaded {Count} categories from Trendyol", totalCount);
-                Snackbar.Add($"{totalCount} kategori yüklendi.", Severity.Success);
-            }
-            else
-            {
-                Snackbar.Add(result.Message ?? "Kategoriler yüklenemedi.", Severity.Error);
-            }
+            categories = result.Data.Select(MapToTreeNode).ToList();
+            var totalCount = CountAllCategories(categories);
+            Logger.LogInformation("Loaded {Count} categories from Trendyol", totalCount);
+            Snackbar.Add($"{totalCount} kategori yüklendi.", Severity.Success);
         }
-        catch (Exception ex)
+        else
         {
-            Logger.LogError(ex, "Category loading failed");
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+            Snackbar.Add(result.Message ?? "Kategoriler yüklenemedi.", Severity.Error);
         }
-        finally
-        {
-            loading = false;
-        }
+        loading = false;
     }
 
     private async Task<IDataResult<IEnumerable<ExternalCategoryDto>>> LoadCategoriesWithRetryAsync()

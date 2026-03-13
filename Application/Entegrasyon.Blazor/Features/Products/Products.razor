@@ -28,7 +28,8 @@
     </MudPaper>
 
     <MudDataGrid T="ProductsDetailDto" Items="@filteredProducts.AsEnumerable()" Filterable="true" SortMode="SortMode.Multiple" Hover="true"
-        Loading="@loading" Virtualize="true" FixedHeader="true" Height="600px" RowsPerPage="25">
+        Loading="@loading" Virtualize="true" FixedHeader="true" Height="600px" RowsPerPage="25"
+        RowClick="OnRowClick" RowStyle="cursor: pointer;">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Ürünler</MudText>
             <MudSpacer />
@@ -37,7 +38,6 @@
             </MudChip>
         </ToolBarContent>
         <Columns>
-            <SelectColumn T="ProductsDetailDto" />
             <TemplateColumn Title="Görsel" Sortable="false">
                 <CellTemplate>
                     <MudAvatar Color="Color.Secondary" Size="Size.Small">
@@ -65,13 +65,14 @@
             </TemplateColumn>
             <TemplateColumn CellClass="d-flex justify-end" Title="İşlemler" Sortable="false">
                 <CellTemplate>
+                    <div @onclick:stopPropagation="true">
                     <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small">
                         <MudMenuItem Icon="@Icons.Material.Filled.Visibility"
-                            OnClick="@(async () => await ViewProduct(context.Item))">
+                            OnClick="@(() => NavigateToProduct(context.Item.Id))">
                             Görüntüle
                         </MudMenuItem>
                         <MudMenuItem Icon="@Icons.Material.Filled.Edit"
-                            OnClick="@(async () => await EditProduct(context.Item))">
+                            OnClick="@(() => EditProduct(context.Item))">
                             Düzenle
                         </MudMenuItem>
                         <MudMenuItem Icon="@Icons.Material.Filled.ContentCopy"
@@ -84,6 +85,7 @@
                             Sil
                         </MudMenuItem>
                     </MudMenu>
+                    </div>
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
