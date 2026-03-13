@@ -11,10 +11,14 @@ public interface IProductService
 {
     Task<IDataResult<Product>> AddProduct(AddProductDto dto);
     Task<IResult> GetProductByBarcode(string barcode);
-    Task<IResult> UpdateProduct(ProductEditDetailDto dto);
+
+    // Edit
+    Task<IDataResult<ProductEditPageDto>> GetProductEditPageData(Guid id);
+    Task<IResult> UpdateProduct(EditProductDto dto);
+
+    // Other
     Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId);
     Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto);
-    Task<IDataResult<ProductEditDetailDto>> GetProductEditDetailById(Guid id);
     Task<int> GetProductCountByCategoryId(int categoryId);
     Task<bool> HasSoldProductsInCategory(int categoryId);
 }
