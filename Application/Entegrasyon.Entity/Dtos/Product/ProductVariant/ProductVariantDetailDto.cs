@@ -7,6 +7,7 @@ public sealed record ProductVariantDetailDto(Guid Id,
     decimal ListPrice,
     decimal SalePrice,
     decimal CostPrice,
+    decimal ECommercePrice,
     decimal VatRate,
     string[] imageLinks,
     IEnumerable<StockDetailDto> StockDetails

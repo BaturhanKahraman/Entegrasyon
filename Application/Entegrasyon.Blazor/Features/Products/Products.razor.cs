@@ -64,7 +64,7 @@ public partial class Products
 
     private Task ViewProduct(ProductsDetailDto product)
     {
-        Snackbar?.Add($"Ürün detayları: {product.Title}", Severity.Info);
+        NavigationManager?.NavigateTo($"/products/{product.Id}");
         return Task.CompletedTask;
     }
 

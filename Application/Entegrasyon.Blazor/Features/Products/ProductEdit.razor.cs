@@ -16,6 +16,7 @@ public partial class ProductEdit
     [Inject] private IImageManager ImageManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private ProductEditPageDto? _pageData;
     private bool _loading = true;
@@ -179,6 +180,28 @@ public partial class ProductEdit
     }
 
     private void Cancel() => NavigationManager.NavigateTo("/products");
+
+    private async Task Delete()
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Ürünü Sil",
+            "Bu ürünü silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+            yesText: "Sil",
+            cancelText: "İptal");
+
+        if (confirm != true) return;
+
+        var result = await ProductManager.SoftDeleteProduct(Id);
+        if (result.Success)
+        {
+            Snackbar.Add("Ürün silindi.", Severity.Success);
+            NavigationManager.NavigateTo("/products");
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Silme başarısız.", Severity.Error);
+        }
+    }
 
     private static string BuildVariantLabel(ProductVariantEditDetailDto pv)
     {

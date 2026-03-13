@@ -217,11 +217,11 @@ public class ProductManager(
         var result = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new ProductDetailDto(
-                p.Id, p.Title, p.Description, p.StockCode, p.Brand.Name, p.Category.Name,
+                p.Id, p.Title, p.Description, p.StockCode, p.Season, p.Year, p.Brand.Name, p.Category.Name,
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 p.ProductVariants.Select(pv => new ProductVariantDetailDto(
-                    pv.Id, pv.Barcode, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.VatRate,
+                    pv.Id, pv.Barcode, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
                     pv.Images.Select(img => img.Src).ToArray(),
                     pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
                 )),
@@ -254,6 +254,19 @@ public class ProductManager(
             .ToListAsync();
 
         return new SuccessDataResult<Pageable<ProductsDetailDto>>(new Pageable<ProductsDetailDto>(items, dto.PageIndex, dto.PageSize, total));
+    }
+
+    public async Task<IResult> SoftDeleteProduct(Guid id)
+    {
+        await applicationLogManager.AddLog("Ürün silme isteği alındı.", LogType.Product, LogAction.Delete, new { id });
+        var product = await dbContext.MainProducts.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
+        if (product is null)
+            return new ErrorResult("Silinecek ürün bulunamadı.");
+        product.IsDeleted = true;
+        product.DeletedAt = DateTimeOffset.UtcNow;
+        await dbContext.SaveChangesAsync();
+        await applicationLogManager.AddLog($"'{product.Title}' ürünü silindi.", LogType.Product, LogAction.Delete);
+        return new SuccessResult("Ürün silindi.");
     }
 
     public Task<int> GetProductCountByCategoryId(int categoryId) =>
