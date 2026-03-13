@@ -1,3 +1,3 @@
-﻿namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
+namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
-public record EditableImageDto(int Id,string Src,bool IsCoverImage,bool IsDeleted);
+public record EditableImageDto(int Id, string Src, bool IsMain, bool IsDeleted);

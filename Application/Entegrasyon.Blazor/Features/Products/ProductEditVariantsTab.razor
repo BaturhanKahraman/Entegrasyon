@@ -1,0 +1,59 @@
+@using Entegrasyon.Entity.Dtos.Branches
+@using static Entegrasyon.Blazor.Features.Products.ProductEdit
+
+<MudExpansionPanels Class="pa-2">
+    @foreach (var variant in Variants)
+    {
+        <MudExpansionPanel Text="@variant.Label">
+            <MudGrid Class="pa-2">
+                <MudItem xs="12">
+                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small">
+                        Barkod: @variant.Barcode
+                    </MudChip>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal" Label="Liste Fiyatı" @bind-Value="variant.ListPrice"
+                                     Adornment="Adornment.Start" AdornmentText="₺" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal" Label="Satış Fiyatı" @bind-Value="variant.SalePrice"
+                                     Adornment="Adornment.Start" AdornmentText="₺" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal" Label="Maliyet Fiyatı" @bind-Value="variant.CostPrice"
+                                     Adornment="Adornment.Start" AdornmentText="₺" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal" Label="E-Ticaret Fiyatı" @bind-Value="variant.ECommercePrice"
+                                     Adornment="Adornment.Start" AdornmentText="₺" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal" Label="Desi" @bind-Value="variant.DimensionalWeight"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField T="decimal" Label="KDV Oranı (%)" @bind-Value="variant.VatRate"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudTextField Label="Para Birimi" @bind-Value="variant.CurrencyType"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">Stok Durumu (salt okunur)</MudText>
+                    <MudTable Items="variant.CurrentStocks.AsEnumerable()" Dense="true" Hover="false" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Şube</MudTh>
+                            <MudTh>Stok</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.BranchOfficeId</MudTd>
+                            <MudTd>@context.FirstTotalStock</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                    <MudLink Href="/stock-management" Typo="Typo.caption">Stok Yönetimi →</MudLink>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    }
+</MudExpansionPanels>

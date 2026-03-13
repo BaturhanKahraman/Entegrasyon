@@ -1,9 +1,8 @@
 using Entegrasyon.Entity.Dtos.Attributes;
-using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
 namespace Entegrasyon.Entity.Dtos.Product;
 
-public sealed record ProductEditDetailDto(
+public sealed record EditProductDto(
     Guid Id,
     string Title,
     string Description,
@@ -12,6 +11,7 @@ public sealed record ProductEditDetailDto(
     string Year,
     int BrandId,
     int CategoryId,
-    List<ProductVariantEditDetailDto> ProductVariants,
-    List<AttributeKeyValueDto> AttributeKeyValues
+    List<EditProductVariantDto> Variants,
+    List<AttributeKeyValueDto> AttributeKeyValues,
+    List<int> DeletedImageIds
 );

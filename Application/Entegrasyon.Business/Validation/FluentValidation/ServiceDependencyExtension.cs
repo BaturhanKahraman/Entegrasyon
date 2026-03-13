@@ -40,6 +40,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<AddBrandDto>, AddBrandDtoValidator>();
         services.AddScoped<IValidator<CreateBrandMarketPlaceMatchDto>, CreateBrandMarketPlaceMatchDtoValidator>();
         services.AddScoped<IValidator<SendNotificationRequest>, SendNotificationValidator>();
+        services.AddScoped<IValidator<EditProductDto>, EditProductValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;
