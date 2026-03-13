@@ -294,5 +294,63 @@ namespace Entegrasyon.Business.Concrete
                 .Include(cm => cm.MarketPlace)
                 .ToListAsync();
         }
+
+        public async Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId)
+        {
+            // 1. Kategori + leaf check + parent candidates — tek Categories sorgusu
+            var allCategories = await dbContext.Categories
+                .AsNoTracking()
+                .ToListAsync();
+
+            var category = allCategories.FirstOrDefault(c => c.Id == categoryId);
+            if (category is null)
+                return new ErrorDataResult<CategoryEditPageDto>(null, Messages.CategoryNotFound);
+
+            var isLeaf = !allCategories.Any(c => c.SuperCategoryId == categoryId);
+
+            var excludeIds = GetDescendantIds(allCategories, categoryId);
+            excludeIds.Add(categoryId);
+            var validParents = allCategories
+                .Where(c => !excludeIds.Contains(c.Id))
+                .Where(c => !dbContext.CategoryAttributeCategories.Any(cac => cac.CategoryId == c.Id))
+                .OrderBy(c => c.Name)
+                .ToList();
+
+            // 2. Tüm attribute'lar + bu kategorinin attribute'ları — tek CategoryAttributes sorgusu
+            var allAttributes = await dbContext.CategoryAttributes
+                .Include(x => x.CategoryAttributeValues)
+                .ToListAsync();
+
+            var categoryAttrDtos = isLeaf
+                ? await dbContext.CategoryAttributes
+                    .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
+                    .Select(x => new CategoryAttributeDto(
+                        x.Id,
+                        x.Categories.First(z => z.CategoryId == categoryId).IsRequired,
+                        x.AllowCustom,
+                        x.Categories.First(z => z.CategoryId == categoryId).IsVarianter,
+                        x.Categories.First(z => z.CategoryId == categoryId).IsSlicer,
+                        x.CreatedAt,
+                        x.CategoryAttributeKey,
+                        x.CategoryAttributeHumanized,
+                        x.CategoryAttributeValues.ToList()))
+                    .ToListAsync()
+                : [];
+
+            // 3. Ürün/satış durumu — tek sorgu ile
+            var hasSold = await dbContext.SaleItems
+                .AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+            var hasProducts = hasSold || await dbContext.MainProducts
+                .AnyAsync(p => p.CategoryId == categoryId);
+
+            return new SuccessDataResult<CategoryEditPageDto>(new CategoryEditPageDto(
+                Category: category,
+                IsLeaf: isLeaf,
+                CategoryAttributes: categoryAttrDtos,
+                AllAttributes: allAttributes,
+                ValidParentCandidates: validParents,
+                HasSoldProducts: hasSold,
+                HasProducts: hasProducts));
+        }
     }
 }

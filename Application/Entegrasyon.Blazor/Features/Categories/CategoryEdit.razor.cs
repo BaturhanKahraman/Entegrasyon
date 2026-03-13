@@ -12,12 +12,10 @@ public partial class CategoryEdit
     [Parameter] public int Id { get; set; }
 
     [Inject] private ICategoryService CategoryManager { get; set; } = null!;
-    [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ICategoryAttributeCategoryManager AttributeCategoryManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private IProductService ProductManager { get; set; } = null!;
 
     private MudForm _form = null!;
     private bool _isValid;
@@ -38,68 +36,32 @@ public partial class CategoryEdit
         _loading = true;
         try
         {
-            await LoadCategory();
-
-            if (_category != null)
+            var result = await CategoryManager.GetCategoryEditPageData(Id);
+            if (!result.Success || result.Data is null)
             {
-                await LoadCategories();
-                await LoadAllAttributes();
-                await LoadCategoryAttributes();
-                await LoadProductStatus();
+                Snackbar.Add(result.Message ?? "Kategori bulunamadı", Severity.Error);
+                return;
             }
-        }
-        finally
-        {
-            _loading = false;
-        }
-    }
 
-    private async Task LoadCategory()
-    {
-        try
-        {
-            var result = await CategoryManager.GetCategoryEditDetail(Id);
-            if (result.Success && result.Data is not null)
+            var data = result.Data;
+            _category = data.Category;
+            _isLeafCategory = data.IsLeaf;
+            _availableCategories = data.ValidParentCandidates;
+            _allAttributes = data.AllAttributes;
+            _hasSoldProducts = data.HasSoldProducts;
+            _hasProducts = data.HasProducts;
+
+            _model = new CategoryFormModel
             {
-                _category = result.Data;
-                _isLeafCategory = !await CategoryManager.IsSuper(Id);
+                Id = _category.Id,
+                Name = _category.Name,
+                IsFavorite = _category.IsFavorite,
+                ParentCategoryId = _category.SuperCategoryId
+            };
 
-                _model = new CategoryFormModel
-                {
-                    Id = _category.Id,
-                    Name = _category.Name,
-                    IsFavorite = _category.IsFavorite,
-                    ParentCategoryId = _category.SuperCategoryId
-                };
-            }
-            else
+            if (data.CategoryAttributes.Count > 0)
             {
-                Snackbar.Add("Kategori bulunamadı", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Kategori yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task LoadProductStatus()
-    {
-        _hasSoldProducts = await ProductManager.HasSoldProductsInCategory(Id);
-        if (!_hasSoldProducts)
-            _hasProducts = await ProductManager.GetProductCountByCategoryId(Id) > 0;
-        else
-            _hasProducts = true; // sold products implies products exist
-    }
-
-    private async Task LoadCategoryAttributes()
-    {
-        try
-        {
-            var result = await AttributeManager.GetCategoryAttributesByCategory(Id);
-            if (result.Success && result.Data is not null)
-            {
-                _model.Attributes = result.Data.Select(a => new AttributeModel
+                _model.Attributes = data.CategoryAttributes.Select(a => new AttributeModel
                 {
                     ExistingAttributeId = a.Id,
                     Name = a.CategoriyAttributeHumanized,
@@ -115,33 +77,11 @@ public partial class CategoryEdit
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Kategori özellikleri yüklenirken hata: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Sayfa yüklenirken hata: {ex.Message}", Severity.Error);
         }
-    }
-
-    private async Task LoadCategories()
-    {
-        try
+        finally
         {
-            _availableCategories = await CategoryManager.GetValidParentCandidatesAsync(Id);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Kategoriler yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task LoadAllAttributes()
-    {
-        try
-        {
-            var result = await AttributeManager.GetCategoryAttributes();
-            if (result.Success && result.Data is not null)
-                _allAttributes = result.Data;
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Özellikler yüklenirken hata: {ex.Message}", Severity.Error);
+            _loading = false;
         }
     }
 
