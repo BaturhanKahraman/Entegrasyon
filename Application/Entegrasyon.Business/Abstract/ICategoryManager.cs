@@ -31,4 +31,5 @@ public interface ICategoryService
     Task<List<Category>> GetAllCategoriesWithoutAttributesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync(int? excludeCategoryId);
+    Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId);
 }
