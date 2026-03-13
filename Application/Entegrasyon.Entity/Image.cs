@@ -46,9 +46,6 @@ public sealed class Image : BaseEntity
     [DataType("varchar")]
     public string? Src { get; set; }
 
-    [Obsolete("Use IsMain instead")]
-    public bool IsCoverImage { get; set; } = false;
-
     // Helper to get resized image path
     // public string GetResizedStorageKey(ImageSize size) => size switch
     // {
