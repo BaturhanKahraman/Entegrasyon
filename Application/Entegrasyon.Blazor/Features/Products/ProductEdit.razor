@@ -1,0 +1,67 @@
+@page "/products/edit/{Id:guid}"
+@using Entegrasyon.Entity.Dtos.Product
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (_pageData is null)
+    {
+        <MudAlert Severity="Severity.Error">Ürün bulunamadı.</MudAlert>
+    }
+    else
+    {
+        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+            <MudText Typo="Typo.h5">@_pageData.Product.Title</MudText>
+            <MudChip T="string" Color="@_syncColor" Size="Size.Small">@_syncLabel</MudChip>
+        </MudStack>
+
+        <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true">
+            <MudTabPanel Text="Genel">
+                <ProductEditGeneralTab
+                    Brands="_pageData.Brands"
+                    Categories="_pageData.LeafCategories"
+                    Title="@_title"
+                    TitleChanged="v => _title = v"
+                    Description="@_description"
+                    DescriptionChanged="v => _description = v"
+                    StockCode="@_stockCode"
+                    StockCodeChanged="v => _stockCode = v"
+                    Season="@_season"
+                    SeasonChanged="v => _season = v"
+                    Year="@_year"
+                    YearChanged="v => _year = v"
+                    BrandId="_brandId"
+                    BrandIdChanged="v => _brandId = v"
+                    CategoryId="_categoryId"
+                    CategoryIdChanged="OnCategoryChanged" />
+            </MudTabPanel>
+            <MudTabPanel Text="Varyantlar">
+                <ProductEditVariantsTab
+                    Variants="_variants"
+                    BranchOffices="_pageData.BranchOffices" />
+            </MudTabPanel>
+            <MudTabPanel Text="Görseller">
+                <ProductEditImagesTab
+                    Images="_images"
+                    NewImages="_newImages"
+                    NewImagesChanged="v => _newImages = v" />
+            </MudTabPanel>
+            <MudTabPanel Text="Özellikler">
+                <ProductEditAttributesTab
+                    CategoryId="_categoryId"
+                    AttributeKeyValues="_attributeKeyValues"
+                    AttributeKeyValuesChanged="v => _attributeKeyValues = v" />
+            </MudTabPanel>
+        </MudTabs>
+
+        <MudStack Row="true" Class="mt-4" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="Save" Disabled="_saving">
+                @(_saving ? "Kaydediliyor..." : "Kaydet")
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" OnClick="Cancel">İptal</MudButton>
+        </MudStack>
+    }
+</MudContainer>
