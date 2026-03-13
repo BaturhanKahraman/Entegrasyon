@@ -216,6 +216,9 @@ Not-found durumunda `ErrorDataResult` döner ("Ürün bulunamadı") — `Success
 **3. Execution** — EF Core change tracking ile (NoTracking default'u aşılır):
 
 ```csharp
+// 0. ApplicationLog — işlem başlangıcı (admin görünür)
+await _applicationLogManager.AddLog("Ürün güncelleme isteği alındı.", LogType.Product, LogAction.Update, dto);
+
 // 1. Tracked load — AsTracking() zorunlu (context globally no-tracking)
 var product = await _dbContext.MainProducts
     .AsTracking()
@@ -274,7 +277,12 @@ foreach (var imageId in dto.DeletedImageIds)
 
 await _dbContext.SaveChangesAsync();
 
-// 9. Event
+// 9. ApplicationLog (admin görünür)
+await _applicationLogManager.AddLog($"'{product.Title}' ürünü güncellendi.", LogType.Product, LogAction.Update);
+if (categoryChanged)
+    await _applicationLogManager.AddLog("Ürünün kategorisi değiştirildi, mevcut özellikler temizlendi.", LogType.Product, LogAction.Update);
+
+// 10. Event
 _productUpdatedChannel.TryPublish(new ProductUpdatedEvent(product.Id, product.Title, categoryChanged));
 ```
 
