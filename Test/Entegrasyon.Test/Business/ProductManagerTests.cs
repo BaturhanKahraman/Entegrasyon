@@ -18,6 +18,7 @@ public class ProductManagerTests : BaseTest
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
     private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
+    private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
 
     public ProductManagerTests()
     {
@@ -41,7 +42,8 @@ public class ProductManagerTests : BaseTest
             _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,
             _mockBarcodeService.Object,
-            _productAddedChannel
+            _productAddedChannel,
+            _productUpdatedChannel
         );
     }
 
