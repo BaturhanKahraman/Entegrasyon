@@ -37,7 +37,7 @@ public class ProductVariantManager : IProductVariantManager
             .Where(x => x.Barcode == barcode)
             .Select(x => new ProductVariantSaleSearchDto(
                 x.Id, x.Product.Title,
-                x.Images.FirstOrDefault(img => img.IsCoverImage).Src ?? x.Images.FirstOrDefault().Src,
+                x.Images.FirstOrDefault(img => img.IsMain).Src ?? x.Images.FirstOrDefault().Src,
                 x.VatRate, x.ListPrice, x.SalePrice, x.CostPrice,
                 x.BranchOfficeStocks.Sum(z => z.CurrentStock),
                 x.Product.Category.Name))
@@ -56,7 +56,7 @@ public class ProductVariantManager : IProductVariantManager
             .OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.UpdatedAt)
             .Select(x => new ProductVariantSaleSearchDto(
                 x.Id, x.Product.Title,
-                x.Images.FirstOrDefault(img => img.IsCoverImage).Src ?? x.Images.FirstOrDefault().Src,
+                x.Images.FirstOrDefault(img => img.IsMain).Src ?? x.Images.FirstOrDefault().Src,
                 x.VatRate, x.ListPrice, x.SalePrice, x.CostPrice,
                 x.BranchOfficeStocks.Sum(z => z.CurrentStock),
                 x.Product.Category.Name))

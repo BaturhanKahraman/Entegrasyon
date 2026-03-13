@@ -54,8 +54,7 @@ public class ImageManager : IImageManager
                     AlternativeText = img.FileName,
                     ThumbnailGenerated = true,
                     MediumGenerated = true,
-                    Src = result.OriginalUrl,
-                    IsCoverImage = img.IsMain
+                    Src = result.OriginalUrl
                 });
 
                 displayOrderByVariant[img.VariantId] = order + 1;
