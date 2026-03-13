@@ -31,24 +31,14 @@ public partial class Products
     private async Task LoadProducts()
     {
         loading = true;
-        try
+        var result = await ProductManager.GetProductsDetailsPageable(
+            new SearchablePageDto(searchString, 0, 200));
+        if (result.Success && result.Data is not null)
         {
-            var result = await ProductManager.GetProductsDetailsPageable(
-                new SearchablePageDto(searchString, 0, 200));
-            if (result.Success && result.Data is not null)
-            {
-                products = result.Data.Items.ToList();
-                filteredProducts = products;
-            }
+            products = result.Data.Items.ToList();
+            filteredProducts = products;
         }
-        catch (Exception ex)
-        {
-            Snackbar?.Add($"Ürünler yüklenirken hata oluştu: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            loading = false;
-        }
+        loading = false;
     }
 
     private async Task OnSearchChanged()
@@ -62,16 +52,19 @@ public partial class Products
         NavigationManager?.NavigateTo("/products/add");
     }
 
-    private Task ViewProduct(ProductsDetailDto product)
+    private void OnRowClick(DataGridRowClickEventArgs<ProductsDetailDto> args)
     {
-        NavigationManager?.NavigateTo($"/products/{product.Id}");
-        return Task.CompletedTask;
+        NavigateToProduct(args.Item.Id);
     }
 
-    private Task EditProduct(ProductsDetailDto product)
+    private void NavigateToProduct(Guid id)
+    {
+        NavigationManager?.NavigateTo($"/products/{id}");
+    }
+
+    private void EditProduct(ProductsDetailDto product)
     {
         NavigationManager?.NavigateTo($"/products/edit/{product.Id}");
-        return Task.CompletedTask;
     }
 
     private async Task DuplicateProduct(ProductsDetailDto product)

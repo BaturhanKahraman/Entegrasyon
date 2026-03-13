@@ -30,22 +30,12 @@ public partial class AttributesPage
     private async Task LoadAttributes()
     {
         _loading = true;
-        try
-        {
-            var result = await AttributeManager.GetCategoryAttributes();
-            if (result.Success && result.Data != null)
-                _attributes = result.Data;
-            else
-                Snackbar.Add(result.Message ?? "Özellikler yüklenemedi", Severity.Warning);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Özellikler yüklenirken hata oluştu: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _loading = false;
-        }
+        var result = await AttributeManager.GetCategoryAttributes();
+        if (result.Success && result.Data != null)
+            _attributes = result.Data;
+        else
+            Snackbar.Add(result.Message ?? "Özellikler yüklenemedi", Severity.Warning);
+        _loading = false;
     }
 
     private void OnAttributeSelected(AppCategoryAttribute attribute)

@@ -13,7 +13,7 @@ public sealed class Image : BaseEntity
 
     // Storage
     [StringLength(500)]
-    public string StorageKey { get; set; }  // "tenants/1/products/42/variants/guid/originals/abc123.jpg"
+    public string? StorageKey { get; set; }  // "tenants/1/products/42/variants/guid/originals/abc123.jpg"
 
     public FileStorageType FileStorageType { get; set; }
 
@@ -23,7 +23,7 @@ public sealed class Image : BaseEntity
     public long FileSizeBytes { get; set; }
 
     [StringLength(50)]
-    public string ContentType { get; set; }  // "image/webp", "image/jpeg"
+    public string? ContentType { get; set; }  // "image/webp", "image/jpeg"
 
     // Display
     public int DisplayOrder { get; set; }  // 0 = main image

@@ -27,23 +27,13 @@ public partial class RoleManagement
     private async Task LoadData()
     {
         _loading = true;
-        try
-        {
-            _roles = await RoleService.GetRolesWithClaimsAsync();
+        _roles = await RoleService.GetRolesWithClaimsAsync();
 
-            var allPermissions = AppPermissions.GetAllPermissions();
-            _allPermissions = allPermissions
-                .Select(p => new PermissionModel(p, FormatPermissionName(p)))
-                .ToList();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Veri yüklenirken hata oluştu: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _loading = false;
-        }
+        var allPermissions = AppPermissions.GetAllPermissions();
+        _allPermissions = allPermissions
+            .Select(p => new PermissionModel(p, FormatPermissionName(p)))
+            .ToList();
+        _loading = false;
     }
 
     private static string FormatPermissionName(string permission)

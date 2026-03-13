@@ -51,22 +51,16 @@ public partial class ProductDialog
         }
     }
 
-    private async Task LoadLookupData()
+    private Task LoadLookupData()
     {
-        try
-        {
-            // TODO: Implement actual data loading
-            // var brandsResult = await BrandManager.GetAllBrandsAsync();
-            // var categoriesResult = await CategoryManager.GetAllCategoriesAsync();
+        // TODO: Implement actual data loading
+        // var brandsResult = await BrandManager.GetAllBrandsAsync();
+        // var categoriesResult = await CategoryManager.GetAllCategoriesAsync();
 
-            // Mock data
-            _brands = new List<BrandDto>();
-            _categories = new List<CategoryDto>();
-        }
-        catch (Exception ex)
-        {
-            Snackbar?.Add($"Veriler yüklenirken hata: {ex.Message}", Severity.Error);
-        }
+        // Mock data
+        _brands = new List<BrandDto>();
+        _categories = new List<CategoryDto>();
+        return Task.CompletedTask;
     }
 
     private void AddVariant()

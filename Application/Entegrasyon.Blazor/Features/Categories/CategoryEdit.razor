@@ -183,23 +183,20 @@ else
                                     </MudChipSet>
                                 </MudItem>
 
-                                @if (attr.AllowCustom)
-                                {
-                                    <MudItem xs="10">
-                                        <MudTextField @bind-Value="attr.NewValueName"
-                                                      Label="Yeni değer ekle"
-                                                      Variant="Variant.Outlined"
-                                                      Dense="true"
-                                                      Immediate="true"
-                                                      OnKeyDown="@(async (e) => { if (e.Key == "Enter") await AddValue(attr); })" />
-                                    </MudItem>
-                                    <MudItem xs="2" Class="d-flex align-center">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Add"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Small"
-                                                       OnClick="@(() => AddValue(attr))" />
-                                    </MudItem>
-                                }
+                                <MudItem xs="10">
+                                    <MudTextField @bind-Value="attr.NewValueName"
+                                                  Label="Yeni değer ekle"
+                                                  Variant="Variant.Outlined"
+                                                  Dense="true"
+                                                  Immediate="true"
+                                                  OnKeyDown="@(async (e) => { if (e.Key == "Enter") await AddValue(attr); })" />
+                                </MudItem>
+                                <MudItem xs="2" Class="d-flex align-center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => AddValue(attr))" />
+                                </MudItem>
                             </MudGrid>
                         </MudPaper>
                     }
@@ -223,7 +220,7 @@ else
                 <MudButton Color="Color.Primary"
                            Variant="Variant.Filled"
                            OnClick="Save"
-                           Disabled="@(!_isValid || _saving)">
+                           Disabled="@_saving">
                     @if (_saving)
                     {
                         <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />

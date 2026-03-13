@@ -59,63 +59,54 @@ public partial class ProductEdit
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        try
+        var result = await ProductManager.GetProductEditPageData(Id);
+        if (!result.Success || result.Data is null)
         {
-            var result = await ProductManager.GetProductEditPageData(Id);
-            if (!result.Success || result.Data is null)
-            {
-                Snackbar.Add(result.Message ?? "Ürün bulunamadı.", Severity.Error);
-                NavigationManager.NavigateTo("/products");
-                return;
-            }
-
-            _pageData = result.Data;
-            var p = _pageData.Product;
-
-            _title = p.Title;
-            _description = p.Description;
-            _stockCode = p.StockCode;
-            _season = p.Season;
-            _year = p.Year;
-            _brandId = p.BrandId;
-            _categoryId = p.CategoryId;
-
-            _variants = p.ProductVariants.Select(pv => new VariantPriceModel
-            {
-                Id = pv.Id,
-                Barcode = pv.Barcode,
-                Label = BuildVariantLabel(pv),
-                ListPrice = pv.ListPrice,
-                SalePrice = pv.SalePrice,
-                CostPrice = pv.CostPrice,
-                ECommercePrice = pv.ECommercePrice,
-                DimensionalWeight = pv.DimensionalWeight,
-                VatRate = pv.VatRate,
-                CurrencyType = pv.CurrencyType,
-                CurrentStocks = pv.BranchOfficeStocks
-            }).ToList();
-
-            _images = p.ProductVariants
-                .SelectMany(pv => pv.UploadedImages.Select(img => new ImageEditState
-                {
-                    Id = img.Id,
-                    Src = img.Src,
-                    IsMain = img.IsMain,
-                    IsDeleted = img.IsDeleted,
-                    VariantId = pv.Id
-                }))
-                .ToList();
-
-            _attributeKeyValues = p.AttributeKeyValues.ToList();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Sayfa yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
+            Snackbar.Add(result.Message ?? "Ürün bulunamadı.", Severity.Error);
             _loading = false;
+            NavigationManager.NavigateTo("/products");
+            return;
         }
+
+        _pageData = result.Data;
+        var p = _pageData.Product;
+
+        _title = p.Title;
+        _description = p.Description;
+        _stockCode = p.StockCode;
+        _season = p.Season;
+        _year = p.Year;
+        _brandId = p.BrandId;
+        _categoryId = p.CategoryId;
+
+        _variants = p.ProductVariants.Select(pv => new VariantPriceModel
+        {
+            Id = pv.Id,
+            Barcode = pv.Barcode,
+            Label = BuildVariantLabel(pv),
+            ListPrice = pv.ListPrice,
+            SalePrice = pv.SalePrice,
+            CostPrice = pv.CostPrice,
+            ECommercePrice = pv.ECommercePrice,
+            DimensionalWeight = pv.DimensionalWeight,
+            VatRate = pv.VatRate,
+            CurrencyType = pv.CurrencyType,
+            CurrentStocks = pv.BranchOfficeStocks
+        }).ToList();
+
+        _images = p.ProductVariants
+            .SelectMany(pv => pv.UploadedImages.Select(img => new ImageEditState
+            {
+                Id = img.Id,
+                Src = img.Src,
+                IsMain = img.IsMain,
+                IsDeleted = img.IsDeleted,
+                VariantId = pv.Id
+            }))
+            .ToList();
+
+        _attributeKeyValues = p.AttributeKeyValues.ToList();
+        _loading = false;
     }
 
     private void OnCategoryChanged(int newCategoryId)

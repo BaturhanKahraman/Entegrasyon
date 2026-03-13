@@ -57,7 +57,7 @@
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-4">
-            <ErrorBoundary @ref="_errorBoundary">
+            <LoggingErrorBoundary @ref="_errorBoundary">
                 <ChildContent>
                     @Body
                 </ChildContent>
@@ -67,7 +67,7 @@
                         <MudText Typo="Typo.body2">Farklı bir sayfaya geçerek devam edebilirsiniz.</MudText>
                     </MudAlert>
                 </ErrorContent>
-            </ErrorBoundary>
+            </LoggingErrorBoundary>
         </MudContainer>
     </MudMainContent>
 </MudLayout>

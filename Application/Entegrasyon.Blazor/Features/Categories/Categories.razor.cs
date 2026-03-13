@@ -28,18 +28,8 @@ public partial class Categories
     private async Task LoadCategories()
     {
         _loading = true;
-        try
-        {
-            _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Kategoriler yüklenirken hata oluştu: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _loading = false;
-        }
+        _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
+        _loading = false;
     }
 
     private void OnCategorySelected(Category item)

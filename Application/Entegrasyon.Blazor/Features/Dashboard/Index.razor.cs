@@ -31,59 +31,50 @@ public partial class Index : IAsyncDisposable
     private async Task LoadDashboardData()
     {
         loading = true;
-        try
+
+        // TODO: Implement actual data loading
+        // Load stats from managers
+        // var productsCount = await ProductManager.GetProductsCount();
+        // var todaySales = await SaleManager.GetTodaySalesAsync();
+
+        // Mock data for now
+        stats = new DashboardStats
         {
-            // TODO: Implement actual data loading
-            // Load stats from managers
-            // var productsCount = await ProductManager.GetProductsCount();
-            // var todaySales = await SaleManager.GetTodaySalesAsync();
+            TotalProducts = 1250,
+            TodaySales = 45,
+            TodayRevenue = 12450.50m,
+            PendingOrders = 8,
+            LowStockProducts = 12
+        };
 
-            // Mock data for now
-            stats = new DashboardStats
-            {
-                TotalProducts = 1250,
-                TodaySales = 45,
-                TodayRevenue = 12450.50m,
-                PendingOrders = 8,
-                LowStockProducts = 12
-            };
+        // Sales chart data (last 7 days)
+        xAxisLabels = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+        salesChartData =
+        [
+            new ChartSeries { Name = "Satışlar", Data = [15000, 18000, 22000, 19000, 25000, 28000, 24000] }
+        ];
 
-            // Sales chart data (last 7 days)
-            xAxisLabels = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-            salesChartData =
-            [
-                new ChartSeries { Name = "Satışlar", Data = [15000, 18000, 22000, 19000, 25000, 28000, 24000] }
-            ];
+        // Marketplace statuses
+        marketplaceStatuses =
+        [
+            new("Trendyol", Icons.Material.Filled.Store, Color.Primary, "Aktif", Color.Success),
+            new("Hepsiburada", Icons.Material.Filled.ShoppingCart, Color.Secondary, "Aktif", Color.Success),
+            new("N11", Icons.Material.Filled.Storefront, Color.Info, "Senkronize Ediliyor", Color.Warning),
+            new("Amazon", Icons.Material.Filled.LocalMall, Color.Tertiary, "Beklemede", Color.Default)
+        ];
 
-            // Marketplace statuses
-            marketplaceStatuses =
-            [
-                new("Trendyol", Icons.Material.Filled.Store, Color.Primary, "Aktif", Color.Success),
-                new("Hepsiburada", Icons.Material.Filled.ShoppingCart, Color.Secondary, "Aktif", Color.Success),
-                new("N11", Icons.Material.Filled.Storefront, Color.Info, "Senkronize Ediliyor", Color.Warning),
-                new("Amazon", Icons.Material.Filled.LocalMall, Color.Tertiary, "Beklemede", Color.Default)
-            ];
+        // Recent activities
+        recentActivities =
+        [
+            new("Yeni ürün eklendi: Lacoste Polo T-Shirt", "2 dk önce", Color.Success),
+            new("Trendyol siparişi alındı: #TR-12345", "15 dk önce", Color.Info),
+            new("Stok güncellendi: 125 ürün", "1 saat önce", Color.Primary),
+            new("Yeni kullanıcı kaydı: Ahmet Y.", "2 saat önce", Color.Secondary),
+            new("Pazaryeri senkronizasyonu tamamlandı", "3 saat önce", Color.Success)
+        ];
 
-            // Recent activities
-            recentActivities =
-            [
-                new("Yeni ürün eklendi: Lacoste Polo T-Shirt", "2 dk önce", Color.Success),
-                new("Trendyol siparişi alındı: #TR-12345", "15 dk önce", Color.Info),
-                new("Stok güncellendi: 125 ürün", "1 saat önce", Color.Primary),
-                new("Yeni kullanıcı kaydı: Ahmet Y.", "2 saat önce", Color.Secondary),
-                new("Pazaryeri senkronizasyonu tamamlandı", "3 saat önce", Color.Success)
-            ];
-
-            await Task.Delay(500); // Simulate loading
-        }
-        catch (Exception ex)
-        {
-            Snackbar?.Add($"Dashboard yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            loading = false;
-        }
+        await Task.Delay(500); // Simulate loading
+        loading = false;
     }
 
     private void SyncMarketplaces()

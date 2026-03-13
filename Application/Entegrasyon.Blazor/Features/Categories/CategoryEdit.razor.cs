@@ -34,55 +34,46 @@ public partial class CategoryEdit
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        try
+        var result = await CategoryManager.GetCategoryEditPageData(Id);
+        if (!result.Success || result.Data is null)
         {
-            var result = await CategoryManager.GetCategoryEditPageData(Id);
-            if (!result.Success || result.Data is null)
-            {
-                Snackbar.Add(result.Message ?? "Kategori bulunamadı", Severity.Error);
-                return;
-            }
-
-            var data = result.Data;
-            _category = data.Category;
-            _isLeafCategory = data.IsLeaf;
-            _availableCategories = data.ValidParentCandidates;
-            _allAttributes = data.AllAttributes;
-            _hasSoldProducts = data.HasSoldProducts;
-            _hasProducts = data.HasProducts;
-
-            _model = new CategoryFormModel
-            {
-                Id = _category.Id,
-                Name = _category.Name,
-                IsFavorite = _category.IsFavorite,
-                ParentCategoryId = _category.SuperCategoryId
-            };
-
-            if (data.CategoryAttributes.Count > 0)
-            {
-                _model.Attributes = data.CategoryAttributes.Select(a => new AttributeModel
-                {
-                    ExistingAttributeId = a.Id,
-                    Name = a.CategoriyAttributeHumanized,
-                    IsRequired = a.IsRequired,
-                    IsVarianter = a.IsVarianter,
-                    IsSlicer = a.IsSlicer,
-                    AllowCustom = a.AllowCustom,
-                    IsExisting = true,
-                    Values = a.CategoryAttributeValues?.ToList() ?? [],
-                    SelectedAttribute = _allAttributes.FirstOrDefault(x => x.Id == a.Id)
-                }).ToList();
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Sayfa yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
+            Snackbar.Add(result.Message ?? "Kategori bulunamadı", Severity.Error);
             _loading = false;
+            return;
         }
+
+        var data = result.Data;
+        _category = data.Category;
+        _isLeafCategory = data.IsLeaf;
+        _availableCategories = data.ValidParentCandidates;
+        _allAttributes = data.AllAttributes;
+        _hasSoldProducts = data.HasSoldProducts;
+        _hasProducts = data.HasProducts;
+
+        _model = new CategoryFormModel
+        {
+            Id = _category.Id,
+            Name = _category.Name,
+            IsFavorite = _category.IsFavorite,
+            ParentCategoryId = _category.SuperCategoryId
+        };
+
+        if (data.CategoryAttributes.Count > 0)
+        {
+            _model.Attributes = data.CategoryAttributes.Select(a => new AttributeModel
+            {
+                ExistingAttributeId = a.Id,
+                Name = a.CategoriyAttributeHumanized,
+                IsRequired = a.IsRequired,
+                IsVarianter = a.IsVarianter,
+                IsSlicer = a.IsSlicer,
+                AllowCustom = a.AllowCustom,
+                IsExisting = true,
+                Values = a.CategoryAttributeValues?.ToList() ?? [],
+                SelectedAttribute = _allAttributes.FirstOrDefault(x => x.Id == a.Id)
+            }).ToList();
+        }
+        _loading = false;
     }
 
     private void AddNewAttribute()
@@ -163,9 +154,9 @@ public partial class CategoryEdit
                         a.CategoryAttributeHumanized.Contains(value, StringComparison.OrdinalIgnoreCase)));
     }
 
-    private Task AddValue(AttributeModel attr)
+    private async Task AddValue(AttributeModel attr)
     {
-        if (string.IsNullOrWhiteSpace(attr.NewValueName)) return Task.CompletedTask;
+        if (string.IsNullOrWhiteSpace(attr.NewValueName)) return;
 
         var newValue = new CategoryAttributeValue
         {
@@ -176,7 +167,7 @@ public partial class CategoryEdit
 
         attr.Values.Add(newValue);
         attr.NewValueName = string.Empty;
-        return Task.CompletedTask;
+        await InvokeAsync(StateHasChanged);
     }
 
     private void RemoveValue(AttributeModel attr, CategoryAttributeValue value)

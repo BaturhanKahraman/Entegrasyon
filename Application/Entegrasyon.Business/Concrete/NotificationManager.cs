@@ -50,24 +50,24 @@ public sealed class NotificationManager(
         context.Notifications.Add(notification);
         await context.SaveChangesAsync();
 
-        // Tüm sender'ları tetikle (email, signalr stub'ları — filtre yok)
+        // Tüm sender'ları tetikle (email, signalr — implemente edildiğinde)
+        var trackedUserIds = trackedUsers.Select(u => u.Id).ToList();
         if (trackedUsers.Count > 0)
         {
-            var trackedUserIds = trackedUsers.Select(u => u.Id).ToList();
             await Task.WhenAll(notificationSenders.Select(s =>
                 s.SendNotification(notification, trackedUserIds)));
         }
 
         // EventChannel'a yaz → NotificationEventPublisher → INotificationDeliveryService
+        // Sadece DB'de var olan kullanıcılara event gönder
         var evt = new NotificationEvent(
-            notification.Id, header, content, userIdList, severity, category, actionUrl);
+            notification.Id, header, content, trackedUserIds, severity, category, actionUrl);
         await eventChannel.Writer.WriteAsync(evt);
     }
 
     public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false)
     {
         var query = context.Notifications
-            .Include(n => n.Users)
             .Where(n => n.Users.Any(u => u.Id == userId));
 
         if (onlyUnread)

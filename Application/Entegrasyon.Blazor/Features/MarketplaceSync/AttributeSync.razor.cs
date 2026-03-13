@@ -25,46 +25,37 @@ public partial class AttributeSync
 
     private async Task LoadAttributes()
     {
-        try
+        _isLoading = true;
+
+        var attrsResult = await AttributeManager.GetCategoryAttributes();
+        if (!attrsResult.Success || attrsResult.Data is null)
         {
-            _isLoading = true;
-
-            var attrsResult = await AttributeManager.GetCategoryAttributes();
-            if (!attrsResult.Success || attrsResult.Data is null)
-            {
-                Snackbar.Add("Özellikler yüklenemedi.", Severity.Error);
-                return;
-            }
-
-            var matchDict = await AttributeManager.GetAttributeMarketPlaceMatchesAsync();
-
-            _attributes = attrsResult.Data.Select(attr =>
-            {
-                matchDict.TryGetValue(attr.Id, out var match);
-                return new AttributeSyncRow
-                {
-                    Id = attr.Id,
-                    Humanized = attr.CategoryAttributeHumanized,
-                    Key = attr.CategoryAttributeKey,
-                    ValueCount = attr.CategoryAttributeValues?.Count ?? 0,
-                    HasMatch = match is not null,
-                    MarketplaceName = match?.MarketplaceName,
-                    MarketplaceAttributeId = match?.MarketplaceAttributeId
-                };
-            })
-            .OrderBy(a => a.Humanized)
-            .ToList();
-
-            _matchedCount = _attributes.Count(a => a.HasMatch);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Özellikler yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
+            Snackbar.Add("Özellikler yüklenemedi.", Severity.Error);
             _isLoading = false;
+            return;
         }
+
+        var matchDict = await AttributeManager.GetAttributeMarketPlaceMatchesAsync();
+
+        _attributes = attrsResult.Data.Select(attr =>
+        {
+            matchDict.TryGetValue(attr.Id, out var match);
+            return new AttributeSyncRow
+            {
+                Id = attr.Id,
+                Humanized = attr.CategoryAttributeHumanized,
+                Key = attr.CategoryAttributeKey,
+                ValueCount = attr.CategoryAttributeValues?.Count ?? 0,
+                HasMatch = match is not null,
+                MarketplaceName = match?.MarketplaceName,
+                MarketplaceAttributeId = match?.MarketplaceAttributeId
+            };
+        })
+        .OrderBy(a => a.Humanized)
+        .ToList();
+
+        _matchedCount = _attributes.Count(a => a.HasMatch);
+        _isLoading = false;
     }
 
     public class AttributeSyncRow

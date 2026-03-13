@@ -26,37 +26,20 @@ public partial class BrandMappingPage : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        IsLoading = true;
         await LoadMappings();
         await LoadSummary();
+        IsLoading = false;
     }
 
     private async Task LoadMappings()
     {
-        try
-        {
-            IsLoading = true;
-            BrandMappings = await BrandMatchService.GetAllBrandMappingsAsync(TrendyolMarketPlaceId);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Mapping'ler yüklenirken hata oluştu: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+        BrandMappings = await BrandMatchService.GetAllBrandMappingsAsync(TrendyolMarketPlaceId);
     }
 
     private async Task LoadSummary()
     {
-        try
-        {
-            MappingSummary = await BrandMatchService.GetBrandMappingsSummaryAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Özet bilgi yüklenirken hata oluştu: {ex.Message}", Severity.Error);
-        }
+        MappingSummary = await BrandMatchService.GetBrandMappingsSummaryAsync();
     }
 
     public async Task OpenMappingDialog()
@@ -123,7 +106,9 @@ public partial class BrandMappingPage : ComponentBase
 
     private async Task RefreshData()
     {
+        IsLoading = true;
         await LoadMappings();
         await LoadSummary();
+        IsLoading = false;
     }
 }

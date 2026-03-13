@@ -56,7 +56,10 @@ public partial class CategoryDialog
                     IsVarianter = a.IsVarianter,
                     IsSlicer = a.IsSlicer,
                     AllowCustom = a.CategoryAttribute?.AllowCustom ?? true,
-                    IsExisting = true
+                    IsExisting = true,
+                    Values = a.CategoryAttribute?.CategoryAttributeValues?
+                        .Select(v => new ValueModel { Id = v.Id, Name = v.Name })
+                        .ToList() ?? []
                 }).ToList() ?? []
             };
         }
@@ -64,29 +67,15 @@ public partial class CategoryDialog
 
     private async Task LoadCategories()
     {
-        try
-        {
-            _availableCategories = await CategoryManager.GetValidParentCandidatesAsync(
-                IsEditMode ? Category?.Id : null);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Kategoriler yüklenirken hata: {ex.Message}", Severity.Error);
-        }
+        _availableCategories = await CategoryManager.GetValidParentCandidatesAsync(
+            IsEditMode ? Category?.Id : null);
     }
 
     private async Task LoadAllAttributes()
     {
-        try
-        {
-            var result = await AttributeManager.GetCategoryAttributes();
-            if (result.Success && result.Data is not null)
-                _allAttributes = result.Data;
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Özellikler yüklenirken hata: {ex.Message}", Severity.Error);
-        }
+        var result = await AttributeManager.GetCategoryAttributes();
+        if (result.Success && result.Data is not null)
+            _allAttributes = result.Data;
     }
 
     private void AddNewAttribute()
@@ -111,6 +100,25 @@ public partial class CategoryDialog
         model.ExistingAttributeId = attr.Id;
         model.Name = attr.CategoryAttributeHumanized;
         model.AllowCustom = attr.AllowCustom;
+        model.Values = attr.CategoryAttributeValues?
+            .Select(v => new ValueModel { Id = v.Id, Name = v.Name })
+            .ToList() ?? [];
+    }
+
+    private async Task AddValue(AttributeModel attr)
+    {
+        if (string.IsNullOrWhiteSpace(attr.NewValueName)) return;
+        if (attr.Values.Any(v => v.Name.Equals(attr.NewValueName, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        attr.Values.Add(new ValueModel { Name = attr.NewValueName.Trim() });
+        attr.NewValueName = string.Empty;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void RemoveValue(AttributeModel attr, ValueModel value)
+    {
+        attr.Values.Remove(value);
     }
 
     private async Task OnVarianterChanged(bool value, AttributeModel model)
@@ -268,7 +276,12 @@ public partial class CategoryDialog
             : a.Name.ToLower().Replace(" ", "_"),
         isSlicer: a.IsSlicer,
         categoryAttributeHumanized: a.Name,
-        categoryAttributeValues: a.SelectedAttribute?.CategoryAttributeValues?.ToList() ?? []
+        categoryAttributeValues: a.Values.Select(v => new CategoryAttributeValue
+        {
+            Id = v.Id,
+            Name = v.Name,
+            CategoryAttributeId = a.IsExisting ? a.ExistingAttributeId : 0
+        }).ToList()
     );
 
     private void Cancel() => MudDialog.Close(DialogResult.Cancel());
@@ -292,5 +305,13 @@ public partial class CategoryDialog
         public bool IsVarianter { get; set; }
         public bool IsSlicer { get; set; }
         public bool AllowCustom { get; set; } = true;
+        public List<ValueModel> Values { get; set; } = [];
+        public string NewValueName { get; set; } = string.Empty;
+    }
+
+    private class ValueModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

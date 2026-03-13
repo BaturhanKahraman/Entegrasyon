@@ -38,19 +38,9 @@ public partial class CategorySync
 
     private async Task LoadCategories()
     {
-        try
-        {
-            _isLoading = true;
-            _categories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Kategoriler yüklenirken hata: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isLoading = false;
-        }
+        _isLoading = true;
+        _categories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
+        _isLoading = false;
     }
 
     private string GetParentName(Category category)
