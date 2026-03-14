@@ -17,7 +17,7 @@
             <MudChip T="string" Color="@_syncColor" Size="Size.Small">@_syncLabel</MudChip>
         </MudStack>
 
-        <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true">
+        <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" @bind-ActivePanelIndex="_activeTabIndex">
             <MudTabPanel Text="Genel">
                 <ProductEditGeneralTab
                     Brands="_pageData.Brands"

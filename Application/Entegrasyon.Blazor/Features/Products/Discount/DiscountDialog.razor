@@ -1,0 +1,101 @@
+@using Entegrasyon.Entity.Dtos.Product.Discount
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">İndirim Uygula — @Preview.ProductTitle</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudNumericField @bind-Value="_discountPercentage" Label="İndirim Yüzdesi (%)"
+                         Min="0.01m" Max="100m" Step="1m"
+                         Immediate="true" Variant="Variant.Outlined"
+                         Adornment="Adornment.End" AdornmentText="%"
+                         Class="mb-4" />
+
+        <MudText Typo="Typo.subtitle1" Class="mb-2">Varyant Fiyatları</MudText>
+        <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="mb-4">
+            <thead>
+                <tr>
+                    <th>Varyant</th>
+                    <th>Maliyet</th>
+                    <th>Liste</th>
+                    <th>Satış</th>
+                    <th>Kar Marjı</th>
+                    <th style="color: var(--mud-palette-primary)">→ Yeni Fiyat</th>
+                    <th style="color: var(--mud-palette-primary)">→ Yeni Kar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var v in Preview.Variants)
+                {
+                    var newPrice = CalculateNewPrice(v.SalePrice);
+                    var newProfit = newPrice - v.CostPrice;
+                    var isBelowCost = newPrice < v.CostPrice;
+
+                    <tr style="@(isBelowCost ? "background-color: rgba(244,67,54,0.1)" : "")">
+                        <td>@v.Label</td>
+                        <td>@v.CostPrice.ToString("N2")</td>
+                        <td>@v.ListPrice.ToString("N2")</td>
+                        <td>@v.SalePrice.ToString("N2")</td>
+                        <td>@v.ProfitMargin.ToString("N2") (@v.ProfitMarginPercent.ToString("N1")%)</td>
+                        <td><strong>@newPrice.ToString("N2")</strong></td>
+                        <td style="@(isBelowCost ? "color: red; font-weight: bold" : "")">
+                            @newProfit.ToString("N2")
+                            @if (isBelowCost)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Error" />
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+
+        @if (Preview.MarketplacePrices.Count > 0)
+        {
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Pazaryeri Fiyatları (Mevcut)</MudText>
+            <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="mb-4">
+                <thead>
+                    <tr>
+                        <th>Pazaryeri</th>
+                        <th>Barkod</th>
+                        <th>Liste Fiyatı</th>
+                        <th>Satış Fiyatı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var mp in Preview.MarketplacePrices)
+                    {
+                        <tr>
+                            <td>@mp.MarketPlaceName</td>
+                            <td>@mp.Barcode</td>
+                            <td>@mp.MarketplaceListPrice.ToString("N2")</td>
+                            <td>@mp.MarketplaceSalePrice.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        @if (_availableMarketplaces.Count > 0)
+        {
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Senkronize Edilecek Pazaryerleri</MudText>
+            @foreach (var mp in _availableMarketplaces)
+            {
+                <MudCheckBox T="bool" Value="@mp.Selected"
+                             ValueChanged="@(val => mp.Selected = val)"
+                             Label="@mp.Name" />
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">İptal</MudButton>
+        <MudButton OnClick="Apply" Variant="Variant.Filled" Color="Color.Primary"
+                   Disabled="@(_applying || _discountPercentage <= 0)">
+            @if (_applying)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            İndirimi Uygula
+        </MudButton>
+    </DialogActions>
+</MudDialog>

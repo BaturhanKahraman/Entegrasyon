@@ -1,5 +1,8 @@
 @page "/products/{Id:guid}"
+@using Entegrasyon.Entity.Dtos.Product
 @using Entegrasyon.Entity.Dtos.Product.ProductVariant
+@using Entegrasyon.Blazor.Features.Printing
+@using Entegrasyon.Blazor.Features.Products.Discount
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     @if (_loading)
@@ -12,17 +15,43 @@
     }
     else
     {
-        <MudButton OnClick="GoBack" StartIcon="@Icons.Material.Filled.ArrowBack"
-                   Variant="Variant.Text" Color="Color.Default" Class="mb-2">
-            Ürünlere geri dön
-        </MudButton>
-
         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
             <MudText Typo="Typo.h5">@_product.Title</MudText>
             <MudChip T="string" Size="Size.Small" Color="Color.Default">@_product.StockCode</MudChip>
-            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@_product.BrandName</MudChip>
-            <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@_product.CategoryName</MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClick="GoToBrand">@_product.BrandName</MudChip>
+            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClick="GoToCategory">@_product.CategoryName</MudChip>
+
+            @if (_syncStatus is not null && _syncStatus.State != MarketplaceSyncState.NeverSynced)
+            {
+                <MudChip T="string" Size="Size.Small" Color="@SyncChipInfo.Color"
+                         OnClick="@(CanSync ? SyncToMarketplace : null)"
+                         Variant="@(CanSync ? Variant.Filled : Variant.Outlined)">
+                    @SyncChipInfo.Label
+                </MudChip>
+            }
+
+            <MudSpacer />
+
+            <MudButton OnClick="GoBack" StartIcon="@Icons.Material.Filled.ArrowBack"
+                       Variant="Variant.Outlined" Color="Color.Default">
+                Geri
+            </MudButton>
+            <MudMenu Label="İşlemler" Variant="Variant.Filled" Color="Color.Primary"
+                     EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                <MudMenuItem OnClick="GoToEditGeneral" Icon="@Icons.Material.Filled.Edit">Temel Bilgi Düzenle</MudMenuItem>
+                <MudMenuItem OnClick="GoToEditStock" Icon="@Icons.Material.Filled.Inventory">Stok Düzenle</MudMenuItem>
+                <MudMenuItem OnClick="GoToEditCategory" Icon="@Icons.Material.Filled.Category">Kategori Düzenle</MudMenuItem>
+                <MudMenuItem OnClick="PrintBarcode" Icon="@Icons.Material.Filled.Print">Barkod Yazdır</MudMenuItem>
+                <MudMenuItem OnClick="OpenDiscountDialog" Icon="@Icons.Material.Filled.Discount">İndirim Uygula</MudMenuItem>
+                <MudDivider />
+                <MudMenuItem OnClick="DeleteProduct" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Sil</MudMenuItem>
+            </MudMenu>
         </MudStack>
+
+        <SyncWarningBanner ProductId="Id"
+                           OutOfSyncMarketplaces="_outOfSyncMarketplaces"
+                           ProductUpdatedAt="_product.UpdatedAt"
+                           OnSyncRequested="SyncAllOutOfSync" />
 
         <MudGrid>
             <MudItem xs="12">
@@ -167,12 +196,5 @@
             </MudItem>
         </MudGrid>
 
-        <MudStack Row="true" Class="mt-4" Spacing="2">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       OnClick="GoToEdit" StartIcon="@Icons.Material.Filled.Edit">
-                Düzenle
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" OnClick="GoBack">Geri</MudButton>
-        </MudStack>
     }
 </MudContainer>

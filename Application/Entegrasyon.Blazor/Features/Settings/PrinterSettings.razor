@@ -1,0 +1,203 @@
+@page "/settings/printing"
+@using Entegrasyon.ApplicationBootstrap.Security
+@using Entegrasyon.Blazor.Features.Printing
+@using Entegrasyon.Blazor.Features.Settings.LabelDesigner
+@using Entegrasyon.PrintAgent.Contracts
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
+
+<PageTitle>Yazıcı & Barkod Ayarları</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Yazıcı & Barkod Ayarları</MudText>
+
+<MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+    <MudTabPanel Text="Yazıcılar" Icon="@Icons.Material.Filled.Print">
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else
+        {
+            <MudGrid>
+                @* Agent Durumu *@
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Print" Color="Color.Primary" />
+                                    <MudText Typo="Typo.h6">Yazıcı Servisi (Print Agent)</MudText>
+                                </MudStack>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Barkod ve fiş yazıcılarına doğrudan yazdırmak için bilgisayarınızda Print Agent çalışmalıdır
+                                </MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@(_agentOnline ? Color.Success : Color.Default)"
+                                         Variant="@(_agentOnline ? Variant.Filled : Variant.Outlined)">
+                                    @(_agentOnline ? "Bağlı" : "Bağlı Değil")
+                                </MudChip>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+
+                        @if (_agentOnline)
+                        {
+                            @* Agent bağlı — Yazıcı listesi + Test *@
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle2" Class="mb-2">Bulunan Yazıcılar</MudText>
+                                @if (_printers.Count == 0)
+                                {
+                                    <MudAlert Severity="Severity.Warning" Dense="true">
+                                        Henüz yazıcı tanımlı değil. Agent konfigürasyon dosyasına yazıcı ekleyin.
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Yazıcı Adı</th>
+                                                <th>Bağlantı</th>
+                                                <th>IP Adresi</th>
+                                                <th>Varsayılan</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var printer in _printers)
+                                            {
+                                                <tr>
+                                                    <td>@printer.Name</td>
+                                                    <td>
+                                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                                                                 Color="@(printer.ConnectionType == "Network" ? Color.Info : Color.Secondary)">
+                                                            @printer.ConnectionType
+                                                        </MudChip>
+                                                    </td>
+                                                    <td>@(printer.IpAddress ?? "—")</td>
+                                                    <td>
+                                                        @if (printer.IsDefault)
+                                                        {
+                                                            <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small" />
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <MudButton Size="Size.Small" Variant="Variant.Text"
+                                                                   StartIcon="@Icons.Material.Filled.Print"
+                                                                   OnClick="@(() => TestPrint(printer.Name))">
+                                                            Test
+                                                        </MudButton>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </MudSimpleTable>
+                                }
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Refresh"
+                                           OnClick="RefreshStatus">
+                                    Yenile
+                                </MudButton>
+                            </MudCardActions>
+                        }
+                        else
+                        {
+                            @* Agent bağlı değil — Kurulum Sihirbazı *@
+                            <MudCardContent>
+                                <MudStepper @bind-ActiveIndex="_wizardStep" Linear="false"
+                                            Color="Color.Primary" Variant="Variant.Filled">
+                                    <MudStep Title="İndir">
+                                        <MudStack Spacing="3" Class="pa-4">
+                                            <MudText Typo="Typo.body1">
+                                                Print Agent, bilgisayarınızda çalışan küçük bir servistir.
+                                                Barkod ve fiş yazıcılarınıza doğrudan yazdırma imkanı sağlar.
+                                            </MudText>
+                                            <MudAlert Severity="Severity.Info" Dense="true">
+                                                Agent olmadan da yazdırabilirsiniz — tarayıcıdan yazdırma veya ZPL dosyası indirme seçenekleri her zaman mevcuttur.
+                                            </MudAlert>
+                                            <MudStack Row="true" Spacing="2">
+                                                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                                           StartIcon="@Icons.Material.Filled.Download"
+                                                           Href="/files/print-agent/EntegrasyonPrintAgent-win-x64.zip"
+                                                           Target="_blank">
+                                                    Windows (x64)
+                                                </MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                                           StartIcon="@Icons.Material.Filled.Download"
+                                                           Href="/files/print-agent/EntegrasyonPrintAgent-linux-x64.zip"
+                                                           Target="_blank">
+                                                    Linux (x64)
+                                                </MudButton>
+                                            </MudStack>
+                                        </MudStack>
+                                    </MudStep>
+
+                                    <MudStep Title="Çalıştır">
+                                        <MudStack Spacing="3" Class="pa-4">
+                                            <MudText Typo="Typo.body1">
+                                                İndirdiğiniz dosyayı açın ve <code>EntegrasyonPrintAgent</code> uygulamasını çalıştırın.
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                                İlk çalıştırmada otomatik bir API anahtarı üretilir ve konsolda gösterilir. Bu anahtarı bir sonraki adımda kullanacaksınız.
+                                            </MudText>
+                                            <MudAlert Severity="Severity.Warning" Dense="true">
+                                                Windows Güvenlik Duvarı veya antivirüs uyarısı çıkarsa "İzin Ver" seçeneğini tıklayın.
+                                                Agent yalnızca <code>localhost</code> üzerinde çalışır ve dışarıya açık değildir.
+                                            </MudAlert>
+                                        </MudStack>
+                                    </MudStep>
+
+                                    <MudStep Title="Bağlan">
+                                        <MudStack Spacing="3" Class="pa-4">
+                                            <MudTextField @bind-Value="_agentUrl" Label="Agent Adresi"
+                                                          Variant="Variant.Outlined"
+                                                          HelperText="Varsayılan: https://localhost:19100" />
+
+                                            <MudTextField @bind-Value="_agentApiKey" Label="API Anahtarı"
+                                                          Variant="Variant.Outlined"
+                                                          HelperText="Agent ilk çalıştığında konsolda gösterilir" />
+
+                                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                                       StartIcon="@Icons.Material.Filled.Cable"
+                                                       OnClick="TestConnection" Disabled="@_testing">
+                                                @if (_testing)
+                                                {
+                                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                                }
+                                                Bağlantıyı Test Et
+                                            </MudButton>
+
+                                            @if (_connectionResult is not null)
+                                            {
+                                                <MudAlert Severity="@(_connectionResult.Value ? Severity.Success : Severity.Error)" Dense="true">
+                                                    @(_connectionResult.Value ? "Bağlantı başarılı! Agent çalışıyor." : "Bağlantı kurulamadı. Agent'ın çalıştığından ve API anahtarının doğru olduğundan emin olun.")
+                                                </MudAlert>
+                                            }
+                                        </MudStack>
+                                    </MudStep>
+                                </MudStepper>
+                            </MudCardContent>
+                        }
+                    </MudCard>
+                </MudItem>
+
+                @* Genel Bilgi *@
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        <MudText Typo="Typo.body2">
+                            <strong>Agent olmadan yazdırma:</strong> "Barkod Yazdır" butonuna tıkladığınızda Agent bağlı değilse,
+                            ZPL dosyasını indirebilir veya tarayıcının yazdırma dialog'unu kullanabilirsiniz.
+                            ZPL dosyasını Zebra yazıcınıza doğrudan gönderebilirsiniz.
+                        </MudText>
+                    </MudAlert>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudTabPanel>
+
+    <MudTabPanel Text="Etiket Şablonları" Icon="@Icons.Material.Filled.DesignServices">
+        <LabelTemplateTab />
+    </MudTabPanel>
+</MudTabs>
