@@ -73,7 +73,14 @@
         </MudTabPanel>
 
         <!-- Tab 3: Import -->
-        <MudTabPanel Text="Trendyol Marka'larını İçe Aktar" Icon="@Icons.Material.Filled.Download">
+        <MudTabPanel Icon="@Icons.Material.Filled.Download">
+            <TabContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MarketplaceLogo Name="Trendyol" Size="Size.Small" />
+                    <MudText>Trendyol Marka'larını İçe Aktar</MudText>
+                </MudStack>
+            </TabContent>
+            <ChildContent>
             <MudPaper Class="pa-4">
                 <MudAlert Severity="Severity.Warning" Class="mb-4">
                     <MudIcon Icon="@Icons.Material.Filled.Info" />
@@ -84,6 +91,7 @@
                     Trendyol Marka'larını İndir
                 </MudButton>
             </MudPaper>
+            </ChildContent>
         </MudTabPanel>
 
     </MudTabs>

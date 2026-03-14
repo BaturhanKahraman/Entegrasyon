@@ -14,6 +14,9 @@ public enum LogType
     Brand,
     Customer,
     DiscountVoucher,
+    Marketplace,
+    StockSync,
+    Invoice,
 
     Error = 999
 }

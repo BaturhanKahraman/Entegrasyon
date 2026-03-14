@@ -12,6 +12,7 @@ public class OrderEntityConfiguration : IEntityTypeConfiguration<Order>
         builder.OwnsOne(x => x.ShippingAddress);
         builder.OwnsOne(x => x.BillingAddress);
         builder.HasQueryFilter(x => !x.IsDeleted);
-
+        builder.Property(x => x.TotalQuantity).HasDefaultValue(0);
+        builder.Property(x => x.TotalPrice).HasDefaultValue(0m);
     }
 }

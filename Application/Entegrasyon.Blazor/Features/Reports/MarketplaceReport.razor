@@ -9,7 +9,12 @@
     <MudGrid>
         <MudItem xs="12" sm="4">
             <MudSelect T="string" Label="Pazaryeri" Variant="Variant.Outlined" Disabled="true">
-                <MudSelectItem Value="@("trendyol")">Trendyol</MudSelectItem>
+                <MudSelectItem Value="@("trendyol")">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MarketplaceLogo Name="Trendyol" Size="Size.Small" />
+                        <MudText>Trendyol</MudText>
+                    </MudStack>
+                </MudSelectItem>
             </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="4">

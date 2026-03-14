@@ -59,7 +59,10 @@
                         <CellTemplate>
                             @if (context.Item.MarketplaceName is not null)
                             {
-                                <MudText Typo="Typo.body2">@context.Item.MarketplaceName (ID: @context.Item.MarketplaceAttributeId)</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MarketplaceLogo Name="@context.Item.MarketplaceName" Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">@context.Item.MarketplaceName (ID: @context.Item.MarketplaceAttributeId)</MudText>
+                                </MudStack>
                             }
                             else
                             {

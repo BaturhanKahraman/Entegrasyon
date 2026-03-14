@@ -85,6 +85,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<MarketPlace> MarketPlaces { get; set; }
     public virtual DbSet<Notification> Notifications { get; set; }
     public virtual DbSet<ApplicationLog> Logs { get; set; }
+    public virtual DbSet<ProductActivityLog> ProductActivityLogs { get; set; }
     public virtual DbSet<Customer> Customers { get; set; }
     public virtual DbSet<RetailCustomer> RetailCustomers { get; set; }
     public virtual DbSet<CorporateCustomer> CorporateCustomers { get; set; }
