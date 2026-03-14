@@ -13,6 +13,7 @@ using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.Notifications;
+using Entegrasyon.Entity.Labels;
 using Entegrasyon.Entity.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -99,6 +100,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
     public virtual DbSet<AttributeKeyValue> AttributeKeyValues { get; set; }
     public virtual DbSet<StockMovement> StockMovements { get; set; }
+    public virtual DbSet<LabelTemplate> LabelTemplates { get; set; }
     public virtual DbSet<CategoryMarketplace> CategoryMarketplaces { get; set; }
     public virtual DbSet<MarketPlaceWarehouse> MarketPlaceWarehouses { get; set; }
     public virtual DbSet<ApplicationUser> Users { get; set; }

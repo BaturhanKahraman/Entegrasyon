@@ -216,7 +216,7 @@ public class ProductManager(
         var result = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new ProductDetailDto(
-                p.Id, p.Title, p.Description, p.StockCode, p.Season, p.Year, p.Brand.Name, p.Category.Name,
+                p.Id, p.Title, p.Description, p.StockCode, p.Season, p.Year, p.BrandId, p.Brand.Name, p.CategoryId, p.Category.Name,
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 p.ProductVariants.Select(pv => new ProductVariantDetailDto(
@@ -226,7 +226,8 @@ public class ProductManager(
                 )),
                 p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
                     kv.CategoryAttribute.CategoryAttributeKey,
-                    kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue))
+                    kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue)),
+                p.UpdatedAt
             ))
             .FirstOrDefaultAsync();
         return new SuccessDataResult<ProductDetailDto>(result);

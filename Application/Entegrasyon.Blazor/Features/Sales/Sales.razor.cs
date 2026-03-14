@@ -1,6 +1,9 @@
 namespace Entegrasyon.Blazor.Features.Sales;
 
+using Entegrasyon.Blazor.Features.Printing;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos;
+using Entegrasyon.Entity.Dtos.Label;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
@@ -12,6 +15,9 @@ public partial class Sales
 
     [Inject]
     private ISnackbar? Snackbar { get; set; }
+
+    [Inject]
+    private ILabelService? LabelService { get; set; }
 
     private string barcodeSearch = string.Empty;
     private string paymentMethod = "Nakit";
@@ -161,8 +167,7 @@ public partial class Sales
 
             if (confirm == true)
             {
-                Snackbar?.Add("Fiş yazdırılıyor...", Severity.Info);
-                // TODO: Implement receipt printing
+                await PrintReceipt();
             }
 
             Snackbar?.Add($"Satış tamamlandı! Toplam: ₺{Total:F2}", Severity.Success);
@@ -176,6 +181,39 @@ public partial class Sales
         {
             processing = false;
         }
+    }
+
+    private async Task PrintReceipt()
+    {
+        // Satış henüz gerçek SaleManager ile kaydedilmediğinden,
+        // burada fiş verisini manuel oluşturup dialog açıyoruz.
+        // SaleManager entegre olduğunda saleId ile LabelService.GenerateSaleReceipt kullanılacak.
+        var receiptData = new PrintAgent.Contracts.Labels.SaleReceiptData(
+            StoreName: "Mağaza",
+            StoreAddress: "",
+            TaxId: "",
+            Items: cartItems.Select(i => new PrintAgent.Contracts.Labels.ReceiptLineItem(
+                i.ProductName, i.Quantity, i.UnitPrice, i.TotalPrice)).ToList(),
+            SubTotal: Subtotal,
+            Discount: TotalDiscount,
+            Total: Total,
+            PaymentMethod: paymentMethod,
+            SaleDate: DateTimeOffset.Now,
+            CashierName: "Kasiyer",
+            CustomerName: selectedCustomer?.Name);
+
+        var generator = new Business.Labels.EscPosReceiptGenerator();
+        var receiptBytes = generator.GenerateSaleReceipt(receiptData);
+
+        var printJob = new PrintJobDto(null, receiptBytes, "ESCPOS", "Satış Fişi");
+
+        var parameters = new DialogParameters<PrintDialog>
+        {
+            { x => x.PrintJob, printJob }
+        };
+
+        await DialogService!.ShowAsync<PrintDialog>("Fiş Yazdır", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
     }
 
     private class CartItem

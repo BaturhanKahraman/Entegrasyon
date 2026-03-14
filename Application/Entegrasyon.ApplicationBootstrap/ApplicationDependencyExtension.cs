@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Labels;
 using Entegrasyon.Business.BackgroundServices;
 
 namespace Entegrasyon.ApplicationBootstrap
@@ -63,8 +64,15 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
             services.AddScoped<IProductSyncManager, ProductSyncManager>();
+            services.AddScoped<IDiscountManager, DiscountManager>();
             services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
             services.AddScoped<IProductActivityLogger, ProductActivityLogger>();
+
+            // Etiket & Fiş servisleri
+            services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
+            services.AddSingleton<IReceiptGenerator, EscPosReceiptGenerator>();
+            services.AddScoped<ILabelService, LabelManager>();
+            services.AddScoped<ILabelTemplateService, LabelTemplateManager>();
 
             // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();

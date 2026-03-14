@@ -1,0 +1,76 @@
+@using Entegrasyon.Entity.Labels
+
+<MudGrid>
+    @* Sol Panel — Toolbox *@
+    <MudItem xs="2">
+        <LabelDesignerToolbox OnAddElement="AddElement" />
+
+        <MudDivider Class="my-3" />
+
+        <MudPaper Elevation="0" Class="pa-3">
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Şablon Ayarları</MudText>
+
+            <MudTextField T="string" @bind-Value="_name" Label="Şablon Adı"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" />
+
+            <MudSelect T="int" Label="Boyut" Value="_presetIndex" ValueChanged="OnPresetChanged"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2">
+                @for (var i = 0; i < Presets.Length; i++)
+                {
+                    var idx = i;
+                    <MudSelectItem T="int" Value="idx">@Presets[idx].Label</MudSelectItem>
+                }
+                <MudSelectItem T="int" Value="@Presets.Length">Özel Boyut</MudSelectItem>
+            </MudSelect>
+
+            @if (_presetIndex == Presets.Length)
+            {
+                <MudGrid Spacing="1">
+                    <MudItem xs="6">
+                        <MudNumericField T="int" @bind-Value="_widthMm" Label="Genişlik (mm)"
+                                         Min="10" Max="200" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudNumericField T="int" @bind-Value="_heightMm" Label="Yükseklik (mm)"
+                                         Min="10" Max="200" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                </MudGrid>
+            }
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.Save" OnClick="Save"
+                       Disabled="_saving" Class="mt-3">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Kaydet
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    @* Orta Panel — Canvas *@
+    <MudItem xs="7">
+        <MudPaper Elevation="1" Class="pa-4" Style="overflow:auto;min-height:400px">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+                <MudText Typo="Typo.subtitle2">Önizleme</MudText>
+                <MudSpacer />
+                <MudText Typo="Typo.caption">Yakınlaştırma:</MudText>
+                <MudSlider T="double" Value="_zoom" Min="0.5" Max="3.0" Step="0.25"
+                           Style="width:150px" ValueChanged="OnZoomChanged" />
+                <MudText Typo="Typo.caption">@($"{_zoom:F1}x")</MudText>
+            </MudStack>
+
+            <div style="@CanvasContainerStyle">
+                <div id="label-designer-canvas"></div>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+    @* Sağ Panel — Properties *@
+    <MudItem xs="3">
+        <LabelElementProperties Element="_selectedElement"
+                                OnChanged="OnPropertyChanged"
+                                OnDeleted="DeleteSelectedElement" />
+    </MudItem>
+</MudGrid>

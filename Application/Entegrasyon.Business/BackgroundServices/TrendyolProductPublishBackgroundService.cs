@@ -73,18 +73,33 @@ public class TrendyolProductPublishBackgroundService(
             return;
         }
 
-        var result = await trendyolService.PublishProductAsync(productId);
-
-        if (result.Success)
+        try
         {
-            record.BatchRequestId = result.Data;
-            logger.LogInformation("Product {ProductId} published to Trendyol. BatchId={BatchId}", productId, result.Data);
+            var result = await trendyolService.PublishProductAsync(productId);
+
+            if (result.Success && !string.IsNullOrWhiteSpace(result.Data))
+            {
+                record.BatchRequestId = result.Data;
+                logger.LogInformation("Product {ProductId} published to Trendyol. BatchId={BatchId}", productId, result.Data);
+            }
+            else if (result.Success)
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = "Trendyol API başarılı döndü ancak BatchRequestId boş geldi.";
+                logger.LogWarning("Product {ProductId}: Trendyol publish succeeded but BatchRequestId is empty", productId);
+            }
+            else
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = result.Message;
+                logger.LogWarning("Product {ProductId} failed to publish to Trendyol: {Message}", productId, result.Message);
+            }
         }
-        else
+        catch (Exception ex)
         {
             record.Status = MarketplaceProductStatus.Failed;
-            record.StatusMessage = result.Message;
-            logger.LogWarning("Product {ProductId} failed to publish to Trendyol: {Message}", productId, result.Message);
+            record.StatusMessage = $"Publish isteği sırasında hata: {ex.Message}";
+            logger.LogError(ex, "Exception during Trendyol publish for product {ProductId}", productId);
         }
 
         await dbContext.SaveChangesAsync(ct);

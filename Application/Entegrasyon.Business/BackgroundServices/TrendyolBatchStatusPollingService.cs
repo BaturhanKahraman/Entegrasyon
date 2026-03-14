@@ -19,6 +19,7 @@ public class TrendyolBatchStatusPollingService(
     ILogger<TrendyolBatchStatusPollingService> logger) : BackgroundService
 {
     private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan BatchTimeout = TimeSpan.FromHours(24);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -60,8 +61,26 @@ public class TrendyolBatchStatusPollingService(
         {
             try
             {
+                // Timeout kontrolü — 24 saat içinde tamamlanmadıysa Failed'a al
+                if (DateTimeOffset.UtcNow - record.UpdatedAt > BatchTimeout)
+                {
+                    record.Status = MarketplaceProductStatus.Failed;
+                    record.StatusMessage = "Batch işlemi 24 saat içinde tamamlanmadı — zaman aşımı.";
+                    logger.LogWarning("Batch {BatchId} timed out for ProductId={ProductId}",
+                        record.BatchRequestId, record.ProductId);
+                    await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchFailed,
+                        "Trendyol batch zaman aşımına uğradı (24 saat)", ProductActivityStatus.Error,
+                        marketplaceName: "Trendyol", referenceId: record.BatchRequestId);
+                    continue;
+                }
+
                 var result = await trendyolService.CheckBatchStatusAsync(record.BatchRequestId!);
-                if (!result.Success || result.Data is null) continue;
+                if (!result.Success || result.Data is null)
+                {
+                    logger.LogWarning("Batch status check failed for {BatchId}, ProductId={ProductId}. Will retry next cycle.",
+                        record.BatchRequestId, record.ProductId);
+                    continue;
+                }
 
                 if (result.Data.Status == TrendyolBatchStatus.IN_PROGRESS)
                     continue;

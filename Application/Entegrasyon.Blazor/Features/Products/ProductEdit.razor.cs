@@ -11,16 +11,19 @@ namespace Entegrasyon.Blazor.Features.Products;
 public partial class ProductEdit
 {
     [Parameter] public Guid Id { get; set; }
+    [SupplyParameterFromQuery] private string? Tab { get; set; }
 
     [Inject] private IProductService ProductManager { get; set; } = null!;
     [Inject] private IImageManager ImageManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private IProductSyncManager SyncManager { get; set; } = null!;
 
     private ProductEditPageDto? _pageData;
     private bool _loading = true;
     private bool _saving;
+    private int _activeTabIndex;
 
     private string _title = string.Empty;
     private string _description = string.Empty;
@@ -106,6 +109,16 @@ public partial class ProductEdit
             .ToList();
 
         _attributeKeyValues = p.AttributeKeyValues.ToList();
+
+        _activeTabIndex = Tab?.ToLowerInvariant() switch
+        {
+            "general" => 0,
+            "variants" => 1,
+            "images" => 2,
+            "attributes" => 3,
+            _ => 0
+        };
+
         _loading = false;
     }
 
@@ -158,7 +171,32 @@ public partial class ProductEdit
             }
 
             Snackbar.Add("Ürün güncellendi.", Severity.Success);
-            NavigationManager.NavigateTo("/products");
+
+            var preSyncState = _pageData!.SyncStatus.State;
+            if (preSyncState is MarketplaceSyncState.Synced or MarketplaceSyncState.OutOfSync
+                or MarketplaceSyncState.Failed or MarketplaceSyncState.Rejected)
+            {
+                Snackbar.Add("Değişiklikler marketplace'e henüz gönderilmedi.",
+                    Severity.Warning, config =>
+                    {
+                        config.Action = "Gönder";
+                        config.OnClick = snackbar =>
+                        {
+                            _ = SyncToMarketplace();
+                            return Task.CompletedTask;
+                        };
+                    });
+            }
+            else if (preSyncState is MarketplaceSyncState.Processing)
+            {
+                Snackbar.Add("Ürün şu an marketplace'te işleniyor. Batch tamamlandıktan sonra tekrar gönderebilirsiniz.", Severity.Info);
+            }
+            else if (preSyncState is MarketplaceSyncState.Waiting)
+            {
+                Snackbar.Add("Ürün zaten gönderim kuyruğunda.", Severity.Info);
+            }
+
+            NavigationManager.NavigateTo($"/products/{Id}");
         }
         catch (Exception ex)
         {
@@ -168,6 +206,14 @@ public partial class ProductEdit
         {
             _saving = false;
         }
+    }
+
+    private async Task SyncToMarketplace()
+    {
+        var result = await SyncManager.SyncProductAsync(Id, marketPlaceId: 1);
+        Snackbar.Add(
+            result.Success ? "Ürün marketplace gönderim kuyruğuna eklendi." : result.Message,
+            result.Success ? Severity.Success : Severity.Error);
     }
 
     private void Cancel() => NavigationManager.NavigateTo("/products");
