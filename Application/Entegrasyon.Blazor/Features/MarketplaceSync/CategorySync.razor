@@ -90,9 +90,12 @@
                             {
                                 @foreach (var link in context.Item.MarketplaceLinks)
                                 {
-                                    <MudText Typo="Typo.caption">
-                                        @(link.MarketPlace?.Name ?? "N/A") - @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
-                                    </MudText>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MarketplaceLogo Name="@(link.MarketPlace?.Name ?? "Trendyol")" Size="Size.Small" />
+                                        <MudText Typo="Typo.caption">
+                                            @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
+                                        </MudText>
+                                    </MudStack>
                                 }
                             }
                         </CellTemplate>

@@ -1,0 +1,33 @@
+@* Pazaryeri logosu gösteren paylaşılan component *@
+
+<MudAvatar Size="@Size" Style="@AvatarStyle" Class="@Class">
+    <MudImage Src="@GetLogoPath()" Alt="@Name" Width="@GetPixelSize()" Height="@GetPixelSize()"
+              ObjectFit="ObjectFit.Contain" />
+</MudAvatar>
+
+@code {
+    [Parameter] public string Name { get; set; } = string.Empty;
+    [Parameter] public Size Size { get; set; } = Size.Medium;
+    [Parameter] public string? Class { get; set; }
+
+    private string AvatarStyle => "background: transparent;";
+
+    private string GetLogoPath() => Name?.ToLowerInvariant() switch
+    {
+        "trendyol" => "img/trendyol-logo.webp",
+        "hepsiburada" => "img/hepsi_burada.webp",
+        "n11" => "img/n11.webp",
+        "temu" => "img/temu.webp",
+        "amazon" => "img/amazon.webp",
+        "ciceksepeti" or "çiçeksepeti" => "img/ciceksepeti.webp",
+        _ => "img/trendyol-logo.webp"
+    };
+
+    private int GetPixelSize() => Size switch
+    {
+        Size.Small => 24,
+        Size.Medium => 32,
+        Size.Large => 40,
+        _ => 32
+    };
+}

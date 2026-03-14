@@ -36,7 +36,7 @@ else
                     <MudCardHeader>
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                <MudIcon Icon="@Icons.Material.Filled.Store" />
+                                <MarketplaceLogo Name="@mp.MarketPlaceName" Size="Size.Medium" />
                                 <MudText Typo="Typo.h6">@mp.MarketPlaceName</MudText>
                             </MudStack>
                         </CardHeaderContent>
@@ -104,4 +104,8 @@ else
             </MudItem>
         }
     </MudGrid>
+
+    <div class="mt-4">
+        <ProductActivityTimeline ProductId="Id" />
+    </div>
 }

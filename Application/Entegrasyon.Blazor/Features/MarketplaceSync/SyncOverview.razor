@@ -13,9 +13,7 @@
         <MudCard Elevation="2">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Primary" Size="Size.Large">
-                        <MudIcon Icon="@Icons.Material.Filled.Store" />
-                    </MudAvatar>
+                    <MarketplaceLogo Name="Trendyol" Size="Size.Large" />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">Trendyol</MudText>
@@ -69,9 +67,7 @@
         <MudCard Elevation="2">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Secondary" Size="Size.Large">
-                        <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" />
-                    </MudAvatar>
+                    <MarketplaceLogo Name="Hepsiburada" Size="Size.Large" />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">Hepsiburada</MudText>
@@ -125,9 +121,7 @@
         <MudCard Elevation="2">
             <MudCardHeader>
                 <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Info" Size="Size.Large">
-                        <MudIcon Icon="@Icons.Material.Filled.Storefront" />
-                    </MudAvatar>
+                    <MarketplaceLogo Name="N11" Size="Size.Large" />
                 </CardHeaderAvatar>
                 <CardHeaderContent>
                     <MudText Typo="Typo.h6">N11</MudText>
@@ -196,7 +190,12 @@
                         <MudTh>Süre</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd DataLabel="Pazaryeri">@context.Marketplace</MudTd>
+                        <MudTd DataLabel="Pazaryeri">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MarketplaceLogo Name="@context.Marketplace" Size="Size.Small" />
+                                <MudText>@context.Marketplace</MudText>
+                            </MudStack>
+                        </MudTd>
                         <MudTd DataLabel="İşlem Tipi">@context.Type</MudTd>
                         <MudTd DataLabel="Durum">
                             <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">

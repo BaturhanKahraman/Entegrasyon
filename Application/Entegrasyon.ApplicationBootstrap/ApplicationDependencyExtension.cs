@@ -44,7 +44,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
             services.AddScoped<CategoryAttributeManager>();
-            services.AddScoped<ApplicationUserManager>();
+            services.AddScoped<IApplicationUserManager, ApplicationUserManager>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICargoCompaniesManager,CargoCompaniesManager>();
             services.AddScoped<ICustomerManager,CustomerManager>();
@@ -63,6 +63,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
             services.AddScoped<IProductSyncManager, ProductSyncManager>();
+            services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
+            services.AddScoped<IProductActivityLogger, ProductActivityLogger>();
 
             // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();

@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +47,7 @@ public class TrendyolProductStatusSyncService(
         await using var scope = scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
         var apiClient = scope.ServiceProvider.GetRequiredService<ITrendyolApiClient>();
+        var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
 
         // Trendyol'da published durumunda olan ürünleri al
         var publishedProducts = await dbContext.ProductMarketplaces
@@ -104,6 +106,25 @@ public class TrendyolProductStatusSyncService(
                     pm.Status = MarketplaceProductStatus.Rejected;
                     pm.StatusMessage = content.RejectReasonDetails?.FirstOrDefault()?.DetailedReason;
                     changed = true;
+
+                    await activityLogger.LogAsync(pm.ProductId, ProductActivityType.Rejected,
+                        $"Trendyol tarafından reddedildi: {pm.StatusMessage}",
+                        ProductActivityStatus.Error, marketplaceName: "Trendyol");
+                }
+
+                if (content.Approved && pm.IsApproved != true)
+                {
+                    await activityLogger.LogAsync(pm.ProductId, ProductActivityType.Approved,
+                        "Trendyol tarafından onaylandı",
+                        ProductActivityStatus.Success, marketplaceName: "Trendyol",
+                        referenceId: content.ContentId?.ToString());
+                }
+
+                if (content.Archived && pm.IsArchived != true)
+                {
+                    await activityLogger.LogAsync(pm.ProductId, ProductActivityType.Archived,
+                        "Trendyol'da arşivlendi",
+                        ProductActivityStatus.Warning, marketplaceName: "Trendyol");
                 }
 
                 if (changed)

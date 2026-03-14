@@ -24,7 +24,7 @@ public class ApplicationUserManager(
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
     IFluentValidator validator,
     IntegrationDbContext context,
-    ILogger<ApplicationUserManager> logger)
+    ILogger<ApplicationUserManager> logger) : IApplicationUserManager
 {
     public async Task<IResult> AddUser(AddUserDto dto, CancellationToken token = default)
     {
@@ -84,6 +84,9 @@ public class ApplicationUserManager(
         return new SuccessResult(Messages.UserUpdated);
     }
 
+    public Task<IDataResult<Pageable<UserDetailListDto>>> GetPaginatedUserDetails(int pageIndex = 0, int itemCount = 50)
+        => GetPaginatedUserDetails(new UserPaginatedRequest() { PageIndex = pageIndex, PageSize = itemCount });
+
     public async Task<IDataResult<Pageable<UserDetailListDto>>> GetPaginatedUserDetails(UserPaginatedRequest request)
     {
         var result = await context.Users.AsNoTracking().ApplyGlobalSearch(request.SearchTerm,
@@ -100,7 +103,7 @@ public class ApplicationUserManager(
                     u.IsTwoFactorAuthActive,
                     u.NeedsTakeNewPassword,
                     u.CreatedAt,
-                    u.DefaultBranchOffice.Name
+                    u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name : ""
                     ))
             .ToPageableAsync(request);
 
@@ -109,9 +112,14 @@ public class ApplicationUserManager(
 
     public async Task<IDataResult<UserDetailDto>> GetUserDetails(Guid id)
     {
-        var result = await context.Users.AsNoTracking().Select(u => new UserDetailDto(u.Id, u.Name, u.Surname, u.UserName, u.IsActive, u.IsTwoFactorAuthActive, u.NeedsTakeNewPassword, u.CreatedAt, u.DefaultBranchOffice.Name, u.Roles.FirstOrDefault().Name))
-            .FirstOrDefaultAsync(u => u.Id
-                                      == id);
+        var result = await context.Users.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new UserDetailDto(
+                u.Id, u.Name, u.Surname, u.UserName,
+                u.IsActive, u.IsTwoFactorAuthActive, u.NeedsTakeNewPassword, u.CreatedAt,
+                u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name : "",
+                u.Roles.Select(r => r.Name).FirstOrDefault() ?? ""))
+            .FirstOrDefaultAsync();
         return new SuccessDataResult<UserDetailDto>(result);
     }
 

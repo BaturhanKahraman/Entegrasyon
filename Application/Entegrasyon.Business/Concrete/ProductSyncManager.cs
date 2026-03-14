@@ -4,6 +4,7 @@ using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,9 @@ namespace Entegrasyon.Business.Concrete;
 
 public sealed class ProductSyncManager(
     IntegrationDbContext dbContext,
-    EventChannel<ProductCreatedForMarketplaceEvent> eventChannel) : IProductSyncManager
+    EventChannel<ProductCreatedForMarketplaceEvent> eventChannel,
+    IApplicationLogManager applicationLogManager,
+    IProductActivityLogger activityLogger) : IProductSyncManager
 {
     public async Task<ProductSyncSummaryDto> GetSyncSummaryAsync(int marketPlaceId)
     {
@@ -189,6 +192,13 @@ public sealed class ProductSyncManager(
         var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
         await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
 
+        await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
+            $"{marketplaceName} senkronizasyon kuyruğuna eklendi",
+            ProductActivityStatus.Info, marketplaceName: marketplaceName);
+        await applicationLogManager.AddLog(
+            $"Ürün {marketplaceName} senkronizasyonuna gönderildi",
+            LogType.Marketplace, LogAction.Sync, new { productId, marketplaceName });
+
         return new SuccessResult("Ürün senkronizasyon kuyruğuna eklendi.");
     }
 
@@ -210,6 +220,10 @@ public sealed class ProductSyncManager(
 
         var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
         await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+
+        await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
+            $"{marketplaceName} için yeniden kuyruğa eklendi",
+            ProductActivityStatus.Info, marketplaceName: marketplaceName);
 
         return new SuccessResult("Ürün yeniden kuyruğa eklendi.");
     }
@@ -239,6 +253,10 @@ public sealed class ProductSyncManager(
             await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
         }
 
+        await applicationLogManager.AddLog(
+            $"{unsyncedProductIds.Count} ürün {marketplaceName} senkronizasyonuna toplu gönderildi",
+            LogType.Marketplace, LogAction.Sync, new { count = unsyncedProductIds.Count, marketplaceName });
+
         return new SuccessResult($"{unsyncedProductIds.Count} ürün senkronizasyon kuyruğuna eklendi.");
     }
 
@@ -263,6 +281,10 @@ public sealed class ProductSyncManager(
         {
             await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName]));
         }
+
+        await applicationLogManager.AddLog(
+            $"{failedRecords.Count} hatalı ürün {marketplaceName} için yeniden kuyruğa eklendi",
+            LogType.Marketplace, LogAction.Retry, new { count = failedRecords.Count, marketplaceName });
 
         return new SuccessResult($"{failedRecords.Count} hatalı ürün yeniden kuyruğa eklendi.");
     }

@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
+using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,7 @@ public class TrendyolBatchStatusPollingService(
         await using var scope = scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
         var trendyolService = scope.ServiceProvider.GetRequiredService<ITrendyolProductService>();
+        var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
 
         var pendingRecords = await dbContext.ProductMarketplaces
             .Where(pm => pm.Status == MarketplaceProductStatus.Pending &&
@@ -77,6 +79,11 @@ public class TrendyolBatchStatusPollingService(
                         : "Trendyol batch işlemi başarısız.";
                     logger.LogWarning("Batch {BatchId} has failures — ProductId={ProductId}: {Message}",
                         record.BatchRequestId, record.ProductId, record.StatusMessage);
+
+                    await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchFailed,
+                        $"Trendyol batch başarısız: {record.StatusMessage}",
+                        ProductActivityStatus.Error, marketplaceName: "Trendyol",
+                        referenceId: record.BatchRequestId);
                 }
                 else
                 {
@@ -85,6 +92,11 @@ public class TrendyolBatchStatusPollingService(
                     record.StatusMessage = null;
                     logger.LogInformation("Batch {BatchId} completed — ProductId={ProductId} published",
                         record.BatchRequestId, record.ProductId);
+
+                    await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchCompleted,
+                        "Trendyol batch tamamlandı — ürün yayında",
+                        ProductActivityStatus.Success, marketplaceName: "Trendyol",
+                        referenceId: record.BatchRequestId);
                 }
             }
             catch (Exception ex)

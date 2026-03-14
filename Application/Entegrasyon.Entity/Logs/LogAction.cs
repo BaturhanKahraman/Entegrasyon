@@ -6,5 +6,9 @@ public enum LogAction
     Add=1,
     Update,
     Delete,
-    List
+    List,
+    Sync,
+    Import,
+    Publish,
+    Retry
 }
