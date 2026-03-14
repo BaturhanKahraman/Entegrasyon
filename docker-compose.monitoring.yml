@@ -1,0 +1,46 @@
+services:
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: entegrasyon-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    networks:
+      - entegrasyon-net
+
+  loki:
+    image: grafana/loki:latest
+    container_name: entegrasyon-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - entegrasyon-net
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: entegrasyon-uptime
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-data:/app/data
+    networks:
+      - entegrasyon-net
+
+volumes:
+  grafana-data:
+  loki-data:
+  uptime-data:
+
+networks:
+  entegrasyon-net:
+    external: true
+    name: entegrasyon_entegrasyon-net

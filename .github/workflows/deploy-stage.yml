@@ -1,0 +1,45 @@
+name: Deploy to Stage
+
+on:
+  push:
+    branches: [ stage ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore Entegrasyon.sln
+      - run: dotnet build Entegrasyon.sln --no-restore -c Release
+      - run: dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj --no-build -c Release --verbosity minimal
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.PROJECT_PATH }}
+            git fetch origin stage
+            git checkout stage
+            git pull origin stage
+            docker compose -f docker-compose.stage.yml up --build -d
+            echo "Stage deploy completed at $(date)"
+
+      - name: Health check
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sleep 15
+            curl -sf http://localhost:8081/ > /dev/null && echo "Stage is healthy" || echo "Stage health check failed"

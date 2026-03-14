@@ -215,6 +215,29 @@ public partial class AddProduct
             return;
         }
 
+        // Step 2 validasyonu: her varyantta fiyat zorunlu
+        if (stepIndex == 2)
+        {
+            var errors = new List<string>();
+            for (int i = 0; i < variants.Count; i++)
+            {
+                var v = variants[i];
+                var label = GetVariantLabel(v, i);
+                if (!v.ListPrice.HasValue || v.ListPrice <= 0)
+                    errors.Add($"{label}: Liste fiyatı girilmeli");
+                if (!v.SalePrice.HasValue || v.SalePrice <= 0)
+                    errors.Add($"{label}: Satış fiyatı girilmeli");
+            }
+            if (errors.Count > 0)
+            {
+                foreach (var e in errors.Take(3))
+                    Snackbar?.Add(e, Severity.Warning);
+                if (errors.Count > 3)
+                    Snackbar?.Add($"...ve {errors.Count - 3} hata daha", Severity.Warning);
+                return;
+            }
+        }
+
         if (stepIndex < 3) stepIndex++;
     }
 
@@ -536,6 +559,18 @@ public partial class AddProduct
         public bool IsSelected { get; set; } = true;
         public string Label { get; set; } = string.Empty;
         public AddProductVariantDto Variant { get; set; } = null!;
+    }
+
+    private string GetAttributeDisplayValue(CategoryAttributeDto attr)
+    {
+        if (_regularAttrValueIds.TryGetValue(attr.Id, out var vid) && vid.HasValue)
+        {
+            var val = attr.CategoryAttributeValues.FirstOrDefault(v => v.Id == vid.Value);
+            if (val is not null) return val.Name;
+        }
+        if (_regularAttrCustomValues.TryGetValue(attr.Id, out var cv) && !string.IsNullOrWhiteSpace(cv))
+            return cv;
+        return "—";
     }
 
     private int? GetStock(int variantIdx, int officeId)
