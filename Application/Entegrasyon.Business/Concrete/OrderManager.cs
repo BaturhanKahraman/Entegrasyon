@@ -1,7 +1,9 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
+using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Orders;
+using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,9 +12,12 @@ namespace Entegrasyon.Business.Concrete;
 
 /// <summary>
 /// Sipariş yönetim servisi — Trendyol DTO → local Order entity mapping, deduplication (ShipmentPackageId).
+/// Sipariş import edildiğinde stok atomik olarak düşülür.
 /// </summary>
 public sealed class OrderManager(
     IntegrationDbContext dbContext,
+    IOfficeStockManager officeStockManager,
+    INotificationManager notificationManager,
     ILogger<OrderManager> logger) : IOrderManager
 {
     private const int TrendyolMarketPlaceId = 1;
@@ -53,6 +58,12 @@ public sealed class OrderManager(
             return new SuccessResult("İmport edilecek sipariş yok.");
 
         var importedCount = 0;
+
+        // Marketplace'e bağlı depo ID'lerini önceden al (her sipariş için tekrar sorgulamayalım)
+        var warehouseIds = await dbContext.MarketPlaceWarehouses.AsNoTracking()
+            .Where(w => w.MarketPlaceId == TrendyolMarketPlaceId && !w.IsDeleted)
+            .Select(w => w.BranchOfficeId)
+            .ToListAsync();
 
         foreach (var pkg in packages)
         {
@@ -127,7 +138,7 @@ public sealed class OrderManager(
                 };
             }
 
-            // Order items
+            // Order items + stok düşme
             var orderItems = new List<OrderItem>();
             if (pkg.Lines is not null)
             {
@@ -156,6 +167,14 @@ public sealed class OrderManager(
                         ProductSize = line.ProductSize,
                         Discount = line.Discount
                     });
+
+                    // Stok düşme: marketplace satışı gerçekleşti
+                    if (productVariantId.HasValue && line.Quantity > 0 && warehouseIds.Count > 0)
+                    {
+                        await DecreaseStockForMarketplaceOrder(
+                            warehouseIds, productVariantId.Value, line.Quantity,
+                            pkg.ShipmentPackageId.ToString());
+                    }
                 }
             }
 
@@ -178,5 +197,47 @@ public sealed class OrderManager(
         order.MarketplaceOrderStatus = newStatus;
         await dbContext.SaveChangesAsync();
         return new SuccessResult("Sipariş durumu güncellendi.");
+    }
+
+    private async Task DecreaseStockForMarketplaceOrder(
+        List<int> warehouseIds, Guid productVariantId, int quantity, string referenceId)
+    {
+        foreach (var warehouseId in warehouseIds)
+        {
+            var stockResult = await officeStockManager.DecreaseStockAtomicAsync(
+                warehouseId, productVariantId, quantity,
+                StockMovementType.MarketplaceSale,
+                "TrendyolOrder", referenceId);
+
+            if (stockResult.Success)
+                return; // Başarılı — ilk uygun depodan düşüldü
+
+            // Stok yetersiz ama marketplace zaten sattı — zorla düş
+            logger.LogWarning(
+                "Stok yetersiz, zorla düşülüyor. VariantId={VariantId}, Warehouse={WarehouseId}, Qty={Qty}",
+                productVariantId, warehouseId, quantity);
+
+            await officeStockManager.ForceDecreaseStockAsync(
+                warehouseId, productVariantId, quantity,
+                StockMovementType.MarketplaceSale,
+                "TrendyolOrder", referenceId);
+
+            // Acil bildirim
+            var adminUserIds = await dbContext.Users.AsNoTracking()
+                .Select(u => u.Id)
+                .ToListAsync();
+
+            await notificationManager.SendNotification(
+                "Marketplace Stok Uyarısı",
+                $"Trendyol siparişi için stok yetersizdi ama satış zaten gerçekleşti. Sipariş: {referenceId}",
+                NotificationSeverity.Error,
+                NotificationCategory.Stok,
+                adminUserIds);
+            return;
+        }
+
+        logger.LogWarning(
+            "Marketplace siparişi için depo bulunamadı. VariantId={VariantId}, ShipmentPkg={PkgId}",
+            productVariantId, referenceId);
     }
 }

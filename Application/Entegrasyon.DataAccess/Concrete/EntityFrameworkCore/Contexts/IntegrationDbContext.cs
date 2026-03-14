@@ -98,6 +98,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<BrandMarketPlaceMatch> BrandMarketPlaceMatches { get; set; }
     public virtual DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
     public virtual DbSet<AttributeKeyValue> AttributeKeyValues { get; set; }
+    public virtual DbSet<StockMovement> StockMovements { get; set; }
     public virtual DbSet<CategoryMarketplace> CategoryMarketplaces { get; set; }
     public virtual DbSet<MarketPlaceWarehouse> MarketPlaceWarehouses { get; set; }
     public virtual DbSet<ApplicationUser> Users { get; set; }
