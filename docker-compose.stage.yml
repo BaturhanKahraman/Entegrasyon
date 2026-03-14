@@ -1,0 +1,28 @@
+services:
+  blazor-stage:
+    build:
+      context: .
+      dockerfile: Application/Entegrasyon.Blazor/Dockerfile
+    container_name: entegrasyon-stage
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Main=${STAGE_DB_CONNECTION}
+      - ConnectionStrings__Redis=${REDIS_CONNECTION:-redis:6379}
+      - Minio__Endpoint=${MINIO_ENDPOINT}
+      - Minio__AccessKey=${MINIO_ACCESS_KEY}
+      - Minio__SecretKey=${MINIO_SECRET_KEY}
+      - Minio__UseSSL=false
+      - Minio__BucketName=products-stage
+      - Minio__PublicBaseUrl=${MINIO_PUBLIC_URL}
+      - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY}
+    networks:
+      - entegrasyon-net
+
+networks:
+  entegrasyon-net:
+    external: true
+    name: entegrasyon_entegrasyon-net

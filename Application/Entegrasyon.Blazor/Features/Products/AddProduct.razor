@@ -349,38 +349,156 @@
 
                 <MudDivider Class="my-4" />
 
-                @* Summary *@
-                <MudText Typo="Typo.h6" Class="mb-2">Özet</MudText>
-                <MudPaper Class="pa-3">
-                    <div><b>Başlık:</b> @title</div>
-                    <div><b>Stok Kodu:</b> @stockCode</div>
-                    <div><b>Marka:</b> @brands.FirstOrDefault(b => b.Id == brandId)?.Name</div>
-                    <div><b>Kategori:</b> @categories.FirstOrDefault(c => c.Id == categoryId)?.Name</div>
-                    <div class="mt-2"><b>Varyant Sayısı:</b> @variants.Count</div>
+                @* ── Özet ── *@
+                <MudText Typo="Typo.h6" Class="mb-3">Özet</MudText>
 
-                    @foreach (var (v, i) in variants.Select((v, i) => (v, i)))
-                    {
-                        <MudDivider Class="my-2" />
-                        <MudText Typo="Typo.subtitle2">@GetVariantLabel(v, i)</MudText>
-                        <MudText Typo="Typo.caption">Satış Fiyatı: ₺@(v.SalePrice?.ToString("N2") ?? "-")</MudText>
-                        @if (_variantImages.TryGetValue(i, out var imgs) && imgs.Count > 0)
-                        {
-                            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
-                                @foreach (var img in imgs)
+                @* Genel Bilgiler *@
+                <MudCard Elevation="1" Class="mb-3">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.subtitle1"><b>Genel Bilgiler</b></MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Ürün Adı</MudText>
+                                <MudText Typo="Typo.body1">@title</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Stok Kodu</MudText>
+                                <MudText Typo="Typo.body1">@stockCode</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Marka</MudText>
+                                <MudText Typo="Typo.body1">@(brands.FirstOrDefault(b => b.Id == brandId)?.Name ?? "—")</MudText>
+                            </MudItem>
+                            <MudItem xs="6" md="3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Kategori</MudText>
+                                <MudText Typo="Typo.body1">@(categories.FirstOrDefault(c => c.Id == categoryId)?.Name ?? "—")</MudText>
+                            </MudItem>
+                            @if (!string.IsNullOrWhiteSpace(season) || !string.IsNullOrWhiteSpace(year))
+                            {
+                                <MudItem xs="6" md="3">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Sezon / Yıl</MudText>
+                                    <MudText Typo="Typo.body1">@(season ?? "—") / @(year ?? "—")</MudText>
+                                </MudItem>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(description))
+                            {
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Açıklama</MudText>
+                                    <MudText Typo="Typo.body2" Style="max-height:60px;overflow:auto;">@description</MudText>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+
+                @* Kategori Özellikleri *@
+                @{
+                    var filledAttrs = _regularAttributes
+                        .Where(a => (_regularAttrValueIds.TryGetValue(a.Id, out var vid) && vid.HasValue) ||
+                                    (_regularAttrCustomValues.TryGetValue(a.Id, out var cv) && !string.IsNullOrWhiteSpace(cv)))
+                        .ToList();
+                }
+                @if (filledAttrs.Count > 0)
+                {
+                    <MudCard Elevation="1" Class="mb-3">
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <MudIcon Icon="@Icons.Material.Filled.Tune" Color="Color.Secondary" />
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle1"><b>Kategori Özellikleri</b></MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                @foreach (var attr in filledAttrs)
                                 {
-                                    <div style="position:relative;">
-                                        <img src="@img.PreviewUrl" style="width:60px;height:60px;object-fit:cover;border-radius:4px;" />
-                                        @if (img.IsPrimary)
-                                        {
-                                            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"
-                                                     Style="position:absolute;top:1px;left:1px;font-size:14px;" />
-                                        }
-                                    </div>
+                                    <MudItem xs="6" md="3">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@attr.CategoriyAttributeHumanized</MudText>
+                                        <MudText Typo="Typo.body1">@GetAttributeDisplayValue(attr)</MudText>
+                                    </MudItem>
                                 }
-                            </div>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                }
+
+                @* Varyantlar *@
+                <MudCard Elevation="1" Class="mb-3">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Info" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.subtitle1"><b>Varyantlar</b> (@variants.Count adet)</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @foreach (var (v, i) in variants.Select((v, i) => (v, i)))
+                        {
+                            <MudPaper Outlined="true" Class="pa-3 mb-2">
+                                <MudStack Row="true" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween">
+                                    <MudStack Spacing="1" Style="flex:1;">
+                                        <MudText Typo="Typo.subtitle2"><b>@title</b> — @GetVariantLabel(v, i)</MudText>
+                                        <MudStack Row="true" Spacing="4" Wrap="Wrap.Wrap">
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Barkod</MudText>
+                                                <MudText Typo="Typo.body2">@(string.IsNullOrEmpty(v.Barcode) ? "Otomatik" : v.Barcode)</MudText>
+                                            </MudStack>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Liste Fiyatı</MudText>
+                                                <MudText Typo="Typo.body2">@(v.ListPrice.HasValue ? $"₺{v.ListPrice:N2}" : "—")</MudText>
+                                            </MudStack>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Satış Fiyatı</MudText>
+                                                <MudText Typo="Typo.body2" Color="Color.Success">@(v.SalePrice.HasValue ? $"₺{v.SalePrice:N2}" : "—")</MudText>
+                                            </MudStack>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Maliyet</MudText>
+                                                <MudText Typo="Typo.body2">@(v.CostPrice.HasValue ? $"₺{v.CostPrice:N2}" : "—")</MudText>
+                                            </MudStack>
+                                            @{
+                                                var totalStock = _branchOffices
+                                                    .Sum(o => _stockValues.GetValueOrDefault((i, o.Id)) ?? 0);
+                                            }
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Toplam Stok</MudText>
+                                                <MudText Typo="Typo.body2"><b>@totalStock</b></MudText>
+                                            </MudStack>
+                                        </MudStack>
+                                    </MudStack>
+                                    @if (_variantImages.TryGetValue(i, out var imgs) && imgs.Count > 0)
+                                    {
+                                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                            @foreach (var img in imgs)
+                                            {
+                                                <div style="position:relative;width:48px;height:48px;">
+                                                    <img src="@img.PreviewUrl" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" />
+                                                    @if (img.IsPrimary)
+                                                    {
+                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"
+                                                                 Style="position:absolute;top:0;left:0;font-size:12px;" />
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning">Görsel Yok</MudChip>
+                                    }
+                                </MudStack>
+                            </MudPaper>
                         }
-                    }
-                </MudPaper>
+                    </MudCardContent>
+                </MudCard>
             </StepContent>
         </MudStep>
 

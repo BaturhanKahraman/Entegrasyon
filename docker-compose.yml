@@ -1,53 +1,48 @@
-version: '3.4'
-
 services:
-  redis:
-    image: docker.io/redis:latest
-    container_name: entegrasyon.redis
-    restart: always
-    ports:
-      - 6379:6379
-    volumes:
-      - ./data/redis:/data
-
   db:
     image: postgres:latest
-    container_name: entegrasyon.pg_container
+    container_name: entegrasyon-db
     restart: always
     environment:
-      POSTGRES_USER: Baturhan
-      POSTGRES_PASSWORD: 649471
+      POSTGRES_USER: ${DB_USER:-baturhan}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: IntegrationDb
     ports:
-      - 5432:5432
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - entegrasyon-net
+
+  redis:
+    image: redis:alpine
+    container_name: entegrasyon-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - entegrasyon-net
 
   pgadmin:
-    container_name: entegrasyon.pgadmin4
     image: dpage/pgadmin4
-    restart: always
+    container_name: entegrasyon-pgadmin
+    restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
       - "5050:80"
     depends_on:
       - db
+    networks:
+      - entegrasyon-net
 
-  # entegrasyon.blazor:
-  #   image: ${DOCKER_REGISTRY-}entegrasyonblazor
-  #   build:
-  #     context: ./
-  #     dockerfile: Application/Entegrasyon.Blazor/Dockerfile
-  #   container_name: entegrasyon.blazor
-  #   restart: always
-  #   depends_on:
-  #     - redis
-  #     - db
-  #   ports:
-  #     - "7070:8080"
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - ASPNETCORE_URLS=http://+:8080
-  #     - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471
-  #     - ConnectionStrings__Main=Host=db;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471
-  #     - ConnectionStrings__Redis=redis:6379
+volumes:
+  pgdata:
+  redis-data:
+
+networks:
+  entegrasyon-net:
+    driver: bridge
