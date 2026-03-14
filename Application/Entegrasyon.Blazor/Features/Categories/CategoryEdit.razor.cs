@@ -33,7 +33,13 @@ public partial class CategoryEdit
 
     protected override async Task OnInitializedAsync()
     {
+        await ReloadPageData();
+    }
+
+    private async Task ReloadPageData()
+    {
         _loading = true;
+        _tempIdCounter = -1;
         var result = await CategoryManager.GetCategoryEditPageData(Id);
         if (!result.Success || result.Data is null)
         {
@@ -207,13 +213,12 @@ public partial class CategoryEdit
                 if (!attrResult.Success)
                 {
                     Snackbar.Add($"Kategori güncellendi fakat özellikler kaydedilemedi: {attrResult.Message}", Severity.Warning);
-                    NavigationManager.NavigateTo("/categories");
                     return;
                 }
             }
 
             Snackbar.Add("Kategori güncellendi", Severity.Success);
-            NavigationManager.NavigateTo("/categories");
+            await ReloadPageData();
         }
         catch (Exception ex)
         {

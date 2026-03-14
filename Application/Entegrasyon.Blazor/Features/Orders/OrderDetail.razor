@@ -1,0 +1,118 @@
+@page "/marketplace/orders/{OrderId:guid}"
+@using Entegrasyon.Entity.Orders
+
+<PageTitle>Sipariş Detay — @(_order?.OrderNumber ?? "Yükleniyor...")</PageTitle>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (_order is null)
+{
+    <MudAlert Severity="Severity.Error">Sipariş bulunamadı.</MudAlert>
+}
+else
+{
+    <MudStack Spacing="4">
+        @* Başlık *@
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="GoBack" />
+                <MudText Typo="Typo.h5">Sipariş #@_order.OrderNumber</MudText>
+                <MudChip T="string" Color="@GetStatusColor(_order.MarketplaceOrderStatus)">
+                    @(_order.MarketplaceOrderStatus ?? "Bilinmiyor")
+                </MudChip>
+            </MudStack>
+            <MudStack Row="true" Spacing="2">
+                @if (_order.MarketplaceOrderStatus == "Created")
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.Cancel" OnClick="MarkUnsuppliedAsync">
+                        Tedarik Edilemez
+                    </MudButton>
+                }
+            </MudStack>
+        </MudStack>
+
+        @* Sipariş bilgileri *@
+        <MudGrid>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Müşteri Bilgileri</b></MudText>
+                    <MudText>@_order.CustomerFirstName @_order.CustomerLastName</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Default">@_order.CustomerEmail</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Teslimat Adresi</b></MudText>
+                    @if (_order.ShippingAddress is not null)
+                    {
+                        <MudText Typo="Typo.body2">@_order.ShippingAddress.FullAddress</MudText>
+                        <MudText Typo="Typo.body2">@_order.ShippingAddress.County / @_order.ShippingAddress.City</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-4" Elevation="1">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Kargo Bilgileri</b></MudText>
+                    <MudText>@(_order.CargoProviderName ?? "—")</MudText>
+                    @if (!string.IsNullOrEmpty(_order.CargoTrackingNumber))
+                    {
+                        <MudText Typo="Typo.body2">Takip: @_order.CargoTrackingNumber</MudText>
+                    }
+                    @if (!string.IsNullOrEmpty(_order.CargoTrackingLink))
+                    {
+                        <MudLink Href="@_order.CargoTrackingLink" Target="_blank">Takip Et</MudLink>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        @* Sipariş kalemleri *@
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.subtitle1" Class="mb-3"><b>Sipariş Kalemleri</b></MudText>
+            <MudTable Items="@_order.OrderItems.AsEnumerable()" Hover="true" Dense="true">
+                <HeaderContent>
+                    <MudTh>Barkod</MudTh>
+                    <MudTh>Ürün</MudTh>
+                    <MudTh>Renk</MudTh>
+                    <MudTh>Beden</MudTh>
+                    <MudTh>Adet</MudTh>
+                    <MudTh>Birim Fiyat</MudTh>
+                    <MudTh>İndirim</MudTh>
+                    <MudTh>Toplam</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Barcode</MudTd>
+                    <MudTd>@context.MerchantSku</MudTd>
+                    <MudTd>@(context.ProductColor ?? "—")</MudTd>
+                    <MudTd>@(context.ProductSize ?? "—")</MudTd>
+                    <MudTd>@context.Quantity</MudTd>
+                    <MudTd>@context.UnitPrice.ToString("C2")</MudTd>
+                    <MudTd>@(context.Discount?.ToString("C2") ?? "—")</MudTd>
+                    <MudTd>@((context.Quantity * context.UnitPrice - (context.Discount ?? 0)).ToString("C2"))</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+
+        @* Özet *@
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                <MudText Typo="Typo.subtitle1"><b>Toplam Tutar</b></MudText>
+                <MudText Typo="Typo.h6" Color="Color.Success">@_order.GrossAmount?.ToString("C2")</MudText>
+            </MudStack>
+            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-1">
+                <MudText Typo="Typo.body2">Sipariş Tarihi</MudText>
+                <MudText Typo="Typo.body2">@_order.OrderDate?.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</MudText>
+            </MudStack>
+            @if (_order.EstimatedDeliveryEndDate.HasValue)
+            {
+                <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-1">
+                    <MudText Typo="Typo.body2">Tahmini Teslim</MudText>
+                    <MudText Typo="Typo.body2">@_order.EstimatedDeliveryEndDate.Value.LocalDateTime.ToString("dd.MM.yyyy")</MudText>
+                </MudStack>
+            }
+        </MudPaper>
+    </MudStack>
+}

@@ -8,17 +8,17 @@
 <ProductSyncSummaryCards Summary="@_summary" IsLoading="@_loading" />
 
 <MudPaper Class="pa-4 mb-4">
-    <MudGrid>
-        <MudItem xs="12" sm="4">
+    <MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap" Spacing="3">
+        <MudStack Row="true" AlignItems="AlignItems.End" Spacing="3" Style="flex: 1; min-width: 300px;">
             <MudTextField @bind-Value="_searchKey" Placeholder="Ürün ara (ad, stok kodu)..."
                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                           Immediate="true" DebounceInterval="400"
-                          OnDebounceIntervalElapsed="OnSearchChanged" />
-        </MudItem>
-        <MudItem xs="12" sm="3">
+                          OnDebounceIntervalElapsed="OnSearchChanged"
+                          Style="max-width: 350px;" />
             <MudSelect T="MarketplaceSyncState?" Value="_stateFilter" Label="Durum Filtresi"
-                       Clearable="true" ValueChanged="OnFilterChanged">
-                <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.NeverSynced)">Hiç Senkronize Edilmedi</MudSelectItem>
+                       Clearable="true" ValueChanged="OnFilterChanged"
+                       Style="max-width: 250px;">
+                <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.NeverSynced)">Senkronize Edilmedi</MudSelectItem>
                 <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.Synced)">Yayında</MudSelectItem>
                 <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.OutOfSync)">Güncelleme Gerekiyor</MudSelectItem>
                 <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.Waiting)">Bekliyor</MudSelectItem>
@@ -26,25 +26,26 @@
                 <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.Failed)">Başarısız</MudSelectItem>
                 <MudSelectItem Value="@((MarketplaceSyncState?)MarketplaceSyncState.Rejected)">Reddedildi</MudSelectItem>
             </MudSelect>
-        </MudItem>
-        <MudItem xs="12" sm="5" Class="d-flex align-end justify-end gap-2">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+        </MudStack>
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Sync"
                        OnClick="SyncAllPending" Disabled="@_loading">
                 Tümünü Senkronize Et
             </MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error"
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Replay"
                        OnClick="RetryAllFailed" Disabled="@_loading">
                 Hatalıları Tekrarla
             </MudButton>
-        </MudItem>
-    </MudGrid>
+        </MudStack>
+    </MudStack>
 </MudPaper>
 
 <MudDataGrid T="ProductSyncListItemDto" Items="@_items.AsEnumerable()" Loading="@_loading"
              Hover="true" FixedHeader="true" Height="600px" RowsPerPage="25"
-             Filterable="false" SortMode="SortMode.Multiple">
+             Filterable="false" SortMode="SortMode.Multiple"
+             RowClick="OnRowClick" RowStyle="cursor: pointer;">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Ürünler</MudText>
         <MudSpacer />
@@ -76,31 +77,6 @@
                 <MudText Typo="Typo.body2">
                     @(context.Item.LastSyncedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")
                 </MudText>
-            </CellTemplate>
-        </TemplateColumn>
-        <TemplateColumn CellClass="d-flex justify-end" Title="İşlemler" Sortable="false">
-            <CellTemplate>
-                <div @onclick:stopPropagation="true">
-                @if (context.Item.SyncState is MarketplaceSyncState.NeverSynced or MarketplaceSyncState.OutOfSync)
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.Sync" Color="Color.Primary"
-                                   Size="Size.Small"
-                                   OnClick="@(() => SyncProduct(context.Item.ProductId))" />
-                }
-                else if (context.Item.SyncState is MarketplaceSyncState.Failed or MarketplaceSyncState.Rejected)
-                {
-                    <MudIconButton Icon="@Icons.Material.Filled.Replay" Color="Color.Warning"
-                                   Size="Size.Small"
-                                   OnClick="@(() => RetryFailed(context.Item.ProductId))" />
-                }
-                @if (!string.IsNullOrEmpty(context.Item.StatusMessage))
-                {
-                    <MudTooltip Text="@context.Item.StatusMessage">
-                        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Default"
-                                       Size="Size.Small" />
-                    </MudTooltip>
-                }
-                </div>
             </CellTemplate>
         </TemplateColumn>
     </Columns>

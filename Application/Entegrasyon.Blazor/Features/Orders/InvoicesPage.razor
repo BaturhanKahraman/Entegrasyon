@@ -1,0 +1,20 @@
+@page "/invoices"
+
+<PageTitle>Faturalar</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Fatura Yönetimi</MudText>
+<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır. Sipariş bazlı fatura oluşturma ve takip burada yapılacak.</MudAlert>
+
+<MudDataGrid T="object" Items="@(Array.Empty<object>())" Loading="false" Hover="true" FixedHeader="true" Height="400px">
+    <Columns>
+        <PropertyColumn Property="x => string.Empty" Title="Fatura No" />
+        <PropertyColumn Property="x => string.Empty" Title="Müşteri" />
+        <PropertyColumn Property="x => string.Empty" Title="Sipariş No" />
+        <PropertyColumn Property="x => string.Empty" Title="Tutar" />
+        <PropertyColumn Property="x => string.Empty" Title="Tarih" />
+        <PropertyColumn Property="x => string.Empty" Title="Durum" />
+    </Columns>
+    <NoRecordsContent>
+        <MudText>Henüz fatura bulunmuyor.</MudText>
+    </NoRecordsContent>
+</MudDataGrid>

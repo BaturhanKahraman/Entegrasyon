@@ -24,6 +24,8 @@ public partial class AddProduct
     private string? title;
     private string? stockCode;
     private string? description;
+    private string? season;
+    private string? year;
     private int brandId;
     private int categoryId;
 
@@ -267,6 +269,8 @@ public partial class AddProduct
                 Title = title,
                 Description = description,
                 StockCode = stockCode,
+                Season = season,
+                Year = year,
                 BrandId = brandId,
                 CategoryId = categoryId,
                 AttributeKeyValues = attributeKeyValues,

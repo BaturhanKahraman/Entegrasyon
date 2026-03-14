@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Concrete.Import;
@@ -28,7 +29,7 @@ namespace Entegrasyon.ApplicationBootstrap
 {
     public static class ApplicationBootstrapExtensions
     {
-        public static IServiceCollection AddApplicationDependencies(this IServiceCollection services)
+        public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ApplicationLifetimeManager>();
             //services.AddScoped<DbContext,IntegrationDbContext>();
@@ -63,8 +64,31 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<INotificationManager, NotificationManager>();
             services.AddScoped<IProductSyncManager, ProductSyncManager>();
 
-            // Yeni Import Servisleri
+            // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();
+            services.AddScoped<TrendyolMappingValidator>();
+            services.AddScoped<ITrendyolApiClient, TrendyolApiClient>();
+            services.AddScoped<ITrendyolProductMapper, TrendyolProductMapper>();
+
+            services.AddScoped<IOrderManager, OrderManager>();
+
+            var useMock = configuration.GetValue<bool>("Trendyol:UseMock", true);
+            services.AddScoped<TrendyolSupplierAddressCache>();
+
+            if (useMock)
+            {
+                services.AddScoped<ITrendyolProductService, MockTrendyolProductService>();
+                services.AddScoped<ITrendyolStockPriceService, MockTrendyolStockPriceService>();
+                services.AddScoped<ITrendyolOrderService, MockTrendyolOrderService>();
+                services.AddScoped<ITrendyolInvoiceService, MockTrendyolInvoiceService>();
+            }
+            else
+            {
+                services.AddScoped<ITrendyolProductService, TrendyolProductService>();
+                services.AddScoped<ITrendyolStockPriceService, TrendyolStockPriceService>();
+                services.AddScoped<ITrendyolOrderService, TrendyolOrderService>();
+                services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
+            }
 
 
 
@@ -86,16 +110,21 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             var connectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection")
-                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;";
+                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=30;ConnectionIdleLifetime=120;Include Error Detail=true;";
 
             services.AddDbContext<IntegrationDbContext>(x =>
             {
-                x.UseNpgsql(connectionString);
+                x.UseNpgsql(connectionString, npgsqlOptions =>
+                {
+                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                });
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+#if DEBUG
                 x.EnableSensitiveDataLogging();
                 x.EnableDetailedErrors();
                 x.LogTo(z => Debug.WriteLine(z));
-            },ServiceLifetime.Scoped);
+#endif
+            }, ServiceLifetime.Scoped);
             return services;
         }
 
@@ -103,6 +132,10 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             services.AddHostedService<TrendyolCategoryImportBackgroundService>();
             services.AddHostedService<TrendyolProductPublishBackgroundService>();
+            services.AddHostedService<TrendyolBatchStatusPollingService>();
+            services.AddHostedService<TrendyolStockPriceSyncService>();
+            services.AddHostedService<TrendyolProductStatusSyncService>();
+            services.AddHostedService<TrendyolOrderPollingService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)

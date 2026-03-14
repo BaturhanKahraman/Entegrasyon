@@ -11,6 +11,7 @@ public partial class Users
 {
     [Inject] private IApplicationUserManager UserManager { get; set; } = null!;
     [Inject] private IRoleService RoleService { get; set; } = null!;
+    [Inject] private IAuthService AuthService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
@@ -157,6 +158,30 @@ public partial class Users
             {
                 Snackbar.Add(serviceResult.Message, Severity.Error);
             }
+        }
+    }
+
+    private async Task ResetPassword(UserDetailListDto user)
+    {
+        var confirm = await DialogService.ShowMessageBox(
+            "Şifre Sıfırla",
+            $"{user.Name} {user.Surname} kullanıcısının şifresini sıfırlamak istediğinize emin misiniz? Geçici bir şifre atanacak.",
+            yesText: "Sıfırla", cancelText: "İptal");
+
+        if (confirm != true) return;
+
+        var tempPassword = Guid.NewGuid().ToString()[..8];
+        var result = await AuthService.AssignTempPassword(tempPassword, user.Id.ToString());
+        if (result.Success)
+        {
+            await DialogService.ShowMessageBox(
+                "Geçici Şifre",
+                $"Geçici şifre: {tempPassword}\n\nKullanıcı bir sonraki girişte yeni şifre oluşturmak zorunda kalacak.",
+                yesText: "Tamam");
+        }
+        else
+        {
+            Snackbar.Add(result.Message, Severity.Error);
         }
     }
 

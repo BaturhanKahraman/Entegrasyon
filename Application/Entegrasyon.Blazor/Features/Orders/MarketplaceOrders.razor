@@ -1,0 +1,76 @@
+@page "/marketplace/orders"
+@using Entegrasyon.Entity.Orders
+
+<PageTitle>Pazaryeri Siparişleri</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Pazaryeri Siparişleri</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+        <MudTextField @bind-Value="_searchText" Placeholder="Sipariş no veya müşteri ara..."
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true" DebounceInterval="300" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshOrdersAsync"
+                   StartIcon="@Icons.Material.Filled.Refresh">
+            Yenile
+        </MudButton>
+    </MudStack>
+</MudPaper>
+
+<MudDataGrid T="Order" Items="@_filteredOrders.AsEnumerable()" Loading="@_loading" Hover="true"
+             FixedHeader="true" Height="600px" Dense="true" RowClick="OnRowClick" RowClass="cursor-pointer">
+    <Columns>
+        <PropertyColumn Property="x => x.OrderNumber" Title="Sipariş No" />
+        <TemplateColumn Title="Müşteri">
+            <CellTemplate>
+                <MudText Typo="Typo.body2">@context.Item.CustomerFirstName @context.Item.CustomerLastName</MudText>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Tutar">
+            <CellTemplate>
+                <MudText Typo="Typo.body2" Color="Color.Success">@context.Item.GrossAmount?.ToString("C2")</MudText>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Durum">
+            <CellTemplate>
+                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.MarketplaceOrderStatus)">
+                    @(context.Item.MarketplaceOrderStatus ?? "Bilinmiyor")
+                </MudChip>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Kargo">
+            <CellTemplate>
+                @if (!string.IsNullOrEmpty(context.Item.CargoTrackingNumber))
+                {
+                    <MudTooltip Text="@context.Item.CargoProviderName">
+                        <MudText Typo="Typo.body2">@context.Item.CargoTrackingNumber</MudText>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Default">—</MudText>
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Tarih">
+            <CellTemplate>
+                <MudText Typo="Typo.body2">@context.Item.OrderDate?.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</MudText>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Etiketler">
+            <CellTemplate>
+                @if (context.Item.IsFastDelivery)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">Hızlı</MudChip>
+                }
+                @if (context.Item.IsMicro)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info">Mikro</MudChip>
+                }
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <NoRecordsContent>
+        <MudText>Henüz pazaryeri siparişi bulunmuyor.</MudText>
+    </NoRecordsContent>
+</MudDataGrid>

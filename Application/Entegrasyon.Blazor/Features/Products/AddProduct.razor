@@ -55,6 +55,12 @@
                                 }
                             </MudSelect>
                         </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Label="Sezon" @bind-Value="season" Placeholder="Örn: Yaz, Kış, İlkbahar" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Label="Yıl" @bind-Value="year" Placeholder="Örn: 2026" />
+                        </MudItem>
                         <MudItem xs="12">
                             <MudTextField Label="Açıklama" Lines="4" @bind-Value="description" />
                         </MudItem>

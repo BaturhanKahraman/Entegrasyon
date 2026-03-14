@@ -111,6 +111,19 @@ public static class AppPermissions
         public const string Delete = "Permissions.Brands.Delete";
     }
 
+    public static class Marketplace
+    {
+        public const string View = "Permissions.Marketplace.View";
+        public const string Create = "Permissions.Marketplace.Create";
+        public const string Edit = "Permissions.Marketplace.Edit";
+        public const string Delete = "Permissions.Marketplace.Delete";
+    }
+
+    public static class Notifications
+    {
+        public const string View = "Permissions.Notifications.View";
+    }
+
     public static List<string> GetAllPermissions()
     {
         var permissions = new List<string>();
@@ -128,6 +141,8 @@ public static class AppPermissions
         permissions.AddRange([Brands.View, Brands.Create, Brands.Edit, Brands.Delete]);
         permissions.AddRange([Logs.View]);
         permissions.AddRange([Settings.View, Settings.Edit]);
+        permissions.AddRange([Marketplace.View, Marketplace.Create, Marketplace.Edit, Marketplace.Delete]);
+        permissions.AddRange([Notifications.View]);
         return permissions;
     }
 }

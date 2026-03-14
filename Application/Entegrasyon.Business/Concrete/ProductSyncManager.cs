@@ -119,6 +119,45 @@ public sealed class ProductSyncManager(
         return new SuccessDataResult<Pageable<ProductSyncListItemDto>>(pageable);
     }
 
+    public async Task<IDataResult<ProductSyncDetailDto>> GetProductSyncDetailAsync(Guid productId)
+    {
+        var product = await dbContext.MainProducts
+            .Where(p => p.Id == productId)
+            .Select(p => new
+            {
+                p.Id,
+                p.Title,
+                p.StockCode,
+                BrandName = p.Brand != null ? p.Brand.Name : "",
+                CategoryName = p.Category != null ? p.Category.Name : "",
+                VariantCount = p.ProductVariants.Count(),
+                p.UpdatedAt,
+                MarketplaceRecords = p.ProductMarketplaces.ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (product is null)
+            return new ErrorDataResult<ProductSyncDetailDto>(null!, "Ürün bulunamadı.");
+
+        var allMarketplaces = await dbContext.MarketPlaces.ToListAsync();
+
+        var marketplaceItems = allMarketplaces.Select(mp =>
+        {
+            var record = product.MarketplaceRecords.FirstOrDefault(r => r.MarketPlaceId == mp.Id);
+            var state = MapSyncState(record, product.UpdatedAt);
+            return new MarketplaceSyncItemDto(
+                mp.Id, mp.Name, state,
+                record?.LastSyncedAt, record?.BatchRequestId, record?.StatusMessage);
+        }).ToList();
+
+        var dto = new ProductSyncDetailDto(
+            product.Id, product.Title, product.StockCode,
+            product.BrandName, product.CategoryName, product.VariantCount,
+            marketplaceItems);
+
+        return new SuccessDataResult<ProductSyncDetailDto>(dto);
+    }
+
     public async Task<IResult> SyncProductAsync(Guid productId, int marketPlaceId)
     {
         var product = await dbContext.MainProducts.FindAsync(productId);

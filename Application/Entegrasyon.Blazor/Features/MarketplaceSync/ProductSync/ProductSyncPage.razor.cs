@@ -10,6 +10,7 @@ public partial class ProductSyncPage
     [Inject] private IProductSyncManager SyncManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
 
     private const int TrendyolMarketPlaceId = 1;
 
@@ -51,32 +52,9 @@ public partial class ProductSyncPage
         await LoadData();
     }
 
-    private async Task SyncProduct(Guid productId)
+    private void OnRowClick(DataGridRowClickEventArgs<ProductSyncListItemDto> args)
     {
-        try
-        {
-            var result = await SyncManager.SyncProductAsync(productId, TrendyolMarketPlaceId);
-            Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
-            if (result.Success) await LoadData();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task RetryFailed(Guid productId)
-    {
-        try
-        {
-            var result = await SyncManager.RetryFailedAsync(productId, TrendyolMarketPlaceId);
-            Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
-            if (result.Success) await LoadData();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
-        }
+        NavigationManager.NavigateTo($"/marketplace/matching/{args.Item.ProductId}");
     }
 
     private async Task SyncAllPending()
@@ -119,7 +97,7 @@ public partial class ProductSyncPage
         }
     }
 
-    private static Color GetSyncStateColor(MarketplaceSyncState state) => state switch
+    internal static Color GetSyncStateColor(MarketplaceSyncState state) => state switch
     {
         MarketplaceSyncState.Synced => Color.Success,
         MarketplaceSyncState.OutOfSync => Color.Warning,
@@ -129,7 +107,7 @@ public partial class ProductSyncPage
         _ => Color.Default
     };
 
-    private static string GetSyncStateLabel(MarketplaceSyncState state) => state switch
+    internal static string GetSyncStateLabel(MarketplaceSyncState state) => state switch
     {
         MarketplaceSyncState.NeverSynced => "Senkronize Edilmedi",
         MarketplaceSyncState.Waiting => "Bekliyor",
