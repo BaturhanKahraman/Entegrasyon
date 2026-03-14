@@ -8,6 +8,7 @@ public class BranchOfficeStockEntityConfiguration: IEntityTypeConfiguration<Bran
 {
     public void Configure(EntityTypeBuilder<BranchOfficeStock> builder)
     {
+        builder.UseXminAsConcurrencyToken();
         builder.HasKey(x => new { x.BranchOfficeId, ProductKindId = x.ProductVariantId });
         builder.Property(x => x.FirstTotalStock).IsRequired();
         builder.Property(x => x.CurrentStock)
