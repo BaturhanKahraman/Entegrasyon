@@ -297,29 +297,34 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId)
         {
-            // 1. Kategori + leaf check + parent candidates — tek Categories sorgusu
-            var allCategories = await dbContext.Categories
-                .AsNoTracking()
-                .ToListAsync();
-
-            var category = allCategories.FirstOrDefault(c => c.Id == categoryId);
+            // 1. Kategori bilgisini direkt ID ile çek
+            var category = await dbContext.Categories
+                .FirstOrDefaultAsync(c => c.Id == categoryId);
             if (category is null)
                 return new ErrorDataResult<CategoryEditPageDto>(null, Messages.CategoryNotFound);
 
-            var isLeaf = !allCategories.Any(c => c.SuperCategoryId == categoryId);
+            var isLeaf = !await dbContext.Categories
+                .AnyAsync(c => c.SuperCategoryId == categoryId);
 
-            var excludeIds = GetDescendantIds(allCategories, categoryId);
+            // Hiyerarşi hesabı için hafif projeksiyon (sadece Id + SuperCategoryId)
+            var categoryTree = await dbContext.Categories
+                .Select(c => new Category { Id = c.Id, SuperCategoryId = c.SuperCategoryId })
+                .ToListAsync();
+
+            var excludeIds = GetDescendantIds(categoryTree, categoryId);
             excludeIds.Add(categoryId);
             var categoriesWithAttributes = await dbContext.CategoryAttributeCategories
                 .Select(cac => cac.CategoryId)
                 .Distinct()
                 .ToListAsync();
             var categoriesWithAttributesSet = categoriesWithAttributes.ToHashSet();
-            var validParents = allCategories
+
+            // validParents — full entity gerekli çünkü DTO'ya Category nesnesi veriliyor
+            var validParents = await dbContext.Categories
                 .Where(c => !excludeIds.Contains(c.Id))
                 .Where(c => !categoriesWithAttributesSet.Contains(c.Id))
                 .OrderBy(c => c.Name)
-                .ToList();
+                .ToListAsync();
 
             // 2. Tüm attribute'lar + bu kategorinin attribute'ları — tek CategoryAttributes sorgusu
             var allAttributes = await dbContext.CategoryAttributes

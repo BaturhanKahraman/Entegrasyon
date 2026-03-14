@@ -1,0 +1,18 @@
+@page "/settings/notifications"
+@using Entegrasyon.ApplicationBootstrap.Security
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
+
+<PageTitle>Bildirim Ayarları</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Bildirim Ayarları</MudText>
+<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır.</MudAlert>
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h6" Class="mb-3">Bildirim Tercihleri</MudText>
+    <MudStack Spacing="3">
+        <MudSwitch T="bool" Label="Sipariş bildirimleri" Color="Color.Primary" Disabled="true" />
+        <MudSwitch T="bool" Label="Stok uyarıları" Color="Color.Primary" Disabled="true" />
+        <MudSwitch T="bool" Label="Pazaryeri senkronizasyon bildirimleri" Color="Color.Primary" Disabled="true" />
+        <MudSwitch T="bool" Label="E-posta bildirimleri" Color="Color.Primary" Disabled="true" />
+    </MudStack>
+</MudPaper>

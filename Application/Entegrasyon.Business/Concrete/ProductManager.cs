@@ -142,9 +142,8 @@ public class ProductManager(
 
         var product = await dbContext.MainProducts
             .AsTracking()
-            .Include(p => p.ProductVariants)
-            .Include(p => p.AttributeKeyValues)
             .Include(p => p.ProductVariants).ThenInclude(pv => pv.Images)
+            .Include(p => p.AttributeKeyValues)
             .FirstOrDefaultAsync(p => p.Id == dto.Id);
 
         if (product is null)

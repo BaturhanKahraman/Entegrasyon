@@ -1,0 +1,29 @@
+@page "/settings/general"
+@using Entegrasyon.ApplicationBootstrap.Security
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
+
+<PageTitle>Genel Ayarlar</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Genel Ayarlar</MudText>
+<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır.</MudAlert>
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h6" Class="mb-3">Firma Bilgileri</MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="Firma Adı" Variant="Variant.Outlined" Disabled="true" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="Vergi Numarası" Variant="Variant.Outlined" Disabled="true" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="Telefon" Variant="Variant.Outlined" Disabled="true" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="E-posta" Variant="Variant.Outlined" Disabled="true" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField T="string" Label="Adres" Lines="3" Variant="Variant.Outlined" Disabled="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>

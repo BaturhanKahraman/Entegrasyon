@@ -1,0 +1,32 @@
+@page "/settings/integrations"
+@using Entegrasyon.ApplicationBootstrap.Security
+@attribute [Authorize(Policy = AppPermissions.Integrations.View)]
+
+<PageTitle>Entegrasyon Ayarları</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Entegrasyon Ayarları</MudText>
+<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır. Pazaryeri API anahtarları ve entegrasyon yapılandırmaları burada yönetilecek.</MudAlert>
+
+<MudGrid>
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.Store" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6">Trendyol</MudText>
+                    </MudStack>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField T="string" Label="API Key" Variant="Variant.Outlined" Disabled="true" Class="mb-2" />
+                <MudTextField T="string" Label="API Secret" Variant="Variant.Outlined" InputType="InputType.Password" Disabled="true" Class="mb-2" />
+                <MudTextField T="string" Label="Mağaza ID" Variant="Variant.Outlined" Disabled="true" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">Kaydet</MudButton>
+                <MudButton Variant="Variant.Outlined" Disabled="true">Bağlantıyı Test Et</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>

@@ -1,3 +1,4 @@
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -15,12 +16,10 @@ namespace Entegrasyon.Business.BackgroundServices;
 ///
 /// Akış:
 ///   ProductSyncManager → ProductMarketplace (Pending) + Event yayınla
-///   Bu servis → Event al → API çağır → Durumu Published/Failed güncelle
+///   Bu servis → Event al → ITrendyolProductService.PublishProductAsync → Durumu güncelle
 ///
 /// TODO: ProductAddedEvent consumer'ı oluşturulmalı — ürün eklendikten sonra otomatik olarak
 /// konfigüre edilmiş pazaryerlerine ProductCreatedForMarketplaceEvent yayınlamalı.
-/// Bu sayede AddProduct → ProductAddedEvent → [consumer] → ProductCreatedForMarketplaceEvent → bu servis
-/// akışı ile ürünler otomatik sync kuyruğuna girecek.
 /// </summary>
 public class TrendyolProductPublishBackgroundService(
     EventChannel<ProductCreatedForMarketplaceEvent> channel,
@@ -38,14 +37,13 @@ public class TrendyolProductPublishBackgroundService(
                     evt.ProductId, string.Join(", ", evt.Marketplaces));
 
                 await using var scope = scopeFactory.CreateAsyncScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
 
                 foreach (var marketplace in evt.Marketplaces)
                 {
                     switch (marketplace)
                     {
                         case "Trendyol":
-                            await HandleTrendyolAsync(dbContext, evt.ProductId, stoppingToken);
+                            await HandleTrendyolAsync(scope.ServiceProvider, evt.ProductId, stoppingToken);
                             break;
                         default:
                             logger.LogWarning("Unsupported marketplace: {Marketplace}", marketplace);
@@ -60,10 +58,12 @@ public class TrendyolProductPublishBackgroundService(
         }
     }
 
-    private async Task HandleTrendyolAsync(IntegrationDbContext dbContext, Guid productId, CancellationToken ct)
+    private async Task HandleTrendyolAsync(IServiceProvider services, Guid productId, CancellationToken ct)
     {
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var trendyolService = services.GetRequiredService<ITrendyolProductService>();
+
         var record = await dbContext.ProductMarketplaces
-            .Include(pm => pm.Product)
             .FirstOrDefaultAsync(pm => pm.ProductId == productId &&
                                        pm.MarketPlace.Name == "Trendyol", ct);
 
@@ -73,16 +73,20 @@ public class TrendyolProductPublishBackgroundService(
             return;
         }
 
-        // TODO: ITrendyolProductService.PublishProduct(productId) çağrılacak
-        // Başarılı:
-        //   record.Status = MarketplaceProductStatus.Published;
-        //   record.LastSyncedAt = DateTimeOffset.UtcNow;
-        //   record.BatchRequestId = response.BatchRequestId;
-        // Başarısız:
-        //   record.Status = MarketplaceProductStatus.Failed;
-        //   record.StatusMessage = error.Message;
-        // await dbContext.SaveChangesAsync(ct);
+        var result = await trendyolService.PublishProductAsync(productId);
 
-        logger.LogInformation("Trendyol publish pending for ProductId={ProductId} — API integration not yet implemented", productId);
+        if (result.Success)
+        {
+            record.BatchRequestId = result.Data;
+            logger.LogInformation("Product {ProductId} published to Trendyol. BatchId={BatchId}", productId, result.Data);
+        }
+        else
+        {
+            record.Status = MarketplaceProductStatus.Failed;
+            record.StatusMessage = result.Message;
+            logger.LogWarning("Product {ProductId} failed to publish to Trendyol: {Message}", productId, result.Message);
+        }
+
+        await dbContext.SaveChangesAsync(ct);
     }
 }

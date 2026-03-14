@@ -823,6 +823,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("ApiSecret")
                         .HasColumnType("text");
 
+                    b.Property<string>("BaseUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("BasicAuthPassword")
                         .HasColumnType("text");
 
@@ -846,8 +850,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("SellerId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserAgentPrefix")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -864,6 +876,42 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                             Name = "Trendyol",
                             UpdatedAt = new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
+                });
+
+            modelBuilder.Entity("Entegrasyon.Entity.MarketPlaceWarehouse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchOfficeId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MarketPlaceId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchOfficeId");
+
+                    b.HasIndex("MarketPlaceId", "BranchOfficeId")
+                        .IsUnique();
+
+                    b.ToTable("MarketPlaceWarehouses");
                 });
 
             modelBuilder.Entity("Entegrasyon.Entity.Matches.BrandMarketPlaceMatch", b =>
@@ -1149,14 +1197,67 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CargoProviderName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CargoTrackingLink")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("CargoTrackingNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerEmail")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CustomerFirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CustomerLastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("EstimatedDeliveryEndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("GrossAmount")
+                        .HasColumnType("money");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFastDelivery")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsMicro")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MarketPlaceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MarketplaceOrderStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset?>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OrderNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long?>("ShipmentPackageId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal>("TotalPrice")
                         .ValueGeneratedOnAddOrUpdate()
@@ -1171,6 +1272,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("MarketPlaceId");
+
                     b.ToTable("Orders");
                 });
 
@@ -1182,20 +1285,42 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Barcode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("Discount")
+                        .HasColumnType("money");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<long?>("LineId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("MerchantSku")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ProductColor")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ProductSize")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -1315,6 +1440,9 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<long?>("ContentId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1324,6 +1452,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<string>("ExternalProductId")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<bool?>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsArchived")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -2010,6 +2144,25 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("Entegrasyon.Entity.MarketPlaceWarehouse", b =>
+                {
+                    b.HasOne("Entegrasyon.Entity.BranchOffice", "BranchOffice")
+                        .WithMany()
+                        .HasForeignKey("BranchOfficeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BranchOffice");
+
+                    b.Navigation("MarketPlace");
+                });
+
             modelBuilder.Entity("Entegrasyon.Entity.Matches.BrandMarketPlaceMatch", b =>
                 {
                     b.HasOne("Entegrasyon.Entity.Brands.Brand", "ApplicationBrand")
@@ -2137,6 +2290,10 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("Entegrasyon.Entity.Orders.Order", b =>
                 {
+                    b.HasOne("Entegrasyon.Entity.MarketPlace", "MarketPlace")
+                        .WithMany()
+                        .HasForeignKey("MarketPlaceId");
+
                     b.OwnsOne("Entegrasyon.Entity.Address", "BillingAddress", b1 =>
                         {
                             b1.Property<Guid>("OrderId")
@@ -2200,6 +2357,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         });
 
                     b.Navigation("BillingAddress");
+
+                    b.Navigation("MarketPlace");
 
                     b.Navigation("ShippingAddress");
                 });
@@ -2267,7 +2426,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .IsRequired();
 
                     b.HasOne("Entegrasyon.Entity.Products.Product", "Product")
-                        .WithMany()
+                        .WithMany("ProductMarketplaces")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2499,6 +2658,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             modelBuilder.Entity("Entegrasyon.Entity.Products.Product", b =>
                 {
                     b.Navigation("AttributeKeyValues");
+
+                    b.Navigation("ProductMarketplaces");
 
                     b.Navigation("ProductVariants");
                 });

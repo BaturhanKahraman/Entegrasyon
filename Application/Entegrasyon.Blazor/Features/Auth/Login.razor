@@ -12,10 +12,9 @@
     <MudTextField @bind-Value="@_password" Label="Şifre" Variant="Variant.Outlined" InputType="InputType.Password"
         Class="mb-3" Required="true" RequiredError="Şifre gereklidir." />
 
-    <div class="d-flex justify-end mb-4">
-        <MudLink Href="/auth/forgot-password" Color="Color.Secondary" Underline="Underline.Hover">Şifremi Unuttum
-        </MudLink>
-    </div>
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Right" Class="mb-4">
+        Şifrenizi mi unuttunuz? Sistem yöneticinize başvurun.
+    </MudText>
 
     <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" OnClick="LoginAsync"
         Disabled="@(!_isValid || _isLoading)">

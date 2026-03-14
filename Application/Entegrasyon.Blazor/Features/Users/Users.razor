@@ -1,3 +1,4 @@
+@page "/users"
 @using Entegrasyon.ApplicationBootstrap.Security
 @attribute [Authorize(Policy = AppPermissions.Users.View)]
 @using Entegrasyon.Entity.Dtos.Users
@@ -58,14 +59,12 @@
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
                         OnClick="@(() => EditUser(context.Item))" />
                 </MudTooltip>
-                <!--
                 <MudTooltip Text="Şifre Sıfırla">
                     <MudIconButton Icon="@Icons.Material.Filled.Lock"
                                    Color="Color.Warning"
                                    Size="Size.Small"
                                    OnClick="@(() => ResetPassword(context.Item))" />
                 </MudTooltip>
-                -->
                 <MudTooltip Text="Sil">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
                         OnClick="@(() => DeleteUser(context.Item))" />

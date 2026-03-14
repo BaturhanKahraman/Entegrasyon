@@ -15,4 +15,19 @@ public sealed class ProductMarketplace : BaseEntity
     public string? ExternalProductId { get; set; }
     public string? StatusMessage { get; set; }
     public DateTimeOffset? LastSyncedAt { get; set; }
+
+    /// <summary>
+    /// Trendyol'un onaylı ürün güncellemesi için zorunlu tuttuğu contentId.
+    /// </summary>
+    public long? ContentId { get; set; }
+
+    /// <summary>
+    /// Ürünün Trendyol tarafından onaylanıp onaylanmadığı.
+    /// </summary>
+    public bool? IsApproved { get; set; }
+
+    /// <summary>
+    /// Ürünün Trendyol'da arşivlenip arşivlenmediği.
+    /// </summary>
+    public bool? IsArchived { get; set; }
 }

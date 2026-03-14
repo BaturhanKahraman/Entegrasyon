@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
+using Entegrasyon.Blazor.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,7 @@ builder.Host.UseDefaultServiceProvider((host, options) =>
     options.ValidateOnBuild = host.HostingEnvironment.IsDevelopment();
     options.ValidateScopes = host.HostingEnvironment.IsDevelopment();
 });
-builder.Services.AddApplicationDependencies();
+builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddClients();
 builder.Services.AddBackgroundServices();
 
@@ -117,6 +118,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<NotificationHub>("/NotificationHub");
+app.MapTrendyolWebhooks();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

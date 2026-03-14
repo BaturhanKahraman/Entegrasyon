@@ -1,0 +1,32 @@
+@page "/reports/inventory"
+
+<PageTitle>Stok Raporları</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Stok Raporları</MudText>
+<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır.</MudAlert>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" sm="4">
+            <MudSelect T="string" Label="Şube" Variant="Variant.Outlined" Disabled="true">
+                <MudSelectItem Value="@("all")">Tüm Şubeler</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudSelect T="string" Label="Durum" Variant="Variant.Outlined" Disabled="true">
+                <MudSelectItem Value="@("all")">Tümü</MudSelectItem>
+                <MudSelectItem Value="@("low")">Düşük Stok</MudSelectItem>
+                <MudSelectItem Value="@("out")">Stokta Yok</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="4" Class="d-flex align-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">Rapor Oluştur</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-4" Style="min-height: 300px;">
+    <MudText Typo="Typo.h6" Color="Color.Dark" Align="Align.Center" Class="mt-8">
+        Stok raporu oluşturmak için filtreleri seçin.
+    </MudText>
+</MudPaper>

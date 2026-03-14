@@ -47,6 +47,9 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
             _ctx.CategoryAttributeCategories.RemoveRange(deletedOnes);
             await _ctx.SaveChangesAsync();
 
+            // Tracker'ı temizle — eski entity referansları yeni ekleme ile çakışmasın
+            _ctx.ChangeTracker.Clear();
+
             // 2. Yeni kayıtları oluştur ve ekle
             var existingCatAttrs = await GetExistingCategoryAttributes(dtoList);
             var existingCatAttrValues = await GetExistingCategoryAttributeValues(dtoList);
@@ -67,14 +70,19 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
     }
     private async Task<ImmutableDictionary<int, CategoryAttribute>> GetExistingCategoryAttributes(IEnumerable<AddCategoryAttributeDto> dto)
     {
-        var ids = dto.Select(d => d.Id);
+        var ids = dto.Where(d => d.Id > 0).Select(d => d.Id).ToList();
+        if (ids.Count == 0) return ImmutableDictionary<int, CategoryAttribute>.Empty;
         return (await _ctx.CategoryAttributes.AsTracking().Where(ca => ids.Contains(ca.Id))
             .ToListAsync()).ToImmutableDictionary(ca => ca.Id);
     }
 
     private async Task<List<CategoryAttributeValue>> GetExistingCategoryAttributeValues(IEnumerable<AddCategoryAttributeDto> dto)
     {
-        var catAttrValueIds = dto.SelectMany(d => d.CategoryAttributeValues).Select(d => d.Id).ToArray();
+        var catAttrValueIds = dto.SelectMany(d => d.CategoryAttributeValues)
+            .Where(v => v.Id > 0)
+            .Select(d => d.Id)
+            .ToArray();
+        if (catAttrValueIds.Length == 0) return [];
         return await _ctx.CategoryAttributeValues.AsTracking()
             .Where(cav => catAttrValueIds.Contains(cav.Id))
             .ToListAsync();
