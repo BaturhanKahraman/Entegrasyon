@@ -156,7 +156,7 @@ public partial class Sales
             //     ClearCart();
             // }
 
-            await Task.Delay(1000); // Simulate processing
+            // TODO: Implement actual sale via SaleManager
 
             var confirm = await DialogService!.ShowMessageBox(
                 "Satış Tamamlandı",

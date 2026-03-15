@@ -18,32 +18,28 @@ public partial class Products
     [Inject]
     private IProductService ProductManager { get; set; } = null!;
 
-    private List<ProductsDetailDto> products = [];
-    private List<ProductsDetailDto> filteredProducts = [];
+    private MudDataGrid<ProductsDetailDto> _dataGrid = null!;
     private string searchString = string.Empty;
-    private bool loading = true;
 
-    protected override async Task OnInitializedAsync()
+    private async Task<GridData<ProductsDetailDto>> ServerData(GridState<ProductsDetailDto> state)
     {
-        await LoadProducts();
-    }
-
-    private async Task LoadProducts()
-    {
-        loading = true;
         var result = await ProductManager.GetProductsDetailsPageable(
-            new SearchablePageDto(searchString, 0, 200));
+            new SearchablePageDto(searchString, state.Page, state.PageSize));
+
         if (result.Success && result.Data is not null)
-        {
-            products = result.Data.Items.ToList();
-            filteredProducts = products;
-        }
-        loading = false;
+            return new GridData<ProductsDetailDto>
+            {
+                TotalItems = result.Data.TotalItemCount,
+                Items = result.Data.Items
+            };
+
+        return new GridData<ProductsDetailDto> { TotalItems = 0, Items = [] };
     }
 
-    private async Task OnSearchChanged()
+    private Task OnSearchChanged(string text)
     {
-        await LoadProducts();
+        searchString = text;
+        return _dataGrid.ReloadServerData();
     }
 
     private async Task OpenAddProductDialog()
@@ -79,7 +75,7 @@ public partial class Products
         if (confirm == true)
         {
             Snackbar?.Add($"Ürün kopyalandı: {product.Title}", Severity.Success);
-            await LoadProducts();
+            await _dataGrid.ReloadServerData();
         }
     }
 
@@ -105,7 +101,7 @@ public partial class Products
         {
             // TODO: Implement Excel export using EPPlus or ClosedXML
             Snackbar?.Add("Excel dosyası oluşturuluyor...", Severity.Info);
-            await Task.Delay(1000); // Simulate export
+            // TODO: Implement actual Excel export
             Snackbar?.Add("Excel dosyası indirildi", Severity.Success);
         }
         catch (Exception ex)

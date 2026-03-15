@@ -8,6 +8,8 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
     private readonly ProtectedLocalStorage _protectedLocalStorage;
     private readonly ClaimsPrincipal _anonymous = new(new ClaimsIdentity());
+    private ClaimsPrincipal? _cachedPrincipal;
+    private bool _hasReadFromStorage;
 
     public CustomAuthenticationStateProvider(ProtectedLocalStorage protectedLocalStorage)
     {
@@ -16,32 +18,29 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        if (_hasReadFromStorage)
+            return new AuthenticationState(_cachedPrincipal ?? _anonymous);
+
         try
         {
             var userSessionResult = await _protectedLocalStorage.GetAsync<UserSession>("UserSession");
             var userSession = userSessionResult.Success ? userSessionResult.Value : null;
+            _hasReadFromStorage = true;
 
             if (userSession == null)
             {
-                return await Task.FromResult(new AuthenticationState(_anonymous));
+                _cachedPrincipal = _anonymous;
+                return new AuthenticationState(_anonymous);
             }
 
-            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, userSession.UserName),
-                new Claim(ClaimTypes.Email, userSession.Email),
-                new Claim(ClaimTypes.NameIdentifier, userSession.UserId),
-                new Claim("Token", userSession.Token)
-            }
-            .Concat(userSession.Roles.Select(r => new Claim(ClaimTypes.Role, r)))
-            .Concat(userSession.Permissions.Select(p => new Claim("Permission", p))),
-            "CustomAuth"));
-
-            return await Task.FromResult(new AuthenticationState(claimsPrincipal));
+            _cachedPrincipal = BuildClaimsPrincipal(userSession);
+            return new AuthenticationState(_cachedPrincipal);
         }
         catch
         {
-            return await Task.FromResult(new AuthenticationState(_anonymous));
+            _hasReadFromStorage = true;
+            _cachedPrincipal = _anonymous;
+            return new AuthenticationState(_anonymous);
         }
     }
 
@@ -52,16 +51,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         if (userSession != null)
         {
             await _protectedLocalStorage.SetAsync("UserSession", userSession);
-            claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, userSession.UserName),
-                new Claim(ClaimTypes.Email, userSession.Email),
-                new Claim(ClaimTypes.NameIdentifier, userSession.UserId),
-                new Claim("Token", userSession.Token)
-            }
-            .Concat(userSession.Roles.Select(r => new Claim(ClaimTypes.Role, r)))
-            .Concat(userSession.Permissions.Select(p => new Claim("Permission", p))),
-            "CustomAuth"));
+            claimsPrincipal = BuildClaimsPrincipal(userSession);
         }
         else
         {
@@ -69,7 +59,24 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             claimsPrincipal = _anonymous;
         }
 
+        _cachedPrincipal = claimsPrincipal;
+        _hasReadFromStorage = true;
+
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
+    }
+
+    private static ClaimsPrincipal BuildClaimsPrincipal(UserSession session)
+    {
+        return new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.Name, session.UserName),
+            new Claim(ClaimTypes.Email, session.Email),
+            new Claim(ClaimTypes.NameIdentifier, session.UserId),
+            new Claim("Token", session.Token)
+        }
+        .Concat(session.Roles.Select(r => new Claim(ClaimTypes.Role, r)))
+        .Concat(session.Permissions.Select(p => new Claim("Permission", p))),
+        "CustomAuth"));
     }
 }
 

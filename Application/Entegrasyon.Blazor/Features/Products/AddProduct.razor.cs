@@ -5,18 +5,17 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Blazor.Features.Products;
 
 public partial class AddProduct
 {
-    // Steps: 0=Genel, 1=Varyant Seçimi, 2=Varyant Detayları & Görseller, 3=Pazaryeri
+    // Steps: 0=Genel, 1=Varyant Seçimi, 2=Varyant Detayları & Görseller, 3=Kontrol & Özet, 4=Pazaryerine Gönder
     private int stepIndex = 0;
     private MudForm? formStep1;
     private bool _isSaving;
@@ -52,8 +51,12 @@ public partial class AddProduct
     // Images per variant index — with preview support
     private readonly Dictionary<int, List<VariantImageItem>> _variantImages = new();
 
-    // Marketplace selection (step 3)
-    private bool _trendyolSelected = true;
+    // Saved product ID — set after successful save in Step 3
+    private Guid? _savedProductId;
+
+    // Loading states
+    private bool _isProcessingImages;
+    private bool _isGeneratingBarcodes;
 
     [Inject] private IBrandService? BrandManager { get; set; }
     [Inject] private ICategoryService? CategoryManager { get; set; }
@@ -62,7 +65,7 @@ public partial class AddProduct
     [Inject] private ISnackbar? Snackbar { get; set; }
     [Inject] private IProductService? ProductManager { get; set; }
     [Inject] private IImageManager? ImageManager { get; set; }
-    [Inject] private EventChannel<ProductCreatedForMarketplaceEvent>? MarketplaceChannel { get; set; }
+    // MarketplaceChannel kaldırıldı — publish artık Step 4'te MarketplacePublishStep üzerinden yapılıyor
     [Inject] private NavigationManager? NavigationManager { get; set; }
     [Inject] private IBarcodeService? BarcodeService { get; set; }
     [Inject] private IDialogService? DialogService { get; set; }
@@ -147,10 +150,15 @@ public partial class AddProduct
         };
 
         var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
-        var dialog = await DialogService.Show<ImageUploadDialog>("Görsel Yönetimi", parameters, options).Result;
+        var dialog = await DialogService.ShowAsync<ImageUploadDialog>("Görsel Yönetimi", parameters, options);
+        var dialogResult = await dialog.Result;
 
-        if (!dialog!.Canceled && dialog.Data is Dictionary<int, List<ImageUploadDialog.ImageItem>> result)
+        if (!dialogResult!.Canceled && dialogResult.Data is Dictionary<int, List<ImageUploadDialog.ImageItem>> result)
         {
+            _isProcessingImages = true;
+            StateHasChanged();
+            await Task.Yield(); // UI'ın spinner'ı göstermesine izin ver
+
             _variantImages.Clear();
             foreach (var (idx, items) in result)
             {
@@ -161,15 +169,51 @@ public partial class AddProduct
                     IsPrimary = item.IsPrimary
                 }).ToList();
             }
+
+            _isProcessingImages = false;
         }
     }
 
-    private async Task GenerateBarcodeForVariant(int idx)
+    private async Task GenerateAllBarcodes()
     {
-        if (BarcodeService is null || idx >= variants.Count) return;
-        variants[idx].Barcode = await BarcodeService.GenerateAsync();
+        if (BarcodeService is null || variants.Count == 0) return;
+
+        _isGeneratingBarcodes = true;
+        StateHasChanged();
+
+        try
+        {
+            foreach (var variant in variants)
+            {
+                variant.Barcode = await BarcodeService.GenerateAsync();
+            }
+        }
+        finally
+        {
+            _isGeneratingBarcodes = false;
+        }
     }
 
+    private void CopyFromPreviousVariant(int idx)
+    {
+        if (idx <= 0 || idx >= variants.Count) return;
+
+        var source = variants[idx - 1];
+        var target = variants[idx];
+
+        // Fiyat, maliyet, hacim ağırlığı kopyala — barkod ve görseller HARİÇ
+        target.ListPrice = source.ListPrice;
+        target.SalePrice = source.SalePrice;
+        target.CostPrice = source.CostPrice;
+        target.DimensionalWeight = source.DimensionalWeight;
+
+        // Stok değerlerini kopyala
+        foreach (var office in _branchOffices)
+        {
+            var sourceStock = _stockValues.GetValueOrDefault((idx - 1, office.Id));
+            _stockValues[(idx, office.Id)] = sourceStock;
+        }
+    }
 
     private static string GetVariantLabel(AddProductVariantDto variant, int idx)
     {
@@ -238,7 +282,7 @@ public partial class AddProduct
             }
         }
 
-        if (stepIndex < 3) stepIndex++;
+        if (stepIndex < 3) stepIndex++; // Step 3 = son manual adım, Step 4'e submit sonrası geçilir
     }
 
     private void PreviousStep()
@@ -309,24 +353,23 @@ public partial class AddProduct
 
             var product = result.Data;
 
-            // 2. Upload images (synchronous — Trendyol needs the URLs)
+            // 2. Upload images
             var imageUploads = BuildImageUploads(product);
             if (imageUploads.Count > 0)
                 await ImageManager.AddProductImages(product.Id, imageUploads);
 
-            // 3. Queue marketplace sync (fire & forget)
-            var selectedMarketplaces = GetSelectedMarketplaces();
-            if (selectedMarketplaces.Count > 0 && MarketplaceChannel is not null)
-            {
-                MarketplaceChannel.TryPublish(new ProductCreatedForMarketplaceEvent(product.Id, selectedMarketplaces));
-            }
-
-            Snackbar?.Add("Ürün oluşturuldu. Pazaryeri senkronizasyonu arka planda başlatıldı.", Severity.Success);
-            NavigationManager?.NavigateTo("/products");
+            // 3. Step 4'e geç — pazaryeri gönderimi opsiyonel
+            _savedProductId = product.Id;
+            Snackbar?.Add("Ürün başarıyla kaydedildi.", Severity.Success);
+            stepIndex = 4;
         }
         catch (FluentValidation.ValidationException vex)
         {
             Snackbar?.Add(string.Join(" | ", vex.Errors.Select(e => e.ErrorMessage)), Severity.Warning);
+        }
+        catch (DbUpdateException dbEx) when (dbEx.InnerException?.Message.Contains("IX_Products_StockCode_Active") == true)
+        {
+            Snackbar?.Add("Bu stok kodu zaten kullanılıyor. Lütfen farklı bir stok kodu girin.", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -366,11 +409,15 @@ public partial class AddProduct
         return result;
     }
 
-    private List<string> GetSelectedMarketplaces()
+    private void OnMarketplacePublished()
     {
-        var list = new List<string>();
-        if (_trendyolSelected) list.Add("Trendyol");
-        return list;
+        Snackbar?.Add("Pazaryeri senkronizasyonu başlatıldı.", Severity.Success);
+        NavigationManager?.NavigateTo("/products");
+    }
+
+    private void OnMarketplaceSkipped()
+    {
+        NavigationManager?.NavigateTo("/products");
     }
 
     private async Task OnCategoryChanged(int newCategoryId)

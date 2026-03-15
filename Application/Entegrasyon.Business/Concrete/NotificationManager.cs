@@ -65,7 +65,7 @@ public sealed class NotificationManager(
         await eventChannel.Writer.WriteAsync(evt);
     }
 
-    public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false)
+    public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false, int? take = null)
     {
         var query = context.Notifications
             .Where(n => n.Users.Any(u => u.Id == userId));
@@ -73,7 +73,12 @@ public sealed class NotificationManager(
         if (onlyUnread)
             query = query.Where(n => !n.IsRead);
 
-        return await query.OrderByDescending(n => n.CreatedAt).ToListAsync();
+        query = query.OrderByDescending(n => n.CreatedAt);
+
+        if (take.HasValue)
+            query = query.Take(take.Value);
+
+        return await query.ToListAsync();
     }
 
     public async Task MarkAsRead(long notificationId, Guid userId)

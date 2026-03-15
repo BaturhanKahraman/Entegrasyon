@@ -73,7 +73,6 @@ public partial class Index : IAsyncDisposable
             new("Pazaryeri senkronizasyonu tamamlandı", "3 saat önce", Color.Success)
         ];
 
-        await Task.Delay(500); // Simulate loading
         loading = false;
     }
 

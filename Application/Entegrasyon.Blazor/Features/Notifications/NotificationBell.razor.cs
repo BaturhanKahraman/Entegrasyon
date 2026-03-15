@@ -15,7 +15,7 @@ public partial class NotificationBell : ComponentBase, IDisposable
     [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = null!;
 
     private Guid _userId;
     private List<Notification> _recentNotifications = [];
@@ -25,7 +25,7 @@ public partial class NotificationBell : ComponentBase, IDisposable
     {
         if (!firstRender) return;
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthStateTask;
         var userIdClaim = authState.User.FindFirst(
             System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -34,8 +34,8 @@ public partial class NotificationBell : ComponentBase, IDisposable
 
         await using var scope = ScopeFactory.CreateAsyncScope();
         var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
-        var all = await notificationManager.GetNotificationsForUser(_userId, onlyUnread: false);
-        _recentNotifications = all.Take(10).ToList();
+        var notifications = await notificationManager.GetNotificationsForUser(_userId, onlyUnread: false, take: 10);
+        _recentNotifications = notifications.ToList();
         _unreadCount = _recentNotifications.Count(n => !n.IsRead);
 
         DeliveryService.Subscribe(_userId, HandleNotification);

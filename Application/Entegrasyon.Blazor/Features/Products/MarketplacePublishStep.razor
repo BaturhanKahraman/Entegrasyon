@@ -1,0 +1,87 @@
+@using Entegrasyon.Entity.Dtos.Product.Marketplace
+
+<MudAlert Severity="Severity.Info" Class="mb-4">
+    Ürününüz başarıyla kaydedildi. Pazaryerlerine göndermek isterseniz aşağıdan seçin.
+</MudAlert>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else
+{
+    <MudExpansionPanels MultiExpansion="true">
+
+        @* Trendyol *@
+        <MudExpansionPanel>
+            <TitleContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudCheckBox T="bool" Value="_trendyolSelected" ValueChanged="v => _trendyolSelected = v" Color="Color.Primary" />
+                    <MudText Typo="Typo.subtitle1"><b>Trendyol</b></MudText>
+                </MudStack>
+            </TitleContent>
+            <ChildContent>
+                @if (_trendyolSelected)
+                {
+                    <MudGrid Class="mb-3">
+                        <MudItem xs="12">
+                            <MudTextField Label="Başlık (Override)" @bind-Value="_trendyolTitleOverride"
+                                          Placeholder="Boş bırakılırsa ürünün başlığı kullanılır"
+                                          MaxLength="200" Counter="200" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Label="Açıklama (Override)" @bind-Value="_trendyolDescriptionOverride"
+                                          Placeholder="Boş bırakılırsa ürünün açıklaması kullanılır"
+                                          Lines="4" MaxLength="30000" />
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (_trendyolVariants.Count > 0)
+                    {
+                        <VariantPriceOverrideGrid Variants="_trendyolVariants" />
+                    }
+
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                               StartIcon="@Icons.Material.Filled.Send"
+                               OnClick="PublishToTrendyol"
+                               Disabled="_publishing" Class="mt-3">
+                        @if (_publishing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Gönderiliyor...</span>
+                        }
+                        else
+                        {
+                            <span>Trendyol'a Gönder</span>
+                        }
+                    </MudButton>
+                }
+            </ChildContent>
+        </MudExpansionPanel>
+
+        @* Hepsiburada (Yakında) *@
+        <MudExpansionPanel Disabled="true">
+            <TitleContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudCheckBox T="bool" Value="false" Disabled="true" />
+                    <MudText Typo="Typo.subtitle1" Style="opacity:0.5"><b>Hepsiburada</b> — Yakında</MudText>
+                </MudStack>
+            </TitleContent>
+        </MudExpansionPanel>
+
+        @* Amazon (Yakında) *@
+        <MudExpansionPanel Disabled="true">
+            <TitleContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudCheckBox T="bool" Value="false" Disabled="true" />
+                    <MudText Typo="Typo.subtitle1" Style="opacity:0.5"><b>Amazon.com.tr</b> — Yakında</MudText>
+                </MudStack>
+            </TitleContent>
+        </MudExpansionPanel>
+
+    </MudExpansionPanels>
+
+    <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="Skip" Class="mt-4">
+        Atla — Ürünlere Dön
+    </MudButton>
+}

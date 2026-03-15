@@ -12,7 +12,7 @@ public interface INotificationManager
         IEnumerable<Guid> userIds,
         string? actionUrl = null);
 
-    Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false);
+    Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false, int? take = null);
     Task MarkAsRead(long notificationId, Guid userId);
     Task MarkAllAsRead(Guid userId);
 }

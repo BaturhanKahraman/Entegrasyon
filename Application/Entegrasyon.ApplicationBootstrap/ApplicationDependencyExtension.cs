@@ -13,18 +13,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
-using Entegrasyon.Business.Notifications;
-using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Labels;
-using Entegrasyon.Business.BackgroundServices;
 
 namespace Entegrasyon.ApplicationBootstrap
 {
@@ -67,6 +63,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IDiscountManager, DiscountManager>();
             services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
             services.AddScoped<IProductActivityLogger, ProductActivityLogger>();
+            services.AddScoped<IMarketplaceOverrideManager, MarketplaceOverrideManager>();
 
             // Etiket & Fiş servisleri
             services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
@@ -120,7 +117,7 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             var connectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection")
-                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=30;ConnectionIdleLifetime=120;Include Error Detail=true;";
+                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=50;ConnectionIdleLifetime=120;Include Error Detail=true;";
 
             services.AddDbContext<IntegrationDbContext>(x =>
             {
