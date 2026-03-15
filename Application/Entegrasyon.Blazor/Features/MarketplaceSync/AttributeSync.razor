@@ -5,7 +5,15 @@
 <PageTitle>Özellik Senkronizasyonu - Entegrasyon</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudText Typo="Typo.h5" Class="mb-4">Özellik Eşleştirme</MudText>
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudText Typo="Typo.h5">Özellik Eşleştirme</MudText>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenMappingDialog">
+            Yeni Eşleştirme
+        </MudButton>
+    </MudStack>
 
     <MudGrid Spacing="2" Class="mb-6">
         <MudItem xs="12" sm="4">
@@ -67,6 +75,17 @@
                             else
                             {
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="İşlemler">
+                        <CellTemplate>
+                            @if (context.Item.HasMatch)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteMapping(context.Item))" />
                             }
                         </CellTemplate>
                     </TemplateColumn>

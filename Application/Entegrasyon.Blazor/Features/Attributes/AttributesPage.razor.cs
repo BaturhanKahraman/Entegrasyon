@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Dtos;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
@@ -10,32 +11,29 @@ public partial class AttributesPage
     [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
-    private List<AppCategoryAttribute> _attributes = [];
+    private MudDataGrid<AppCategoryAttribute> _dataGrid = null!;
     private AppCategoryAttribute? _selectedAttribute;
-    private bool _loading = true;
     private string _searchString = string.Empty;
 
-    private IEnumerable<AppCategoryAttribute> FilteredAttributes =>
-        string.IsNullOrWhiteSpace(_searchString)
-            ? _attributes
-            : _attributes.Where(a =>
-                a.CategoryAttributeHumanized.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
-                a.CategoryAttributeKey.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
-
-    protected override async Task OnInitializedAsync()
+    private async Task<GridData<AppCategoryAttribute>> ServerData(GridState<AppCategoryAttribute> state)
     {
-        await LoadAttributes();
+        var result = await AttributeManager.GetCategoryAttributesPageable(
+            new SearchablePageDto(_searchString, state.Page, state.PageSize));
+
+        if (result.Success && result.Data is not null)
+            return new GridData<AppCategoryAttribute>
+            {
+                TotalItems = result.Data.TotalItemCount,
+                Items = result.Data.Items
+            };
+
+        return new GridData<AppCategoryAttribute> { TotalItems = 0, Items = [] };
     }
 
-    private async Task LoadAttributes()
+    private Task OnSearchChanged(string text)
     {
-        _loading = true;
-        var result = await AttributeManager.GetCategoryAttributes();
-        if (result.Success && result.Data != null)
-            _attributes = result.Data;
-        else
-            Snackbar.Add(result.Message ?? "Özellikler yüklenemedi", Severity.Warning);
-        _loading = false;
+        _searchString = text;
+        return _dataGrid.ReloadServerData();
     }
 
     private void OnAttributeSelected(AppCategoryAttribute attribute)
@@ -46,6 +44,6 @@ public partial class AttributesPage
     private async Task OnAttributeChanged()
     {
         _selectedAttribute = null;
-        await LoadAttributes();
+        await _dataGrid.ReloadServerData();
     }
 }

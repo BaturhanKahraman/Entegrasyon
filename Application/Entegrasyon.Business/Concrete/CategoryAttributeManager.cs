@@ -1,8 +1,12 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.Matches;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Entity.Results;
@@ -44,6 +48,33 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
             await dbContext.CategoryAttributes
                 .Include(x => x.CategoryAttributeValues)
                 .ToListAsync());
+    }
+
+    public async Task<IDataResult<Pageable<CategoryAttribute>>> GetCategoryAttributesPageable(SearchablePageDto dto)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        var query = dbContext.CategoryAttributes
+            .Include(x => x.CategoryAttributeValues)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(dto.FullTextSearchKey))
+        {
+            var search = dto.FullTextSearchKey.ToLower();
+            query = query.Where(x =>
+                EF.Functions.ILike(x.CategoryAttributeHumanized, $"%{search}%") ||
+                EF.Functions.ILike(x.CategoryAttributeKey, $"%{search}%"));
+        }
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderBy(x => x.CategoryAttributeHumanized)
+            .Skip(dto.PageIndex * dto.PageSize)
+            .Take(dto.PageSize)
+            .ToListAsync();
+
+        return new SuccessDataResult<Pageable<CategoryAttribute>>(
+            new Pageable<CategoryAttribute>(items, dto.PageIndex, dto.PageSize, total));
     }
 
     public async Task<IDataResult<List<CategoryAttributeDto>>> GetCategoryAttributesByCategory(int categoryId)
@@ -197,5 +228,79 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
                     m.ApplicationCategoryAttributeId,
                     m.MarketPlace.Name,
                     m.MarketPlaceCategoryAttributeId));
+    }
+
+    public async Task<IResult> CreateAttributeMarketPlaceMatchAsync(CreateAttributeMarketPlaceMatchDto dto)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        await applicationLogManager.AddLog("Özellik marketplace mapping oluşturma isteği", LogType.Matching, LogAction.Add, dto);
+
+        // Validation
+        if (dto.ApplicationCategoryAttributeId <= 0)
+            return new ErrorResult("Geçerli bir özellik seçilmelidir.");
+
+        if (dto.MarketPlaceCategoryAttributeId <= 0)
+            return new ErrorResult("Marketplace özellik ID'si gereklidir.");
+
+        // Business Rules
+        var attribute = await dbContext.CategoryAttributes.FirstOrDefaultAsync(x => x.Id == dto.ApplicationCategoryAttributeId);
+        if (attribute is null)
+        {
+            var error = "Seçilen özellik bulunamadı.";
+            await applicationLogManager.AddLog(error, LogType.Matching, LogAction.Add, dto);
+            return new ErrorResult(error);
+        }
+
+        var existingMatch = await dbContext.CategoryAttributeMarketPlaceMatches
+            .FirstOrDefaultAsync(x =>
+                x.ApplicationCategoryAttributeId == dto.ApplicationCategoryAttributeId &&
+                x.MarketPlaceId == dto.MarketPlaceId);
+
+        if (existingMatch is not null)
+        {
+            var error = "Bu özellik için zaten bir eşleştirme mevcuttur.";
+            await applicationLogManager.AddLog(error, LogType.Matching, LogAction.Add, dto);
+            return new ErrorResult(error);
+        }
+
+        // Execution
+        var match = new CategoryAttributeMarketPlaceMatch
+        {
+            ApplicationCategoryAttributeId = dto.ApplicationCategoryAttributeId,
+            MarketPlaceId = dto.MarketPlaceId,
+            MarketPlaceCategoryAttributeId = dto.MarketPlaceCategoryAttributeId
+        };
+
+        dbContext.CategoryAttributeMarketPlaceMatches.Add(match);
+        await dbContext.SaveChangesAsync();
+
+        await applicationLogManager.AddLog("Özellik marketplace mapping başarıyla oluşturuldu", LogType.Matching, LogAction.Add, dto);
+        return new SuccessResult("Özellik eşleştirme başarıyla oluşturuldu.");
+    }
+
+    public async Task<IResult> RemoveAttributeMarketPlaceMatchAsync(int attributeId, int marketPlaceId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        await applicationLogManager.AddLog($"Özellik marketplace mapping silme isteği (AttributeId: {attributeId})", LogType.Matching, LogAction.Delete);
+
+        var match = await dbContext.CategoryAttributeMarketPlaceMatches
+            .FirstOrDefaultAsync(x =>
+                x.ApplicationCategoryAttributeId == attributeId &&
+                x.MarketPlaceId == marketPlaceId);
+
+        if (match is null)
+        {
+            var error = "Eşleştirme bulunamadı.";
+            await applicationLogManager.AddLog(error, LogType.Matching, LogAction.Delete);
+            return new ErrorResult(error);
+        }
+
+        dbContext.CategoryAttributeMarketPlaceMatches.Remove(match);
+        await dbContext.SaveChangesAsync();
+
+        await applicationLogManager.AddLog("Özellik marketplace mapping başarıyla silindi", LogType.Matching, LogAction.Delete);
+        return new SuccessResult("Özellik eşleştirme başarıyla silindi.");
     }
 }

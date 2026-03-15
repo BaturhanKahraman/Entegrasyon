@@ -6,31 +6,39 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
         <MudText Typo="Typo.h5">Kategori Eşleştirme</MudText>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Download"
-                   Href="/categories/import">
-            Trendyol'dan Kategori İçe Aktar
-        </MudButton>
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenMappingDialog">
+                Yeni Eşleştirme
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       Href="/categories/import">
+                Trendyol'dan İçe Aktar
+            </MudButton>
+        </MudStack>
     </MudStack>
 
     <MudGrid Spacing="2" Class="mb-6">
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2">Toplam Kategori</MudText>
-                <MudText Typo="Typo.h5" Class="mt-2">@_categories.Count</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2">@_summary.TotalCategories</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirilmiş</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_categories.Count(c => c.MarketplaceLinks?.Any() == true)</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_summary.MappedCategories</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirilmemiş</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@_categories.Count(c => c.MarketplaceLinks == null || !c.MarketplaceLinks.Any())</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@_summary.UnmappedCategories</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
@@ -100,20 +108,14 @@
                             }
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Son Senkronizasyon">
+                    <TemplateColumn Title="İşlemler">
                         <CellTemplate>
-                            @{
-                                var lastSync = context.Item.MarketplaceLinks?
-                                    .Where(l => l.LastSyncedAt.HasValue)
-                                    .MaxBy(l => l.LastSyncedAt)?.LastSyncedAt;
-                            }
-                            @if (lastSync.HasValue)
+                            @if (context.Item.MarketplaceLinks?.Any() == true)
                             {
-                                <MudText Typo="Typo.body2">@lastSync.Value.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</MudText>
-                            }
-                            else
-                            {
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => DeleteMapping(context.Item))" />
                             }
                         </CellTemplate>
                     </TemplateColumn>
