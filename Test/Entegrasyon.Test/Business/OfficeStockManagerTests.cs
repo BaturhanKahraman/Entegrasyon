@@ -18,7 +18,7 @@ public class OfficeStockManagerTests : BaseTest
     public OfficeStockManagerTests()
     {
         _manager = new OfficeStockManager(
-            mockIntegrationDbContext.Object,
+            mockContextFactory.Object,
             _mockBranchOfficeManager.Object,
             _mockProductVariantManager.Object,
             _mockNotificationManager.Object,

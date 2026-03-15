@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete;
 
 public class DiscountManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     IProductSyncManager syncManager,
     IApplicationLogManager applicationLogManager,
@@ -19,6 +19,7 @@ public class DiscountManager(
 {
     public async Task<IDataResult<DiscountPreviewDto>> GetDiscountPreviewAsync(Guid productId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var product = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new
@@ -87,6 +88,7 @@ public class DiscountManager(
 
     public async Task<IDataResult<DiscountResultDto>> ApplyDiscountAsync(ApplyDiscountDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         await validator.ValidateAndThrowAsync(dto);
 

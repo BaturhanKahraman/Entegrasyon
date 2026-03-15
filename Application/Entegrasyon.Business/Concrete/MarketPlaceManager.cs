@@ -8,12 +8,13 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete;
 
 public sealed class MarketPlaceManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
     ILogger<MarketPlaceManager> logger) : IMarketPlaceManager
 {
     public async Task<IDataResult<MarketPlace>> GetByIdAsync(int id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var mp = await dbContext.MarketPlaces.FirstOrDefaultAsync(m => m.Id == id);
         if (mp is null)
             return new ErrorDataResult<MarketPlace>(null!, "Marketplace bulunamadı.");
@@ -22,12 +23,14 @@ public sealed class MarketPlaceManager(
 
     public async Task<IDataResult<List<MarketPlace>>> GetAllAsync()
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var list = await dbContext.MarketPlaces.AsNoTracking().ToListAsync();
         return new SuccessDataResult<List<MarketPlace>>(list);
     }
 
     public async Task<IResult> UpdateCredentialsAsync(int id, string apiKey, string apiSecret, string sellerId, string? baseUrl)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var mp = await dbContext.MarketPlaces.FirstOrDefaultAsync(m => m.Id == id);
         if (mp is null)
             return new ErrorResult("Marketplace bulunamadı.");
@@ -46,6 +49,7 @@ public sealed class MarketPlaceManager(
 
     public async Task<IDataResult<List<MarketPlaceWarehouse>>> GetWarehousesAsync(int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var warehouses = await dbContext.MarketPlaceWarehouses
             .AsNoTracking()
             .Include(w => w.BranchOffice)
@@ -56,6 +60,7 @@ public sealed class MarketPlaceManager(
 
     public async Task<IResult> SetWarehousesAsync(int marketPlaceId, List<int> branchOfficeIds)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // Mevcut kayıtları sil
         var existing = await dbContext.MarketPlaceWarehouses
             .Where(w => w.MarketPlaceId == marketPlaceId)
@@ -80,6 +85,7 @@ public sealed class MarketPlaceManager(
 
     public async Task<IDataResult<bool>> TestConnectionAsync(int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         try
         {
             var mp = await dbContext.MarketPlaces.AsNoTracking()

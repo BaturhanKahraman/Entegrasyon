@@ -12,13 +12,14 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete;
 
 public class LabelManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ILabelGenerator labelGenerator,
     IReceiptGenerator receiptGenerator,
     ILogger<LabelManager> logger) : ILabelService
 {
     public async Task<IDataResult<PrintJobDto>> GenerateProductLabel(Guid variantId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         if (variantId == Guid.Empty)
             return new ErrorDataResult<PrintJobDto>(null, "Geçersiz varyant ID");
@@ -82,6 +83,7 @@ public class LabelManager(
 
     public async Task<IDataResult<List<PrintJobDto>>> GenerateBulkLabels(List<Guid> variantIds)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         if (variantIds is null || variantIds.Count == 0)
             return new ErrorDataResult<List<PrintJobDto>>(null, "En az bir varyant ID gerekli");
@@ -161,6 +163,7 @@ public class LabelManager(
 
     public async Task<IDataResult<PrintJobDto>> GenerateSaleReceipt(Guid saleId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         if (saleId == Guid.Empty)
             return new ErrorDataResult<PrintJobDto>(null, "Geçersiz satış ID");

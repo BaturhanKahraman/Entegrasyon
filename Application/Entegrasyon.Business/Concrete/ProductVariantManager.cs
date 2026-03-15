@@ -11,29 +11,39 @@ namespace Entegrasyon.Business.Concrete;
 
 public class ProductVariantManager : IProductVariantManager
 {
-    private readonly IntegrationDbContext _dbContext;
+    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
     private readonly IApplicationLogManager _applicationLogManager;
 
-    public ProductVariantManager(IntegrationDbContext dbContext, IApplicationLogManager applicationLogManager)
+    public ProductVariantManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager)
     {
-        _dbContext = dbContext;
+        _contextFactory = contextFactory;
         _applicationLogManager = applicationLogManager;
     }
 
-    public async Task<ProductVariant> GetById(Guid id) =>
-        await _dbContext.ProductVariants.FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<ProductVariant> GetById(Guid id)
+    {
+        using var dbContext = _contextFactory.CreateDbContext();
+        return await dbContext.ProductVariants.FirstOrDefaultAsync(x => x.Id == id);
+    }
 
-    public async Task<string> GetLastProductVariantBarcode() =>
-        (await _dbContext.ProductVariants.AsNoTracking()
+    public async Task<string> GetLastProductVariantBarcode()
+    {
+        using var dbContext = _contextFactory.CreateDbContext();
+        return (await dbContext.ProductVariants.AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(x => x.Barcode != null))?.Barcode;
+    }
 
-    public Task<List<string>> GetAllVariantsBarcodes() =>
-        _dbContext.ProductVariants.Select(x => x.Barcode).ToListAsync();
+    public Task<List<string>> GetAllVariantsBarcodes()
+    {
+        using var dbContext = _contextFactory.CreateDbContext();
+        return dbContext.ProductVariants.Select(x => x.Barcode).ToListAsync();
+    }
 
     public async Task<IDataResult<ProductVariantSaleSearchDto>> GetProductVariantByBarcode(string barcode)
     {
-        var result = await _dbContext.ProductVariants
+        using var dbContext = _contextFactory.CreateDbContext();
+        var result = await dbContext.ProductVariants
             .Where(x => x.Barcode == barcode)
             .Select(x => new ProductVariantSaleSearchDto(
                 x.Id, x.Product.Title,
@@ -49,7 +59,8 @@ public class ProductVariantManager : IProductVariantManager
 
     public async Task<IResult> GetProductVariantsBySearchText(string fullTextSearch)
     {
-        var result = await _dbContext.ProductVariants
+        using var dbContext = _contextFactory.CreateDbContext();
+        var result = await dbContext.ProductVariants
             .Where(x => x.BranchOfficeStocks.Sum(stck => stck.CurrentStock) > 0 &&
                 (x.Product.SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
                  || x.Barcode == fullTextSearch))

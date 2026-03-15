@@ -9,10 +9,11 @@ using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, IMapper mapper, ICategoryService categoryService, IntegrationDbContext dbContext) : ICategoryAttributeManager
+public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, IMapper mapper, ICategoryService categoryService, IDbContextFactory<IntegrationDbContext> contextFactory) : ICategoryAttributeManager
 {
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var list = attrs.ToList();
         var newAttrs = list.Where(x => x.Id <= 0).ToList();
         if (newAttrs.Any())
@@ -23,23 +24,31 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
         return list;
     }
 
-    public async Task<bool> CheckIfCategoryHasCategoryAttribute(int categoryId) =>
-        await dbContext.CategoryAttributes.AnyAsync(x => x.Categories.Any(c => c.CategoryId == categoryId));
+    public async Task<bool> CheckIfCategoryHasCategoryAttribute(int categoryId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return await dbContext.CategoryAttributes.AnyAsync(x => x.Categories.Any(c => c.CategoryId == categoryId));
+    }
 
     public async Task<bool> CheckIfExits(string name)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         string nameNormalize = name.Trim().ToLower();
         return await dbContext.CategoryAttributes.AnyAsync(x => x.CategoryAttributeKey.Trim().ToLower() == nameNormalize);
     }
 
-    public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes() =>
-        new SuccessDataResult<List<CategoryAttribute>>(
+    public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes()
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return new SuccessDataResult<List<CategoryAttribute>>(
             await dbContext.CategoryAttributes
                 .Include(x => x.CategoryAttributeValues)
                 .ToListAsync());
+    }
 
     public async Task<IDataResult<List<CategoryAttributeDto>>> GetCategoryAttributesByCategory(int categoryId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var result = await dbContext.CategoryAttributes
             .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
             .Select(x => new CategoryAttributeDto(
@@ -58,6 +67,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IDataResult<CategoryAttribute>> GetCategoryAttributeById(int id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var attr = await dbContext.CategoryAttributes
             .Include(x => x.CategoryAttributeValues)
             .FirstOrDefaultAsync(x => x.Id == id);
@@ -68,6 +78,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> UpdateCategoryAttribute(EditCategoryAttributeDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         await fluentValidator.ValidateAndThrowAsync(dto);
         var attr = await dbContext.CategoryAttributes
             .AsTracking()
@@ -114,6 +125,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> DeleteCategoryAttribute(int id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         bool inUse = await dbContext.AttributeKeyValues.AnyAsync(x => x.CategoryAttributeId == id);
         if (inUse)
         {
@@ -137,6 +149,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         await fluentValidator.ValidateAndThrowAsync(dto);
         var categoryAttr = mapper.Map<CategoryAttribute>(dto);
         dbContext.CategoryAttributes.Add(categoryAttr);
@@ -146,6 +159,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task RemoveAllAttributesByCategoryId(int categoryId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var attrs = await dbContext.CategoryAttributes
             .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
             .ToListAsync();
@@ -158,15 +172,20 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         dbContext.CategoryAttributes.RemoveRange(attrs);
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids) =>
-        await dbContext.CategoryAttributes.Where(x => ids.Contains(x.Id)).ToListAsync();
+    public async Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return await dbContext.CategoryAttributes.Where(x => ids.Contains(x.Id)).ToListAsync();
+    }
 
     public async Task<Dictionary<int, AttributeMarketPlaceMatchDto>> GetAttributeMarketPlaceMatchesAsync()
     {
+        using var dbContext = contextFactory.CreateDbContext();
         return await dbContext.CategoryAttributeMarketPlaceMatches
             .AsNoTracking()
             .Include(m => m.MarketPlace)

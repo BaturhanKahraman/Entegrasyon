@@ -12,14 +12,15 @@ namespace Entegrasyon.Business.Concrete;
 
 public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManager
 {
-    private readonly IntegrationDbContext _ctx;
-    public CategoryAttributeCategoryManager(IntegrationDbContext ctx)
+    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
+    public CategoryAttributeCategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory)
     {
-        _ctx = ctx;
+        _contextFactory = contextFactory;
     }
 
     public async Task<IResult> AddCategoryAttributeForCategory(int catId, IEnumerable<AddCategoryAttributeDto> dto)
     {
+        using var dbContext = _contextFactory.CreateDbContext();
         var dtoList = dto.ToList();
 
         if (dtoList.Count(d => d.IsVarianter) > 1)
@@ -32,32 +33,32 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
             return new ErrorResult("Bir özellik hem varyant hem de dilimleyici olamaz.");
 
         var result = LogicRunner.Run(
-            await CategoryExists(catId),
-            await IsSuper(catId));
+            await CategoryExists(dbContext, catId),
+            await IsSuper(dbContext, catId));
         if (result != null)
             return result;
 
-        await using var transaction = await _ctx.Database.BeginTransactionAsync();
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
         try
         {
             // 1. Mevcut junction kayıtlarını sil ve flush et
-            var deletedOnes = await _ctx.CategoryAttributeCategories
+            var deletedOnes = await dbContext.CategoryAttributeCategories
                 .Where(x => x.CategoryId == catId)
                 .ToListAsync();
-            _ctx.CategoryAttributeCategories.RemoveRange(deletedOnes);
-            await _ctx.SaveChangesAsync();
+            dbContext.CategoryAttributeCategories.RemoveRange(deletedOnes);
+            await dbContext.SaveChangesAsync();
 
             // Tracker'ı temizle — eski entity referansları yeni ekleme ile çakışmasın
-            _ctx.ChangeTracker.Clear();
+            dbContext.ChangeTracker.Clear();
 
             // 2. Yeni kayıtları oluştur ve ekle
-            var existingCatAttrs = await GetExistingCategoryAttributes(dtoList);
-            var existingCatAttrValues = await GetExistingCategoryAttributeValues(dtoList);
+            var existingCatAttrs = await GetExistingCategoryAttributes(dbContext, dtoList);
+            var existingCatAttrValues = await GetExistingCategoryAttributeValues(dbContext, dtoList);
             var catAttrCats = dtoList
                 .Select(CreateCategoryAttributeCategory(catId, existingCatAttrs, existingCatAttrValues))
                 .ToList();
-            _ctx.CategoryAttributeCategories.AddRange(catAttrCats);
-            await _ctx.SaveChangesAsync();
+            dbContext.CategoryAttributeCategories.AddRange(catAttrCats);
+            await dbContext.SaveChangesAsync();
 
             await transaction.CommitAsync();
             return new SuccessResult();
@@ -68,22 +69,22 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
             throw;
         }
     }
-    private async Task<ImmutableDictionary<int, CategoryAttribute>> GetExistingCategoryAttributes(IEnumerable<AddCategoryAttributeDto> dto)
+    private async Task<ImmutableDictionary<int, CategoryAttribute>> GetExistingCategoryAttributes(IntegrationDbContext dbContext, IEnumerable<AddCategoryAttributeDto> dto)
     {
         var ids = dto.Where(d => d.Id > 0).Select(d => d.Id).ToList();
         if (ids.Count == 0) return ImmutableDictionary<int, CategoryAttribute>.Empty;
-        return (await _ctx.CategoryAttributes.AsTracking().Where(ca => ids.Contains(ca.Id))
+        return (await dbContext.CategoryAttributes.AsTracking().Where(ca => ids.Contains(ca.Id))
             .ToListAsync()).ToImmutableDictionary(ca => ca.Id);
     }
 
-    private async Task<List<CategoryAttributeValue>> GetExistingCategoryAttributeValues(IEnumerable<AddCategoryAttributeDto> dto)
+    private async Task<List<CategoryAttributeValue>> GetExistingCategoryAttributeValues(IntegrationDbContext dbContext, IEnumerable<AddCategoryAttributeDto> dto)
     {
         var catAttrValueIds = dto.SelectMany(d => d.CategoryAttributeValues)
             .Where(v => v.Id > 0)
             .Select(d => d.Id)
             .ToArray();
         if (catAttrValueIds.Length == 0) return [];
-        return await _ctx.CategoryAttributeValues.AsTracking()
+        return await dbContext.CategoryAttributeValues.AsTracking()
             .Where(cav => catAttrValueIds.Contains(cav.Id))
             .ToListAsync();
     }
@@ -126,16 +127,16 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
         };
     }
 
-    private async Task<IResult> IsSuper(int categoryId)
+    private async Task<IResult> IsSuper(IntegrationDbContext dbContext, int categoryId)
     {
-        var isSuper = await _ctx.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
+        var isSuper = await dbContext.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
         if (isSuper)
             return new ErrorResult(Messages.CategoryIsSuper);
         return new SuccessResult();
     }
-    private async Task<IResult> CategoryExists(int categoryId)
+    private async Task<IResult> CategoryExists(IntegrationDbContext dbContext, int categoryId)
     {
-        var exits = await _ctx.Categories.AnyAsync(c => c.Id == categoryId);
+        var exits = await dbContext.Categories.AnyAsync(c => c.Id == categoryId);
         if (!exits)
             return new ErrorResult(Messages.CategoryNotFound);
         return new SuccessResult();

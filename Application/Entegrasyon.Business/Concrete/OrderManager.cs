@@ -15,7 +15,7 @@ namespace Entegrasyon.Business.Concrete;
 /// Sipariş import edildiğinde stok atomik olarak düşülür.
 /// </summary>
 public sealed class OrderManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IOfficeStockManager officeStockManager,
     INotificationManager notificationManager,
     ILogger<OrderManager> logger) : IOrderManager
@@ -24,6 +24,7 @@ public sealed class OrderManager(
 
     public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var query = dbContext.Orders.AsNoTracking()
             .Include(o => o.OrderItems)
             .AsQueryable();
@@ -42,6 +43,7 @@ public sealed class OrderManager(
 
     public async Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var order = await dbContext.Orders.AsNoTracking()
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -54,6 +56,7 @@ public sealed class OrderManager(
 
     public async Task<IResult> ImportTrendyolOrdersAsync(List<TrendyolShipmentPackage> packages)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         if (packages.Count == 0)
             return new SuccessResult("İmport edilecek sipariş yok.");
 
@@ -190,6 +193,7 @@ public sealed class OrderManager(
 
     public async Task<IResult> UpdateOrderStatusAsync(Guid orderId, string newStatus)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
         if (order is null)
             return new ErrorResult("Sipariş bulunamadı.");
@@ -202,6 +206,7 @@ public sealed class OrderManager(
     private async Task DecreaseStockForMarketplaceOrder(
         List<int> warehouseIds, Guid productVariantId, int quantity, string referenceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         foreach (var warehouseId in warehouseIds)
         {
             var stockResult = await officeStockManager.DecreaseStockAtomicAsync(

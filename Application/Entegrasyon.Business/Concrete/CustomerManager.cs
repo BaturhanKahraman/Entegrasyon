@@ -18,14 +18,14 @@ namespace Entegrasyon.Business.Concrete;
 
 public class CustomerManager : ICustomerManager
 {
-    private readonly IntegrationDbContext _dbContext;
+    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
     private readonly IFluentValidator _fluentValidator;
     private readonly IMapper _mapper;
     private readonly IApplicationLogManager _applicationLogManager;
 
-    public CustomerManager(IntegrationDbContext dbContext, IFluentValidator fluentValidator, IMapper mapper, IApplicationLogManager applicationLogManager)
+    public CustomerManager(IDbContextFactory<IntegrationDbContext> contextFactory, IFluentValidator fluentValidator, IMapper mapper, IApplicationLogManager applicationLogManager)
     {
-        _dbContext = dbContext;
+        _contextFactory = contextFactory;
         _fluentValidator = fluentValidator;
         _mapper = mapper;
         _applicationLogManager = applicationLogManager;
@@ -33,8 +33,9 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IDataResult<Customer>> UpdateCustomer(UpdateCustomerDto customerDto)
     {
+        using var dbContext = _contextFactory.CreateDbContext();
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.", LogType.Customer, LogAction.Update);
-        Customer applicationCustomer = await _dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == customerDto.Id);
+        Customer applicationCustomer = await dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == customerDto.Id);
         if (customerDto.CustomerType == "Retail")
         {
             if (applicationCustomer is CorporateCustomer corpCustomer)
@@ -61,20 +62,21 @@ public class CustomerManager : ICustomerManager
             corporateCustomer.Surname = customerDto.Surname;
             corporateCustomer.PhoneNumber = customerDto.PhoneNumber;
         }
-        await _dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.", LogType.Customer, LogAction.Update);
         return new SuccessDataResult<Customer>(applicationCustomer);
     }
 
     public async Task<IResult> AddCustomer(CustomerAddDto dto)
     {
+        using var dbContext = _contextFactory.CreateDbContext();
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.", LogType.Customer, LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
         Customer customer = dto.CustomerType == "Retail"
             ? _mapper.Map<RetailCustomer>(dto)
             : _mapper.Map<CorporateCustomer>(dto);
-        _dbContext.Customers.Add(customer);
-        await _dbContext.SaveChangesAsync();
+        dbContext.Customers.Add(customer);
+        await dbContext.SaveChangesAsync();
         await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add);
         CustomerDetailDto result;
         if (customer is RetailCustomer retailCustomer)
@@ -86,7 +88,8 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo, int pageIndex = 0, int itemCount = 50)
     {
-        var query = _dbContext.Customers.AsQueryable();
+        using var dbContext = _contextFactory.CreateDbContext();
+        var query = dbContext.Customers.AsQueryable();
         if (!string.IsNullOrEmpty(customerInfo))
             query = query.Where(x =>
                 (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ToFullTextSearchQuery()))
@@ -106,16 +109,18 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IResult> CheckIfCustomerExits(int id)
     {
-        var result = await _dbContext.Customers.AnyAsync(x => x.Id == id);
+        using var dbContext = _contextFactory.CreateDbContext();
+        var result = await dbContext.Customers.AnyAsync(x => x.Id == id);
         return result ? new SuccessResult() : new ErrorResult("Müşteri bulunamamıştır.");
     }
 
     public async Task<IDataResult<IEnumerable<CustomerDetailDto>>> GetCustomerBySearch(string searchText)
     {
+        using var dbContext = _contextFactory.CreateDbContext();
         if (string.IsNullOrEmpty(searchText))
             throw new ValidationException("Arama kriteri boş olamaz.");
 
-        var result = await _dbContext.Customers
+        var result = await dbContext.Customers
             .Where(x =>
                 (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()))
                 || (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery())))
@@ -125,12 +130,16 @@ public class CustomerManager : ICustomerManager
         return new SuccessDataResult<IEnumerable<CustomerDetailDto>>(result);
     }
 
-    public async Task<IDataResult<Customer>> GetCustomerById(int id) =>
-        new SuccessDataResult<Customer>(await _dbContext.Customers.FirstOrDefaultAsync(x => x.Id == id));
+    public async Task<IDataResult<Customer>> GetCustomerById(int id)
+    {
+        using var dbContext = _contextFactory.CreateDbContext();
+        return new SuccessDataResult<Customer>(await dbContext.Customers.FirstOrDefaultAsync(x => x.Id == id));
+    }
 
     public async Task<IDataResult<CustomerDetailDto>> GetCustomerDetailById(int id)
     {
-        var cust = await _dbContext.Customers
+        using var dbContext = _contextFactory.CreateDbContext();
+        var cust = await dbContext.Customers
             .Where(c => c.Id == id)
             .Select(FuncMappings.CustomerToDetailDto().ToExpression())
             .FirstOrDefaultAsync();
@@ -139,12 +148,13 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IResult> SoftDelete(int id)
     {
-        var cust = await _dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
+        using var dbContext = _contextFactory.CreateDbContext();
+        var cust = await dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (cust == null)
             return new ErrorResult(Messages.CustomerNotFound);
         cust.IsDeleted = true;
         cust.DeletedAt = DateTimeOffset.UtcNow;
-        await _dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
         return new SuccessResult(Messages.ProcessSuccess);
     }
 }

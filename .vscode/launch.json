@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Launch Blazor (Debug)",
-            // "type": "coreclr",
+            "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/Application/Entegrasyon.Blazor/bin/Debug/net8.0/Entegrasyon.Blazor.dll",
@@ -17,9 +17,9 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:7070",
-                "ConnectionStrings__DefaultConnection": "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471",
-                "ConnectionStrings__Main": "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471",
-                "ConnectionStrings__Redis": "localhost:6379"
+                "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471",
+                //"ConnectionStrings__Main": "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471",
+                //"ConnectionStrings__Redis": "localhost:6379"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

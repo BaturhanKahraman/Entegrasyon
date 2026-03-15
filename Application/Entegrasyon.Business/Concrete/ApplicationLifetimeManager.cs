@@ -7,7 +7,7 @@ using Entegrasyon.Business.FileStorage;
 namespace Entegrasyon.Business.Concrete;
 
 public class ApplicationLifetimeManager(
-    IntegrationDbContext context,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ILogger<ApplicationLifetimeManager> logger,
     IMinioFileStorage minioFileStorage)
     : IApplicationLifetimeManager
@@ -20,7 +20,8 @@ public class ApplicationLifetimeManager(
     }
     private async Task MigrateDatabase(CancellationToken ct = default)
     {
-        var db = context.Database;
+        using var dbContext = contextFactory.CreateDbContext();
+        var db = dbContext.Database;
         var pendingMigrations = await db.GetPendingMigrationsAsync(ct);
         if (pendingMigrations.Any())
         {

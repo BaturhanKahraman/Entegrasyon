@@ -22,7 +22,7 @@ public class CategoryManagerTests : BaseTest
     {
         MockValidator = new Mock<IFluentValidator>();
         _categoryManager = new CategoryManager(
-            mockIntegrationDbContext.Object,
+            mockContextFactory.Object,
             mockApplicationLogger.Object,
             _mockMapper.Object,
             MockValidator.Object,

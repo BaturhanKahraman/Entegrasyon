@@ -12,13 +12,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Entegrasyon.Business.Concrete;
 
 public sealed class ProductSyncManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     EventChannel<ProductCreatedForMarketplaceEvent> eventChannel,
     IApplicationLogManager applicationLogManager,
     IProductActivityLogger activityLogger) : IProductSyncManager
 {
     public async Task<ProductSyncSummaryDto> GetSyncSummaryAsync(int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var totalProducts = await dbContext.MainProducts.CountAsync();
 
         var statusCounts = await dbContext.ProductMarketplaces
@@ -44,6 +45,7 @@ public sealed class ProductSyncManager(
     public async Task<DataResult<Pageable<ProductSyncListItemDto>>> GetProductSyncListAsync(
         int marketPlaceId, MarketplaceSyncState? stateFilter, string searchKey, int pageIndex, int pageSize)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var query = dbContext.MainProducts
             .Select(p => new
             {
@@ -124,6 +126,7 @@ public sealed class ProductSyncManager(
 
     public async Task<IDataResult<ProductSyncDetailDto>> GetProductSyncDetailAsync(Guid productId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var product = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new
@@ -163,6 +166,7 @@ public sealed class ProductSyncManager(
 
     public async Task<IResult> SyncProductAsync(Guid productId, int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var product = await dbContext.MainProducts.FindAsync(productId);
         if (product is null)
             return new ErrorResult("Ürün bulunamadı.");
@@ -204,6 +208,7 @@ public sealed class ProductSyncManager(
 
     public async Task<IResult> RetryFailedAsync(Guid productId, int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var marketplace = await dbContext.ProductMarketplaces
             .FirstOrDefaultAsync(pm => pm.ProductId == productId && pm.MarketPlaceId == marketPlaceId);
 
@@ -230,6 +235,7 @@ public sealed class ProductSyncManager(
 
     public async Task<IResult> SyncAllPendingAsync(int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var unsyncedProductIds = await dbContext.MainProducts
             .Where(p => !p.ProductMarketplaces.Any(pm => pm.MarketPlaceId == marketPlaceId))
             .Select(p => p.Id)
@@ -262,6 +268,7 @@ public sealed class ProductSyncManager(
 
     public async Task<IResult> RetryAllFailedAsync(int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var failedRecords = await dbContext.ProductMarketplaces
             .Where(pm => pm.MarketPlaceId == marketPlaceId &&
                          (pm.Status == MarketplaceProductStatus.Failed || pm.Status == MarketplaceProductStatus.Rejected))

@@ -119,7 +119,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 ?? configuration.GetConnectionString("DefaultConnection")
                 ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=50;ConnectionIdleLifetime=120;Include Error Detail=true;";
 
-            services.AddDbContext<IntegrationDbContext>(x =>
+            services.AddDbContextFactory<IntegrationDbContext>(x =>
             {
                 x.UseNpgsql(connectionString, npgsqlOptions =>
                 {
@@ -131,7 +131,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 x.EnableDetailedErrors();
                 x.LogTo(z => Debug.WriteLine(z));
 #endif
-            }, ServiceLifetime.Scoped);
+            });
             return services;
         }
 

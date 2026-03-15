@@ -14,7 +14,7 @@ using Entegrasyon.Business.Abstract;
 namespace Entegrasyon.Business.Concrete;
 
 public class OfficeStockManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IBranchOfficeManager branchOfficeManager,
     IProductVariantManager productVariantManager,
     INotificationManager notificationManager,
@@ -23,6 +23,7 @@ public class OfficeStockManager(
 {
     public async Task<IResult> AddOfficeStocks(IEnumerable<BranchOfficeStock> stocks)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var enumeratedStocks = stocks.ToList();
         var result = LogicRunner.Run(await CheckIfOfficeExists(enumeratedStocks.Select(x => x.BranchOfficeId).ToArray()));
         if (result != null)
@@ -40,6 +41,7 @@ public class OfficeStockManager(
 
     public async Task UpdateStock(int branchOfficeId, Guid productVariantId, int stock)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var stockToUpdate = await dbContext.BranchOfficeStocks.AsTracking()
             .FirstOrDefaultAsync(x => x.BranchOfficeId == branchOfficeId && x.ProductVariantId == productVariantId);
         stockToUpdate!.FirstTotalStock = stock;
@@ -63,6 +65,7 @@ public class OfficeStockManager(
 
     public async Task<IResult> DecreaseProductStock(Guid id, int stockNumber, int branchId, bool overrideStockStatus = false)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var productVariant = await productVariantManager.GetById(id);
         if (productVariant == null)
             return new ErrorResult("İlettiğiniz ürün bulunamamıştır.");
@@ -79,6 +82,7 @@ public class OfficeStockManager(
 
     public async Task<IResult> DecreaseProductsStock(List<DecreaseStockDto> dtos, bool overrideStockStatus = false)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var officeIds = dtos.Select(x => x.OfficeId).ToList();
         var productIds = dtos.Select(x => x.ProductId).ToList();
         var dbStocks = await dbContext.BranchOfficeStocks.AsTracking()
@@ -100,6 +104,7 @@ public class OfficeStockManager(
         int branchOfficeId, Guid productVariantId, int quantity,
         StockMovementType type, string? referenceType = null, string? referenceId = null)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // Atomic update — tek SQL: UPDATE SET SoldQuantity = SoldQuantity + @qty WHERE CurrentStock >= @qty
         var affected = await dbContext.BranchOfficeStocks
             .Where(s => s.BranchOfficeId == branchOfficeId
@@ -140,6 +145,7 @@ public class OfficeStockManager(
         int branchOfficeId, Guid productVariantId, int quantity,
         StockMovementType type, string? referenceType = null, string? referenceId = null)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // Stok yetersiz olsa bile düş — WHERE'de CurrentStock kontrolü yok
         await dbContext.BranchOfficeStocks
             .Where(s => s.BranchOfficeId == branchOfficeId
@@ -173,6 +179,7 @@ public class OfficeStockManager(
 
     private async Task CheckStockLevelsAsync(int branchOfficeId, Guid productVariantId, int currentStock)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // ProductId'yi al (marketplace sync event için gerekli)
         var productId = await dbContext.ProductVariants.AsNoTracking()
             .Where(v => v.Id == productVariantId)
