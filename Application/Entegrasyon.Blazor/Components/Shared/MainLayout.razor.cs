@@ -52,7 +52,7 @@ public partial class MainLayout : IDisposable
                 Secondary = "#BDBDBD",
                 Success = "#81C784",
                 Info = "#64B5F6",
-                Warning = "#FFB74D",
+                Warning = "#FFA726",
                 Error = "#E57373",
                 AppbarBackground = "#212121",
             }

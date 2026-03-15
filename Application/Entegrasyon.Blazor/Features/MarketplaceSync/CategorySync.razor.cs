@@ -50,10 +50,14 @@ public partial class CategorySync
         _isLoading = false;
     }
 
-    private async Task OpenMappingDialog()
+    private async Task OpenRowMappingDialog(Category category)
     {
+        var parameters = new DialogParameters<CategoryMappingDialog>
+        {
+            { x => x.ApplicationCategory, category }
+        };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<CategoryMappingDialog>("Kategori Eşleştirme Oluştur", null, options);
+        var dialog = await DialogService.ShowAsync<CategoryMappingDialog>("Kategori Eşleştirme", parameters, options);
         var result = await dialog.Result;
 
         if (result is not null && !result.Canceled)

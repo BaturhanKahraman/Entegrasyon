@@ -5,15 +5,7 @@
 <PageTitle>Özellik Senkronizasyonu - Entegrasyon</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-        <MudText Typo="Typo.h5">Özellik Eşleştirme</MudText>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="OpenMappingDialog">
-            Yeni Eşleştirme
-        </MudButton>
-    </MudStack>
+    <MudText Typo="Typo.h5" Class="mb-4">Özellik Eşleştirme</MudText>
 
     <MudGrid Spacing="2" Class="mb-6">
         <MudItem xs="12" sm="4">
@@ -80,13 +72,22 @@
                     </TemplateColumn>
                     <TemplateColumn Title="İşlemler">
                         <CellTemplate>
-                            @if (context.Item.HasMatch)
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteMapping(context.Item))" />
-                            }
+                            <MudStack Row="true" Spacing="1">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Link"
+                                           OnClick="@(() => OpenRowMappingDialog(context.Item))">
+                                    Eşleştir
+                                </MudButton>
+                                @if (context.Item.HasMatch)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteMapping(context.Item))" />
+                                }
+                            </MudStack>
                         </CellTemplate>
                     </TemplateColumn>
                 </Columns>

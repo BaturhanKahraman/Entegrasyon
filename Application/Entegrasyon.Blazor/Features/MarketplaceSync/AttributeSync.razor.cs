@@ -61,10 +61,15 @@ public partial class AttributeSync
         _isLoading = false;
     }
 
-    private async Task OpenMappingDialog()
+    private async Task OpenRowMappingDialog(AttributeSyncRow row)
     {
+        var parameters = new DialogParameters<AttributeMappingDialog>
+        {
+            { x => x.ApplicationAttributeId, row.Id },
+            { x => x.ApplicationAttributeName, row.Humanized }
+        };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<AttributeMappingDialog>("Özellik Eşleştirme Oluştur", null, options);
+        var dialog = await DialogService.ShowAsync<AttributeMappingDialog>("Özellik Eşleştirme", parameters, options);
         var result = await dialog.Result;
 
         if (result is not null && !result.Canceled)

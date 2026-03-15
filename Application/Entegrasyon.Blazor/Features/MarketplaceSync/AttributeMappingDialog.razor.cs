@@ -1,8 +1,8 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
@@ -11,60 +11,65 @@ public partial class AttributeMappingDialog : ComponentBase
     [CascadingParameter]
     public IMudDialogInstance MudDialog { get; set; } = null!;
 
+    [Parameter]
+    public int ApplicationAttributeId { get; set; }
+
+    [Parameter]
+    public string ApplicationAttributeName { get; set; } = string.Empty;
+
+    [Inject] private IMarketplaceSearchService SearchService { get; set; } = null!;
+    [Inject] private IMarketPlaceManager MarketPlaceManager { get; set; } = null!;
     [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
-    private CreateAttributeMarketPlaceMatchDto _formDto = new();
-    private List<AppCategoryAttribute> _allAttributes = [];
-    private AppCategoryAttribute? _selectedAttribute;
-    private MudForm _form = null!;
-    private bool _isLoading = true;
+    private List<MarketplaceOption> _marketplaces = [];
+    private MarketplaceOption? _selectedMarketplace;
+    private MarketplaceAttributeSearchResult? _selectedResult;
+    private bool _isLoadingMarketplaces = true;
     private bool _isSubmitting;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        _formDto.MarketPlaceId = TrendyolMarketPlaceId;
-        await LoadAttributes();
+        await LoadMarketplaces();
     }
 
-    private async Task LoadAttributes()
+    private async Task LoadMarketplaces()
     {
-        _isLoading = true;
-        var result = await AttributeManager.GetCategoryAttributes();
+        _isLoadingMarketplaces = true;
+        var result = await MarketPlaceManager.GetAllAsync();
         if (result.Success && result.Data is not null)
-            _allAttributes = result.Data.OrderBy(x => x.CategoryAttributeHumanized).ToList();
-        else
-            Snackbar.Add("Özellikler yüklenirken hata oluştu.", Severity.Error);
-        _isLoading = false;
+            _marketplaces = result.Data.Select(mp => new MarketplaceOption(mp.Id, mp.Name)).ToList();
+        _isLoadingMarketplaces = false;
+    }
+
+    private async Task<IEnumerable<MarketplaceAttributeSearchResult>> SearchMarketplaceAttributes(
+        string value, CancellationToken ct)
+    {
+        if (_selectedMarketplace is null) return [];
+
+        var result = await SearchService.SearchAttributesAsync(_selectedMarketplace.Id, value ?? "", ct);
+        return result.Success ? result.Data : [];
     }
 
     private async Task SubmitForm()
     {
+        if (_selectedMarketplace is null || _selectedResult is null) return;
+
+        _isSubmitting = true;
         try
         {
-            if (_form is null) return;
-
-            await _form.Validate();
-            if (!_form.IsValid) return;
-
-            if (_selectedAttribute is not null)
-                _formDto.ApplicationCategoryAttributeId = _selectedAttribute.Id;
-
-            if (_formDto.ApplicationCategoryAttributeId <= 0)
+            var dto = new CreateAttributeMarketPlaceMatchDto
             {
-                Snackbar.Add("Lütfen bir özellik seçiniz.", Severity.Error);
-                return;
-            }
+                ApplicationCategoryAttributeId = ApplicationAttributeId,
+                MarketPlaceId = _selectedMarketplace.Id,
+                MarketPlaceCategoryAttributeId = _selectedResult.Id
+            };
 
-            _isSubmitting = true;
-
-            var result = await AttributeManager.CreateAttributeMarketPlaceMatchAsync(_formDto);
+            var result = await AttributeManager.CreateAttributeMarketPlaceMatchAsync(dto);
             if (result.Success)
             {
                 Snackbar.Add("Özellik eşleştirme başarıyla oluşturuldu.", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(_formDto));
+                MudDialog.Close(DialogResult.Ok(dto));
             }
             else
             {
@@ -73,7 +78,7 @@ public partial class AttributeMappingDialog : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Form gönderimi sırasında hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Kayıt sırasında hata oluştu: {ex.Message}", Severity.Error);
         }
         finally
         {
