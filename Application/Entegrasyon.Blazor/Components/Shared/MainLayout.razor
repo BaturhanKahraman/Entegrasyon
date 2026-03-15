@@ -3,7 +3,7 @@
 @using Entegrasyon.Blazor.Services
 @using Entegrasyon.Blazor.Features.Notifications
 
-<MudThemeProvider Theme="_theme" IsDarkMode="@_isDarkMode" @ref="_mudThemeProvider"/>
+<MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDarkMode" @ref="_mudThemeProvider"/>
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
