@@ -9,12 +9,28 @@ public partial class MainLayout : IDisposable
 {
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
-
+    private MudThemeProvider _mudThemeProvider;
     private LoggingErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
     private bool _isDarkMode = false;
     private MudTheme _theme = new();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+            StateHasChanged();
+        }
+        await _mudThemeProvider.WatchSystemDarkModeAsync(OnSystemDarkModeChanged);
+        await base.OnAfterRenderAsync(firstRender);
+    }
 
+    private Task OnSystemDarkModeChanged(bool newValue)
+    {
+        _isDarkMode = newValue;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
