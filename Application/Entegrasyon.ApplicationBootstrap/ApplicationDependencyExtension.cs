@@ -89,6 +89,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITrendyolStockPriceService, MockTrendyolStockPriceService>();
                 services.AddScoped<ITrendyolOrderService, MockTrendyolOrderService>();
                 services.AddScoped<ITrendyolInvoiceService, MockTrendyolInvoiceService>();
+                services.AddScoped<IMarketplaceSearchService, MockMarketplaceSearchService>();
             }
             else
             {
@@ -96,6 +97,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITrendyolStockPriceService, TrendyolStockPriceService>();
                 services.AddScoped<ITrendyolOrderService, TrendyolOrderService>();
                 services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
+                services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             }
 
 

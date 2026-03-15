@@ -6,20 +6,12 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
         <MudText Typo="Typo.h5">Kategori Eşleştirme</MudText>
-        <MudStack Row="true" Spacing="2">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="OpenMappingDialog">
-                Yeni Eşleştirme
-            </MudButton>
-            <MudButton Variant="Variant.Outlined"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Download"
-                       Href="/categories/import">
-                Trendyol'dan İçe Aktar
-            </MudButton>
-        </MudStack>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Download"
+                   Href="/categories/import">
+            Trendyol'dan İçe Aktar
+        </MudButton>
     </MudStack>
 
     <MudGrid Spacing="2" Class="mb-6">
@@ -110,13 +102,22 @@
                     </TemplateColumn>
                     <TemplateColumn Title="İşlemler">
                         <CellTemplate>
-                            @if (context.Item.MarketplaceLinks?.Any() == true)
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => DeleteMapping(context.Item))" />
-                            }
+                            <MudStack Row="true" Spacing="1">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Link"
+                                           OnClick="@(() => OpenRowMappingDialog(context.Item))">
+                                    Eşleştir
+                                </MudButton>
+                                @if (context.Item.MarketplaceLinks?.Any() == true)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteMapping(context.Item))" />
+                                }
+                            </MudStack>
                         </CellTemplate>
                     </TemplateColumn>
                 </Columns>

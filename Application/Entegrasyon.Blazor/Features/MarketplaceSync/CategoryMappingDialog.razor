@@ -1,60 +1,63 @@
-@using Entegrasyon.Entity.Categories
-@using Entegrasyon.Entity.Dtos.Category
+@using Entegrasyon.Entity.Dtos.Marketplace
 
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-3" />
-            Yeni Kategori Eşleştirme
+            <MudIcon Icon="@Icons.Material.Filled.Link" Class="mr-3" />
+            Kategori Eşleştirme
         </MudText>
     </TitleContent>
     <DialogContent>
-        @if (_isLoading)
-        {
-            <MudProgressCircular Indeterminate="true" Class="mx-auto my-4" />
-        }
-        else
-        {
-            <MudForm @ref="_form">
-                <MudTextField Value="@_formDto.MarketPlaceId.ToString()"
-                              Label="E-ticaret Sitesi ID"
-                              ReadOnly="true"
-                              Variant="Variant.Outlined"
-                              Class="mb-4" />
+        <MudStack Spacing="4">
+            <MudTextField Value="@ApplicationCategory.Name"
+                          Label="Uygulama Kategorisi"
+                          ReadOnly="true"
+                          Variant="Variant.Filled"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Category" />
 
-                <MudAutocomplete T="Category"
-                                 @bind-Value="_selectedCategory"
-                                 SearchFunc="SearchCategories"
-                                 Label="Kategori Seçin"
+            @if (_isLoadingMarketplaces)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            }
+            else
+            {
+                <MudSelect T="MarketplaceOption"
+                           @bind-Value="_selectedMarketplace"
+                           Label="Platform Seçin"
+                           Variant="Variant.Outlined"
+                           Required="true"
+                           RequiredError="Platform seçilmelidir."
+                           ToStringFunc="@(x => x?.Name ?? "")"
+                           TransformOrigin="Origin.TopLeft"
+                           AnchorOrigin="Origin.BottomLeft">
+                    @foreach (var mp in _marketplaces)
+                    {
+                        <MudSelectItem T="MarketplaceOption" Value="mp">@mp.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudAutocomplete T="MarketplaceCategorySearchResult"
+                                 @bind-Value="_selectedResult"
+                                 SearchFunc="SearchMarketplaceCategories"
+                                 Label="Marketplace Kategorisi Ara"
+                                 Placeholder="Kategori adı yazın..."
                                  Variant="Variant.Outlined"
-                                 ToStringFunc="@(x => x?.Name ?? "")"
+                                 ToStringFunc="@(x => x?.FullPath ?? x?.Name ?? "")"
+                                 DebounceInterval="300"
+                                 MinCharacters="0"
                                  Required="true"
-                                 RequiredError="Kategori seçilmelidir."
-                                 Class="mb-4" />
-
-                <MudTextField @bind-Value="_formDto.MarketPlaceCategoryId"
-                              Label="Marketplace Kategori ID"
-                              Placeholder="örn: 1234"
-                              Variant="Variant.Outlined"
-                              Required="true"
-                              RequiredError="Marketplace Kategori ID gereklidir."
-                              InputType="InputType.Number"
-                              Class="mb-4" />
-
-                <MudTextField @bind-Value="_formDto.MarketPlaceCategoryName"
-                              Label="Marketplace Kategori Adı"
-                              Placeholder="örn: Elektronik > Bilgisayar"
-                              Variant="Variant.Outlined"
-                              Class="mb-4" />
-            </MudForm>
-        }
+                                 RequiredError="Marketplace kategorisi seçilmelidir."
+                                 Disabled="_selectedMarketplace is null" />
+            }
+        </MudStack>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">İptal</MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="Color.Primary"
                    OnClick="SubmitForm"
-                   Disabled="_isSubmitting || _isLoading">
+                   Disabled="_isSubmitting || _selectedResult is null">
             @if (_isSubmitting)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -62,20 +65,8 @@
             }
             else
             {
-                <span>Oluştur</span>
+                <span>Eşleştir</span>
             }
         </MudButton>
     </DialogActions>
 </MudDialog>
-
-@code {
-    private Task<IEnumerable<Category>> SearchCategories(string value, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(value))
-            return Task.FromResult(_allCategories.AsEnumerable());
-
-        return Task.FromResult(
-            _allCategories.Where(x => x.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
-                .AsEnumerable());
-    }
-}

@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -11,57 +12,63 @@ public partial class CategoryMappingDialog : ComponentBase
     [CascadingParameter]
     public IMudDialogInstance MudDialog { get; set; } = null!;
 
-    [Inject] private ICategoryService CategoryService { get; set; } = null!;
+    [Parameter]
+    public Category ApplicationCategory { get; set; } = null!;
+
+    [Inject] private IMarketplaceSearchService SearchService { get; set; } = null!;
+    [Inject] private IMarketPlaceManager MarketPlaceManager { get; set; } = null!;
     [Inject] private ICategoryMatchService CategoryMatchService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
-    private CreateCategoryMarketplaceMatchDto _formDto = new();
-    private List<Category> _allCategories = [];
-    private Category? _selectedCategory;
-    private MudForm _form = null!;
-    private bool _isLoading = true;
+    private List<MarketplaceOption> _marketplaces = [];
+    private MarketplaceOption? _selectedMarketplace;
+    private MarketplaceCategorySearchResult? _selectedResult;
+    private bool _isLoadingMarketplaces = true;
     private bool _isSubmitting;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        _formDto.MarketPlaceId = TrendyolMarketPlaceId;
-        await LoadCategories();
+        await LoadMarketplaces();
     }
 
-    private async Task LoadCategories()
+    private async Task LoadMarketplaces()
     {
-        _isLoading = true;
-        _allCategories = await CategoryService.GetAllCategoriesWithoutAttributesAsync();
-        _isLoading = false;
+        _isLoadingMarketplaces = true;
+        var result = await MarketPlaceManager.GetAllAsync();
+        if (result.Success && result.Data is not null)
+            _marketplaces = result.Data.Select(mp => new MarketplaceOption(mp.Id, mp.Name)).ToList();
+        _isLoadingMarketplaces = false;
+    }
+
+    private async Task<IEnumerable<MarketplaceCategorySearchResult>> SearchMarketplaceCategories(
+        string value, CancellationToken ct)
+    {
+        if (_selectedMarketplace is null) return [];
+
+        var result = await SearchService.SearchCategoriesAsync(_selectedMarketplace.Id, value ?? "", ct);
+        return result.Success ? result.Data : [];
     }
 
     private async Task SubmitForm()
     {
+        if (_selectedMarketplace is null || _selectedResult is null) return;
+
+        _isSubmitting = true;
         try
         {
-            if (_form is null) return;
-
-            await _form.Validate();
-            if (!_form.IsValid) return;
-
-            if (_selectedCategory is not null)
-                _formDto.ApplicationCategoryId = _selectedCategory.Id;
-
-            if (_formDto.ApplicationCategoryId <= 0)
+            var dto = new CreateCategoryMarketplaceMatchDto
             {
-                Snackbar.Add("Lütfen bir kategori seçiniz.", Severity.Error);
-                return;
-            }
+                ApplicationCategoryId = ApplicationCategory.Id,
+                MarketPlaceId = _selectedMarketplace.Id,
+                MarketPlaceCategoryId = _selectedResult.Id,
+                MarketPlaceCategoryName = _selectedResult.FullPath ?? _selectedResult.Name
+            };
 
-            _isSubmitting = true;
-
-            var result = await CategoryMatchService.CreateCategoryMappingAsync(_formDto);
+            var result = await CategoryMatchService.CreateCategoryMappingAsync(dto);
             if (result.Success)
             {
                 Snackbar.Add("Kategori eşleştirme başarıyla oluşturuldu.", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(_formDto));
+                MudDialog.Close(DialogResult.Ok(dto));
             }
             else
             {
@@ -70,7 +77,7 @@ public partial class CategoryMappingDialog : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Form gönderimi sırasında hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Kayıt sırasında hata oluştu: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -80,3 +87,5 @@ public partial class CategoryMappingDialog : ComponentBase
 
     private void Cancel() => MudDialog.Cancel();
 }
+
+public record MarketplaceOption(int Id, string Name);
