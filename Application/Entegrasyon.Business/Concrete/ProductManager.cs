@@ -24,7 +24,7 @@ using Entegrasyon.Entity.Categories;
 namespace Entegrasyon.Business.Concrete;
 
 public class ProductManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager,
     IMapper mapper,
     IFluentValidator validator,
@@ -38,6 +38,8 @@ public class ProductManager(
     {
         await applicationLogManager.AddLog("Ürün ekleme isteği geldi.", LogType.Product, LogAction.Add, dto);
         await validator.ValidateAndThrowAsync(dto);
+
+        using var dbContext = contextFactory.CreateDbContext();
 
         // Business Rules
         var stockCodeConflict = !string.IsNullOrEmpty(dto.StockCode) &&
@@ -66,6 +68,9 @@ public class ProductManager(
     {
         if (string.IsNullOrEmpty(barcode))
             return new ErrorResult("Barkod boş olamaz.");
+
+        using var dbContext = contextFactory.CreateDbContext();
+
         var product = await dbContext.MainProducts
             .FirstOrDefaultAsync(x => x.ProductVariants.Any(pv => pv.Barcode == barcode));
         if (product == null)
@@ -75,6 +80,8 @@ public class ProductManager(
 
     public async Task<IDataResult<ProductEditPageDto>> GetProductEditPageData(Guid id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
+
         var product = await dbContext.MainProducts
             .Where(p => p.Id == id)
             .Select(p => new ProductEditDetailDto(
@@ -139,6 +146,8 @@ public class ProductManager(
 
         try { await validator.ValidateAndThrowAsync(dto); }
         catch (Exception ex) { return new ErrorResult(ex.Message); }
+
+        using var dbContext = contextFactory.CreateDbContext();
 
         var stockCodeConflict = await dbContext.MainProducts
             .AnyAsync(p => p.StockCode == dto.StockCode && p.Id != dto.Id && !p.IsDeleted);
@@ -221,6 +230,8 @@ public class ProductManager(
 
     public async Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
+
         var result = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new ProductDetailDto(
@@ -243,6 +254,8 @@ public class ProductManager(
 
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
+
         var query = dbContext.MainProducts.AsQueryable();
         if (!string.IsNullOrEmpty(dto.FullTextSearchKey))
             query = query.Where(x =>
@@ -267,6 +280,9 @@ public class ProductManager(
     public async Task<IResult> SoftDeleteProduct(Guid id)
     {
         await applicationLogManager.AddLog("Ürün silme isteği alındı.", LogType.Product, LogAction.Delete, new { id });
+
+        using var dbContext = contextFactory.CreateDbContext();
+
         var product = await dbContext.MainProducts.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (product is null)
             return new ErrorResult("Silinecek ürün bulunamadı.");
@@ -277,11 +293,17 @@ public class ProductManager(
         return new SuccessResult("Ürün silindi.");
     }
 
-    public Task<int> GetProductCountByCategoryId(int categoryId) =>
-        dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
+    public Task<int> GetProductCountByCategoryId(int categoryId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
+    }
 
-    public Task<bool> HasSoldProductsInCategory(int categoryId) =>
-        dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+    public Task<bool> HasSoldProductsInCategory(int categoryId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+    }
 
     private static MarketplaceSyncStatusDto BuildSyncStatus(ProductMarketplace? marketplace, DateTimeOffset? productUpdatedAt)
     {

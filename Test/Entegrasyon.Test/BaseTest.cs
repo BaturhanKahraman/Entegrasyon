@@ -13,16 +13,23 @@ namespace Entegrasyon.UnitTest;
 public class BaseTest
 {
     protected Mock<IntegrationDbContext> mockIntegrationDbContext;
+    protected Mock<IDbContextFactory<IntegrationDbContext>> mockContextFactory;
     protected Mock<IApplicationLogManager> mockApplicationLogger;
     protected Mock<IFluentValidator> MockValidator;
-    protected Mock<IMemoryCache> mockMemoryCache; 
+    protected Mock<IMemoryCache> mockMemoryCache;
     public BaseTest()
     {
-        //mock dbcontextoptions 
-        
+        //mock dbcontextoptions
+
         DbContextOptionsBuilder<IntegrationDbContext> b = new DbContextOptionsBuilder<IntegrationDbContext>();
-        
+
         mockIntegrationDbContext = new Mock<IntegrationDbContext>(b.Options);
+
+        // Mock IDbContextFactory to return the mocked context
+        mockContextFactory = new Mock<IDbContextFactory<IntegrationDbContext>>();
+        mockContextFactory
+            .Setup(f => f.CreateDbContext())
+            .Returns(mockIntegrationDbContext.Object);
 
         //application logger mock
         mockApplicationLogger = new Mock<IApplicationLogManager>();

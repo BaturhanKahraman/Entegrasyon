@@ -36,7 +36,7 @@ public class UpdateProductTests : BaseTest
             .ReturnsAsync(1);
 
         _productManager = new ProductManager(
-            mockIntegrationDbContext.Object,
+            mockContextFactory.Object,
             mockApplicationLogger.Object,
             _mockMapper.Object,
             MockValidator.Object,

@@ -10,13 +10,14 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete;
 
 public sealed class MarketplaceOverrideManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     IProductSyncManager syncManager,
     ILogger<MarketplaceOverrideManager> logger) : IMarketplaceOverrideManager
 {
     public async Task<IDataResult<MarketplaceOverrideDetailDto>> GetOverridesAsync(Guid productId, int marketPlaceId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var product = await dbContext.MainProducts
             .AsNoTracking()
             .Include(p => p.ProductVariants)
@@ -71,6 +72,7 @@ public sealed class MarketplaceOverrideManager(
 
     public async Task<IResult> SaveOverridesAsync(SaveMarketplaceOverridesDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         await validator.ValidateAndThrowAsync(dto);
 

@@ -12,13 +12,14 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete;
 
 public class LabelTemplateManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     IApplicationLogManager logManager,
     ILogger<LabelTemplateManager> logger) : ILabelTemplateService
 {
     public async Task<IDataResult<List<LabelTemplateDto>>> GetAllAsync()
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var templates = await dbContext.LabelTemplates
             .Where(t => !t.IsDeleted)
             .OrderByDescending(t => t.IsDefault)
@@ -31,6 +32,7 @@ public class LabelTemplateManager(
 
     public async Task<IDataResult<LabelTemplateDto>> GetByIdAsync(Guid id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
@@ -42,6 +44,7 @@ public class LabelTemplateManager(
 
     public async Task<IDataResult<LabelTemplateDto>> GetDefaultAsync(LabelType type)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Type == type && t.IsDefault && !t.IsDeleted);
 
@@ -53,6 +56,7 @@ public class LabelTemplateManager(
 
     public async Task<IDataResult<LabelTemplateDto>> SaveAsync(SaveLabelTemplateDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         var validationResult = await validator.Validate(dto);
         if (!validationResult.IsValid)
@@ -110,7 +114,7 @@ public class LabelTemplateManager(
 
         // IsDefault ise aynı tipteki diğerlerini kapat
         if (template.IsDefault)
-            await ClearDefaultForType(template.Type, template.Id);
+            await ClearDefaultForType(dbContext, template.Type, template.Id);
 
         await dbContext.SaveChangesAsync();
 
@@ -123,6 +127,7 @@ public class LabelTemplateManager(
 
     public async Task<IResult> DeleteAsync(Guid id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
@@ -143,13 +148,14 @@ public class LabelTemplateManager(
 
     public async Task<IResult> SetAsDefaultAsync(Guid id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
         if (template is null)
             return new ErrorResult("Şablon bulunamadı");
 
-        await ClearDefaultForType(template.Type, template.Id);
+        await ClearDefaultForType(dbContext, template.Type, template.Id);
 
         dbContext.Entry(template).State = EntityState.Modified;
         template.IsDefault = true;
@@ -159,7 +165,7 @@ public class LabelTemplateManager(
         return new SuccessResult($"'{template.Name}' varsayılan şablon olarak ayarlandı");
     }
 
-    private async Task ClearDefaultForType(LabelType type, Guid excludeId)
+    private async Task ClearDefaultForType(IntegrationDbContext dbContext, LabelType type, Guid excludeId)
     {
         var defaults = await dbContext.LabelTemplates
             .Where(t => t.Type == type && t.IsDefault && t.Id != excludeId && !t.IsDeleted)

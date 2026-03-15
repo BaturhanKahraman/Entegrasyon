@@ -11,7 +11,7 @@ public class AttributeKeyValueManagerTests : BaseTest
 
     public AttributeKeyValueManagerTests()
     {
-        _manager = new AttributeKeyValueManager(mockIntegrationDbContext.Object);
+        _manager = new AttributeKeyValueManager(mockContextFactory.Object);
     }
 
     [Fact]
