@@ -19,7 +19,7 @@ public partial class PrintStatusIndicator : IDisposable
         {
             await CheckStatus();
             await InvokeAsync(StateHasChanged);
-        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }, null, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
     }
 
     private async Task CheckStatus()

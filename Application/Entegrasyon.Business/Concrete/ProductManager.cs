@@ -38,11 +38,19 @@ public class ProductManager(
     {
         await applicationLogManager.AddLog("Ürün ekleme isteği geldi.", LogType.Product, LogAction.Add, dto);
         await validator.ValidateAndThrowAsync(dto);
+
+        // Business Rules
+        var stockCodeConflict = !string.IsNullOrEmpty(dto.StockCode) &&
+            await dbContext.MainProducts.AnyAsync(p => p.StockCode == dto.StockCode && !p.IsDeleted);
+        if (stockCodeConflict)
+            return new ErrorDataResult<Product>(null!, "Bu stok kodu zaten kullanılıyor. Lütfen farklı bir stok kodu girin.");
+
         var check = LogicRunner.Run(
             officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
         );
         if (check != null)
             return new ErrorDataResult<Product>(null!, check.Message);
+
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = await barcodeService.GenerateAsync();
         var product = mapper.Map<Product>(dto);

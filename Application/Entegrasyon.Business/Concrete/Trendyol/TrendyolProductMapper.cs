@@ -36,6 +36,16 @@ public sealed class TrendyolProductMapper(
         if (product.ProductVariants.Count == 0)
             return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Ürünün varyantı yok.");
 
+        // Override'ları yükle (varsa)
+        var marketplace = await dbContext.ProductMarketplaces
+            .AsNoTracking()
+            .Include(pm => pm.VariantOverrides)
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId
+                && pm.MarketPlaceId == TrendyolMarketPlaceId && !pm.IsDeleted);
+
+        var effectiveTitle = marketplace?.TitleOverride ?? product.Title;
+        var effectiveDescription = marketplace?.DescriptionOverride ?? product.Description;
+
         // Marketplace eşleştirmeleri — brand, category
         var brandMatch = product.BrandId.HasValue
             ? await dbContext.BrandMarketPlaceMatches.AsNoTracking()
@@ -103,8 +113,14 @@ public sealed class TrendyolProductMapper(
                 continue;
             }
 
+            // Override varsa override fiyatlarını kullan, yoksa orijinal
+            var variantOverride = marketplace?.VariantOverrides
+                ?.FirstOrDefault(vo => vo.ProductVariantId == variant.Id);
+            var effectiveListPrice = variantOverride?.ListPriceOverride ?? variant.ListPrice;
+            var effectiveSalePrice = variantOverride?.SalePriceOverride ?? variant.SalePrice;
+
             // SalePrice ≤ ListPrice kontrolü
-            var salePrice = variant.SalePrice > variant.ListPrice ? variant.ListPrice : variant.SalePrice;
+            var salePrice = effectiveSalePrice > effectiveListPrice ? effectiveListPrice : effectiveSalePrice;
 
             // VatRate: 0, 1, 10, 20 olmalı
             var vatRate = (int)variant.VatRate;
@@ -177,16 +193,16 @@ public sealed class TrendyolProductMapper(
 
             var item = new TrendyolProductItem(
                 Barcode: variant.Barcode,
-                Title: product.Title.Length > 100 ? product.Title[..100] : product.Title,
+                Title: effectiveTitle.Length > 100 ? effectiveTitle[..100] : effectiveTitle,
                 ProductMainId: productMainId,
                 BrandId: brandMatch.MarketPlaceBrandId,
                 CategoryId: categoryMatch.MarketPlaceCategoryId,
-                ListPrice: variant.ListPrice,
+                ListPrice: effectiveListPrice,
                 SalePrice: salePrice,
                 VatRate: vatRate,
                 StockCode: variant.Barcode,
                 DimensionalWeight: variant.DimensionalWeight,
-                Description: product.Description.Length > 30000 ? product.Description[..30000] : product.Description,
+                Description: effectiveDescription.Length > 30000 ? effectiveDescription[..30000] : effectiveDescription,
                 Quantity: quantity,
                 Images: images,
                 Attributes: attributes);

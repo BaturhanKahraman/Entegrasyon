@@ -39,7 +39,6 @@ public partial class SyncOverview
         try
         {
             // TODO: Trigger actual sync via background service
-            await Task.Delay(2000);
             Snackbar.Add($"{marketplace} senkronizasyonu tamamlandı", Severity.Success);
         }
         catch (Exception ex)

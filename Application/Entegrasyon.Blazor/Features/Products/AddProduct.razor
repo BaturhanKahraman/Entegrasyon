@@ -213,37 +213,70 @@
         <MudStep Label="Varyantlar & Görseller">
             <StepContent>
                 <div class="variants-section">
+                    @if (_isProcessingImages)
+                    {
+                        <MudOverlay Visible="true" DarkBackground="true" ZIndex="9999" Absolute="true">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                                <MudText Color="Color.Primary">Görseller işleniyor...</MudText>
+                            </MudStack>
+                        </MudOverlay>
+                    }
+
                     @if (!variants.Any())
                     {
                         <MudAlert Severity="Severity.Warning">Henüz varyant yok. Lütfen geri dönüp varyant oluşturun.</MudAlert>
                     }
                     else
                     {
-                        <MudButton Color="Color.Primary" Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.PhotoLibrary"
-                                   OnClick="OpenImageDialog" Class="mb-3">
-                            Görselleri Yönet
-                        </MudButton>
+                        <MudStack Row="true" Spacing="2" Class="mb-3">
+                            <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.PhotoLibrary"
+                                       OnClick="OpenImageDialog" Disabled="_isProcessingImages">
+                                Görselleri Yönet
+                            </MudButton>
+                            <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
+                                       StartIcon="@Icons.Material.Filled.QrCode"
+                                       OnClick="GenerateAllBarcodes"
+                                       Disabled="_isGeneratingBarcodes">
+                                @if (_isGeneratingBarcodes)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Oluşturuluyor...</span>
+                                }
+                                else
+                                {
+                                    <span>Tüm Barkodları Oluştur</span>
+                                }
+                            </MudButton>
+                        </MudStack>
                     }
 
                     @foreach (var (variant, idx) in variants.Select((v, i) => (v, i)))
                     {
                         <MudPaper Class="pa-3 mt-3 variant-card">
-                            @* Header: label + delete *@
+                            @* Header: label + actions *@
                             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
                                 <MudText Typo="Typo.subtitle1"><b>@GetVariantLabel(variant, idx)</b></MudText>
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                               Size="Size.Small"
-                                               OnClick="@(() => RemoveVariant(idx))" />
+                                <MudStack Row="true" Spacing="1">
+                                    @if (idx > 0)
+                                    {
+                                        <MudTooltip Text="Üstteki varyantın değerlerini kopyala (fiyat, maliyet, stok)">
+                                            <MudIconButton Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Info"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => CopyFromPreviousVariant(idx))" />
+                                        </MudTooltip>
+                                    }
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => RemoveVariant(idx))" />
+                                </MudStack>
                             </MudStack>
 
                             <MudGrid>
                                 <MudItem xs="12" md="3">
-                                    <MudTextField Label="Barkod" @bind-Value="variant.Barcode"
-                                                  Adornment="Adornment.End"
-                                                  AdornmentIcon="@Icons.Material.Filled.QrCode"
-                                                  OnAdornmentClick="@(() => GenerateBarcodeForVariant(idx))"
-                                                  AdornmentAriaLabel="Barkod Oluştur" />
+                                    <MudTextField Label="Barkod" Value="@(string.IsNullOrEmpty(variant.Barcode) ? "Otomatik oluşturulacak" : variant.Barcode)"
+                                                  ReadOnly="true" Variant="Variant.Outlined" />
                                 </MudItem>
                                 <MudItem xs="12" md="2">
                                     <MudNumericField T="decimal?" Label="Liste Fiyatı" @bind-Value="variant.ListPrice"
@@ -312,44 +345,9 @@
             </StepContent>
         </MudStep>
 
-        @* ── Step 3: Pazaryeri Seçimi & Özet ── *@
-        <MudStep Label="Pazaryeri">
+        @* ── Step 3: Kontrol & Özet ── *@
+        <MudStep Label="Kontrol & Özet">
             <StepContent>
-                <MudText Typo="Typo.subtitle1" Class="mb-3">Ürünü hangi pazaryerlerine eklemek istiyorsunuz?</MudText>
-
-                <MudPaper Class="pa-3 mb-2">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                        <MudCheckBox @bind-Value="_trendyolSelected" Color="Color.Primary" />
-                        <MudStack Spacing="0">
-                            <MudText Typo="Typo.body1"><b>Trendyol</b></MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Ürün Trendyol'a gönderilecek</MudText>
-                        </MudStack>
-                    </MudStack>
-                </MudPaper>
-
-                <MudPaper Class="pa-3 mb-2" Style="opacity:0.5">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                        <MudCheckBox Value="false" Disabled="true" />
-                        <MudStack Spacing="0">
-                            <MudText Typo="Typo.body1"><b>Hepsiburada</b></MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Yakında</MudText>
-                        </MudStack>
-                    </MudStack>
-                </MudPaper>
-
-                <MudPaper Class="pa-3 mb-2" Style="opacity:0.5">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                        <MudCheckBox Value="false" Disabled="true" />
-                        <MudStack Spacing="0">
-                            <MudText Typo="Typo.body1"><b>Amazon.com.tr</b></MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Yakında</MudText>
-                        </MudStack>
-                    </MudStack>
-                </MudPaper>
-
-                <MudDivider Class="my-4" />
-
-                @* ── Özet ── *@
                 <MudText Typo="Typo.h6" Class="mb-3">Özet</MudText>
 
                 @* Genel Bilgiler *@
@@ -502,29 +500,48 @@
             </StepContent>
         </MudStep>
 
+        @* ── Step 4: Pazaryerine Gönder (Opsiyonel) ── *@
+        <MudStep Label="Pazaryerine Gönder">
+            <StepContent>
+                @if (_savedProductId.HasValue)
+                {
+                    <MarketplacePublishStep ProductId="_savedProductId.Value"
+                                            OnPublished="OnMarketplacePublished"
+                                            OnSkipped="OnMarketplaceSkipped" />
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Warning">Ürün henüz kaydedilmedi.</MudAlert>
+                }
+            </StepContent>
+        </MudStep>
+
         </ChildContent>
 
     </MudStepper>
 
-    <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-4">
-        <MudButton Variant="Variant.Outlined" OnClick="PreviousStep" Disabled="@(stepIndex == 0 || _isSaving)">Geri</MudButton>
-        @if (stepIndex < 3)
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" Disabled="_isSaving">İleri</MudButton>
-        }
-        else
-        {
-            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Submit" Disabled="_isSaving">
-                @if (_isSaving)
-                {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                    <span>Kaydediliyor...</span>
-                }
-                else
-                {
-                    <span>Kaydet ve Yayınla</span>
-                }
-            </MudButton>
-        }
-    </MudStack>
+    @if (stepIndex < 4)
+    {
+        <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-4">
+            <MudButton Variant="Variant.Outlined" OnClick="PreviousStep" Disabled="@(stepIndex == 0 || _isSaving)">Geri</MudButton>
+            @if (stepIndex < 3)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" Disabled="_isSaving">İleri</MudButton>
+            }
+            else if (stepIndex == 3)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Submit" Disabled="_isSaving">
+                    @if (_isSaving)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Kaydediliyor...</span>
+                    }
+                    else
+                    {
+                        <span>Kaydet</span>
+                    }
+                </MudButton>
+            }
+        </MudStack>
+    }
 </MudPaper>
