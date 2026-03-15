@@ -8,48 +8,46 @@
     <MudItem xs="12" md="5">
         <MudPaper Elevation="1" Class="pa-2">
             <MudToolBar Dense="true" DisableGutters="true" Class="mb-2">
-                <MudTextField @bind-Value="_searchString"
+                <MudTextField T="string"
                               Placeholder="Özellik ara..."
                               Adornment="Adornment.Start"
                               AdornmentIcon="@Icons.Material.Filled.Search"
-                              Immediate="true"
+                              ValueChanged="OnSearchChanged"
+                              DebounceInterval="400"
                               Clearable="true"
                               Class="mr-2" />
             </MudToolBar>
 
-            @if (_loading)
-            {
-                <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-            }
-            else
-            {
-                <MudDataGrid T="Entegrasyon.Entity.Categories.CategoryAttribute"
-                             Items="@FilteredAttributes"
-                             Hover="true"
-                             Dense="true"
-                             SelectedItem="@_selectedAttribute"
-                             SelectedItemChanged="@OnAttributeSelected"
-                             SelectionMode="DataGridSelectionMode.SingleSelection">
-                    <Columns>
-                        <PropertyColumn Property="x => x.CategoryAttributeHumanized" Title="Ad" />
-                        <PropertyColumn Property="x => x.CategoryAttributeKey" Title="Anahtar" />
-                        <TemplateColumn Title="Özel Değer">
-                            <CellTemplate>
-                                <MudIcon Icon="@(context.Item.AllowCustom ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
-                                         Color="@(context.Item.AllowCustom ? Color.Success : Color.Default)"
-                                         Size="Size.Small" />
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="Değerler">
-                            <CellTemplate>
-                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">
-                                    @context.Item.CategoryAttributeValues.Count
-                                </MudChip>
-                            </CellTemplate>
-                        </TemplateColumn>
-                    </Columns>
-                </MudDataGrid>
-            }
+            <MudDataGrid @ref="_dataGrid"
+                         T="Entegrasyon.Entity.Categories.CategoryAttribute"
+                         ServerData="ServerData"
+                         Hover="true"
+                         Dense="true"
+                         SelectedItem="@_selectedAttribute"
+                         SelectedItemChanged="@OnAttributeSelected"
+                         SelectionMode="DataGridSelectionMode.SingleSelection">
+                <Columns>
+                    <PropertyColumn Property="x => x.CategoryAttributeHumanized" Title="Ad" />
+                    <PropertyColumn Property="x => x.CategoryAttributeKey" Title="Anahtar" />
+                    <TemplateColumn Title="Özel Değer">
+                        <CellTemplate>
+                            <MudIcon Icon="@(context.Item.AllowCustom ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                     Color="@(context.Item.AllowCustom ? Color.Success : Color.Default)"
+                                     Size="Size.Small" />
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Değerler">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                @context.Item.CategoryAttributeValues.Count
+                            </MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="Entegrasyon.Entity.Categories.CategoryAttribute" />
+                </PagerContent>
+            </MudDataGrid>
         </MudPaper>
     </MudItem>
 

@@ -26,6 +26,9 @@
         <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale">
             Satış (POS)
         </MudNavLink>
+        <MudNavLink Href="/orders" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Receipt">
+            Satışlar ve Siparişler
+        </MudNavLink>
     </MudNavGroup>
 
     <MudNavGroup Title="Pazaryeri" Icon="@Icons.Material.Filled.Store" Expanded="@ExpandedSections["marketplace"]">
@@ -51,7 +54,7 @@
         </MudNavLink>
     </MudNavGroup>
 
-    <MudNavGroup Title="Müşteriler & Satış" Icon="@Icons.Material.Filled.People" Expanded="@ExpandedSections["customers"]">
+    <MudNavGroup Title="Müşteriler" Icon="@Icons.Material.Filled.People" Expanded="@ExpandedSections["customers"]">
         <AuthorizeView Policy="@AppPermissions.Customers.View">
             <Authorized>
                 <MudNavLink Href="/customers" Icon="@Icons.Material.Filled.Person">
@@ -59,9 +62,6 @@
                 </MudNavLink>
             </Authorized>
         </AuthorizeView>
-        <MudNavLink Href="/orders" Icon="@Icons.Material.Filled.Receipt">
-            Siparişler
-        </MudNavLink>
         <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.Description">
             Faturalar
         </MudNavLink>
