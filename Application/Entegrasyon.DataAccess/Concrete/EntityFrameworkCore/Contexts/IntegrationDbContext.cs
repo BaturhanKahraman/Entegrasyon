@@ -24,6 +24,10 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.HasCollation("CaseInsensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
+
+        // Materialized View: mv_category_summary — kategori listeleme agregasyonu
+        modelBuilder.Entity<CategorySummaryView>().ToView("mv_category_summary");
+
         modelBuilder.Seed();
 
         base.OnModelCreating(modelBuilder);
@@ -94,6 +98,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StockMovement> StockMovements { get; set; }
     public virtual DbSet<ProductVariantMarketplaceOverride> ProductVariantMarketplaceOverrides { get; set; }
     public virtual DbSet<LabelTemplate> LabelTemplates { get; set; }
+    public virtual DbSet<CategorySummaryView> CategorySummaries { get; set; }
     public virtual DbSet<CategoryMarketplace> CategoryMarketplaces { get; set; }
     public virtual DbSet<MarketPlaceWarehouse> MarketPlaceWarehouses { get; set; }
     public virtual DbSet<ApplicationUser> Users { get; set; }

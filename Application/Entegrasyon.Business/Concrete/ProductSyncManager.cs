@@ -17,6 +17,8 @@ public sealed class ProductSyncManager(
     IApplicationLogManager applicationLogManager,
     IProductActivityLogger activityLogger) : IProductSyncManager
 {
+    private const long AdvisoryLockKeySyncAll = 1001;
+    private const long AdvisoryLockKeyRetryFailed = 1002;
     public async Task<ProductSyncSummaryDto> GetSyncSummaryAsync(int marketPlaceId)
     {
         using var dbContext = contextFactory.CreateDbContext();
@@ -236,64 +238,98 @@ public sealed class ProductSyncManager(
     public async Task<IResult> SyncAllPendingAsync(int marketPlaceId)
     {
         using var dbContext = contextFactory.CreateDbContext();
-        var unsyncedProductIds = await dbContext.MainProducts
-            .Where(p => !p.ProductMarketplaces.Any(pm => pm.MarketPlaceId == marketPlaceId))
-            .Select(p => p.Id)
-            .ToListAsync();
 
-        foreach (var productId in unsyncedProductIds)
+        // Advisory lock: Eşzamanlı toplu sync'i engelle
+        var lockAcquired = await dbContext.Database
+            .SqlQuery<bool>($"""SELECT pg_try_advisory_lock({AdvisoryLockKeySyncAll}) AS "Value" """)
+            .FirstAsync();
+
+        if (!lockAcquired)
+            return new ErrorResult("Toplu senkronizasyon zaten devam ediyor.");
+
+        try
         {
-            dbContext.ProductMarketplaces.Add(new ProductMarketplace
+            var unsyncedProductIds = await dbContext.MainProducts
+                .Where(p => !p.ProductMarketplaces.Any(pm => pm.MarketPlaceId == marketPlaceId))
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            foreach (var productId in unsyncedProductIds)
             {
-                ProductId = productId,
-                MarketPlaceId = marketPlaceId,
-                Status = MarketplaceProductStatus.Pending
-            });
+                dbContext.ProductMarketplaces.Add(new ProductMarketplace
+                {
+                    ProductId = productId,
+                    MarketPlaceId = marketPlaceId,
+                    Status = MarketplaceProductStatus.Pending
+                });
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+            foreach (var productId in unsyncedProductIds)
+            {
+                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+            }
+
+            await applicationLogManager.AddLog(
+                $"{unsyncedProductIds.Count} ürün {marketplaceName} senkronizasyonuna toplu gönderildi",
+                LogType.Marketplace, LogAction.Sync, new { count = unsyncedProductIds.Count, marketplaceName });
+
+            return new SuccessResult($"{unsyncedProductIds.Count} ürün senkronizasyon kuyruğuna eklendi.");
         }
-
-        await dbContext.SaveChangesAsync();
-
-        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-        foreach (var productId in unsyncedProductIds)
+        finally
         {
-            await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "SELECT pg_advisory_unlock({0})", AdvisoryLockKeySyncAll);
         }
-
-        await applicationLogManager.AddLog(
-            $"{unsyncedProductIds.Count} ürün {marketplaceName} senkronizasyonuna toplu gönderildi",
-            LogType.Marketplace, LogAction.Sync, new { count = unsyncedProductIds.Count, marketplaceName });
-
-        return new SuccessResult($"{unsyncedProductIds.Count} ürün senkronizasyon kuyruğuna eklendi.");
     }
 
     public async Task<IResult> RetryAllFailedAsync(int marketPlaceId)
     {
         using var dbContext = contextFactory.CreateDbContext();
-        var failedRecords = await dbContext.ProductMarketplaces
-            .Where(pm => pm.MarketPlaceId == marketPlaceId &&
-                         (pm.Status == MarketplaceProductStatus.Failed || pm.Status == MarketplaceProductStatus.Rejected))
-            .ToListAsync();
 
-        foreach (var record in failedRecords)
+        // Advisory lock: Eşzamanlı toplu retry'ı engelle
+        var lockAcquired = await dbContext.Database
+            .SqlQuery<bool>($"""SELECT pg_try_advisory_lock({AdvisoryLockKeyRetryFailed}) AS "Value" """)
+            .FirstAsync();
+
+        if (!lockAcquired)
+            return new ErrorResult("Toplu yeniden deneme işlemi zaten devam ediyor.");
+
+        try
         {
-            record.Status = MarketplaceProductStatus.Pending;
-            record.BatchRequestId = null;
-            record.StatusMessage = null;
+            var failedRecords = await dbContext.ProductMarketplaces
+                .Where(pm => pm.MarketPlaceId == marketPlaceId &&
+                             (pm.Status == MarketplaceProductStatus.Failed || pm.Status == MarketplaceProductStatus.Rejected))
+                .ToListAsync();
+
+            foreach (var record in failedRecords)
+            {
+                record.Status = MarketplaceProductStatus.Pending;
+                record.BatchRequestId = null;
+                record.StatusMessage = null;
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+            foreach (var record in failedRecords)
+            {
+                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName]));
+            }
+
+            await applicationLogManager.AddLog(
+                $"{failedRecords.Count} hatalı ürün {marketplaceName} için yeniden kuyruğa eklendi",
+                LogType.Marketplace, LogAction.Retry, new { count = failedRecords.Count, marketplaceName });
+
+            return new SuccessResult($"{failedRecords.Count} hatalı ürün yeniden kuyruğa eklendi.");
         }
-
-        await dbContext.SaveChangesAsync();
-
-        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-        foreach (var record in failedRecords)
+        finally
         {
-            await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName]));
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "SELECT pg_advisory_unlock({0})", AdvisoryLockKeyRetryFailed);
         }
-
-        await applicationLogManager.AddLog(
-            $"{failedRecords.Count} hatalı ürün {marketplaceName} için yeniden kuyruğa eklendi",
-            LogType.Marketplace, LogAction.Retry, new { count = failedRecords.Count, marketplaceName });
-
-        return new SuccessResult($"{failedRecords.Count} hatalı ürün yeniden kuyruğa eklendi.");
     }
 
     private static MarketplaceSyncState MapSyncState(ProductMarketplace? marketplace, DateTimeOffset productUpdatedAt)

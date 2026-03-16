@@ -23,6 +23,7 @@ public partial class Categories
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
+
     }
 
     private async Task LoadCategories()
