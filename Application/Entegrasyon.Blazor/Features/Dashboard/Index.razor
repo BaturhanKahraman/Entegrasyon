@@ -1,7 +1,4 @@
 @page "/"
-@using Entegrasyon.Business.Concrete
-@using Entegrasyon.Business.Channels
-@using Entegrasyon.Business.Channels.Events
 @implements IAsyncDisposable
 
 <PageTitle>Ana Sayfa - Dashboard</PageTitle>
@@ -23,6 +20,7 @@
                     <div>
                         <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Ürün</MudText>
                         <MudText Typo="Typo.h4">@stats.TotalProducts</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@stats.TotalVariants varyant</MudText>
                     </div>
                     <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" />
                 </div>
@@ -128,24 +126,54 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudList T="string" Dense="true">
-                    @foreach (var marketplace in marketplaceStatuses)
-                    {
-                        <MudListItem T="string">
-                            <div class="d-flex justify-space-between align-center" style="width: 100%">
-                                <div class="d-flex align-center gap-2">
-                                    <MudAvatar Color="@marketplace.Color" Size="Size.Small">
-                                        <MudIcon Icon="@marketplace.Icon" Size="Size.Small" />
-                                    </MudAvatar>
-                                    <MudText>@marketplace.Name</MudText>
+                @if (marketplaceStatuses.Count == 0)
+                {
+                    <MudText Color="Color.Secondary" Typo="Typo.body2">Henüz pazaryeri tanımlanmamış.</MudText>
+                }
+                else
+                {
+                    <MudList T="string" Dense="true">
+                        @foreach (var marketplace in marketplaceStatuses)
+                        {
+                            <MudListItem T="string">
+                                <div class="d-flex justify-space-between align-center" style="width: 100%">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudAvatar Color="@marketplace.Color" Size="Size.Small">
+                                            <MudIcon Icon="@marketplace.Icon" Size="Size.Small" />
+                                        </MudAvatar>
+                                        <MudText>@marketplace.Name</MudText>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        @if (marketplace.SyncedCount > 0)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">
+                                                @marketplace.SyncedCount Senkron
+                                            </MudChip>
+                                        }
+                                        @if (marketplace.PendingCount > 0)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                                @marketplace.PendingCount Bekliyor
+                                            </MudChip>
+                                        }
+                                        @if (marketplace.FailedCount > 0)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Error">
+                                                @marketplace.FailedCount Hatalı
+                                            </MudChip>
+                                        }
+                                        @if (marketplace.SyncedCount == 0 && marketplace.PendingCount == 0 && marketplace.FailedCount == 0)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                                Ürün Yok
+                                            </MudChip>
+                                        }
+                                    </div>
                                 </div>
-                                <MudChip T="string" Size="Size.Small" Color="@marketplace.StatusColor">
-                                    @marketplace.Status
-                                </MudChip>
-                            </div>
-                        </MudListItem>
-                    }
-                </MudList>
+                            </MudListItem>
+                        }
+                    </MudList>
+                }
             </MudCardContent>
         </MudCard>
     </MudItem>
@@ -159,17 +187,24 @@
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
-                    @foreach (var activity in recentActivities)
-                    {
-                        <MudTimelineItem Color="@activity.Color" Size="Size.Small">
-                            <ItemContent>
-                                <MudText Typo="Typo.body2">@activity.Message</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Time</MudText>
-                            </ItemContent>
-                        </MudTimelineItem>
-                    }
-                </MudTimeline>
+                @if (recentActivities.Count == 0)
+                {
+                    <MudText Color="Color.Secondary" Typo="Typo.body2">Henüz aktivite bulunmuyor.</MudText>
+                }
+                else
+                {
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
+                        @foreach (var activity in recentActivities)
+                        {
+                            <MudTimelineItem Color="@activity.Color" Size="Size.Small" Icon="@activity.Icon">
+                                <ItemContent>
+                                    <MudText Typo="Typo.body2">@activity.Message</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Time</MudText>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                }
             </MudCardContent>
         </MudCard>
     </MudItem>

@@ -1,27 +1,24 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Dtos.Dashboard;
+using Entegrasyon.Entity.Logs;
+using Microsoft.AspNetCore.Components;
+using MudBlazor;
 
 namespace Entegrasyon.Blazor.Features.Dashboard;
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
-using Entegrasyon.Business.Concrete;
-
 public partial class Index : IAsyncDisposable
 {
-    [Inject] private IProductService? ProductManager { get; set; }
-    [Inject] private ISaleManager? SaleManager { get; set; }
-    [Inject] private ISnackbar? Snackbar { get; set; }
+    [Inject] private IDashboardManager DashboardManager { get; set; } = null!;
+    [Inject] private IProductSyncManager ProductSyncManager { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
     private bool loading = true;
-    private DashboardStats stats = new();
+    private DashboardStatsDto stats = new(0, 0, 0, 0m, 0, 0);
     private List<ChartSeries> salesChartData = [];
     private string[] xAxisLabels = [];
     private readonly ChartOptions chartOptions = new() { YAxisTicks = 1000, MaxNumYAxisTicks = 10 };
-    private List<MarketplaceStatus> marketplaceStatuses = [];
-    private List<ActivityItem> recentActivities = [];
+    private List<MarketplaceStatusViewModel> marketplaceStatuses = [];
+    private List<ActivityViewModel> recentActivities = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,54 +29,128 @@ public partial class Index : IAsyncDisposable
     {
         loading = true;
 
-        // TODO: Implement actual data loading
-        // Load stats from managers
-        // var productsCount = await ProductManager.GetProductsCount();
-        // var todaySales = await SaleManager.GetTodaySalesAsync();
+        var dashboard = await DashboardManager.GetDashboardAsync();
 
-        // Mock data for now
-        stats = new DashboardStats
-        {
-            TotalProducts = 1250,
-            TodaySales = 45,
-            TodayRevenue = 12450.50m,
-            PendingOrders = 8,
-            LowStockProducts = 12
-        };
+        stats = dashboard.Stats;
 
-        // Sales chart data (last 7 days)
-        xAxisLabels = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+        // Haftalık satış grafiği
+        xAxisLabels = dashboard.WeeklySales
+            .Select(s => GetTurkishDayAbbr(s.Date.DayOfWeek))
+            .ToArray();
+
         salesChartData =
         [
-            new ChartSeries { Name = "Satışlar", Data = [15000, 18000, 22000, 19000, 25000, 28000, 24000] }
+            new ChartSeries
+            {
+                Name = "Satışlar",
+                Data = dashboard.WeeklySales.Select(s => (double)s.Revenue).ToArray()
+            }
         ];
 
-        // Marketplace statuses
-        marketplaceStatuses =
-        [
-            new("Trendyol", Icons.Material.Filled.Store, Color.Primary, "Aktif", Color.Success),
-            new("Hepsiburada", Icons.Material.Filled.ShoppingCart, Color.Secondary, "Aktif", Color.Success),
-            new("N11", Icons.Material.Filled.Storefront, Color.Info, "Senkronize Ediliyor", Color.Warning),
-            new("Amazon", Icons.Material.Filled.LocalMall, Color.Tertiary, "Beklemede", Color.Default)
-        ];
+        // Marketplace durumları
+        marketplaceStatuses = dashboard.MarketplaceStatuses
+            .Select(m => new MarketplaceStatusViewModel(
+                Name: m.Name,
+                Icon: GetMarketplaceIcon(m.Name),
+                Color: GetMarketplaceColor(m.Name),
+                SyncedCount: m.SyncedCount,
+                PendingCount: m.PendingCount,
+                FailedCount: m.FailedCount,
+                TotalProducts: m.TotalProducts,
+                MarketPlaceId: m.MarketPlaceId))
+            .ToList();
 
-        // Recent activities
-        recentActivities =
-        [
-            new("Yeni ürün eklendi: Lacoste Polo T-Shirt", "2 dk önce", Color.Success),
-            new("Trendyol siparişi alındı: #TR-12345", "15 dk önce", Color.Info),
-            new("Stok güncellendi: 125 ürün", "1 saat önce", Color.Primary),
-            new("Yeni kullanıcı kaydı: Ahmet Y.", "2 saat önce", Color.Secondary),
-            new("Pazaryeri senkronizasyonu tamamlandı", "3 saat önce", Color.Success)
-        ];
+        // Son aktiviteler
+        recentActivities = dashboard.RecentActivities
+            .Select(a => new ActivityViewModel(
+                Message: a.Content,
+                Time: FormatRelativeTime(a.CreatedAt),
+                Color: GetLogColor((LogType)a.LogType),
+                Icon: GetLogIcon((LogAction)a.LogAction)))
+            .ToList();
 
         loading = false;
     }
 
-    private void SyncMarketplaces()
+    private async Task SyncMarketplaces()
     {
-        Snackbar?.Add("Pazaryeri senkronizasyonu başlatıldı", Severity.Info);
-        // TODO: Trigger marketplace sync
+        Snackbar.Add("Pazaryeri senkronizasyonu başlatıldı", Severity.Info);
+        var result = await ProductSyncManager.SyncAllPendingAsync(1);
+        if (result.Success)
+        {
+            Snackbar.Add("Senkronizasyon tamamlandı", Severity.Success);
+            await LoadDashboardData();
+            StateHasChanged();
+        }
+        else
+        {
+            Snackbar.Add($"Senkronizasyon hatası: {result.Message}", Severity.Error);
+        }
+    }
+
+    private static string GetTurkishDayAbbr(DayOfWeek day) => day switch
+    {
+        DayOfWeek.Monday => "Pzt",
+        DayOfWeek.Tuesday => "Sal",
+        DayOfWeek.Wednesday => "Çar",
+        DayOfWeek.Thursday => "Per",
+        DayOfWeek.Friday => "Cum",
+        DayOfWeek.Saturday => "Cmt",
+        DayOfWeek.Sunday => "Paz",
+        _ => ""
+    };
+
+    private static string GetMarketplaceIcon(string name) => name.ToLowerInvariant() switch
+    {
+        "trendyol" => Icons.Material.Filled.Store,
+        "hepsiburada" => Icons.Material.Filled.ShoppingCart,
+        "n11" => Icons.Material.Filled.Storefront,
+        "amazon" => Icons.Material.Filled.LocalMall,
+        _ => Icons.Material.Filled.Store
+    };
+
+    private static Color GetMarketplaceColor(string name) => name.ToLowerInvariant() switch
+    {
+        "trendyol" => Color.Primary,
+        "hepsiburada" => Color.Secondary,
+        "n11" => Color.Info,
+        "amazon" => Color.Tertiary,
+        _ => Color.Default
+    };
+
+    private static Color GetLogColor(LogType logType) => logType switch
+    {
+        LogType.Product => Color.Success,
+        LogType.Order => Color.Info,
+        LogType.Sale => Color.Primary,
+        LogType.StockSync => Color.Warning,
+        LogType.Marketplace => Color.Secondary,
+        LogType.Error => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string GetLogIcon(LogAction action) => action switch
+    {
+        LogAction.Add => Icons.Material.Filled.AddCircle,
+        LogAction.Update => Icons.Material.Filled.Edit,
+        LogAction.Delete => Icons.Material.Filled.Delete,
+        LogAction.Sync => Icons.Material.Filled.Sync,
+        LogAction.Import => Icons.Material.Filled.CloudDownload,
+        LogAction.Publish => Icons.Material.Filled.CloudUpload,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private static string FormatRelativeTime(DateTimeOffset createdAt)
+    {
+        var diff = DateTimeOffset.UtcNow - createdAt;
+
+        return diff.TotalMinutes switch
+        {
+            < 1 => "az önce",
+            < 60 => $"{(int)diff.TotalMinutes} dk önce",
+            < 1440 => $"{(int)diff.TotalHours} saat önce",
+            _ => $"{(int)diff.TotalDays} gün önce"
+        };
     }
 
     public ValueTask DisposeAsync()
@@ -87,16 +158,10 @@ public partial class Index : IAsyncDisposable
         return ValueTask.CompletedTask;
     }
 
-    private record DashboardStats
-    {
-        public int TotalProducts { get; init; }
-        public int TodaySales { get; init; }
-        public decimal TodayRevenue { get; init; }
-        public int PendingOrders { get; init; }
-        public int LowStockProducts { get; init; }
-    }
+    private record MarketplaceStatusViewModel(
+        string Name, string Icon, Color Color,
+        int SyncedCount, int PendingCount, int FailedCount,
+        int TotalProducts, int MarketPlaceId);
 
-    private record MarketplaceStatus(string Name, string Icon, Color Color, string Status, Color StatusColor);
-
-    private record ActivityItem(string Message, string Time, Color Color);
+    private record ActivityViewModel(string Message, string Time, Color Color, string Icon);
 }

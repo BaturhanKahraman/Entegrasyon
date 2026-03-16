@@ -117,13 +117,12 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IDataResult<List<CategoryDetailDto>>> GetCategoryDetailList()
         {
             using var dbContext = contextFactory.CreateDbContext();
-            var result = await dbContext.Categories
+            var result = await dbContext.CategorySummaries
                 .OrderByDescending(x => x.IsFavorite)
-                .ThenByDescending(x => x.Id)
+                .ThenByDescending(x => x.CategoryId)
                 .Select(x => new CategoryDetailDto(
-                    x.Id,
-                    x.Products.Sum(p => p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.CurrentStock)),
-                    x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                    x.CategoryId, x.TotalStock, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -131,16 +130,18 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string categoryName = null)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            var query = dbContext.Categories.AsQueryable();
+            var query = dbContext.CategorySummaries.AsQueryable();
             if (!string.IsNullOrEmpty(categoryName))
                 query = query.Where(x => EF.Functions.ILike(x.Name, $"%{categoryName}%"));
 
             int total = await query.CountAsync();
             var items = await query
-                .OrderByDescending(x => x.Id)
+                .OrderByDescending(x => x.CategoryId)
                 .Skip((pageIndex - 1) * itemCount)
                 .Take(itemCount)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
 
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(new Pageable<CategoryDetailDto>(items, pageIndex, itemCount, total));
@@ -171,10 +172,12 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IDataResult<List<CategoryDetailDto>>> GetFavoriteCategories()
         {
             using var dbContext = contextFactory.CreateDbContext();
-            var result = await dbContext.Categories
+            var result = await dbContext.CategorySummaries
                 .Where(x => x.IsFavorite)
-                .OrderByDescending(x => x.Id)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .OrderByDescending(x => x.CategoryId)
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -182,10 +185,12 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IDataResult<List<CategoryDetailDto>>> GetSubCategories()
         {
             using var dbContext = contextFactory.CreateDbContext();
-            var result = await dbContext.Categories
-                .Where(x => !x.SubCategories.Any())
+            var result = await dbContext.CategorySummaries
+                .Where(x => x.SubCategoryCount == 0)
                 .OrderByDescending(x => x.IsFavorite).ThenBy(x => x.Name)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -193,10 +198,12 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IDataResult<List<CategoryDetailDto>>> GetSuperCategories()
         {
             using var dbContext = contextFactory.CreateDbContext();
-            var result = await dbContext.Categories
-                .Where(x => !x.CategoryAttributes.Any())
+            var result = await dbContext.CategorySummaries
+                .Where(x => x.AttributeCount == 0)
                 .OrderByDescending(x => x.IsFavorite).ThenBy(x => x.Name)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -283,37 +290,26 @@ namespace Entegrasyon.Business.Concrete
                 return await GetValidParentCandidatesAsync();
 
             using var dbContext = contextFactory.CreateDbContext();
-            var allCategories = await dbContext.Categories
-                .AsNoTracking()
-                .ToListAsync();
 
-            var excludeIds = GetDescendantIds(allCategories, excludeCategoryId.Value);
+            // Recursive CTE ile alt kategorileri PostgreSQL'de hesapla — tüm tabloyu belleğe yüklemeden
+            var excludeIds = await dbContext.Database
+                .SqlQuery<int>($"SELECT * FROM fn_get_descendant_ids({excludeCategoryId.Value})")
+                .ToListAsync();
             excludeIds.Add(excludeCategoryId.Value);
 
-            return allCategories
+            return await dbContext.Categories
+                .AsNoTracking()
                 .Where(c => !excludeIds.Contains(c.Id))
-                .Where(c => c.CategoryAttributes == null || !c.CategoryAttributes.Any())
+                .Where(c => !c.CategoryAttributes.Any())
                 .OrderBy(c => c.Name)
-                .ToList();
+                .ToListAsync();
         }
 
-        private static HashSet<int> GetDescendantIds(List<Category> allCategories, int parentId)
+        public async Task RefreshCategorySummaryAsync()
         {
-            var descendants = new HashSet<int>();
-            var queue = new Queue<int>();
-            queue.Enqueue(parentId);
-
-            while (queue.Count > 0)
-            {
-                var currentId = queue.Dequeue();
-                foreach (var child in allCategories.Where(c => c.SuperCategoryId == currentId))
-                {
-                    if (descendants.Add(child.Id))
-                        queue.Enqueue(child.Id);
-                }
-            }
-
-            return descendants;
+            using var dbContext = contextFactory.CreateDbContext();
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_category_summary");
         }
 
         public async Task<List<CategoryMarketplace>> GetCategoryMarketplaceLinksAsync(int categoryId)
@@ -339,12 +335,10 @@ namespace Entegrasyon.Business.Concrete
             var isLeaf = !await dbContext.Categories
                 .AnyAsync(c => c.SuperCategoryId == categoryId);
 
-            // Hiyerarşi hesabı için hafif projeksiyon (sadece Id + SuperCategoryId)
-            var categoryTree = await dbContext.Categories
-                .Select(c => new Category { Id = c.Id, SuperCategoryId = c.SuperCategoryId })
+            // Recursive CTE ile alt kategorileri PostgreSQL'de hesapla
+            var excludeIds = await dbContext.Database
+                .SqlQuery<int>($"SELECT * FROM fn_get_descendant_ids({categoryId})")
                 .ToListAsync();
-
-            var excludeIds = GetDescendantIds(categoryTree, categoryId);
             excludeIds.Add(categoryId);
             var categoriesWithAttributes = await dbContext.CategoryAttributeCategories
                 .Select(cac => cac.CategoryId)

@@ -43,8 +43,12 @@ public partial class IntegrationSettings : ComponentBase
     {
         _loading = true;
 
-        // Marketplace bilgilerini yükle
-        var mpResult = await MarketPlaceManager.GetByIdAsync(TrendyolMarketPlaceId);
+        var mpTask = MarketPlaceManager.GetByIdAsync(TrendyolMarketPlaceId);
+        var branchTask = BranchOfficeManager.GetBranchList();
+        var whTask = MarketPlaceManager.GetWarehousesAsync(TrendyolMarketPlaceId);
+        await Task.WhenAll(mpTask, branchTask, whTask);
+
+        var mpResult = mpTask.Result;
         if (mpResult.Success && mpResult.Data is not null)
         {
             var mp = mpResult.Data;
@@ -54,13 +58,11 @@ public partial class IntegrationSettings : ComponentBase
             _baseUrl = mp.BaseUrl ?? "https://apigw.trendyol.com";
         }
 
-        // Depoları yükle
-        var branchResult = await BranchOfficeManager.GetBranchList();
+        var branchResult = branchTask.Result;
         if (branchResult.Success)
             _branches = branchResult.Data;
 
-        // Seçili depoları yükle
-        var whResult = await MarketPlaceManager.GetWarehousesAsync(TrendyolMarketPlaceId);
+        var whResult = whTask.Result;
         if (whResult.Success)
             _selectedBranchIds = whResult.Data.Select(w => w.BranchOfficeId).ToHashSet();
 

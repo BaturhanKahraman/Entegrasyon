@@ -13,6 +13,7 @@ namespace Entegrasyon.Business.Concrete;
 /// <summary>
 /// Sipariş yönetim servisi — Trendyol DTO → local Order entity mapping, deduplication (ShipmentPackageId).
 /// Sipariş import edildiğinde stok atomik olarak düşülür.
+/// Advisory lock ile eşzamanlı import korunur.
 /// </summary>
 public sealed class OrderManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
@@ -21,6 +22,7 @@ public sealed class OrderManager(
     ILogger<OrderManager> logger) : IOrderManager
 {
     private const int TrendyolMarketPlaceId = 1;
+    private const long AdvisoryLockKeyTrendyolImport = 2001;
 
     public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)
     {
@@ -60,26 +62,66 @@ public sealed class OrderManager(
         if (packages.Count == 0)
             return new SuccessResult("İmport edilecek sipariş yok.");
 
+        // Advisory lock: Eşzamanlı import'u engelle
+        var lockAcquired = await dbContext.Database
+            .SqlQuery<bool>($"""SELECT pg_try_advisory_lock({AdvisoryLockKeyTrendyolImport}) AS "Value" """)
+            .FirstAsync();
+
+        if (!lockAcquired)
+            return new ErrorResult("Sipariş import işlemi zaten devam ediyor.");
+
+        try
+        {
+            return await ExecuteImportAsync(dbContext, packages);
+        }
+        finally
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "SELECT pg_advisory_unlock({0})", AdvisoryLockKeyTrendyolImport);
+        }
+    }
+
+    private async Task<IResult> ExecuteImportAsync(IntegrationDbContext dbContext, List<TrendyolShipmentPackage> packages)
+    {
         var importedCount = 0;
 
         // Marketplace'e bağlı depo ID'lerini önceden al (her sipariş için tekrar sorgulamayalım)
-        var warehouseIds = await dbContext.MarketPlaceWarehouses.AsNoTracking()
+        var warehouseIds = await dbContext.MarketPlaceWarehouses
             .Where(w => w.MarketPlaceId == TrendyolMarketPlaceId && !w.IsDeleted)
             .Select(w => w.BranchOfficeId)
             .ToListAsync();
 
+        // Batch deduplication: Tüm ShipmentPackageId'leri tek sorguda kontrol et
+        var allPackageIds = packages
+            .Select(p => (long?)p.ShipmentPackageId)
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+
+        var existingOrders = await dbContext.Orders
+            .Where(o => allPackageIds.Contains(o.ShipmentPackageId))
+            .ToDictionaryAsync(o => o.ShipmentPackageId!.Value);
+
+        // Batch barcode lookup: Tüm barkodları tek sorguda çöz
+        var allBarcodes = packages
+            .Where(p => p.Lines is not null)
+            .SelectMany(p => p.Lines)
+            .Select(l => l.Barcode)
+            .Where(b => !string.IsNullOrEmpty(b))
+            .Distinct()
+            .ToArray();
+
+        var barcodeMap = await dbContext.ProductVariants
+            .AsNoTracking()
+            .Where(v => allBarcodes.Contains(v.Barcode))
+            .ToDictionaryAsync(v => v.Barcode, v => v.Id);
+
         foreach (var pkg in packages)
         {
-            // Deduplication: ShipmentPackageId ile aynı sipariş tekrar import edilmez
-            var exists = await dbContext.Orders
-                .AnyAsync(o => o.ShipmentPackageId == pkg.ShipmentPackageId);
-
-            if (exists)
+            // Deduplication: Önceden çekilen dictionary'den kontrol et
+            if (existingOrders.TryGetValue(pkg.ShipmentPackageId, out var existingOrder))
             {
                 // Durum güncelle
-                var existingOrder = await dbContext.Orders
-                    .FirstAsync(o => o.ShipmentPackageId == pkg.ShipmentPackageId);
-
                 existingOrder.MarketplaceOrderStatus = pkg.Status;
                 if (pkg.CargoProviderInfo is not null)
                 {
@@ -147,15 +189,10 @@ public sealed class OrderManager(
             {
                 foreach (var line in pkg.Lines)
                 {
-                    // Barcode ile lokal ürün eşleştirme
+                    // Barcode ile lokal ürün eşleştirme — dictionary lookup (O(1))
                     Guid? productVariantId = null;
-                    if (!string.IsNullOrEmpty(line.Barcode))
-                    {
-                        productVariantId = await dbContext.ProductVariants.AsNoTracking()
-                            .Where(v => v.Barcode == line.Barcode)
-                            .Select(v => (Guid?)v.Id)
-                            .FirstOrDefaultAsync();
-                    }
+                    if (!string.IsNullOrEmpty(line.Barcode) && barcodeMap.TryGetValue(line.Barcode, out var variantId))
+                        productVariantId = variantId;
 
                     orderItems.Add(new OrderItem
                     {

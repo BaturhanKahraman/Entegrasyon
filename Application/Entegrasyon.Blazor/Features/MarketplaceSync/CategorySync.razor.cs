@@ -45,8 +45,13 @@ public partial class CategorySync
     private async Task LoadData()
     {
         _isLoading = true;
-        _categories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
-        _summary = await CategoryMatchService.GetCategoryMatchSummaryAsync();
+
+        var categoriesTask = CategoryService.GetAllCategoriesWithHierarchyAsync();
+        var summaryTask = CategoryMatchService.GetCategoryMatchSummaryAsync();
+        await Task.WhenAll(categoriesTask, summaryTask);
+
+        _categories = categoriesTask.Result;
+        _summary = summaryTask.Result;
         _isLoading = false;
     }
 

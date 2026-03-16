@@ -79,6 +79,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ITrendyolProductMapper, TrendyolProductMapper>();
 
             services.AddScoped<IOrderManager, OrderManager>();
+            services.AddScoped<IDashboardManager, DashboardManager>();
 
             var useMock = configuration.GetValue<bool>("Trendyol:UseMock", true);
             services.AddScoped<TrendyolSupplierAddressCache>();
