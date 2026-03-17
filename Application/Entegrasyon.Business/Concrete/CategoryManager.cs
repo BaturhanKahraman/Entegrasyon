@@ -263,6 +263,14 @@ namespace Entegrasyon.Business.Concrete
                 .ToListAsync();
         }
 
+        public async Task<Category?> GetCategoryDetailById(int categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories
+                .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
+                .FirstOrDefaultAsync(c => c.Id == categoryId);
+        }
+
         public async Task<List<Category>> GetAllCategoriesWithoutAttributesAsync()
         {
             if (cache.TryGetValue(CategoryListCacheKey, out List<Category>? cached) && cached is not null)

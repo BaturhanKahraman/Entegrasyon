@@ -3,6 +3,7 @@ using Entegrasyon.Entity;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.Settings;
 
@@ -12,8 +13,6 @@ public partial class IntegrationSettings : ComponentBase
     [Inject] private IBranchOfficeManager BranchOfficeManager { get; set; } = null!;
     [Inject] private IConfiguration Configuration { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     private bool _loading = true;
     private bool _saving;

@@ -23,24 +23,25 @@ public partial class Categories
     protected override async Task OnInitializedAsync()
     {
         await LoadCategories();
-
     }
 
     private async Task LoadCategories()
     {
         _loading = true;
-        _categories = await CategoryManager.GetAllCategoriesWithHierarchyAsync();
+        _categories = await CategoryManager.GetAllCategoriesWithoutAttributesAsync();
         _loading = false;
     }
 
-    private void OnCategorySelected(Category item)
+    private async Task OnCategorySelected(Category item)
     {
-        _selectedCategory = item;
+        // Lazy-load: detay paneli için attributes dahil yükle
+        var detail = await CategoryManager.GetCategoryDetailById(item.Id);
+        _selectedCategory = detail ?? item;
     }
 
-    private void SelectCategory(Category category)
+    private async Task SelectCategory(Category category)
     {
-        _selectedCategory = category;
+        await OnCategorySelected(category);
     }
 
     private async Task OpenAddCategoryDialog()

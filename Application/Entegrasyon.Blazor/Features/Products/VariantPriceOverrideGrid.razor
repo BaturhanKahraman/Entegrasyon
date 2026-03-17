@@ -16,7 +16,7 @@
     <tbody>
         @foreach (var variant in Variants)
         {
-            <tr>
+            <tr @key="variant.Barcode">
                 <td>@variant.VariantLabel</td>
                 <td><MudText Typo="Typo.body2">@variant.Barcode</MudText></td>
                 <td><MudText Typo="Typo.body2">@($"₺{variant.OriginalListPrice:N2}")</MudText></td>

@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
@@ -15,8 +16,6 @@ public partial class AttributeSync
     private bool _isLoading = true;
     private bool _showUnmappedOnly;
     private int _matchedCount;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     private IEnumerable<AttributeSyncRow> FilteredRows =>
         _showUnmappedOnly ? _attributes.Where(a => !a.HasMatch) : _attributes;

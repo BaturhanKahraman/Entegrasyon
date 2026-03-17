@@ -33,7 +33,7 @@
                            AnchorOrigin="Origin.BottomLeft">
                     @foreach (var mp in _marketplaces)
                     {
-                        <MudSelectItem T="MarketplaceOption" Value="mp">@mp.Name</MudSelectItem>
+                        <MudSelectItem @key="mp.Id" T="MarketplaceOption" Value="mp">@mp.Name</MudSelectItem>
                     }
                 </MudSelect>
 

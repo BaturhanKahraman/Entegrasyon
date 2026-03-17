@@ -16,12 +16,12 @@ else
 {
     @foreach (var group in _settingsByGroup)
     {
-        <MudPaper Class="pa-4 mb-4">
+        <MudPaper @key="group.Key" Class="pa-4 mb-4">
             <MudText Typo="Typo.h6" Class="mb-3">@group.Key</MudText>
             <MudGrid>
                 @foreach (var setting in group.Value)
                 {
-                    <MudItem xs="12" md="6">
+                    <MudItem @key="setting.Key" xs="12" md="6">
                         @if (setting.Key == "ThemeMode")
                         {
                             <MudSelect T="string"

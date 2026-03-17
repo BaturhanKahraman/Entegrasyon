@@ -6,7 +6,7 @@ using MudBlazor;
 
 namespace Entegrasyon.Blazor.Components.Shared;
 
-public partial class MainLayout : IDisposable
+public partial class MainLayout : IAsyncDisposable
 {
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
@@ -27,8 +27,7 @@ public partial class MainLayout : IDisposable
             {
                 "dark" => true,
                 "light" => false,
-                _ => await JsRuntime.InvokeAsync<bool>("eval",
-                    "window.matchMedia('(prefers-color-scheme: dark)').matches")
+                _ => await JsRuntime.InvokeAsync<bool>("AppTheme.prefersDark")
             };
             _themeLoaded = true;
             StateHasChanged();
@@ -40,7 +39,7 @@ public partial class MainLayout : IDisposable
         _isDarkMode = !_isDarkMode;
         var mode = _isDarkMode ? "dark" : "light";
         await JsRuntime.InvokeVoidAsync("localStorage.setItem", "themeMode", mode);
-        await JsRuntime.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{mode}')");
+        await JsRuntime.InvokeVoidAsync("AppTheme.setDataTheme", mode);
     }
 
     protected override void OnInitialized()
@@ -74,8 +73,11 @@ public partial class MainLayout : IDisposable
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
         => _errorBoundary?.Recover();
 
-    public void Dispose()
-        => NavigationManager.LocationChanged -= OnLocationChanged;
+    public ValueTask DisposeAsync()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        return ValueTask.CompletedTask;
+    }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 

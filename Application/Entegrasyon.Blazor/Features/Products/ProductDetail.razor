@@ -97,7 +97,7 @@
                             <MudGrid>
                                 @foreach (var attr in _product.AttributeKeyValueDetails)
                                 {
-                                    <MudItem xs="12" sm="6">
+                                    <MudItem @key="attr.AttributeKey" xs="12" sm="6">
                                         <MudText Typo="Typo.body2" Color="Color.Dark">@attr.AttributeKey</MudText>
                                         <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(attr.AttributeValue) ? "—" : attr.AttributeValue)</MudText>
                                     </MudItem>
@@ -117,7 +117,7 @@
                         <MudExpansionPanels MultiExpansion="true">
                             @foreach (var variant in _product.ProductVariantsDetails)
                             {
-                                <MudExpansionPanel Text="@variant.Barcode">
+                                <MudExpansionPanel @key="variant.Barcode" Text="@variant.Barcode">
                                     <MudGrid>
                                         <MudItem xs="12">
                                             <MudSimpleTable Dense="true" Hover="true" Elevation="0">
@@ -153,7 +153,7 @@
                                                 <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                                                     @foreach (var img in variant.imageLinks)
                                                     {
-                                                        <MudImage Src="@img" Width="120" Height="120" ObjectFit="ObjectFit.Cover"
+                                                        <MudImage @key="img" Src="@img" Width="120" Height="120" ObjectFit="ObjectFit.Cover"
                                                                   Elevation="1" Class="rounded-lg" />
                                                     }
                                                 </MudStack>
@@ -176,7 +176,7 @@
                                                     <tbody>
                                                         @foreach (var stock in variant.StockDetails)
                                                         {
-                                                            <tr>
+                                                            <tr @key="stock.OfficeName">
                                                                 <td>@stock.OfficeName</td>
                                                                 <td>@stock.CurrentStock</td>
                                                                 <td>@stock.SoldQuantity</td>

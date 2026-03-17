@@ -35,7 +35,7 @@
                                RequiredError="Marka seçimi gerekli">
                         @foreach (var brand in _brands)
                         {
-                            <MudSelectItem Value="@brand.Id">@brand.Name</MudSelectItem>
+                            <MudSelectItem @key="brand.Id" Value="@brand.Id">@brand.Name</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -48,7 +48,7 @@
                                RequiredError="Kategori seçimi gerekli">
                         @foreach (var category in _categories)
                         {
-                            <MudSelectItem Value="@category.Id">@category.Name</MudSelectItem>
+                            <MudSelectItem @key="category.Id" Value="@category.Id">@category.Name</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -77,7 +77,7 @@
 
                         @foreach (var (variant, index) in _model.ProductVariants.Select((v, i) => (v, i)))
                         {
-                            <MudPaper Class="pa-2 mb-2">
+                            <MudPaper @key="index" Class="pa-2 mb-2">
                                 <MudGrid>
                                     <MudItem xs="4">
                                         <MudTextField @bind-Value="variant.Size"

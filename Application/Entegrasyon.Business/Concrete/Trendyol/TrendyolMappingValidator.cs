@@ -1,13 +1,12 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 public sealed class TrendyolMappingValidator(IDbContextFactory<IntegrationDbContext> contextFactory)
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IResult> ValidateProductMappingsAsync(Guid productId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();

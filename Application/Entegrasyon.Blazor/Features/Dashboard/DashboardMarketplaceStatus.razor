@@ -38,7 +38,7 @@ else
                 <MudList T="string" Dense="true">
                     @foreach (var marketplace in _marketplaceStatuses)
                     {
-                        <MudListItem T="string">
+                        <MudListItem @key="marketplace.Name" T="string">
                             <div class="d-flex justify-space-between align-center" style="width: 100%">
                                 <div class="d-flex align-center gap-2">
                                     <MudAvatar Color="@marketplace.Color" Size="Size.Small">

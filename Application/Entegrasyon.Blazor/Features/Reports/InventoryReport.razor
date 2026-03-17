@@ -12,7 +12,7 @@
                        Variant="Variant.Outlined" Clearable="true">
                 @foreach (var branch in _branches)
                 {
-                    <MudSelectItem T="int?" Value="@branch.Id">@branch.Name</MudSelectItem>
+                    <MudSelectItem @key="branch.Id" T="int?" Value="@branch.Id">@branch.Name</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>

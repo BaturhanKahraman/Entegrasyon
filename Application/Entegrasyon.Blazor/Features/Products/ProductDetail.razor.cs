@@ -32,7 +32,7 @@ public partial class ProductDetail
         {
             Snackbar.Add("Ürün bulunamadı.", Severity.Error);
             _loading = false;
-            NavigationManager.NavigateTo("/products");
+            NavigationManager.NavigateTo("/products", replace: true);
             return;
         }
 
@@ -188,6 +188,6 @@ public partial class ProductDetail
             result.Success ? Severity.Success : Severity.Error);
 
         if (result.Success)
-            NavigationManager.NavigateTo("/products");
+            NavigationManager.NavigateTo("/products", replace: true);
     }
 }

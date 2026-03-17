@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
@@ -17,8 +18,6 @@ public sealed class TrendyolProductService(
     IProductActivityLogger activityLogger,
     ILogger<TrendyolProductService> logger) : ITrendyolProductService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IDataResult<string>> PublishProductAsync(Guid productId)
     {
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);

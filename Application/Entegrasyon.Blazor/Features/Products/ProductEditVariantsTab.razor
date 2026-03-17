@@ -4,7 +4,7 @@
 <MudExpansionPanels Class="pa-2">
     @foreach (var variant in Variants)
     {
-        <MudExpansionPanel Text="@variant.Label">
+        <MudExpansionPanel @key="variant.Barcode" Text="@variant.Label">
             <MudGrid Class="pa-2">
                 <MudItem xs="12">
                     <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small">

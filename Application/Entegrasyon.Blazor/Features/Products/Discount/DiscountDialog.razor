@@ -31,7 +31,7 @@
                     var newProfit = newPrice - v.CostPrice;
                     var isBelowCost = newPrice < v.CostPrice;
 
-                    <tr style="@(isBelowCost ? "background-color: rgba(244,67,54,0.1)" : "")">
+                    <tr @key="v.Barcode" style="@(isBelowCost ? "background-color: rgba(244,67,54,0.1)" : "")">
                         <td>@v.Label</td>
                         <td>@v.CostPrice.ToString("N2")</td>
                         <td>@v.ListPrice.ToString("N2")</td>
@@ -65,7 +65,7 @@
                 <tbody>
                     @foreach (var mp in Preview.MarketplacePrices)
                     {
-                        <tr>
+                        <tr @key="@($"{mp.MarketPlaceName}_{mp.Barcode}")">
                             <td>@mp.MarketPlaceName</td>
                             <td>@mp.Barcode</td>
                             <td>@mp.MarketplaceListPrice.ToString("N2")</td>
@@ -81,7 +81,7 @@
             <MudText Typo="Typo.subtitle1" Class="mb-2">Senkronize Edilecek Pazaryerleri</MudText>
             @foreach (var mp in _availableMarketplaces)
             {
-                <MudCheckBox T="bool" Value="@mp.Selected"
+                <MudCheckBox @key="mp.Name" T="bool" Value="@mp.Selected"
                              ValueChanged="@(val => mp.Selected = val)"
                              Label="@mp.Name" />
             }

@@ -36,9 +36,9 @@ else
             else
             {
                 <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
-                    @foreach (var activity in _activities)
+                    @foreach (var (activity, idx) in _activities.Select((a, i) => (a, i)))
                     {
-                        <MudTimelineItem Color="@activity.Color" Size="Size.Small" Icon="@activity.Icon">
+                        <MudTimelineItem @key="idx" Color="@activity.Color" Size="Size.Small" Icon="@activity.Icon">
                             <ItemContent>
                                 <MudText Typo="Typo.body2">@activity.Message</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Time</MudText>

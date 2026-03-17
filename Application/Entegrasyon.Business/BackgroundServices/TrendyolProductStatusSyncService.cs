@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
@@ -19,7 +20,6 @@ public class TrendyolProductStatusSyncService(
     IServiceScopeFactory scopeFactory,
     ILogger<TrendyolProductStatusSyncService> logger) : BackgroundService
 {
-    private const int TrendyolMarketPlaceId = 1;
     private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(5);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
