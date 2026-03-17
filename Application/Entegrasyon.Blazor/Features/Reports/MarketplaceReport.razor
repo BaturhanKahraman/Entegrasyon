@@ -1,33 +1,104 @@
 @page "/reports/marketplace"
+@using Entegrasyon.Entity.Dtos.Reports
 
 <PageTitle>Pazaryeri Raporları</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Pazaryeri Raporları</MudText>
-<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır.</MudAlert>
 
 <MudPaper Class="pa-4 mb-4">
-    <MudGrid>
-        <MudItem xs="12" sm="4">
-            <MudSelect T="string" Label="Pazaryeri" Variant="Variant.Outlined" Disabled="true">
-                <MudSelectItem Value="@("trendyol")">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                        <MarketplaceLogo Name="Trendyol" Size="Size.Small" />
-                        <MudText>Trendyol</MudText>
-                    </MudStack>
-                </MudSelectItem>
-            </MudSelect>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudDatePicker Label="Tarih Aralığı" Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" sm="4" Class="d-flex align-end">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">Rapor Oluştur</MudButton>
-        </MudItem>
-    </MudGrid>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               OnClick="LoadReportAsync" Disabled="_loading"
+               StartIcon="@Icons.Material.Filled.Refresh">
+        Raporu Yenile
+    </MudButton>
 </MudPaper>
 
-<MudPaper Class="pa-4" Style="min-height: 300px;">
-    <MudText Typo="Typo.h6" Color="Color.Dark" Align="Align.Center" Class="mt-8">
-        Pazaryeri performans raporu oluşturmak için filtreleri seçin.
-    </MudText>
-</MudPaper>
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+@if (_report is not null)
+{
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.TotalProducts</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Ürün</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.PublishedCount</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Yayında</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.HourglassEmpty" Color="Color.Warning" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.PendingCount</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Bekliyor</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Durum Dağılımı</MudText>
+                @if (_report.Summary.TotalProducts > 0)
+                {
+                    <MudChart ChartType="ChartType.Donut"
+                              InputData="@_chartData"
+                              InputLabels="@_chartLabels"
+                              Width="100%"
+                              Height="250px" />
+                }
+                else
+                {
+                    <MudText Color="Color.Secondary" Align="Align.Center">Veri yok</MudText>
+                }
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Detay</MudText>
+                <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                    <thead>
+                        <tr><th>Durum</th><th>Adet</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Yayında</td><td>@_report.Summary.PublishedCount</td></tr>
+                        <tr><td>Bekliyor</td><td>@_report.Summary.PendingCount</td></tr>
+                        <tr><td>Başarısız</td><td>@_report.Summary.FailedCount</td></tr>
+                        <tr><td>Reddedilen</td><td>@_report.Summary.RejectedCount</td></tr>
+                        <tr><td>Onaylı</td><td>@_report.Summary.ApprovedCount</td></tr>
+                        <tr><td>Arşivli</td><td>@_report.Summary.ArchivedCount</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @if (_report.FailedProducts.Any())
+    {
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Başarısız / Reddedilen Ürünler</MudText>
+            <MudDataGrid T="MarketplaceProductStatusDto" Items="@_report.FailedProducts.AsEnumerable()"
+                         Hover="true" Striped="true" Dense="true">
+                <Columns>
+                    <PropertyColumn Property="x => x.ProductTitle" Title="Ürün" />
+                    <PropertyColumn Property="x => x.StatusText" Title="Durum" />
+                    <PropertyColumn Property="x => x.StatusMessage" Title="Hata Mesajı" />
+                    <PropertyColumn Property="x => x.LastSyncedAt" Title="Son Senkronizasyon"
+                                    Format="dd.MM.yyyy HH:mm" />
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager T="MarketplaceProductStatusDto" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudPaper>
+    }
+}
