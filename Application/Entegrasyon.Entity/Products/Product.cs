@@ -20,9 +20,9 @@ public sealed class Product : BaseEntity
     public Brand? Brand { get; set; }
     public int CategoryId { get; set; }
     public Category Category { get; set; } = null!;
-    public ICollection<ProductVariant> ProductVariants { get; set; } = [];
-    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; } = [];
-    public ICollection<ProductMarketplace> ProductMarketplaces { get; set; } = [];
+    public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
+    public ICollection<AttributeKeyValue> AttributeKeyValues { get; set; } = new List<AttributeKeyValue>();
+    public ICollection<ProductMarketplace> ProductMarketplaces { get; set; } = new List<ProductMarketplace>();
     public NpgsqlTsVector SearchVector { get; set; } = null!;
 
 

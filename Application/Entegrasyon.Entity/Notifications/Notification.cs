@@ -13,7 +13,7 @@ public sealed class Notification : BaseEntity
     public NotificationSeverity Severity { get; set; }
     public NotificationCategory Category { get; set; }
     public string? ActionUrl { get; set; }
-    public ICollection<NotificationsUsers> NotificationsUsers { get; set; } = [];
-    public ICollection<ApplicationUser> Users { get; set; } = [];
-    public ICollection<NotificationsClaims> NotificationClaims { get; set; } = [];
+    public ICollection<NotificationsUsers> NotificationsUsers { get; set; } = new List<NotificationsUsers>();
+    public ICollection<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
+    public ICollection<NotificationsClaims> NotificationClaims { get; set; } = new List<NotificationsClaims>();
 }

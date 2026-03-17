@@ -27,9 +27,9 @@ public sealed class Category : BaseEntity
 
     public int? SuperCategoryId { get; set; }
     public Category? SuperCategory { get; set; }
-    public IEnumerable<Category> SubCategories { get; set; } = [];
+    public IEnumerable<Category> SubCategories { get; set; } = new List<Category>();
     public List<CategoryAttributeCategory> CategoryAttributes { get; set; } = new ();
-    public IEnumerable<Product> Products { get; set; } = [];
+    public IEnumerable<Product> Products { get; set; } = new List<Product>();
 
     /// <summary>
     /// Marketplace eşleşmeleri

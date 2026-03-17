@@ -36,5 +36,5 @@ public sealed class ProductMarketplace : BaseEntity
     public string? DescriptionOverride { get; set; }
 
     // Navigation property
-    public ICollection<ProductVariantMarketplaceOverride> VariantOverrides { get; set; } = [];
+    public ICollection<ProductVariantMarketplaceOverride> VariantOverrides { get; set; } = new List<ProductVariantMarketplaceOverride>();
 }
