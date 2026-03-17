@@ -4,8 +4,8 @@ namespace Entegrasyon.Entity.Categories;
 public sealed class CategoryAttribute : BaseEntity
 {
     public int Id { get; set; }
-    public string CategoryAttributeKey { get; set; } = null!;
-    public string CategoryAttributeHumanized { get; set; } = null!;
+    public string? CategoryAttributeKey { get; set; }
+    public string? CategoryAttributeHumanized { get; set; }
 
     public bool AllowCustom { get; set; }
     public int ImportId { get; set; }

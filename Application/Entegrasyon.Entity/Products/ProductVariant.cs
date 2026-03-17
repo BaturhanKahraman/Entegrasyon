@@ -8,7 +8,7 @@ public sealed class ProductVariant:BaseEntity
     public Guid ProductId { get; set; }
     public Product Product { get; set; } = null!;
     public List<ProductVariantAttribute> ProductVariantAttributes { get; set; } = new(); //color:red,size:xl etc...
-    public string Barcode { get; set; } = null!;
+    public string? Barcode { get; set; }
     public decimal DimensionalWeight { get; set; }
     public string CurrencyType { get; set; } = "TRY";
     [Column(TypeName = "money")]
