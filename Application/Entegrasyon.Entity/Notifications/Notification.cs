@@ -6,8 +6,8 @@ namespace Entegrasyon.Entity.Notifications;
 public sealed class Notification : BaseEntity
 {
     public long Id { get; set; }
-    public string Header { get; set; } = null!;
-    public string Content { get; set; } = null!;
+    public string? Header { get; set; }
+    public string? Content { get; set; }
     public bool IsRead { get; set; }
     public DateTimeOffset ReadAt { get; set; }
     public NotificationSeverity Severity { get; set; }

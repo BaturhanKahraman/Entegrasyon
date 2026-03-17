@@ -5,13 +5,13 @@ namespace Entegrasyon.Entity.User;
 public class ApplicationUser : BaseEntity
 {
     public Guid Id { get; set; }
-    public string Name { get; set; } = null!;
-    public string Surname { get; set; } = null!;
-    public string FullName { get; set; } = null!;
+    public string? Name { get; set; }
+    public string? Surname { get; set; }
+    public string? FullName { get; set; }
 
-    public string Email { get; set; } = null!;
-    public string UserName { get; set; } = null!;
-    public string NormalizedUserName { get; set; } = null!;
+    public string? Email { get; set; }
+    public string? UserName { get; set; }
+    public string? NormalizedUserName { get; set; }
     public string? NormalizedEmail { get; set; }
     public bool IsActive { get; set; } = true;
     public byte[]? PasswordSalt { get; set; }
@@ -19,7 +19,7 @@ public class ApplicationUser : BaseEntity
     public bool IsTwoFactorAuthActive { get; set; } = false;
     public bool NeedsTakeNewPassword { get; set; }
     [MaxLength(15)]
-    public string TemporaryPassword { get; set; } = null!;
+    public string? TemporaryPassword { get; set; }
 
     public string? WebJwtToken { get; set; }
     public DateTimeOffset WebJwtTokenExpiresAt { get; set; }
