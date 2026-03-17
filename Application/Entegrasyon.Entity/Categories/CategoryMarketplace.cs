@@ -8,10 +8,10 @@ namespace Entegrasyon.Entity.Categories;
 public sealed class CategoryMarketplace : BaseEntity
 {
     public int CategoryId { get; set; }
-    public Category Category { get; set; }
+    public Category Category { get; set; } = null!;
 
     public int MarketPlaceId { get; set; }
-    public MarketPlace MarketPlace { get; set; }
+    public MarketPlace MarketPlace { get; set; } = null!;
 
     /// <summary>
     /// Pazaryerindeki kategori ID'si (int olarak - çoğu marketplace int kullanır)

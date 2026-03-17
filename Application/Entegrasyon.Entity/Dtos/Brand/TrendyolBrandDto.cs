@@ -6,5 +6,5 @@ namespace Entegrasyon.Entity.Dtos.Brand;
 public record TrendyolBrandDto
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }

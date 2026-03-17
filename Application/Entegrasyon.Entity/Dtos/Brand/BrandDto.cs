@@ -6,5 +6,5 @@ namespace Entegrasyon.Entity.Dtos.Brand;
 public record BrandDto
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }

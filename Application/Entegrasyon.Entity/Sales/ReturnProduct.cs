@@ -6,7 +6,7 @@ public sealed class ReturnProduct: BaseEntity
 {
     public int Id { get; set; }
     public Guid ProductId { get; set; }
-    public ProductVariant Product { get; set; }
+    public ProductVariant Product { get; set; } = null!;
     
     
 }

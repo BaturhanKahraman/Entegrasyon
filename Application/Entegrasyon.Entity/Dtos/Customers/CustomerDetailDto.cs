@@ -19,14 +19,14 @@ public sealed class CustomerDetailDto
         CorporateName = corporateName;
     }
 
-    public string CustomerType { get; set; }
+    public string CustomerType { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; }
     public int Id { get; init; }
-    public string NationalIdentityOrTaxNumber { get; init; }
-    public string NameSurname { get; init; }
-    public string CorporateName { get; init; }
+    public string NationalIdentityOrTaxNumber { get; init; } = null!;
+    public string NameSurname { get; init; } = null!;
+    public string CorporateName { get; init; } = null!;
     public int SalesCount { get; init; }
-    public string PhoneNumber { get; set; }
-    public string Address { get; set; }
+    public string PhoneNumber { get; set; } = null!;
+    public string Address { get; set; } = null!;
 
 }
