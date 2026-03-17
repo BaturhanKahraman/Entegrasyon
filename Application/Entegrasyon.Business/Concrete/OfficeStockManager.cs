@@ -58,11 +58,6 @@ public class OfficeStockManager(
         return new SuccessResult();
     }
 
-    public Task<IResult> IncreaseProductStock()
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<IResult> DecreaseProductStock(Guid id, int stockNumber, int branchId, bool overrideStockStatus = false)
     {
         using var dbContext = contextFactory.CreateDbContext();

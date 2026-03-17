@@ -35,8 +35,8 @@ public interface ICategoryImporterService
 /// </summary>
 public record ExternalCategoryDto
 {
-    public string ExternalId { get; init; }
-    public string Name { get; init; }
+    public string ExternalId { get; init; } = null!;
+    public string Name { get; init; } = null!;
     public string? ParentExternalId { get; init; }
     public bool HasChildren { get; init; }
     public List<ExternalCategoryDto> Children { get; init; } = new();
@@ -47,8 +47,8 @@ public record ExternalCategoryDto
 /// </summary>
 public record ExternalCategoryImportRequest
 {
-    public string ExternalId { get; init; }
-    public string Name { get; init; }
+    public string ExternalId { get; init; } = null!;
+    public string Name { get; init; } = null!;
     public string? ParentExternalId { get; init; }
     public List<ExternalCategoryImportRequest> Children { get; init; } = new();
     public bool IsLeaf => Children.Count == 0;

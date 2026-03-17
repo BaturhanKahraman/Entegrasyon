@@ -6,7 +6,6 @@ using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
@@ -35,15 +34,6 @@ builder.Services.AddBackgroundServices();
 // Event channels and background services are registered via AddEventChannels() and AddBackgroundServices()
 
 builder.Services.AddStorageServices(builder.Configuration);
-
-// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
-// {
-//     x.SlidingExpiration = true;
-//     x.ExpireTimeSpan = TimeSpan.FromHours(1);
-//     x.LoginPath = "/auth/login";
-//     x.AccessDeniedPath = "/access-denied";
-//     x.LogoutPath = "/auth/logout";
-// });
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();

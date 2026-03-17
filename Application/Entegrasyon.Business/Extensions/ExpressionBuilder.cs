@@ -5,7 +5,7 @@ namespace Entegrasyon.Business.Extensions;
 public class ExpressionBuilder<T>
 where T:class
 {
-    private Expression<Func<T, bool>> expression;
+    private Expression<Func<T, bool>>? expression;
 
     public ExpressionBuilder<T> AddAnd(Expression<Func<T, bool>> expr,bool condition)
     {
@@ -18,5 +18,5 @@ where T:class
         return this;
     }
 
-    public Expression<Func<T, bool>> Build() => expression;
+    public Expression<Func<T, bool>>? Build() => expression;
 }

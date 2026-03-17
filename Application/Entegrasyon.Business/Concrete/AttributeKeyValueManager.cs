@@ -16,14 +16,4 @@ public class AttributeKeyValueManager(IDbContextFactory<IntegrationDbContext> co
             .ToList();
     }
 
-    public async Task<IResult> ValidateAttributeKeyValues(IEnumerable<AttributeKeyValue> kv)
-    {
-        //todo
-        throw new NotImplementedException();
-        // var errorKeys = (await attributeKeyValueDal.ValidateKeyValues(kv)).ToList();
-        // if(errorKeys.Any())
-        //     return new ErrorResult(string.Join(' ',errorKeys) + " özellikleri eksiksiz doldurulmalıdır.");
-        // return new SuccessResult();
-    }
-
 }

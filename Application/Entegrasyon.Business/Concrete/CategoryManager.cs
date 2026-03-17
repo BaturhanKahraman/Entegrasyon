@@ -42,7 +42,7 @@ namespace Entegrasyon.Business.Concrete
                 bool parentHasAttrs = await dbContext.CategoryAttributeCategories
                     .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value);
                 if (parentHasAttrs)
-                    return new ErrorDataResult<CategoryDetailDto>(null, "Seçilen üst kategori özellik içerdiğinden alt kategori eklenemez.");
+                    return new ErrorDataResult<CategoryDetailDto>(null!, "Seçilen üst kategori özellik içerdiğinden alt kategori eklenemez.");
             }
 
             var category = mapper.Map<Category>(dto);
@@ -52,7 +52,7 @@ namespace Entegrasyon.Business.Concrete
             await applicationLogManager.AddLog(Messages.CategoryAdded, LogType.Category, LogAction.Add);
             var detail = await dbContext.Categories
                 .Where(x => x.Id == category.Id)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory!.Name))
                 .FirstOrDefaultAsync();
             return new SuccessDataResult<CategoryDetailDto>(detail);
         }
@@ -63,7 +63,7 @@ namespace Entegrasyon.Business.Concrete
             await fluentValidator.ValidateAndThrowAsync(dto);
             var dbCategory = await dbContext.Categories.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id);
             if (dbCategory == null)
-                return new ErrorDataResult<CategoryDetailDto>(null, "Kategori bulunamadı.");
+                return new ErrorDataResult<CategoryDetailDto>(null!, "Kategori bulunamadı.");
 
             if (dto.SuperCategoryId is > 0)
             {
@@ -127,7 +127,7 @@ namespace Entegrasyon.Business.Concrete
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
-        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string categoryName = null)
+        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string? categoryName = null)
         {
             using var dbContext = contextFactory.CreateDbContext();
             var query = dbContext.CategorySummaries.AsQueryable();
@@ -222,19 +222,19 @@ namespace Entegrasyon.Business.Concrete
             return await dbContext.Categories.AnyAsync(x => x.Id == id);
         }
 
-        public Task<string> GetCategoryNameById(int categoryId)
+        public Task<string?> GetCategoryNameById(int categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.Categories.AsNoTracking().Where(x => x.Id == categoryId).Select(x => x.Name).FirstOrDefaultAsync();
         }
 
-        public Task<Category> GetCategoryById(int? categoryId)
+        public Task<Category?> GetCategoryById(int? categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
         }
 
-        public Task<Category> GetCategoryWithAttrById(int? categoryId)
+        public Task<Category?> GetCategoryWithAttrById(int? categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.Categories.Include(x => x.CategoryAttributes).FirstOrDefaultAsync(x => x.Id == categoryId);
@@ -265,7 +265,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<List<Category>> GetAllCategoriesWithoutAttributesAsync()
         {
-            if (cache.TryGetValue(CategoryListCacheKey, out List<Category> cached))
+            if (cache.TryGetValue(CategoryListCacheKey, out List<Category>? cached) && cached is not null)
                 return cached;
 
             using var dbContext = contextFactory.CreateDbContext();
@@ -330,7 +330,7 @@ namespace Entegrasyon.Business.Concrete
             var category = await dbContext.Categories
                 .FirstOrDefaultAsync(c => c.Id == categoryId);
             if (category is null)
-                return new ErrorDataResult<CategoryEditPageDto>(null, Messages.CategoryNotFound);
+                return new ErrorDataResult<CategoryEditPageDto>(null!, Messages.CategoryNotFound);
 
             var isLeaf = !await dbContext.Categories
                 .AnyAsync(c => c.SuperCategoryId == categoryId);

@@ -16,9 +16,9 @@ public class RoleServiceTests : BaseTest
     }
 
     public static IEnumerable<object[]> invalidMembers => new List<object[]>() {
-        new object[]{new AddRoleDto(default,default) { Name="",PermissionNames=[]} },
-        new object[]{new AddRoleDto(default,default) { Name="asd",PermissionNames=[]} },
-        new object[]{new AddRoleDto(default,default) { Name="",PermissionNames=["Products.Read"]} }
+        new object[]{new AddRoleDto(default!,default!) { Name="",PermissionNames=[]} },
+        new object[]{new AddRoleDto(default!,default!) { Name="asd",PermissionNames=[]} },
+        new object[]{new AddRoleDto(default!,default!) { Name="",PermissionNames=["Products.Read"]} }
     };
 
     [Theory]

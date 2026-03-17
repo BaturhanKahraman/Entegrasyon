@@ -11,7 +11,6 @@ public interface IOfficeStockManager
     Task<IResult> CheckIfOfficeExists(IEnumerable<int> officesIds);
     Task UpdateStock(int branchOfficeId, Guid productVariantId, int stock);
     IResult CheckIfProductCountZero(params AddBranchOfficeStockDto[] stocks);
-    Task<IResult> IncreaseProductStock();
     Task<IResult> DecreaseProductStock(Guid id, int stockNumber, int branchId, bool overrideStockStatus = false);
     Task<IResult> DecreaseProductsStock(List<DecreaseStockDto> dtos, bool overrideStockStatus = false);
 

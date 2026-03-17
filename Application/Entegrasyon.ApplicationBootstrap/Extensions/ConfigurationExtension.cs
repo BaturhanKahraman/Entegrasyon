@@ -11,6 +11,6 @@ public static class ConfigurationExtension
         {
             throw new KeyNotFoundException($"{key} is not found in configuration");
         }
-        return configuration.GetValue<T>(key);
+        return configuration.GetValue<T>(key)!;
     }
 }
