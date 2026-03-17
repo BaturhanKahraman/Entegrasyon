@@ -45,6 +45,17 @@ else
                                                  ValueChanged="@(v => setting.Value = v.ToString(System.Globalization.CultureInfo.InvariantCulture))"
                                                  Variant="Variant.Outlined" />
                                 break;
+                            case SettingValueType.Password:
+                                <MudTextField T="string"
+                                              Label="@setting.Description"
+                                              @bind-Value="setting.Value"
+                                              Variant="Variant.Outlined"
+                                              InputType="@(_showPasswords.GetValueOrDefault(setting.Key) ? InputType.Text : InputType.Password)"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@(_showPasswords.GetValueOrDefault(setting.Key) ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                              OnAdornmentClick="@(() => TogglePasswordVisibility(setting.Key))"
+                                              AdornmentAriaLabel="Şifreyi göster/gizle" />
+                                break;
                             default:
                                 <MudTextField T="string"
                                               Label="@setting.Description"
@@ -69,4 +80,33 @@ else
         }
         Kaydet
     </MudButton>
+
+    @if (_settingsByGroup.ContainsKey("E-posta Ayarları"))
+    {
+        <MudDivider Class="my-4" />
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Info"
+                       StartIcon="@Icons.Material.Filled.Mail"
+                       OnClick="TestSmtpConnectionAsync"
+                       Disabled="_testingSmtp">
+                @if (_testingSmtp)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                SMTP Bağlantısını Test Et
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.Send"
+                       OnClick="SendTestEmailAsync"
+                       Disabled="_sendingTestEmail">
+                @if (_sendingTestEmail)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Test E-postası Gönder
+            </MudButton>
+        </MudStack>
+    }
 }

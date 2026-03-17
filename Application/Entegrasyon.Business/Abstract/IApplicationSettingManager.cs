@@ -8,4 +8,6 @@ public interface IApplicationSettingManager
     Task<List<ApplicationSettingDto>> GetSettingsByGroupAsync(string group);
     Task<ApplicationSettingDto?> GetSettingAsync(string key);
     Task<bool> UpdateSettingsAsync(List<UpdateApplicationSettingDto> settings);
+    Task<bool> TestSmtpConnectionAsync();
+    Task SendTestEmailAsync();
 }

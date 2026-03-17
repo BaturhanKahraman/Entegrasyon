@@ -15,5 +15,17 @@ public class ApplicationSettingEntityConfiguration : IEntityTypeConfiguration<Ap
         builder.Property(x => x.Description).HasMaxLength(500);
         builder.Property(x => x.Group).HasMaxLength(100);
         builder.Property(x => x.ValueType).HasConversion<string>().HasMaxLength(20);
+
+        builder.HasData(
+            new ApplicationSetting { Id = 9, Key = "SmtpHost", Value = "", Description = "SMTP sunucu adresi (ör: smtp.gmail.com)", Group = "E-posta Ayarları", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 10, Key = "SmtpPort", Value = "587", Description = "SMTP port numarası", Group = "E-posta Ayarları", ValueType = SettingValueType.Integer, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 11, Key = "SmtpUsername", Value = "", Description = "SMTP kullanıcı adı", Group = "E-posta Ayarları", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 12, Key = "SmtpPassword", Value = "", Description = "SMTP şifresi", Group = "E-posta Ayarları", ValueType = SettingValueType.Password, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 13, Key = "SmtpFromAddress", Value = "", Description = "Gönderen e-posta adresi", Group = "E-posta Ayarları", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 14, Key = "SmtpFromDisplayName", Value = "", Description = "Gönderen görünen adı", Group = "E-posta Ayarları", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 15, Key = "SmtpEnableSsl", Value = "true", Description = "SSL/TLS bağlantısı kullan", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 16, Key = "SmtpInvoiceEmailEnabled", Value = "false", Description = "Fatura e-postaları gönderilsin mi?", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 17, Key = "SmtpNotificationEmailEnabled", Value = "false", Description = "Bildirim e-postaları gönderilsin mi?", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue }
+        );
     }
 }
