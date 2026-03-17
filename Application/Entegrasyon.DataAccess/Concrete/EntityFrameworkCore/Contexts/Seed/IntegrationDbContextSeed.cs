@@ -11,6 +11,7 @@ public static class IntegrationDbContextSeed
         {
             Id = 1,
             Name = "Admin",
+            NormalizedName = "ADMIN",
             CreatedAt = DateTimeOffset.MinValue,
         };
         modelBuilder.Entity<Role>().HasData(role);
@@ -25,6 +26,7 @@ public static class IntegrationDbContextSeed
             UserName = "Admin",
             NormalizedUserName = "Admin".ToUpperInvariant(),
             Email = "admin@admin.com",
+            NormalizedEmail = "ADMIN@ADMIN.COM",
             NeedsTakeNewPassword = true,
             TemporaryPassword = "Admin",
             DefaultBranchOfficeId = 1,
