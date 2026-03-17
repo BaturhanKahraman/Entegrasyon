@@ -65,6 +65,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
             services.AddScoped<IProductActivityLogger, ProductActivityLogger>();
             services.AddScoped<IMarketplaceOverrideManager, MarketplaceOverrideManager>();
+            services.AddScoped<IApplicationSettingManager, ApplicationSettingManager>();
 
             // Etiket & Fiş servisleri
             services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
