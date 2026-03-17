@@ -12,7 +12,7 @@ public class RoleServiceTests : BaseTest
 
     public RoleServiceTests()
     {
-        roleService = new RoleService(mockApplicationLogger.Object, mockIntegrationDbContext.Object, mockMemoryCache.Object, new AddRoleDtoValidator(), new EditRoleDtoValidator());
+        roleService = new RoleService(mockApplicationLogger.Object, mockContextFactory.Object, mockMemoryCache.Object, new AddRoleDtoValidator(), new EditRoleDtoValidator());
     }
 
     public static IEnumerable<object[]> invalidMembers => new List<object[]>() {

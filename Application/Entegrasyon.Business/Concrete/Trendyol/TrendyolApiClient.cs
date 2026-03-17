@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Trendyol API'ye credential-aware HTTP çağrıları yapan client.
-/// Her istekte MarketPlace tablosundan (Id=1) credentials çeker,
+/// Trendyol API'ye credential-aware HTTP cagrilari yapan client.
+/// Her istekte MarketPlace tablosundan (Id=1) credentials ceker,
 /// Basic Auth + User-Agent header otomatik eklenir.
 /// </summary>
 public sealed class TrendyolApiClient(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IHttpClientFactory httpClientFactory,
     ILogger<TrendyolApiClient> logger) : ITrendyolApiClient
 {
@@ -51,10 +51,12 @@ public sealed class TrendyolApiClient(
 
     private async Task<HttpClient> CreateConfiguredClientAsync()
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
         var marketplace = await dbContext.MarketPlaces
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId)
-            ?? throw new InvalidOperationException("Trendyol marketplace kaydı bulunamadı (Id=1).");
+            ?? throw new InvalidOperationException("Trendyol marketplace kaydi bulunamadi (Id=1).");
 
         var baseUrl = marketplace.BaseUrl ?? DefaultBaseUrl;
 

@@ -10,4 +10,5 @@ public interface IOrderManager
     Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId);
     Task<IResult> ImportTrendyolOrdersAsync(List<TrendyolShipmentPackage> packages);
     Task<IResult> UpdateOrderStatusAsync(Guid orderId, string newStatus);
+    Task<IResult> UpdateOrderByShipmentPackageAsync(long shipmentPackageId, string? status, string? trackingNumber);
 }

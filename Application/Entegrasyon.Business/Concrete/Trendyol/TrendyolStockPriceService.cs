@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Gerçek Trendyol stok/fiyat güncelleme servisi.
+/// Gercek Trendyol stok/fiyat guncelleme servisi.
 /// POST /integration/inventory/sellers/{sellerId}/products/price-and-inventory
 /// Bu endpoint UNLIMITED rate'e sahip.
 /// </summary>
 public sealed class TrendyolStockPriceService(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
     ILogger<TrendyolStockPriceService> logger) : ITrendyolStockPriceService
 {
@@ -23,13 +23,15 @@ public sealed class TrendyolStockPriceService(
     public async Task<IDataResult<string>> UpdatePriceAndInventoryAsync(List<TrendyolPriceInventoryItem> items)
     {
         if (items.Count == 0)
-            return new ErrorDataResult<string>(null!, "Güncellenecek ürün yok.");
+            return new ErrorDataResult<string>(null!, "Guncellenecek urun yok.");
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
 
         if (marketplace?.SellerId is null)
-            return new ErrorDataResult<string>(null!, "Trendyol SellerId ayarlanmamış.");
+            return new ErrorDataResult<string>(null!, "Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/inventory/sellers/{marketplace.SellerId}/products/price-and-inventory";
         var request = new TrendyolPriceAndInventoryRequest(items);
@@ -40,7 +42,7 @@ public sealed class TrendyolStockPriceService(
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol stock/price update failed. Status={Status}, Body={Body}",
                 response.StatusCode, errorBody);
-            return new ErrorDataResult<string>(null!, $"Trendyol API hatası: {response.StatusCode}");
+            return new ErrorDataResult<string>(null!, $"Trendyol API hatasi: {response.StatusCode}");
         }
 
         var batchResponse = await response.Content.ReadFromJsonAsync<TrendyolBatchResponse>();
@@ -48,6 +50,6 @@ public sealed class TrendyolStockPriceService(
             items.Count, batchResponse?.BatchRequestId);
 
         return new SuccessDataResult<string>(batchResponse?.BatchRequestId ?? "ok",
-            $"{items.Count} ürünün stok/fiyat bilgisi güncellendi.");
+            $"{items.Count} urunun stok/fiyat bilgisi guncellendi.");
     }
 }

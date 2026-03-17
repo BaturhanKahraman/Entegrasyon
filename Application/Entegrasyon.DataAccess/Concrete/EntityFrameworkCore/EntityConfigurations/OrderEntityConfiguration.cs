@@ -9,7 +9,9 @@ public class OrderEntityConfiguration : IEntityTypeConfiguration<Order>
 {
     public void Configure(EntityTypeBuilder<Order> builder)
     {
-        builder.UseXminAsConcurrencyToken();
+        builder.Property<uint>("xmin")
+            .HasColumnType("xid")
+            .IsRowVersion();
         builder.OwnsOne(x => x.ShippingAddress);
         builder.OwnsOne(x => x.BillingAddress);
         builder.HasQueryFilter(x => !x.IsDeleted);

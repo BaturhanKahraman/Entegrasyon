@@ -1,14 +1,12 @@
 using System.Text.Json;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Blazor.Endpoints;
 
 /// <summary>
-/// Trendyol webhook receiver — Minimal API endpoint.
+/// Trendyol webhook receiver -- Minimal API endpoint.
 /// POST /api/trendyol/webhook
-/// Sipariş durumu değişikliklerini alır ve local DB'yi günceller.
+/// Siparis durumu degisikliklerini alir ve local DB'yi gunceller.
 /// </summary>
 public static class TrendyolWebhookEndpoint
 {
@@ -20,8 +18,7 @@ public static class TrendyolWebhookEndpoint
 
     private static async Task<IResult> HandleWebhookAsync(
         HttpContext httpContext,
-        IOrderManager orderManager,
-        IntegrationDbContext dbContext)
+        IOrderManager orderManager)
     {
         var logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>()
             .CreateLogger("TrendyolWebhook");
@@ -39,21 +36,15 @@ public static class TrendyolWebhookEndpoint
             if (payload is null)
                 return Results.BadRequest("Invalid payload");
 
-            // Sipariş durumu güncelleme
+            // Siparis durumu guncelleme
             if (payload.ShipmentPackageId > 0)
             {
-                var order = await dbContext.Orders
-                    .FirstOrDefaultAsync(o => o.ShipmentPackageId == payload.ShipmentPackageId);
+                var result = await orderManager.UpdateOrderByShipmentPackageAsync(
+                    payload.ShipmentPackageId, payload.Status, payload.TrackingNumber);
 
-                if (order is not null)
-                {
-                    order.MarketplaceOrderStatus = payload.Status;
-                    if (!string.IsNullOrEmpty(payload.TrackingNumber))
-                        order.CargoTrackingNumber = payload.TrackingNumber;
-                    await dbContext.SaveChangesAsync();
-                    logger.LogInformation("Order {OrderId} status updated via webhook to {Status}",
-                        order.Id, payload.Status);
-                }
+                if (result.Success)
+                    logger.LogInformation("Order with ShipmentPackageId {PackageId} updated via webhook to {Status}",
+                        payload.ShipmentPackageId, payload.Status);
             }
 
             return Results.Ok();
