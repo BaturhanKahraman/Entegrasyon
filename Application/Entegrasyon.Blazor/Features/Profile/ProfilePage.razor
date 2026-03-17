@@ -1,0 +1,164 @@
+@page "/profile"
+@attribute [Authorize]
+
+<PageTitle>Profilim</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Profilim</MudText>
+
+@if (_loading)
+{
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudSkeleton Width="60%" Height="32px" Class="mb-4" />
+                    @for (var i = 0; i < 4; i++)
+                    {
+                        <MudSkeleton Width="100%" Height="56px" Class="mb-3" />
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudSkeleton Width="60%" Height="32px" Class="mb-4" />
+                    @for (var i = 0; i < 3; i++)
+                    {
+                        <MudSkeleton Width="100%" Height="56px" Class="mb-3" />
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+else if (_user is not null)
+{
+    <MudGrid>
+        @* ── Sol: Profil Bilgileri ── *@
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Primary" Size="Size.Large">
+                            @(_user.Name?.FirstOrDefault())@(_user.Surname?.FirstOrDefault())
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@_user.Name @_user.Surname</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@@@_user.UserName</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudForm @ref="_profileForm">
+                        <MudTextField Label="Kullanici Adi" Value="@_user.UserName"
+                                      ReadOnly="true" Variant="Variant.Filled"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AlternateEmail"
+                                      HelperText="Kullanici adi degistirilemez" Class="mb-3" />
+
+                        <MudTextField Label="Ad" @bind-Value="_editName"
+                                      Required="true" RequiredError="Ad zorunludur"
+                                      MaxLength="60" Counter="60"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person"
+                                      Class="mb-3" />
+
+                        <MudTextField Label="Soyad" @bind-Value="_editSurname"
+                                      Required="true" RequiredError="Soyad zorunludur"
+                                      MaxLength="60" Counter="60"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person"
+                                      Class="mb-3" />
+
+                        <MudTextField Label="Rol" Value="@_user.RoleName"
+                                      ReadOnly="true" Variant="Variant.Filled"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Security"
+                                      HelperText="Rol yonetici tarafindan atanir" Class="mb-3" />
+
+                        <MudTextField Label="Varsayilan Sube" Value="@_user.DefaultOfficeName"
+                                      ReadOnly="true" Variant="Variant.Filled"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Store"
+                                      HelperText="Sube yonetici tarafindan atanir" Class="mb-3" />
+
+                        <MudTextField Label="Kayit Tarihi" Value="@_user.CreatedAt.ToString("dd.MM.yyyy HH:mm")"
+                                      ReadOnly="true" Variant="Variant.Filled"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.CalendarToday"
+                                      Class="mb-3" />
+                    </MudForm>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="SaveProfile" Disabled="_isSaving">
+                        @if (_isSaving)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Kaydediliyor...</span>
+                        }
+                        else
+                        {
+                            <span>Profili Kaydet</span>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* ── Sag: Sifre Degistirme ── *@
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Secondary" Size="Size.Large" />
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Sifre Degistir</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Guvenliginiz icin duzgun aralıklarla sifrenizi degistirin</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudForm @ref="_passwordForm">
+                        <MudTextField Label="Mevcut Sifre" @bind-Value="_currentPassword"
+                                      InputType="@(_showCurrentPassword ? InputType.Text : InputType.Password)"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@(_showCurrentPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                      OnAdornmentClick="@(() => _showCurrentPassword = !_showCurrentPassword)"
+                                      Required="true" RequiredError="Mevcut sifre zorunludur"
+                                      Class="mb-3" />
+
+                        <MudTextField Label="Yeni Sifre" @bind-Value="_newPassword"
+                                      InputType="@(_showNewPassword ? InputType.Text : InputType.Password)"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@(_showNewPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                      OnAdornmentClick="@(() => _showNewPassword = !_showNewPassword)"
+                                      Required="true" RequiredError="Yeni sifre zorunludur"
+                                      Validation="@(new Func<string, string?>(ValidateNewPassword))"
+                                      Class="mb-3" />
+
+                        <MudTextField Label="Yeni Sifre (Tekrar)" @bind-Value="_confirmPassword"
+                                      InputType="@(_showConfirmPassword ? InputType.Text : InputType.Password)"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@(_showConfirmPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                      OnAdornmentClick="@(() => _showConfirmPassword = !_showConfirmPassword)"
+                                      Required="true" RequiredError="Sifre tekrari zorunludur"
+                                      Validation="@(new Func<string, string?>(ValidateConfirmPassword))"
+                                      Class="mb-3" />
+                    </MudForm>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.LockReset"
+                               OnClick="ChangePassword" Disabled="_isChangingPassword">
+                        @if (_isChangingPassword)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Degistiriliyor...</span>
+                        }
+                        else
+                        {
+                            <span>Sifreyi Degistir</span>
+                        }
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}

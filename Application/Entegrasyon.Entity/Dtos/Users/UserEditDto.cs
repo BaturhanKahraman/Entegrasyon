@@ -17,6 +17,8 @@ public record UserEditDto
     [StringLength(maximumLength: 60,ErrorMessage = "En fazla 60 karakterden oluşabilir")]
     public string Surname { get; init; } = null!;
 
+    public bool IsActive { get; init; } = true;
+
     public int? BranchOfficeId { get; init; }
 
     public ICollection<int> RoleIds { get; init; } = [];

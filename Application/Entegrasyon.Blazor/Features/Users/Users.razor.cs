@@ -14,6 +14,7 @@ public partial class Users
     [Inject] private IAuthService AuthService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
 
     private List<UserDetailListDto> _users = [];
     private string _searchString = string.Empty;
@@ -82,60 +83,9 @@ public partial class Users
         }
     }
 
-    private async Task EditUser(UserDetailListDto user)
+    private void EditUser(UserDetailListDto user)
     {
-        var parameters = new DialogParameters
-        {
-            { "IsEdit", true },
-            { "Roles", _roles },
-            { "Model", new UserDialog.UserViewModel
-                {
-                    UserName = user.UserName,
-                    Name = user.Name,
-                    Surname = user.Surname,
-                }
-            }
-        };
-
-        var detailResult = await UserManager.GetUserDetails(user.Id);
-        if (!detailResult.Success)
-        {
-            Snackbar.Add("Kullanıcı detayları alınamadı", Severity.Error);
-            return;
-        }
-
-        var fullUser = detailResult.Data;
-        parameters["Model"] = new UserDialog.UserViewModel
-        {
-            UserName = fullUser.UserName,
-            Name = fullUser.Name,
-            Surname = fullUser.Surname,
-            Email = fullUser.UserName
-        };
-
-        var dialog = await DialogService.ShowAsync<UserDialog>("Kullanıcı Düzenle", parameters);
-        var result = await dialog.Result;
-
-        if (!result!.Canceled && result.Data is UserDialog.UserDialogResult dialogResult)
-        {
-            var editDto = new UserEditDto
-            {
-                Id = user.Id,
-                UserName = dialogResult.Model.UserName,
-                Email = dialogResult.Model.Email,
-            };
-
-            var serviceResult = await UserManager.EditUser(editDto);
-            if (serviceResult.Success)
-            {
-                Snackbar.Add(serviceResult.Message, Severity.Success);
-                await LoadUsers();
-            }
-            else
-            {
-                Snackbar.Add(serviceResult.Message, Severity.Error);
-            }
-        }
+        NavigationManager.NavigateTo($"/users/edit/{user.Id}");
     }
 
     private async Task DeleteUser(UserDetailListDto user)
