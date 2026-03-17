@@ -6,7 +6,7 @@ public sealed class AttributeKeyValue :BaseEntity
 {
     public int CategoryAttributeId { get; set; }
     public CategoryAttribute CategoryAttribute { get; set; } = null!;
-    public string CustomValue { get; set; } = null!;
+    public string? CustomValue { get; set; }
     public int? AttributeValueId { get; set; }
     public CategoryAttributeValue? AttributeValue { get; set; }
 
