@@ -5,6 +5,7 @@ using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
@@ -18,8 +19,6 @@ public sealed class TrendyolProductMapper(
     IMinioFileStorage fileStorage,
     ILogger<TrendyolProductMapper> logger) : ITrendyolProductMapper
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IDataResult<TrendyolCreateProductRequest>> MapProductAsync(Guid productId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();

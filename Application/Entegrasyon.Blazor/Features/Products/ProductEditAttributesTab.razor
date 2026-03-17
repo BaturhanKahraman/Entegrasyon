@@ -16,7 +16,7 @@
     {
         @foreach (var attr in _categoryAttributes)
         {
-            <MudItem xs="12" md="6">
+            <MudItem @key="attr.Id" xs="12" md="6">
                 @if (attr.AllowCustom)
                 {
                     <MudTextField Label="@attr.CategoriyAttributeHumanized"
@@ -35,7 +35,7 @@
                                Variant="Variant.Outlined">
                         @foreach (var val in attr.CategoryAttributeValues)
                         {
-                            <MudSelectItem T="int?" Value="@((int?)val.Id)">@val.Name</MudSelectItem>
+                            <MudSelectItem @key="val.Id" T="int?" Value="@((int?)val.Id)">@val.Name</MudSelectItem>
                         }
                     </MudSelect>
                 }

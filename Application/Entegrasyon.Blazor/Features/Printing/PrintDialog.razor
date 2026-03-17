@@ -30,7 +30,7 @@
                     <MudSelect T="string" @bind-Value="_selectedPrinter" Label="Yazıcı" Variant="Variant.Outlined">
                         @foreach (var printer in _printers)
                         {
-                            <MudSelectItem T="string" Value="@printer.Name">
+                            <MudSelectItem @key="printer.Name" T="string" Value="@printer.Name">
                                 @printer.Name (@printer.ConnectionType)
                             </MudSelectItem>
                         }

@@ -5,6 +5,7 @@ using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
@@ -18,8 +19,6 @@ public sealed class TrendyolStockPriceService(
     ITrendyolApiClient apiClient,
     ILogger<TrendyolStockPriceService> logger) : ITrendyolStockPriceService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IDataResult<string>> UpdatePriceAndInventoryAsync(List<TrendyolPriceInventoryItem> items)
     {
         if (items.Count == 0)

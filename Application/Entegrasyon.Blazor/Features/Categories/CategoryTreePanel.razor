@@ -36,7 +36,7 @@
         <div class="category-tree" style="max-height: 600px; overflow-y: auto;">
             @foreach (var category in TreeItems)
             {
-                <CategoryTreeItem Category="category"
+                <CategoryTreeItem @key="category.Id" Category="category"
                                   AllCategories="AllCategories"
                                   OnCategorySelected="OnCategorySelectedInternal" />
             }

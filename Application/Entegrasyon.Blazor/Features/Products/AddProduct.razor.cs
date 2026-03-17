@@ -412,12 +412,12 @@ public partial class AddProduct
     private void OnMarketplacePublished()
     {
         Snackbar?.Add("Pazaryeri senkronizasyonu başlatıldı.", Severity.Success);
-        NavigationManager?.NavigateTo("/products");
+        NavigationManager?.NavigateTo("/products", replace: true);
     }
 
     private void OnMarketplaceSkipped()
     {
-        NavigationManager?.NavigateTo("/products");
+        NavigationManager?.NavigateTo("/products", replace: true);
     }
 
     private async Task OnCategoryChanged(int newCategoryId)
@@ -625,4 +625,11 @@ public partial class AddProduct
 
     private void SetStock(int variantIdx, int officeId, int? value)
         => _stockValues[(variantIdx, officeId)] = value;
+
+    // Y2: Parameterized methods for loop lambdas — avoids per-render delegate allocation
+    private void OnRegularAttrValueChanged(int attrId, int? value)
+        => _regularAttrValueIds[attrId] = value;
+
+    private void OnRegularAttrCustomValueChanged(int attrId, string? value)
+        => _regularAttrCustomValues[attrId] = value;
 }

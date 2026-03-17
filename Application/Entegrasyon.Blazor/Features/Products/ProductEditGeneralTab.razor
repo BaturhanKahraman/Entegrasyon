@@ -27,7 +27,7 @@
                    Variant="Variant.Outlined">
             @foreach (var brand in Brands)
             {
-                <MudSelectItem T="int" Value="@brand.Id">@brand.Name</MudSelectItem>
+                <MudSelectItem @key="brand.Id" T="int" Value="@brand.Id">@brand.Name</MudSelectItem>
             }
         </MudSelect>
     </MudItem>
@@ -36,7 +36,7 @@
                    Variant="Variant.Outlined">
             @foreach (var cat in Categories)
             {
-                <MudSelectItem T="int" Value="@cat.Id">@cat.Name</MudSelectItem>
+                <MudSelectItem @key="cat.Id" T="int" Value="@cat.Id">@cat.Name</MudSelectItem>
             }
         </MudSelect>
     </MudItem>

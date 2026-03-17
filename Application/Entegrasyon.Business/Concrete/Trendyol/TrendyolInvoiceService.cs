@@ -4,6 +4,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
@@ -16,8 +17,6 @@ public sealed class TrendyolInvoiceService(
     ITrendyolApiClient apiClient,
     ILogger<TrendyolInvoiceService> logger) : ITrendyolInvoiceService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IResult> SendInvoiceLinkAsync(long shipmentPackageId, string invoiceLink,
         long? invoiceDateTime = null, string? invoiceNumber = null)
     {

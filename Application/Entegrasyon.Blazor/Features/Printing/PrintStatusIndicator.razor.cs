@@ -3,12 +3,13 @@ using Microsoft.JSInterop;
 
 namespace Entegrasyon.Blazor.Features.Printing;
 
-public partial class PrintStatusIndicator : IDisposable
+public partial class PrintStatusIndicator : IAsyncDisposable
 {
     [Inject] private IJSRuntime JS { get; set; } = null!;
 
     private bool _isOnline;
-    private Timer _pollTimer;
+    private Timer? _pollTimer;
+    private CancellationTokenSource _cts = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -17,7 +18,12 @@ public partial class PrintStatusIndicator : IDisposable
         await CheckStatus();
         _pollTimer = new Timer(async _ =>
         {
+            if (_cts.IsCancellationRequested) return;
+
             await CheckStatus();
+
+            if (_cts.IsCancellationRequested) return;
+
             await InvokeAsync(StateHasChanged);
         }, null, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(2));
     }
@@ -26,7 +32,7 @@ public partial class PrintStatusIndicator : IDisposable
     {
         try
         {
-            _isOnline = await JS.InvokeAsync<bool>("PrintAgent.isAvailable");
+            _isOnline = await JS.InvokeAsync<bool>("PrintAgent.isAvailable", _cts.Token);
         }
         catch
         {
@@ -34,8 +40,13 @@ public partial class PrintStatusIndicator : IDisposable
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _pollTimer?.Dispose();
+        await _cts.CancelAsync();
+
+        if (_pollTimer is not null)
+            await _pollTimer.DisposeAsync();
+
+        _cts.Dispose();
     }
 }

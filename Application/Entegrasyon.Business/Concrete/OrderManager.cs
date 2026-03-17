@@ -7,6 +7,7 @@ using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -21,7 +22,6 @@ public sealed class OrderManager(
     INotificationManager notificationManager,
     ILogger<OrderManager> logger) : IOrderManager
 {
-    private const int TrendyolMarketPlaceId = 1;
     private const long AdvisoryLockKeyTrendyolImport = 2001;
 
     public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)

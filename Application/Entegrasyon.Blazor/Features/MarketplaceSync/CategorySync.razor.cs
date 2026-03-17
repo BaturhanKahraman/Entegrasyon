@@ -3,6 +3,7 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
@@ -18,8 +19,6 @@ public partial class CategorySync
     private bool _isLoading = true;
     private bool _showUnmappedOnly;
     private bool _showLeafOnly;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     private IEnumerable<Category> FilteredCategories
     {
@@ -46,12 +45,8 @@ public partial class CategorySync
     {
         _isLoading = true;
 
-        var categoriesTask = CategoryService.GetAllCategoriesWithHierarchyAsync();
-        var summaryTask = CategoryMatchService.GetCategoryMatchSummaryAsync();
-        await Task.WhenAll(categoriesTask, summaryTask);
-
-        _categories = categoriesTask.Result;
-        _summary = summaryTask.Result;
+        _categories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
+        _summary = await CategoryMatchService.GetCategoryMatchSummaryAsync();
         _isLoading = false;
     }
 

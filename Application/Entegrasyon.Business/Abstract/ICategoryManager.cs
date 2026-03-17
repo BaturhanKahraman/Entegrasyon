@@ -28,6 +28,7 @@ public interface ICategoryService
     Task UpdatePlainCategory(Category category);
     Task<bool> IsSuper(int? categoryId);
     Task<List<Category>> GetAllCategoriesWithHierarchyAsync();
+    Task<Category?> GetCategoryDetailById(int categoryId);
     Task<List<Category>> GetAllCategoriesWithoutAttributesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync(int? excludeCategoryId);

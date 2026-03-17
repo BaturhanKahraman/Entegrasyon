@@ -15,7 +15,7 @@
             <MudList T="string" Dense="true">
                 @foreach (var category in SelectedCategories)
                 {
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.Category">
+                    <MudListItem @key="category.ExternalId" T="string" Icon="@Icons.Material.Filled.Category">
                         <div class="d-flex justify-space-between align-center" style="width: 100%">
                             <MudText>@category.Name</MudText>
                             <MudIconButton Icon="@Icons.Material.Filled.Close"

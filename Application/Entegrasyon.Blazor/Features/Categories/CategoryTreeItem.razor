@@ -39,7 +39,7 @@
         <div class="category-children" style="margin-left: 20px;">
             @foreach (var child in Children)
             {
-                <CategoryTreeItem Category="child"
+                <CategoryTreeItem @key="child.Id" Category="child"
                                   AllCategories="AllCategories"
                                   OnCategorySelected="OnCategorySelected" />
             }

@@ -4,6 +4,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
@@ -18,7 +19,6 @@ public sealed class TrendyolSupplierAddressCache(
     IMemoryCache memoryCache,
     ILogger<TrendyolSupplierAddressCache> logger)
 {
-    private const int TrendyolMarketPlaceId = 1;
     private const string CacheKey = "TrendyolSupplierAddresses";
 
     public async Task<TrendyolSupplierAddress?> GetDefaultAddressAsync()

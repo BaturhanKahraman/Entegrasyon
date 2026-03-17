@@ -51,7 +51,7 @@ else
                 <tbody>
                     @foreach (var template in _templates)
                     {
-                        <tr>
+                        <tr @key="template.Id">
                             <td>@template.Name</td>
                             <td>@(template.WidthMm)×@(template.HeightMm) mm</td>
                             <td>@template.Elements.Count</td>

@@ -16,7 +16,7 @@
         <MudTimeline TimelinePosition="TimelinePosition.Start">
             @foreach (var activity in _activities)
             {
-                <MudTimelineItem Color="@GetColor(activity.Status)" Size="Size.Small"
+                <MudTimelineItem @key="activity.Id" Color="@GetColor(activity.Status)" Size="Size.Small"
                                  TimelineAlign="TimelineAlign.End">
                     <ItemOpposite>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">

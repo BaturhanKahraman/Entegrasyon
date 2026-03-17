@@ -7,7 +7,7 @@ using MudBlazor;
 
 namespace Entegrasyon.Blazor.Features.Settings.LabelDesigner;
 
-public partial class LabelDesignerCanvas : ComponentBase, IDisposable
+public partial class LabelDesignerCanvas : ComponentBase, IAsyncDisposable
 {
     [Inject] private IJSRuntime JS { get; set; } = null!;
     [Inject] private ILabelTemplateService LabelTemplateService { get; set; } = null!;
@@ -245,9 +245,17 @@ public partial class LabelDesignerCanvas : ComponentBase, IDisposable
         }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _ = JS.InvokeVoidAsync("LabelDesigner.destroy");
+        try
+        {
+            await JS.InvokeVoidAsync("LabelDesigner.destroy");
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit zaten kapanmış, JS çağrısı yapılamaz — güvenle yoksay
+        }
+
         _dotNetRef?.Dispose();
     }
 }

@@ -119,7 +119,7 @@ else
                             <MudChipSet T="string">
                                 @foreach (var val in SelectedAttribute.CategoryAttributeValues)
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">@val.Name</MudChip>
+                                    <MudChip @key="val.Id" T="string" Size="Size.Small" Color="Color.Primary">@val.Name</MudChip>
                                 }
                             </MudChipSet>
                         }

@@ -5,6 +5,7 @@ using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -12,8 +13,6 @@ public class CategoryMatchService(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager) : ICategoryMatchService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<CategoryMatchSummaryDto> GetCategoryMatchSummaryAsync()
     {
         using var dbContext = contextFactory.CreateDbContext();

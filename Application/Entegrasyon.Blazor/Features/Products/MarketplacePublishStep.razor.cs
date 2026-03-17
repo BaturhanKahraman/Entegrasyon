@@ -2,13 +2,12 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.Products;
 
 public partial class MarketplacePublishStep
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     [Parameter] public Guid ProductId { get; set; }
     [Parameter] public EventCallback OnPublished { get; set; }
     [Parameter] public EventCallback OnSkipped { get; set; }

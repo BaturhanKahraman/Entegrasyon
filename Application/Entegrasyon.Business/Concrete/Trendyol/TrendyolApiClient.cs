@@ -5,6 +5,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
@@ -18,7 +19,6 @@ public sealed class TrendyolApiClient(
     IHttpClientFactory httpClientFactory,
     ILogger<TrendyolApiClient> logger) : ITrendyolApiClient
 {
-    private const int TrendyolMarketPlaceId = 1;
     private const string DefaultBaseUrl = "https://apigw.trendyol.com";
 
     public async Task<HttpResponseMessage> GetAsync(string relativeUrl)

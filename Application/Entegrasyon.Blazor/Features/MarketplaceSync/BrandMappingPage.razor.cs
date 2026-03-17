@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Brand;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
@@ -22,8 +23,6 @@ public partial class BrandMappingPage : ComponentBase
     public BrandMappingSummaryDto MappingSummary { get; set; } = new();
     public bool IsLoading { get; set; } = true;
     public int SelectedTabIndex { get; set; } = 0;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     protected override async Task OnInitializedAsync()
     {
