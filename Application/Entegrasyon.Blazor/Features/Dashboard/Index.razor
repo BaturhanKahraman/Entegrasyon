@@ -1,211 +1,25 @@
 @page "/"
-@implements IAsyncDisposable
 
 <PageTitle>Ana Sayfa - Dashboard</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Dashboard</MudText>
 <MudText Class="mb-4" Color="Color.Secondary">E-Commerce Entegrasyon Platformuna Hoş Geldiniz</MudText>
 
-@if (loading)
-{
-    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
-}
-
 <MudGrid>
-    <!-- Stats Cards -->
-    <MudItem xs="12" sm="6" md="3">
-        <MudCard Elevation="2" Class="hover-card">
-            <MudCardContent>
-                <div class="d-flex justify-space-between align-center">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Ürün</MudText>
-                        <MudText Typo="Typo.h4">@stats.TotalProducts</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@stats.TotalVariants varyant</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" />
-                </div>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
+    <DashboardStatsCards />
+</MudGrid>
 
-    <MudItem xs="12" sm="6" md="3">
-        <MudCard Elevation="2" Class="hover-card">
-            <MudCardContent>
-                <div class="d-flex justify-space-between align-center">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bugünkü Satışlar</MudText>
-                        <MudText Typo="Typo.h4">@stats.TodaySales</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Success">₺@stats.TodayRevenue.ToString("N2")</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Success" />
-                </div>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-
-    <MudItem xs="12" sm="6" md="3">
-        <MudCard Elevation="2" Class="hover-card">
-            <MudCardContent>
-                <div class="d-flex justify-space-between align-center">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Bekleyen Sipariş</MudText>
-                        <MudText Typo="Typo.h4">@stats.PendingOrders</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" Color="Color.Warning" />
-                </div>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-
-    <MudItem xs="12" sm="6" md="3">
-        <MudCard Elevation="2" Class="hover-card">
-            <MudCardContent>
-                <div class="d-flex justify-space-between align-center">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Düşük Stok</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Error">@stats.LowStockProducts</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Large" Color="Color.Error" />
-                </div>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-
-    <!-- Sales Chart -->
+<MudGrid Class="mt-4">
     <MudItem xs="12" md="8">
-        <MudCard Elevation="2">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Haftalık Satış Grafiği</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudChart ChartType="ChartType.Line"
-                          ChartSeries="@salesChartData"
-                          XAxisLabels="@xAxisLabels"
-                          Width="100%"
-                          Height="300px"
-                          ChartOptions="@chartOptions" />
-            </MudCardContent>
-        </MudCard>
+        <DashboardWeeklyChart />
     </MudItem>
-
-    <!-- Quick Actions -->
     <MudItem xs="12" md="4">
-        <MudCard Elevation="2">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudList T="string">
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Href="/products">
-                        Yeni Ürün Ekle
-                    </MudListItem>
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" Href="/sales">
-                        Satış Yap
-                    </MudListItem>
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.Sync" IconColor="Color.Info" OnClick="@SyncMarketplaces">
-                        Pazaryeri Senkronize
-                    </MudListItem>
-                    <MudListItem T="string" Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Secondary" Href="/reports">
-                        Raporları Görüntüle
-                    </MudListItem>
-                </MudList>
-            </MudCardContent>
-        </MudCard>
+        <DashboardQuickActions OnSyncCompleted="@OnSyncCompleted" />
     </MudItem>
-
-    <!-- Marketplace Sync Status -->
     <MudItem xs="12" md="6">
-        <MudCard Elevation="2">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Pazaryeri Durumu</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                @if (marketplaceStatuses.Count == 0)
-                {
-                    <MudText Color="Color.Secondary" Typo="Typo.body2">Henüz pazaryeri tanımlanmamış.</MudText>
-                }
-                else
-                {
-                    <MudList T="string" Dense="true">
-                        @foreach (var marketplace in marketplaceStatuses)
-                        {
-                            <MudListItem T="string">
-                                <div class="d-flex justify-space-between align-center" style="width: 100%">
-                                    <div class="d-flex align-center gap-2">
-                                        <MudAvatar Color="@marketplace.Color" Size="Size.Small">
-                                            <MudIcon Icon="@marketplace.Icon" Size="Size.Small" />
-                                        </MudAvatar>
-                                        <MudText>@marketplace.Name</MudText>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        @if (marketplace.SyncedCount > 0)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">
-                                                @marketplace.SyncedCount Senkron
-                                            </MudChip>
-                                        }
-                                        @if (marketplace.PendingCount > 0)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">
-                                                @marketplace.PendingCount Bekliyor
-                                            </MudChip>
-                                        }
-                                        @if (marketplace.FailedCount > 0)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Error">
-                                                @marketplace.FailedCount Hatalı
-                                            </MudChip>
-                                        }
-                                        @if (marketplace.SyncedCount == 0 && marketplace.PendingCount == 0 && marketplace.FailedCount == 0)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Default">
-                                                Ürün Yok
-                                            </MudChip>
-                                        }
-                                    </div>
-                                </div>
-                            </MudListItem>
-                        }
-                    </MudList>
-                }
-            </MudCardContent>
-        </MudCard>
+        <DashboardMarketplaceStatus @ref="_marketplaceStatus" />
     </MudItem>
-
-    <!-- Recent Activity -->
     <MudItem xs="12" md="6">
-        <MudCard Elevation="2">
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">Son Aktiviteler</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                @if (recentActivities.Count == 0)
-                {
-                    <MudText Color="Color.Secondary" Typo="Typo.body2">Henüz aktivite bulunmuyor.</MudText>
-                }
-                else
-                {
-                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
-                        @foreach (var activity in recentActivities)
-                        {
-                            <MudTimelineItem Color="@activity.Color" Size="Size.Small" Icon="@activity.Icon">
-                                <ItemContent>
-                                    <MudText Typo="Typo.body2">@activity.Message</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@activity.Time</MudText>
-                                </ItemContent>
-                            </MudTimelineItem>
-                        }
-                    </MudTimeline>
-                }
-            </MudCardContent>
-        </MudCard>
+        <DashboardRecentActivity />
     </MudItem>
 </MudGrid>

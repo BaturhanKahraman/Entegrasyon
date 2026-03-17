@@ -1,0 +1,23 @@
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Hızlı İşlemler</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Add" IconColor="Color.Primary" Href="/products">
+                Yeni Ürün Ekle
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.PointOfSale" IconColor="Color.Success" Href="/sales">
+                Satış Yap
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Sync" IconColor="Color.Info" OnClick="@SyncMarketplaces">
+                Pazaryeri Senkronize
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Secondary" Href="/reports">
+                Raporları Görüntüle
+            </MudListItem>
+        </MudList>
+    </MudCardContent>
+</MudCard>

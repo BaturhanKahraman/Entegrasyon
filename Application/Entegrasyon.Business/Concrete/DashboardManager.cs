@@ -3,36 +3,36 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Dashboard;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class DashboardManager(IDbContextFactory<IntegrationDbContext> dbContextFactory) : IDashboardManager
+public class DashboardManager(
+    IDbContextFactory<IntegrationDbContext> dbContextFactory,
+    IMemoryCache cache) : IDashboardManager
 {
-    private const string DashboardQuery = """
-        WITH stats AS (
-            SELECT
-                (SELECT COUNT(*)::int FROM "MainProducts" WHERE NOT "IsDeleted") AS total_products,
-                (SELECT COUNT(*)::int FROM "ProductVariants" WHERE NOT "IsDeleted") AS total_variants,
-                (SELECT COUNT(*)::int FROM "Sales" WHERE NOT "IsDeleted"
-                 AND "CreatedAt" >= CURRENT_DATE::timestamptz) AS today_sales,
-                (SELECT COALESCE(SUM(si."UnitPrice" * si."Quantity"), 0)
-                 FROM "SaleItems" si
-                 INNER JOIN "Sales" s ON s."Id" = si."SaleId"
-                 WHERE NOT si."IsDeleted" AND NOT s."IsDeleted"
-                 AND s."CreatedAt" >= CURRENT_DATE::timestamptz) AS today_revenue,
-                (SELECT COUNT(*)::int FROM "Orders"
-                 WHERE NOT "IsDeleted"
-                 AND "MarketplaceOrderStatus" IN ('Created','Picking')) AS pending_orders,
-                (SELECT COUNT(*)::int FROM (
-                    SELECT pv."ProductId"
-                    FROM "ProductVariants" pv
-                    LEFT JOIN "BranchOfficeStocks" bos ON bos."ProductVariantId" = pv."Id"
-                    WHERE NOT pv."IsDeleted"
-                    GROUP BY pv."ProductId"
-                    HAVING COALESCE(SUM(bos."CurrentStock"), 0) BETWEEN 0 AND @p0
-                ) sub) AS low_stock_products
-        ),
-        weekly AS (
+    private const string StatsQuery = """
+        SELECT json_build_object(
+            'total_products', (SELECT COUNT(*)::int FROM "MainProducts" WHERE NOT "IsDeleted"),
+            'total_variants', (SELECT COUNT(*)::int FROM "ProductVariants" WHERE NOT "IsDeleted"),
+            'today_sales', (SELECT COUNT(*)::int FROM "Sales" WHERE NOT "IsDeleted"
+                AND "CreatedAt" >= CURRENT_DATE::timestamptz),
+            'today_revenue', (SELECT COALESCE(SUM(si."UnitPrice" * si."Quantity"), 0)
+                FROM "SaleItems" si
+                INNER JOIN "Sales" s ON s."Id" = si."SaleId"
+                WHERE NOT si."IsDeleted" AND NOT s."IsDeleted"
+                AND s."CreatedAt" >= CURRENT_DATE::timestamptz),
+            'pending_orders', (SELECT COUNT(*)::int FROM "Orders"
+                WHERE NOT "IsDeleted"
+                AND "MarketplaceOrderStatus" IN ('Created','Picking')),
+            'low_stock_products', (SELECT COUNT(*)::int FROM mv_product_stock_summary
+                WHERE "TotalStock" BETWEEN 0 AND @p0)
+        )::text AS "Value"
+        """;
+
+    private const string WeeklySalesQuery = """
+        SELECT json_agg(row_to_json(w))::text AS "Value"
+        FROM (
             SELECT
                 d::date AS sale_date,
                 COALESCE(SUM(si."UnitPrice" * si."Quantity"), 0) AS revenue
@@ -47,8 +47,12 @@ public class DashboardManager(IDbContextFactory<IntegrationDbContext> dbContextF
                 AND NOT si."IsDeleted"
             GROUP BY d::date
             ORDER BY d::date
-        ),
-        marketplace_sync AS (
+        ) w
+        """;
+
+    private const string MarketplaceQuery = """
+        SELECT COALESCE(json_agg(row_to_json(m)), '[]')::text AS "Value"
+        FROM (
             SELECT
                 mp."Id" AS marketplace_id,
                 mp."Name" AS name,
@@ -61,66 +65,117 @@ public class DashboardManager(IDbContextFactory<IntegrationDbContext> dbContextF
                 AND NOT pm."IsDeleted"
             WHERE NOT mp."IsDeleted"
             GROUP BY mp."Id", mp."Name"
-        ),
-        recent_logs AS (
-            SELECT "Id" AS id, "Content" AS content, "LogType" AS log_type, "LogAction" AS log_action, "CreatedAt" AS created_at
+        ) m
+        """;
+
+    private const string RecentActivitiesQuery = """
+        SELECT COALESCE(json_agg(row_to_json(r)), '[]')::text AS "Value"
+        FROM (
+            SELECT "Id" AS id, "Content" AS content, "LogType" AS log_type,
+                   "LogAction" AS log_action, "CreatedAt" AS created_at
             FROM "Logs"
             ORDER BY "CreatedAt" DESC
             LIMIT 10
-        )
-        SELECT json_build_object(
-            'stats', (SELECT row_to_json(stats) FROM stats),
-            'weekly', (SELECT COALESCE(json_agg(row_to_json(weekly)), '[]') FROM weekly),
-            'marketplaces', (SELECT COALESCE(json_agg(row_to_json(marketplace_sync)), '[]') FROM marketplace_sync),
-            'recentLogs', (SELECT COALESCE(json_agg(row_to_json(recent_logs)), '[]') FROM recent_logs)
-        )::text AS "Value"
+        ) r
         """;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-    };
-
+    #pragma warning disable CS0618 // Obsolete
     public async Task<DashboardDto> GetDashboardAsync(int lowStockThreshold = 5)
     {
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        var stats = await GetStatsAsync(lowStockThreshold);
+        var weekly = await GetWeeklySalesAsync();
+        var marketplaces = await GetMarketplaceStatusesAsync();
+        var activities = await GetRecentActivitiesAsync();
+        return new DashboardDto(stats, weekly, marketplaces, activities);
+    }
+    #pragma warning restore CS0618
 
-        var jsonResult = await dbContext.Database
-            .SqlQueryRaw<string>(DashboardQuery, lowStockThreshold)
+    public async Task<DashboardStatsDto> GetStatsAsync(int lowStockThreshold = 5)
+    {
+        var key = $"dashboard:stats:{lowStockThreshold}";
+        if (cache.TryGetValue(key, out DashboardStatsDto? cached) && cached is not null)
+            return cached;
+
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var json = await ctx.Database
+            .SqlQueryRaw<string>(StatsQuery, lowStockThreshold)
             .FirstOrDefaultAsync();
 
-        if (string.IsNullOrEmpty(jsonResult))
-            return EmptyDashboard();
+        var result = string.IsNullOrEmpty(json)
+            ? new DashboardStatsDto(0, 0, 0, 0m, 0, 0)
+            : ParseStats(json);
 
-        return ParseDashboardJson(jsonResult);
+        cache.Set(key, result, TimeSpan.FromMinutes(3));
+        return result;
     }
 
-    private static DashboardDto ParseDashboardJson(string json)
+    public async Task<List<DailySalesDto>> GetWeeklySalesAsync()
+    {
+        const string key = "dashboard:weekly";
+        if (cache.TryGetValue(key, out List<DailySalesDto>? cached) && cached is not null)
+            return cached;
+
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var json = await ctx.Database
+            .SqlQueryRaw<string>(WeeklySalesQuery)
+            .FirstOrDefaultAsync();
+
+        var result = string.IsNullOrEmpty(json) ? [] : ParseWeeklySales(json);
+        cache.Set(key, result, TimeSpan.FromMinutes(5));
+        return result;
+    }
+
+    public async Task<List<MarketplaceStatusDto>> GetMarketplaceStatusesAsync()
+    {
+        const string key = "dashboard:marketplace";
+        if (cache.TryGetValue(key, out List<MarketplaceStatusDto>? cached) && cached is not null)
+            return cached;
+
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var json = await ctx.Database
+            .SqlQueryRaw<string>(MarketplaceQuery)
+            .FirstOrDefaultAsync();
+
+        var result = string.IsNullOrEmpty(json) ? [] : ParseMarketplaces(json);
+        cache.Set(key, result, TimeSpan.FromMinutes(5));
+        return result;
+    }
+
+    public async Task<List<RecentActivityDto>> GetRecentActivitiesAsync()
+    {
+        const string key = "dashboard:activities";
+        if (cache.TryGetValue(key, out List<RecentActivityDto>? cached) && cached is not null)
+            return cached;
+
+        await using var ctx = await dbContextFactory.CreateDbContextAsync();
+        var json = await ctx.Database
+            .SqlQueryRaw<string>(RecentActivitiesQuery)
+            .FirstOrDefaultAsync();
+
+        var result = string.IsNullOrEmpty(json) ? [] : ParseRecentActivities(json);
+        cache.Set(key, result, TimeSpan.FromMinutes(1));
+        return result;
+    }
+
+    private static DashboardStatsDto ParseStats(string json)
     {
         using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-
-        var stats = ParseStats(root.GetProperty("stats"));
-        var weekly = ParseWeeklySales(root.GetProperty("weekly"));
-        var marketplaces = ParseMarketplaces(root.GetProperty("marketplaces"));
-        var recentLogs = ParseRecentActivities(root.GetProperty("recentLogs"));
-
-        return new DashboardDto(stats, weekly, marketplaces, recentLogs);
+        var el = doc.RootElement;
+        return new DashboardStatsDto(
+            TotalProducts: el.GetProperty("total_products").GetInt32(),
+            TotalVariants: el.GetProperty("total_variants").GetInt32(),
+            TodaySales: el.GetProperty("today_sales").GetInt32(),
+            TodayRevenue: el.GetProperty("today_revenue").GetDecimal(),
+            PendingOrders: el.GetProperty("pending_orders").GetInt32(),
+            LowStockProducts: el.GetProperty("low_stock_products").GetInt32()
+        );
     }
 
-    private static DashboardStatsDto ParseStats(JsonElement el) => new(
-        TotalProducts: el.GetProperty("total_products").GetInt32(),
-        TotalVariants: el.GetProperty("total_variants").GetInt32(),
-        TodaySales: el.GetProperty("today_sales").GetInt32(),
-        TodayRevenue: el.GetProperty("today_revenue").GetDecimal(),
-        PendingOrders: el.GetProperty("pending_orders").GetInt32(),
-        LowStockProducts: el.GetProperty("low_stock_products").GetInt32()
-    );
-
-    private static List<DailySalesDto> ParseWeeklySales(JsonElement el)
+    private static List<DailySalesDto> ParseWeeklySales(string json)
     {
+        using var doc = JsonDocument.Parse(json);
         var list = new List<DailySalesDto>();
-        foreach (var item in el.EnumerateArray())
+        foreach (var item in doc.RootElement.EnumerateArray())
         {
             var dateStr = item.GetProperty("sale_date").GetString()!;
             var date = DateOnly.Parse(dateStr);
@@ -130,10 +185,11 @@ public class DashboardManager(IDbContextFactory<IntegrationDbContext> dbContextF
         return list;
     }
 
-    private static List<MarketplaceStatusDto> ParseMarketplaces(JsonElement el)
+    private static List<MarketplaceStatusDto> ParseMarketplaces(string json)
     {
+        using var doc = JsonDocument.Parse(json);
         var list = new List<MarketplaceStatusDto>();
-        foreach (var item in el.EnumerateArray())
+        foreach (var item in doc.RootElement.EnumerateArray())
         {
             list.Add(new MarketplaceStatusDto(
                 MarketPlaceId: item.GetProperty("marketplace_id").GetInt32(),
@@ -147,10 +203,11 @@ public class DashboardManager(IDbContextFactory<IntegrationDbContext> dbContextF
         return list;
     }
 
-    private static List<RecentActivityDto> ParseRecentActivities(JsonElement el)
+    private static List<RecentActivityDto> ParseRecentActivities(string json)
     {
+        using var doc = JsonDocument.Parse(json);
         var list = new List<RecentActivityDto>();
-        foreach (var item in el.EnumerateArray())
+        foreach (var item in doc.RootElement.EnumerateArray())
         {
             list.Add(new RecentActivityDto(
                 Id: item.GetProperty("id").GetInt64(),
@@ -162,8 +219,4 @@ public class DashboardManager(IDbContextFactory<IntegrationDbContext> dbContextF
         }
         return list;
     }
-
-    private static DashboardDto EmptyDashboard() => new(
-        new DashboardStatsDto(0, 0, 0, 0m, 0, 0),
-        [], [], []);
 }
