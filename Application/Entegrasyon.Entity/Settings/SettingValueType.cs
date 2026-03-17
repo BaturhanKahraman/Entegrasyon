@@ -6,5 +6,6 @@ public enum SettingValueType
     Integer = 1,
     Boolean = 2,
     Decimal = 3,
-    Json = 4
+    Json = 4,
+    Password = 5
 }

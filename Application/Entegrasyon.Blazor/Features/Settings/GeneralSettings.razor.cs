@@ -11,8 +11,11 @@ public partial class GeneralSettings : ComponentBase
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     private Dictionary<string, List<ApplicationSettingDto>> _settingsByGroup = new();
+    private Dictionary<string, bool> _showPasswords = new();
     private bool _loading = true;
     private bool _saving;
+    private bool _testingSmtp;
+    private bool _sendingTestEmail;
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,6 +28,7 @@ public partial class GeneralSettings : ComponentBase
         var settings = await SettingManager.GetAllSettingsAsync();
         _settingsByGroup = settings
             .GroupBy(s => s.Group ?? "Diğer")
+            .OrderBy(g => g.Key == "E-posta Ayarları" ? 1 : 0)
             .ToDictionary(g => g.Key, g => g.ToList());
         _loading = false;
     }
@@ -54,6 +58,57 @@ public partial class GeneralSettings : ComponentBase
         finally
         {
             _saving = false;
+        }
+    }
+
+    private void TogglePasswordVisibility(string key)
+    {
+        if (_showPasswords.ContainsKey(key))
+            _showPasswords[key] = !_showPasswords[key];
+        else
+            _showPasswords[key] = true;
+    }
+
+    private async Task TestSmtpConnectionAsync()
+    {
+        _testingSmtp = true;
+        try
+        {
+            await SaveSettingsAsync();
+
+            var result = await SettingManager.TestSmtpConnectionAsync();
+            if (result)
+                Snackbar.Add("SMTP bağlantısı başarılı!", Severity.Success);
+            else
+                Snackbar.Add("SMTP bağlantısı başarısız.", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"SMTP bağlantı hatası: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _testingSmtp = false;
+        }
+    }
+
+    private async Task SendTestEmailAsync()
+    {
+        _sendingTestEmail = true;
+        try
+        {
+            await SaveSettingsAsync();
+
+            await SettingManager.SendTestEmailAsync();
+            Snackbar.Add("Test e-postası gönderildi! Gelen kutunuzu kontrol edin.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Test e-postası gönderilemedi: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _sendingTestEmail = false;
         }
     }
 }

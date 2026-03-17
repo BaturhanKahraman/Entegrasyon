@@ -55,4 +55,76 @@ public sealed class ApplicationSettingManager(
         await dbContext.SaveChangesAsync();
         return true;
     }
+
+    public async Task<bool> TestSmtpConnectionAsync()
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var settings = await dbContext.ApplicationSettings
+            .Where(s => s.Group == "E-posta Ayarları")
+            .ToDictionaryAsync(s => s.Key, s => s.Value);
+
+        var host = settings.GetValueOrDefault("SmtpHost", "");
+        var port = int.TryParse(settings.GetValueOrDefault("SmtpPort", "587"), out var p) ? p : 587;
+        var enableSsl = bool.TryParse(settings.GetValueOrDefault("SmtpEnableSsl", "true"), out var ssl) && ssl;
+
+        if (string.IsNullOrWhiteSpace(host))
+            throw new InvalidOperationException("SMTP sunucu adresi yapılandırılmamış.");
+
+        using var client = new System.Net.Mail.SmtpClient(host, port)
+        {
+            EnableSsl = enableSsl,
+            Timeout = 10000
+        };
+
+        var username = settings.GetValueOrDefault("SmtpUsername", "");
+        var password = settings.GetValueOrDefault("SmtpPassword", "");
+        if (!string.IsNullOrWhiteSpace(username))
+            client.Credentials = new System.Net.NetworkCredential(username, password);
+
+        using var tcpClient = new System.Net.Sockets.TcpClient();
+        await tcpClient.ConnectAsync(host, port);
+        return tcpClient.Connected;
+    }
+
+    public async Task SendTestEmailAsync()
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var settings = await dbContext.ApplicationSettings
+            .Where(s => s.Group == "E-posta Ayarları")
+            .ToDictionaryAsync(s => s.Key, s => s.Value);
+
+        var host = settings.GetValueOrDefault("SmtpHost", "");
+        if (string.IsNullOrWhiteSpace(host))
+            throw new InvalidOperationException("SMTP sunucu adresi yapılandırılmamış.");
+
+        var port = int.TryParse(settings.GetValueOrDefault("SmtpPort", "587"), out var p) ? p : 587;
+        var enableSsl = bool.TryParse(settings.GetValueOrDefault("SmtpEnableSsl", "true"), out var ssl) && ssl;
+        var fromAddress = settings.GetValueOrDefault("SmtpFromAddress", "");
+        var fromName = settings.GetValueOrDefault("SmtpFromDisplayName", "Entegrasyon");
+        var username = settings.GetValueOrDefault("SmtpUsername", "");
+        var password = settings.GetValueOrDefault("SmtpPassword", "");
+
+        if (string.IsNullOrWhiteSpace(fromAddress))
+            throw new InvalidOperationException("Gönderen e-posta adresi yapılandırılmamış.");
+
+        using var client = new System.Net.Mail.SmtpClient(host, port)
+        {
+            EnableSsl = enableSsl,
+            Timeout = 30000
+        };
+
+        if (!string.IsNullOrWhiteSpace(username))
+            client.Credentials = new System.Net.NetworkCredential(username, password);
+
+        var mailMessage = new System.Net.Mail.MailMessage
+        {
+            From = new System.Net.Mail.MailAddress(fromAddress, fromName),
+            Subject = "Entegrasyon - SMTP Test E-postası",
+            Body = $"Bu bir test e-postasıdır. SMTP ayarlarınız doğru yapılandırılmış.\n\nGönderim zamanı: {DateTimeOffset.Now:dd.MM.yyyy HH:mm:ss}",
+            IsBodyHtml = false
+        };
+        mailMessage.To.Add(fromAddress);
+
+        await client.SendMailAsync(mailMessage);
+    }
 }
