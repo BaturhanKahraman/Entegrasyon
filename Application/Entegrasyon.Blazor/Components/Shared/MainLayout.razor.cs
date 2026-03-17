@@ -1,6 +1,7 @@
 using Entegrasyon.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace Entegrasyon.Blazor.Components.Shared;
@@ -9,28 +10,37 @@ public partial class MainLayout : IDisposable
 {
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
-    private MudThemeProvider _mudThemeProvider;
+    [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
+    private MudThemeProvider _mudThemeProvider = null!;
     private LoggingErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
-    private bool _isDarkMode = false;
+    private bool _isDarkMode;
     private MudTheme _theme = new();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+            var stored = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "darkMode");
+            if (stored is not null)
+            {
+                _isDarkMode = stored == "true";
+            }
+            else
+            {
+                _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+            }
             StateHasChanged();
         }
-        await _mudThemeProvider.WatchSystemDarkModeAsync(OnSystemDarkModeChanged);
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private Task OnSystemDarkModeChanged(bool newValue)
+    private async Task ToggleThemeAsync()
     {
-        _isDarkMode = newValue;
-        StateHasChanged();
-        return Task.CompletedTask;
+        _isDarkMode = !_isDarkMode;
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", "darkMode", _isDarkMode.ToString().ToLower());
     }
+
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
@@ -66,7 +76,6 @@ public partial class MainLayout : IDisposable
         => NavigationManager.LocationChanged -= OnLocationChanged;
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
-    private void ToggleTheme() => _isDarkMode = !_isDarkMode;
 
     private async Task HandleLogout()
     {

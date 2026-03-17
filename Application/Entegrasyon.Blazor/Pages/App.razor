@@ -1,11 +1,15 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Entegrasyon.Blazor.Components.Shared
+@using MudBlazor
 
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <Authorizing>
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                </Authorizing>
                 <NotAuthorized>
                     @if (context.User.Identity?.IsAuthenticated != true)
                     {
