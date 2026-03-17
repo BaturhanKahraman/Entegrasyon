@@ -29,6 +29,9 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
         // Materialized View: mv_category_summary — kategori listeleme agregasyonu
         modelBuilder.Entity<CategorySummaryView>().ToView("mv_category_summary");
 
+        // Materialized View: mv_product_stock_summary — dashboard düşük stok agregasyonu
+        modelBuilder.Entity<ProductStockSummaryView>().ToView("mv_product_stock_summary");
+
         modelBuilder.Seed();
 
         base.OnModelCreating(modelBuilder);
@@ -100,6 +103,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<ProductVariantMarketplaceOverride> ProductVariantMarketplaceOverrides { get; set; }
     public virtual DbSet<LabelTemplate> LabelTemplates { get; set; }
     public virtual DbSet<CategorySummaryView> CategorySummaries { get; set; }
+    public virtual DbSet<ProductStockSummaryView> ProductStockSummaries { get; set; }
     public virtual DbSet<CategoryMarketplace> CategoryMarketplaces { get; set; }
     public virtual DbSet<MarketPlaceWarehouse> MarketPlaceWarehouses { get; set; }
     public virtual DbSet<ApplicationUser> Users { get; set; }

@@ -150,6 +150,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolStockPriceSyncService>();
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
+            services.AddHostedService<DashboardRefreshService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
