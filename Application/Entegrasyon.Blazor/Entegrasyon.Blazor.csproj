@@ -20,6 +20,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Watch Remove="Logs\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="wwwroot\styles\**\*">
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</None>

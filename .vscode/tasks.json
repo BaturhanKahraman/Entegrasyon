@@ -13,16 +13,42 @@
             ],
             "problemMatcher": "$msCompile",
             "presentation": {
-                "reveal": "silent",        // Hata yoksa terminal fırlamasın
+                "reveal": "silent",
                 "focus": false,
                 "panel": "shared",
-                "showReuseMessage": false, // <-- O sinir bozucu mesajı kapatır
+                "showReuseMessage": false,
                 "clear": true
             },
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "watch-blazor",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj"
+            ],
+            "options": {
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development",
+                    "ASPNETCORE_URLS": "http://localhost:7070",
+                    "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true",
+                    "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471"
+                }
+            },
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false
+            },
+            "isBackground": true
         }
     ]
 }

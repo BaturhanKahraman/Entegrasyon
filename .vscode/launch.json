@@ -2,34 +2,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Blazor (Debug)",
-            "type": "coreclr",
+            "name": "Blazor (Debug)",
+            "type": "dotnet",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Application/Entegrasyon.Blazor/bin/Debug/net8.0/Entegrasyon.Blazor.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/Application/Entegrasyon.Blazor",
-            "stopAtEntry": false,
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-            },
+            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:7070",
-                "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471",
-                //"ConnectionStrings__Main": "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471",
-                //"ConnectionStrings__Redis": "localhost:6379"
-            },
-            "sourceFileMap": {
-                "/Views": "${workspaceFolder}/Views"
+                "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471"
             }
         },
         {
-            "name": "Attach to Blazor",
-            // "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
+            "name": "Blazor (Hot Reload)",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
+            "hotReloadEnabled": true,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:7070",
+                "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true",
+                "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471"
+            }
         }
     ]
 }
