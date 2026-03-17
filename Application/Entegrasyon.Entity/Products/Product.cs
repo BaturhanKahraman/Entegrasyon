@@ -12,10 +12,10 @@ public sealed class Product : BaseEntity
     // 
     public Guid Id { get; set; }
     public string Title { get; set; } = null!;
-    public string Description { get; set; } = null!;
-    public string StockCode { get; set; } = null!;
-    public string Season { get; set; } = null!;
-    public string Year { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? StockCode { get; set; }
+    public string? Season { get; set; }
+    public string? Year { get; set; }
     public int? BrandId { get; set; }
     public Brand? Brand { get; set; }
     public int CategoryId { get; set; }

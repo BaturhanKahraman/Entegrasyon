@@ -13,6 +13,6 @@ public sealed class SaleItem:BaseEntity
     public double DiscountPercent { get; set; }
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
-    public string UsedDiscountVoucherCode { get; set; } = null!;
+    public string? UsedDiscountVoucherCode { get; set; }
     
 }
