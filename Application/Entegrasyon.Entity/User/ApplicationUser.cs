@@ -26,12 +26,12 @@ public class ApplicationUser : BaseEntity
 
     public string? MobileJwtToken { get; set; }
     public DateTimeOffset MobileJwtTokenExpiresAt { get; set; }
-    public ICollection<Login> Logins { get; set; } = [];
-    public ICollection<UsersRoles> UsersRoles { get; set; } = [];
-    public ICollection<Role> Roles { get; set; } = [];
-    public ICollection<UsersClaims> MyProperty { get; set; } = [];
-    public ICollection<NotificationsUsers> NotificationsUsers { get; set; } = [];
-    public ICollection<Notification> Notifications { get; set; } = [];
+    public ICollection<Login> Logins { get; set; } = new List<Login>();
+    public ICollection<UsersRoles> UsersRoles { get; set; } = new List<UsersRoles>();
+    public ICollection<Role> Roles { get; set; } = new List<Role>();
+    public ICollection<UsersClaims> MyProperty { get; set; } = new List<UsersClaims>();
+    public ICollection<NotificationsUsers> NotificationsUsers { get; set; } = new List<NotificationsUsers>();
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     public int? DefaultBranchOfficeId { get; set; }
     public BranchOffice? DefaultBranchOffice { get; set; }
 
