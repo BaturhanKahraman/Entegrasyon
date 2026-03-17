@@ -25,7 +25,8 @@ public class ApplicationSettingEntityConfiguration : IEntityTypeConfiguration<Ap
             new ApplicationSetting { Id = 14, Key = "SmtpFromDisplayName", Value = "", Description = "Gönderen görünen adı", Group = "E-posta Ayarları", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
             new ApplicationSetting { Id = 15, Key = "SmtpEnableSsl", Value = "true", Description = "SSL/TLS bağlantısı kullan", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue },
             new ApplicationSetting { Id = 16, Key = "SmtpInvoiceEmailEnabled", Value = "false", Description = "Fatura e-postaları gönderilsin mi?", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue },
-            new ApplicationSetting { Id = 17, Key = "SmtpNotificationEmailEnabled", Value = "false", Description = "Bildirim e-postaları gönderilsin mi?", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue }
+            new ApplicationSetting { Id = 17, Key = "SmtpNotificationEmailEnabled", Value = "false", Description = "Bildirim e-postaları gönderilsin mi?", Group = "E-posta Ayarları", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 18, Key = "ThemeMode", Value = "system", Description = "Tema modu (system, light, dark)", Group = "Görünüm", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue }
         );
     }
 }
