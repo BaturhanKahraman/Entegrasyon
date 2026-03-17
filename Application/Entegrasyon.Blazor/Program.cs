@@ -18,7 +18,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 // Add MudBlazor services
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomEnd;
+    config.SnackbarConfiguration.VisibleStateDuration = 5000;
+    config.SnackbarConfiguration.ShowTransitionDuration = 300;
+    config.SnackbarConfiguration.HideTransitionDuration = 300;
+});
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);

@@ -33,9 +33,12 @@ public sealed class NotificationManager(
 
         // 3. Execution
 
-        using var dbContext = contextFactory.CreateDbContext();
-        var trackedUsers = await dbContext.Users
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Kullanıcıların varlığını doğrula (track etmeden)
+        var existingUserIds = await dbContext.Users
             .Where(u => userIdList.Contains(u.Id))
+            .Select(u => u.Id)
             .ToListAsync();
 
         var notification = new Notification
@@ -45,30 +48,31 @@ public sealed class NotificationManager(
             Severity = severity,
             Category = category,
             ActionUrl = actionUrl,
-            Users = trackedUsers
+            NotificationsUsers = existingUserIds.Select(uid => new NotificationsUsers
+            {
+                ApplicationUserId = uid
+            }).ToList()
         };
 
         dbContext.Notifications.Add(notification);
         await dbContext.SaveChangesAsync();
 
         // Tüm sender'ları tetikle (email, signalr — implemente edildiğinde)
-        var trackedUserIds = trackedUsers.Select(u => u.Id).ToList();
-        if (trackedUsers.Count > 0)
+        if (existingUserIds.Count > 0)
         {
             await Task.WhenAll(notificationSenders.Select(s =>
-                s.SendNotification(notification, trackedUserIds)));
+                s.SendNotification(notification, existingUserIds)));
         }
 
         // EventChannel'a yaz → NotificationEventPublisher → INotificationDeliveryService
-        // Sadece DB'de var olan kullanıcılara event gönder
         var evt = new NotificationEvent(
-            notification.Id, header, content, trackedUserIds, severity, category, actionUrl);
+            notification.Id, header, content, existingUserIds, severity, category, actionUrl);
         await eventChannel.Writer.WriteAsync(evt);
     }
 
     public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false, int? take = null)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.Notifications
             .Where(n => n.Users.Any(u => u.Id == userId));
 
@@ -85,7 +89,7 @@ public sealed class NotificationManager(
 
     public async Task MarkAsRead(long notificationId, Guid userId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var notification = await dbContext.Notifications
             .Include(n => n.Users)
             .FirstOrDefaultAsync(n => n.Id == notificationId && n.Users.Any(u => u.Id == userId));
@@ -99,7 +103,7 @@ public sealed class NotificationManager(
 
     public async Task MarkAllAsRead(Guid userId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await dbContext.Notifications
             .Where(n => n.Users.Any(u => u.Id == userId) && !n.IsRead)
             .ExecuteUpdateAsync(s => s
