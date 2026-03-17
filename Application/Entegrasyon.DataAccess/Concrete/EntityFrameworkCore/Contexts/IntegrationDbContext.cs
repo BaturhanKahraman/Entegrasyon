@@ -104,6 +104,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<ApplicationUser> Users { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<Login> Logins { get; set; }
+    public virtual DbSet<NotificationSetting> NotificationSettings { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }
