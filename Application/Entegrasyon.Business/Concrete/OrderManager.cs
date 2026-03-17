@@ -240,6 +240,24 @@ public sealed class OrderManager(
         return new SuccessResult("Sipariş durumu güncellendi.");
     }
 
+    public async Task<IResult> UpdateOrderByShipmentPackageAsync(long shipmentPackageId, string? status, string? trackingNumber)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var order = await dbContext.Orders
+            .FirstOrDefaultAsync(o => o.ShipmentPackageId == shipmentPackageId);
+
+        if (order is null)
+            return new ErrorResult("Sipariş bulunamadı.");
+
+        if (!string.IsNullOrEmpty(status))
+            order.MarketplaceOrderStatus = status;
+        if (!string.IsNullOrEmpty(trackingNumber))
+            order.CargoTrackingNumber = trackingNumber;
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Sipariş güncellendi.");
+    }
+
     private async Task DecreaseStockForMarketplaceOrder(
         List<int> warehouseIds, Guid productVariantId, int quantity, string referenceId)
     {

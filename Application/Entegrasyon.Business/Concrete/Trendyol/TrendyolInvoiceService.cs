@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Trendyol fatura link/dosya gönderme servisi.
-/// Fatura gönderilmeden kargo etiketi bastırılamaz.
+/// Trendyol fatura link/dosya gonderme servisi.
+/// Fatura gonderilmeden kargo etiketi bastirilmaz.
 /// </summary>
 public sealed class TrendyolInvoiceService(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
     ILogger<TrendyolInvoiceService> logger) : ITrendyolInvoiceService
 {
@@ -23,7 +23,7 @@ public sealed class TrendyolInvoiceService(
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/order/sellers/{sellerId}/seller-invoice-links";
         var body = new
@@ -41,24 +41,24 @@ public sealed class TrendyolInvoiceService(
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol invoice link failed. PackageId={PackageId}, Body={Body}",
                 shipmentPackageId, errorBody);
-            return new ErrorResult($"Fatura gönderme hatası: {response.StatusCode}");
+            return new ErrorResult($"Fatura gonderme hatasi: {response.StatusCode}");
         }
 
         logger.LogInformation("Invoice link sent for package {PackageId}", shipmentPackageId);
-        return new SuccessResult("Fatura linki gönderildi.");
+        return new SuccessResult("Fatura linki gonderildi.");
     }
 
     public async Task<IResult> DeleteInvoiceLinkAsync(long serviceSourceId, long customerId)
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/order/sellers/{sellerId}/seller-invoice-links/{serviceSourceId}/customers/{customerId}";
         var response = await apiClient.DeleteAsync(url);
 
         if (!response.IsSuccessStatusCode)
-            return new ErrorResult($"Fatura silme hatası: {response.StatusCode}");
+            return new ErrorResult($"Fatura silme hatasi: {response.StatusCode}");
 
         return new SuccessResult("Fatura linki silindi.");
     }
@@ -67,9 +67,8 @@ public sealed class TrendyolInvoiceService(
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
-        // Bu endpoint multipart/form-data gerektirir — doğrudan HttpClient kullanır
         var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}/invoice";
 
         using var formContent = new MultipartFormDataContent();
@@ -84,14 +83,15 @@ public sealed class TrendyolInvoiceService(
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol invoice upload failed. PackageId={PackageId}, Body={Body}",
                 shipmentPackageId, errorBody);
-            return new ErrorResult($"Fatura yükleme hatası: {response.StatusCode}");
+            return new ErrorResult($"Fatura yukleme hatasi: {response.StatusCode}");
         }
 
-        return new SuccessResult("Fatura dosyası yüklendi.");
+        return new SuccessResult("Fatura dosyasi yuklendi.");
     }
 
     private async Task<string?> GetSellerIdAsync()
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
         return marketplace?.SellerId;

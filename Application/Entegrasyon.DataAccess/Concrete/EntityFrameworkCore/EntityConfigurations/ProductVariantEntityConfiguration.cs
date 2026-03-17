@@ -10,7 +10,9 @@ public class ProductVariantEntityConfiguration : IEntityTypeConfiguration<Produc
 {
     public void Configure(EntityTypeBuilder<ProductVariant> builder)
     {
-        builder.UseXminAsConcurrencyToken();
+        builder.Property<uint>("xmin")
+            .HasColumnType("xid")
+            .IsRowVersion();
         builder.HasQueryFilter(x => !x.IsDeleted);
         builder.HasIndex(x => x.Barcode).IsUnique();
         //builder.OwnsMany(x => x.ProductVariantAttributes, navBuilder =>

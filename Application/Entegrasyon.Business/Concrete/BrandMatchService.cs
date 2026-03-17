@@ -14,30 +14,36 @@ using Microsoft.EntityFrameworkCore;
 namespace Entegrasyon.Business.Concrete;
 
 /// <summary>
-/// Brand ve Marketplace brand'ları arasındaki mapping işlemlerini yönetir.
-/// Trendyol gibi e-ticaret platformları ile brand eşleştirmelerini sağlar.
+/// Brand ve Marketplace brand'lari arasindaki mapping islemlerini yonetir.
+/// Trendyol gibi e-ticaret platformlari ile brand eslestirmelerini saglar.
 /// </summary>
 public class BrandMatchService(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     IApplicationLogManager applicationLogManager,
     IMapper mapper) : IBrandMatchService
 {
     public async Task AddRange(List<BrandMarketPlaceMatch> entities)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         dbContext.BrandMarketPlaceMatches.AddRange(entities);
         await dbContext.SaveChangesAsync();
     }
 
-    public Task<List<int>> GetMarketPlaceBrandIdsByMarketPlaceId(int marketPlaceId) =>
-        dbContext.BrandMarketPlaceMatches
+    public async Task<List<int>> GetMarketPlaceBrandIdsByMarketPlaceId(int marketPlaceId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        return await dbContext.BrandMarketPlaceMatches
             .Where(x => x.MarketPlaceId == marketPlaceId)
             .Select(x => x.MarketPlaceBrandId)
             .ToListAsync();
+    }
 
     public async Task<BrandMappingSummaryDto> GetBrandMappingsSummaryAsync()
     {
         const int trendyolMarketPlaceId = 1;
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var totalBrands = await dbContext.Brands
             .Where(x => !x.IsDeleted)
@@ -59,6 +65,7 @@ public class BrandMatchService(
 
     public async Task<List<BrandMarketPlaceMatchDto>> GetAllBrandMappingsAsync(int marketPlaceId)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var mappings = await dbContext.BrandMarketPlaceMatches
             .Where(x => x.MarketPlaceId == marketPlaceId)
             .Include(x => x.ApplicationBrand)
@@ -69,6 +76,7 @@ public class BrandMatchService(
 
     public async Task<List<BrandDto>> GetUnmappedBrandsAsync(int marketPlaceId)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var mappedBrandIds = await dbContext.BrandMarketPlaceMatches
             .Where(x => x.MarketPlaceId == marketPlaceId)
             .Select(x => x.ApplicationBrandId)
@@ -85,16 +93,18 @@ public class BrandMatchService(
 
     public async Task<IResult> CreateBrandMappingAsync(CreateBrandMarketPlaceMatchDto dto)
     {
-        await applicationLogManager.AddLog("Brand mapping oluşturma isteği", LogType.Brand, LogAction.Add, dto);
+        await applicationLogManager.AddLog("Brand mapping olusturma istegi", LogType.Brand, LogAction.Add, dto);
 
         // Validation
         await validator.ValidateAndThrowAsync(dto);
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // Business Rules
         var brand = await dbContext.Brands.FindAsync(dto.ApplicationBrandId);
         if (brand == null || brand.IsDeleted)
         {
-            var error = "Seçilen marka bulunamadı veya silinmiş durumda.";
+            var error = "Secilen marka bulunamadi veya silinmis durumda.";
             await applicationLogManager.AddLog(error, LogType.Brand, LogAction.Add, dto);
             return new ErrorResult(error);
         }
@@ -106,7 +116,7 @@ public class BrandMatchService(
 
         if (existingMapping != null)
         {
-            var error = "Bu marka için zaten bir mapping mevcuttur.";
+            var error = "Bu marka icin zaten bir mapping mevcuttur.";
             await applicationLogManager.AddLog(error, LogType.Brand, LogAction.Add, dto);
             return new ErrorResult(error);
         }
@@ -122,14 +132,15 @@ public class BrandMatchService(
         dbContext.BrandMarketPlaceMatches.Add(mapping);
         await dbContext.SaveChangesAsync();
 
-        await applicationLogManager.AddLog("Brand mapping başarıyla oluşturuldu", LogType.Brand, LogAction.Add, dto);
-        return new SuccessResult("Brand mapping başarıyla oluşturuldu.");
+        await applicationLogManager.AddLog("Brand mapping basariyla olusturuldu", LogType.Brand, LogAction.Add, dto);
+        return new SuccessResult("Brand mapping basariyla olusturuldu.");
     }
 
     public async Task<IResult> RemoveBrandMappingAsync(int brandId, int marketPlaceId)
     {
-        await applicationLogManager.AddLog($"Brand mapping silme isteği (BrandId: {brandId})", LogType.Brand, LogAction.Delete);
+        await applicationLogManager.AddLog($"Brand mapping silme istegi (BrandId: {brandId})", LogType.Brand, LogAction.Delete);
 
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var mapping = await dbContext.BrandMarketPlaceMatches
             .FirstOrDefaultAsync(x =>
                 x.ApplicationBrandId == brandId &&
@@ -137,7 +148,7 @@ public class BrandMatchService(
 
         if (mapping == null)
         {
-            var error = "Mapping bulunamadı.";
+            var error = "Mapping bulunamadi.";
             await applicationLogManager.AddLog(error, LogType.Brand, LogAction.Delete);
             return new ErrorResult(error);
         }
@@ -145,21 +156,21 @@ public class BrandMatchService(
         dbContext.BrandMarketPlaceMatches.Remove(mapping);
         await dbContext.SaveChangesAsync();
 
-        await applicationLogManager.AddLog("Brand mapping başarıyla silindi", LogType.Brand, LogAction.Delete);
-        return new SuccessResult("Brand mapping başarıyla silindi.");
+        await applicationLogManager.AddLog("Brand mapping basariyla silindi", LogType.Brand, LogAction.Delete);
+        return new SuccessResult("Brand mapping basariyla silindi.");
     }
 
     public async Task<IResult> ImportTrendyolBrandsAsync()
     {
         // TODO: Implement Trendyol brand import logic
         await Task.CompletedTask;
-        return new ErrorResult("Trendyol brand import işlevi henüz implement edilmemiştir.");
+        return new ErrorResult("Trendyol brand import islevi henuz implement edilmemistir.");
     }
 
     public async Task<IResult> SyncWithTrendyolAsync()
     {
         // TODO: Implement Trendyol sync logic
         await Task.CompletedTask;
-        return new ErrorResult("Trendyol sync işlevi henüz implement edilmemiştir.");
+        return new ErrorResult("Trendyol sync islevi henuz implement edilmemistir.");
     }
 }

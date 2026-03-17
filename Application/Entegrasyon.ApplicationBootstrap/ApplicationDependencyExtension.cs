@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
+using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
@@ -40,7 +41,6 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeManager, CategoryAttributeManager>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
-            services.AddScoped<CategoryAttributeManager>();
             services.AddScoped<IApplicationUserManager, ApplicationUserManager>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICargoCompaniesManager,CargoCompaniesManager>();
@@ -122,7 +122,7 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             var connectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection")
-                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=50;ConnectionIdleLifetime=120;Include Error Detail=true;";
+                ?? throw new InvalidOperationException("ConnectionString 'Main' is not configured. Check appsettings.json or environment variables.");
 
             services.AddDbContextFactory<IntegrationDbContext>(x =>
             {
@@ -173,10 +173,8 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddNotification(this IServiceCollection services)
         {
-            // TODO: SignalRSender ve EmailSender henüz implemente edilmedi.
-            // Implemente edildiklerinde buraya kayıt eklenecek:
-            // services.AddSingleton<INotificationSender, SignalRSender>();
-            // services.AddSingleton<INotificationSender, EmailSender>();
+            services.AddScoped<ISignalRNotificationSender, SignalRSender>();
+            services.AddScoped<IEmailSender, EmailSender>();
             return services;
         }
     }

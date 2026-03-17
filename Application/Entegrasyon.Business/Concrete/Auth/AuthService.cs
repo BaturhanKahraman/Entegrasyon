@@ -1,4 +1,4 @@
-﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Auth;
@@ -6,17 +6,17 @@ using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Business.Utilities;
-using Entegrasyon.Entity.Dtos.Auth;
 
 namespace Entegrasyon.Business.Concrete.Auth;
 
 public class AuthService(
-    IntegrationDbContext context,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogger) : IAuthService
 {
 
     public async Task<IResult> LoginAsync(string userName,string password)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
         string normalizedUsername = userName.ToUpperInvariant();
         var user = await context.Users
             .Include(u => u.Roles)
@@ -47,6 +47,7 @@ public class AuthService(
         bool isParsable = Guid.TryParse(userId,out var guidId);
         if(!isParsable)
             return new ErrorResult(Messages.ProcessFailed);
+        await using var context = await contextFactory.CreateDbContextAsync();
         var user = await context.Users.FindAsync(guidId);
         if(user == null)
             return new ErrorResult(Messages.ProcessFailed);
@@ -59,9 +60,10 @@ public class AuthService(
     public async Task<IResult> CreatePassword(string password,Guid userId,CancellationToken token = default)
     {
         //password rules need to be applied here TODO
-        await applicationLogger.AddLog("Şifre oluşturma isteği geldi.",LogType.Auth,LogAction.Update);
+        await applicationLogger.AddLog("Sifre olusturma istegi geldi.",LogType.Auth,LogAction.Update);
         if(string.IsNullOrEmpty(password))
             return new ErrorResult(Messages.ProcessFailed);
+        await using var context = await contextFactory.CreateDbContextAsync();
         var user = await context.Users.FindAsync([userId],cancellationToken: token);
         if(user is null)
             return new ErrorResult(Messages.UserNotFound);
@@ -74,22 +76,4 @@ public class AuthService(
         await context.SaveChangesAsync(token);
         return new SuccessResult(Messages.FirstPasswordAssigned);
     }
-
-    //public async Task<IResult> LogOut(string userId)
-    //{
-    //    var user = await _userManager.GetUserAsync(x => x.Id == Guid.Parse(userId), false);
-    //    if (_httpContext.IsMobileDevice())
-    //    {
-    //        user.MobileJwtToken = string.Empty;
-    //        user.MobileJwtTokenExpiresAt = DateTimeOffset.MinValue;
-    //    }
-    //    else
-    //    {
-    //        user.WebJwtToken = string.Empty;
-    //        user.WebJwtTokenExpiresAt = DateTimeOffset.MinValue;
-    //    }
-
-    //    await _userManager.UpdateUser(user);
-    //    return new SuccessResult(Messages.LogOut);
-    //}
 }

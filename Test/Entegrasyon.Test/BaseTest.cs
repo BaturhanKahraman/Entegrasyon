@@ -30,6 +30,9 @@ public class BaseTest
         mockContextFactory
             .Setup(f => f.CreateDbContext())
             .Returns(mockIntegrationDbContext.Object);
+        mockContextFactory
+            .Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockIntegrationDbContext.Object);
 
         //application logger mock
         mockApplicationLogger = new Mock<IApplicationLogManager>();

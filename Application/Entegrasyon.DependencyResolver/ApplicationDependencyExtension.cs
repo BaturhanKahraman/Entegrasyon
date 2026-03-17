@@ -97,9 +97,9 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             var connectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection")
-                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=1024;ConnectionIdleLifetime=120;Include Error Detail=true;";
+                ?? throw new InvalidOperationException("ConnectionString 'Main' is not configured. Check appsettings.json or environment variables.");
 
-            services.AddDbContext<IntegrationDbContext>(x =>
+            services.AddDbContextFactory<IntegrationDbContext>(x =>
             {
                 x.UseNpgsql(connectionString);
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);

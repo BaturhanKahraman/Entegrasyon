@@ -4,42 +4,44 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
-public sealed class TrendyolMappingValidator(IntegrationDbContext dbContext)
+public sealed class TrendyolMappingValidator(IDbContextFactory<IntegrationDbContext> contextFactory)
 {
     private const int TrendyolMarketPlaceId = 1;
 
     public async Task<IResult> ValidateProductMappingsAsync(Guid productId)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
         var product = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new { p.CategoryId, p.BrandId, p.Title })
             .FirstOrDefaultAsync();
 
         if (product is null)
-            return new ErrorResult("Ürün bulunamadı.");
+            return new ErrorResult("Urun bulunamadi.");
 
         var errors = new List<string>();
 
-        // 1. Kategori eşleştirmesi
+        // 1. Kategori eslestirmesi
         var categoryMapped = await dbContext.CategoryMarketPlaceMatches
             .AnyAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId);
         if (!categoryMapped)
-            errors.Add("Ürünün kategorisi Trendyol'a eşleştirilmemiş.");
+            errors.Add("Urunun kategorisi Trendyol'a eslestirilmemis.");
 
-        // 2. Marka eşleştirmesi
+        // 2. Marka eslestirmesi
         if (product.BrandId is null)
         {
-            errors.Add("Ürünün markası belirlenmemiş.");
+            errors.Add("Urunun markasi belirlenmemis.");
         }
         else
         {
             var brandMapped = await dbContext.BrandMarketPlaceMatches
                 .AnyAsync(m => m.ApplicationBrandId == product.BrandId.Value && m.MarketPlaceId == TrendyolMarketPlaceId);
             if (!brandMapped)
-                errors.Add("Ürünün markası Trendyol'a eşleştirilmemiş.");
+                errors.Add("Urunun markasi Trendyol'a eslestirilmemis.");
         }
 
-        // 3. Zorunlu özellik eşleştirmeleri
+        // 3. Zorunlu ozellik eslestirmeleri
         var requiredAttrIds = await dbContext.CategoryAttributeCategories
             .Where(cac => cac.CategoryId == product.CategoryId && cac.IsRequired)
             .Select(cac => cac.CategoryAttributeId)
@@ -54,11 +56,11 @@ public sealed class TrendyolMappingValidator(IntegrationDbContext dbContext)
 
             var unmappedCount = requiredAttrIds.Count - mappedAttrIds.Count;
             if (unmappedCount > 0)
-                errors.Add($"{unmappedCount} zorunlu özellik Trendyol'a eşleştirilmemiş.");
+                errors.Add($"{unmappedCount} zorunlu ozellik Trendyol'a eslestirilmemis.");
         }
 
         if (errors.Count > 0)
-            return new ErrorResult($"'{product.Title}' gönderilemez: {string.Join(" ", errors)}");
+            return new ErrorResult($"'{product.Title}' gonderilemez: {string.Join(" ", errors)}");
 
         return new SuccessResult();
     }
