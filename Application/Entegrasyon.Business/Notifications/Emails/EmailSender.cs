@@ -1,21 +1,26 @@
-﻿using Entegrasyon.Entity.Notifications;
+using System.Net;
+using System.Net.Mail;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Notifications;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.Notifications.Emails;
 
-public class EmailSender(ILogger<EmailSender> logger) : IEmailSender
+public class EmailSender(
+    IDbContextFactory<IntegrationDbContext> contextFactory,
+    ILogger<EmailSender> logger) : IEmailSender
 {
     public SenderType Type => SenderType.Email;
 
-    public Task SendNotification(Notification message, IEnumerable<Guid> userIds)
+    public async Task SendNotification(Notification message, IEnumerable<Guid> userIds)
     {
-        logger.LogWarning("Email sending is not configured. Skipping batch notification: {Title}", message.Header);
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
 
     public Task SendNotification(Notification message, Guid userId)
     {
-        logger.LogWarning("Email sending is not configured. Skipping notification to user {UserId}: {Title}", userId, message.Header);
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
+
 }
