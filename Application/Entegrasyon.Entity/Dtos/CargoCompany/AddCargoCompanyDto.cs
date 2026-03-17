@@ -3,7 +3,7 @@
 public sealed record AddCargoCompanyDto
 {
     
-    public string Name { get; set; }
-    public string Code { get; set; }
-    public string TaxNumber { get; set; }
+    public string Name { get; set; } = null!;
+    public string Code { get; set; } = null!;
+    public string TaxNumber { get; set; } = null!;
 }
