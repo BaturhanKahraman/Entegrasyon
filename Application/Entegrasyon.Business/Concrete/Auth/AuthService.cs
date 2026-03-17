@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Auth;
+using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Entity.Results;
@@ -55,6 +56,35 @@ public class AuthService(
         user.TemporaryPassword = password;
         await context.SaveChangesAsync(token);
         return new SuccessResult(Messages.TemporaryPasswordAssigned);
+    }
+
+    public async Task<IResult> ChangeOwnPassword(Guid userId, ChangePasswordDto dto, CancellationToken token = default)
+    {
+        // 1. Validation
+        if (dto.NewPassword != dto.ConfirmPassword)
+            return new ErrorResult(Messages.PasswordsDoNotMatch);
+
+        // 2. Business Rules — kullanici ve mevcut sifre kontrolu
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FindAsync([userId], cancellationToken: token);
+        if (user is null)
+            return new ErrorResult(Messages.UserNotFound);
+
+        bool isCurrentPasswordValid = HashingHelper.VerifyPasswordHash(dto.CurrentPassword, user.PasswordHash, user.PasswordSalt);
+        if (!isCurrentPasswordValid)
+            return new ErrorResult(Messages.CurrentPasswordWrong);
+
+        // 3. Execution
+        HashingHelper.CreatePasswordHash(dto.NewPassword, out var newHash, out var newSalt);
+        user.PasswordHash = newHash;
+        user.PasswordSalt = newSalt;
+        user.NeedsTakeNewPassword = false;
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+        context.Update(user);
+        await context.SaveChangesAsync(token);
+
+        await applicationLogger.AddLog("Kullanici kendi sifresini degistirdi.", LogType.Auth, LogAction.Update, token: token);
+        return new SuccessResult(Messages.PasswordChanged);
     }
 
     public async Task<IResult> CreatePassword(string password,Guid userId,CancellationToken token = default)

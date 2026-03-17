@@ -60,4 +60,8 @@ public class Messages
     public const string NoClaim ="Yetki bulunamadı.";
     public const string NotExistingClaim="Böyle bir yetki bulunamadı.";
     public const string NotNullId="Id boş bırakalamaz.";
+    public const string PasswordsDoNotMatch = "Yeni şifre ve onay şifresi eşleşmiyor.";
+    public const string CurrentPasswordWrong = "Mevcut şifreniz hatalı.";
+    public const string PasswordChanged = "Şifreniz başarıyla değiştirildi.";
+    public const string ProfileUpdated = "Profil bilgileriniz başarıyla güncellendi.";
 }
