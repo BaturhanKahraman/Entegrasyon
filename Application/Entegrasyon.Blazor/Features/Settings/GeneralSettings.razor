@@ -22,46 +22,62 @@ else
                 @foreach (var setting in group.Value)
                 {
                     <MudItem xs="12" md="6">
-                        @switch (setting.ValueType)
+                        @if (setting.Key == "ThemeMode")
                         {
-                            case SettingValueType.Boolean:
-                                <MudSwitch T="bool"
-                                           Label="@setting.Description"
-                                           Value="@(bool.TryParse(setting.Value, out var b) && b)"
-                                           ValueChanged="@(v => setting.Value = v.ToString().ToLower())"
-                                           Color="Color.Primary" />
-                                break;
-                            case SettingValueType.Integer:
-                                <MudNumericField T="int"
-                                                 Label="@setting.Description"
-                                                 Value="@(int.TryParse(setting.Value, out var i) ? i : 0)"
-                                                 ValueChanged="@(v => setting.Value = v.ToString())"
-                                                 Variant="Variant.Outlined" />
-                                break;
-                            case SettingValueType.Decimal:
-                                <MudNumericField T="decimal"
-                                                 Label="@setting.Description"
-                                                 Value="@(decimal.TryParse(setting.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : 0)"
-                                                 ValueChanged="@(v => setting.Value = v.ToString(System.Globalization.CultureInfo.InvariantCulture))"
-                                                 Variant="Variant.Outlined" />
-                                break;
-                            case SettingValueType.Password:
-                                <MudTextField T="string"
-                                              Label="@setting.Description"
-                                              @bind-Value="setting.Value"
-                                              Variant="Variant.Outlined"
-                                              InputType="@(_showPasswords.GetValueOrDefault(setting.Key) ? InputType.Text : InputType.Password)"
-                                              Adornment="Adornment.End"
-                                              AdornmentIcon="@(_showPasswords.GetValueOrDefault(setting.Key) ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                              OnAdornmentClick="@(() => TogglePasswordVisibility(setting.Key))"
-                                              AdornmentAriaLabel="Şifreyi göster/gizle" />
-                                break;
-                            default:
-                                <MudTextField T="string"
-                                              Label="@setting.Description"
-                                              @bind-Value="setting.Value"
-                                              Variant="Variant.Outlined" />
-                                break;
+                            <MudSelect T="string"
+                                       Label="@setting.Description"
+                                       Value="@setting.Value"
+                                       ValueChanged="@(v => setting.Value = v)"
+                                       Variant="Variant.Outlined"
+                                       AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Value="@("system")">Sisteme Göre</MudSelectItem>
+                                <MudSelectItem Value="@("light")">Aydınlık</MudSelectItem>
+                                <MudSelectItem Value="@("dark")">Karanlık</MudSelectItem>
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            @switch (setting.ValueType)
+                            {
+                                case SettingValueType.Boolean:
+                                    <MudSwitch T="bool"
+                                               Label="@setting.Description"
+                                               Value="@(bool.TryParse(setting.Value, out var b) && b)"
+                                               ValueChanged="@(v => setting.Value = v.ToString().ToLower())"
+                                               Color="Color.Primary" />
+                                    break;
+                                case SettingValueType.Integer:
+                                    <MudNumericField T="int"
+                                                     Label="@setting.Description"
+                                                     Value="@(int.TryParse(setting.Value, out var i) ? i : 0)"
+                                                     ValueChanged="@(v => setting.Value = v.ToString())"
+                                                     Variant="Variant.Outlined" />
+                                    break;
+                                case SettingValueType.Decimal:
+                                    <MudNumericField T="decimal"
+                                                     Label="@setting.Description"
+                                                     Value="@(decimal.TryParse(setting.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : 0)"
+                                                     ValueChanged="@(v => setting.Value = v.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                                     Variant="Variant.Outlined" />
+                                    break;
+                                case SettingValueType.Password:
+                                    <MudTextField T="string"
+                                                  Label="@setting.Description"
+                                                  @bind-Value="setting.Value"
+                                                  Variant="Variant.Outlined"
+                                                  InputType="@(_showPasswords.GetValueOrDefault(setting.Key) ? InputType.Text : InputType.Password)"
+                                                  Adornment="Adornment.End"
+                                                  AdornmentIcon="@(_showPasswords.GetValueOrDefault(setting.Key) ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                                  OnAdornmentClick="@(() => TogglePasswordVisibility(setting.Key))"
+                                                  AdornmentAriaLabel="Şifreyi göster/gizle" />
+                                    break;
+                                default:
+                                    <MudTextField T="string"
+                                                  Label="@setting.Description"
+                                                  @bind-Value="setting.Value"
+                                                  Variant="Variant.Outlined" />
+                                    break;
+                            }
                         }
                     </MudItem>
                 }
