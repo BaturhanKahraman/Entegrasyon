@@ -10,6 +10,6 @@ public interface IDiscountVoucherManager
     Task<IDataResult<string>> CreateDiscountVoucher(CreateDiscountVoucherDto dto);
     Task<IResult> MakePassiveDiscountVouchers(IEnumerable<int> voucherIds);
     Task<IResult> MakeActiveDiscountVouchers(IEnumerable<int> voucherIds);
-    Task<IDataResult<Pageable<DiscountVoucherDto>>> GetDiscountVouchers(int pageIndex, int pagesize, string code = null);
+    Task<IDataResult<Pageable<DiscountVoucherDto>>> GetDiscountVouchers(int pageIndex, int pagesize, string? code = null);
     Task<IResult> CheckVoucherValid(string code);
 }

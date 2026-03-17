@@ -7,9 +7,12 @@ public class SignalRSender(IHubContext<NotificationHub> hubContext) : ISignalRNo
 {
     public SenderType Type => SenderType.SignalR;
 
-    public Task SendNotification(Notification message, IEnumerable<Guid> userIds)
+    public async Task SendNotification(Notification message, IEnumerable<Guid> userIds)
     {
-        throw new NotImplementedException();
+        foreach (var userId in userIds)
+        {
+            await SendNotification(message, userId);
+        }
     }
 
     public async Task SendNotification(Notification notification, Guid userId)

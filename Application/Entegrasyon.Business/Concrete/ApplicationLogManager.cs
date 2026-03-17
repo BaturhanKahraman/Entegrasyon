@@ -14,16 +14,16 @@ namespace Entegrasyon.Business.Concrete;
 public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> contextFactory, IHttpContextAccessor httpContextAccessor)
     : IApplicationLogManager
 {
-    private readonly HttpContext httpContext = httpContextAccessor.HttpContext;
+    private readonly HttpContext? httpContext = httpContextAccessor.HttpContext;
 
-    public async Task AddLog(string content,LogType type,LogAction action = LogAction.None,object obj = null,CancellationToken token = default)
+    public async Task AddLog(string content,LogType type,LogAction action = LogAction.None,object? obj = null,CancellationToken token = default)
     {
         using var context = contextFactory.CreateDbContext();
         var log = new ApplicationLog()
         {
             Content = content,
             CreatedAt = DateTimeOffset.UtcNow,
-            IpAddress = httpContext.GetIPAddress(),
+            IpAddress = httpContext?.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type,
             LogAction = action
@@ -40,7 +40,7 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
 
     private Guid? GetUserId()
     {
-        var canParseId = Guid.TryParse(httpContext.GetUserId(),out Guid userId);
+        var canParseId = Guid.TryParse(httpContext?.GetUserId(),out Guid userId);
         if(canParseId)
             return userId;
         return null;
@@ -62,7 +62,7 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
                     IpAddress = x.IpAddress,
                     LogAction = x.LogAction,
                     LogType = x.LogType,
-                    UserInfos = x.ApplicationUser.UserName + ' ' + x.ApplicationUser.Name + ' ' + x.ApplicationUser.Surname
+                    UserInfos = x.ApplicationUser != null ? x.ApplicationUser.UserName + ' ' + x.ApplicationUser.Name + ' ' + x.ApplicationUser.Surname : ""
                 }).ToListAsync(token);
         int totalItemCount = await dbContext.Logs.CountAsync(token);
         var logResult = new Pageable<ApplicationLogDetailDto>(logs, pageIndex, itemCount, totalItemCount);

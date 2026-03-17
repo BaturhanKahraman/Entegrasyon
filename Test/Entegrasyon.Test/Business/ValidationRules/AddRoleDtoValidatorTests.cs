@@ -18,7 +18,7 @@ public class AddRoleDtoValidatorTests
     public async Task Validate_WhenNameIsEmpty_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default, default) { Name = "" };
+        var dto = new AddRoleDto(default!, default!) { Name = "" };
 
         // Act
         var result = await validator.TestValidateAsync(dto);
@@ -32,7 +32,7 @@ public class AddRoleDtoValidatorTests
     public async Task Validate_WhenPermissionNamesIsNull_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default, default) { Name = "Admin", PermissionNames = null };
+        var dto = new AddRoleDto(default!, default!) { Name = "Admin", PermissionNames = null };
 
         // Act
         var result = await validator.TestValidateAsync(dto);
@@ -46,7 +46,7 @@ public class AddRoleDtoValidatorTests
     public async Task Validate_WhenPermissionNamesIsEmpty_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default, default) { Name = "Admin", PermissionNames = [] };
+        var dto = new AddRoleDto(default!, default!) { Name = "Admin", PermissionNames = [] };
 
         // Act
         var result = await validator.TestValidateAsync(dto);
@@ -60,7 +60,7 @@ public class AddRoleDtoValidatorTests
     public async Task Validate_WhenPermissionNamesIsNotNullAndNotEmpty_ShouldNotHaveError()
     {
         // Arrange
-        var dto = new AddRoleDto(default, default) { Name = "Admin", PermissionNames = ["Products.Read"] };
+        var dto = new AddRoleDto(default!, default!) { Name = "Admin", PermissionNames = ["Products.Read"] };
 
         // Act
         var result = await validator.TestValidateAsync(dto);

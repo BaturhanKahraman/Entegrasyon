@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:latest
+    image: postgres:16-alpine
     container_name: entegrasyon-db
     restart: always
     environment:

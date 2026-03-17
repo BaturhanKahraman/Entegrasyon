@@ -12,11 +12,11 @@ namespace Entegrasyon.UnitTest;
 
 public class BaseTest
 {
-    protected Mock<IntegrationDbContext> mockIntegrationDbContext;
-    protected Mock<IDbContextFactory<IntegrationDbContext>> mockContextFactory;
-    protected Mock<IApplicationLogManager> mockApplicationLogger;
-    protected Mock<IFluentValidator> MockValidator;
-    protected Mock<IMemoryCache> mockMemoryCache;
+    protected Mock<IntegrationDbContext> mockIntegrationDbContext = null!;
+    protected Mock<IDbContextFactory<IntegrationDbContext>> mockContextFactory = null!;
+    protected Mock<IApplicationLogManager> mockApplicationLogger = null!;
+    protected Mock<IFluentValidator> MockValidator = null!;
+    protected Mock<IMemoryCache> mockMemoryCache = null!;
     public BaseTest()
     {
         //mock dbcontextoptions

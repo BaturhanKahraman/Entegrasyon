@@ -39,7 +39,8 @@ namespace Entegrasyon.Blazor.Utility.Attributes
             }
             else if(!string.IsNullOrEmpty(titleKey) && resourceType is not null)
             {
-                throw new NotImplementedException();
+                // Resource-based localization is not yet implemented; fall through with titleKey as display name
+                models.Add(new BreadcrumbModel(titleKey, GetFullUrl(routeData), bcUsageType));
             }
             vr.ViewData[StringConstant.Breadcrumb] = models;
         }

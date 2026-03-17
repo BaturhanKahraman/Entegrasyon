@@ -19,6 +19,6 @@ public class IntegrationDbContextFactory: IIntegrationDbContextFactory
             dbContextOptionsBuilder.EnableDetailedErrors();
             dbContextOptionsBuilder.EnableSensitiveDataLogging();
         #endif
-        throw new NotImplementedException();
+        throw new InvalidOperationException("Multi-tenant DbContext factory is not yet configured.");
     }
 }
