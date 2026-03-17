@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Settings;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace Entegrasyon.Blazor.Features.Settings;
@@ -9,6 +10,7 @@ public partial class GeneralSettings : ComponentBase
 {
     [Inject] private IApplicationSettingManager SettingManager { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private IJSRuntime JsRuntime { get; set; } = default!;
 
     private Dictionary<string, List<ApplicationSettingDto>> _settingsByGroup = new();
     private Dictionary<string, bool> _showPasswords = new();
@@ -28,7 +30,12 @@ public partial class GeneralSettings : ComponentBase
         var settings = await SettingManager.GetAllSettingsAsync();
         _settingsByGroup = settings
             .GroupBy(s => s.Group ?? "Diğer")
-            .OrderBy(g => g.Key == "E-posta Ayarları" ? 1 : 0)
+            .OrderBy(g => g.Key switch
+            {
+                "Görünüm" => 0,
+                "E-posta Ayarları" => 2,
+                _ => 1
+            })
             .ToDictionary(g => g.Key, g => g.ToList());
         _loading = false;
     }
@@ -47,9 +54,14 @@ public partial class GeneralSettings : ComponentBase
 
             var success = await SettingManager.UpdateSettingsAsync(updates);
             if (success)
+            {
                 Snackbar.Add("Ayarlar başarıyla kaydedildi.", Severity.Success);
+                await SyncThemeModeToLocalStorageAsync();
+            }
             else
+            {
                 Snackbar.Add("Ayarlar kaydedilirken hata oluştu.", Severity.Error);
+            }
         }
         catch (Exception ex)
         {
@@ -58,6 +70,24 @@ public partial class GeneralSettings : ComponentBase
         finally
         {
             _saving = false;
+        }
+    }
+
+    private async Task SyncThemeModeToLocalStorageAsync()
+    {
+        var themeSetting = _settingsByGroup.Values
+            .SelectMany(s => s)
+            .FirstOrDefault(s => s.Key == "ThemeMode");
+
+        if (themeSetting is not null)
+        {
+            await JsRuntime.InvokeVoidAsync("localStorage.setItem", "themeMode", themeSetting.Value);
+            // data-theme attribute'unu da güncelle
+            var isDark = themeSetting.Value == "dark" ||
+                (themeSetting.Value == "system" &&
+                 await JsRuntime.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches"));
+            var attr = isDark ? "dark" : "light";
+            await JsRuntime.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{attr}')");
         }
     }
 

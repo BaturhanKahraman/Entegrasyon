@@ -15,30 +15,32 @@ public partial class MainLayout : IDisposable
     private LoggingErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
     private bool _isDarkMode;
+    private bool _themeLoaded;
     private MudTheme _theme = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var stored = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "darkMode");
-            if (stored is not null)
+            var mode = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "themeMode") ?? "system";
+            _isDarkMode = mode switch
             {
-                _isDarkMode = stored == "true";
-            }
-            else
-            {
-                _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
-            }
+                "dark" => true,
+                "light" => false,
+                _ => await JsRuntime.InvokeAsync<bool>("eval",
+                    "window.matchMedia('(prefers-color-scheme: dark)').matches")
+            };
+            _themeLoaded = true;
             StateHasChanged();
         }
-        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task ToggleThemeAsync()
     {
         _isDarkMode = !_isDarkMode;
-        await JsRuntime.InvokeVoidAsync("localStorage.setItem", "darkMode", _isDarkMode.ToString().ToLower());
+        var mode = _isDarkMode ? "dark" : "light";
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", "themeMode", mode);
+        await JsRuntime.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{mode}')");
     }
 
     protected override void OnInitialized()

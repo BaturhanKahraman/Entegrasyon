@@ -9,6 +9,7 @@ public partial class AuthLayout
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
 
     private bool _isDarkMode;
+    private bool _themeLoaded;
 
     private readonly MudTheme _theme = new()
     {
@@ -36,15 +37,15 @@ public partial class AuthLayout
     {
         if (firstRender)
         {
-            var stored = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "darkMode");
-            if (stored is not null)
+            var mode = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "themeMode") ?? "system";
+            _isDarkMode = mode switch
             {
-                _isDarkMode = stored == "true";
-            }
-            else
-            {
-                _isDarkMode = await JsRuntime.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches");
-            }
+                "dark" => true,
+                "light" => false,
+                _ => await JsRuntime.InvokeAsync<bool>("eval",
+                    "window.matchMedia('(prefers-color-scheme: dark)').matches")
+            };
+            _themeLoaded = true;
             StateHasChanged();
         }
     }
