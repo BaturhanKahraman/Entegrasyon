@@ -1,5 +1,8 @@
 namespace Entegrasyon.Business.Utility.Constants;
 
+// TODO Multi-tenant: Bu sabitler single-tenant içindir.
+// Multi-tenant geçişinde ITenantContext.GetMarketPlaceId() kullanılmalıdır.
+// N11SoapClient zaten ITenantContext kullanıyor — diğer servisler de geçirilmeli.
 public static class MarketPlaceConstants
 {
     public const int TrendyolMarketPlaceId = 1;

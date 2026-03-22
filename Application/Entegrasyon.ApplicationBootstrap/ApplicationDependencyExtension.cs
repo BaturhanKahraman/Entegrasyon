@@ -33,6 +33,8 @@ namespace Entegrasyon.ApplicationBootstrap
     {
         public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<ITenantContext, DefaultTenantContext>();
+
             services.AddScoped<ApplicationLifetimeManager>();
             //services.AddScoped<DbContext,IntegrationDbContext>();
 

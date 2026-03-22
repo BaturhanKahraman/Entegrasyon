@@ -16,7 +16,8 @@ namespace Entegrasyon.Business.Concrete.N11;
 public sealed class N11SoapClient(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IHttpClientFactory httpClientFactory,
-    ILogger<N11SoapClient> logger) : IN11SoapClient
+    ILogger<N11SoapClient> logger,
+    ITenantContext tenantContext) : IN11SoapClient
 {
     private const string DefaultBaseUrl = "https://api.n11.com/ws/";
 
@@ -38,10 +39,11 @@ public sealed class N11SoapClient(
         // 1. DB'den N11 credentials'ını çek
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
+        var n11MarketPlaceId = tenantContext.GetMarketPlaceId("N11");
         var marketplace = await dbContext.MarketPlaces
             .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.Id == N11MarketPlaceId)
-            ?? throw new InvalidOperationException("N11 marketplace kaydı bulunamadı (Id=2).");
+            .FirstOrDefaultAsync(m => m.Id == n11MarketPlaceId)
+            ?? throw new InvalidOperationException($"N11 marketplace kaydı bulunamadı (Id={n11MarketPlaceId}).");
 
         // 2. bodyContent'in defensive kopyasını oluştur (caller'ın XElement'ini mutate etmemek için)
         var requestBody = new XElement(bodyContent);
