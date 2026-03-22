@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Dtos.N11;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Orders;
@@ -9,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Entegrasyon.UnitTest")]
+
 namespace Entegrasyon.Business.Concrete;
 
 /// <summary>
@@ -16,13 +19,14 @@ namespace Entegrasyon.Business.Concrete;
 /// Sipariş import edildiğinde stok atomik olarak düşülür.
 /// Advisory lock ile eşzamanlı import korunur.
 /// </summary>
-public sealed class OrderManager(
+public class OrderManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IOfficeStockManager officeStockManager,
     INotificationManager notificationManager,
     ILogger<OrderManager> logger) : IOrderManager
 {
     private const long AdvisoryLockKeyTrendyolImport = 2001;
+    private const long AdvisoryLockKeyN11Import = 2002;
 
     public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)
     {
@@ -79,6 +83,152 @@ public sealed class OrderManager(
             await dbContext.Database.ExecuteSqlRawAsync(
                 "SELECT pg_advisory_unlock({0})", AdvisoryLockKeyTrendyolImport);
         }
+    }
+
+    public async Task<IResult> ImportN11OrdersAsync(List<N11OrderDto> orders)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        if (orders.Count == 0)
+            return new SuccessResult("İmport edilecek sipariş yok.");
+
+        // Advisory lock: Eşzamanlı import'u engelle
+        var lockAcquired = await dbContext.Database
+            .SqlQuery<bool>($"""SELECT pg_try_advisory_lock({AdvisoryLockKeyN11Import}) AS "Value" """)
+            .FirstAsync();
+
+        if (!lockAcquired)
+            return new ErrorResult("N11 sipariş import işlemi zaten devam ediyor.");
+
+        try
+        {
+            return await ExecuteN11ImportAsync(dbContext, orders);
+        }
+        finally
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "SELECT pg_advisory_unlock({0})", AdvisoryLockKeyN11Import);
+        }
+    }
+
+    internal async Task<IResult> ExecuteN11ImportAsync(IntegrationDbContext dbContext, List<N11OrderDto> orders)
+    {
+        var importedCount = 0;
+
+        // Marketplace'e bağlı depo ID'lerini önceden al
+        var warehouseIds = await dbContext.MarketPlaceWarehouses
+            .Where(w => w.MarketPlaceId == N11MarketPlaceId && !w.IsDeleted)
+            .Select(w => w.BranchOfficeId)
+            .ToListAsync();
+
+        // Batch deduplication: Tüm OrderNumber'ları tek sorguda kontrol et
+        var allOrderNumbers = orders
+            .Select(o => o.OrderNumber)
+            .Where(n => !string.IsNullOrEmpty(n))
+            .Distinct()
+            .ToList();
+
+        var existingOrderNumbers = (await dbContext.Orders
+            .Where(o => o.MarketPlaceId == N11MarketPlaceId && allOrderNumbers.Contains(o.OrderNumber))
+            .Select(o => o.OrderNumber)
+            .ToListAsync()).ToHashSet();
+
+        // Batch barcode lookup: Tüm barkodları tek sorguda çöz
+        var allBarcodes = orders
+            .Where(o => o.OrderItems is not null)
+            .SelectMany(o => o.OrderItems)
+            .Select(i => i.ProductSellerCode)
+            .Where(b => !string.IsNullOrEmpty(b))
+            .Distinct()
+            .ToArray();
+
+        var barcodeMap = await dbContext.ProductVariants
+            .AsNoTracking()
+            .Where(v => allBarcodes.Contains(v.Barcode))
+            .ToDictionaryAsync(v => v.Barcode, v => v.Id);
+
+        foreach (var dto in orders)
+        {
+            // Deduplication: aynı N11 siparişi tekrar gelmesin
+            if (existingOrderNumbers.Contains(dto.OrderNumber))
+                continue;
+
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                MarketPlaceId = N11MarketPlaceId,
+                OrderNumber = dto.OrderNumber,
+                MarketplaceOrderStatus = dto.Status,
+                GrossAmount = dto.TotalAmount,
+                OrderDate = dto.CreateDate,
+                CustomerFirstName = dto.Buyer?.FirstName,
+                CustomerLastName = dto.Buyer?.LastName,
+                CustomerEmail = dto.Buyer?.Email,
+            };
+
+            // Adresler
+            if (dto.BillingAddress is not null)
+            {
+                order.BillingAddress = new Entegrasyon.Entity.Address
+                {
+                    City = dto.BillingAddress.City ?? "",
+                    County = dto.BillingAddress.District ?? "",
+                    Country = "TR",
+                    FullAddress = dto.BillingAddress.FullAddress ?? "",
+                    ZipCode = dto.BillingAddress.PostalCode ?? "",
+                    Street = ""
+                };
+            }
+
+            if (dto.ShippingAddress is not null)
+            {
+                order.ShippingAddress = new Entegrasyon.Entity.Address
+                {
+                    City = dto.ShippingAddress.City ?? "",
+                    County = dto.ShippingAddress.District ?? "",
+                    Country = "TR",
+                    FullAddress = dto.ShippingAddress.FullAddress ?? "",
+                    ZipCode = dto.ShippingAddress.PostalCode ?? "",
+                    Street = ""
+                };
+            }
+
+            // Order items + stok düşme
+            var orderItems = new List<OrderItem>();
+            foreach (var item in dto.OrderItems)
+            {
+                // Barcode ile lokal ürün eşleştirme — dictionary lookup (O(1))
+                Guid? productVariantId = null;
+                if (!string.IsNullOrEmpty(item.ProductSellerCode) &&
+                    barcodeMap.TryGetValue(item.ProductSellerCode, out var variantId))
+                    productVariantId = variantId;
+
+                orderItems.Add(new OrderItem
+                {
+                    OrderId = order.Id,
+                    ProductId = productVariantId,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.Price,
+                    Barcode = item.ProductSellerCode,
+                    MerchantSku = item.ProductSellerCode,
+                });
+
+                // Stok düşme: N11 marketplace satışı gerçekleşti
+                if (productVariantId.HasValue && item.Quantity > 0 && warehouseIds.Count > 0)
+                {
+                    await DecreaseStockForMarketplaceOrder(
+                        warehouseIds, productVariantId.Value, item.Quantity,
+                        dto.OrderNumber);
+                }
+            }
+
+            order.OrderItems = orderItems;
+            dbContext.Orders.Add(order);
+            importedCount++;
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Imported {Count} N11 orders", importedCount);
+        return new SuccessResult($"{importedCount} N11 siparişi import edildi.");
     }
 
     private async Task<IResult> ExecuteImportAsync(IntegrationDbContext dbContext, List<TrendyolShipmentPackage> packages)
