@@ -106,6 +106,21 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
                 new XElement("errorCode", "ERR-002"),
                 new XElement("errorMessage", errorMessage)));
 
+    /// <summary>
+    /// GetProductStockByProductId SOAP yanıtını belirtilen barkod ve version ile oluşturur.
+    /// </summary>
+    private static XElement BuildGetStockResponse(string sellerStockCode, long version) =>
+        new("GetProductStockByProductIdResponse",
+            new XElement("result",
+                new XElement("status", "success"),
+                new XElement("errorMessage")),
+            new XElement("stockItems",
+                new XElement("stockItem",
+                    new XElement("sellerStockCode", sellerStockCode),
+                    new XElement("quantity", "10"),
+                    new XElement("version", version.ToString()),
+                    new XElement("id", "999"))));
+
     // -----------------------------------------------------------------------
     // Test 1: UpdatePriceAsync — ProductService WSDL kullanılır
     // -----------------------------------------------------------------------
@@ -156,20 +171,27 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
     }
 
     // -----------------------------------------------------------------------
-    // Test 3: UpdateStockAsync — ProductStockService WSDL kullanılır
+    // Test 3: UpdateStockAsync — 2 SOAP çağrısı yapılır (GetProductStock + UpdateStock)
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task UpdateStockAsync_ShouldCallProductStockServiceWsdl()
+    public async Task UpdateStockAsync_ShouldMakeTwoSoapCalls()
     {
         // Arrange
         SetupProductMarketplaceWithExternalId(TestExternalProductId);
         SetupProductWithVariants();
 
-        string? capturedWsdlPath = null;
+        var callOrder = new List<string>();
         _soapClientMock
-            .Setup(s => s.SendAsync(It.IsAny<string>(), "", It.IsAny<XElement>()))
-            .Callback<string, string, XElement>((wsdl, _, _) => capturedWsdlPath = wsdl)
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "GetProductStockByProductIdRequest")))
+            .Callback<string, string, XElement>((_, _, req) => callOrder.Add(req.Name.LocalName))
+            .ReturnsAsync(BuildGetStockResponse("9876543210123", 7));
+
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "UpdateStockBySellerStockCodeRequest")))
+            .Callback<string, string, XElement>((_, _, req) => callOrder.Add(req.Name.LocalName))
             .ReturnsAsync(BuildSuccessResponse("UpdateStockBySellerStockCodeResponse"));
 
         var sut = CreateSut();
@@ -179,7 +201,9 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         result.Success.Should().BeTrue();
-        capturedWsdlPath.Should().Be("ProductStockService");
+        callOrder.Should().HaveCount(2);
+        callOrder[0].Should().Be("GetProductStockByProductIdRequest");
+        callOrder[1].Should().Be("UpdateStockBySellerStockCodeRequest");
     }
 
     // -----------------------------------------------------------------------
@@ -194,8 +218,15 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
         SetupProductMarketplaceWithExternalId(TestExternalProductId);
         SetupProductWithVariants();
 
+        // GetProductStock başarılı, UpdateStock başarısız
         _soapClientMock
-            .Setup(s => s.SendAsync("ProductStockService", "", It.IsAny<XElement>()))
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "GetProductStockByProductIdRequest")))
+            .ReturnsAsync(BuildGetStockResponse("9876543210123", 1));
+
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "UpdateStockBySellerStockCodeRequest")))
             .ReturnsAsync(BuildFailureResponse(errorMessage));
 
         var sut = CreateSut();
@@ -242,7 +273,7 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
     }
 
     // -----------------------------------------------------------------------
-    // Test 6: UpdateStockAsync — SOAP request içinde sellerStockCode ve quantity doğru gönderilir
+    // Test 6: UpdateStockAsync — SOAP request içinde sellerStockCode, quantity ve version doğru gönderilir
     // -----------------------------------------------------------------------
 
     [Fact]
@@ -252,10 +283,18 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
         SetupProductMarketplaceWithExternalId(TestExternalProductId);
         SetupProductWithVariants();
 
-        XElement? capturedRequest = null;
+        const long expectedVersion = 5L;
+
         _soapClientMock
-            .Setup(s => s.SendAsync("ProductStockService", "", It.IsAny<XElement>()))
-            .Callback<string, string, XElement>((_, _, req) => capturedRequest = req)
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "GetProductStockByProductIdRequest")))
+            .ReturnsAsync(BuildGetStockResponse("9876543210123", expectedVersion));
+
+        XElement? capturedUpdateRequest = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "UpdateStockBySellerStockCodeRequest")))
+            .Callback<string, string, XElement>((_, _, req) => capturedUpdateRequest = req)
             .ReturnsAsync(BuildSuccessResponse("UpdateStockBySellerStockCodeResponse"));
 
         var sut = CreateSut();
@@ -265,13 +304,13 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
         await sut.UpdateStockAsync(TestProductId, quantity);
 
         // Assert
-        capturedRequest.Should().NotBeNull();
-        capturedRequest!.Descendants("sellerStockCode").FirstOrDefault()?.Value
+        capturedUpdateRequest.Should().NotBeNull();
+        capturedUpdateRequest!.Descendants("sellerStockCode").FirstOrDefault()?.Value
             .Should().Be("9876543210123");
-        capturedRequest.Descendants("quantity").FirstOrDefault()?.Value
+        capturedUpdateRequest.Descendants("quantity").FirstOrDefault()?.Value
             .Should().Be(quantity.ToString());
-        capturedRequest.Descendants("version").FirstOrDefault()?.Value
-            .Should().Be("0");
+        capturedUpdateRequest.Descendants("version").FirstOrDefault()?.Value
+            .Should().Be(expectedVersion.ToString());
     }
 
     // -----------------------------------------------------------------------
@@ -305,5 +344,81 @@ public class N11StockPriceServiceTests : Entegrasyon.UnitTest.BaseTest
                 It.IsAny<string?>(),
                 It.IsAny<string?>()),
             Times.Once);
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 8: UpdateStockAsync — GetProductStock version, UpdateStock isteğine taşınır
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task UpdateStockAsync_ShouldUseVersionFromGetProductStockResponse()
+    {
+        // Arrange
+        SetupProductMarketplaceWithExternalId(TestExternalProductId);
+        SetupProductWithVariants();
+
+        const long fetchedVersion = 42L;
+        const string barcode = "9876543210123";
+
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "GetProductStockByProductIdRequest")))
+            .ReturnsAsync(BuildGetStockResponse(barcode, fetchedVersion));
+
+        XElement? capturedUpdateRequest = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "UpdateStockBySellerStockCodeRequest")))
+            .Callback<string, string, XElement>((_, _, req) => capturedUpdateRequest = req)
+            .ReturnsAsync(BuildSuccessResponse("UpdateStockBySellerStockCodeResponse"));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.UpdateStockAsync(TestProductId, 10);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedUpdateRequest.Should().NotBeNull();
+        capturedUpdateRequest!.Descendants("version").FirstOrDefault()?.Value
+            .Should().Be(fetchedVersion.ToString(),
+                "UpdateStock isteğindeki version, GetProductStock yanıtından alınmalıdır");
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 9: UpdateStockAsync — GetProductStock başarısız olursa version=0 fallback
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task UpdateStockAsync_WhenGetStockFails_ShouldFallbackToVersionZero()
+    {
+        // Arrange
+        SetupProductMarketplaceWithExternalId(TestExternalProductId);
+        SetupProductWithVariants();
+
+        // GetProductStock failure simülasyonu
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "GetProductStockByProductIdRequest")))
+            .ReturnsAsync(BuildFailureResponse("Ürün bulunamadı"));
+
+        XElement? capturedUpdateRequest = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync("ProductStockService", "", It.Is<XElement>(x =>
+                x.Name.LocalName == "UpdateStockBySellerStockCodeRequest")))
+            .Callback<string, string, XElement>((_, _, req) => capturedUpdateRequest = req)
+            .ReturnsAsync(BuildSuccessResponse("UpdateStockBySellerStockCodeResponse"));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.UpdateStockAsync(TestProductId, 5);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedUpdateRequest.Should().NotBeNull();
+        capturedUpdateRequest!.Descendants("version").FirstOrDefault()?.Value
+            .Should().Be("0",
+                "GetProductStock başarısız olduğunda version=0 fallback kullanılmalıdır");
     }
 }
