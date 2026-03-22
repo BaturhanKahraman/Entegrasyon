@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
+using Entegrasyon.Business.Concrete.Pazarama;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
@@ -150,6 +151,17 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IN11StockPriceService, N11StockPriceService>();
                 services.AddScoped<IN11OrderService, N11OrderService>();
                 services.AddScoped<IN11ClaimService, N11ClaimService>();
+            }
+
+            // Pazarama servisleri
+            var usePazaramaMock = configuration.GetValue<bool>("Pazarama:UseMock", true);
+            if (usePazaramaMock)
+            {
+                services.AddScoped<IPazaramaApiClient, MockPazaramaApiClient>();
+            }
+            else
+            {
+                services.AddScoped<IPazaramaApiClient, PazaramaApiClient>();
             }
 
             services.AddEventChannels();
