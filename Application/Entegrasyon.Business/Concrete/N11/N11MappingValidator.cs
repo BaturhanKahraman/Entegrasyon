@@ -5,9 +5,9 @@ using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.N11;
 
-public sealed class N11MappingValidator(IDbContextFactory<IntegrationDbContext> contextFactory)
+public class N11MappingValidator(IDbContextFactory<IntegrationDbContext> contextFactory)
 {
-    public async Task<IResult> ValidateProductMappingsAsync(Guid productId)
+    public virtual async Task<IResult> ValidateProductMappingsAsync(Guid productId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
