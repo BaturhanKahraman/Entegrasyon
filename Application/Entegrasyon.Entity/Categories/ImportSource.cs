@@ -44,5 +44,10 @@ public enum ImportSource
     /// <summary>
     /// Pazarama pazaryerinden import edilmiş
     /// </summary>
-    Pazarama = 103
+    Pazarama = 103,
+
+    /// <summary>
+    /// Amazon pazaryerinden import edilmiş
+    /// </summary>
+    Amazon = 104
 }
