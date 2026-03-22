@@ -48,6 +48,7 @@ services:
       - Minio__PublicBaseUrl=http://localhost:9099
       - JwtTokenOptions__SecurityKey=E2ETestSecurityKey_12345678!
       - Trendyol__UseMock=true
+      - N11__UseMock=true
     depends_on:
       db-e2e:
         condition: service_healthy
