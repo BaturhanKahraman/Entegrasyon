@@ -27,7 +27,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 table: "MarketPlaces",
                 columns: new[] { "Id", "Name", "IsBasicAuth", "IsDeleted", "CreatedAt",
                     "BaseUrl", "TokenUrl" },
-                values: new object[] { 5, "Amazon", false, false,
+                values: new object[] { 6, "Amazon", false, false,
                     new DateTime(2026, 3, 22, 0, 0, 0, DateTimeKind.Utc),
                     "https://sellingpartnerapi-eu.amazon.com",
                     "https://api.amazon.com/auth/o2/token" });
@@ -39,7 +39,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             migrationBuilder.DeleteData(
                 table: "MarketPlaces",
                 keyColumn: "Id",
-                keyValue: 5);
+                keyValue: 6);
 
             migrationBuilder.DropColumn(
                 name: "RefreshToken",
