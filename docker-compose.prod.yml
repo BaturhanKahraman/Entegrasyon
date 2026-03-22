@@ -1,0 +1,28 @@
+services:
+  blazor-prod:
+    build:
+      context: .
+      dockerfile: Application/Entegrasyon.Blazor/Dockerfile
+    container_name: entegrasyon-prod
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Main=${PROD_DB_CONNECTION}
+      - ConnectionStrings__Redis=${REDIS_CONNECTION:-redis:6379}
+      - Minio__Endpoint=${MINIO_ENDPOINT}
+      - Minio__AccessKey=${MINIO_ACCESS_KEY}
+      - Minio__SecretKey=${MINIO_SECRET_KEY}
+      - Minio__UseSSL=false
+      - Minio__BucketName=products
+      - Minio__PublicBaseUrl=${MINIO_PUBLIC_URL}
+      - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY}
+    networks:
+      - entegrasyon-net
+
+networks:
+  entegrasyon-net:
+    external: true
+    name: entegrasyon_entegrasyon-net

@@ -8,6 +8,9 @@ public class ProductEntityConfiguration:IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
+        builder.Property<uint>("xmin")
+            .HasColumnType("xid")
+            .IsRowVersion();
         builder.HasQueryFilter(x => !x.IsDeleted);
         builder.HasMany(x => x.ProductVariants).WithOne(x => x.Product).HasForeignKey(x => x.ProductId);
         builder.HasOne(x => x.Brand)

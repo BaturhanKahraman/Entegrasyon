@@ -9,7 +9,7 @@ public sealed class ProductMarketplace : BaseEntity
     public Guid ProductId { get; set; }
     public Product Product { get; set; } = null!;
     public int MarketPlaceId { get; set; }
-    public Entegrasyon.Entity.MarketPlace MarketPlace { get; set; } = null!;
+    public MarketPlace MarketPlace { get; set; } = null!;
     public MarketplaceProductStatus Status { get; set; } = MarketplaceProductStatus.Pending;
     public string? BatchRequestId { get; set; }
     public string? ExternalProductId { get; set; }
@@ -30,4 +30,11 @@ public sealed class ProductMarketplace : BaseEntity
     /// Ürünün Trendyol'da arşivlenip arşivlenmediği.
     /// </summary>
     public bool? IsArchived { get; set; }
+
+    // Pazaryerine özel override alanları — null ise ürünün kendi değeri kullanılır
+    public string? TitleOverride { get; set; }
+    public string? DescriptionOverride { get; set; }
+
+    // Navigation property
+    public ICollection<ProductVariantMarketplaceOverride> VariantOverrides { get; set; } = new List<ProductVariantMarketplaceOverride>();
 }

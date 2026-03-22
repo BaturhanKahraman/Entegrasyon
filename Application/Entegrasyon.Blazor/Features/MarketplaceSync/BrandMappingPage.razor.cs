@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Brand;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
@@ -18,17 +19,17 @@ public partial class BrandMappingPage : ComponentBase
 
     // State
     public List<BrandMarketPlaceMatchDto> BrandMappings { get; set; } = [];
+    public List<BrandDto> UnmappedBrands { get; set; } = [];
     public BrandMappingSummaryDto MappingSummary { get; set; } = new();
     public bool IsLoading { get; set; } = true;
     public int SelectedTabIndex { get; set; } = 0;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
         await LoadMappings();
         await LoadSummary();
+        await LoadUnmappedBrands();
         IsLoading = false;
     }
 
@@ -42,16 +43,23 @@ public partial class BrandMappingPage : ComponentBase
         MappingSummary = await BrandMatchService.GetBrandMappingsSummaryAsync();
     }
 
-    public async Task OpenMappingDialog()
+    private async Task LoadUnmappedBrands()
     {
+        UnmappedBrands = await BrandMatchService.GetUnmappedBrandsAsync(TrendyolMarketPlaceId);
+    }
+
+    public async Task OpenRowMappingDialog(BrandDto brand)
+    {
+        var parameters = new DialogParameters<BrandMappingDialog>
+        {
+            { x => x.ApplicationBrand, brand }
+        };
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<BrandMappingDialog>("Brand Mapping Oluştur", null, options);
+        var dialog = await DialogService.ShowAsync<BrandMappingDialog>("Marka Eşleştirme", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
-        {
+        if (result is not null && !result.Canceled)
             await RefreshData();
-        }
     }
 
     public async Task DeleteMapping(BrandMarketPlaceMatchDto mapping)
@@ -109,6 +117,7 @@ public partial class BrandMappingPage : ComponentBase
         IsLoading = true;
         await LoadMappings();
         await LoadSummary();
+        await LoadUnmappedBrands();
         IsLoading = false;
     }
 }

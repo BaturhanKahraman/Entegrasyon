@@ -24,7 +24,7 @@
                 <MudList T="Notification" Dense="true">
                     @foreach (var notification in _recentNotifications)
                     {
-                        <MudListItem T="Notification" Class="@(notification.IsRead ? "" : "mud-background-gray")">
+                        <MudListItem @key="notification.Id" T="Notification" Class="@(notification.IsRead ? "" : "mud-background-gray")">
                             <NotificationItem Notification="@notification"
                                               OnMarkAsRead="MarkAsRead" />
                         </MudListItem>

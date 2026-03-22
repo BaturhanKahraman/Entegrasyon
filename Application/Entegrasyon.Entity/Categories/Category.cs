@@ -5,7 +5,7 @@ namespace Entegrasyon.Entity.Categories;
 public sealed class Category : BaseEntity
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public bool IsFavorite { get; set; }
     public bool IsImported { get; set; }
 
@@ -26,13 +26,18 @@ public sealed class Category : BaseEntity
     public int? ImportId { get; set; }
 
     public int? SuperCategoryId { get; set; }
-    public Category SuperCategory { get; set; }
-    public IEnumerable<Category> SubCategories { get; set; }
+    public Category? SuperCategory { get; set; }
+    public IEnumerable<Category> SubCategories { get; set; } = new List<Category>();
     public List<CategoryAttributeCategory> CategoryAttributes { get; set; } = new ();
-    public IEnumerable<Product> Products { get; set; }
+    public IEnumerable<Product> Products { get; set; } = new List<Product>();
 
     /// <summary>
     /// Marketplace eşleşmeleri
     /// </summary>
     public ICollection<CategoryMarketplace> MarketplaceLinks { get; set; } = new List<CategoryMarketplace>();
+
+    /// <summary>
+    /// Bu kategorideki ürünler için varsayılan KDV oranı (%)
+    /// </summary>
+    public decimal? DefaultVatRate { get; set; }
 }

@@ -2,5 +2,5 @@
 
 public sealed record AddBranchDto
 {
-    public string Name { get; init; }
+    public string Name { get; init; } = null!;
 }

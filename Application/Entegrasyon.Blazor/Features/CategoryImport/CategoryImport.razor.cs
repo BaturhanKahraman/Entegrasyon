@@ -22,6 +22,12 @@ public partial class CategoryImport
     private TrendyolCategoryImporter TrendyolImporter { get; set; } = null!;
 
     [Inject]
+    private N11CategoryImporter N11Importer { get; set; } = null!;
+
+    [Inject]
+    private HepsiburadaCategoryImporter HbImporter { get; set; } = null!;
+
+    [Inject]
     private NavigationManager NavigationManager { get; set; } = null!;
 
     [Inject]
@@ -33,11 +39,21 @@ public partial class CategoryImport
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
-     private List<CategoryTreeNode> categories = [];
+    private List<CategoryTreeNode> categories = [];
     private IReadOnlyCollection<CategoryTreeNode>? selectedNodes;
     private bool loading;
     private bool importing;
     private string searchQuery = string.Empty;
+
+    // N11 state (separate from Trendyol)
+    private List<CategoryTreeNode> n11Categories = [];
+    private IReadOnlyCollection<CategoryTreeNode>? n11SelectedNodes;
+    private bool n11Loading;
+
+    // Hepsiburada state (separate from others)
+    private List<CategoryTreeNode> hbCategories = [];
+    private IReadOnlyCollection<CategoryTreeNode>? hbSelectedNodes;
+    private bool hbLoading;
 
     private async Task LoadTrendyolCategoriesAsync()
     {
@@ -163,4 +179,126 @@ public partial class CategoryImport
             .ToList()
     };
 
+    private async Task LoadN11CategoriesAsync()
+    {
+        n11Loading = true;
+        var result = await N11Importer.GetExternalCategoriesAsync();
+        if (result.Success && result.Data != null)
+        {
+            n11Categories = result.Data.Select(MapToTreeNode).ToList();
+            Snackbar.Add($"{n11Categories.Count} N11 üst kategori yüklendi.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "N11 kategorileri yüklenemedi.", Severity.Error);
+        }
+        n11Loading = false;
+    }
+
+    private async Task ImportN11CategoriesAsync()
+    {
+        if (n11SelectedNodes == null || !n11SelectedNodes.Any())
+        {
+            Snackbar.Add("Lütfen en az bir kategori seçin.", Severity.Warning);
+            return;
+        }
+
+        importing = true;
+        try
+        {
+            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var importRequests = n11SelectedNodes.Select(MapToImportRequest).ToList();
+            var importEvent = new CategoryImportRequestedEvent("N11", importRequests, userId);
+            await ImportRequestedChannel.PublishAsync(importEvent);
+            Snackbar.Add("N11 kategori içe aktarma işlemi başlatıldı.", Severity.Info);
+            n11SelectedNodes = null;
+            NavigationManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "N11 category import request failed");
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            importing = false;
+        }
+    }
+
+    private void RemoveN11SelectedCategory(CategoryTreeNode node)
+    {
+        if (n11SelectedNodes != null)
+        {
+            var list = n11SelectedNodes.ToList();
+            list.Remove(node);
+            n11SelectedNodes = list;
+        }
+    }
+
+    private void ClearN11Selection()
+    {
+        n11SelectedNodes = null;
+    }
+
+    // Hepsiburada methods
+    private async Task LoadHepsiburadaCategoriesAsync()
+    {
+        hbLoading = true;
+        var result = await HbImporter.GetExternalCategoriesAsync();
+        if (result.Success && result.Data != null)
+        {
+            hbCategories = result.Data.Select(MapToTreeNode).ToList();
+            Snackbar.Add($"{hbCategories.Count} Hepsiburada kategori yüklendi.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Hepsiburada kategorileri yüklenemedi.", Severity.Error);
+        }
+        hbLoading = false;
+    }
+
+    private async Task ImportHepsiburadaCategoriesAsync()
+    {
+        if (hbSelectedNodes == null || !hbSelectedNodes.Any())
+        {
+            Snackbar.Add("Lütfen en az bir kategori seçin.", Severity.Warning);
+            return;
+        }
+
+        importing = true;
+        try
+        {
+            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var importRequests = hbSelectedNodes.Select(MapToImportRequest).ToList();
+            var importEvent = new CategoryImportRequestedEvent("Hepsiburada", importRequests, userId);
+            await ImportRequestedChannel.PublishAsync(importEvent);
+            Snackbar.Add("Hepsiburada kategori içe aktarma işlemi başlatıldı.", Severity.Info);
+            hbSelectedNodes = null;
+            NavigationManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Hepsiburada category import request failed");
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            importing = false;
+        }
+    }
+
+    private void RemoveHbSelectedCategory(CategoryTreeNode node)
+    {
+        if (hbSelectedNodes != null)
+        {
+            var list = hbSelectedNodes.ToList();
+            list.Remove(node);
+            hbSelectedNodes = list;
+        }
+    }
+
+    private void ClearHbSelection()
+    {
+        hbSelectedNodes = null;
+    }
 }

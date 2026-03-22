@@ -48,7 +48,7 @@ else
                         <MudSelectItem Value="@((int?)null)" Disabled>Bir üst kategori seçebilirsiniz.</MudSelectItem>
                         @foreach (var cat in _availableCategories)
                         {
-                            <MudSelectItem Value="@((int?)cat.Id)">@cat.Name</MudSelectItem>
+                            <MudSelectItem @key="cat.Id" Value="@((int?)cat.Id)">@cat.Name</MudSelectItem>
                         }
                     </MudSelect>
                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-3">
@@ -58,6 +58,16 @@ else
                     <MudCheckBox @bind-Value="_model.IsFavorite"
                                  Label="Favori Kategori"
                                  Color="Color.Warning" />
+
+                    <MudSelect T="decimal?" @bind-Value="_model.DefaultVatRate"
+                               Label="Varsayilan KDV Orani"
+                               Clearable="true"
+                               Variant="Variant.Outlined"
+                               Class="mb-3">
+                        <MudSelectItem Value="@((decimal?)1)">%1</MudSelectItem>
+                        <MudSelectItem Value="@((decimal?)10)">%10</MudSelectItem>
+                        <MudSelectItem Value="@((decimal?)20)">%20</MudSelectItem>
+                    </MudSelect>
                 </MudForm>
             </MudPaper>
         </MudItem>
@@ -105,7 +115,7 @@ else
 
                     @foreach (var (attr, index) in _model.Attributes.Select((a, i) => (a, i)))
                     {
-                        <MudPaper Class="pa-3 mb-2" Outlined="true">
+                        <MudPaper @key="index" Class="pa-3 mb-2" Outlined="true">
                             <MudGrid>
                                 @if (attr.IsExisting)
                                 {
@@ -172,7 +182,7 @@ else
                                     <MudChipSet T="string" ReadOnly="false">
                                         @foreach (var val in attr.Values)
                                         {
-                                            <MudChip T="string"
+                                            <MudChip @key="val" T="string"
                                                      Text="@val.Name"
                                                      Color="Color.Default"
                                                      Variant="Variant.Outlined"
@@ -183,7 +193,7 @@ else
                                     </MudChipSet>
                                 </MudItem>
 
-                                @if (!attr.AllowCustom)
+                                @if (attr.AllowCustom)
                                 {
                                     <MudItem xs="10">
                                         <MudTextField @bind-Value="attr.NewValueName"

@@ -3,6 +3,6 @@
 public class TrendyolImport
 {
     public int Depth { get; set; }
-    public List<TrendyolSelectedCategory> SelectedCategories { get; set; }
+    public List<TrendyolSelectedCategory> SelectedCategories { get; set; } = [];
 
 }

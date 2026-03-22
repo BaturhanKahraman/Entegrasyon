@@ -54,12 +54,14 @@ public partial class ImageUploadDialog
 
             using var ms = new MemoryStream();
             await file.OpenReadStream(maxAllowedSize: 5_242_880).CopyToAsync(ms);
-            var previewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+            var bytes = ms.ToArray();
+            var previewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
 
             var imageItem = new ImageItem
             {
                 Id = Guid.NewGuid(),
-                File = file,
+                FileData = bytes,
+                FileName = file.Name,
                 PreviewUrl = previewUrl
             };
             _allImages.Add(imageItem);
@@ -152,7 +154,8 @@ public partial class ImageUploadDialog
                 .Select(i => new ImageItem
                 {
                     Id = i!.Id,
-                    File = i.File,
+                    FileData = i.FileData,
+                    FileName = i.FileName,
                     PreviewUrl = i.PreviewUrl,
                     IsPrimary = i.Id == coverId
                 })
@@ -178,7 +181,8 @@ public partial class ImageUploadDialog
     public class ImageItem
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public IBrowserFile? File { get; set; }
+        public byte[] FileData { get; set; } = [];
+        public string FileName { get; set; } = string.Empty;
         public string PreviewUrl { get; set; } = string.Empty;
         public bool IsPrimary { get; set; }
     }

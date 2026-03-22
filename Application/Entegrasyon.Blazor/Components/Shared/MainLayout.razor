@@ -3,10 +3,15 @@
 @using Entegrasyon.Blazor.Services
 @using Entegrasyon.Blazor.Features.Notifications
 
-<MudThemeProvider Theme="_theme" IsDarkMode="@_isDarkMode" />
+<MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDarkMode" @ref="_mudThemeProvider"/>
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+
+@if (!_themeLoaded)
+{
+    return;
+}
 
 <MudLayout>
     <MudAppBar Elevation="1">
@@ -18,7 +23,7 @@
         <MudTooltip Text="@(_isDarkMode ? "Açık Tema" : "Koyu Tema")">
             <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
                            Color="Color.Inherit"
-                           OnClick="ToggleTheme" />
+                           OnClick="ToggleThemeAsync" />
         </MudTooltip>
 
         <!-- Notifications -->
@@ -28,13 +33,13 @@
         <AuthorizeView>
             <Authorized>
                 <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AnchorOrigin="Origin.BottomRight">
-                    <MudMenuItem Icon="@Icons.Material.Filled.Person">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Person" Href="/profile">
                         <div class="d-flex flex-column">
                             <MudText Typo="Typo.body1">@context.User.Identity?.Name</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Profilim</MudText>
                         </div>
                     </MudMenuItem>
                     <MudDivider />
-                    <MudMenuItem Icon="@Icons.Material.Filled.Settings" Href="/settings">Ayarlar</MudMenuItem>
                     <MudMenuItem Icon="@Icons.Material.Filled.Help" Href="/help">Yardım</MudMenuItem>
                     <MudDivider />
                     <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout" IconColor="Color.Error">

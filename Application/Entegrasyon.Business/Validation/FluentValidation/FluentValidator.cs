@@ -11,7 +11,7 @@ public class FluentValidator(IServiceProvider serviceProvider,IApplicationLogMan
     {
         if(entity == null)
             throw new ValidationException(new ValidationFailure[1] { new("Object","Obje boş geldi. Lütfen geliştirici ile irtibata geçin.") });
-        var validator = (IValidator<T>)serviceProvider.GetService(typeof(IValidator<T>));
+        var validator = serviceProvider.GetService(typeof(IValidator<T>)) as IValidator<T>;
         if(validator == null)
             throw new Exception("Validator not found!");
         var validateResult = await validator.ValidateAsync(entity);
@@ -26,7 +26,7 @@ public class FluentValidator(IServiceProvider serviceProvider,IApplicationLogMan
     public async ValueTask<ValidationResult> Validate<T>(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        var validator = (IValidator<T>)serviceProvider.GetService(typeof(IValidator<T>));
+        var validator = serviceProvider.GetService(typeof(IValidator<T>)) as IValidator<T>;
         return validator == null ? throw new Exception("Validator not found!") : await validator.ValidateAsync(entity);
     }
 }

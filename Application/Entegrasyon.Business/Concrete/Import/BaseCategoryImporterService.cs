@@ -9,97 +9,100 @@ using Entegrasyon.Entity.Results;
 namespace Entegrasyon.Business.Concrete.Import;
 
 /// <summary>
-/// Kategori import işlemleri için temel sınıf.
-/// Ortak transaction, loglama ve veritabanı işlemlerini yönetir.
+/// Kategori import islemleri icin temel sinif.
+/// Ortak transaction, loglama ve veritabani islemlerini yonetir.
 /// </summary>
 public abstract class BaseCategoryImporterService : ICategoryImporterService
 {
-    protected readonly IntegrationDbContext DbContext;
+    protected readonly IDbContextFactory<IntegrationDbContext> ContextFactory;
     protected readonly ILogger Logger;
     protected MarketPlace? MarketPlace;
 
     public abstract ImportSource Source { get; }
 
-    protected BaseCategoryImporterService(IntegrationDbContext dbContext, ILogger logger)
+    protected BaseCategoryImporterService(IDbContextFactory<IntegrationDbContext> contextFactory, ILogger logger)
     {
-        DbContext = dbContext;
+        ContextFactory = contextFactory;
         Logger = logger;
     }
 
     /// <summary>
-    /// Marketplace'i yükler
+    /// Marketplace'i yukler
     /// </summary>
-    protected async Task LoadMarketPlaceAsync(string marketplaceName, CancellationToken cancellationToken = default)
+    protected async Task LoadMarketPlaceAsync(IntegrationDbContext dbContext, string marketplaceName, CancellationToken cancellationToken = default)
     {
-        MarketPlace = await DbContext.MarketPlaces
+        MarketPlace = await dbContext.MarketPlaces
             .AsTracking()
             .FirstOrDefaultAsync(x => x.Name == marketplaceName, cancellationToken);
     }
 
     /// <summary>
-    /// Harici kategorileri çeker - her marketplace kendi implementasyonunu sağlar
+    /// Harici kategorileri ceker - her marketplace kendi implementasyonunu saglar
     /// </summary>
     public abstract Task<IDataResult<IEnumerable<ExternalCategoryDto>>> GetExternalCategoriesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Toplu kategori import işlemi
+    /// Toplu kategori import islemi
     /// </summary>
     public virtual async Task<IResult> ImportCategoriesAsync(IEnumerable<ExternalCategoryImportRequest> categories, CancellationToken cancellationToken = default)
     {
-        await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var dbContext = await ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             foreach (var category in categories)
             {
-                await ImportCategoryInternalAsync(category, null, cancellationToken);
+                await ImportCategoryInternalAsync(dbContext, category, null, cancellationToken);
             }
 
-            await DbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            Logger.LogInformation("{Source} kategorileri başarıyla import edildi", Source);
-            return new SuccessResult($"{Source} kategorileri başarıyla import edildi.");
+            Logger.LogInformation("{Source} kategorileri basariyla import edildi", Source);
+            return new SuccessResult($"{Source} kategorileri basariyla import edildi.");
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
-            Logger.LogError(ex, "{Source} kategorileri import edilirken hata oluştu", Source);
-            return new ErrorResult($"Import sırasında hata: {ex.Message}");
+            Logger.LogError(ex, "{Source} kategorileri import edilirken hata olustu", Source);
+            return new ErrorResult($"Import sirasinda hata: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Tekil kategori import işlemi
+    /// Tekil kategori import islemi
     /// </summary>
     public virtual async Task<IResult> ImportCategoryAsync(ExternalCategoryImportRequest category, CancellationToken cancellationToken = default)
     {
-        await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var dbContext = await ContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            await ImportCategoryInternalAsync(category, null, cancellationToken);
-            await DbContext.SaveChangesAsync(cancellationToken);
+            await ImportCategoryInternalAsync(dbContext, category, null, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return new SuccessResult($"Kategori '{category.Name}' başarıyla import edildi.");
+            return new SuccessResult($"Kategori '{category.Name}' basariyla import edildi.");
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
             Logger.LogError(ex, "Kategori import edilirken hata: {CategoryName}", category.Name);
-            return new ErrorResult($"Import sırasında hata: {ex.Message}");
+            return new ErrorResult($"Import sirasinda hata: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Kategoriyi veritabanına ekler veya günceller
+    /// Kategoriyi veritabanina ekler veya gunceller
     /// </summary>
     protected virtual async Task<Category> ImportCategoryInternalAsync(
+        IntegrationDbContext dbContext,
         ExternalCategoryImportRequest importRequest,
         Category? parentCategory,
         CancellationToken cancellationToken = default)
     {
-        // Mevcut kategoriyi bul veya yeni oluştur
-        var existingCategory = await DbContext.Categories
+        // Mevcut kategoriyi bul veya yeni olustur
+        var existingCategory = await dbContext.Categories
             .AsTracking()
             .Include(c => c.CategoryAttributes)
             .FirstOrDefaultAsync(c =>
@@ -112,7 +115,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
 
         if (existingCategory != null)
         {
-            // Güncelle
+            // Guncelle
             existingCategory.Name = importRequest.Name;
             existingCategory.SuperCategory = parentCategory;
             existingCategory.UpdatedAt = DateTimeOffset.UtcNow;
@@ -120,7 +123,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
         }
         else
         {
-            // Yeni oluştur
+            // Yeni olustur
             category = new Category
             {
                 Name = importRequest.Name,
@@ -131,7 +134,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
-            // Backward compatibility için ImportId'yi de set et (Trendyol için)
+            // Backward compatibility icin ImportId'yi de set et (Trendyol icin)
             if (Source == ImportSource.Trendyol && int.TryParse(importRequest.ExternalId, out var importId))
             {
                 #pragma warning disable CS0618
@@ -139,34 +142,35 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
                 #pragma warning restore CS0618
             }
 
-            await DbContext.Categories.AddAsync(category, cancellationToken);
+            await dbContext.Categories.AddAsync(category, cancellationToken);
         }
 
-        // Marketplace eşleşmesi oluştur
+        // Marketplace eslesmesi olustur
         if (isNew && MarketPlace != null)
         {
-            await CreateMarketplaceLinkAsync(category, importRequest, cancellationToken);
+            await CreateMarketplaceLinkAsync(dbContext, category, importRequest, cancellationToken);
         }
 
-        // Alt kategorileri işle
+        // Alt kategorileri isle
         foreach (var childRequest in importRequest.Children)
         {
-            await ImportCategoryInternalAsync(childRequest, category, cancellationToken);
+            await ImportCategoryInternalAsync(dbContext, childRequest, category, cancellationToken);
         }
 
-        // Leaf kategori ise özelliklerini çek
+        // Leaf kategori ise ozelliklerini cek
         if (importRequest.IsLeaf)
         {
-            await ImportCategoryAttributesAsync(category, isNew, cancellationToken);
+            await ImportCategoryAttributesAsync(dbContext, category, isNew, cancellationToken);
         }
 
         return category;
     }
 
     /// <summary>
-    /// Marketplace eşleşmesi oluşturur
+    /// Marketplace eslesmesi olusturur
     /// </summary>
     protected virtual async Task CreateMarketplaceLinkAsync(
+        IntegrationDbContext dbContext,
         Category category,
         ExternalCategoryImportRequest importRequest,
         CancellationToken cancellationToken = default)
@@ -185,18 +189,19 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await DbContext.CategoryMarketplaces.AddAsync(link, cancellationToken);
+        await dbContext.CategoryMarketplaces.AddAsync(link, cancellationToken);
     }
 
     /// <summary>
-    /// Kategori özelliklerini import eder - marketplace-specific
+    /// Kategori ozelliklerini import eder - marketplace-specific
     /// </summary>
     protected virtual Task ImportCategoryAttributesAsync(
+        IntegrationDbContext dbContext,
         Category category,
         bool isNewCategory,
         CancellationToken cancellationToken = default)
     {
-        // Alt sınıflar override edebilir
+        // Alt siniflar override edebilir
         return Task.CompletedTask;
     }
 }

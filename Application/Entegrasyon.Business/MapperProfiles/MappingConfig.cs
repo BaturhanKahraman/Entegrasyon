@@ -77,7 +77,8 @@ public static class MappingConfig
         config.NewConfig<ProductEditDetailDto,Product>();
 
         // Product Variant
-        config.NewConfig<AddProductVariantDto,ProductVariant>();
+        config.NewConfig<AddProductVariantDto,ProductVariant>()
+              .Map(dest => dest.VatRate, src => src.VatRate ?? 0m);
         config.NewConfig<ProductVariant,AddProductVariantDto>();
         config.NewConfig<ProductVariantEditDetailDto,ProductVariant>();
 

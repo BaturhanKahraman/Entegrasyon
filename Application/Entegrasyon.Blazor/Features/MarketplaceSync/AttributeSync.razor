@@ -70,6 +70,26 @@
                             }
                         </CellTemplate>
                     </TemplateColumn>
+                    <TemplateColumn Title="İşlemler">
+                        <CellTemplate>
+                            <MudStack Row="true" Spacing="1">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Link"
+                                           OnClick="@(() => OpenRowMappingDialog(context.Item))">
+                                    Eşleştir
+                                </MudButton>
+                                @if (context.Item.HasMatch)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteMapping(context.Item))" />
+                                }
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
                 </Columns>
                 <PagerContent>
                     <MudDataGridPager T="AttributeSyncRow" />

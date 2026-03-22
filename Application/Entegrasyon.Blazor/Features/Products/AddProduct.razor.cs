@@ -1,24 +1,24 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Blazor.Features.Products;
 
 public partial class AddProduct
 {
-    // Steps: 0=Genel, 1=Varyant Seçimi, 2=Varyant Detayları & Görseller, 3=Pazaryeri
+    // Steps: 0=Genel, 1=Varyant Seçimi, 2=Varyant Detayları & Görseller, 3=Kontrol & Özet, 4=Pazaryerine Gönder
     private int stepIndex = 0;
     private MudForm? formStep1;
+    private MudAutocomplete<int>? _brandAutocompleteRef;
     private bool _isSaving;
 
     private string? title;
@@ -47,13 +47,20 @@ public partial class AddProduct
 
     // Feature 4: Branch offices for stock entry in Step 2
     private List<BranchOffice> _branchOffices = [];
+    private decimal? _categoryDefaultVatRate;
     private readonly Dictionary<(int variantIdx, int officeId), int?> _stockValues = new();
 
     // Images per variant index — with preview support
     private readonly Dictionary<int, List<VariantImageItem>> _variantImages = new();
 
-    // Marketplace selection (step 3)
-    private bool _trendyolSelected = true;
+    // Saved product ID — set after successful save in Step 3
+    private Guid? _savedProductId;
+
+    // Loading states
+    private bool _isProcessingImages;
+    private bool _isGeneratingBarcodes;
+    private int _uploadProgress;
+    private int _uploadTotal;
 
     [Inject] private IBrandService? BrandManager { get; set; }
     [Inject] private ICategoryService? CategoryManager { get; set; }
@@ -62,7 +69,7 @@ public partial class AddProduct
     [Inject] private ISnackbar? Snackbar { get; set; }
     [Inject] private IProductService? ProductManager { get; set; }
     [Inject] private IImageManager? ImageManager { get; set; }
-    [Inject] private EventChannel<ProductCreatedForMarketplaceEvent>? MarketplaceChannel { get; set; }
+    // MarketplaceChannel kaldırıldı — publish artık Step 4'te MarketplacePublishStep üzerinden yapılıyor
     [Inject] private NavigationManager? NavigationManager { get; set; }
     [Inject] private IBarcodeService? BarcodeService { get; set; }
     [Inject] private IDialogService? DialogService { get; set; }
@@ -77,11 +84,7 @@ public partial class AddProduct
         try
         {
             if (CategoryManager is not null)
-            {
-                var cats = await CategoryManager.GetSubCategories();
-                if (cats?.Data is not null)
-                    categories = cats.Data.Select(d => new Category { Id = d.Id, Name = d.Name }).ToList();
-            }
+                categories = await CategoryManager.GetLeafCategoriesAsync();
 
             if (BrandManager is not null)
             {
@@ -134,7 +137,8 @@ public partial class AddProduct
             kv => kv.Key,
             kv => kv.Value.Select(img => new ImageUploadDialog.ImageItem
             {
-                File = img.File,
+                FileData = img.FileData,
+                FileName = img.FileName,
                 PreviewUrl = img.PreviewUrl,
                 IsPrimary = img.IsPrimary
             }).ToList()
@@ -147,29 +151,71 @@ public partial class AddProduct
         };
 
         var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
-        var dialog = await DialogService.Show<ImageUploadDialog>("Görsel Yönetimi", parameters, options).Result;
+        var dialog = await DialogService.ShowAsync<ImageUploadDialog>("Görsel Yönetimi", parameters, options);
+        var dialogResult = await dialog.Result;
 
-        if (!dialog!.Canceled && dialog.Data is Dictionary<int, List<ImageUploadDialog.ImageItem>> result)
+        if (!dialogResult!.Canceled && dialogResult.Data is Dictionary<int, List<ImageUploadDialog.ImageItem>> result)
         {
+            _isProcessingImages = true;
+            StateHasChanged();
+            await Task.Yield(); // UI'ın spinner'ı göstermesine izin ver
+
             _variantImages.Clear();
             foreach (var (idx, items) in result)
             {
                 _variantImages[idx] = items.Select(item => new VariantImageItem
                 {
-                    File = item.File,
+                    FileData = item.FileData,
+                    FileName = item.FileName,
                     PreviewUrl = item.PreviewUrl,
                     IsPrimary = item.IsPrimary
                 }).ToList();
             }
+
+            _isProcessingImages = false;
         }
     }
 
-    private async Task GenerateBarcodeForVariant(int idx)
+    private async Task GenerateAllBarcodes()
     {
-        if (BarcodeService is null || idx >= variants.Count) return;
-        variants[idx].Barcode = await BarcodeService.GenerateAsync();
+        if (BarcodeService is null || variants.Count == 0) return;
+
+        _isGeneratingBarcodes = true;
+        StateHasChanged();
+
+        try
+        {
+            foreach (var variant in variants)
+            {
+                variant.Barcode = await BarcodeService.GenerateAsync();
+            }
+        }
+        finally
+        {
+            _isGeneratingBarcodes = false;
+        }
     }
 
+    private void CopyFromPreviousVariant(int idx)
+    {
+        if (idx <= 0 || idx >= variants.Count) return;
+
+        var source = variants[idx - 1];
+        var target = variants[idx];
+
+        // Fiyat, maliyet, hacim ağırlığı kopyala — barkod ve görseller HARİÇ
+        target.ListPrice = source.ListPrice;
+        target.SalePrice = source.SalePrice;
+        target.CostPrice = source.CostPrice;
+        target.DimensionalWeight = source.DimensionalWeight;
+
+        // Stok değerlerini kopyala
+        foreach (var office in _branchOffices)
+        {
+            var sourceStock = _stockValues.GetValueOrDefault((idx - 1, office.Id));
+            _stockValues[(idx, office.Id)] = sourceStock;
+        }
+    }
 
     private static string GetVariantLabel(AddProductVariantDto variant, int idx)
     {
@@ -215,7 +261,30 @@ public partial class AddProduct
             return;
         }
 
-        if (stepIndex < 3) stepIndex++;
+        // Step 2 validasyonu: her varyantta fiyat zorunlu
+        if (stepIndex == 2)
+        {
+            var errors = new List<string>();
+            for (int i = 0; i < variants.Count; i++)
+            {
+                var v = variants[i];
+                var label = GetVariantLabel(v, i);
+                if (!v.ListPrice.HasValue || v.ListPrice <= 0)
+                    errors.Add($"{label}: Liste fiyatı girilmeli");
+                if (!v.SalePrice.HasValue || v.SalePrice <= 0)
+                    errors.Add($"{label}: Satış fiyatı girilmeli");
+            }
+            if (errors.Count > 0)
+            {
+                foreach (var e in errors.Take(3))
+                    Snackbar?.Add(e, Severity.Warning);
+                if (errors.Count > 3)
+                    Snackbar?.Add($"...ve {errors.Count - 3} hata daha", Severity.Warning);
+                return;
+            }
+        }
+
+        if (stepIndex < 3) stepIndex++; // Step 3 = son manual adım, Step 4'e submit sonrası geçilir
     }
 
     private void PreviousStep()
@@ -286,24 +355,35 @@ public partial class AddProduct
 
             var product = result.Data;
 
-            // 2. Upload images (synchronous — Trendyol needs the URLs)
+            // 2. Upload images (with progress)
             var imageUploads = BuildImageUploads(product);
             if (imageUploads.Count > 0)
-                await ImageManager.AddProductImages(product.Id, imageUploads);
-
-            // 3. Queue marketplace sync (fire & forget)
-            var selectedMarketplaces = GetSelectedMarketplaces();
-            if (selectedMarketplaces.Count > 0 && MarketplaceChannel is not null)
             {
-                MarketplaceChannel.TryPublish(new ProductCreatedForMarketplaceEvent(product.Id, selectedMarketplaces));
+                _uploadTotal = imageUploads.Count;
+                _uploadProgress = 0;
+                StateHasChanged();
+
+                foreach (var upload in imageUploads)
+                {
+                    await ImageManager.AddProductImages(product.Id, [upload]);
+                    _uploadProgress++;
+                    StateHasChanged();
+                    await Task.Yield();
+                }
             }
 
-            Snackbar?.Add("Ürün oluşturuldu. Pazaryeri senkronizasyonu arka planda başlatıldı.", Severity.Success);
-            NavigationManager?.NavigateTo("/products");
+            // 3. Step 4'e geç — pazaryeri gönderimi opsiyonel
+            _savedProductId = product.Id;
+            Snackbar?.Add("Ürün başarıyla kaydedildi.", Severity.Success);
+            stepIndex = 4;
         }
         catch (FluentValidation.ValidationException vex)
         {
             Snackbar?.Add(string.Join(" | ", vex.Errors.Select(e => e.ErrorMessage)), Severity.Warning);
+        }
+        catch (DbUpdateException dbEx) when (dbEx.InnerException?.Message.Contains("IX_Products_StockCode_Active") == true)
+        {
+            Snackbar?.Add("Bu stok kodu zaten kullanılıyor. Lütfen farklı bir stok kodu girin.", Severity.Error);
         }
         catch (Exception ex)
         {
@@ -332,22 +412,26 @@ public partial class AddProduct
 
             foreach (var item in items)
             {
-                if (item.File is null) continue;
+                if (item.FileData.Length == 0) continue;
                 result.Add(new VariantImageStream(
                     savedVariant.Id,
-                    item.File.OpenReadStream(maxAllowedSize: 10_000_000),
-                    item.File.Name,
+                    new MemoryStream(item.FileData),
+                    item.FileName,
                     item.IsPrimary));
             }
         }
         return result;
     }
 
-    private List<string> GetSelectedMarketplaces()
+    private void OnMarketplacePublished()
     {
-        var list = new List<string>();
-        if (_trendyolSelected) list.Add("Trendyol");
-        return list;
+        Snackbar?.Add("Pazaryeri senkronizasyonu başlatıldı.", Severity.Success);
+        NavigationManager?.NavigateTo("/products", replace: true);
+    }
+
+    private void OnMarketplaceSkipped()
+    {
+        NavigationManager?.NavigateTo("/products", replace: true);
     }
 
     private async Task OnCategoryChanged(int newCategoryId)
@@ -364,6 +448,13 @@ public partial class AddProduct
         _stockValues.Clear();
         StateHasChanged();
         await LoadVarianterAttributes();
+
+        // Kategori default VatRate'ini yukle
+        if (CategoryManager is not null && categoryId > 0)
+        {
+            var cat = await CategoryManager.GetCategoryById(categoryId);
+            _categoryDefaultVatRate = cat?.DefaultVatRate;
+        }
     }
 
     private async Task LoadVarianterAttributes()
@@ -508,7 +599,8 @@ public partial class AddProduct
 
     private class VariantImageItem
     {
-        public IBrowserFile? File { get; set; }
+        public byte[] FileData { get; set; } = [];
+        public string FileName { get; set; } = string.Empty;
         public string PreviewUrl { get; set; } = string.Empty;
         public bool IsPrimary { get; set; }
     }
@@ -538,9 +630,96 @@ public partial class AddProduct
         public AddProductVariantDto Variant { get; set; } = null!;
     }
 
+    private string GetAttributeDisplayValue(CategoryAttributeDto attr)
+    {
+        if (_regularAttrValueIds.TryGetValue(attr.Id, out var vid) && vid.HasValue)
+        {
+            var val = attr.CategoryAttributeValues.FirstOrDefault(v => v.Id == vid.Value);
+            if (val is not null) return val.Name;
+        }
+        if (_regularAttrCustomValues.TryGetValue(attr.Id, out var cv) && !string.IsNullOrWhiteSpace(cv))
+            return cv;
+        return "—";
+    }
+
     private int? GetStock(int variantIdx, int officeId)
         => _stockValues.GetValueOrDefault((variantIdx, officeId));
 
     private void SetStock(int variantIdx, int officeId, int? value)
         => _stockValues[(variantIdx, officeId)] = value;
+
+    // Y2: Parameterized methods for loop lambdas — avoids per-render delegate allocation
+    private void OnRegularAttrValueChanged(int attrId, int? value)
+        => _regularAttrValueIds[attrId] = value;
+
+    private void OnRegularAttrCustomValueChanged(int attrId, string? value)
+        => _regularAttrCustomValues[attrId] = value;
+
+    private async Task OnBrandBlur(FocusEventArgs _)
+    {
+        // Geçerli bir marka zaten seçildiyse bir şey yapma
+        if (brandId > 0 && brands.Any(b => b.Id == brandId))
+            return;
+
+        var typedName = _brandAutocompleteRef?.Text;
+        if (string.IsNullOrWhiteSpace(typedName))
+            return;
+
+        // Yazılan metin mevcut bir markayla eşleşiyorsa bir şey yapma
+        if (brands.Any(b => b.Name.Equals(typedName, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var confirm = await DialogService!.ShowMessageBox(
+            "Yeni Marka",
+            $"\"{typedName}\" markası bulunmamaktadır. Yeni olarak eklemek ister misiniz?",
+            yesText: "Evet, Ekle",
+            cancelText: "Hayır");
+
+        if (confirm == true)
+        {
+            var result = await BrandManager!.AddBrand(new AddBrandDto { Name = typedName });
+            if (result.Success)
+            {
+                var brandsResult = await BrandManager.GetBrandListDetails();
+                if (brandsResult?.Data is not null)
+                    brands = brandsResult.Data;
+
+                brandId = brands.FirstOrDefault(b =>
+                    b.Name.Equals(typedName, StringComparison.OrdinalIgnoreCase))?.Id ?? 0;
+
+                Snackbar?.Add($"\"{typedName}\" markası eklendi. Pazaryerlerine göndermek için eşleştirmesi yapılmalıdır.",
+                    Severity.Info);
+            }
+            else
+            {
+                Snackbar?.Add(result.Message ?? "Marka eklenemedi.", Severity.Error);
+            }
+        }
+        else
+        {
+            brandId = 0;
+            if (_brandAutocompleteRef is not null)
+                await _brandAutocompleteRef.ResetAsync();
+        }
+    }
+
+    private Task<IEnumerable<int>> SearchBrands(string value, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(brands.Select(b => b.Id));
+
+        return Task.FromResult(brands
+            .Where(b => b.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Select(b => b.Id));
+    }
+
+    private Task<IEnumerable<int>> SearchCategories(string value, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(categories.Select(c => c.Id));
+
+        return Task.FromResult(categories
+            .Where(c => c.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.Id));
+    }
 }

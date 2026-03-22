@@ -4,21 +4,21 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Trendyol satıcı adres bilgilerini cache'ler.
-/// 1 req/hour rate limit — memory cache + DB fallback.
-/// Ürün publish için ShipmentAddressId ve ReturningAddressId gerekli.
+/// Trendyol satici adres bilgilerini cache'ler.
+/// 1 req/hour rate limit -- memory cache + DB fallback.
+/// Urun publish icin ShipmentAddressId ve ReturningAddressId gerekli.
 /// </summary>
 public sealed class TrendyolSupplierAddressCache(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
     IMemoryCache memoryCache,
     ILogger<TrendyolSupplierAddressCache> logger)
 {
-    private const int TrendyolMarketPlaceId = 1;
     private const string CacheKey = "TrendyolSupplierAddresses";
 
     public async Task<TrendyolSupplierAddress?> GetDefaultAddressAsync()
@@ -28,6 +28,8 @@ public sealed class TrendyolSupplierAddressCache(
 
         try
         {
+            await using var dbContext = await contextFactory.CreateDbContextAsync();
+
             var marketplace = await dbContext.MarketPlaces.AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
 

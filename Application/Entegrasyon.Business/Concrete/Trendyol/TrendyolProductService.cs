@@ -3,51 +3,51 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Logs;
-using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 public sealed class TrendyolProductService(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
     ITrendyolProductMapper productMapper,
     TrendyolMappingValidator mappingValidator,
     IProductActivityLogger activityLogger,
     ILogger<TrendyolProductService> logger) : ITrendyolProductService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IDataResult<string>> PublishProductAsync(Guid productId)
     {
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         if (!validationResult.Success)
         {
             await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-                $"Eşleştirme doğrulaması başarısız: {validationResult.Message}",
+                $"Eslestirme dogrulamasi basarisiz: {validationResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "Trendyol");
             return new ErrorDataResult<string>(null!, validationResult.Message);
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            "Eşleştirme doğrulaması başarılı", ProductActivityStatus.Success, marketplaceName: "Trendyol");
+            "Eslestirme dogrulamasi basarili", ProductActivityStatus.Success, marketplaceName: "Trendyol");
 
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
         {
             await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
-                $"Ürün mapping hatası: {mapResult.Message}",
+                $"Urun mapping hatasi: {mapResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "Trendyol");
             return new ErrorDataResult<string>(null!, mapResult.Message);
         }
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
 
         if (marketplace?.SellerId is null)
-            return new ErrorDataResult<string>(null!, "Trendyol SellerId ayarlanmamış.");
+            return new ErrorDataResult<string>(null!, "Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/product/sellers/{marketplace.SellerId}/v2/products";
         var response = await apiClient.PostAsync(url, mapResult.Data);
@@ -59,15 +59,15 @@ public sealed class TrendyolProductService(
                 response.StatusCode, errorBody);
 
             await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
-                $"Trendyol API hatası: {response.StatusCode}",
+                $"Trendyol API hatasi: {response.StatusCode}",
                 ProductActivityStatus.Error, detail: errorBody, marketplaceName: "Trendyol");
 
-            return new ErrorDataResult<string>(null!, $"Trendyol API hatası: {response.StatusCode} — {errorBody}");
+            return new ErrorDataResult<string>(null!, $"Trendyol API hatasi: {response.StatusCode} -- {errorBody}");
         }
 
         var batchResponse = await response.Content.ReadFromJsonAsync<TrendyolBatchResponse>();
         var batchRequestId = batchResponse?.BatchRequestId
-            ?? throw new InvalidOperationException("Trendyol batch response'da BatchRequestId bulunamadı.");
+            ?? throw new InvalidOperationException("Trendyol batch response'da BatchRequestId bulunamadi.");
 
         var pm = await dbContext.ProductMarketplaces
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == TrendyolMarketPlaceId);
@@ -80,19 +80,21 @@ public sealed class TrendyolProductService(
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
-            $"Trendyol'a gönderildi — {mapResult.Data.Items.Count} varyant",
+            $"Trendyol'a gonderildi -- {mapResult.Data.Items.Count} varyant",
             ProductActivityStatus.Success, marketplaceName: "Trendyol", referenceId: batchRequestId);
 
-        return new SuccessDataResult<string>(batchRequestId, "Ürün Trendyol'a gönderildi.");
+        return new SuccessDataResult<string>(batchRequestId, "Urun Trendyol'a gonderildi.");
     }
 
     public async Task<IDataResult<TrendyolBatchStatusResponse>> CheckBatchStatusAsync(string batchRequestId)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
 
         if (marketplace?.SellerId is null)
-            return new ErrorDataResult<TrendyolBatchStatusResponse>(null!, "Trendyol SellerId ayarlanmamış.");
+            return new ErrorDataResult<TrendyolBatchStatusResponse>(null!, "Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/product/sellers/{marketplace.SellerId}/products/batch-requests/{batchRequestId}";
         var response = await apiClient.GetAsync(url);
@@ -102,7 +104,7 @@ public sealed class TrendyolProductService(
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol batch status check failed. BatchId={BatchId}, Status={Status}",
                 batchRequestId, response.StatusCode);
-            return new ErrorDataResult<TrendyolBatchStatusResponse>(null!, $"Trendyol API hatası: {response.StatusCode}");
+            return new ErrorDataResult<TrendyolBatchStatusResponse>(null!, $"Trendyol API hatasi: {response.StatusCode}");
         }
 
         var statusResponse = await response.Content.ReadFromJsonAsync<TrendyolBatchStatusResponse>();
@@ -118,11 +120,13 @@ public sealed class TrendyolProductService(
         if (!mapResult.Success)
             return new ErrorResult(mapResult.Message);
 
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
 
         if (marketplace?.SellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/product/sellers/{marketplace.SellerId}/v2/products/unapproved-bulk-update";
         var response = await apiClient.PutAsync(url, mapResult.Data);
@@ -131,25 +135,27 @@ public sealed class TrendyolProductService(
         {
             var errorBody = await response.Content.ReadAsStringAsync();
             await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
-                $"Onaysız ürün güncelleme hatası: {response.StatusCode}",
+                $"Onaysiz urun guncelleme hatasi: {response.StatusCode}",
                 ProductActivityStatus.Error, detail: errorBody, marketplaceName: "Trendyol");
-            return new ErrorResult($"Güncelleme hatası: {response.StatusCode}");
+            return new ErrorResult($"Guncelleme hatasi: {response.StatusCode}");
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
-            "Onaysız ürün Trendyol'da güncellendi",
+            "Onaysiz urun Trendyol'da guncellendi",
             ProductActivityStatus.Success, marketplaceName: "Trendyol");
 
-        return new SuccessResult("Onaysız ürün güncellendi.");
+        return new SuccessResult("Onaysiz urun guncellendi.");
     }
 
     public async Task<IResult> UpdateApprovedContentAsync(Guid productId)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
         var pm = await dbContext.ProductMarketplaces.AsNoTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == TrendyolMarketPlaceId);
 
         if (pm?.ContentId is null)
-            return new ErrorResult("ContentId bulunamadı — ürün henüz onaylanmamış olabilir.");
+            return new ErrorResult("ContentId bulunamadi -- urun henuz onaylanmamis olabilir.");
 
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
@@ -159,7 +165,7 @@ public sealed class TrendyolProductService(
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
 
         if (marketplace?.SellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/product/sellers/{marketplace.SellerId}/v2/products/content-bulk-update";
         var response = await apiClient.PutAsync(url, mapResult.Data);
@@ -168,15 +174,15 @@ public sealed class TrendyolProductService(
         {
             var errorBody = await response.Content.ReadAsStringAsync();
             await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
-                $"Onaylı ürün içerik güncelleme hatası: {response.StatusCode}",
+                $"Onayli urun icerik guncelleme hatasi: {response.StatusCode}",
                 ProductActivityStatus.Error, detail: errorBody, marketplaceName: "Trendyol");
-            return new ErrorResult($"İçerik güncelleme hatası: {response.StatusCode}");
+            return new ErrorResult($"Icerik guncelleme hatasi: {response.StatusCode}");
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
-            $"Onaylı ürün içeriği Trendyol'da güncellendi (contentId={pm.ContentId})",
+            $"Onayli urun icerigi Trendyol'da guncellendi (contentId={pm.ContentId})",
             ProductActivityStatus.Success, marketplaceName: "Trendyol", referenceId: pm.ContentId.ToString());
 
-        return new SuccessResult("Onaylı ürün içeriği güncellendi.");
+        return new SuccessResult("Onayli urun icerigi guncellendi.");
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Users;
@@ -11,7 +11,6 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Entegrasyon.Business.Utilities;
-using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Requests;
 using MapsterMapper;
@@ -23,33 +22,34 @@ public class ApplicationUserManager(
     IApplicationLogManager applicationLogManager,
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
     IFluentValidator validator,
-    IntegrationDbContext context,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ILogger<ApplicationUserManager> logger) : IApplicationUserManager
 {
     public async Task<IResult> AddUser(AddUserDto dto, CancellationToken token = default)
     {
-        await applicationLogManager.AddLog("Kullanıcı ekleniyor...", LogType.User, LogAction.Add, dto, token);
+        await applicationLogManager.AddLog("Kullanici ekleniyor...", LogType.User, LogAction.Add, dto, token);
         var validationResult = await validator.Validate(dto);
         if (!validationResult.IsValid)
             return validationResult.ToResult();
 
+        await using var context = await contextFactory.CreateDbContextAsync();
         var user = mapper.Map<AddUserDto, ApplicationUser>(dto);
         user.NeedsTakeNewPassword = true;
         user.NormalizedUserName = user.UserName.ToUpperInvariant();
         user.NormalizedEmail = user.Email.ToUpperInvariant();
         user.CreatedAt = DateTimeOffset.UtcNow;
 
-        var logicResult = LogicRunner.Run(await CheckSameUserName(user.NormalizedUserName));
+        var logicResult = LogicRunner.Run(await CheckSameUserName(context, user.NormalizedUserName));
         if (logicResult != null)
             return logicResult;
         await context.Users.AddAsync(user, token);
         await context.SaveChangesAsync(token);
 
-        await applicationLogManager.AddLog("Kullanıcı eklendi.", LogType.User, LogAction.Add, token: token);
+        await applicationLogManager.AddLog("Kullanici eklendi.", LogType.User, LogAction.Add, token: token);
         return new SuccessResult(Messages.UserAdded);
     }
 
-    private async Task<IResult> CheckSameUserName(string normalizedUserName)
+    private static async Task<IResult> CheckSameUserName(IntegrationDbContext context, string normalizedUserName)
     {
         var exists = await context.Users.AnyAsync(u => u.NormalizedUserName == normalizedUserName);
         return exists ? new ErrorResult(Messages.UserSameUsername) : new SuccessResult();
@@ -57,20 +57,52 @@ public class ApplicationUserManager(
 
     public async Task<IResult> EditUser(UserEditDto dto, CancellationToken token = default)
     {
-        await applicationLogManager.AddLog("Kullanıcı güncelleniyor...", LogType.User, LogAction.Update, dto, token);
+        await applicationLogManager.AddLog("Kullanici guncelleniyor...", LogType.User, LogAction.Update, dto, token);
+
+        // 1. Validation
         var validationResult = await validator.Validate(dto);
         if (!validationResult.IsValid)
             return validationResult.ToResult();
-        var dbUser = await context.Users.FindAsync(dto.Id);
+
+        // 2. Business Rules
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var dbUser = await context.Users
+            .Include(u => u.UsersRoles)
+            .FirstOrDefaultAsync(u => u.Id == dto.Id, token);
         if (dbUser == null)
             return new ErrorResult(Messages.UserNotFound);
+
+        // Kullanici adi degistiriliyorsa, baska kullanicida ayni isim var mi kontrol et
+        var newNormalizedUserName = dto.UserName.ToUpperInvariant();
+        if (dbUser.NormalizedUserName != newNormalizedUserName)
+        {
+            var logicResult = LogicRunner.Run(await CheckSameUserName(context, newNormalizedUserName));
+            if (logicResult != null)
+                return logicResult;
+        }
+
+        // 3. Execution
+        dbUser.Name = dto.Name;
+        dbUser.Surname = dto.Surname;
+        dbUser.FullName = $"{dto.Name} {dto.Surname}";
         dbUser.Email = dto.Email;
         dbUser.NormalizedEmail = dto.Email.ToUpperInvariant();
         dbUser.UserName = dto.UserName;
-        dbUser.NormalizedUserName = dto.UserName.ToUpperInvariant();
+        dbUser.NormalizedUserName = newNormalizedUserName;
+        dbUser.IsActive = dto.IsActive;
         dbUser.DefaultBranchOfficeId = dto.BranchOfficeId;
-        //if (dto.RoleIds.Count > 0)
-        //    dbUser.Roles = dto.RoleIds.Select(r => new Role { Id = r }).ToList();
+
+        // Rol atamasi: mevcut rolleri temizle, yeni rolleri ekle
+        dbUser.UsersRoles.Clear();
+        foreach (var roleId in dto.RoleIds)
+        {
+            dbUser.UsersRoles.Add(new UsersRoles
+            {
+                ApplicationUserId = dbUser.Id,
+                RoleId = roleId
+            });
+        }
+
         try
         {
             await context.SaveChangesAsync(token);
@@ -78,9 +110,10 @@ public class ApplicationUserManager(
         catch (DbUpdateConcurrencyException e)
         {
             logger.LogError(e, "Concurrency Exception");
-            return new ErrorResult("Bu kayıt güncellenmiş ve sizdeki versiyonu eski olabilir. Lütfen tekrar deneyin");
+            return new ErrorResult("Bu kayit guncellenmis ve sizdeki versiyonu eski olabilir. Lutfen tekrar deneyin");
         }
-        await applicationLogManager.AddLog("Kullanıcı güncellendi...", LogType.User, LogAction.Update, dto, token);
+
+        await applicationLogManager.AddLog("Kullanici guncellendi.", LogType.User, LogAction.Update, dto, token);
         return new SuccessResult(Messages.UserUpdated);
     }
 
@@ -89,11 +122,11 @@ public class ApplicationUserManager(
 
     public async Task<IDataResult<Pageable<UserDetailListDto>>> GetPaginatedUserDetails(UserPaginatedRequest request)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
         var result = await context.Users.AsNoTracking().ApplyGlobalSearch(request.SearchTerm,
             nameof(ApplicationUser.FullName),
             nameof(ApplicationUser.NormalizedUserName),
             nameof(ApplicationUser.NormalizedEmail))
-            //TODO mapping yapılacak
             .Select(u=>
                 new UserDetailListDto(u.Id,
                     u.Name,
@@ -112,6 +145,7 @@ public class ApplicationUserManager(
 
     public async Task<IDataResult<UserDetailDto>> GetUserDetails(Guid id)
     {
+        await using var context = await contextFactory.CreateDbContextAsync();
         var result = await context.Users.AsNoTracking()
             .Where(u => u.Id == id)
             .Select(u => new UserDetailDto(
@@ -130,6 +164,25 @@ public class ApplicationUserManager(
             return new ErrorDataResult<UserDetailDto>(null, Messages.ProcessFailed);
         return await GetUserDetails(guidId);
     }
+
+    public async Task<IDataResult<UserEditDetailDto>> GetUserEditDetail(Guid id)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var result = await context.Users.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new UserEditDetailDto(
+                u.Id, u.Name, u.Surname, u.UserName, u.Email,
+                u.IsActive, u.IsTwoFactorAuthActive, u.NeedsTakeNewPassword,
+                u.DefaultBranchOfficeId,
+                u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name : "",
+                u.Roles.Select(r => r.Id).ToList(),
+                u.Roles.Select(r => r.Name).FirstOrDefault() ?? "",
+                u.CreatedAt))
+            .FirstOrDefaultAsync();
+        if (result is null)
+            return new ErrorDataResult<UserEditDetailDto>(null, Messages.UserNotFound);
+        return new SuccessDataResult<UserEditDetailDto>(result);
+    }
     public string GetActiveUserId() =>
        GetActiveUserGuidId().ToString();
 
@@ -138,17 +191,21 @@ public class ApplicationUserManager(
         ?.Value!);
 
 
-    public ValueTask<ApplicationUser> GetUserById(Guid id) => context.Users.FindAsync(id);
+    public async ValueTask<ApplicationUser> GetUserById(Guid id)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        return await context.Users.FindAsync(id);
+    }
 
     public async Task<IResult> SetPassive(Guid userId, CancellationToken token = default)
     {
-        var user = await GetUserById(userId);
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FindAsync(userId);
         if (user is null)
         {
             return new ErrorResult(Messages.UserNotFound);
         }
         user.IsActive = false;
-        //geçerli oturum sonlandırılacak.
         try
         {
             await context.SaveChangesAsync(token);
@@ -156,18 +213,52 @@ public class ApplicationUserManager(
         catch (DbUpdateConcurrencyException e)
         {
             logger.LogError(e, "Concurrency hatasi");
-            return new ErrorResult("Bu kayıt güncellenmiş ve sizdeki versiyonu eski olabilir. Lütfen tekrar deneyin");
+            return new ErrorResult("Bu kayit guncellenmis ve sizdeki versiyonu eski olabilir. Lutfen tekrar deneyin");
         }
         return new SuccessResult(Messages.ProcessSuccess);
     }
 
     public async Task<IResult> SoftDelete(Guid userId, CancellationToken token = default)
     {
-        var user = await GetUserById(userId);
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FindAsync(userId);
         user.IsDeleted = true;
         user.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync(token);
         return new SuccessResult(Messages.UserDeletedSuccessfuly);
+    }
+
+    public async Task<IResult> UpdateOwnProfile(Guid userId, UpdateProfileDto dto, CancellationToken token = default)
+    {
+        // 1. Validation
+        var validationResult = await validator.Validate(dto);
+        if (!validationResult.IsValid)
+            return validationResult.ToResult();
+
+        // 2. Business Rules — kullanici var mi kontrolu
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FindAsync([userId], cancellationToken: token);
+        if (user is null)
+            return new ErrorResult(Messages.UserNotFound);
+
+        // 3. Execution
+        user.Name = dto.Name;
+        user.Surname = dto.Surname;
+        user.FullName = $"{dto.Name} {dto.Surname}";
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+
+        try
+        {
+            await context.SaveChangesAsync(token);
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            logger.LogError(e, "Profil guncelleme sirasinda concurrency hatasi");
+            return new ErrorResult("Bu kayit guncellenmis ve sizdeki versiyonu eski olabilir. Lutfen tekrar deneyin");
+        }
+
+        await applicationLogManager.AddLog("Kullanici profil bilgilerini guncelledi.", LogType.User, LogAction.Update, token: token);
+        return new SuccessResult(Messages.ProfileUpdated);
     }
 
 }

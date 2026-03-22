@@ -31,7 +31,7 @@ else
     <MudGrid>
         @foreach (var mp in _detail.Marketplaces)
         {
-            <MudItem xs="12" sm="6" md="4">
+            <MudItem @key="mp.MarketPlaceId" xs="12" sm="6" md="4">
                 <MudCard Elevation="2">
                     <MudCardHeader>
                         <CardHeaderContent>

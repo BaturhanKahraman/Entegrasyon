@@ -1,16 +1,21 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Dtos.Category;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
 public partial class CategorySync
 {
     [Inject] private ICategoryService CategoryService { get; set; } = null!;
+    [Inject] private ICategoryMatchService CategoryMatchService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private List<Category> _categories = [];
+    private CategoryMatchSummaryDto _summary = new();
     private bool _isLoading = true;
     private bool _showUnmappedOnly;
     private bool _showLeafOnly;
@@ -33,14 +38,55 @@ public partial class CategorySync
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCategories();
+        await LoadData();
     }
 
-    private async Task LoadCategories()
+    private async Task LoadData()
     {
         _isLoading = true;
+
         _categories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
+        _summary = await CategoryMatchService.GetCategoryMatchSummaryAsync();
         _isLoading = false;
+    }
+
+    private async Task OpenRowMappingDialog(Category category)
+    {
+        var parameters = new DialogParameters<CategoryMappingDialog>
+        {
+            { x => x.ApplicationCategory, category }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<CategoryMappingDialog>("Kategori Eşleştirme", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+            await LoadData();
+    }
+
+    private async Task DeleteMapping(Category category)
+    {
+        var link = category.MarketplaceLinks?.FirstOrDefault();
+        if (link is null) return;
+
+        var confirmed = await DialogService.ShowMessageBox(
+            "Eşleştirmeyi Sil",
+            $"'{category.Name}' kategorisi için eşleştirmeyi silmek istediğinize emin misiniz?",
+            yesText: "Evet", cancelText: "İptal");
+
+        if (confirmed is true)
+        {
+            var result = await CategoryMatchService.RemoveCategoryMappingAsync(category.Id, link.MarketPlaceId);
+            if (result.Success)
+            {
+                Snackbar.Add("Eşleştirme başarıyla silindi.", Severity.Success);
+                await LoadData();
+            }
+            else
+            {
+                Snackbar.Add($"Hata: {result.Message}", Severity.Error);
+            }
+        }
     }
 
     private string GetParentName(Category category)

@@ -2,7 +2,9 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Products;
@@ -19,6 +21,7 @@ public class ProductManagerTests : BaseTest
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
     private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
     private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
+    private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
 
     public ProductManagerTests()
     {
@@ -31,11 +34,14 @@ public class ProductManagerTests : BaseTest
             .Setup(x => x.MainProducts)
             .ReturnsDbSet(new List<Product>());
         mockIntegrationDbContext
+            .Setup(x => x.Categories)
+            .ReturnsDbSet(new List<Category>());
+        mockIntegrationDbContext
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         _productManager = new ProductManager(
-            mockIntegrationDbContext.Object,
+            mockContextFactory.Object,
             mockApplicationLogger.Object,
             _mockMapper.Object,
             MockValidator.Object,
@@ -43,7 +49,8 @@ public class ProductManagerTests : BaseTest
             _mockAttributeKeyValueManager.Object,
             _mockBarcodeService.Object,
             _productAddedChannel,
-            _productUpdatedChannel
+            _productUpdatedChannel,
+            _mockMinioFileStorage.Object
         );
     }
 

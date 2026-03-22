@@ -1,0 +1,81 @@
+@using Entegrasyon.Entity.Dtos.Label
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Print" />
+            <MudText Typo="Typo.h6">Yazdır</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mb-4" />
+            <MudText Typo="Typo.body2" Align="Align.Center">Yazıcı servisi kontrol ediliyor...</MudText>
+        }
+        else
+        {
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.body1">
+                    <strong>@PrintJob.JobLabel</strong>
+                </MudText>
+
+                @if (_agentAvailable)
+                {
+                    @* Agent bağlı — doğrudan yazıcıya gönderebiliriz *@
+                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                        Yazıcı servisi bağlı
+                    </MudAlert>
+
+                    <MudSelect T="string" @bind-Value="_selectedPrinter" Label="Yazıcı" Variant="Variant.Outlined">
+                        @foreach (var printer in _printers)
+                        {
+                            <MudSelectItem @key="printer.Name" T="string" Value="@printer.Name">
+                                @printer.Name (@printer.ConnectionType)
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudNumericField T="int" @bind-Value="_copies" Label="Kopya Sayısı"
+                                     Min="1" Max="100" Variant="Variant.Outlined" />
+                }
+                else
+                {
+                    @* Agent yok — dosya indirme veya tarayıcı yazdırma *@
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                        Yazıcı servisi bağlı değil. Dosya olarak indirebilir veya tarayıcıdan yazdırabilirsiniz.
+                        <MudLink Href="/settings/printing" Class="ml-2">Ayarlar</MudLink>
+                    </MudAlert>
+
+                    <MudRadioGroup T="string" @bind-Value="_fallbackMode">
+                        <MudRadio T="string" Value="@("browser")" Color="Color.Primary">
+                            Tarayıcıdan Yazdır
+                        </MudRadio>
+                        <MudRadio T="string" Value="@("download")" Color="Color.Primary">
+                            ZPL Dosyası İndir
+                        </MudRadio>
+                    </MudRadioGroup>
+                }
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">İptal</MudButton>
+
+        @if (_agentAvailable)
+        {
+            <MudButton OnClick="PrintViaAgent" Variant="Variant.Filled" Color="Color.Primary"
+                       Disabled="@(_printing || string.IsNullOrEmpty(_selectedPrinter))"
+                       StartIcon="@Icons.Material.Filled.Print">
+                @(_printing ? "Yazdırılıyor..." : "Yazdır")
+            </MudButton>
+        }
+        else if (!_loading)
+        {
+            <MudButton OnClick="HandleFallback" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@(_fallbackMode == "browser" ? Icons.Material.Filled.Print : Icons.Material.Filled.Download)">
+                @(_fallbackMode == "browser" ? "Tarayıcıdan Yazdır" : "Dosya İndir")
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>

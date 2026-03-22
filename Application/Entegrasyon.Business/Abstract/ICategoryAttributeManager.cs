@@ -1,4 +1,6 @@
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Results;
 
@@ -6,6 +8,7 @@ namespace Entegrasyon.Business.Abstract;
 
 public interface ICategoryAttributeManager
 {
+    Task<IDataResult<Pageable<CategoryAttribute>>> GetCategoryAttributesPageable(SearchablePageDto dto);
     Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs);
     Task<bool> CheckIfCategoryHasCategoryAttribute(int categoryId);
     Task<bool> CheckIfExits(string name);
@@ -19,4 +22,6 @@ public interface ICategoryAttributeManager
     Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs);
     Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids);
     Task<Dictionary<int, AttributeMarketPlaceMatchDto>> GetAttributeMarketPlaceMatchesAsync();
+    Task<IResult> CreateAttributeMarketPlaceMatchAsync(CreateAttributeMarketPlaceMatchDto dto);
+    Task<IResult> RemoveAttributeMarketPlaceMatchAsync(int attributeId, int marketPlaceId);
 }

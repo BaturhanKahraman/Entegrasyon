@@ -7,20 +7,22 @@ namespace Entegrasyon.Business.Concrete;
 
 public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManager
 {
-    private readonly IntegrationDbContext _ctx;
-    public CategoryAttributeValueManager(IntegrationDbContext ctx)
+    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
+    public CategoryAttributeValueManager(IDbContextFactory<IntegrationDbContext> contextFactory)
     {
-        _ctx = ctx;
+        _contextFactory = contextFactory;
     }
 
     public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeId(int id)
     {
-        return await _ctx.CategoryAttributeValues.Where(x=>x.CategoryAttributeId== id).ToListAsync();
+        using var dbContext = _contextFactory.CreateDbContext();
+        return await dbContext.CategoryAttributeValues.Where(x=>x.CategoryAttributeId== id).ToListAsync();
     }
 
     public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeIds(IEnumerable<int> categoryAttributeIds)
     {
-        return await _ctx.CategoryAttributeValues
+        using var dbContext = _contextFactory.CreateDbContext();
+        return await dbContext.CategoryAttributeValues
             .Where(cav=>categoryAttributeIds.Contains(cav.CategoryAttributeId))
             .ToListAsync();
     }

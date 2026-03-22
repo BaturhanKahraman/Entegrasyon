@@ -6,7 +6,7 @@ namespace Entegrasyon.Entity.Notifications;
 public class NotificationsUsers
 {
     public Guid ApplicationUserId { get; set; }
-    public ApplicationUser ApplicationUser { get; set; }
+    public ApplicationUser ApplicationUser { get; set; } = null!;
     public long NotificationId { get; set; }
-    public Notification Notification { get; set; }
+    public Notification Notification { get; set; } = null!;
 }

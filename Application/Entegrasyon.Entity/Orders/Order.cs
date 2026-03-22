@@ -11,9 +11,9 @@ public sealed class Order : BaseEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public decimal TotalPrice { get; set; }//calculated
 
-    public IEnumerable<OrderItem> OrderItems { get; set; }
-    public Address BillingAddress { get; set; }
-    public Address ShippingAddress { get; set; }
+    public IEnumerable<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public Address BillingAddress { get; set; } = null!;
+    public Address ShippingAddress { get; set; } = null!;
 
     // Marketplace sipariş bilgileri
     public int? MarketPlaceId { get; set; }

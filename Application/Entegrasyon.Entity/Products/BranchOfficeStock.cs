@@ -5,10 +5,10 @@ namespace Entegrasyon.Entity.Products;
 public sealed class BranchOfficeStock
 {
     public int BranchOfficeId { get; set; }
-    public BranchOffice BranchOffice { get; set; }
+    public BranchOffice BranchOffice { get; set; } = null!;
 
     public Guid? ProductVariantId { get; set; }
-    public ProductVariant ProductVariant { get; set; }
+    public ProductVariant? ProductVariant { get; set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public int CurrentStock { get; set; }

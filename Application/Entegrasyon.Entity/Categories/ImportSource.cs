@@ -29,5 +29,15 @@ public enum ImportSource
     /// <summary>
     /// Trendyol pazaryerinden import edilmiş
     /// </summary>
-    Trendyol = 100
+    Trendyol = 100,
+
+    /// <summary>
+    /// N11 pazaryerinden import edilmiş
+    /// </summary>
+    N11 = 101,
+
+    /// <summary>
+    /// Hepsiburada pazaryerinden import edilmiş
+    /// </summary>
+    Hepsiburada = 102
 }

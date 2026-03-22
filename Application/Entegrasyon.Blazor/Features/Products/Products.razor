@@ -10,13 +10,13 @@
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
         <MudItem xs="12" md="6">
-            <MudTextField @bind-Value="searchString" Placeholder="Ürün ara (isim, stok kodu, barkod)..."
+            <MudTextField T="string" ValueChanged="@(s => OnSearchChanged(s))" Placeholder="Ürün ara (isim, stok kodu, barkod)..."
                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                OnKeyUp="@(async e => await OnSearchChanged())" Immediate="true" />
+                DebounceInterval="400" />
         </MudItem>
         <MudItem xs="12" md="6" Class="d-flex justify-end gap-2">
             <MudButton Variant="Variant.Outlined" Color="Color.Success" StartIcon="@Icons.Material.Filled.Download"
-                OnClick="ExportToExcel" Disabled="@(!products.Any())">
+                OnClick="ExportToExcel">
                 Excel'e Aktar
             </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
@@ -27,15 +27,12 @@
     </MudGrid>
     </MudPaper>
 
-    <MudDataGrid T="ProductsDetailDto" Items="@filteredProducts.AsEnumerable()" Filterable="true" SortMode="SortMode.Multiple" Hover="true"
-        Loading="@loading" Virtualize="true" FixedHeader="true" Height="600px" RowsPerPage="25"
+    <MudDataGrid @ref="_dataGrid" T="ProductsDetailDto" ServerData="ServerData" Filterable="true" SortMode="SortMode.Multiple" Hover="true"
+        Virtualize="true" FixedHeader="true" Height="600px" RowsPerPage="25"
         RowClick="OnRowClick" RowStyle="cursor: pointer;">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Ürünler</MudText>
             <MudSpacer />
-            <MudChip Color="Color.Info" Size="Size.Small">
-                Toplam: @filteredProducts.Count ürün
-            </MudChip>
         </ToolBarContent>
         <Columns>
             <TemplateColumn Title="Görsel" Sortable="false">

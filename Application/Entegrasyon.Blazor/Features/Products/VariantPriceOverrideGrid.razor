@@ -1,0 +1,45 @@
+@using Entegrasyon.Entity.Dtos.Product.Marketplace
+
+<MudText Typo="Typo.subtitle2" Class="mb-2">Varyant Fiyatları</MudText>
+
+<MudSimpleTable Dense="true" Hover="true" Outlined="true">
+    <thead>
+        <tr>
+            <th>Varyant</th>
+            <th>Barkod</th>
+            <th>Orijinal Liste</th>
+            <th>Orijinal Satış</th>
+            <th>Liste Fiyatı (Override)</th>
+            <th>Satış Fiyatı (Override)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var variant in Variants)
+        {
+            <tr @key="variant.Barcode">
+                <td>@variant.VariantLabel</td>
+                <td><MudText Typo="Typo.body2">@variant.Barcode</MudText></td>
+                <td><MudText Typo="Typo.body2">@($"₺{variant.OriginalListPrice:N2}")</MudText></td>
+                <td><MudText Typo="Typo.body2" Color="Color.Success">@($"₺{variant.OriginalSalePrice:N2}")</MudText></td>
+                <td>
+                    <MudNumericField T="decimal?" @bind-Value="variant.ListPriceOverride"
+                                     Placeholder="Orijinal fiyat"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.Start" AdornmentText="₺"
+                                     Margin="Margin.Dense" />
+                </td>
+                <td>
+                    <MudNumericField T="decimal?" @bind-Value="variant.SalePriceOverride"
+                                     Placeholder="Orijinal fiyat"
+                                     HideSpinButtons="true"
+                                     Adornment="Adornment.Start" AdornmentText="₺"
+                                     Margin="Margin.Dense" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
+
+<MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+    Boş bırakılan alanlar için ürünün orijinal fiyatı kullanılır.
+</MudText>

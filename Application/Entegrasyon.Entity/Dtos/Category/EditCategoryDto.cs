@@ -5,5 +5,6 @@ public sealed record EditCategoryDto(
     string Name,
     int? SuperCategoryId,
     bool IsFavorite,
-    bool IsImported
+    bool IsImported,
+    decimal? DefaultVatRate = null
     );

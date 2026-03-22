@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
@@ -20,8 +21,6 @@ public class TrendyolStockPriceSyncService(
     IServiceScopeFactory scopeFactory,
     ILogger<TrendyolStockPriceSyncService> logger) : BackgroundService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (var evt in channel.Reader.ReadAllAsync(stoppingToken))

@@ -6,7 +6,6 @@ using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
@@ -19,7 +18,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 // Add MudBlazor services
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomEnd;
+    config.SnackbarConfiguration.VisibleStateDuration = 5000;
+    config.SnackbarConfiguration.ShowTransitionDuration = 300;
+    config.SnackbarConfiguration.HideTransitionDuration = 300;
+});
 
 builder.Services.AddLogging();
 builder.Services.AddConfigurations(builder.Configuration);
@@ -35,15 +40,6 @@ builder.Services.AddBackgroundServices();
 // Event channels and background services are registered via AddEventChannels() and AddBackgroundServices()
 
 builder.Services.AddStorageServices(builder.Configuration);
-
-// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
-// {
-//     x.SlidingExpiration = true;
-//     x.ExpireTimeSpan = TimeSpan.FromHours(1);
-//     x.LoginPath = "/auth/login";
-//     x.AccessDeniedPath = "/access-denied";
-//     x.LogoutPath = "/auth/logout";
-// });
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();

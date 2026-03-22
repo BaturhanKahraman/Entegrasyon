@@ -4,6 +4,7 @@ using Entegrasyon.Entity;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Entity.Results;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -11,20 +12,21 @@ public class ImageManager : IImageManager
 {
     private readonly ILogger<ImageManager> _logger;
     private readonly IImageProcessingService _imageProcessing;
-    private readonly IntegrationDbContext _dbContext;
+    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
 
     public ImageManager(
         ILogger<ImageManager> logger,
         IImageProcessingService imageProcessing,
-        IntegrationDbContext dbContext)
+        IDbContextFactory<IntegrationDbContext> contextFactory)
     {
         _logger = logger;
         _imageProcessing = imageProcessing;
-        _dbContext = dbContext;
+        _contextFactory = contextFactory;
     }
 
     public async Task<IResult> AddProductImages(Guid productId, IEnumerable<VariantImageStream> images)
     {
+        using var dbContext = _contextFactory.CreateDbContext();
         var entities = new List<Image>();
         var displayOrderByVariant = new Dictionary<Guid, int>();
 
@@ -70,8 +72,8 @@ public class ImageManager : IImageManager
 
         if (entities.Count > 0)
         {
-            await _dbContext.Images.AddRangeAsync(entities);
-            await _dbContext.SaveChangesAsync();
+            await dbContext.Images.AddRangeAsync(entities);
+            await dbContext.SaveChangesAsync();
         }
 
         return new SuccessResult($"{entities.Count} görsel yüklendi.");

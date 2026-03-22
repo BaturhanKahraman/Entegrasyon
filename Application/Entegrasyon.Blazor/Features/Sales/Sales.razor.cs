@@ -1,6 +1,10 @@
 namespace Entegrasyon.Blazor.Features.Sales;
 
+using Entegrasyon.Blazor.Features.Printing;
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Dtos;
+using Entegrasyon.Entity.Dtos.Label;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
@@ -13,6 +17,9 @@ public partial class Sales
     [Inject]
     private ISnackbar? Snackbar { get; set; }
 
+    [Inject]
+    private ILabelService? LabelService { get; set; }
+
     private string barcodeSearch = string.Empty;
     private string paymentMethod = "Nakit";
     private bool processing;
@@ -22,7 +29,20 @@ public partial class Sales
     private decimal Subtotal => cartItems.Sum(x => x.Quantity * x.UnitPrice);
     private decimal TotalDiscount => cartItems.Sum(x => (x.Quantity * x.UnitPrice) * ((decimal)x.DiscountPercent / 100));
     private decimal SubtotalAfterDiscount => Subtotal - TotalDiscount;
-    private decimal Tax => SubtotalAfterDiscount * 0.20m;
+    private decimal Tax => cartItems.Sum(x =>
+    {
+        var lineNet = x.Quantity * x.UnitPrice * (1 - (decimal)x.DiscountPercent / 100);
+        return KdvCalculator.FromExclusive(lineNet, x.VatRate).KdvAmount;
+    });
+
+    private IEnumerable<(decimal Rate, decimal Amount)> TaxBreakdown =>
+        cartItems.GroupBy(x => x.VatRate)
+            .Select(g => (Rate: g.Key, Amount: g.Sum(x =>
+                KdvCalculator.FromExclusive(
+                    x.Quantity * x.UnitPrice * (1 - (decimal)x.DiscountPercent / 100),
+                    g.Key).KdvAmount)))
+            .Where(x => x.Amount > 0)
+            .OrderBy(x => x.Rate);
     private decimal Total => SubtotalAfterDiscount + Tax;
 
     private async Task HandleBarcodeSearch(KeyboardEventArgs e)
@@ -150,7 +170,7 @@ public partial class Sales
             //     ClearCart();
             // }
 
-            await Task.Delay(1000); // Simulate processing
+            // TODO: Implement actual sale via SaleManager
 
             var confirm = await DialogService!.ShowMessageBox(
                 "Satış Tamamlandı",
@@ -161,8 +181,7 @@ public partial class Sales
 
             if (confirm == true)
             {
-                Snackbar?.Add("Fiş yazdırılıyor...", Severity.Info);
-                // TODO: Implement receipt printing
+                await PrintReceipt();
             }
 
             Snackbar?.Add($"Satış tamamlandı! Toplam: ₺{Total:F2}", Severity.Success);
@@ -178,6 +197,39 @@ public partial class Sales
         }
     }
 
+    private async Task PrintReceipt()
+    {
+        // Satış henüz gerçek SaleManager ile kaydedilmediğinden,
+        // burada fiş verisini manuel oluşturup dialog açıyoruz.
+        // SaleManager entegre olduğunda saleId ile LabelService.GenerateSaleReceipt kullanılacak.
+        var receiptData = new PrintAgent.Contracts.Labels.SaleReceiptData(
+            StoreName: "Mağaza",
+            StoreAddress: "",
+            TaxId: "",
+            Items: cartItems.Select(i => new PrintAgent.Contracts.Labels.ReceiptLineItem(
+                i.ProductName, i.Quantity, i.UnitPrice, i.TotalPrice)).ToList(),
+            SubTotal: Subtotal,
+            Discount: TotalDiscount,
+            Total: Total,
+            PaymentMethod: paymentMethod,
+            SaleDate: DateTimeOffset.Now,
+            CashierName: "Kasiyer",
+            CustomerName: selectedCustomer?.Name);
+
+        var generator = new Business.Labels.EscPosReceiptGenerator();
+        var receiptBytes = generator.GenerateSaleReceipt(receiptData);
+
+        var printJob = new PrintJobDto(null, receiptBytes, "ESCPOS", "Satış Fişi");
+
+        var parameters = new DialogParameters<PrintDialog>
+        {
+            { x => x.PrintJob, printJob }
+        };
+
+        await DialogService!.ShowAsync<PrintDialog>("Fiş Yazdır", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
     private class CartItem
     {
         public Guid ProductVariantId { get; set; }
@@ -186,6 +238,7 @@ public partial class Sales
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public int DiscountPercent { get; set; }
+        public decimal VatRate { get; set; } = 20;
         public decimal TotalPrice => Quantity * UnitPrice * (1 - ((decimal)DiscountPercent / 100));
     }
 

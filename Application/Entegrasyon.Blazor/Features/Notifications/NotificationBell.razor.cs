@@ -15,9 +15,8 @@ public partial class NotificationBell : ComponentBase, IDisposable
     [Inject] private IServiceScopeFactory ScopeFactory { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = null!;
 
-    private readonly object _lock = new();
     private Guid _userId;
     private List<Notification> _recentNotifications = [];
     private int _unreadCount;
@@ -26,7 +25,7 @@ public partial class NotificationBell : ComponentBase, IDisposable
     {
         if (!firstRender) return;
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthStateTask;
         var userIdClaim = authState.User.FindFirst(
             System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -35,8 +34,8 @@ public partial class NotificationBell : ComponentBase, IDisposable
 
         await using var scope = ScopeFactory.CreateAsyncScope();
         var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
-        var all = await notificationManager.GetNotificationsForUser(_userId, onlyUnread: false);
-        _recentNotifications = all.Take(10).ToList();
+        var notifications = await notificationManager.GetNotificationsForUser(_userId, onlyUnread: false, take: 10);
+        _recentNotifications = notifications.ToList();
         _unreadCount = _recentNotifications.Count(n => !n.IsRead);
 
         DeliveryService.Subscribe(_userId, HandleNotification);
@@ -58,26 +57,25 @@ public partial class NotificationBell : ComponentBase, IDisposable
             IsRead = false
         };
 
-        lock (_lock)
+        // Tüm state mutation InvokeAsync içinde — Blazor dispatch queue thread-safe
+        await InvokeAsync(() =>
         {
             _recentNotifications.Insert(0, notification);
             if (_recentNotifications.Count > 10)
                 _recentNotifications.RemoveAt(10);
             _unreadCount++;
-        }
 
-        var severity = evt.Severity switch
-        {
-            NotificationSeverity.Success => Severity.Success,
-            NotificationSeverity.Warning => Severity.Warning,
-            NotificationSeverity.Error   => Severity.Error,
-            _                            => Severity.Info
-        };
+            var severity = evt.Severity switch
+            {
+                NotificationSeverity.Success => Severity.Success,
+                NotificationSeverity.Warning => Severity.Warning,
+                NotificationSeverity.Error   => Severity.Error,
+                _                            => Severity.Info
+            };
 
-        Snackbar.Add(evt.Header, severity);
-
-        // ÖNEMLI: Background thread'den çağrıldığı için InvokeAsync zorunlu
-        await InvokeAsync(StateHasChanged);
+            Snackbar.Add(evt.Header, severity);
+            StateHasChanged();
+        });
     }
 
     private async Task MarkAsRead(long notificationId)

@@ -14,7 +14,7 @@ public interface ICategoryService
     Task<IResult> DeleteCategory(int categoryId);
     Task<IResult> SoftDelete(int categoryId);
     Task<IDataResult<List<CategoryDetailDto>>> GetCategoryDetailList();
-    Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string categoryName = null);
+    Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string? categoryName = null);
     Task<IResult> AddFavorite(int categoryId);
     Task<IResult> AddFavorites(int[] categoryIds);
     Task<IDataResult<List<CategoryDetailDto>>> GetFavoriteCategories();
@@ -22,14 +22,17 @@ public interface ICategoryService
     Task<IDataResult<List<CategoryDetailDto>>> GetSuperCategories();
     Task<IDataResult<Category>> GetCategoryEditDetail(int id);
     Task<bool> Exits(int id);
-    Task<string> GetCategoryNameById(int categoryId);
-    Task<Category> GetCategoryById(int? categoryId);
-    Task<Category> GetCategoryWithAttrById(int? categoryId);
+    Task<string?> GetCategoryNameById(int categoryId);
+    Task<Category?> GetCategoryById(int? categoryId);
+    Task<Category?> GetCategoryWithAttrById(int? categoryId);
     Task UpdatePlainCategory(Category category);
     Task<bool> IsSuper(int? categoryId);
     Task<List<Category>> GetAllCategoriesWithHierarchyAsync();
+    Task<Category?> GetCategoryDetailById(int categoryId);
     Task<List<Category>> GetAllCategoriesWithoutAttributesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync();
     Task<List<Category>> GetValidParentCandidatesAsync(int? excludeCategoryId);
     Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId);
+    Task RefreshCategorySummaryAsync();
+    Task<List<Category>> GetLeafCategoriesAsync();
 }

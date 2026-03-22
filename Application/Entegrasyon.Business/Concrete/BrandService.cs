@@ -16,7 +16,7 @@ using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, IMapper mapper, IntegrationDbContext dbContext, IMemoryCache cache)
+public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, IMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, IMemoryCache cache)
     : IBrandService
 {
     private const string brandListCacheKey = "brands:list";
@@ -26,6 +26,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         if (cache.TryGetValue(brandListCacheKey, out List<BrandListDetailDto> cached))
             return new SuccessDataResult<List<BrandListDetailDto>>(cached);
 
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var result = await dbContext.Brands
             .OrderByDescending(x => x.CreatedAt)
             .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
@@ -37,10 +38,12 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
 
     public async Task<IResult> AddBrand(AddBrandDto brandDto)
     {
-        await applicationLogManager.AddLog("Marka ekleme isteği geldi.", LogType.Brand, LogAction.Add, brandDto);
+        await applicationLogManager.AddLog("Marka ekleme istegi geldi.", LogType.Brand, LogAction.Add, brandDto);
         await validator.ValidateAndThrowAsync(brandDto);
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var brand = mapper.Map<AddBrandDto, Brand>(brandDto);
-        var result = LogicRunner.Run(await CheckIfTheSameNameExits(brand.Name));
+        var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, brand.Name));
         if (result != null)
         {
             await applicationLogManager.AddLog($"Marka eklenemedi. {result.Message}", LogType.Brand, LogAction.Add, brandDto);
@@ -49,24 +52,26 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         dbContext.Brands.Add(brand);
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
-        await applicationLogManager.AddLog("Marka başarıyla eklendi.", LogType.Brand, LogAction.Add, brandDto);
+        await applicationLogManager.AddLog("Marka basariyla eklendi.", LogType.Brand, LogAction.Add, brandDto);
         return new SuccessDataResult<Brand>(brand);
     }
 
     public async Task<IResult> UpdateBrand(Brand brand)
     {
-        await applicationLogManager.AddLog("Marka güncelleme isteği geldi.", LogType.Brand, LogAction.Update, brand);
-        var result = LogicRunner.Run(await CheckIfTheSameNameExits(brand.Name));
+        await applicationLogManager.AddLog("Marka guncelleme istegi geldi.", LogType.Brand, LogAction.Update, brand);
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, brand.Name));
         if (result != null)
         {
-            await applicationLogManager.AddLog($"Marka güncellenemedi. {result.Message}", LogType.Brand, LogAction.Add, brand);
+            await applicationLogManager.AddLog($"Marka guncellenemedi. {result.Message}", LogType.Brand, LogAction.Add, brand);
             return new ErrorResult(result.Message);
         }
         await validator.ValidateAndThrowAsync(brand);
         dbContext.Brands.Update(brand);
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
-        await applicationLogManager.AddLog("Marka başarıyla güncellendi.", LogType.Brand, LogAction.Update, brand);
+        await applicationLogManager.AddLog("Marka basariyla guncellendi.", LogType.Brand, LogAction.Update, brand);
         var detail = await dbContext.Brands
             .Where(x => x.Id == brand.Id)
             .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
@@ -76,23 +81,25 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
 
     public async Task<IResult> DeleteBrand(int id)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var brand = await dbContext.Brands.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
-        await applicationLogManager.AddLog("Marka silme isteği geldi.", LogType.Brand, LogAction.Delete, brand);
+        await applicationLogManager.AddLog("Marka silme istegi geldi.", LogType.Brand, LogAction.Delete, brand);
         if (brand == null)
         {
-            await applicationLogManager.AddLog("Marka silme başarısız. İlgili id bulunamadı:", LogType.Brand, LogAction.Delete, id);
-            return new ErrorResult("Böyle bir marka bulunamadı");
+            await applicationLogManager.AddLog("Marka silme basarisiz. Ilgili id bulunamadi:", LogType.Brand, LogAction.Delete, id);
+            return new ErrorResult("Boyle bir marka bulunamadi");
         }
         brand.IsDeleted = true;
         brand.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
-        await applicationLogManager.AddLog("Marka başarıyla silindi.", LogType.Brand, LogAction.Delete, brand);
+        await applicationLogManager.AddLog("Marka basariyla silindi.", LogType.Brand, LogAction.Delete, brand);
         return new SuccessResult();
     }
 
     public async Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(BrandDetailPaginatedRequest request)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         IQueryable<Brand> query = dbContext.Brands;
         query = query.ApplyGlobalSearch(request.SearchTerm, nameof(Brand.Name));
 
@@ -104,18 +111,22 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         return new SuccessDataResult<Pageable<BrandListDetailDto>>(items);
     }
 
-    public async Task<IDataResult<Brand>> GetBrandById(int id) =>
-        new SuccessDataResult<Brand>(await dbContext.Brands.FindAsync(id));
+    public async Task<IDataResult<Brand>> GetBrandById(int id)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        return new SuccessDataResult<Brand>(await dbContext.Brands.FindAsync(id));
+    }
 
     public async Task<IDataResult<BrandDetailDto>> GetBrandDetail(int id)
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var entity = await dbContext.Brands
             .Select(x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
             .FirstOrDefaultAsync(x => x.Id == id);
         return new SuccessDataResult<BrandDetailDto>(entity);
     }
 
-    private async Task<IResult> CheckIfTheSameNameExits(string name)
+    private static async Task<IResult> CheckIfTheSameNameExits(IntegrationDbContext dbContext, string name)
     {
         if (await dbContext.Brands.AnyAsync(x => x.Name == name))
             return new ErrorResult("Bu isimde bir marka zaten mevcut");

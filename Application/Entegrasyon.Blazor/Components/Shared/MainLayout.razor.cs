@@ -1,19 +1,46 @@
 using Entegrasyon.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace Entegrasyon.Blazor.Components.Shared;
 
-public partial class MainLayout : IDisposable
+public partial class MainLayout : IAsyncDisposable
 {
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
-
+    [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
+    private MudThemeProvider _mudThemeProvider = null!;
     private LoggingErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
-    private bool _isDarkMode = false;
+    private bool _isDarkMode;
+    private bool _themeLoaded;
     private MudTheme _theme = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var mode = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", "themeMode") ?? "system";
+            _isDarkMode = mode switch
+            {
+                "dark" => true,
+                "light" => false,
+                _ => await JsRuntime.InvokeAsync<bool>("AppTheme.prefersDark")
+            };
+            _themeLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleThemeAsync()
+    {
+        _isDarkMode = !_isDarkMode;
+        var mode = _isDarkMode ? "dark" : "light";
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", "themeMode", mode);
+        await JsRuntime.InvokeVoidAsync("AppTheme.setDataTheme", mode);
+    }
 
     protected override void OnInitialized()
     {
@@ -36,7 +63,7 @@ public partial class MainLayout : IDisposable
                 Secondary = "#BDBDBD",
                 Success = "#81C784",
                 Info = "#64B5F6",
-                Warning = "#FFB74D",
+                Warning = "#FFA726",
                 Error = "#E57373",
                 AppbarBackground = "#212121",
             }
@@ -46,11 +73,13 @@ public partial class MainLayout : IDisposable
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
         => _errorBoundary?.Recover();
 
-    public void Dispose()
-        => NavigationManager.LocationChanged -= OnLocationChanged;
+    public ValueTask DisposeAsync()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        return ValueTask.CompletedTask;
+    }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
-    private void ToggleTheme() => _isDarkMode = !_isDarkMode;
 
     private async Task HandleLogout()
     {

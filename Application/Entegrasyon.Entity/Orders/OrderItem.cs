@@ -8,9 +8,9 @@ public sealed class OrderItem : BaseEntity
 {
     public long Id { get; set; }
     public Guid OrderId { get; set; }
-    public Order Order { get; set; }
+    public Order Order { get; set; } = null!;
     public Guid? ProductId { get; set; }
-    public ProductVariant Product { get; set; }
+    public ProductVariant? Product { get; set; }
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
 
@@ -31,4 +31,9 @@ public sealed class OrderItem : BaseEntity
 
     [Column(TypeName = "money")]
     public decimal? Discount { get; set; }
+
+    /// <summary>
+    /// Sipariş satırına uygulanan KDV oranı (%)
+    /// </summary>
+    public decimal? VatRate { get; set; }
 }

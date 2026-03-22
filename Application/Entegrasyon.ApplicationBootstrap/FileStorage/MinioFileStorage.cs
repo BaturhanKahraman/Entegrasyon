@@ -64,5 +64,13 @@ public class MinioFileStorage : IMinioFileStorage
     }
 
     public string GetPublicUrl(string objectName)
-        => $"{_publicBaseUrl}/{_bucketName}/{objectName}";
+    {
+        if (string.IsNullOrEmpty(objectName))
+            return string.Empty;
+
+        if (objectName.StartsWith("http://") || objectName.StartsWith("https://"))
+            return objectName;
+
+        return $"{_publicBaseUrl}/{_bucketName}/{objectName}";
+    }
 }

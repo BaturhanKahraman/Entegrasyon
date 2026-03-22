@@ -10,14 +10,14 @@ public class ConcurrencyExceptionHandler(ILogger logger) : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        if (exception is not DbUpdateConcurrencyException updateException)
+        if (exception is not DbUpdateConcurrencyException)
             return false;
-        _logger.LogError(exception,"Veritabanı güncelleme hatası oldu.");
+        _logger.LogError(exception, "Eşzamanlılık hatası: kayıt başka bir işlem tarafından değiştirilmiş.");
         var problemDetails = new ProblemDetails
         {
-            Status = StatusCodes.Status400BadRequest,
-            Title = "Bad Request",
-            Detail = updateException.Message
+            Status = StatusCodes.Status409Conflict,
+            Title = "Eşzamanlılık Hatası",
+            Detail = "Bu kayıt başka bir işlem tarafından güncellenmiş. Lütfen sayfayı yenileyip tekrar deneyin."
         };
 
         httpContext.Response.StatusCode = problemDetails.Status.Value;

@@ -13,6 +13,8 @@ using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.Notifications;
+using Entegrasyon.Entity.Labels;
+using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -23,6 +25,13 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         modelBuilder.HasCollation("CaseInsensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
+
+        // Materialized View: mv_category_summary — kategori listeleme agregasyonu
+        modelBuilder.Entity<CategorySummaryView>().ToView("mv_category_summary");
+
+        // Materialized View: mv_product_stock_summary — dashboard düşük stok agregasyonu
+        modelBuilder.Entity<ProductStockSummaryView>().ToView("mv_product_stock_summary");
+
         modelBuilder.Seed();
 
         base.OnModelCreating(modelBuilder);
@@ -31,38 +40,30 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
-        // Tüm DateTimeOffset alanlarını UTC'ye dönüştür (PostgreSQL uyumluluğu için)
-        foreach (var entry in ChangeTracker.Entries())
+        foreach (var entry in ChangeTracker.Entries()
+                     .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
-            var entity = entry.Entity;
-            var properties = entity.GetType().GetProperties();
-
-            foreach (var property in properties)
+            // DateTimeOffset alanlarını UTC'ye dönüştür — EF Core metadata cache kullanır, reflection yok
+            foreach (var prop in entry.Properties)
             {
-                if (property.PropertyType == typeof(DateTimeOffset) || property.PropertyType == typeof(DateTimeOffset?))
+                if (prop.Metadata.ClrType == typeof(DateTimeOffset) ||
+                    prop.Metadata.ClrType == typeof(DateTimeOffset?))
                 {
-                    var value = property.GetValue(entity);
-                    if (value is DateTimeOffset dto && dto.Offset != TimeSpan.Zero)
-                    {
-                        // UTC'ye dönüştür
-                        property.SetValue(entity, new DateTimeOffset(dto.UtcDateTime, TimeSpan.Zero));
-                    }
+                    if (prop.CurrentValue is DateTimeOffset dto && dto.Offset != TimeSpan.Zero)
+                        prop.CurrentValue = new DateTimeOffset(dto.UtcDateTime, TimeSpan.Zero);
                 }
             }
-        }
 
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
-        {
-            switch (entry.State)
+            // CreatedAt / UpdatedAt otomatik ayarla
+            if (entry.Entity is BaseEntity baseEntity)
             {
-                case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTimeOffset.UtcNow;
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTimeOffset.UtcNow;
-                    break;
+                if (entry.State == EntityState.Added)
+                    baseEntity.CreatedAt = DateTimeOffset.UtcNow;
+                else
+                    baseEntity.UpdatedAt = DateTimeOffset.UtcNow;
             }
         }
+
         return base.SaveChangesAsync(cancellationToken);
     }
 
@@ -98,11 +99,18 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<BrandMarketPlaceMatch> BrandMarketPlaceMatches { get; set; }
     public virtual DbSet<CargoCompanyMarketPlaceMatch> CargoCompanyMarketPlaceMatches { get; set; }
     public virtual DbSet<AttributeKeyValue> AttributeKeyValues { get; set; }
+    public virtual DbSet<StockMovement> StockMovements { get; set; }
+    public virtual DbSet<ProductVariantMarketplaceOverride> ProductVariantMarketplaceOverrides { get; set; }
+    public virtual DbSet<LabelTemplate> LabelTemplates { get; set; }
+    public virtual DbSet<CategorySummaryView> CategorySummaries { get; set; }
+    public virtual DbSet<ProductStockSummaryView> ProductStockSummaries { get; set; }
     public virtual DbSet<CategoryMarketplace> CategoryMarketplaces { get; set; }
     public virtual DbSet<MarketPlaceWarehouse> MarketPlaceWarehouses { get; set; }
     public virtual DbSet<ApplicationUser> Users { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<Login> Logins { get; set; }
+    public virtual DbSet<ApplicationSetting> ApplicationSettings { get; set; }
+    public virtual DbSet<NotificationSetting> NotificationSettings { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

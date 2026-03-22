@@ -105,7 +105,7 @@ else
                         </MudText>
                         @foreach (var branch in _branches)
                         {
-                            <MudCheckBox T="bool" Label="@branch.Name"
+                            <MudCheckBox @key="branch.Id" T="bool" Label="@branch.Name"
                                          Value="@_selectedBranchIds.Contains(branch.Id)"
                                          ValueChanged="@(v => ToggleBranch(branch.Id, v))"
                                          Color="Color.Primary" Class="mb-1" />

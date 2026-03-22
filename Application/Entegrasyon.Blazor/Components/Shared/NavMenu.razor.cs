@@ -14,9 +14,9 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
     /// </summary>
     private static readonly Dictionary<string, List<string>> sectionRoutes = new()
     {
-        { "admin", ["products", "categories", "attributes", "brands", "sales", "notifications"] },
+        { "admin", ["products", "categories", "attributes", "brands", "sales", "orders", "notifications"] },
         { "marketplace", ["marketplace"] },
-        { "customers", ["customers", "orders", "invoices"] },
+        { "customers", ["customers", "invoices"] },
         { "reports", ["reports"] },
         { "users", ["users", "roles"] },
         { "settings", ["settings"] }

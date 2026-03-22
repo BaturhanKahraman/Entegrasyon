@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
@@ -20,6 +21,7 @@ public class UpdateProductTests : BaseTest
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
     private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
     private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
+    private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
 
     public UpdateProductTests()
     {
@@ -36,7 +38,7 @@ public class UpdateProductTests : BaseTest
             .ReturnsAsync(1);
 
         _productManager = new ProductManager(
-            mockIntegrationDbContext.Object,
+            mockContextFactory.Object,
             mockApplicationLogger.Object,
             _mockMapper.Object,
             MockValidator.Object,
@@ -44,7 +46,8 @@ public class UpdateProductTests : BaseTest
             _mockAttributeKeyValueManager.Object,
             _mockBarcodeService.Object,
             _productAddedChannel,
-            _productUpdatedChannel
+            _productUpdatedChannel,
+            _mockMinioFileStorage.Object
         );
     }
 

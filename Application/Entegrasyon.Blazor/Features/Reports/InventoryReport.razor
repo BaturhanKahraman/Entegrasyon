@@ -1,32 +1,109 @@
 @page "/reports/inventory"
+@using Entegrasyon.Entity.Dtos.Reports
 
 <PageTitle>Stok Raporları</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Stok Raporları</MudText>
-<MudAlert Severity="Severity.Info" Class="mb-4">Bu sayfa yapım aşamasındadır.</MudAlert>
 
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
         <MudItem xs="12" sm="4">
-            <MudSelect T="string" Label="Şube" Variant="Variant.Outlined" Disabled="true">
-                <MudSelectItem Value="@("all")">Tüm Şubeler</MudSelectItem>
+            <MudSelect T="int?" Label="Şube" @bind-Value="_selectedBranchId"
+                       Variant="Variant.Outlined" Clearable="true">
+                @foreach (var branch in _branches)
+                {
+                    <MudSelectItem @key="branch.Id" T="int?" Value="@branch.Id">@branch.Name</MudSelectItem>
+                }
             </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="4">
-            <MudSelect T="string" Label="Durum" Variant="Variant.Outlined" Disabled="true">
-                <MudSelectItem Value="@("all")">Tümü</MudSelectItem>
-                <MudSelectItem Value="@("low")">Düşük Stok</MudSelectItem>
-                <MudSelectItem Value="@("out")">Stokta Yok</MudSelectItem>
+            <MudSelect T="StockFilter" Label="Durum" @bind-Value="_stockFilter"
+                       Variant="Variant.Outlined">
+                <MudSelectItem T="StockFilter" Value="StockFilter.All">Tümü</MudSelectItem>
+                <MudSelectItem T="StockFilter" Value="StockFilter.LowStock">Düşük Stok</MudSelectItem>
+                <MudSelectItem T="StockFilter" Value="StockFilter.OutOfStock">Stokta Yok</MudSelectItem>
             </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="4" Class="d-flex align-end">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="true">Rapor Oluştur</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="GenerateReportAsync" Disabled="_loading"
+                       StartIcon="@Icons.Material.Filled.Assessment">
+                Rapor Oluştur
+            </MudButton>
         </MudItem>
     </MudGrid>
 </MudPaper>
 
-<MudPaper Class="pa-4" Style="min-height: 300px;">
-    <MudText Typo="Typo.h6" Color="Color.Dark" Align="Align.Center" Class="mt-8">
-        Stok raporu oluşturmak için filtreleri seçin.
-    </MudText>
-</MudPaper>
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+@if (_report is not null)
+{
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.TotalProducts</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Kayıt</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.AllInbox" Color="Color.Success" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.TotalStock</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Toplam Stok</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.LowStockCount</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Düşük Stok</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4 d-flex flex-column align-center">
+                <MudIcon Icon="@Icons.Material.Filled.RemoveShoppingCart" Color="Color.Error" Size="Size.Large" />
+                <MudText Typo="Typo.h5" Class="mt-2">@_report.Summary.OutOfStockCount</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Stokta Yok</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Class="pa-4">
+        <MudDataGrid T="StockItemDto" Items="@_report.Items.AsEnumerable()"
+                     Hover="true" Striped="true" Dense="true"
+                     SortMode="SortMode.Multiple" Filterable="true"
+                     QuickFilter="@QuickFilter">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Stok Detayı</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchTerm" Placeholder="Ürün ara..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium" Class="mt-0" Clearable="true" />
+            </ToolBarContent>
+            <Columns>
+                <PropertyColumn Property="x => x.ProductTitle" Title="Ürün" Sortable="true" />
+                <PropertyColumn Property="x => x.VariantTitle" Title="Varyant" Sortable="true" />
+                <PropertyColumn Property="x => x.Barcode" Title="Barkod" />
+                <PropertyColumn Property="x => x.BranchOfficeName" Title="Şube" Sortable="true" />
+                <PropertyColumn Property="x => x.CurrentStock" Title="Mevcut Stok" Sortable="true" />
+                <PropertyColumn Property="x => x.SoldQuantity" Title="Satılan" Sortable="true" />
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="StockItemDto" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudPaper>
+}
+else if (!_loading)
+{
+    <MudPaper Class="pa-4" Style="min-height: 200px;">
+        <MudText Typo="Typo.h6" Color="Color.Dark" Align="Align.Center" Class="mt-8">
+            Stok raporu oluşturmak için filtreleri seçin.
+        </MudText>
+    </MudPaper>
+}

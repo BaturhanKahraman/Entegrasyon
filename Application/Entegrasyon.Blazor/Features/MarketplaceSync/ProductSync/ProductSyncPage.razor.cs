@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Product;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync.ProductSync;
 
@@ -11,8 +12,6 @@ public partial class ProductSyncPage
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-
-    private const int TrendyolMarketPlaceId = 1;
 
     private ProductSyncSummaryDto? _summary;
     private List<ProductSyncListItemDto> _items = [];

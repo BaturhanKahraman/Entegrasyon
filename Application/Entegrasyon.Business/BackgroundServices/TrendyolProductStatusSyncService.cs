@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
@@ -19,7 +20,6 @@ public class TrendyolProductStatusSyncService(
     IServiceScopeFactory scopeFactory,
     ILogger<TrendyolProductStatusSyncService> logger) : BackgroundService
 {
-    private const int TrendyolMarketPlaceId = 1;
     private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(5);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,13 +50,14 @@ public class TrendyolProductStatusSyncService(
         var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
 
         // Trendyol'da published durumunda olan ürünleri al
-        var publishedProducts = await dbContext.ProductMarketplaces
+        var trackedProducts = await dbContext.ProductMarketplaces
             .Include(pm => pm.Product).ThenInclude(p => p.ProductVariants)
             .Where(pm => pm.MarketPlaceId == TrendyolMarketPlaceId
-                && pm.Status == MarketplaceProductStatus.Published)
+                && (pm.Status == MarketplaceProductStatus.Published
+                    || pm.Status == MarketplaceProductStatus.Rejected))
             .ToListAsync(ct);
 
-        if (publishedProducts.Count == 0) return;
+        if (trackedProducts.Count == 0) return;
 
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId, ct);
@@ -68,7 +69,7 @@ public class TrendyolProductStatusSyncService(
         }
 
         // Her ürünün ilk varyant barkodunu kullanarak durum sorgula
-        foreach (var pm in publishedProducts)
+        foreach (var pm in trackedProducts)
         {
             try
             {
@@ -110,6 +111,21 @@ public class TrendyolProductStatusSyncService(
                     await activityLogger.LogAsync(pm.ProductId, ProductActivityType.Rejected,
                         $"Trendyol tarafından reddedildi: {pm.StatusMessage}",
                         ProductActivityStatus.Error, marketplaceName: "Trendyol");
+                }
+
+                // Rejected → Published recovery: Trendyol'da tekrar onaylanmışsa
+                if (!content.Rejected && content.Approved
+                    && pm.Status == MarketplaceProductStatus.Rejected)
+                {
+                    pm.Status = MarketplaceProductStatus.Published;
+                    pm.LastSyncedAt = DateTimeOffset.UtcNow;
+                    pm.StatusMessage = null;
+                    changed = true;
+
+                    await activityLogger.LogAsync(pm.ProductId, ProductActivityType.Approved,
+                        "Trendyol tarafından yeniden onaylandı (önceki red kaldırıldı)",
+                        ProductActivityStatus.Success, marketplaceName: "Trendyol",
+                        referenceId: content.ContentId?.ToString());
                 }
 
                 if (content.Approved && pm.IsApproved != true)

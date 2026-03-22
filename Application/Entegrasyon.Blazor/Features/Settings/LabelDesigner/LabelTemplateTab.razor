@@ -1,0 +1,90 @@
+@using Entegrasyon.Entity.Labels
+
+@if (_designerOpen)
+{
+    <MudStack Spacing="2">
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           OnClick="CloseDesigner" />
+            <MudText Typo="Typo.h6">
+                @(_editingTemplate is not null ? "Şablonu Düzenle" : "Yeni Şablon")
+            </MudText>
+        </MudStack>
+
+        <LabelDesignerCanvas Template="_editingTemplate" OnSaved="OnTemplateSaved" />
+    </MudStack>
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">Etiket Şablonları</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateNew">
+                Yeni Şablon
+            </MudButton>
+        </MudStack>
+
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_templates.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                Henüz etiket şablonu oluşturulmamış. "Yeni Şablon" butonuna tıklayarak ilk şablonunuzu tasarlayın.
+            </MudAlert>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Hover="true" Elevation="1">
+                <thead>
+                    <tr>
+                        <th>Şablon Adı</th>
+                        <th>Boyut</th>
+                        <th>Eleman Sayısı</th>
+                        <th>Varsayılan</th>
+                        <th style="width:200px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var template in _templates)
+                    {
+                        <tr @key="template.Id">
+                            <td>@template.Name</td>
+                            <td>@(template.WidthMm)×@(template.HeightMm) mm</td>
+                            <td>@template.Elements.Count</td>
+                            <td>
+                                @if (template.IsDefault)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">
+                                        Varsayılan
+                                    </MudChip>
+                                }
+                            </td>
+                            <td>
+                                <MudStack Row="true" Spacing="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                                   OnClick="@(() => EditTemplate(template))"
+                                                   Title="Düzenle" />
+                                    @if (!template.IsDefault)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.Star" Size="Size.Small"
+                                                       Color="Color.Warning"
+                                                       OnClick="@(() => SetDefault(template.Id))"
+                                                       Title="Varsayılan Yap" />
+                                    }
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => DeleteTemplate(template.Id))"
+                                                   Title="Sil" />
+                                </MudStack>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </MudStack>
+}

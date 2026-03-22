@@ -9,10 +9,13 @@ public sealed record ProductDetailDto(
         string StockCode,
         string Season,
         string Year,
+        int? BrandId,
         string BrandName,
+        int CategoryId,
         string CategoryName,
         int TotalQuantity,
         int TotalSoldQuantity,
         IEnumerable<ProductVariantDetailDto> ProductVariantsDetails,
-        IEnumerable<AttributeKeyValueDetailDto> AttributeKeyValueDetails
+        IEnumerable<AttributeKeyValueDetailDto> AttributeKeyValueDetails,
+        DateTimeOffset UpdatedAt
     );

@@ -31,7 +31,7 @@
             <MudGrid Spacing="2">
                 @foreach (var img in _allImages)
                 {
-                    <MudItem xs="2">
+                    <MudItem @key="img.Id" xs="2">
                         <div style="position:relative;width:80px;height:80px;">
                             <img src="@img.PreviewUrl"
                                  style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />
@@ -56,7 +56,7 @@
                             <th style="min-width:140px;">Varyant</th>
                             @foreach (var img in _allImages)
                             {
-                                <th style="text-align:center;padding:4px;">
+                                <th @key="img.Id" style="text-align:center;padding:4px;">
                                     <img src="@img.PreviewUrl"
                                          style="width:40px;height:40px;object-fit:cover;border-radius:3px;" />
                                 </th>
@@ -66,13 +66,13 @@
                     <tbody>
                         @foreach (var variant in Variants)
                         {
-                            <tr>
+                            <tr @key="variant.Index">
                                 <td>@variant.Label</td>
                                 @foreach (var img in _allImages)
                                 {
                                     var vIdx = variant.Index;
                                     var imgId = img.Id;
-                                    <td style="text-align:center;">
+                                    <td @key="img.Id" style="text-align:center;">
                                         <MudStack AlignItems="AlignItems.Center" Spacing="0">
                                             <MudCheckBox T="bool"
                                                          Value="@IsAssigned(vIdx, imgId)"

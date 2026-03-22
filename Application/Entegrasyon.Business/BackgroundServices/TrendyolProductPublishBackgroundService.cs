@@ -45,6 +45,9 @@ public class TrendyolProductPublishBackgroundService(
                         case "Trendyol":
                             await HandleTrendyolAsync(scope.ServiceProvider, evt.ProductId, stoppingToken);
                             break;
+                        case "Hepsiburada":
+                            await HandleHepsiburadaAsync(scope.ServiceProvider, evt.ProductId, stoppingToken);
+                            break;
                         default:
                             logger.LogWarning("Unsupported marketplace: {Marketplace}", marketplace);
                             break;
@@ -73,18 +76,81 @@ public class TrendyolProductPublishBackgroundService(
             return;
         }
 
-        var result = await trendyolService.PublishProductAsync(productId);
-
-        if (result.Success)
+        try
         {
-            record.BatchRequestId = result.Data;
-            logger.LogInformation("Product {ProductId} published to Trendyol. BatchId={BatchId}", productId, result.Data);
+            var result = await trendyolService.PublishProductAsync(productId);
+
+            if (result.Success && !string.IsNullOrWhiteSpace(result.Data))
+            {
+                record.BatchRequestId = result.Data;
+                logger.LogInformation("Product {ProductId} published to Trendyol. BatchId={BatchId}", productId, result.Data);
+            }
+            else if (result.Success)
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = "Trendyol API başarılı döndü ancak BatchRequestId boş geldi.";
+                logger.LogWarning("Product {ProductId}: Trendyol publish succeeded but BatchRequestId is empty", productId);
+            }
+            else
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = result.Message;
+                logger.LogWarning("Product {ProductId} failed to publish to Trendyol: {Message}", productId, result.Message);
+            }
         }
-        else
+        catch (Exception ex)
         {
             record.Status = MarketplaceProductStatus.Failed;
-            record.StatusMessage = result.Message;
-            logger.LogWarning("Product {ProductId} failed to publish to Trendyol: {Message}", productId, result.Message);
+            record.StatusMessage = $"Publish isteği sırasında hata: {ex.Message}";
+            logger.LogError(ex, "Exception during Trendyol publish for product {ProductId}", productId);
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private async Task HandleHepsiburadaAsync(IServiceProvider services, Guid productId, CancellationToken ct)
+    {
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var hbService = services.GetRequiredService<IHepsiburadaProductService>();
+
+        var record = await dbContext.ProductMarketplaces
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId &&
+                                       pm.MarketPlace.Name == "Hepsiburada", ct);
+
+        if (record is null)
+        {
+            logger.LogWarning("ProductMarketplace record not found for ProductId={ProductId}, Hepsiburada", productId);
+            return;
+        }
+
+        try
+        {
+            var result = await hbService.PublishProductAsync(productId);
+
+            if (result.Success && !string.IsNullOrWhiteSpace(result.Data))
+            {
+                record.BatchRequestId = result.Data;
+                logger.LogInformation("Product {ProductId} published to Hepsiburada. TrackingId={TrackingId}",
+                    productId, result.Data);
+            }
+            else if (result.Success)
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = "Hepsiburada API başarılı döndü ancak trackingId boş geldi.";
+            }
+            else
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = result.Message;
+                logger.LogWarning("Product {ProductId} failed to publish to Hepsiburada: {Message}",
+                    productId, result.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            record.Status = MarketplaceProductStatus.Failed;
+            record.StatusMessage = $"Publish isteği sırasında hata: {ex.Message}";
+            logger.LogError(ex, "Exception during Hepsiburada publish for product {ProductId}", productId);
         }
 
         await dbContext.SaveChangesAsync(ct);

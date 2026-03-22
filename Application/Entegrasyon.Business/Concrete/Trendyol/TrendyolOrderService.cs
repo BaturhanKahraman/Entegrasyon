@@ -5,24 +5,23 @@ using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Gerçek Trendyol sipariş API çağrıları.
+/// Gercek Trendyol siparis API cagrilari.
 /// </summary>
 public sealed class TrendyolOrderService(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
     ILogger<TrendyolOrderService> logger) : ITrendyolOrderService
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IDataResult<List<TrendyolShipmentPackage>>> FetchOrdersAsync(TrendyolOrderQueryParams query)
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorDataResult<List<TrendyolShipmentPackage>>(null!, "Trendyol SellerId ayarlanmamış.");
+            return new ErrorDataResult<List<TrendyolShipmentPackage>>(null!, "Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/order/sellers/{sellerId}/orders?page={query.Page}&size={query.Size}";
 
@@ -41,7 +40,7 @@ public sealed class TrendyolOrderService(
         {
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol order fetch failed. Status={Status}, Body={Body}", response.StatusCode, errorBody);
-            return new ErrorDataResult<List<TrendyolShipmentPackage>>(null!, $"Trendyol API hatası: {response.StatusCode}");
+            return new ErrorDataResult<List<TrendyolShipmentPackage>>(null!, $"Trendyol API hatasi: {response.StatusCode}");
         }
 
         var orderList = await response.Content.ReadFromJsonAsync<TrendyolOrderListResponse>();
@@ -52,7 +51,7 @@ public sealed class TrendyolOrderService(
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}/unsupplied";
         var body = new { Lines = lineIds.Select(id => new { LineId = id, Quantity = 0 }).ToList() };
@@ -63,17 +62,17 @@ public sealed class TrendyolOrderService(
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol unsupplied failed. PackageId={PackageId}, Body={Body}",
                 shipmentPackageId, errorBody);
-            return new ErrorResult($"Trendyol API hatası: {response.StatusCode}");
+            return new ErrorResult($"Trendyol API hatasi: {response.StatusCode}");
         }
 
-        return new SuccessResult("Sipariş tedarik edilemez olarak işaretlendi.");
+        return new SuccessResult("Siparis tedarik edilemez olarak isaretlendi.");
     }
 
     public async Task<IResult> UpdateTrackingNumberAsync(long shipmentPackageId, string trackingNumber)
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+            return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}";
         var body = new { TrackingNumber = trackingNumber };
@@ -84,23 +83,23 @@ public sealed class TrendyolOrderService(
             var errorBody = await response.Content.ReadAsStringAsync();
             logger.LogError("Trendyol tracking update failed. PackageId={PackageId}, Body={Body}",
                 shipmentPackageId, errorBody);
-            return new ErrorResult($"Trendyol API hatası: {response.StatusCode}");
+            return new ErrorResult($"Trendyol API hatasi: {response.StatusCode}");
         }
 
-        return new SuccessResult("Kargo takip numarası güncellendi.");
+        return new SuccessResult("Kargo takip numarasi guncellendi.");
     }
 
     public async Task<IDataResult<byte[]>> GetShippingLabelAsync(long shipmentPackageId)
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
-            return new ErrorDataResult<byte[]>(null!, "Trendyol SellerId ayarlanmamış.");
+            return new ErrorDataResult<byte[]>(null!, "Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}/shipping-label";
         var response = await apiClient.GetAsync(url);
 
         if (!response.IsSuccessStatusCode)
-            return new ErrorDataResult<byte[]>(null!, $"Kargo etiketi alınamadı: {response.StatusCode}");
+            return new ErrorDataResult<byte[]>(null!, $"Kargo etiketi alinamadi: {response.StatusCode}");
 
         var bytes = await response.Content.ReadAsByteArrayAsync();
         return new SuccessDataResult<byte[]>(bytes);
@@ -108,6 +107,7 @@ public sealed class TrendyolOrderService(
 
     private async Task<string?> GetSellerIdAsync()
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
         return marketplace?.SellerId;

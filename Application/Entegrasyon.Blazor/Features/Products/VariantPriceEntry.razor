@@ -1,0 +1,112 @@
+@using Entegrasyon.Entity.Constants
+
+<MudGrid>
+    @* KDV Orani Secici *@
+    <MudItem xs="12" sm="6" md="3">
+        <MudSelect T="decimal?" Label="KDV Orani"
+                   Value="@_selectedPresetRate"
+                   ValueChanged="OnPresetRateChanged"
+                   Variant="MudBlazor.Variant.Outlined">
+            @foreach (var rate in KdvRates.Presets)
+            {
+                <MudSelectItem Value="@((decimal?)rate)">%@rate</MudSelectItem>
+            }
+            <MudSelectItem Value="@((decimal?)-1)">Ozel</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+
+    @if (_isCustomRate)
+    {
+        <MudItem xs="12" sm="6" md="2">
+            <MudNumericField T="decimal?" Label="Ozel KDV Orani"
+                             Value="@Variant.VatRate"
+                             ValueChanged="OnCustomRateChanged"
+                             Variant="MudBlazor.Variant.Outlined"
+                             Adornment="Adornment.End"
+                             AdornmentText="%"
+                             Min="0" Max="100"
+                             HideSpinButtons="true" />
+        </MudItem>
+    }
+
+    @* KDV Dahil/Haric Toggle *@
+    <MudItem xs="12" sm="6" md="3">
+        <MudSwitch T="bool" @bind-Value="_isKdvInclusive"
+                   Label="@(_isKdvInclusive ? "KDV Dahil Giris" : "KDV Haric Giris")"
+                   Color="Color.Primary"
+                   Class="mt-2" />
+    </MudItem>
+
+    @* Fiyat Alanlari: Maliyet → Satis → Liste *@
+    <MudItem xs="12" sm="4">
+        <MudNumericField T="decimal?" Label="Maliyet"
+                         Value="@Variant.CostPrice"
+                         ValueChanged="OnCostPriceChanged"
+                         HideSpinButtons="true"
+                         Variant="MudBlazor.Variant.Outlined"
+                         Adornment="Adornment.Start" AdornmentText="₺" />
+        @if (Variant.CostPrice.HasValue && _effectiveVatRate > 0)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                @(_isKdvInclusive
+                    ? $"KDV Haric: ₺{CalculateNetFromInclusive(Variant.CostPrice.Value):N2}"
+                    : $"KDV Dahil: ₺{CalculateGrossFromExclusive(Variant.CostPrice.Value):N2}")
+            </MudText>
+        }
+    </MudItem>
+
+    <MudItem xs="12" sm="4">
+        <MudNumericField T="decimal?" Label="Satis Fiyati"
+                         Value="@Variant.SalePrice"
+                         ValueChanged="OnSalePriceChanged"
+                         HideSpinButtons="true"
+                         Variant="MudBlazor.Variant.Outlined"
+                         Adornment="Adornment.Start" AdornmentText="₺" />
+        @if (Variant.SalePrice.HasValue && _effectiveVatRate > 0)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                @(_isKdvInclusive
+                    ? $"KDV Haric: ₺{CalculateNetFromInclusive(Variant.SalePrice.Value):N2}"
+                    : $"KDV Dahil: ₺{CalculateGrossFromExclusive(Variant.SalePrice.Value):N2}")
+            </MudText>
+        }
+    </MudItem>
+
+    <MudItem xs="12" sm="4">
+        <MudNumericField T="decimal?" Label="Liste Fiyati"
+                         Value="@Variant.ListPrice"
+                         ValueChanged="OnListPriceChanged"
+                         HideSpinButtons="true"
+                         Variant="MudBlazor.Variant.Outlined"
+                         Adornment="Adornment.Start" AdornmentText="₺" />
+        @if (Variant.ListPrice.HasValue && _effectiveVatRate > 0)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                @(_isKdvInclusive
+                    ? $"KDV Haric: ₺{CalculateNetFromInclusive(Variant.ListPrice.Value):N2}"
+                    : $"KDV Dahil: ₺{CalculateGrossFromExclusive(Variant.ListPrice.Value):N2}")
+            </MudText>
+        }
+    </MudItem>
+
+    @* Kar Gösterimi *@
+    @if (HasProfitData)
+    {
+        <MudItem xs="12">
+            <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center" Class="mt-1">
+                <MudChip T="string" Size="Size.Small" Color="@(GrossProfit >= 0 ? Color.Success : Color.Error)"
+                         Variant="MudBlazor.Variant.Outlined">
+                    Brüt Kar: ₺@GrossProfit.ToString("N2")
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@(NetProfit >= 0 ? Color.Success : Color.Error)"
+                         Variant="MudBlazor.Variant.Filled">
+                    Net Kar: ₺@NetProfit.ToString("N2")
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Color="@(ProfitMargin >= 0 ? Color.Info : Color.Error)"
+                         Variant="MudBlazor.Variant.Outlined">
+                    Marj: %@ProfitMargin.ToString("N1")
+                </MudChip>
+            </MudStack>
+        </MudItem>
+    }
+</MudGrid>

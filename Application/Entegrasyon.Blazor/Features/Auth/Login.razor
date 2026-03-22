@@ -1,5 +1,5 @@
 @page "/auth/login"
-@layout Layouts.AuthLayout
+@layout AuthLayout
 @attribute [AllowAnonymous]
 @using Entegrasyon.Entity.Results
 @using Entegrasyon.Entity.User
@@ -8,9 +8,9 @@
 
 <MudForm @bind-IsValid="@_isValid">
     <MudTextField @bind-Value="@_username" Label="Kullanıcı Adı" Variant="Variant.Outlined" Class="mb-3" Required="true"
-        RequiredError="Kullanıcı adı gereklidir." />
+        RequiredError="Kullanıcı adı gereklidir." Immediate="true" />
     <MudTextField @bind-Value="@_password" Label="Şifre" Variant="Variant.Outlined" InputType="InputType.Password"
-        Class="mb-3" Required="true" RequiredError="Şifre gereklidir." />
+        Class="mb-3" Required="true" RequiredError="Şifre gereklidir." Immediate="true" />
 
     <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Right" Class="mb-4">
         Şifrenizi mi unuttunuz? Sistem yöneticinize başvurun.

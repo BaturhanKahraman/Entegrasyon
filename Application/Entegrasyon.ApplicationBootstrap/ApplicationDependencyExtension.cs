@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Concrete.Hepsiburada;
+using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
@@ -13,17 +15,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
-using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Labels;
 
 namespace Entegrasyon.ApplicationBootstrap
 {
@@ -43,7 +43,6 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeManager, CategoryAttributeManager>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
-            services.AddScoped<CategoryAttributeManager>();
             services.AddScoped<IApplicationUserManager, ApplicationUserManager>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICargoCompaniesManager,CargoCompaniesManager>();
@@ -59,20 +58,34 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
             services.AddScoped<IBarcodeService, BarcodeService>();
             services.AddScoped<IBrandMatchService,BrandMatchService>();
+            services.AddScoped<ICategoryMatchService,CategoryMatchService>();
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
             services.AddScoped<IProductSyncManager, ProductSyncManager>();
+            services.AddScoped<IDiscountManager, DiscountManager>();
             services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
             services.AddScoped<IProductActivityLogger, ProductActivityLogger>();
+            services.AddScoped<IMarketplaceOverrideManager, MarketplaceOverrideManager>();
+            services.AddScoped<INotificationSettingManager, NotificationSettingManager>();
+            services.AddScoped<IReportManager, ReportManager>();
+            services.AddScoped<IApplicationSettingManager, ApplicationSettingManager>();
+
+            // Etiket & Fiş servisleri
+            services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
+            services.AddSingleton<IReceiptGenerator, EscPosReceiptGenerator>();
+            services.AddScoped<ILabelService, LabelManager>();
+            services.AddScoped<ILabelTemplateService, LabelTemplateManager>();
 
             // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();
+            services.AddScoped<N11CategoryImporter>();
             services.AddScoped<TrendyolMappingValidator>();
             services.AddScoped<ITrendyolApiClient, TrendyolApiClient>();
             services.AddScoped<ITrendyolProductMapper, TrendyolProductMapper>();
 
             services.AddScoped<IOrderManager, OrderManager>();
+            services.AddScoped<IDashboardManager, DashboardManager>();
 
             var useMock = configuration.GetValue<bool>("Trendyol:UseMock", true);
             services.AddScoped<TrendyolSupplierAddressCache>();
@@ -83,6 +96,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITrendyolStockPriceService, MockTrendyolStockPriceService>();
                 services.AddScoped<ITrendyolOrderService, MockTrendyolOrderService>();
                 services.AddScoped<ITrendyolInvoiceService, MockTrendyolInvoiceService>();
+                services.AddScoped<IMarketplaceSearchService, MockMarketplaceSearchService>();
             }
             else
             {
@@ -90,9 +104,51 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITrendyolStockPriceService, TrendyolStockPriceService>();
                 services.AddScoped<ITrendyolOrderService, TrendyolOrderService>();
                 services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
+                services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             }
 
+            // Hepsiburada servisleri
+            services.AddScoped<IHepsiburadaApiClient, HepsiburadaApiClient>();
+            services.AddScoped<HepsiburadaCategoryImporter>();
+            services.AddScoped<HepsiburadaMappingValidator>();
+            services.AddScoped<IHepsiburadaProductMapper, HepsiburadaProductMapper>();
 
+            var useHbMock = configuration.GetValue<bool>("Hepsiburada:UseMock", true);
+            if (useHbMock)
+            {
+                services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
+                services.AddScoped<IHepsiburadaListingService, MockHepsiburadaListingService>();
+                services.AddScoped<IHepsiburadaOrderService, MockHepsiburadaOrderService>();
+            }
+            else
+            {
+                services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
+                services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
+                services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
+            }
+
+            // Hepsiburada Q&A + Claim (mock/real ayrımı yok — her zaman real, API yoksa hata döner)
+            services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
+            services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
+
+            // N11 servisleri
+            services.AddScoped<IN11SoapClient, N11SoapClient>();
+            services.AddScoped<N11MappingValidator>();
+            services.AddScoped<IN11ProductMapper, N11ProductMapper>();
+
+            var useN11Mock = configuration.GetValue<bool>("N11:UseMock", true);
+            if (useN11Mock)
+            {
+                services.AddScoped<IN11ProductService, MockN11ProductService>();
+                services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
+                services.AddScoped<IN11OrderService, MockN11OrderService>();
+            }
+            else
+            {
+                services.AddScoped<IN11ProductService, N11ProductService>();
+                services.AddScoped<IN11StockPriceService, N11StockPriceService>();
+                services.AddScoped<IN11OrderService, N11OrderService>();
+            }
 
             services.AddEventChannels();
             services.AddValidators();
@@ -106,15 +162,19 @@ namespace Entegrasyon.ApplicationBootstrap
             {
                 x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/");
             });
+            services.AddHttpClient(StringConstants.HepsiburadaApi, x =>
+            {
+                x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/");
+            });
             return services;
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection")
-                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471;Pooling=true;Maximum Pool Size=30;ConnectionIdleLifetime=120;Include Error Detail=true;";
+                ?? throw new InvalidOperationException("ConnectionString 'Main' is not configured. Check appsettings.json or environment variables.");
 
-            services.AddDbContext<IntegrationDbContext>(x =>
+            services.AddDbContextFactory<IntegrationDbContext>(x =>
             {
                 x.UseNpgsql(connectionString, npgsqlOptions =>
                 {
@@ -126,18 +186,22 @@ namespace Entegrasyon.ApplicationBootstrap
                 x.EnableDetailedErrors();
                 x.LogTo(z => Debug.WriteLine(z));
 #endif
-            }, ServiceLifetime.Scoped);
+            });
             return services;
         }
 
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
         {
-            services.AddHostedService<TrendyolCategoryImportBackgroundService>();
+            services.AddHostedService<CategoryImportBackgroundService>();
             services.AddHostedService<TrendyolProductPublishBackgroundService>();
             services.AddHostedService<TrendyolBatchStatusPollingService>();
             services.AddHostedService<TrendyolStockPriceSyncService>();
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
+            services.AddHostedService<N11OrderPollingService>();
+            services.AddHostedService<DashboardRefreshService>();
+            services.AddHostedService<HepsiburadaStatusPollingService>();
+            services.AddHostedService<HepsiburadaStockPriceSyncService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
@@ -163,10 +227,8 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddNotification(this IServiceCollection services)
         {
-            // TODO: SignalRSender ve EmailSender henüz implemente edilmedi.
-            // Implemente edildiklerinde buraya kayıt eklenecek:
-            // services.AddSingleton<INotificationSender, SignalRSender>();
-            // services.AddSingleton<INotificationSender, EmailSender>();
+            services.AddScoped<ISignalRNotificationSender, SignalRSender>();
+            services.AddScoped<IEmailSender, EmailSender>();
             return services;
         }
     }

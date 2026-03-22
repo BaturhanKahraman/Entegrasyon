@@ -27,7 +27,7 @@
                 AnchorOrigin="Origin.BottomCenter">
                 @foreach (var role in Roles)
                 {
-                    <MudSelectItem Value="@role.Id">@role.Name</MudSelectItem>
+                    <MudSelectItem @key="role.Id" Value="@role.Id">@role.Name</MudSelectItem>
                 }
             </MudSelect>
 

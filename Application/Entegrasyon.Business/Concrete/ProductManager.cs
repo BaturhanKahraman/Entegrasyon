@@ -18,13 +18,14 @@ using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity;
+using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Categories;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class ProductManager(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager,
     IMapper mapper,
     IFluentValidator validator,
@@ -32,20 +33,47 @@ public class ProductManager(
     IAttributeKeyValueManager attributeKeyValueManager,
     IBarcodeService barcodeService,
     EventChannel<ProductAddedEvent> productAddedChannel,
-    EventChannel<ProductUpdatedEvent> productUpdatedChannel) : IProductService
+    EventChannel<ProductUpdatedEvent> productUpdatedChannel,
+    IMinioFileStorage minioFileStorage) : IProductService
 {
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
         await applicationLogManager.AddLog("Ürün ekleme isteği geldi.", LogType.Product, LogAction.Add, dto);
         await validator.ValidateAndThrowAsync(dto);
+
+        using var dbContext = contextFactory.CreateDbContext();
+
+        // Business Rules
+        var stockCodeConflict = !string.IsNullOrEmpty(dto.StockCode) &&
+            await dbContext.MainProducts.AnyAsync(p => p.StockCode == dto.StockCode && !p.IsDeleted);
+        if (stockCodeConflict)
+            return new ErrorDataResult<Product>(null!, "Bu stok kodu zaten kullanılıyor. Lütfen farklı bir stok kodu girin.");
+
         var check = LogicRunner.Run(
             officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
         );
         if (check != null)
             return new ErrorDataResult<Product>(null!, check.Message);
+
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = await barcodeService.GenerateAsync();
         var product = mapper.Map<Product>(dto);
+
+        // Kategori default VatRate doldurma: variant VatRate == 0 ise kategoriden al
+        if (dto.CategoryId > 0)
+        {
+            var categoryDefaultVatRate = await dbContext.Categories
+                .Where(c => c.Id == dto.CategoryId)
+                .Select(c => c.DefaultVatRate)
+                .FirstOrDefaultAsync();
+
+            if (categoryDefaultVatRate.HasValue && categoryDefaultVatRate.Value > 0)
+            {
+                foreach (var variant in product.ProductVariants.Where(v => v.VatRate == 0))
+                    variant.VatRate = categoryDefaultVatRate.Value;
+            }
+        }
+
         attributeKeyValueManager.ClearEmptyAttributes(product);
         dbContext.MainProducts.Add(product);
         await dbContext.SaveChangesAsync();
@@ -58,6 +86,9 @@ public class ProductManager(
     {
         if (string.IsNullOrEmpty(barcode))
             return new ErrorResult("Barkod boş olamaz.");
+
+        using var dbContext = contextFactory.CreateDbContext();
+
         var product = await dbContext.MainProducts
             .FirstOrDefaultAsync(x => x.ProductVariants.Any(pv => pv.Barcode == barcode));
         if (product == null)
@@ -67,19 +98,21 @@ public class ProductManager(
 
     public async Task<IDataResult<ProductEditPageDto>> GetProductEditPageData(Guid id)
     {
+        using var dbContext = contextFactory.CreateDbContext();
+
         var product = await dbContext.MainProducts
             .Where(p => p.Id == id)
             .Select(p => new ProductEditDetailDto(
-                p.Id, p.Title, p.Description, p.StockCode,
-                p.Season, p.Year,
+                p.Id, p.Title, p.Description ?? "", p.StockCode ?? "",
+                p.Season ?? "", p.Year ?? "",
                 p.BrandId!.Value, p.CategoryId,
                 p.ProductVariants.Select(pv => new ProductVariantEditDetailDto(
-                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode,
+                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode ?? "",
                     pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
                     pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId, bos.FirstTotalStock)).ToList(),
-                    pv.Images.Select(img => new EditableImageDto(img.Id, img.Src, img.IsMain, img.IsDeleted)).ToList(),
+                    pv.Images.Select(img => new EditableImageDto(img.Id, img.Src ?? "", img.IsMain, img.IsDeleted)).ToList(),
                     pv.ProductVariantAttributes
-                        .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId, pva.CategoryAttributeValue, pva.CustomValue, pva.IsVarianter, pva.IsSlicer))
+                        .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId, pva.CategoryAttributeValue ?? "", pva.CustomValue ?? "", pva.IsVarianter, pva.IsSlicer))
                         .ToList()
                 )).ToList(),
                 p.AttributeKeyValues.Select(akv => new AttributeKeyValueDto(
@@ -107,7 +140,7 @@ public class ProductManager(
 
         var branches = await dbContext.BranchOffices
             .Where(b => !b.IsDeleted)
-            .Select(b => new BranchSelectDto(b.Id, b.Name))
+            .Select(b => new BranchSelectDto(b.Id, b.Name ?? ""))
             .ToListAsync();
 
         var marketplace = await dbContext.ProductMarketplaces
@@ -131,6 +164,8 @@ public class ProductManager(
 
         try { await validator.ValidateAndThrowAsync(dto); }
         catch (Exception ex) { return new ErrorResult(ex.Message); }
+
+        using var dbContext = contextFactory.CreateDbContext();
 
         var stockCodeConflict = await dbContext.MainProducts
             .AnyAsync(p => p.StockCode == dto.StockCode && p.Id != dto.Id && !p.IsDeleted);
@@ -213,27 +248,49 @@ public class ProductManager(
 
     public async Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId)
     {
+        using var dbContext = contextFactory.CreateDbContext();
+
         var result = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new ProductDetailDto(
-                p.Id, p.Title, p.Description, p.StockCode, p.Season, p.Year, p.Brand.Name, p.Category.Name,
+                p.Id, p.Title, p.Description, p.StockCode, p.Season, p.Year, p.BrandId, p.Brand.Name, p.CategoryId, p.Category.Name,
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 p.ProductVariants.Select(pv => new ProductVariantDetailDto(
                     pv.Id, pv.Barcode, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
-                    pv.Images.Select(img => img.Src).ToArray(),
+                    pv.Images.OrderBy(img => img.DisplayOrder)
+                        .Select(img => img.StorageKey != null ? img.StorageKey + "_original.webp" : img.Src)
+                        .ToArray(),
                     pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
                 )),
                 p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
                     kv.CategoryAttribute.CategoryAttributeKey,
-                    kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue))
+                    kv.CategoryAttribute.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey,
+                    kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue)),
+                p.UpdatedAt
             ))
             .FirstOrDefaultAsync();
+
+        // StorageKey → public URL dönüşümü (EF projection içinde yapılamaz)
+        if (result is not null)
+        {
+            foreach (var variant in result.ProductVariantsDetails)
+            {
+                for (int i = 0; i < variant.imageLinks.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(variant.imageLinks[i]))
+                        variant.imageLinks[i] = minioFileStorage.GetPublicUrl(variant.imageLinks[i]);
+                }
+            }
+        }
+
         return new SuccessDataResult<ProductDetailDto>(result);
     }
 
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)
     {
+        using var dbContext = contextFactory.CreateDbContext();
+
         var query = dbContext.MainProducts.AsQueryable();
         if (!string.IsNullOrEmpty(dto.FullTextSearchKey))
             query = query.Where(x =>
@@ -258,6 +315,9 @@ public class ProductManager(
     public async Task<IResult> SoftDeleteProduct(Guid id)
     {
         await applicationLogManager.AddLog("Ürün silme isteği alındı.", LogType.Product, LogAction.Delete, new { id });
+
+        using var dbContext = contextFactory.CreateDbContext();
+
         var product = await dbContext.MainProducts.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (product is null)
             return new ErrorResult("Silinecek ürün bulunamadı.");
@@ -268,11 +328,17 @@ public class ProductManager(
         return new SuccessResult("Ürün silindi.");
     }
 
-    public Task<int> GetProductCountByCategoryId(int categoryId) =>
-        dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
+    public async Task<int> GetProductCountByCategoryId(int categoryId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return await dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
+    }
 
-    public Task<bool> HasSoldProductsInCategory(int categoryId) =>
-        dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+    public async Task<bool> HasSoldProductsInCategory(int categoryId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        return await dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+    }
 
     private static MarketplaceSyncStatusDto BuildSyncStatus(ProductMarketplace? marketplace, DateTimeOffset? productUpdatedAt)
     {

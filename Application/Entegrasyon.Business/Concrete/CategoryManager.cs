@@ -16,11 +16,12 @@ using System.Linq.Dynamic.Core;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(IntegrationDbContext dbContext, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, IProductService productService, IMemoryCache cache) : ICategoryService
+    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, IProductService productService, IMemoryCache cache) : ICategoryService
     {
         private const string CategoryListCacheKey = "categories:list";
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             await fluentValidator.ValidateAndThrowAsync(dto);
             var category = mapper.Map<Category>(dto);
             if (await dbContext.Categories.AnyAsync(x => x.Name.ToLower() == dto.Name.ToLower()))
@@ -33,6 +34,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IDataResult<CategoryDetailDto>> AddCategory(AddCategoryDto dto)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             await applicationLogManager.AddLog("Kategori ekleniyor.", LogType.Category, LogAction.Add, dto);
 
             if (dto.SuperCategoryId is > 0)
@@ -40,7 +42,7 @@ namespace Entegrasyon.Business.Concrete
                 bool parentHasAttrs = await dbContext.CategoryAttributeCategories
                     .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value);
                 if (parentHasAttrs)
-                    return new ErrorDataResult<CategoryDetailDto>(null, "Seçilen üst kategori özellik içerdiğinden alt kategori eklenemez.");
+                    return new ErrorDataResult<CategoryDetailDto>(null!, "Seçilen üst kategori özellik içerdiğinden alt kategori eklenemez.");
             }
 
             var category = mapper.Map<Category>(dto);
@@ -50,17 +52,18 @@ namespace Entegrasyon.Business.Concrete
             await applicationLogManager.AddLog(Messages.CategoryAdded, LogType.Category, LogAction.Add);
             var detail = await dbContext.Categories
                 .Where(x => x.Id == category.Id)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory!.Name))
                 .FirstOrDefaultAsync();
             return new SuccessDataResult<CategoryDetailDto>(detail);
         }
 
         public async Task<IResult> UpdateCategory(EditCategoryDto dto)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             await fluentValidator.ValidateAndThrowAsync(dto);
             var dbCategory = await dbContext.Categories.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id);
             if (dbCategory == null)
-                return new ErrorDataResult<CategoryDetailDto>(null, "Kategori bulunamadı.");
+                return new ErrorDataResult<CategoryDetailDto>(null!, "Kategori bulunamadı.");
 
             if (dto.SuperCategoryId is > 0)
             {
@@ -74,6 +77,7 @@ namespace Entegrasyon.Business.Concrete
             dbCategory.Name = dto.Name;
             dbCategory.IsFavorite = dto.IsFavorite;
             dbCategory.IsImported = dto.IsImported;
+            dbCategory.DefaultVatRate = dto.DefaultVatRate;
             await dbContext.SaveChangesAsync();
             cache.Remove(CategoryListCacheKey);
             return new SuccessResult(Messages.CategoryUpdated);
@@ -81,6 +85,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IResult> DeleteCategory(int categoryId)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             await applicationLogManager.AddLog("Kategori siliniyor.", LogType.Category, LogAction.Delete, new { categoryId });
             var category = await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
             if (category == null)
@@ -94,6 +99,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IResult> SoftDelete(int categoryId)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             await applicationLogManager.AddLog("Kategori siliniyor.", LogType.Category, LogAction.Delete, new { categoryId });
             var category = await dbContext.Categories.AsTracking().FirstOrDefaultAsync(x => x.Id == categoryId);
             if (category == null)
@@ -111,29 +117,32 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IDataResult<List<CategoryDetailDto>>> GetCategoryDetailList()
         {
-            var result = await dbContext.Categories
+            using var dbContext = contextFactory.CreateDbContext();
+            var result = await dbContext.CategorySummaries
                 .OrderByDescending(x => x.IsFavorite)
-                .ThenByDescending(x => x.Id)
+                .ThenByDescending(x => x.CategoryId)
                 .Select(x => new CategoryDetailDto(
-                    x.Id,
-                    x.Products.Sum(p => p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.CurrentStock)),
-                    x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                    x.CategoryId, x.TotalStock, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
-        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string categoryName = null)
+        public async Task<IDataResult<Pageable<CategoryDetailDto>>> GetCategoryDetailPageable(int pageIndex = 1, int itemCount = 50, string? categoryName = null)
         {
-            var query = dbContext.Categories.AsQueryable();
+            using var dbContext = contextFactory.CreateDbContext();
+            var query = dbContext.CategorySummaries.AsQueryable();
             if (!string.IsNullOrEmpty(categoryName))
                 query = query.Where(x => EF.Functions.ILike(x.Name, $"%{categoryName}%"));
 
             int total = await query.CountAsync();
             var items = await query
-                .OrderByDescending(x => x.Id)
+                .OrderByDescending(x => x.CategoryId)
                 .Skip((pageIndex - 1) * itemCount)
                 .Take(itemCount)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
 
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(new Pageable<CategoryDetailDto>(items, pageIndex, itemCount, total));
@@ -141,6 +150,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IResult> AddFavorite(int categoryId)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             var category = await dbContext.Categories.AsTracking().FirstOrDefaultAsync(x => x.Id == categoryId);
             if (category == null)
                 return new ErrorResult("Böyle bir kategori bulunamadı.");
@@ -151,6 +161,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IResult> AddFavorites(int[] categoryIds)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             var categories = await dbContext.Categories.AsTracking().Where(x => categoryIds.Contains(x.Id)).ToListAsync();
             if (categories == null || !categories.Any())
                 return new ErrorResult("Bulunamayan kategori var.");
@@ -161,36 +172,46 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IDataResult<List<CategoryDetailDto>>> GetFavoriteCategories()
         {
-            var result = await dbContext.Categories
+            using var dbContext = contextFactory.CreateDbContext();
+            var result = await dbContext.CategorySummaries
                 .Where(x => x.IsFavorite)
-                .OrderByDescending(x => x.Id)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .OrderByDescending(x => x.CategoryId)
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
         public async Task<IDataResult<List<CategoryDetailDto>>> GetSubCategories()
         {
-            var result = await dbContext.Categories
-                .Where(x => !x.SubCategories.Any())
+            using var dbContext = contextFactory.CreateDbContext();
+            var result = await dbContext.CategorySummaries
+                .Where(x => x.SubCategoryCount == 0)
                 .OrderByDescending(x => x.IsFavorite).ThenBy(x => x.Name)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
         public async Task<IDataResult<List<CategoryDetailDto>>> GetSuperCategories()
         {
-            var result = await dbContext.Categories
-                .Where(x => !x.CategoryAttributes.Any())
+            using var dbContext = contextFactory.CreateDbContext();
+            var result = await dbContext.CategorySummaries
+                .Where(x => x.AttributeCount == 0)
                 .OrderByDescending(x => x.IsFavorite).ThenBy(x => x.Name)
-                .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory.Name))
+                .Select(x => new CategoryDetailDto(
+                    x.CategoryId, x.ProductCount, x.Name,
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
 
         public async Task<IDataResult<Category>> GetCategoryEditDetail(int id)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             var result = await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == id);
             return new SuccessDataResult<Category>(result);
         }
@@ -198,41 +219,66 @@ namespace Entegrasyon.Business.Concrete
         public async Task<bool> Exits(int id)
         {
             if (id <= 0) return false;
+            using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories.AnyAsync(x => x.Id == id);
         }
 
-        public Task<string> GetCategoryNameById(int categoryId) =>
-            dbContext.Categories.AsNoTracking().Where(x => x.Id == categoryId).Select(x => x.Name).FirstOrDefaultAsync();
+        public async Task<string?> GetCategoryNameById(int categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories.AsNoTracking().Where(x => x.Id == categoryId).Select(x => x.Name).FirstOrDefaultAsync();
+        }
 
-        public Task<Category> GetCategoryById(int? categoryId) =>
-            dbContext.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
+        public async Task<Category?> GetCategoryById(int? categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
+        }
 
-        public Task<Category> GetCategoryWithAttrById(int? categoryId) =>
-            dbContext.Categories.Include(x => x.CategoryAttributes).FirstOrDefaultAsync(x => x.Id == categoryId);
+        public async Task<Category?> GetCategoryWithAttrById(int? categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories.Include(x => x.CategoryAttributes).FirstOrDefaultAsync(x => x.Id == categoryId);
+        }
 
         public async Task UpdatePlainCategory(Category category)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             dbContext.Categories.Update(category);
             await dbContext.SaveChangesAsync();
         }
 
-        public Task<bool> IsSuper(int? categoryId) =>
-            dbContext.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
+        public async Task<bool> IsSuper(int? categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
+        }
 
         public async Task<List<Category>> GetAllCategoriesWithHierarchyAsync()
         {
+            using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories
+                .AsSingleQuery()
                 .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
                 .Include(c => c.MarketplaceLinks).ThenInclude(ml => ml.MarketPlace)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
 
+        public async Task<Category?> GetCategoryDetailById(int categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories
+                .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
+                .FirstOrDefaultAsync(c => c.Id == categoryId);
+        }
+
         public async Task<List<Category>> GetAllCategoriesWithoutAttributesAsync()
         {
-            if (cache.TryGetValue(CategoryListCacheKey, out List<Category> cached))
+            if (cache.TryGetValue(CategoryListCacheKey, out List<Category>? cached) && cached is not null)
                 return cached;
 
+            using var dbContext = contextFactory.CreateDbContext();
             var result = await dbContext.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync();
             cache.Set(CategoryListCacheKey, result, TimeSpan.FromMinutes(30));
             return result;
@@ -240,6 +286,7 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<List<Category>> GetValidParentCandidatesAsync()
         {
+            using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories
                 .AsNoTracking()
                 .Where(c => !c.CategoryAttributes.Any())
@@ -252,41 +299,40 @@ namespace Entegrasyon.Business.Concrete
             if (excludeCategoryId is null or <= 0)
                 return await GetValidParentCandidatesAsync();
 
-            var allCategories = await dbContext.Categories
+            using var dbContext = contextFactory.CreateDbContext();
+
+            var descendantIds = await GetDescendantIdsAsync(dbContext, excludeCategoryId.Value);
+            descendantIds.Add(excludeCategoryId.Value);
+
+            return await dbContext.Categories
                 .AsNoTracking()
-                .ToListAsync();
-
-            var excludeIds = GetDescendantIds(allCategories, excludeCategoryId.Value);
-            excludeIds.Add(excludeCategoryId.Value);
-
-            return allCategories
-                .Where(c => !excludeIds.Contains(c.Id))
-                .Where(c => c.CategoryAttributes == null || !c.CategoryAttributes.Any())
+                .Where(c => !descendantIds.Contains(c.Id))
+                .Where(c => !c.CategoryAttributes.Any())
                 .OrderBy(c => c.Name)
-                .ToList();
+                .ToListAsync();
         }
 
-        private static HashSet<int> GetDescendantIds(List<Category> allCategories, int parentId)
+        public async Task<List<Category>> GetLeafCategoriesAsync()
         {
-            var descendants = new HashSet<int>();
-            var queue = new Queue<int>();
-            queue.Enqueue(parentId);
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories
+                .AsSingleQuery()
+                .AsNoTracking()
+                .Where(c => !c.SubCategories.Any())
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
 
-            while (queue.Count > 0)
-            {
-                var currentId = queue.Dequeue();
-                foreach (var child in allCategories.Where(c => c.SuperCategoryId == currentId))
-                {
-                    if (descendants.Add(child.Id))
-                        queue.Enqueue(child.Id);
-                }
-            }
-
-            return descendants;
+        public async Task RefreshCategorySummaryAsync()
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_category_summary");
         }
 
         public async Task<List<CategoryMarketplace>> GetCategoryMarketplaceLinksAsync(int categoryId)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories
                 .AsNoTracking()
                 .Where(c => c.Id == categoryId)
@@ -297,22 +343,18 @@ namespace Entegrasyon.Business.Concrete
 
         public async Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId)
         {
+            using var dbContext = contextFactory.CreateDbContext();
             // 1. Kategori bilgisini direkt ID ile çek
             var category = await dbContext.Categories
                 .FirstOrDefaultAsync(c => c.Id == categoryId);
             if (category is null)
-                return new ErrorDataResult<CategoryEditPageDto>(null, Messages.CategoryNotFound);
+                return new ErrorDataResult<CategoryEditPageDto>(null!, Messages.CategoryNotFound);
 
             var isLeaf = !await dbContext.Categories
                 .AnyAsync(c => c.SuperCategoryId == categoryId);
 
-            // Hiyerarşi hesabı için hafif projeksiyon (sadece Id + SuperCategoryId)
-            var categoryTree = await dbContext.Categories
-                .Select(c => new Category { Id = c.Id, SuperCategoryId = c.SuperCategoryId })
-                .ToListAsync();
-
-            var excludeIds = GetDescendantIds(categoryTree, categoryId);
-            excludeIds.Add(categoryId);
+            var descendantIds = await GetDescendantIdsAsync(dbContext, categoryId);
+            descendantIds.Add(categoryId);
             var categoriesWithAttributes = await dbContext.CategoryAttributeCategories
                 .Select(cac => cac.CategoryId)
                 .Distinct()
@@ -321,7 +363,7 @@ namespace Entegrasyon.Business.Concrete
 
             // validParents — full entity gerekli çünkü DTO'ya Category nesnesi veriliyor
             var validParents = await dbContext.Categories
-                .Where(c => !excludeIds.Contains(c.Id))
+                .Where(c => !descendantIds.Contains(c.Id))
                 .Where(c => !categoriesWithAttributesSet.Contains(c.Id))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
@@ -361,6 +403,32 @@ namespace Entegrasyon.Business.Concrete
                 ValidParentCandidates: validParents,
                 HasSoldProducts: hasSold,
                 HasProducts: hasProducts));
+        }
+
+        private static async Task<HashSet<int>> GetDescendantIdsAsync(IntegrationDbContext dbContext, int categoryId)
+        {
+            var allPairs = await dbContext.Categories
+                .Select(c => new { c.Id, c.SuperCategoryId })
+                .ToListAsync();
+
+            var childrenMap = allPairs
+                .Where(c => c.SuperCategoryId.HasValue)
+                .GroupBy(c => c.SuperCategoryId!.Value)
+                .ToDictionary(g => g.Key, g => g.Select(c => c.Id).ToList());
+
+            var descendants = new HashSet<int>();
+            var queue = new Queue<int>();
+            queue.Enqueue(categoryId);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                if (childrenMap.TryGetValue(current, out var children))
+                    foreach (var childId in children)
+                        if (descendants.Add(childId))
+                            queue.Enqueue(childId);
+            }
+            return descendants;
         }
     }
 }

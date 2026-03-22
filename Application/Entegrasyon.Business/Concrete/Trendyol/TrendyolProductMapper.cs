@@ -5,24 +5,25 @@ using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Product + Variants → List&lt;TrendyolProductItem&gt; dönüşümü.
-/// Her varyant ayrı bir TrendyolProductItem olarak oluşturulur — Trendyol V2 API varyant bazlı çalışır.
-/// Aynı ürünün tüm varyantları aynı productMainId altında gruplanır.
+/// Product + Variants -> List&lt;TrendyolProductItem&gt; donusumu.
+/// Her varyant ayri bir TrendyolProductItem olarak olusturulur -- Trendyol V2 API varyant bazli calisir.
+/// Ayni urunun tum varyantlari ayni productMainId altinda gruplanir.
 /// </summary>
 public sealed class TrendyolProductMapper(
-    IntegrationDbContext dbContext,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     IMinioFileStorage fileStorage,
     ILogger<TrendyolProductMapper> logger) : ITrendyolProductMapper
 {
-    private const int TrendyolMarketPlaceId = 1;
-
     public async Task<IDataResult<TrendyolCreateProductRequest>> MapProductAsync(Guid productId)
     {
-        // Ürünü tüm ilişkileriyle çek
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Urunu tum iliskileriyle cek
         var product = await dbContext.MainProducts
             .AsNoTracking()
             .Include(p => p.ProductVariants).ThenInclude(v => v.BranchOfficeStocks).ThenInclude(s => s.BranchOffice)
@@ -31,27 +32,37 @@ public sealed class TrendyolProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Ürün bulunamadı.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Urun bulunamadi.");
 
         if (product.ProductVariants.Count == 0)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Ürünün varyantı yok.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Urunun varyanti yok.");
 
-        // Marketplace eşleştirmeleri — brand, category
+        // Override'lari yukle (varsa)
+        var marketplace = await dbContext.ProductMarketplaces
+            .AsNoTracking()
+            .Include(pm => pm.VariantOverrides)
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId
+                && pm.MarketPlaceId == TrendyolMarketPlaceId && !pm.IsDeleted);
+
+        var effectiveTitle = marketplace?.TitleOverride ?? product.Title;
+        var effectiveDescription = marketplace?.DescriptionOverride ?? product.Description;
+
+        // Marketplace eslestirmeleri -- brand, category
         var brandMatch = product.BrandId.HasValue
             ? await dbContext.BrandMarketPlaceMatches.AsNoTracking()
                 .FirstOrDefaultAsync(m => m.ApplicationBrandId == product.BrandId && m.MarketPlaceId == TrendyolMarketPlaceId)
             : null;
 
         if (brandMatch is null)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Marka Trendyol eşleştirmesi bulunamadı.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Marka Trendyol eslestirmesi bulunamadi.");
 
         var categoryMatch = await dbContext.CategoryMarketPlaceMatches.AsNoTracking()
             .FirstOrDefaultAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId);
 
         if (categoryMatch is null)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Kategori Trendyol eşleştirmesi bulunamadı.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Kategori Trendyol eslestirmesi bulunamadi.");
 
-        // Attribute eşleştirmelerini toplu çek
+        // Attribute eslestirmelerini toplu cek
         var attributeIds = product.AttributeKeyValues.Select(a => a.CategoryAttributeId).Distinct().ToList();
         var attributeMatches = await dbContext.CategoryAttributeMarketPlaceMatches.AsNoTracking()
             .Where(m => attributeIds.Contains(m.ApplicationCategoryAttributeId) && m.MarketPlaceId == TrendyolMarketPlaceId)
@@ -65,13 +76,13 @@ public sealed class TrendyolProductMapper(
             .Where(m => valueIds.Contains(m.ApplicationCategoryAttributeValueId) && m.MarketPlaceId == TrendyolMarketPlaceId)
             .ToDictionaryAsync(m => m.ApplicationCategoryAttributeValueId, m => m.MarketPlaceCategoryAttributeValueId);
 
-        // Marketplace'e stok gönderecek depo ID'lerini belirle
+        // Marketplace'e stok gonderecek depo ID'lerini belirle
         var warehouseIds = await dbContext.MarketPlaceWarehouses.AsNoTracking()
             .Where(w => w.MarketPlaceId == TrendyolMarketPlaceId)
             .Select(w => w.BranchOfficeId)
             .ToListAsync();
 
-        // Fallback: MarketPlaceWarehouse kaydı yoksa IsDefaultMarketPlaceStock olan depoları kullan
+        // Fallback: MarketPlaceWarehouse kaydi yoksa IsDefaultMarketPlaceStock olan depolari kullan
         if (warehouseIds.Count == 0)
         {
             warehouseIds = await dbContext.BranchOffices.AsNoTracking()
@@ -85,12 +96,12 @@ public sealed class TrendyolProductMapper(
 
         foreach (var variant in product.ProductVariants)
         {
-            // Quantity: seçili depoların stok toplamı
+            // Quantity: secili depolarin stok toplami
             var quantity = variant.BranchOfficeStocks
                 .Where(s => warehouseIds.Contains(s.BranchOfficeId))
                 .Sum(s => s.CurrentStock);
 
-            // Görseller: MinIO StorageKey → public URL
+            // Gorseller: MinIO StorageKey -> public URL
             var images = variant.Images
                 .Where(i => !string.IsNullOrEmpty(i.StorageKey))
                 .OrderBy(i => i.DisplayOrder)
@@ -99,25 +110,31 @@ public sealed class TrendyolProductMapper(
 
             if (images.Count == 0)
             {
-                logger.LogWarning("Varyant {Barcode} görseli yok, atlanıyor", variant.Barcode);
+                logger.LogWarning("Varyant {Barcode} gorseli yok, atlaniyor", variant.Barcode);
                 continue;
             }
 
-            // SalePrice ≤ ListPrice kontrolü
-            var salePrice = variant.SalePrice > variant.ListPrice ? variant.ListPrice : variant.SalePrice;
+            // Override varsa override fiyatlarini kullan, yoksa orijinal
+            var variantOverride = marketplace?.VariantOverrides
+                ?.FirstOrDefault(vo => vo.ProductVariantId == variant.Id);
+            var effectiveListPrice = variantOverride?.ListPriceOverride ?? variant.ListPrice;
+            var effectiveSalePrice = variantOverride?.SalePriceOverride ?? variant.SalePrice;
 
-            // VatRate: 0, 1, 10, 20 olmalı
+            // SalePrice <= ListPrice kontrolu
+            var salePrice = effectiveSalePrice > effectiveListPrice ? effectiveListPrice : effectiveSalePrice;
+
+            // VatRate: 0, 1, 10, 20 olmali
             var vatRate = (int)variant.VatRate;
             if (vatRate is not (0 or 1 or 10 or 20))
             {
-                logger.LogWarning("Varyant {Barcode} geçersiz VatRate={VatRate}, 20 olarak ayarlandı", variant.Barcode, vatRate);
+                logger.LogWarning("Varyant {Barcode} gecersiz VatRate={VatRate}, 20 olarak ayarlandi", variant.Barcode, vatRate);
                 vatRate = 20;
             }
 
-            // Attributes: ürün seviyesi (AttributeKeyValues) + varyant seviyesi (ProductVariantAttributes)
+            // Attributes: urun seviyesi (AttributeKeyValues) + varyant seviyesi (ProductVariantAttributes)
             var attributes = new List<TrendyolProductAttribute>();
 
-            // Ürün seviyesi özellikler
+            // Urun seviyesi ozellikler
             foreach (var akv in product.AttributeKeyValues)
             {
                 if (!attributeMatches.TryGetValue(akv.CategoryAttributeId, out var trendyolAttrId))
@@ -142,7 +159,7 @@ public sealed class TrendyolProductMapper(
                 attributes.Add(new TrendyolProductAttribute(trendyolAttrId, trendyolValueId, customValue));
             }
 
-            // Varyant seviyesi özellikler (renk, beden vb.)
+            // Varyant seviyesi ozellikler (renk, beden vb.)
             if (variant.ProductVariantAttributes is not null)
             {
                 foreach (var pva in variant.ProductVariantAttributes)
@@ -150,10 +167,6 @@ public sealed class TrendyolProductMapper(
                     if (pva.CategoryAttributeValueId.HasValue
                         && valueMatches.TryGetValue(pva.CategoryAttributeValueId.Value, out var trendyolValueId))
                     {
-                        // CategoryAttributeValueId üzerinden attribute match'i bul
-                        // Value match'ten attribute'u resolve etmek için reverse lookup gerekiyor
-                        // Ancak variant attribute'lar zaten match tablosundaki value'lar ile eşleşir
-                        // Attribute ID'yi value üzerinden bulmak gerekiyor
                         var attrValue = await dbContext.CategoryAttributeValues.AsNoTracking()
                             .FirstOrDefaultAsync(v => v.Id == pva.CategoryAttributeValueId.Value);
 
@@ -177,16 +190,16 @@ public sealed class TrendyolProductMapper(
 
             var item = new TrendyolProductItem(
                 Barcode: variant.Barcode,
-                Title: product.Title.Length > 100 ? product.Title[..100] : product.Title,
+                Title: effectiveTitle.Length > 100 ? effectiveTitle[..100] : effectiveTitle,
                 ProductMainId: productMainId,
                 BrandId: brandMatch.MarketPlaceBrandId,
                 CategoryId: categoryMatch.MarketPlaceCategoryId,
-                ListPrice: variant.ListPrice,
+                ListPrice: effectiveListPrice,
                 SalePrice: salePrice,
                 VatRate: vatRate,
                 StockCode: variant.Barcode,
                 DimensionalWeight: variant.DimensionalWeight,
-                Description: product.Description.Length > 30000 ? product.Description[..30000] : product.Description,
+                Description: effectiveDescription.Length > 30000 ? effectiveDescription[..30000] : effectiveDescription,
                 Quantity: quantity,
                 Images: images,
                 Attributes: attributes);
@@ -195,7 +208,7 @@ public sealed class TrendyolProductMapper(
         }
 
         if (items.Count == 0)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Hiçbir varyant Trendyol'a gönderilemedi (görsel eksik olabilir).");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Hicbir varyant Trendyol'a gonderilemedi (gorsel eksik olabilir).");
 
         logger.LogInformation("Product {ProductId} mapped to {ItemCount} TrendyolProductItems", productId, items.Count);
         return new SuccessDataResult<TrendyolCreateProductRequest>(new TrendyolCreateProductRequest(items));

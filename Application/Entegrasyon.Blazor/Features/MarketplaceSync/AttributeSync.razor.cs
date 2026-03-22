@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
@@ -9,6 +10,7 @@ public partial class AttributeSync
 {
     [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private List<AttributeSyncRow> _attributes = [];
     private bool _isLoading = true;
@@ -56,6 +58,43 @@ public partial class AttributeSync
 
         _matchedCount = _attributes.Count(a => a.HasMatch);
         _isLoading = false;
+    }
+
+    private async Task OpenRowMappingDialog(AttributeSyncRow row)
+    {
+        var parameters = new DialogParameters<AttributeMappingDialog>
+        {
+            { x => x.ApplicationAttributeId, row.Id },
+            { x => x.ApplicationAttributeName, row.Humanized }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<AttributeMappingDialog>("Özellik Eşleştirme", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+            await LoadAttributes();
+    }
+
+    private async Task DeleteMapping(AttributeSyncRow row)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Eşleştirmeyi Sil",
+            $"'{row.Humanized}' özelliği için eşleştirmeyi silmek istediğinize emin misiniz?",
+            yesText: "Evet", cancelText: "İptal");
+
+        if (confirmed is true)
+        {
+            var result = await AttributeManager.RemoveAttributeMarketPlaceMatchAsync(row.Id, TrendyolMarketPlaceId);
+            if (result.Success)
+            {
+                Snackbar.Add("Eşleştirme başarıyla silindi.", Severity.Success);
+                await LoadAttributes();
+            }
+            else
+            {
+                Snackbar.Add($"Hata: {result.Message}", Severity.Error);
+            }
+        }
     }
 
     public class AttributeSyncRow

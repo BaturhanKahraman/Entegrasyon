@@ -14,7 +14,7 @@ namespace Entegrasyon.UnitTest.Business
         private readonly IAuthService authService;
         public AuthServiceTests()
         {
-            authService = new AuthService(mockIntegrationDbContext.Object, mockApplicationLogger.Object);
+            authService = new AuthService(mockContextFactory.Object, mockApplicationLogger.Object);
         }
 
         [Fact]

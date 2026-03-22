@@ -2,13 +2,13 @@
 
 public class RootTrendyolCategory
 {
-    public IEnumerable<ImportedTrendyolCategory> Categories { get; set; }
+    public IEnumerable<ImportedTrendyolCategory> Categories { get; set; } = [];
 }
 public class ImportedTrendyolCategory
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public int? ParentId { get; set; }
-    public List<ImportedTrendyolCategory> SubCategories { get; set; }
+    public List<ImportedTrendyolCategory> SubCategories { get; set; } = [];
 
 }

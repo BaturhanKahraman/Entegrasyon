@@ -110,7 +110,7 @@
             <MudList T="string" Dense="true">
                 <MudListItem T="string">
                     <div class="d-flex justify-space-between" style="width: 100%">
-                        <MudText>Ara Toplam:</MudText>
+                        <MudText>Ara Toplam (KDV Haric):</MudText>
                         <MudText Typo="Typo.h6">₺@Subtotal.ToString("F2")</MudText>
                     </div>
                 </MudListItem>
@@ -127,12 +127,24 @@
 
                 <MudDivider />
 
-                <MudListItem T="string">
-                    <div class="d-flex justify-space-between" style="width: 100%">
-                        <MudText>KDV (%20):</MudText>
-                        <MudText Typo="Typo.body1">₺@Tax.ToString("F2")</MudText>
-                    </div>
-                </MudListItem>
+                @foreach (var tb in TaxBreakdown)
+                {
+                    <MudListItem T="string">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText>KDV (%@tb.Rate.ToString("G29")):</MudText>
+                            <MudText Typo="Typo.body1">₺@tb.Amount.ToString("F2")</MudText>
+                        </div>
+                    </MudListItem>
+                }
+                @if (!TaxBreakdown.Any())
+                {
+                    <MudListItem T="string">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText>KDV:</MudText>
+                            <MudText Typo="Typo.body1">₺0.00</MudText>
+                        </div>
+                    </MudListItem>
+                }
 
                 <MudDivider />
 

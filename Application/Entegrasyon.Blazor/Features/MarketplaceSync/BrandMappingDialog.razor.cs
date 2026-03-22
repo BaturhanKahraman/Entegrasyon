@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -10,72 +11,62 @@ public partial class BrandMappingDialog : ComponentBase
     [CascadingParameter]
     public IMudDialogInstance MudDialog { get; set; } = null!;
 
-    [Inject]
-    public IBrandService BrandService { get; set; } = null!;
+    [Parameter]
+    public BrandDto ApplicationBrand { get; set; } = null!;
 
-    [Inject]
-    public IBrandMatchService BrandMatchService { get; set; } = null!;
+    [Inject] private IMarketplaceSearchService SearchService { get; set; } = null!;
+    [Inject] private IMarketPlaceManager MarketPlaceManager { get; set; } = null!;
+    [Inject] private IBrandMatchService BrandMatchService { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
-    [Inject]
-    public ISnackbar Snackbar { get; set; } = null!;
-
-    // Form State
-    public CreateBrandMarketPlaceMatchDto FormDto { get; set; } = new();
-    public List<BrandDto> AllBrands { get; set; } = [];
-    public bool IsLoading { get; set; } = true;
-    public bool IsSubmitting { get; set; } = false;
-    public BrandDto? SelectedBrand { get; set; }
-
-    private MudForm _form = null!;
-    private const int TrendyolMarketPlaceId = 1;
+    private List<MarketplaceOption> _marketplaces = [];
+    private MarketplaceOption? _selectedMarketplace;
+    private MarketplaceBrandSearchResult? _selectedResult;
+    private bool _isLoadingMarketplaces = true;
+    private bool _isSubmitting;
 
     protected override async Task OnInitializedAsync()
     {
-        FormDto.MarketPlaceId = TrendyolMarketPlaceId;
-        await LoadBrands();
+        await LoadMarketplaces();
     }
 
-    private async Task LoadBrands()
+    private async Task LoadMarketplaces()
     {
-        IsLoading = true;
-        var result = await BrandService.GetBrandListDetails();
-        if (result.Success)
-        {
-            AllBrands = result.Data?
-                .Select(x => new BrandDto { Id = x.Id, Name = x.Name })
-                .OrderBy(x => x.Name)
-                .ToList() ?? [];
-        }
-        else
-        {
-            Snackbar.Add("Brand'lar yüklenirken hata oluştu.", Severity.Error);
-        }
-        IsLoading = false;
+        _isLoadingMarketplaces = true;
+        var result = await MarketPlaceManager.GetAllAsync();
+        if (result.Success && result.Data is not null)
+            _marketplaces = result.Data.Select(mp => new MarketplaceOption(mp.Id, mp.Name)).ToList();
+        _isLoadingMarketplaces = false;
     }
 
-    public async Task SubmitForm()
+    private async Task<IEnumerable<MarketplaceBrandSearchResult>> SearchMarketplaceBrands(
+        string value, CancellationToken ct)
     {
+        if (_selectedMarketplace is null) return [];
+
+        var result = await SearchService.SearchBrandsAsync(_selectedMarketplace.Id, value ?? "", ct);
+        return result.Success ? result.Data : [];
+    }
+
+    private async Task SubmitForm()
+    {
+        if (_selectedMarketplace is null || _selectedResult is null) return;
+
+        _isSubmitting = true;
         try
         {
-            if (_form == null) return;
-
-            await _form.Validate();
-            if (!_form.IsValid) return;
-
-            // Validate Brand selection
-            if (FormDto.ApplicationBrandId <= 0)
+            var dto = new CreateBrandMarketPlaceMatchDto
             {
-                Snackbar.Add("Lütfen bir brand seçiniz.", Severity.Error);
-                return;
-            }
+                ApplicationBrandId = ApplicationBrand.Id,
+                MarketPlaceId = _selectedMarketplace.Id,
+                MarketPlaceBrandId = _selectedResult.Id
+            };
 
-            IsSubmitting = true;
-
-            var result = await BrandMatchService.CreateBrandMappingAsync(FormDto);
+            var result = await BrandMatchService.CreateBrandMappingAsync(dto);
             if (result.Success)
             {
-                Snackbar.Add("Marka eşleştirme başarıylaoluşturuldu.", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(FormDto));
+                Snackbar.Add("Marka eşleştirme başarıyla oluşturuldu.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(dto));
             }
             else
             {
@@ -84,25 +75,13 @@ public partial class BrandMappingDialog : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Form gönderimi sırasında hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Kayıt sırasında hata oluştu: {ex.Message}", Severity.Error);
         }
         finally
         {
-            IsSubmitting = false;
+            _isSubmitting = false;
         }
     }
 
-    public void HandleBrandSelection(BrandDto? brand)
-    {
-        if (brand != null)
-        {
-            FormDto.ApplicationBrandId = brand.Id;
-            SelectedBrand = brand;
-        }
-    }
-
-    public void Cancel()
-    {
-        MudDialog.Cancel();
-    }
+    private void Cancel() => MudDialog.Cancel();
 }

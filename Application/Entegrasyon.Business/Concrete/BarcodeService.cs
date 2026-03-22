@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BarcodeService(IntegrationDbContext dbContext) : IBarcodeService
+public class BarcodeService(IDbContextFactory<IntegrationDbContext> contextFactory) : IBarcodeService
 {
     public async Task<string> GenerateAsync()
     {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var result = await dbContext.Database
             .SqlQueryRaw<long>("SELECT nextval('barcode_sequence') AS \"Value\"")
             .FirstAsync();

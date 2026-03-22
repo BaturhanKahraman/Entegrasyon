@@ -13,6 +13,10 @@ using Entegrasyon.Entity.Dtos.Category.AddStep;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Business.Notifications;
+using Entegrasyon.Entity.Dtos.Label;
+using Entegrasyon.Entity.Dtos.Product.Discount;
+using Entegrasyon.Entity.Dtos.Product.Marketplace;
+using Entegrasyon.Entity.Dtos.Settings;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -41,6 +45,10 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<CreateBrandMarketPlaceMatchDto>, CreateBrandMarketPlaceMatchDtoValidator>();
         services.AddScoped<IValidator<SendNotificationRequest>, SendNotificationValidator>();
         services.AddScoped<IValidator<EditProductDto>, EditProductValidator>();
+        services.AddScoped<IValidator<ApplyDiscountDto>, ApplyDiscountValidator>();
+        services.AddScoped<IValidator<SaveLabelTemplateDto>, SaveLabelTemplateDtoValidator>();
+        services.AddScoped<IValidator<SaveMarketplaceOverridesDto>, SaveMarketplaceOverridesDtoValidator>();
+        services.AddScoped<IValidator<UpdateApplicationSettingDto>, UpdateApplicationSettingValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;

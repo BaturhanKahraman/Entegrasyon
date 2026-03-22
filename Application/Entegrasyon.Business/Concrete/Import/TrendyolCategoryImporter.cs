@@ -13,8 +13,8 @@ using Entegrasyon.Entity.Results;
 namespace Entegrasyon.Business.Concrete.Import;
 
 /// <summary>
-/// Trendyol'dan kategori import işlemleri.
-/// BaseCategoryImporterService'den türer ve Trendyol-specific işlemleri yapar.
+/// Trendyol'dan kategori import islemleri.
+/// BaseCategoryImporterService'den turer ve Trendyol-specific islemleri yapar.
 /// </summary>
 public class TrendyolCategoryImporter : BaseCategoryImporterService
 {
@@ -27,15 +27,15 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
 
     public TrendyolCategoryImporter(
         IHttpClientFactory httpClientFactory,
-        IntegrationDbContext dbContext,
+        IDbContextFactory<IntegrationDbContext> contextFactory,
         ILogger<TrendyolCategoryImporter> logger)
-        : base(dbContext, logger)
+        : base(contextFactory, logger)
     {
         _httpClient = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
     }
 
     /// <summary>
-    /// Trendyol API'sinden kategorileri çeker
+    /// Trendyol API'sinden kategorileri ceker
     /// </summary>
     public override async Task<IDataResult<IEnumerable<ExternalCategoryDto>>> GetExternalCategoriesAsync(CancellationToken cancellationToken = default)
     {
@@ -45,7 +45,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
 
             if (result?.Categories == null)
             {
-                Logger.LogCritical("Trendyol kategorileri boş döndü");
+                Logger.LogCritical("Trendyol kategorileri bos dondu");
                 return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, Messages.TrendyolCategoryApiError);
             }
 
@@ -54,13 +54,13 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Trendyol kategorileri çekilirken hata oluştu");
+            Logger.LogError(ex, "Trendyol kategorileri cekilirken hata olustu");
             return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Trendyol kategori modelini genel modele çevirir
+    /// Trendyol kategori modelini genel modele cevirir
     /// </summary>
     private ExternalCategoryDto MapToExternalCategory(ImportedTrendyolCategory trendyolCategory)
     {
@@ -75,19 +75,41 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
     }
 
     /// <summary>
-    /// Import işleminden önce marketplace'i yükler
+    /// Import isleminden once marketplace'i yukler
     /// </summary>
     public override async Task<IResult> ImportCategoriesAsync(IEnumerable<ExternalCategoryImportRequest> categories, CancellationToken cancellationToken = default)
     {
-        await LoadMarketPlaceAsync(MarketplaceName, cancellationToken);
+        await using var dbContext = await ContextFactory.CreateDbContextAsync(cancellationToken);
+        await LoadMarketPlaceAsync(dbContext, MarketplaceName, cancellationToken);
         _savedCategoryAttributes.Clear();
-        return await base.ImportCategoriesAsync(categories, cancellationToken);
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var category in categories)
+            {
+                await ImportCategoryInternalAsync(dbContext, category, null, cancellationToken);
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            Logger.LogInformation("{Source} kategorileri basariyla import edildi", Source);
+            return new SuccessResult($"{Source} kategorileri basariyla import edildi.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            Logger.LogError(ex, "{Source} kategorileri import edilirken hata olustu", Source);
+            return new ErrorResult($"Import sirasinda hata: {ex.Message}");
+        }
     }
 
     /// <summary>
-    /// Trendyol'a özel kategori özellikleri import işlemi
+    /// Trendyol'a ozel kategori ozellikleri import islemi
     /// </summary>
     protected override async Task ImportCategoryAttributesAsync(
+        IntegrationDbContext dbContext,
         Category category,
         bool isNewCategory,
         CancellationToken cancellationToken = default)
@@ -106,19 +128,19 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
 
             foreach (var attr in trendyolCategory.categoryAttributes)
             {
-                var dbCatAttr = await GetOrCreateCategoryAttributeAsync(attr, cancellationToken);
+                var dbCatAttr = await GetOrCreateCategoryAttributeAsync(dbContext, attr, cancellationToken);
 
-                // Attribute değerlerini ekle
+                // Attribute degerlerini ekle
                 if (!_savedCategoryAttributes.Any(x => x.ImportId == attr.Attribute.Id))
                 {
                     foreach (var attrValue in attr.AttributeValues)
                     {
-                        await AddAttributeValueAsync(attrValue, dbCatAttr, cancellationToken);
+                        await AddAttributeValueAsync(dbContext, attrValue, dbCatAttr, cancellationToken);
                     }
                     _savedCategoryAttributes.Add(dbCatAttr);
                 }
 
-                // Kategori-Attribute ilişkisi
+                // Kategori-Attribute iliskisi
                 categoryAttributeCategories.Add(new CategoryAttributeCategory
                 {
                     Category = category,
@@ -129,22 +151,23 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
                 });
             }
 
-            await DbContext.CategoryAttributeCategories.AddRangeAsync(categoryAttributeCategories, cancellationToken);
+            await dbContext.CategoryAttributeCategories.AddRangeAsync(categoryAttributeCategories, cancellationToken);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Kategori özellikleri import edilirken hata: {CategoryId}", category.ExternalCategoryId);
+            Logger.LogWarning(ex, "Kategori ozellikleri import edilirken hata: {CategoryId}", category.ExternalCategoryId);
         }
     }
 
     /// <summary>
-    /// Kategori attribute'unu bulur veya oluşturur
+    /// Kategori attribute'unu bulur veya olusturur
     /// </summary>
     private async Task<CategoryAttribute> GetOrCreateCategoryAttributeAsync(
+        IntegrationDbContext dbContext,
         TrendyolCategoryAttribute attr,
         CancellationToken cancellationToken)
     {
-        var existing = await DbContext.CategoryAttributes
+        var existing = await dbContext.CategoryAttributes
             .FirstOrDefaultAsync(x => x.ImportId == attr.Attribute.Id, cancellationToken);
 
         if (existing != null)
@@ -164,7 +187,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        // Marketplace eşleşmesi
+        // Marketplace eslesmesi
         if (MarketPlace != null)
         {
             var match = new CategoryAttributeMarketPlaceMatch
@@ -173,16 +196,17 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
                 ApplicationCategoryAttribute = newAttr,
                 MarketPlaceCategoryAttributeId = attr.Attribute.Id
             };
-            await DbContext.CategoryAttributeMarketPlaceMatches.AddAsync(match, cancellationToken);
+            await dbContext.CategoryAttributeMarketPlaceMatches.AddAsync(match, cancellationToken);
         }
 
         return newAttr;
     }
 
     /// <summary>
-    /// Attribute değeri ekler
+    /// Attribute degeri ekler
     /// </summary>
     private async Task AddAttributeValueAsync(
+        IntegrationDbContext dbContext,
         TrendyolAttributeValue attrValue,
         CategoryAttribute categoryAttribute,
         CancellationToken cancellationToken)
@@ -203,7 +227,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
                 ApplicationCategoryAttributeValue = value,
                 MarketPlaceCategoryAttributeValueId = attrValue.Id
             };
-            await DbContext.CategoryAttributeValueMarketPlaceMatches.AddAsync(match, cancellationToken);
+            await dbContext.CategoryAttributeValueMarketPlaceMatches.AddAsync(match, cancellationToken);
         }
     }
 }

@@ -9,7 +9,7 @@ public sealed class Image : BaseEntity
 
     // Relations
     public Guid? ProductVariantId { get; set; }
-    public ProductVariant ProductVariant { get; set; }
+    public ProductVariant? ProductVariant { get; set; }
 
     // Storage
     [StringLength(500)]

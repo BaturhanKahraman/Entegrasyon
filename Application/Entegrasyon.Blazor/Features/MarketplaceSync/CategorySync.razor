@@ -6,11 +6,11 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
         <MudText Typo="Typo.h5">Kategori Eşleştirme</MudText>
-        <MudButton Variant="Variant.Filled"
+        <MudButton Variant="Variant.Outlined"
                    Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.Download"
                    Href="/categories/import">
-            Trendyol'dan Kategori İçe Aktar
+            Trendyol'dan İçe Aktar
         </MudButton>
     </MudStack>
 
@@ -18,19 +18,19 @@
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2">Toplam Kategori</MudText>
-                <MudText Typo="Typo.h5" Class="mt-2">@_categories.Count</MudText>
+                <MudText Typo="Typo.h5" Class="mt-2">@_summary.TotalCategories</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirilmiş</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_categories.Count(c => c.MarketplaceLinks?.Any() == true)</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_summary.MappedCategories</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirilmemiş</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@_categories.Count(c => c.MarketplaceLinks == null || !c.MarketplaceLinks.Any())</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@_summary.UnmappedCategories</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
@@ -90,7 +90,7 @@
                             {
                                 @foreach (var link in context.Item.MarketplaceLinks)
                                 {
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudStack @key="link.MarketPlaceCategoryId" Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                         <MarketplaceLogo Name="@(link.MarketPlace?.Name ?? "Trendyol")" Size="Size.Small" />
                                         <MudText Typo="Typo.caption">
                                             @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
@@ -100,21 +100,24 @@
                             }
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Son Senkronizasyon">
+                    <TemplateColumn Title="İşlemler">
                         <CellTemplate>
-                            @{
-                                var lastSync = context.Item.MarketplaceLinks?
-                                    .Where(l => l.LastSyncedAt.HasValue)
-                                    .MaxBy(l => l.LastSyncedAt)?.LastSyncedAt;
-                            }
-                            @if (lastSync.HasValue)
-                            {
-                                <MudText Typo="Typo.body2">@lastSync.Value.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</MudText>
-                            }
-                            else
-                            {
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
-                            }
+                            <MudStack Row="true" Spacing="1">
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Link"
+                                           OnClick="@(() => OpenRowMappingDialog(context.Item))">
+                                    Eşleştir
+                                </MudButton>
+                                @if (context.Item.MarketplaceLinks?.Any() == true)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteMapping(context.Item))" />
+                                }
+                            </MudStack>
                         </CellTemplate>
                     </TemplateColumn>
                 </Columns>
