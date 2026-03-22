@@ -118,11 +118,13 @@ namespace Entegrasyon.ApplicationBootstrap
             {
                 services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
                 services.AddScoped<IHepsiburadaListingService, MockHepsiburadaListingService>();
+                services.AddScoped<IHepsiburadaOrderService, MockHepsiburadaOrderService>();
             }
             else
             {
                 services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
                 services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
+                services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
             }
 
             // N11 servisleri
