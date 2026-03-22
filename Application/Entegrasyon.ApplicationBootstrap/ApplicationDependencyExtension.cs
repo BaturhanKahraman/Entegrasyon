@@ -127,6 +127,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
             }
 
+            // Hepsiburada Q&A + Claim (mock/real ayrımı yok — her zaman real, API yoksa hata döner)
+            services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
+            services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
+
             // N11 servisleri
             services.AddScoped<IN11SoapClient, N11SoapClient>();
             services.AddScoped<N11MappingValidator>();
