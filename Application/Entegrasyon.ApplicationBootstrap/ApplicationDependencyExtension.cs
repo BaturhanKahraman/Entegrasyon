@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
@@ -106,6 +107,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             }
 
+            // Hepsiburada servisleri
+            services.AddScoped<IHepsiburadaApiClient, HepsiburadaApiClient>();
+            services.AddScoped<HepsiburadaCategoryImporter>();
+
             // N11 servisleri
             services.AddScoped<IN11SoapClient, N11SoapClient>();
             services.AddScoped<N11MappingValidator>();
@@ -134,6 +139,10 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHttpClient(StringConstants.TrendyolApi, x =>
             {
                 x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/");
+            });
+            services.AddHttpClient(StringConstants.HepsiburadaApi, x =>
+            {
+                x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/");
             });
             return services;
         }
