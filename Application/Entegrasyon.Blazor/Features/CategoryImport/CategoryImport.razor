@@ -91,7 +91,7 @@
         </ChildContent>
     </MudTabPanel>
 
-    <MudTabPanel Disabled="true">
+    <MudTabPanel>
         <TabContent>
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                 <MarketplaceLogo Name="N11" Size="Size.Small" />
@@ -100,9 +100,59 @@
         </TabContent>
         <ChildContent>
         <MudPaper Class="pa-4">
-            <MudAlert Severity="Severity.Info">
-                N11 entegrasyonu yakında eklenecek.
-            </MudAlert>
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6">N11 Kategorileri</MudText>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="LoadN11CategoriesAsync"
+                               Disabled="@n11Loading">
+                        @if (n11Loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Kategorileri Yükle
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="ImportN11CategoriesAsync"
+                               Disabled="@(importing || n11SelectedNodes == null || !n11SelectedNodes.Any())">
+                        @if (importing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Seçilenleri İçe Aktar (@(n11SelectedNodes?.Count ?? 0))
+                    </MudButton>
+                </div>
+            </div>
+
+            @if (n11Loading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+                <MudText Align="Align.Center" Color="Color.Secondary">Kategoriler yükleniyor...</MudText>
+            }
+            else if (!n11Categories.Any())
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">
+                    Kategorileri görüntülemek için "Kategorileri Yükle" butonuna tıklayın.
+                </MudAlert>
+            }
+            else
+            {
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <N11CategoryTreeView Categories="@n11Categories"
+                                             @bind-SelectedNodes="n11SelectedNodes" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <SelectedCategoriesPanel SelectedCategories="@n11SelectedNodes"
+                                                 OnRemove="@RemoveN11SelectedCategory"
+                                                 OnClearAll="@ClearN11Selection" />
+                    </MudItem>
+                </MudGrid>
+            }
         </MudPaper>
         </ChildContent>
     </MudTabPanel>
