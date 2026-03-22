@@ -32,7 +32,7 @@ public enum ImportSource
     Trendyol = 100,
 
     /// <summary>
-    /// N11 pazaryerinden import edilmis
+    /// N11 pazaryerinden import edilmiş
     /// </summary>
     N11 = 101
 }
