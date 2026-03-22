@@ -7,9 +7,9 @@ namespace Entegrasyon.Test.Pazarama;
 public class PazaramaConstantsTests
 {
     [Fact]
-    public void PazaramaMarketPlaceId_ShouldBe4()
+    public void PazaramaMarketPlaceId_ShouldBe5()
     {
-        MarketPlaceConstants.PazaramaMarketPlaceId.Should().Be(4);
+        MarketPlaceConstants.PazaramaMarketPlaceId.Should().Be(5);
     }
 
     [Fact]

@@ -14,7 +14,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 table: "MarketPlaces",
                 columns: new[] { "Id", "Name", "BaseUrl", "TokenUrl", "IsDeleted", "CreatedAt" },
                 values: new object[] {
-                    4, "Pazarama",
+                    5, "Pazarama",
                     "https://isortagimapi.pazarama.com",
                     "https://isortagimgiris.pazarama.com/connect/token",
                     false, new DateTime(2026, 3, 22, 0, 0, 0, DateTimeKind.Utc)
@@ -27,7 +27,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
             migrationBuilder.DeleteData(
                 table: "MarketPlaces",
                 keyColumn: "Id",
-                keyValue: 4);
+                keyValue: 5);
         }
     }
 }
