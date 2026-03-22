@@ -214,6 +214,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
             }
 
+            services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
+            services.AddScoped<ICiceksepetiCategoryImporter, CiceksepetiCategoryImporter>();
+            services.AddScoped<CiceksepetiCategoryImporter>();
+
             services.AddEventChannels();
             services.AddValidators();
             services.AddBusinessMapping();
