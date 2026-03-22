@@ -4,12 +4,17 @@
 <PageTitle>Pazaryeri Siparişleri</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
-    <MarketplaceLogo Name="Trendyol" Size="Size.Large" />
     <MudText Typo="Typo.h4">Pazaryeri Siparişleri</MudText>
 </MudStack>
 
 <MudPaper Class="pa-4 mb-4">
     <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+        <MudSelect T="int?" Value="_selectedMarketPlaceId" ValueChanged="OnMarketPlaceFilterChanged"
+                   Label="Pazaryeri" Variant="Variant.Outlined" Style="min-width:160px;">
+            <MudSelectItem T="int?" Value="@((int?)null)">Tümü</MudSelectItem>
+            <MudSelectItem T="int?" Value="@((int?)1)">Trendyol</MudSelectItem>
+            <MudSelectItem T="int?" Value="@((int?)2)">N11</MudSelectItem>
+        </MudSelect>
         <MudTextField @bind-Value="_searchText" Placeholder="Sipariş no veya müşteri ara..."
                       Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                       Immediate="true" DebounceInterval="300" />
