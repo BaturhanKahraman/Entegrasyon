@@ -49,5 +49,10 @@ public enum ImportSource
     /// <summary>
     /// Amazon pazaryerinden import edilmiş
     /// </summary>
-    Amazon = 104
+    Amazon = 104,
+
+    /// <summary>
+    /// PttAVM pazaryerinden import edilmis
+    /// </summary>
+    Pttavm = 105
 }
