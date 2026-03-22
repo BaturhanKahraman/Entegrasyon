@@ -68,12 +68,13 @@ public sealed class N11SoapClient(
         var client = httpClientFactory.CreateClient();
         var content = new StringContent(xmlString, Encoding.UTF8, "text/xml");
 
+        using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = content };
         if (!string.IsNullOrEmpty(soapAction))
-            content.Headers.Add("SOAPAction", soapAction);
+            request.Headers.Add("SOAPAction", $"\"{soapAction}\"");
 
         logger.LogDebug("N11 SOAP request to {Url}: {Body}", requestUrl, xmlString);
 
-        var response = await client.PostAsync(requestUrl, content);
+        var response = await client.SendAsync(request);
         var responseXml = await response.Content.ReadAsStringAsync();
 
         logger.LogDebug("N11 SOAP response: {Body}", responseXml);
