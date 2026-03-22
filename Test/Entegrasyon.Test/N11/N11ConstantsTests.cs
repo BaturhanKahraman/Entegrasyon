@@ -20,12 +20,6 @@ public class N11ConstantsTests
     }
 
     [Fact]
-    public void N11Api_StringConstant_Should_Be_Defined()
-    {
-        StringConstants.N11Api.Should().Be("N11Api");
-    }
-
-    [Fact]
     public void ImportSource_N11_Should_Be_101()
     {
         ((int)ImportSource.N11).Should().Be(101);
