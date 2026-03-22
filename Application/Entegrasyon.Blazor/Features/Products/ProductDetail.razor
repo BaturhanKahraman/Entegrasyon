@@ -43,6 +43,8 @@
                 <MudMenuItem OnClick="GoToEditCategory" Icon="@Icons.Material.Filled.Category">Kategori Düzenle</MudMenuItem>
                 <MudMenuItem OnClick="PrintBarcode" Icon="@Icons.Material.Filled.Print">Barkod Yazdır</MudMenuItem>
                 <MudMenuItem OnClick="OpenDiscountDialog" Icon="@Icons.Material.Filled.Discount">İndirim Uygula</MudMenuItem>
+                <MudMenuItem OnClick="SyncToMarketplace" Icon="@Icons.Material.Filled.Sync"
+                             Disabled="@(!CanSync)">Pazaryeri Senkronizasyonu</MudMenuItem>
                 <MudDivider />
                 <MudMenuItem OnClick="DeleteProduct" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Sil</MudMenuItem>
             </MudMenu>
@@ -98,7 +100,7 @@
                                 @foreach (var attr in _product.AttributeKeyValueDetails)
                                 {
                                     <MudItem @key="attr.AttributeKey" xs="12" sm="6">
-                                        <MudText Typo="Typo.body2" Color="Color.Dark">@attr.AttributeKey</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Dark">@attr.AttributeHumanized</MudText>
                                         <MudText Typo="Typo.body1">@(string.IsNullOrWhiteSpace(attr.AttributeValue) ? "—" : attr.AttributeValue)</MudText>
                                     </MudItem>
                                 }

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
@@ -18,6 +18,7 @@ public partial class AddProduct
     // Steps: 0=Genel, 1=Varyant Seçimi, 2=Varyant Detayları & Görseller, 3=Kontrol & Özet, 4=Pazaryerine Gönder
     private int stepIndex = 0;
     private MudForm? formStep1;
+    private MudAutocomplete<int>? _brandAutocompleteRef;
     private bool _isSaving;
 
     private string? title;
@@ -46,6 +47,7 @@ public partial class AddProduct
 
     // Feature 4: Branch offices for stock entry in Step 2
     private List<BranchOffice> _branchOffices = [];
+    private decimal? _categoryDefaultVatRate;
     private readonly Dictionary<(int variantIdx, int officeId), int?> _stockValues = new();
 
     // Images per variant index — with preview support
@@ -57,6 +59,8 @@ public partial class AddProduct
     // Loading states
     private bool _isProcessingImages;
     private bool _isGeneratingBarcodes;
+    private int _uploadProgress;
+    private int _uploadTotal;
 
     [Inject] private IBrandService? BrandManager { get; set; }
     [Inject] private ICategoryService? CategoryManager { get; set; }
@@ -80,11 +84,7 @@ public partial class AddProduct
         try
         {
             if (CategoryManager is not null)
-            {
-                var cats = await CategoryManager.GetSubCategories();
-                if (cats?.Data is not null)
-                    categories = cats.Data.Select(d => new Category { Id = d.Id, Name = d.Name }).ToList();
-            }
+                categories = await CategoryManager.GetLeafCategoriesAsync();
 
             if (BrandManager is not null)
             {
@@ -137,7 +137,8 @@ public partial class AddProduct
             kv => kv.Key,
             kv => kv.Value.Select(img => new ImageUploadDialog.ImageItem
             {
-                File = img.File,
+                FileData = img.FileData,
+                FileName = img.FileName,
                 PreviewUrl = img.PreviewUrl,
                 IsPrimary = img.IsPrimary
             }).ToList()
@@ -164,7 +165,8 @@ public partial class AddProduct
             {
                 _variantImages[idx] = items.Select(item => new VariantImageItem
                 {
-                    File = item.File,
+                    FileData = item.FileData,
+                    FileName = item.FileName,
                     PreviewUrl = item.PreviewUrl,
                     IsPrimary = item.IsPrimary
                 }).ToList();
@@ -353,10 +355,22 @@ public partial class AddProduct
 
             var product = result.Data;
 
-            // 2. Upload images
+            // 2. Upload images (with progress)
             var imageUploads = BuildImageUploads(product);
             if (imageUploads.Count > 0)
-                await ImageManager.AddProductImages(product.Id, imageUploads);
+            {
+                _uploadTotal = imageUploads.Count;
+                _uploadProgress = 0;
+                StateHasChanged();
+
+                foreach (var upload in imageUploads)
+                {
+                    await ImageManager.AddProductImages(product.Id, [upload]);
+                    _uploadProgress++;
+                    StateHasChanged();
+                    await Task.Yield();
+                }
+            }
 
             // 3. Step 4'e geç — pazaryeri gönderimi opsiyonel
             _savedProductId = product.Id;
@@ -398,11 +412,11 @@ public partial class AddProduct
 
             foreach (var item in items)
             {
-                if (item.File is null) continue;
+                if (item.FileData.Length == 0) continue;
                 result.Add(new VariantImageStream(
                     savedVariant.Id,
-                    item.File.OpenReadStream(maxAllowedSize: 10_000_000),
-                    item.File.Name,
+                    new MemoryStream(item.FileData),
+                    item.FileName,
                     item.IsPrimary));
             }
         }
@@ -434,6 +448,13 @@ public partial class AddProduct
         _stockValues.Clear();
         StateHasChanged();
         await LoadVarianterAttributes();
+
+        // Kategori default VatRate'ini yukle
+        if (CategoryManager is not null && categoryId > 0)
+        {
+            var cat = await CategoryManager.GetCategoryById(categoryId);
+            _categoryDefaultVatRate = cat?.DefaultVatRate;
+        }
     }
 
     private async Task LoadVarianterAttributes()
@@ -578,7 +599,8 @@ public partial class AddProduct
 
     private class VariantImageItem
     {
-        public IBrowserFile? File { get; set; }
+        public byte[] FileData { get; set; } = [];
+        public string FileName { get; set; } = string.Empty;
         public string PreviewUrl { get; set; } = string.Empty;
         public bool IsPrimary { get; set; }
     }
@@ -632,4 +654,72 @@ public partial class AddProduct
 
     private void OnRegularAttrCustomValueChanged(int attrId, string? value)
         => _regularAttrCustomValues[attrId] = value;
+
+    private async Task OnBrandBlur(FocusEventArgs _)
+    {
+        // Geçerli bir marka zaten seçildiyse bir şey yapma
+        if (brandId > 0 && brands.Any(b => b.Id == brandId))
+            return;
+
+        var typedName = _brandAutocompleteRef?.Text;
+        if (string.IsNullOrWhiteSpace(typedName))
+            return;
+
+        // Yazılan metin mevcut bir markayla eşleşiyorsa bir şey yapma
+        if (brands.Any(b => b.Name.Equals(typedName, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var confirm = await DialogService!.ShowMessageBox(
+            "Yeni Marka",
+            $"\"{typedName}\" markası bulunmamaktadır. Yeni olarak eklemek ister misiniz?",
+            yesText: "Evet, Ekle",
+            cancelText: "Hayır");
+
+        if (confirm == true)
+        {
+            var result = await BrandManager!.AddBrand(new AddBrandDto { Name = typedName });
+            if (result.Success)
+            {
+                var brandsResult = await BrandManager.GetBrandListDetails();
+                if (brandsResult?.Data is not null)
+                    brands = brandsResult.Data;
+
+                brandId = brands.FirstOrDefault(b =>
+                    b.Name.Equals(typedName, StringComparison.OrdinalIgnoreCase))?.Id ?? 0;
+
+                Snackbar?.Add($"\"{typedName}\" markası eklendi. Pazaryerlerine göndermek için eşleştirmesi yapılmalıdır.",
+                    Severity.Info);
+            }
+            else
+            {
+                Snackbar?.Add(result.Message ?? "Marka eklenemedi.", Severity.Error);
+            }
+        }
+        else
+        {
+            brandId = 0;
+            if (_brandAutocompleteRef is not null)
+                await _brandAutocompleteRef.ResetAsync();
+        }
+    }
+
+    private Task<IEnumerable<int>> SearchBrands(string value, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(brands.Select(b => b.Id));
+
+        return Task.FromResult(brands
+            .Where(b => b.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Select(b => b.Id));
+    }
+
+    private Task<IEnumerable<int>> SearchCategories(string value, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(categories.Select(c => c.Id));
+
+        return Task.FromResult(categories
+            .Where(c => c.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.Id));
+    }
 }
