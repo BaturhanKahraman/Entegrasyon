@@ -9,4 +9,9 @@ public sealed class BrandMarketPlaceMatch
     public int MarketPlaceId { get; set; }
     public MarketPlace MarketPlace { get; set; } = null!;
     public int MarketPlaceBrandId { get; set; }
+
+    /// <summary>
+    /// String tipinde harici marka ID'si (Pazarama gibi GUID ID kullanan marketplace'ler için).
+    /// </summary>
+    public string? MarketPlaceBrandExternalId { get; set; }
 }

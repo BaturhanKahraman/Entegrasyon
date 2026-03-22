@@ -32,4 +32,10 @@ public sealed class MarketPlace : BaseEntity
     /// </summary>
     [StringLength(maximumLength: 100)]
     public string? UserAgentPrefix { get; set; }
+
+    /// <summary>
+    /// OAuth2 token endpoint URL — Pazarama: https://isortagimgiris.pazarama.com/connect/token
+    /// </summary>
+    [StringLength(maximumLength: 200)]
+    public string? TokenUrl { get; set; }
 }
