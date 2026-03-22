@@ -110,6 +110,18 @@ namespace Entegrasyon.ApplicationBootstrap
             // Hepsiburada servisleri
             services.AddScoped<IHepsiburadaApiClient, HepsiburadaApiClient>();
             services.AddScoped<HepsiburadaCategoryImporter>();
+            services.AddScoped<HepsiburadaMappingValidator>();
+            services.AddScoped<IHepsiburadaProductMapper, HepsiburadaProductMapper>();
+
+            var useHbMock = configuration.GetValue<bool>("Hepsiburada:UseMock", true);
+            if (useHbMock)
+            {
+                services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
+            }
+            else
+            {
+                services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
+            }
 
             // N11 servisleri
             services.AddScoped<IN11SoapClient, N11SoapClient>();
@@ -177,6 +189,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
             services.AddHostedService<DashboardRefreshService>();
+            services.AddHostedService<HepsiburadaStatusPollingService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
