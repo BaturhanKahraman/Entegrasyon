@@ -31,4 +31,31 @@ public sealed class MockN11OrderService(
         return Task.FromResult<IDataResult<N11OrderDto>>(
             new ErrorDataResult<N11OrderDto>(null!, $"Mock: sipariş {orderId} bulunamadı."));
     }
+
+    public Task<IResult> AcceptOrderItemAsync(long orderItemId, int numberOfPackages = 1)
+    {
+        logger.LogInformation(
+            "Mock N11: AcceptOrderItemAsync çağrıldı — orderItemId={OrderItemId}, numberOfPackages={NumberOfPackages}",
+            orderItemId, numberOfPackages);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: sipariş kalemi kabul edildi."));
+    }
+
+    public Task<IResult> RejectOrderItemAsync(long orderItemId, string rejectReason, string rejectReasonType)
+    {
+        logger.LogInformation(
+            "Mock N11: RejectOrderItemAsync çağrıldı — orderItemId={OrderItemId}, rejectReason={RejectReason}, rejectReasonType={RejectReasonType}",
+            orderItemId, rejectReason, rejectReasonType);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: sipariş kalemi reddedildi."));
+    }
+
+    public Task<IResult> ShipOrderItemAsync(long orderItemId, int shipmentCompanyId, string trackingNumber, int shipmentMethod = 1)
+    {
+        logger.LogInformation(
+            "Mock N11: ShipOrderItemAsync çağrıldı — orderItemId={OrderItemId}, shipmentCompanyId={ShipmentCompanyId}, trackingNumber={TrackingNumber}, shipmentMethod={ShipmentMethod}",
+            orderItemId, shipmentCompanyId, trackingNumber, shipmentMethod);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: sipariş kalemi kargoya verildi."));
+    }
 }

@@ -10,4 +10,10 @@ public interface IN11OrderService
         string? status = null, int page = 0, int pageSize = 50);
 
     Task<IDataResult<N11OrderDto>> GetOrderDetailAsync(long orderId);
+
+    Task<IResult> AcceptOrderItemAsync(long orderItemId, int numberOfPackages = 1);
+
+    Task<IResult> RejectOrderItemAsync(long orderItemId, string rejectReason, string rejectReasonType);
+
+    Task<IResult> ShipOrderItemAsync(long orderItemId, int shipmentCompanyId, string trackingNumber, int shipmentMethod = 1);
 }

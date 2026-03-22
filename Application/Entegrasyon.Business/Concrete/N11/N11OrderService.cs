@@ -138,6 +138,119 @@ public sealed class N11OrderService(
     }
 
     // -----------------------------------------------------------------------
+    // AcceptOrderItemAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> AcceptOrderItemAsync(long orderItemId, int numberOfPackages = 1)
+    {
+        var request = new XElement(Ns + "OrderItemAcceptRequest",
+            new XElement("orderItemList",
+                new XElement("orderItem",
+                    new XElement("id", orderItemId))),
+            new XElement("numberOfPackages", numberOfPackages));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("OrderService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 AcceptOrderItem SOAP çağrısı başarısız — OrderItemId={OrderItemId}", orderItemId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 AcceptOrderItem başarısız — OrderItemId={OrderItemId}, Message={Message}",
+                orderItemId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 AcceptOrderItem başarılı — OrderItemId={OrderItemId}", orderItemId);
+        return new SuccessResult("Sipariş kalemi kabul edildi.");
+    }
+
+    // -----------------------------------------------------------------------
+    // RejectOrderItemAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> RejectOrderItemAsync(long orderItemId, string rejectReason, string rejectReasonType)
+    {
+        var request = new XElement(Ns + "OrderItemRejectRequest",
+            new XElement("orderItemList",
+                new XElement("orderItem",
+                    new XElement("id", orderItemId))),
+            new XElement("rejectReason", rejectReason),
+            new XElement("rejectReasonType", rejectReasonType));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("OrderService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 RejectOrderItem SOAP çağrısı başarısız — OrderItemId={OrderItemId}", orderItemId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 RejectOrderItem başarısız — OrderItemId={OrderItemId}, Message={Message}",
+                orderItemId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 RejectOrderItem başarılı — OrderItemId={OrderItemId}", orderItemId);
+        return new SuccessResult("Sipariş kalemi reddedildi.");
+    }
+
+    // -----------------------------------------------------------------------
+    // ShipOrderItemAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> ShipOrderItemAsync(long orderItemId, int shipmentCompanyId, string trackingNumber, int shipmentMethod = 1)
+    {
+        var request = new XElement(Ns + "MakeOrderItemShipmentRequest",
+            new XElement("orderItemList",
+                new XElement("orderItem",
+                    new XElement("id", orderItemId),
+                    new XElement("shipmentInfo",
+                        new XElement("shipmentCompany",
+                            new XElement("id", shipmentCompanyId)),
+                        new XElement("trackingNumber", trackingNumber),
+                        new XElement("shipmentMethod", shipmentMethod)))));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("OrderService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 ShipOrderItem SOAP çağrısı başarısız — OrderItemId={OrderItemId}", orderItemId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 ShipOrderItem başarısız — OrderItemId={OrderItemId}, Message={Message}",
+                orderItemId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 ShipOrderItem başarılı — OrderItemId={OrderItemId}", orderItemId);
+        return new SuccessResult("Sipariş kalemi kargoya verildi.");
+    }
+
+    // -----------------------------------------------------------------------
     // XML parsing
     // -----------------------------------------------------------------------
 
