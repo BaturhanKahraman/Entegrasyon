@@ -49,5 +49,15 @@ public enum ImportSource
     /// <summary>
     /// Amazon pazaryerinden import edilmiş
     /// </summary>
-    Amazon = 104
+    Amazon = 104,
+
+    /// <summary>
+    /// PttAVM pazaryerinden import edilmiş (reserved — MarketPlaceId=7)
+    /// </summary>
+    PttAvm = 105,
+
+    /// <summary>
+    /// Çiçeksepeti pazaryerinden import edilmiş
+    /// </summary>
+    Ciceksepeti = 106
 }
