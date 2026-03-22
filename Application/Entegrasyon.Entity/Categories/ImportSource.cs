@@ -39,5 +39,10 @@ public enum ImportSource
     /// <summary>
     /// Hepsiburada pazaryerinden import edilmiş
     /// </summary>
-    Hepsiburada = 102
+    Hepsiburada = 102,
+
+    /// <summary>
+    /// Pazarama pazaryerinden import edilmiş
+    /// </summary>
+    Pazarama = 103
 }
