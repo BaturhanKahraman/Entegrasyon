@@ -6,6 +6,7 @@ using Entegrasyon.Business.Concrete.Import;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
+using Entegrasyon.Entity.Dtos.Amazon;
 using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Blazor.Features.CategoryImport;
@@ -62,6 +63,9 @@ public partial class CategoryImport
     private List<CategoryTreeNode> pazaramaCategories = [];
     private IReadOnlyCollection<CategoryTreeNode>? pazaramaSelectedNodes;
     private bool pazaramaLoading;
+
+    // Amazon state (product type search — kategori ağacı yok)
+    private List<AmazonProductTypeSearchResult> amazonSelectedProductTypes = [];
 
     private async Task LoadTrendyolCategoriesAsync()
     {

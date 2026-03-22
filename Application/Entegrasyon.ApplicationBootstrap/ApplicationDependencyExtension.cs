@@ -247,6 +247,10 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<DashboardRefreshService>();
             services.AddHostedService<HepsiburadaStatusPollingService>();
             services.AddHostedService<HepsiburadaStockPriceSyncService>();
+            services.AddHostedService<AmazonOrderPollingService>();
+            services.AddHostedService<AmazonStockPriceSyncService>();
+            services.AddHostedService<AmazonFeedStatusPollingService>();
+            services.AddHostedService<AmazonListingStatusPollingService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
