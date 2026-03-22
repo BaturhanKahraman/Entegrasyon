@@ -142,12 +142,14 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IN11ProductService, MockN11ProductService>();
                 services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
                 services.AddScoped<IN11OrderService, MockN11OrderService>();
+                services.AddScoped<IN11ClaimService, MockN11ClaimService>();
             }
             else
             {
                 services.AddScoped<IN11ProductService, N11ProductService>();
                 services.AddScoped<IN11StockPriceService, N11StockPriceService>();
                 services.AddScoped<IN11OrderService, N11OrderService>();
+                services.AddScoped<IN11ClaimService, N11ClaimService>();
             }
 
             services.AddEventChannels();
