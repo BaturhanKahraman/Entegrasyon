@@ -169,6 +169,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolStockPriceSyncService>();
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
+            services.AddHostedService<N11OrderPollingService>();
             services.AddHostedService<DashboardRefreshService>();
             return services;
         }
