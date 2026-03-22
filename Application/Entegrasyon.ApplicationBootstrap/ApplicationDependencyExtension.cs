@@ -115,12 +115,13 @@ namespace Entegrasyon.ApplicationBootstrap
             if (useN11Mock)
             {
                 services.AddScoped<IN11ProductService, MockN11ProductService>();
+                services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
             }
             else
             {
                 services.AddScoped<IN11ProductService, N11ProductService>();
+                services.AddScoped<IN11StockPriceService, N11StockPriceService>();
             }
-            services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
 
             services.AddEventChannels();
             services.AddValidators();
