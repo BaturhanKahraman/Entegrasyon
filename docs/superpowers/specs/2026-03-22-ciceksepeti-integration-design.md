@@ -45,13 +45,17 @@ Business/Concrete/Ciceksepeti/
 Business/Abstract/
 ├── ICiceksepetiApiClient.cs
 ├── ICiceksepetiCategoryService.cs
+├── ICiceksepetiCategoryImportService.cs
 ├── ICiceksepetiProductService.cs
+├── ICiceksepetiProductMapper.cs
 ├── ICiceksepetiStockPriceService.cs
 ├── ICiceksepetiOrderService.cs
 ├── ICiceksepetiInvoiceService.cs
 ├── ICiceksepetiReturnService.cs
 └── ICiceksepetiQnAService.cs
 ```
+
+> **Not:** `CiceksepetiMappingValidator` interface'siz concrete olarak inject edilir (Pazarama pattern'i ile tutarlı).
 
 ### Background Services
 
@@ -77,12 +81,21 @@ Business/Concrete/Import/
 
 **Auth:** `x-api-key` HTTP header (MarketPlace.ApiKey alanından okunur)
 
+**Constructor Dependencies:**
+- `IDbContextFactory<IntegrationDbContext>` — credential lookup
+- `IHttpClientFactory` — HTTP client oluşturma
+- `ILogger<CiceksepetiApiClient>` — teknik loglama
+
 **Multi-tenant:**
 - `ConcurrentDictionary<int, (string ApiKey, string BaseUrl)>` credential cache
 - Per-marketplace `SemaphoreSlim` rate limit izolasyonu
 - `IDbContextFactory<IntegrationDbContext>` ile credential refresh
 
+**DI Lifetime:** Scoped (Pazarama pattern'i ile tutarlı). Credential cache `static` veya ayrı singleton servis olarak yönetilir.
+
 **Rate limit stratejisi:** Per-endpoint minimum interval kontrolü. Çiçeksepeti "aynı body" ve "farklı body" için ayrı rate limit uyguluyor — client tarafında sadece "farklı body" limiti uygulanacak (aynı body kontrolü scope dışı).
+
+**Retry stratejisi:** `IHttpClientFactory` üzerinden Polly retry policy — 429 (Too Many Requests) ve 503 (Service Unavailable) için exponential backoff. Transient timeout'lar için max 3 retry.
 
 **Özel case:** Fatura endpoint'i (`/Branch/SendInvoiceMail`) farklı path prefix kullanır — ApiClient'ta `SendRawAsync` veya path override desteği.
 
@@ -90,6 +103,7 @@ Business/Concrete/Import/
 - `GetAsync<T>(string path, CancellationToken ct)`
 - `PostAsync<T>(string path, object body, CancellationToken ct)`
 - `PutAsync<T>(string path, object body, CancellationToken ct)`
+- `DeleteAsync(string path, CancellationToken ct)` — gelecek uyumluluk
 - `SendRawAsync<T>(string fullPath, HttpMethod method, object? body, CancellationToken ct)` — fatura için
 
 ---
@@ -102,7 +116,10 @@ Business/Concrete/Import/
 
 ### CiceksepetiCategoryImporter (extends BaseCategoryImporterService)
 - Tree → flat list dönüşümü, leaf kategorileri MarketPlaceId=7 ile kaydet
-- Attribute import: `type="Variant Ozellik"` → IsVarianter=true, `type="Urun Ozellik"` → IsVarianter=false
+- Attribute import type mapping:
+  - `"Variant Ozellik"` → IsVarianter=true
+  - `"Urun Ozellik"` → IsVarianter=false
+  - `"Kisisellestirilebilir Ozellik"` → IsVarianter=false, AllowCustom=true (kişiselleştirme)
 
 ### CiceksepetiProductMapper
 - Product entity → `CiceksepetiCreateProductRequest` dönüşümü
@@ -116,17 +133,27 @@ Business/Concrete/Import/
 - Image format/boyut kontrolü (500x500–2000x2000, JPG/PNG)
 
 ### CiceksepetiProductService
+**Dependencies:** `ICiceksepetiApiClient`, `ICiceksepetiProductMapper`, `CiceksepetiMappingValidator`, `IProductActivityLogger`, `IApplicationLogManager`, `ILogger<T>`
+
 - `PublishProductAsync(Guid productId)` → validate → map → POST /api/v1/Products → batchId
 - `UpdateProductAsync(Guid productId)` → PUT /api/v1/Products (isActive zorunlu!)
 - `CheckBatchStatusAsync(string batchId)` → GET batch-status/{batchId}
-- `GetProductsAsync(filters)` → GET /api/v1/Products (pageSize max 60)
+- `GetProductsAsync(filters)` → GET /api/v1/Products (pageSize max 60, **page 1-based**)
+
+**Logging:** Dual-logging pattern — `IApplicationLogManager` (admin, Türkçe) + `ILogger<T>` (developer, teknik)
+**Activity logging:** `IProductActivityLogger` ile her publish/update/batch sonucu kaydedilir
 
 **Dikkat:** Update'te `operatorContacts`/`safetyInfo` gönderilmezse mevcut veri silinir!
+
+**Pagination notu:** Ürün listeleme **1-based** page, sipariş listeleme **0-based** page — endpoint'e göre farklı.
 
 ### CiceksepetiStockPriceService
 - `UpdateStockAndPriceAsync(items)` → PUT /api/v1/Products/price-and-stock
 - Max 200 ürün/batch
-- İş kuralları: fiyat %50 düşüş limiti, listPrice salesPrice ile birlikte
+- İş kuralları:
+  - Fiyat tek seferde %50'den fazla düşürülemez
+  - listPrice tek başına gönderilemez (salesPrice ile birlikte)
+  - listPrice - salesPrice farkı: %1'den fazla ve %80'den az olmalı
 
 ---
 
@@ -167,6 +194,7 @@ Business/Concrete/Import/
 - Bekleyen batch'leri DB'den çek → poll → sonuçları güncelle
 - Multi-tenant: tenant başına izole polling
 - Poll interval: konfigüre edilebilir (default 30 sn)
+- Max polling süresi: Ürün batch 24 saat, stok/fiyat batch 4 saat — süre aşımında Failed olarak işaretle
 
 ### CiceksepetiOrderPollingService
 - Periyodik yeni sipariş çekme → DB'ye kaydet
@@ -189,23 +217,34 @@ public static IServiceCollection AddCiceksepetiServices(
 {
     var useMock = configuration.GetValue<bool>("Ciceksepeti:UseMock", true);
 
+    // ApiClient — Scoped (Pazarama pattern'i ile tutarlı)
     if (useMock)
-        services.AddSingleton<ICiceksepetiApiClient, MockCiceksepetiApiClient>();
+        services.AddScoped<ICiceksepetiApiClient, MockCiceksepetiApiClient>();
     else
-        services.AddSingleton<ICiceksepetiApiClient, CiceksepetiApiClient>();
+        services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
 
+    // Services
     services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
     services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
+    services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
     services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
     services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
     services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
     services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
     services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
-    services.AddScoped<CiceksepetiProductMapper>();
     services.AddScoped<CiceksepetiMappingValidator>();
 
     return services;
 }
+```
+
+### AddBackgroundServices (mevcut metoda ekleme)
+
+```csharp
+// Ciceksepeti background services
+services.AddHostedService<CiceksepetiBatchStatusPollingService>();
+services.AddHostedService<CiceksepetiOrderPollingService>();
+services.AddHostedService<CiceksepetiStockPriceSyncService>();
 ```
 
 ### MarketPlaceConstants.cs
@@ -220,7 +259,7 @@ MarketPlace tablosuna: `Id=7, Name="Çiçeksepeti", BaseUrl="https://apis.ciceks
 
 ## 9. Multi-Tenant Tasarım
 
-- **CiceksepetiApiClient:** Singleton, `ConcurrentDictionary<int, (string, string)>` credential cache
+- **CiceksepetiApiClient:** Scoped, credential cache static `ConcurrentDictionary<int, (string, string)>`
 - **Rate limit:** Per-marketplace `SemaphoreSlim` (tenant izolasyonu)
 - **Background services:** `IServiceScopeFactory` + `IDbContextFactory` ile scoped DB erişimi
 - **Order polling:** `ConcurrentDictionary<int, DateTime>` last poll timestamp
