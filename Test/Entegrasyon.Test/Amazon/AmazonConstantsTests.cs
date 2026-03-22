@@ -7,9 +7,9 @@ namespace Entegrasyon.Test.Amazon;
 public class AmazonConstantsTests
 {
     [Fact]
-    public void AmazonMarketPlaceId_Should_Be_5()
+    public void AmazonMarketPlaceId_Should_Be_6()
     {
-        MarketPlaceConstants.AmazonMarketPlaceId.Should().Be(5);
+        MarketPlaceConstants.AmazonMarketPlaceId.Should().Be(6);
     }
 
     [Fact]
