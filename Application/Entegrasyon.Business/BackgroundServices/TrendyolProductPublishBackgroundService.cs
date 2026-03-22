@@ -48,6 +48,9 @@ public class TrendyolProductPublishBackgroundService(
                         case "Hepsiburada":
                             await HandleHepsiburadaAsync(scope.ServiceProvider, evt.ProductId, stoppingToken);
                             break;
+                        case "Pazarama":
+                            await HandlePazaramaAsync(scope.ServiceProvider, evt.ProductId, stoppingToken);
+                            break;
                         default:
                             logger.LogWarning("Unsupported marketplace: {Marketplace}", marketplace);
                             break;
@@ -151,6 +154,52 @@ public class TrendyolProductPublishBackgroundService(
             record.Status = MarketplaceProductStatus.Failed;
             record.StatusMessage = $"Publish isteği sırasında hata: {ex.Message}";
             logger.LogError(ex, "Exception during Hepsiburada publish for product {ProductId}", productId);
+        }
+
+        await dbContext.SaveChangesAsync(ct);
+    }
+
+    private async Task HandlePazaramaAsync(IServiceProvider services, Guid productId, CancellationToken ct)
+    {
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var pazaramaService = services.GetRequiredService<IPazaramaProductService>();
+
+        var record = await dbContext.ProductMarketplaces
+            .FirstOrDefaultAsync(pm => pm.ProductId == productId &&
+                                       pm.MarketPlace.Name == "Pazarama", ct);
+
+        if (record is null)
+        {
+            logger.LogWarning("ProductMarketplace record not found for ProductId={ProductId}, Pazarama", productId);
+            return;
+        }
+
+        try
+        {
+            var result = await pazaramaService.PublishProductAsync(productId);
+
+            if (result.Success && !string.IsNullOrWhiteSpace(result.Data))
+            {
+                record.BatchRequestId = result.Data;
+                logger.LogInformation("Product {ProductId} published to Pazarama. BatchId={BatchId}", productId, result.Data);
+            }
+            else if (result.Success)
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = "Pazarama API basarili dondu ancak BatchRequestId bos geldi.";
+            }
+            else
+            {
+                record.Status = MarketplaceProductStatus.Failed;
+                record.StatusMessage = result.Message;
+                logger.LogWarning("Product {ProductId} failed to publish to Pazarama: {Message}", productId, result.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            record.Status = MarketplaceProductStatus.Failed;
+            record.StatusMessage = $"Publish istegi sirasinda hata: {ex.Message}";
+            logger.LogError(ex, "Exception during Pazarama publish for product {ProductId}", productId);
         }
 
         await dbContext.SaveChangesAsync(ct);
