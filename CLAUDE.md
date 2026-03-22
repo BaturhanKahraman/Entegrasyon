@@ -132,3 +132,13 @@ EventChannel<CategoryUpdatedEvent> // publisher → subscriber
   8. E2E testini çalıştır: `dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj`
 
   Test olmadan özellik tamamlanmış SAYILMAZ. "Testleri sonra yazarız" KABUL EDİLMEZ.
+
+## Multi-Tenant Design (Strict Rule)
+
+  Bu sistem ileride **multi-tenant** yapılacak. Tüm yeni geliştirmelerde tenant izolasyonunu göz önünde bulundur:
+
+  - **Singleton servislerde in-memory state:** Tek bir field yerine `ConcurrentDictionary<int, T>` kullan (key = tenantId veya MarketPlace.Id). Özellikle OAuth token cache'leri bu kurala TABİ.
+  - **SemaphoreSlim:** Tenant başına izole lock mekanizması kullan, global tek lock değil.
+  - **DB query'leri:** Tüm sorgularda tenant filtresi uygulanabilir olmalı.
+  - **Configuration:** Tenant-specific config'ler DB'den okunmalı, appsettings.json'a hardcode edilmemeli.
+  - **Tek tenant için çalışıyor ≠ multi-tenant'ta çalışacak.** Tasarımda her zaman "bu N tenant ile çalışır mı?" sorusunu sor.
