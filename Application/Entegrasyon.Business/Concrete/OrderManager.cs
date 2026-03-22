@@ -25,6 +25,8 @@ public class OrderManager(
     INotificationManager notificationManager,
     ILogger<OrderManager> logger) : IOrderManager
 {
+    // TODO Multi-tenant: Lock key'lere tenantId dahil et: (tenantId * 10000) + marketplaceImportId
+    // Şu an single-tenant olduğu için sabit key'ler yeterli.
     private const long AdvisoryLockKeyTrendyolImport = 2001;
     private const long AdvisoryLockKeyN11Import = 2002;
 
