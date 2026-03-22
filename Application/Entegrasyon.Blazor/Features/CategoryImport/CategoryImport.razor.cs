@@ -28,6 +28,9 @@ public partial class CategoryImport
     private HepsiburadaCategoryImporter HbImporter { get; set; } = null!;
 
     [Inject]
+    private PazaramaCategoryImporter PazaramaImporter { get; set; } = null!;
+
+    [Inject]
     private NavigationManager NavigationManager { get; set; } = null!;
 
     [Inject]
@@ -54,6 +57,11 @@ public partial class CategoryImport
     private List<CategoryTreeNode> hbCategories = [];
     private IReadOnlyCollection<CategoryTreeNode>? hbSelectedNodes;
     private bool hbLoading;
+
+    // Pazarama state
+    private List<CategoryTreeNode> pazaramaCategories = [];
+    private IReadOnlyCollection<CategoryTreeNode>? pazaramaSelectedNodes;
+    private bool pazaramaLoading;
 
     private async Task LoadTrendyolCategoriesAsync()
     {
@@ -300,5 +308,68 @@ public partial class CategoryImport
     private void ClearHbSelection()
     {
         hbSelectedNodes = null;
+    }
+
+    // Pazarama methods
+    private async Task LoadPazaramaCategoriesAsync()
+    {
+        pazaramaLoading = true;
+        var result = await PazaramaImporter.GetExternalCategoriesAsync();
+        if (result.Success && result.Data != null)
+        {
+            pazaramaCategories = result.Data.Select(MapToTreeNode).ToList();
+            var totalCount = CountAllCategories(pazaramaCategories);
+            Snackbar.Add($"{totalCount} Pazarama kategori yuklendi.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Pazarama kategorileri yuklenemedi.", Severity.Error);
+        }
+        pazaramaLoading = false;
+    }
+
+    private async Task ImportPazaramaCategoriesAsync()
+    {
+        if (pazaramaSelectedNodes == null || !pazaramaSelectedNodes.Any())
+        {
+            Snackbar.Add("Lutfen en az bir kategori secin.", Severity.Warning);
+            return;
+        }
+
+        importing = true;
+        try
+        {
+            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var importRequests = pazaramaSelectedNodes.Select(MapToImportRequest).ToList();
+            var importEvent = new CategoryImportRequestedEvent("Pazarama", importRequests, userId);
+            await ImportRequestedChannel.PublishAsync(importEvent);
+            Snackbar.Add("Pazarama kategori ice aktarma islemi baslatildi.", Severity.Info);
+            pazaramaSelectedNodes = null;
+            NavigationManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Pazarama category import request failed");
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            importing = false;
+        }
+    }
+
+    private void RemovePazaramaSelectedCategory(CategoryTreeNode node)
+    {
+        if (pazaramaSelectedNodes != null)
+        {
+            var list = pazaramaSelectedNodes.ToList();
+            list.Remove(node);
+            pazaramaSelectedNodes = list;
+        }
+    }
+
+    private void ClearPazaramaSelection()
+    {
+        pazaramaSelectedNodes = null;
     }
 }
