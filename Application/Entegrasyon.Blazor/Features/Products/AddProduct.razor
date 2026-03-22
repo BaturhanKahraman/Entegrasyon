@@ -36,24 +36,26 @@
                             <MudTextField Label="Stok Kodu" @bind-Value="stockCode" Required="true" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudSelect T="int" Label="Marka" @bind-Value="brandId" Placeholder="Marka seçin" Required="true">
-                                <MudSelectItem T="int" Disabled>Lütfen bir marka seçin</MudSelectItem>
-                                @foreach (var b in brands)
-                                {
-                                    <MudSelectItem @key="b.Id" Value="@b.Id">@b.Name</MudSelectItem>
-                                }
-                            </MudSelect>
+                            <MudAutocomplete T="int" @ref="_brandAutocompleteRef"
+                                             Label="Marka" @bind-Value="brandId"
+                                             SearchFunc="SearchBrands"
+                                             ToStringFunc="@(id => brands.FirstOrDefault(b => b.Id == id)?.Name ?? string.Empty)"
+                                             Placeholder="Marka arayın..."
+                                             Required="true"
+                                             ResetValueOnEmptyText="true"
+                                             CoerceText="false"
+                                             OnBlur="@OnBrandBlur" />
                         </MudItem>
                         <MudItem xs="12" md="6">
-                            <MudSelect T="int" Label="Kategori" Value="@categoryId"
-                                       ValueChanged="@OnCategoryChanged"
-                                       Placeholder="Kategori seçin" Required="true">
-                                <MudSelectItem T="int" Disabled>Lütfen bir kategori seçin</MudSelectItem>
-                                @foreach (var c in categories)
-                                {
-                                    <MudSelectItem @key="c.Id" Value="@c.Id">@c.Name</MudSelectItem>
-                                }
-                            </MudSelect>
+                            <MudAutocomplete T="int" Label="Kategori" Value="@categoryId"
+                                             ValueChanged="@OnCategoryChanged"
+                                             SearchFunc="SearchCategories"
+                                             ToStringFunc="@(id => categories.FirstOrDefault(c => c.Id == id)?.Name ?? string.Empty)"
+                                             Placeholder="Kategori arayın..."
+                                             Required="true"
+                                             ResetValueOnEmptyText="true"
+                                             CoerceText="true"
+                                             CoerceValue="true" />
                         </MudItem>
                         <MudItem xs="12" md="6">
                             <MudTextField Label="Sezon" @bind-Value="season" Placeholder="Örn: Yaz, Kış, İlkbahar" />
@@ -273,73 +275,60 @@
                                 </MudStack>
                             </MudStack>
 
-                            <MudGrid>
-                                <MudItem xs="12" md="3">
+                            @* Barkod & Hacim — tek satır *@
+                            <MudGrid Class="mb-2">
+                                <MudItem xs="12" sm="6" md="4">
                                     <MudTextField Label="Barkod" Value="@(string.IsNullOrEmpty(variant.Barcode) ? "Otomatik oluşturulacak" : variant.Barcode)"
                                                   ReadOnly="true" Variant="Variant.Outlined" />
                                 </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudNumericField T="decimal?" Label="Liste Fiyatı" @bind-Value="variant.ListPrice"
-                                                     HideSpinButtons="true"
-                                                     Adornment="Adornment.Start" AdornmentText="₺" />
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudNumericField T="decimal?" Label="Hacim Ağırlığı (Desi)" @bind-Value="variant.DimensionalWeight"
+                                                     Variant="Variant.Outlined" />
                                 </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudNumericField T="decimal?" Label="Satış Fiyatı" @bind-Value="variant.SalePrice"
-                                                     HideSpinButtons="true"
-                                                     Adornment="Adornment.Start" AdornmentText="₺" />
-                                </MudItem>
-                                <MudItem xs="12" md="2">
-                                    <MudNumericField T="decimal?" Label="Maliyet" @bind-Value="variant.CostPrice"
-                                                     HideSpinButtons="true"
-                                                     Adornment="Adornment.Start" AdornmentText="₺" />
-                                </MudItem>
-                                <MudItem xs="12" md="3">
-                                    <MudNumericField T="decimal?" Label="Hacim Ağırlığı" @bind-Value="variant.DimensionalWeight" />
-                                </MudItem>
-
-                                @* Branch office stock entry *@
-                                @if (_branchOffices.Any())
-                                {
-                                    <MudItem xs="12">
-                                        <MudText Typo="Typo.subtitle2" Class="mt-2 mb-1">Şube Stokları</MudText>
-                                        <MudGrid Spacing="2">
-                                            @foreach (var office in _branchOffices)
-                                            {
-                                                <MudItem @key="office.Id" xs="12" sm="6" md="3">
-                                                    <MudNumericField T="int?"
-                                                                     Label="@office.Name"
-                                                                     Value="@GetStock(idx, office.Id)"
-                                                                     ValueChanged="@(v => SetStock(idx, office.Id, v))"
-                                                                     Min="0"
-                                                                     HideSpinButtons="true" />
-                                                </MudItem>
-                                            }
-                                        </MudGrid>
-                                    </MudItem>
-                                }
-
-                                @* Read-only image preview for this variant *@
-                                @if (_variantImages.TryGetValue(idx, out var imgs) && imgs.Count > 0)
-                                {
-                                    <MudItem xs="12">
-                                        <MudText Typo="Typo.subtitle2" Class="mb-1">Görseller</MudText>
-                                        <MudStack Row Wrap="Wrap.Wrap" Spacing="2">
-                                            @foreach (var img in imgs)
-                                            {
-                                                <div @key="img.PreviewUrl" style="position:relative;width:64px;height:64px;">
-                                                    <MudImage Src="@img.PreviewUrl" Width="64" Height="64" ObjectFit="ObjectFit.Cover"
-                                                              Class="rounded" Elevation="1" />
-                                                    @if (img.IsPrimary)
-                                                    {
-                                                        <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"
-                                                                 Style="position:absolute;top:1px;left:1px;font-size:14px;" />
-                                                    }
-                                                </div>
-                                            }
-                                        </MudStack>
-                                    </MudItem>
-                                }
                             </MudGrid>
+
+                            @* Fiyatlandırma *@
+                            <MudText Typo="Typo.subtitle2" Class="mb-1 mt-2">Fiyatlandırma</MudText>
+                            <VariantPriceEntry Variant="variant" DefaultVatRate="_categoryDefaultVatRate" />
+
+                            @* Branch office stock entry *@
+                            @if (_branchOffices.Any())
+                            {
+                                <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1">Şube Stokları</MudText>
+                                <MudGrid Spacing="2">
+                                    @foreach (var office in _branchOffices)
+                                    {
+                                        <MudItem @key="office.Id" xs="12" sm="6" md="3">
+                                            <MudNumericField T="int?"
+                                                             Label="@office.Name"
+                                                             Value="@GetStock(idx, office.Id)"
+                                                             ValueChanged="@(v => SetStock(idx, office.Id, v))"
+                                                             Min="0"
+                                                             HideSpinButtons="true" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            }
+
+                            @* Read-only image preview for this variant *@
+                            @if (_variantImages.TryGetValue(idx, out var imgs) && imgs.Count > 0)
+                            {
+                                <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1">Görseller</MudText>
+                                <MudStack Row Wrap="Wrap.Wrap" Spacing="2">
+                                    @foreach (var img in imgs)
+                                    {
+                                        <div @key="img.PreviewUrl" style="position:relative;width:64px;height:64px;">
+                                            <MudImage Src="@img.PreviewUrl" Width="64" Height="64" ObjectFit="ObjectFit.Cover"
+                                                      Class="rounded" Elevation="1" />
+                                            @if (img.IsPrimary)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"
+                                                         Style="position:absolute;top:1px;left:1px;font-size:14px;" />
+                                            }
+                                        </div>
+                                    }
+                                </MudStack>
+                            }
                         </MudPaper>
                     }
                 </div>
@@ -521,6 +510,17 @@
         </ChildContent>
 
     </MudStepper>
+
+    @if (_isSaving && _uploadTotal > 0)
+    {
+        <MudPaper Class="pa-4 mt-3" Elevation="1">
+            <MudText Typo="Typo.body2" Class="mb-2">
+                Görseller yükleniyor... (@_uploadProgress / @_uploadTotal)
+            </MudText>
+            <MudProgressLinear Value="@(_uploadTotal > 0 ? (double)_uploadProgress / _uploadTotal * 100 : 0)"
+                               Color="Color.Primary" Rounded="true" Size="Size.Medium" />
+        </MudPaper>
+    }
 
     @if (stepIndex < 4)
     {

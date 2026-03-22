@@ -17,6 +17,12 @@ dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj
 # Run a single test
 dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj --filter "FullyQualifiedName~TestClassName"
 
+# Run E2E tests (uygulama debug modda ayakta olmalı — ayrı docker-compose gerekmez)
+dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj
+
+# Run a single E2E test
+dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj --filter "FullyQualifiedName~TestClassName"
+
 # Apply EF Core migrations
 dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor
 
@@ -25,6 +31,8 @@ dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess -
 ```
 
 **Infrastructure (docker-compose):** PostgreSQL (5432)
+
+**E2E Testleri:** Uygulama genelde debug modda ayaktadır. E2E testleri doğrudan `dotnet test` ile çalıştırılabilir — ayrı bir docker-compose ortamı başlatmaya gerek yoktur. Testler varsayılan olarak `http://localhost:5099` adresine bağlanır (`E2E_BASE_URL` env var ile değiştirilebilir).
 
 ## Architecture
 
@@ -37,7 +45,6 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → Blazor:
 | `Entegrasyon.Business` | Business managers (Abstract + Concrete) |
 | `Entegrasyon.ApplicationBootstrap` | DI container kurulumu |
 | `Entegrasyon.Blazor` | Blazor Server UI (MudBlazor) |
-| `Shared/` | MinIO, Serilog, ImageSharp yardımcı servisleri |
 
 ## Key Patterns
 
@@ -112,6 +119,16 @@ EventChannel<CategoryUpdatedEvent> // publisher → subscriber
 - Components/Shared: layout, nav, category tree, attribute detail paneli
 - SignalR hub: `/NotificationHub`
 
-## Test Yapısı
+## Development Workflow (Strict Rule)
 
-xUnit + Moq + FluentAssertions. Test base class: `BaseTest.cs`. EF Core in-memory DB kullanılır.
+  **TDD-First:** Her yeni özellik ve bug fix için KESİNLİKLE şu sıra izlenir:
+  1. Önce testi yaz (RED)
+  2. Testi çalıştır, başarısız olduğunu doğrula
+  3. Minimum kodu implement et (GREEN)
+  4. Testi çalıştır, geçtiğini doğrula
+  5. Refactor et (gerekiyorsa)
+  6. Tüm testleri çalıştır: `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`
+  7. Entegrasyon testini çalıştır (eklenecek)
+  8. E2E testini çalıştır: `dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj`
+
+  Test olmadan özellik tamamlanmış SAYILMAZ. "Testleri sonra yazarız" KABUL EDİLMEZ.

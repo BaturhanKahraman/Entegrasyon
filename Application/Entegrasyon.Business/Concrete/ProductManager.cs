@@ -18,6 +18,7 @@ using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity;
+using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Categories;
 
@@ -32,7 +33,8 @@ public class ProductManager(
     IAttributeKeyValueManager attributeKeyValueManager,
     IBarcodeService barcodeService,
     EventChannel<ProductAddedEvent> productAddedChannel,
-    EventChannel<ProductUpdatedEvent> productUpdatedChannel) : IProductService
+    EventChannel<ProductUpdatedEvent> productUpdatedChannel,
+    IMinioFileStorage minioFileStorage) : IProductService
 {
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
@@ -56,6 +58,22 @@ public class ProductManager(
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = await barcodeService.GenerateAsync();
         var product = mapper.Map<Product>(dto);
+
+        // Kategori default VatRate doldurma: variant VatRate == 0 ise kategoriden al
+        if (dto.CategoryId > 0)
+        {
+            var categoryDefaultVatRate = await dbContext.Categories
+                .Where(c => c.Id == dto.CategoryId)
+                .Select(c => c.DefaultVatRate)
+                .FirstOrDefaultAsync();
+
+            if (categoryDefaultVatRate.HasValue && categoryDefaultVatRate.Value > 0)
+            {
+                foreach (var variant in product.ProductVariants.Where(v => v.VatRate == 0))
+                    variant.VatRate = categoryDefaultVatRate.Value;
+            }
+        }
+
         attributeKeyValueManager.ClearEmptyAttributes(product);
         dbContext.MainProducts.Add(product);
         await dbContext.SaveChangesAsync();
@@ -240,15 +258,32 @@ public class ProductManager(
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 p.ProductVariants.Select(pv => new ProductVariantDetailDto(
                     pv.Id, pv.Barcode, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
-                    pv.Images.Select(img => img.Src).ToArray(),
+                    pv.Images.OrderBy(img => img.DisplayOrder)
+                        .Select(img => img.StorageKey != null ? img.StorageKey + "_original.webp" : img.Src)
+                        .ToArray(),
                     pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
                 )),
                 p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
                     kv.CategoryAttribute.CategoryAttributeKey,
+                    kv.CategoryAttribute.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey,
                     kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue)),
                 p.UpdatedAt
             ))
             .FirstOrDefaultAsync();
+
+        // StorageKey → public URL dönüşümü (EF projection içinde yapılamaz)
+        if (result is not null)
+        {
+            foreach (var variant in result.ProductVariantsDetails)
+            {
+                for (int i = 0; i < variant.imageLinks.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(variant.imageLinks[i]))
+                        variant.imageLinks[i] = minioFileStorage.GetPublicUrl(variant.imageLinks[i]);
+                }
+            }
+        }
+
         return new SuccessDataResult<ProductDetailDto>(result);
     }
 
@@ -293,16 +328,16 @@ public class ProductManager(
         return new SuccessResult("Ürün silindi.");
     }
 
-    public Task<int> GetProductCountByCategoryId(int categoryId)
+    public async Task<int> GetProductCountByCategoryId(int categoryId)
     {
         using var dbContext = contextFactory.CreateDbContext();
-        return dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
+        return await dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
     }
 
-    public Task<bool> HasSoldProductsInCategory(int categoryId)
+    public async Task<bool> HasSoldProductsInCategory(int categoryId)
     {
         using var dbContext = contextFactory.CreateDbContext();
-        return dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+        return await dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
     }
 
     private static MarketplaceSyncStatusDto BuildSyncStatus(ProductMarketplace? marketplace, DateTimeOffset? productUpdatedAt)

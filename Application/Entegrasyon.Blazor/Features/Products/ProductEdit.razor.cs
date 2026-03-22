@@ -3,7 +3,6 @@ using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 
 namespace Entegrasyon.Blazor.Features.Products;
@@ -34,7 +33,7 @@ public partial class ProductEdit
     private int _categoryId;
     private List<VariantPriceModel> _variants = [];
     private List<ImageEditState> _images = [];
-    private List<IBrowserFile> _newImages = [];
+    private List<BufferedImage> _newImages = [];
     private List<AttributeKeyValueDto> _attributeKeyValues = [];
 
     private Color _syncColor => _pageData?.SyncStatus.State switch
@@ -162,8 +161,8 @@ public partial class ProductEdit
                 var firstVariantId = _variants[0].Id;
                 var streams = _newImages.Select(f => new VariantImageStream(
                     firstVariantId,
-                    f.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024),
-                    f.Name,
+                    new MemoryStream(f.FileData),
+                    f.FileName,
                     IsMain: false));
                 var imgResult = await ImageManager.AddProductImages(Id, streams);
                 if (!imgResult.Success)
@@ -270,5 +269,11 @@ public partial class ProductEdit
         public bool IsMain { get; set; }
         public bool IsDeleted { get; set; }
         public Guid VariantId { get; set; }
+    }
+
+    public class BufferedImage
+    {
+        public byte[] FileData { get; set; } = [];
+        public string FileName { get; set; } = string.Empty;
     }
 }
