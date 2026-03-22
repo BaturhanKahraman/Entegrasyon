@@ -6,4 +6,5 @@ public static class MarketPlaceConstants
     public const int N11MarketPlaceId = 2;
     public const int HepsiburadaMarketPlaceId = 3;
     public const int PazaramaMarketPlaceId = 5;
+    public const int AmazonMarketPlaceId = 6;
 }
