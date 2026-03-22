@@ -31,4 +31,9 @@ public sealed class OrderItem : BaseEntity
 
     [Column(TypeName = "money")]
     public decimal? Discount { get; set; }
+
+    /// <summary>
+    /// Sipariş satırına uygulanan KDV oranı (%)
+    /// </summary>
+    public decimal? VatRate { get; set; }
 }

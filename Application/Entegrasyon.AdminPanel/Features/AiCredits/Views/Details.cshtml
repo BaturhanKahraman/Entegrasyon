@@ -1,0 +1,85 @@
+@model Entegrasyon.AdminPanel.Features.AiCredits.AiCreditDetailViewModel
+@{
+    ViewData["Title"] = $"{Model.CompanyName} - AI Kredileri";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model.CompanyName - AI Kredileri</h2>
+    <div>
+        <a asp-controller="AiCredits" asp-action="AddCredits" asp-route-tenantId="@Model.TenantId" class="btn btn-success me-2">Kredi Ekle</a>
+        <a asp-controller="AiCredits" asp-action="Index" class="btn btn-outline-secondary">Listeye Don</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-2">Resim Olusturma Kredisi</h6>
+                <h1 class="display-4 fw-bold text-primary">@Model.ImageGenerationCredits</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-2">Urun Aciklamasi Kredisi</h6>
+                <h1 class="display-4 fw-bold text-info">@Model.ProductDescriptionCredits</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <h5 class="card-title mb-0">Islem Gecmisi</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Kredi Tipi</th>
+                        <th class="text-center">Miktar</th>
+                        <th>Aciklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tx in Model.Transactions)
+                    {
+                        <tr>
+                            <td class="text-nowrap">@tx.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                            <td>@tx.CreditType</td>
+                            <td class="text-center">
+                                @if (tx.Amount > 0)
+                                {
+                                    <span class="text-success fw-bold">+@tx.Amount</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">@tx.Amount</span>
+                                }
+                            </td>
+                            <td>@(tx.Description ?? "-")</td>
+                        </tr>
+                    }
+                    @if (!Model.Transactions.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">Henuz islem bulunmuyor.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

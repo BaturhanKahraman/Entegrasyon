@@ -46,6 +46,7 @@ public partial class CategoryDialog
                 Id = Category.Id,
                 Name = Category.Name,
                 IsFavorite = Category.IsFavorite,
+                DefaultVatRate = Category.DefaultVatRate,
                 ParentCategoryId = Category.SuperCategoryId,
                 Attributes = Category.CategoryAttributes?.Select(a => new AttributeModel
                 {
@@ -203,7 +204,8 @@ public partial class CategoryDialog
             Name: _model.Name,
             CategoryAttributes: [],
             SuperCategoryId: _model.ParentCategoryId,
-            IsFavorite: _model.IsFavorite
+            IsFavorite: _model.IsFavorite,
+            DefaultVatRate: _model.DefaultVatRate
         );
 
         var result = await CategoryManager.AddCategory(addDto);
@@ -238,7 +240,8 @@ public partial class CategoryDialog
             Name: _model.Name,
             SuperCategoryId: _model.ParentCategoryId,
             IsFavorite: _model.IsFavorite,
-            IsImported: false
+            IsImported: false,
+            DefaultVatRate: _model.DefaultVatRate
         );
 
         var result = await CategoryManager.UpdateCategory(editDto);
@@ -291,6 +294,7 @@ public partial class CategoryDialog
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsFavorite { get; set; }
+        public decimal? DefaultVatRate { get; set; }
         public int? ParentCategoryId { get; set; }
         public List<AttributeModel> Attributes { get; set; } = [];
     }

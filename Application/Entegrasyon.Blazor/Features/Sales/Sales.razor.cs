@@ -2,6 +2,7 @@ namespace Entegrasyon.Blazor.Features.Sales;
 
 using Entegrasyon.Blazor.Features.Printing;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Label;
 using Microsoft.AspNetCore.Components;
@@ -28,7 +29,20 @@ public partial class Sales
     private decimal Subtotal => cartItems.Sum(x => x.Quantity * x.UnitPrice);
     private decimal TotalDiscount => cartItems.Sum(x => (x.Quantity * x.UnitPrice) * ((decimal)x.DiscountPercent / 100));
     private decimal SubtotalAfterDiscount => Subtotal - TotalDiscount;
-    private decimal Tax => SubtotalAfterDiscount * 0.20m;
+    private decimal Tax => cartItems.Sum(x =>
+    {
+        var lineNet = x.Quantity * x.UnitPrice * (1 - (decimal)x.DiscountPercent / 100);
+        return KdvCalculator.FromExclusive(lineNet, x.VatRate).KdvAmount;
+    });
+
+    private IEnumerable<(decimal Rate, decimal Amount)> TaxBreakdown =>
+        cartItems.GroupBy(x => x.VatRate)
+            .Select(g => (Rate: g.Key, Amount: g.Sum(x =>
+                KdvCalculator.FromExclusive(
+                    x.Quantity * x.UnitPrice * (1 - (decimal)x.DiscountPercent / 100),
+                    g.Key).KdvAmount)))
+            .Where(x => x.Amount > 0)
+            .OrderBy(x => x.Rate);
     private decimal Total => SubtotalAfterDiscount + Tax;
 
     private async Task HandleBarcodeSearch(KeyboardEventArgs e)
@@ -224,6 +238,7 @@ public partial class Sales
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public int DiscountPercent { get; set; }
+        public decimal VatRate { get; set; } = 20;
         public decimal TotalPrice => Quantity * UnitPrice * (1 - ((decimal)DiscountPercent / 100));
     }
 

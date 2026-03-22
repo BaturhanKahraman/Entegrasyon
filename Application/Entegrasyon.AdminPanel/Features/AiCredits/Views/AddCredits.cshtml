@@ -1,0 +1,51 @@
+@model Entegrasyon.AdminPanel.Features.AiCredits.AddCreditsFormViewModel
+@{
+    ViewData["Title"] = $"{Model.CompanyName} - Kredi Ekle";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model.CompanyName - Kredi Ekle</h2>
+    <a asp-controller="AiCredits" asp-action="Details" asp-route-tenantId="@Model.TenantId" class="btn btn-outline-secondary">Geri Don</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="post" asp-controller="AiCredits" asp-action="AddCredits">
+                    <input type="hidden" name="TenantId" value="@Model.TenantId" />
+
+                    <div class="mb-3">
+                        <label asp-for="CreditType" class="form-label"></label>
+                        <select asp-for="CreditType" class="form-select">
+                            <option value="">-- Kredi tipi secin --</option>
+                            <option value="ImageGeneration">Resim Olusturma</option>
+                            <option value="ProductDescription">Urun Aciklamasi</option>
+                        </select>
+                        <span asp-validation-for="CreditType" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label"></label>
+                        <input asp-for="Amount" class="form-control" type="number" min="1" max="100000" />
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Ornegin: Aylik kredi yukleme"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">Kredi Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

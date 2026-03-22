@@ -36,11 +36,24 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             LEFT JOIN sales_data sd ON sd.sale_date = dr.d
             ORDER BY dr.d
         ),
+        tax_data AS (
+            SELECT
+                COALESCE(SUM(
+                    si."UnitPrice" * si."Quantity" * (1 - si."DiscountPercent" / 100.0)
+                    * si."TaxPercentage" / 100.0
+                ), 0) AS total_tax
+            FROM "SaleItems" si
+            INNER JOIN "Sales" s ON s."Id" = si."SaleId" AND NOT s."IsDeleted"
+            WHERE NOT si."IsDeleted"
+              AND s."CreatedAt" >= @p0::timestamptz
+              AND s."CreatedAt" < (@p1::date + 1)::timestamptz
+        ),
         summary AS (
             SELECT
                 COALESCE(SUM(sale_count), 0)::int AS total_sales,
                 COALESCE(SUM(revenue), 0) AS total_revenue,
-                COALESCE(SUM(sd.items_sold), 0)::int AS total_items
+                COALESCE(SUM(sd.items_sold), 0)::int AS total_items,
+                (SELECT total_tax FROM tax_data) AS total_tax
             FROM sales_data sd
         ),
         top_products AS (
@@ -92,8 +105,9 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
         var totalSales = s.GetProperty("total_sales").GetInt32();
         var totalRevenue = s.GetProperty("total_revenue").GetDecimal();
         var totalItems = s.GetProperty("total_items").GetInt32();
+        var totalTax = s.TryGetProperty("total_tax", out var taxProp) ? taxProp.GetDecimal() : 0m;
         var avg = totalSales > 0 ? totalRevenue / totalSales : 0;
-        var summary = new SalesReportSummaryDto(totalSales, totalRevenue, avg, totalItems);
+        var summary = new SalesReportSummaryDto(totalSales, totalRevenue, avg, totalItems, totalTax);
 
         var daily = new List<DailySalesReportDto>();
         foreach (var item in root.GetProperty("daily").EnumerateArray())

@@ -35,4 +35,9 @@ public sealed class Category : BaseEntity
     /// Marketplace eşleşmeleri
     /// </summary>
     public ICollection<CategoryMarketplace> MarketplaceLinks { get; set; } = new List<CategoryMarketplace>();
+
+    /// <summary>
+    /// Bu kategorideki ürünler için varsayılan KDV oranı (%)
+    /// </summary>
+    public decimal? DefaultVatRate { get; set; }
 }

@@ -61,7 +61,8 @@ public partial class CategoryEdit
             Id = _category.Id,
             Name = _category.Name,
             IsFavorite = _category.IsFavorite,
-            ParentCategoryId = _category.SuperCategoryId
+            ParentCategoryId = _category.SuperCategoryId,
+            DefaultVatRate = _category.DefaultVatRate
         };
 
         if (data.CategoryAttributes.Count > 0)
@@ -194,7 +195,8 @@ public partial class CategoryEdit
                 Name: _model.Name,
                 SuperCategoryId: _model.ParentCategoryId,
                 IsFavorite: _model.IsFavorite,
-                IsImported: _category?.IsImported ?? false
+                IsImported: _category?.IsImported ?? false,
+                DefaultVatRate: _model.DefaultVatRate
             );
 
             var result = await CategoryManager.UpdateCategory(editDto);
@@ -250,6 +252,7 @@ public partial class CategoryEdit
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsFavorite { get; set; }
+        public decimal? DefaultVatRate { get; set; }
         public int? ParentCategoryId { get; set; }
         public List<AttributeModel> Attributes { get; set; } = [];
     }

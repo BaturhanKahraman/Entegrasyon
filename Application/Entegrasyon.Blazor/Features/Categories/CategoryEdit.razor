@@ -58,6 +58,16 @@ else
                     <MudCheckBox @bind-Value="_model.IsFavorite"
                                  Label="Favori Kategori"
                                  Color="Color.Warning" />
+
+                    <MudSelect T="decimal?" @bind-Value="_model.DefaultVatRate"
+                               Label="Varsayilan KDV Orani"
+                               Clearable="true"
+                               Variant="Variant.Outlined"
+                               Class="mb-3">
+                        <MudSelectItem Value="@((decimal?)1)">%1</MudSelectItem>
+                        <MudSelectItem Value="@((decimal?)10)">%10</MudSelectItem>
+                        <MudSelectItem Value="@((decimal?)20)">%20</MudSelectItem>
+                    </MudSelect>
                 </MudForm>
             </MudPaper>
         </MudItem>
@@ -172,7 +182,7 @@ else
                                     <MudChipSet T="string" ReadOnly="false">
                                         @foreach (var val in attr.Values)
                                         {
-                                            <MudChip @key="val.Name" T="string"
+                                            <MudChip @key="val" T="string"
                                                      Text="@val.Name"
                                                      Color="Color.Default"
                                                      Variant="Variant.Outlined"
@@ -183,7 +193,7 @@ else
                                     </MudChipSet>
                                 </MudItem>
 
-                                @if (!attr.AllowCustom)
+                                @if (attr.AllowCustom)
                                 {
                                     <MudItem xs="10">
                                         <MudTextField @bind-Value="attr.NewValueName"

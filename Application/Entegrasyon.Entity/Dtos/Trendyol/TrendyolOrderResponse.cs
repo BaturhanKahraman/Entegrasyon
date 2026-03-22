@@ -37,7 +37,8 @@ public sealed record TrendyolOrderLine(
     string? ProductName,
     string? ProductColor,
     string? ProductSize,
-    int? MerchantId);
+    int? MerchantId,
+    int? VatRate = null);
 
 public sealed record TrendyolCargoInfo(
     string? CargoProviderName,

@@ -34,10 +34,10 @@ public class ProductVariantManager : IProductVariantManager
             .FirstOrDefaultAsync(x => x.Barcode != null))?.Barcode;
     }
 
-    public Task<List<string>> GetAllVariantsBarcodes()
+    public async Task<List<string>> GetAllVariantsBarcodes()
     {
         using var dbContext = _contextFactory.CreateDbContext();
-        return dbContext.ProductVariants.Select(x => x.Barcode).ToListAsync();
+        return await dbContext.ProductVariants.Select(x => x.Barcode).ToListAsync();
     }
 
     public async Task<IDataResult<ProductVariantSaleSearchDto>> GetProductVariantByBarcode(string barcode)
