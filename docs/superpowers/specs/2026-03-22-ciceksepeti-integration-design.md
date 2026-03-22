@@ -1,7 +1,7 @@
 # Çiçeksepeti Marketplace Entegrasyonu — Design Spec
 
 **Tarih:** 2026-03-22
-**MarketPlaceId:** 7
+**MarketPlaceId:** 8
 **Yaklaşım:** Pazarama pattern klonu (multi-tenant ready)
 
 ---
@@ -45,7 +45,7 @@ Business/Concrete/Ciceksepeti/
 Business/Abstract/
 ├── ICiceksepetiApiClient.cs
 ├── ICiceksepetiCategoryService.cs
-├── ICiceksepetiCategoryImportService.cs
+├── ICiceksepetiCategoryImporter.cs
 ├── ICiceksepetiProductService.cs
 ├── ICiceksepetiProductMapper.cs
 ├── ICiceksepetiStockPriceService.cs
@@ -115,7 +115,7 @@ Business/Concrete/Import/
 - `GetCategoryAttributesAsync(int categoryId)` → GET /api/v1/Categories/{categoryId}/attributes
 
 ### CiceksepetiCategoryImporter (extends BaseCategoryImporterService)
-- Tree → flat list dönüşümü, leaf kategorileri MarketPlaceId=7 ile kaydet
+- Tree → flat list dönüşümü, leaf kategorileri MarketPlaceId=8 ile kaydet
 - Attribute import type mapping:
   - `"Variant Ozellik"` → IsVarianter=true
   - `"Urun Ozellik"` → IsVarianter=false
@@ -233,6 +233,7 @@ public static IServiceCollection AddCiceksepetiServices(
     services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
     services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
     services.AddScoped<CiceksepetiMappingValidator>();
+    services.AddScoped<ICiceksepetiCategoryImporter, CiceksepetiCategoryImporter>();
 
     return services;
 }
@@ -249,11 +250,13 @@ services.AddHostedService<CiceksepetiStockPriceSyncService>();
 
 ### MarketPlaceConstants.cs
 ```csharp
-public const int CiceksepetiMarketPlaceId = 7;
+public const int CiceksepetiMarketPlaceId = 8;
 ```
 
 ### Seed Data
-MarketPlace tablosuna: `Id=7, Name="Çiçeksepeti", BaseUrl="https://apis.ciceksepeti.com"`
+MarketPlace tablosuna: `Id=8, Name="Çiçeksepeti", BaseUrl="https://apis.ciceksepeti.com"`
+
+> **Not:** MarketPlaceId=7 PttAVM tarafından kullanılıyor (bkz. `2026-03-22-pttavm-integration-design.md`).
 
 ---
 
