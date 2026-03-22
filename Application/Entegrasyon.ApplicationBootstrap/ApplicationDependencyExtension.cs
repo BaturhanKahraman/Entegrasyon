@@ -163,6 +163,7 @@ namespace Entegrasyon.ApplicationBootstrap
             {
                 services.AddScoped<IPazaramaApiClient, PazaramaApiClient>();
             }
+            services.AddScoped<PazaramaCategoryImporter>();
 
             services.AddEventChannels();
             services.AddValidators();
