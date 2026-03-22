@@ -375,4 +375,289 @@ public class N11ClaimServiceTests : Entegrasyon.UnitTest.BaseTest
         result.Success.Should().BeFalse();
         result.Message.Should().Be(errorMessage);
     }
+
+    // -----------------------------------------------------------------------
+    // Exchange claim yardımcı metodları
+    // -----------------------------------------------------------------------
+
+    private static XElement BuildExchangeClaimElement(
+        long claimExchangeId = 3001L,
+        string status = "REQUESTED",
+        string orderNumber = "N11-EXCHANGE-001",
+        string productName = "Değişim Ürünü",
+        int quantity = 1,
+        decimal unitPrice = 199.90m,
+        decimal finalPrice = 199.90m,
+        string exchangeReasonType = "WRONG_SIZE",
+        string exchangeReasonDescription = "Yanlış beden geldi",
+        string buyerName = "Ali Kaya",
+        string buyerEmail = "ali@test.com")
+    {
+        return new XElement("claimExchange",
+            new XElement("id", claimExchangeId),
+            new XElement("status", status),
+            new XElement("orderNumber", orderNumber),
+            new XElement("productName", productName),
+            new XElement("quantity", quantity),
+            new XElement("unitPrice", unitPrice.ToString("F2")),
+            new XElement("finalPrice", finalPrice.ToString("F2")),
+            new XElement("exchangeReasonType", exchangeReasonType),
+            new XElement("exchangeReasonDescription", exchangeReasonDescription),
+            new XElement("buyerName", buyerName),
+            new XElement("buyerEmail", buyerEmail),
+            new XElement("requestDate", "22/03/2026 14:00:00"));
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 9: GetExchangeClaimsAsync — ClaimExchangeService WSDL'ine gider
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetExchangeClaimsAsync_ShouldCallClaimExchangeService()
+    {
+        // Arrange
+        var exchangeClaim = BuildExchangeClaimElement();
+        var payload = new XElement("claimExchangeList", exchangeClaim);
+
+        string? capturedWsdl = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<XElement>()))
+            .Callback<string, string, XElement>((wsdl, _, _) => capturedWsdl = wsdl)
+            .ReturnsAsync(BuildSuccessResponse("ClaimExchangeListResponse", payload));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.GetExchangeClaimsAsync();
+
+        // Assert
+        capturedWsdl.Should().Be("ClaimExchangeService");
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(1);
+
+        var claim = result.Data[0];
+        claim.ClaimExchangeId.Should().Be(3001);
+        claim.Status.Should().Be("REQUESTED");
+        claim.OrderNumber.Should().Be("N11-EXCHANGE-001");
+        claim.ProductName.Should().Be("Değişim Ürünü");
+        claim.Quantity.Should().Be(1);
+        claim.UnitPrice.Should().Be(199.90m);
+        claim.FinalPrice.Should().Be(199.90m);
+        claim.ExchangeReasonType.Should().Be("WRONG_SIZE");
+        claim.ExchangeReasonDescription.Should().Be("Yanlış beden geldi");
+        claim.BuyerName.Should().Be("Ali Kaya");
+        claim.BuyerEmail.Should().Be("ali@test.com");
+        claim.RequestDate.Should().NotBeNull();
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 10: ApproveExchangeByTrackingAsync — trackingNumber SOAP isteğine eklenir
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ApproveExchangeByTrackingAsync_ShouldIncludeTrackingNumber()
+    {
+        // Arrange
+        const long claimExchangeId = 3001L;
+        const string trackingNumber = "MNG123456789";
+
+        XElement? capturedRequest = null;
+        string? capturedWsdl = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<XElement>()))
+            .Callback<string, string, XElement>((wsdl, _, req) =>
+            {
+                capturedWsdl = wsdl;
+                capturedRequest = req;
+            })
+            .ReturnsAsync(BuildSuccessResponse("ExchangeApproveByTrackingNumberResponse"));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ApproveExchangeByTrackingAsync(claimExchangeId, trackingNumber);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedWsdl.Should().Be("ClaimExchangeService");
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.Descendants("claimExchangeId").FirstOrDefault()?.Value.Should().Be("3001");
+        capturedRequest.Descendants("trackingNumber").FirstOrDefault()?.Value.Should().Be(trackingNumber);
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 11: DenyExchangeAsync — denyReasonId ve denyReasonNote SOAP isteğine eklenir
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task DenyExchangeAsync_ShouldIncludeReasonId()
+    {
+        // Arrange
+        const long claimExchangeId = 3002L;
+        const long denyReasonId = 5L;
+        const string denyReasonNote = "Değişim koşulları sağlanmıyor";
+
+        XElement? capturedRequest = null;
+        string? capturedWsdl = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<XElement>()))
+            .Callback<string, string, XElement>((wsdl, _, req) =>
+            {
+                capturedWsdl = wsdl;
+                capturedRequest = req;
+            })
+            .ReturnsAsync(BuildSuccessResponse("ClaimExchangeDenyWithConfirmResponse"));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.DenyExchangeAsync(claimExchangeId, denyReasonId, denyReasonNote);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedWsdl.Should().Be("ClaimExchangeService");
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.Descendants("claimExchangeId").FirstOrDefault()?.Value.Should().Be("3002");
+        capturedRequest.Descendants("denyReasonId").FirstOrDefault()?.Value.Should().Be("5");
+        capturedRequest.Descendants("denyReasonNote").FirstOrDefault()?.Value.Should().Be(denyReasonNote);
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 12: GetExchangeDenyReasonsAsync — denyReasonTypeDataList parse edilir
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetExchangeDenyReasonsAsync_ShouldParseReasonTypes()
+    {
+        // Arrange
+        var reasonList = new XElement("denyReasonTypeDataList",
+            BuildReasonTypeElement(10L, "Beden uygun değil"),
+            BuildReasonTypeElement(11L, "Renk uygun değil"),
+            BuildReasonTypeElement(12L, "Değişim talebi geçersiz"));
+
+        _soapClientMock
+            .Setup(s => s.SendAsync("ClaimExchangeService", It.IsAny<string>(), It.IsAny<XElement>()))
+            .ReturnsAsync(BuildSuccessResponse("ExchangeDenyReasonTypeResponse", reasonList));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.GetExchangeDenyReasonsAsync();
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(3);
+
+        result.Data[0].Id.Should().Be(10);
+        result.Data[0].Value.Should().Be("Beden uygun değil");
+        result.Data[1].Id.Should().Be(11);
+        result.Data[1].Value.Should().Be("Renk uygun değil");
+        result.Data[2].Id.Should().Be(12);
+        result.Data[2].Value.Should().Be("Değişim talebi geçersiz");
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 13: ApproveExchangeByCampaignAsync — shipmentCompanyId SOAP isteğine eklenir
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ApproveExchangeByCampaignAsync_ShouldIncludeShipmentCompanyId()
+    {
+        // Arrange
+        const long claimExchangeId = 3003L;
+        const int shipmentCompanyId = 7;
+
+        XElement? capturedRequest = null;
+        string? capturedWsdl = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<XElement>()))
+            .Callback<string, string, XElement>((wsdl, _, req) =>
+            {
+                capturedWsdl = wsdl;
+                capturedRequest = req;
+            })
+            .ReturnsAsync(BuildSuccessResponse("ExchangeApproveByCargoCampaignResponse"));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ApproveExchangeByCampaignAsync(claimExchangeId, shipmentCompanyId);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedWsdl.Should().Be("ClaimExchangeService");
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.Descendants("claimExchangeId").FirstOrDefault()?.Value.Should().Be("3003");
+        capturedRequest.Descendants("shipmentCompanyId").FirstOrDefault()?.Value.Should().Be("7");
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 14: PendExchangeAsync — tüm pending alanları SOAP isteğine eklenir
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task PendExchangeAsync_ShouldIncludeAllPendingFields()
+    {
+        // Arrange
+        const long claimExchangeId = 3004L;
+        const long pendingReasonId = 3L;
+        const int pendingDayCount = 7;
+        const string pendingReasonNote = "Ürün stok bekleniyor";
+
+        XElement? capturedRequest = null;
+        string? capturedWsdl = null;
+        _soapClientMock
+            .Setup(s => s.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<XElement>()))
+            .Callback<string, string, XElement>((wsdl, _, req) =>
+            {
+                capturedWsdl = wsdl;
+                capturedRequest = req;
+            })
+            .ReturnsAsync(BuildSuccessResponse("ClaimExchangePendingResponse"));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.PendExchangeAsync(claimExchangeId, pendingReasonId, pendingDayCount, pendingReasonNote);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedWsdl.Should().Be("ClaimExchangeService");
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.Descendants("claimExchangeId").FirstOrDefault()?.Value.Should().Be("3004");
+        capturedRequest.Descendants("pendingReasonId").FirstOrDefault()?.Value.Should().Be("3");
+        capturedRequest.Descendants("pendingDayCount").FirstOrDefault()?.Value.Should().Be("7");
+        capturedRequest.Descendants("pendingReasonNote").FirstOrDefault()?.Value.Should().Be(pendingReasonNote);
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 15: GetExchangePendingReasonsAsync — pendingReasonTypeDataList parse edilir
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetExchangePendingReasonsAsync_ShouldParseReasonTypes()
+    {
+        // Arrange
+        var reasonList = new XElement("pendingReasonTypeDataList",
+            BuildReasonTypeElement(20L, "Stok bekleniyor"),
+            BuildReasonTypeElement(21L, "Tedarik sorunu"));
+
+        _soapClientMock
+            .Setup(s => s.SendAsync("ClaimExchangeService", It.IsAny<string>(), It.IsAny<XElement>()))
+            .ReturnsAsync(BuildSuccessResponse("ExchangePendingReasonTypeResponse", reasonList));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.GetExchangePendingReasonsAsync();
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(2);
+
+        result.Data[0].Id.Should().Be(20);
+        result.Data[0].Value.Should().Be("Stok bekleniyor");
+        result.Data[1].Id.Should().Be(21);
+        result.Data[1].Value.Should().Be("Tedarik sorunu");
+    }
 }

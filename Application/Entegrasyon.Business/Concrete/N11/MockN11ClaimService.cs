@@ -106,4 +106,70 @@ public sealed class MockN11ClaimService(
         return Task.FromResult<IDataResult<List<N11ReasonTypeDto>>>(
             new SuccessDataResult<List<N11ReasonTypeDto>>([], "N11 iade bekleme nedenleri (mock — boş)."));
     }
+
+    // -----------------------------------------------------------------------
+    // Exchange Claims
+    // -----------------------------------------------------------------------
+
+    public Task<IDataResult<List<N11ClaimExchangeDto>>> GetExchangeClaimsAsync(string? status = null, int page = 0)
+    {
+        logger.LogInformation(
+            "Mock N11: GetExchangeClaimsAsync çağrıldı — status={Status}, page={Page}",
+            status, page);
+
+        return Task.FromResult<IDataResult<List<N11ClaimExchangeDto>>>(
+            new SuccessDataResult<List<N11ClaimExchangeDto>>([], "N11 değişim talep listesi (mock — boş)."));
+    }
+
+    public Task<IResult> ApproveExchangeByTrackingAsync(long claimExchangeId, string trackingNumber)
+    {
+        logger.LogInformation(
+            "Mock N11: ApproveExchangeByTrackingAsync çağrıldı — claimExchangeId={ClaimExchangeId}, trackingNumber={TrackingNumber}",
+            claimExchangeId, trackingNumber);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: değişim talebi kargo takip numarasıyla onaylandı."));
+    }
+
+    public Task<IResult> ApproveExchangeByCampaignAsync(long claimExchangeId, int shipmentCompanyId)
+    {
+        logger.LogInformation(
+            "Mock N11: ApproveExchangeByCampaignAsync çağrıldı — claimExchangeId={ClaimExchangeId}, shipmentCompanyId={ShipmentCompanyId}",
+            claimExchangeId, shipmentCompanyId);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: değişim talebi kargo kampanyasıyla onaylandı."));
+    }
+
+    public Task<IResult> DenyExchangeAsync(long claimExchangeId, long denyReasonId, string? denyReasonNote = null)
+    {
+        logger.LogInformation(
+            "Mock N11: DenyExchangeAsync çağrıldı — claimExchangeId={ClaimExchangeId}, denyReasonId={DenyReasonId}, denyReasonNote={DenyReasonNote}",
+            claimExchangeId, denyReasonId, denyReasonNote);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: değişim talebi reddedildi."));
+    }
+
+    public Task<IResult> PendExchangeAsync(long claimExchangeId, long pendingReasonId, int pendingDayCount, string? pendingReasonNote = null)
+    {
+        logger.LogInformation(
+            "Mock N11: PendExchangeAsync çağrıldı — claimExchangeId={ClaimExchangeId}, pendingReasonId={PendingReasonId}, pendingDayCount={PendingDayCount}, pendingReasonNote={PendingReasonNote}",
+            claimExchangeId, pendingReasonId, pendingDayCount, pendingReasonNote);
+
+        return Task.FromResult<IResult>(new SuccessResult("Mock: değişim talebi beklemeye alındı."));
+    }
+
+    public Task<IDataResult<List<N11ReasonTypeDto>>> GetExchangeDenyReasonsAsync()
+    {
+        logger.LogInformation("Mock N11: GetExchangeDenyReasonsAsync çağrıldı");
+
+        return Task.FromResult<IDataResult<List<N11ReasonTypeDto>>>(
+            new SuccessDataResult<List<N11ReasonTypeDto>>([], "N11 değişim red nedenleri (mock — boş)."));
+    }
+
+    public Task<IDataResult<List<N11ReasonTypeDto>>> GetExchangePendingReasonsAsync()
+    {
+        logger.LogInformation("Mock N11: GetExchangePendingReasonsAsync çağrıldı");
+
+        return Task.FromResult<IDataResult<List<N11ReasonTypeDto>>>(
+            new SuccessDataResult<List<N11ReasonTypeDto>>([], "N11 değişim bekleme nedenleri (mock — boş)."));
+    }
 }

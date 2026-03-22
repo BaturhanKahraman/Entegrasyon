@@ -650,7 +650,7 @@ public sealed class N11ClaimService(
         }
 
         var reasons = response
-            .Element("denyReasonTypeDataList")?
+            .Element("pendingReasonTypeDataList")?
             .Elements("denyReasonType")
             .Select(ParseReasonType)
             .ToList() ?? [];

@@ -18,4 +18,13 @@ public interface IN11ClaimService
     Task<IResult> PendReturnAsync(long claimReturnId, long pendingReasonId, int pendingDayCount, string? pendingReasonNote = null);
     Task<IDataResult<List<N11ReasonTypeDto>>> GetReturnDenyReasonsAsync();
     Task<IDataResult<List<N11ReasonTypeDto>>> GetReturnPendingReasonsAsync();
+
+    // Exchange Claims (ClaimExchangeService WSDL)
+    Task<IDataResult<List<N11ClaimExchangeDto>>> GetExchangeClaimsAsync(string? status = null, int page = 0);
+    Task<IResult> ApproveExchangeByTrackingAsync(long claimExchangeId, string trackingNumber);
+    Task<IResult> ApproveExchangeByCampaignAsync(long claimExchangeId, int shipmentCompanyId);
+    Task<IResult> DenyExchangeAsync(long claimExchangeId, long denyReasonId, string? denyReasonNote = null);
+    Task<IResult> PendExchangeAsync(long claimExchangeId, long pendingReasonId, int pendingDayCount, string? pendingReasonNote = null);
+    Task<IDataResult<List<N11ReasonTypeDto>>> GetExchangeDenyReasonsAsync();
+    Task<IDataResult<List<N11ReasonTypeDto>>> GetExchangePendingReasonsAsync();
 }
