@@ -1,0 +1,31 @@
+@using Entegrasyon.Blazor.ViewModels
+
+<MudTextField @bind-Value="SearchQuery"
+              Placeholder="Kategori ara..."
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              Immediate="true"
+              Class="mb-4" />
+
+<MudDataGrid T="CategoryTreeNode"
+             Items="@FilteredCategories"
+             Dense="true"
+             Hover="true"
+             SelectOnRowClick="true"
+             MultiSelection="true"
+             @bind-SelectedItems="SelectedItemsInternal"
+             Height="500px"
+             FixedHeader="true">
+    <Columns>
+        <SelectColumn T="CategoryTreeNode" />
+        <PropertyColumn Property="x => x.Name" Title="Kategori Adı" />
+        <PropertyColumn Property="x => x.ExternalId" Title="ID" />
+    </Columns>
+    <NoRecordsContent>
+        <MudText>Kategori bulunamadı.</MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+<MudText Typo="Typo.caption" Class="mt-2" Color="Color.Secondary">
+    @FilteredCategories.Count() / @(Categories?.Count ?? 0) kategori gösteriliyor
+</MudText>
