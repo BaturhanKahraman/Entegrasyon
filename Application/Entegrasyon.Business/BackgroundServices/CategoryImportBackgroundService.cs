@@ -12,20 +12,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
-public class TrendyolCategoryImportBackgroundService : BackgroundService
+public class CategoryImportBackgroundService : BackgroundService
 {
     private readonly EventChannel<CategoryImportRequestedEvent> _importRequestedChannel;
     private readonly EventChannel<CategoryImportCompletedEvent> _importCompletedChannel;
     private readonly EventChannel<NotificationEvent> _notificationChannel;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<TrendyolCategoryImportBackgroundService> _logger;
+    private readonly ILogger<CategoryImportBackgroundService> _logger;
 
-    public TrendyolCategoryImportBackgroundService(
+    public CategoryImportBackgroundService(
         EventChannel<CategoryImportRequestedEvent> importRequestedChannel,
         EventChannel<CategoryImportCompletedEvent> importCompletedChannel,
         EventChannel<NotificationEvent> notificationChannel,
         IServiceScopeFactory scopeFactory,
-        ILogger<TrendyolCategoryImportBackgroundService> logger)
+        ILogger<CategoryImportBackgroundService> logger)
     {
         _importRequestedChannel = importRequestedChannel;
         _importCompletedChannel = importCompletedChannel;
@@ -44,13 +44,21 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                     importEvent.UserId, importEvent.Categories.Count());
 
                 using var scope = _scopeFactory.CreateScope();
-                var trendyolImporter = scope.ServiceProvider.GetRequiredService<TrendyolCategoryImporter>();
+
+                // Route by MarketplaceName
+                BaseCategoryImporterService importer = importEvent.MarketplaceName switch
+                {
+                    "Trendyol" => scope.ServiceProvider.GetRequiredService<TrendyolCategoryImporter>(),
+                    "N11" => scope.ServiceProvider.GetRequiredService<N11CategoryImporter>(),
+                    _ => throw new InvalidOperationException($"Bilinmeyen pazaryeri: {importEvent.MarketplaceName}")
+                };
+
                 var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
 
                 try
                 {
                     await notificationManager.SendNotification(
-                        header: "Trendyol kategori içe aktarma işlemi başladı",
+                        header: $"{importEvent.MarketplaceName} kategori içe aktarma işlemi başladı",
                         content: $"{importEvent.Categories.Count()} kategori içe aktarılıyor...",
                         severity: NotificationSeverity.Info,
                         category: NotificationCategory.Pazaryeri,
@@ -61,7 +69,7 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                     _logger.LogError(notifEx, "Failed to send start notification");
                 }
 
-                var result = await trendyolImporter.ImportCategoriesAsync(importEvent.Categories, stoppingToken);
+                var result = await importer.ImportCategoriesAsync(importEvent.Categories, stoppingToken);
 
                 await _importCompletedChannel.PublishAsync(new CategoryImportCompletedEvent(
                     importEvent.MarketplaceName,
@@ -71,8 +79,8 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                     importEvent.UserId));
 
                 var header = result.Success
-                    ? "Trendyol kategori içe aktarma tamamlandı"
-                    : "Trendyol kategori içe aktarma hatası";
+                    ? $"{importEvent.MarketplaceName} kategori içe aktarma tamamlandı"
+                    : $"{importEvent.MarketplaceName} kategori içe aktarma hatası";
                 var content = result.Success
                     ? $"{importEvent.Categories.Count()} kategori başarıyla içe aktarıldı."
                     : $"İçe aktarma başarısız: {result.Message}";
@@ -103,7 +111,7 @@ public class TrendyolCategoryImportBackgroundService : BackgroundService
                 try
                 {
                     await notificationManager.SendNotification(
-                        header: "Trendyol kategori içe aktarma hatası",
+                        header: $"{importEvent.MarketplaceName} kategori içe aktarma hatası",
                         content: $"Beklenmeyen hata: {ex.Message}",
                         severity: NotificationSeverity.Error,
                         category: NotificationCategory.Pazaryeri,

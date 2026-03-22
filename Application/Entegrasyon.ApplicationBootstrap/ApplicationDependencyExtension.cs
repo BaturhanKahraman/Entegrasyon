@@ -78,6 +78,7 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();
+            services.AddScoped<N11CategoryImporter>();
             services.AddScoped<TrendyolMappingValidator>();
             services.AddScoped<ITrendyolApiClient, TrendyolApiClient>();
             services.AddScoped<ITrendyolProductMapper, TrendyolProductMapper>();
@@ -151,7 +152,7 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
         {
-            services.AddHostedService<TrendyolCategoryImportBackgroundService>();
+            services.AddHostedService<CategoryImportBackgroundService>();
             services.AddHostedService<TrendyolProductPublishBackgroundService>();
             services.AddHostedService<TrendyolBatchStatusPollingService>();
             services.AddHostedService<TrendyolStockPriceSyncService>();
