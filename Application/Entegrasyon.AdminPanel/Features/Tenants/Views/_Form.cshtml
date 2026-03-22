@@ -1,0 +1,84 @@
+@model TenantFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+<div class="row g-3">
+    <!-- Firma Bilgileri -->
+    <div class="col-12">
+        <h5 class="border-bottom pb-2 mb-3">Firma Bilgileri</h5>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="CompanyName" class="form-label"></label>
+        <input asp-for="CompanyName" class="form-control" />
+        <span asp-validation-for="CompanyName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Subdomain" class="form-label"></label>
+        <input asp-for="Subdomain" class="form-control" />
+        <span asp-validation-for="Subdomain" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="ContactEmail" class="form-label"></label>
+        <input asp-for="ContactEmail" class="form-control" type="email" />
+        <span asp-validation-for="ContactEmail" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="ContactPhone" class="form-label"></label>
+        <input asp-for="ContactPhone" class="form-control" type="tel" />
+        <span asp-validation-for="ContactPhone" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="TaxNumber" class="form-label"></label>
+        <input asp-for="TaxNumber" class="form-control" />
+        <span asp-validation-for="TaxNumber" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+
+    <!-- Teknik Bilgiler -->
+    <div class="col-12 mt-4">
+        <h5 class="border-bottom pb-2 mb-3">Teknik Bilgiler</h5>
+    </div>
+
+    <div class="col-md-8">
+        <label asp-for="ConnectionString" class="form-label"></label>
+        <input asp-for="ConnectionString" class="form-control" />
+        <span asp-validation-for="ConnectionString" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="DatabaseType" class="form-label"></label>
+        <select asp-for="DatabaseType" class="form-select">
+            @foreach (var dbType in TenantFormViewModel.DatabaseTypes)
+            {
+                <option value="@dbType">@dbType</option>
+            }
+        </select>
+        <span asp-validation-for="DatabaseType" class="text-danger"></span>
+    </div>
+
+    <!-- Notlar -->
+    <div class="col-12 mt-4">
+        <h5 class="border-bottom pb-2 mb-3">Notlar</h5>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="mt-4">
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-outline-secondary ms-2">İptal</a>
+</div>

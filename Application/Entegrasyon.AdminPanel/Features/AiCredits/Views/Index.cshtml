@@ -1,0 +1,60 @@
+@model Entegrasyon.AdminPanel.Features.AiCredits.AiCreditListViewModel
+@{
+    ViewData["Title"] = "AI Kredileri";
+}
+
+<h2 class="mb-4">AI Kredileri</h2>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Firma</th>
+                        <th>Subdomain</th>
+                        <th>Durum</th>
+                        <th class="text-center">Resim Olusturma</th>
+                        <th class="text-center">Urun Aciklamasi</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.CompanyName</td>
+                            <td><code>@item.Subdomain</code></td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pasif</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary bg-opacity-75 fs-6">@item.ImageGenerationCredits</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info bg-opacity-75 fs-6">@item.ProductDescriptionCredits</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-controller="AiCredits" asp-action="Details" asp-route-tenantId="@item.TenantId" class="btn btn-sm btn-outline-primary me-1">Detay</a>
+                                <a asp-controller="AiCredits" asp-action="AddCredits" asp-route-tenantId="@item.TenantId" class="btn btn-sm btn-success">Kredi Ekle</a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Henuz firma bulunmuyor.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

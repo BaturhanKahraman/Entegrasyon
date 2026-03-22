@@ -32,6 +32,20 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
         if (dtoList.Any(d => d.IsVarianter && d.IsSlicer))
             return new ErrorResult("Bir özellik hem varyant hem de dilimleyici olamaz.");
 
+        var hasDuplicateIds = dtoList
+            .Where(d => d.Id > 0)
+            .GroupBy(d => d.Id)
+            .Any(g => g.Count() > 1);
+        if (hasDuplicateIds)
+            return new ErrorResult("Aynı özellik birden fazla kez eklenemez.");
+
+        var hasDuplicateKeys = dtoList
+            .Where(d => d.Id == 0 && !string.IsNullOrEmpty(d.CategoryAttributeKey))
+            .GroupBy(d => d.CategoryAttributeKey, StringComparer.OrdinalIgnoreCase)
+            .Any(g => g.Count() > 1);
+        if (hasDuplicateKeys)
+            return new ErrorResult("Aynı anahtar ile birden fazla yeni özellik eklenemez.");
+
         var result = LogicRunner.Run(
             await CategoryExists(dbContext, catId),
             await IsSuper(dbContext, catId));
@@ -106,6 +120,7 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
                 var existingCatAttr = existingCatAttrs.GetValueOrDefault(catAttr.Id);
                 existingCatAttr.CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized;
                 existingCatAttr.CategoryAttributeKey = catAttr.CategoryAttributeKey;
+                existingCatAttr.AllowCustom = catAttr.AllowCustom;
                 catAttrcat.CategoryAttribute = existingCatAttr;
             }
             else
@@ -115,6 +130,7 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
                     Id = catAttr.Id,
                     CategoryAttributeKey = catAttr.CategoryAttributeKey,
                     CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized,
+                    AllowCustom = catAttr.AllowCustom,
                     CategoryAttributeValues = new()
                 };
             }

@@ -1,0 +1,130 @@
+@model TenantDetailViewModel
+@{
+    ViewData["Title"] = Model.CompanyName;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model.CompanyName</h2>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Listeye Dön</a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string msg)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Durum</h6>
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success fs-6">Aktif</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary fs-6">Pasif</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Lisanslar</h6>
+                <h4 class="mb-0">@Model.ActiveLicenseCount / @Model.TotalLicenseCount</h4>
+                <small class="text-muted">
+                    @(Model.CurrentLicenseType ?? "Lisans yok")
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Uygulama Logları</h6>
+                <h4 class="mb-0">@Model.LogCount</h4>
+                <small class="text-danger">@Model.ErrorLogCount hata</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">AI Kredileri</h6>
+                <div><small>Görsel: <strong>@Model.ImageCredits</strong></small></div>
+                <div><small>Açıklama: <strong>@Model.DescriptionCredits</strong></small></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Cards -->
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Firma Bilgileri</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Firma Adı</dt>
+                    <dd class="col-sm-7">@Model.CompanyName</dd>
+
+                    <dt class="col-sm-5">Subdomain</dt>
+                    <dd class="col-sm-7"><code>@Model.Subdomain</code></dd>
+
+                    <dt class="col-sm-5">E-posta</dt>
+                    <dd class="col-sm-7">@(Model.ContactEmail ?? "-")</dd>
+
+                    <dt class="col-sm-5">Telefon</dt>
+                    <dd class="col-sm-7">@(Model.ContactPhone ?? "-")</dd>
+
+                    <dt class="col-sm-5">Adres</dt>
+                    <dd class="col-sm-7">@(Model.Address ?? "-")</dd>
+
+                    <dt class="col-sm-5">Vergi Numarası</dt>
+                    <dd class="col-sm-7">@(Model.TaxNumber ?? "-")</dd>
+
+                    <dt class="col-sm-5">Kullanıcı Sayısı</dt>
+                    <dd class="col-sm-7">@Model.UserCount</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Teknik Bilgiler</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Veritabanı Tipi</dt>
+                    <dd class="col-sm-7">@Model.DatabaseType</dd>
+
+                    <dt class="col-sm-5">Bağlantı Dizesi</dt>
+                    <dd class="col-sm-7">
+                        <code class="text-break small">@Model.ConnectionString</code>
+                    </dd>
+
+                    <dt class="col-sm-5">Oluşturulma</dt>
+                    <dd class="col-sm-7">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-5">Son Güncelleme</dt>
+                    <dd class="col-sm-7">@(Model.UpdatedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-")</dd>
+                </dl>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <hr />
+                    <h6>Notlar</h6>
+                    <p class="text-muted mb-0">@Model.Notes</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

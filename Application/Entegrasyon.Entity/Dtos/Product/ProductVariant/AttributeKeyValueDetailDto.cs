@@ -1,3 +1,3 @@
-﻿namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
+namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
 
-public sealed record AttributeKeyValueDetailDto(string AttributeKey,string AttributeValue);
+public sealed record AttributeKeyValueDetailDto(string AttributeKey, string AttributeHumanized, string AttributeValue);

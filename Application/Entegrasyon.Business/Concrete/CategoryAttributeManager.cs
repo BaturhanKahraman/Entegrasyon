@@ -38,7 +38,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
     {
         using var dbContext = contextFactory.CreateDbContext();
         string nameNormalize = name.Trim().ToLower();
-        return await dbContext.CategoryAttributes.AnyAsync(x => x.CategoryAttributeKey.Trim().ToLower() == nameNormalize);
+        return await dbContext.CategoryAttributes.AnyAsync(x => x.CategoryAttributeKey!.Trim().ToLower() == nameNormalize);
     }
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes()
@@ -81,6 +81,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
     {
         using var dbContext = contextFactory.CreateDbContext();
         var result = await dbContext.CategoryAttributes
+            .AsSingleQuery()
             .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
             .Select(x => new CategoryAttributeDto(
                 x.Id,
@@ -103,7 +104,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
             .Include(x => x.CategoryAttributeValues)
             .FirstOrDefaultAsync(x => x.Id == id);
         if (attr is null)
-            return new ErrorDataResult<CategoryAttribute>(null, "Özellik bulunamadı.");
+            return new ErrorDataResult<CategoryAttribute>(null!, "Özellik bulunamadı.");
         return new SuccessDataResult<CategoryAttribute>(attr);
     }
 

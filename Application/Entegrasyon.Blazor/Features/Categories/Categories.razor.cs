@@ -126,6 +126,30 @@ public partial class Categories
 
     private List<Category> GetTreeItemsForView()
     {
-        return _categories.Where(c => c.SuperCategoryId == null).ToList();
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return _categories.Where(c => c.SuperCategoryId == null).ToList();
+
+        var matchingIds = new HashSet<int>();
+        foreach (var cat in _categories)
+        {
+            if (cat.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            {
+                matchingIds.Add(cat.Id);
+                AddAncestors(cat.SuperCategoryId, matchingIds);
+            }
+        }
+        return _categories
+            .Where(c => c.SuperCategoryId == null && matchingIds.Contains(c.Id))
+            .ToList();
+    }
+
+    private void AddAncestors(int? parentId, HashSet<int> ids)
+    {
+        while (parentId.HasValue)
+        {
+            if (!ids.Add(parentId.Value)) return;
+            var parent = _categories.FirstOrDefault(c => c.Id == parentId.Value);
+            parentId = parent?.SuperCategoryId;
+        }
     }
 }

@@ -1,0 +1,19 @@
+@model TenantFormViewModel
+@{
+    ViewData["Title"] = "Yeni Firma Ekle";
+}
+
+<h2 class="mb-4">Yeni Firma Ekle</h2>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <partial name="~/Features/Tenants/Views/_Form.cshtml" model="Model" />
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

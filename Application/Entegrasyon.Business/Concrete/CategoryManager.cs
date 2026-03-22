@@ -77,6 +77,7 @@ namespace Entegrasyon.Business.Concrete
             dbCategory.Name = dto.Name;
             dbCategory.IsFavorite = dto.IsFavorite;
             dbCategory.IsImported = dto.IsImported;
+            dbCategory.DefaultVatRate = dto.DefaultVatRate;
             await dbContext.SaveChangesAsync();
             cache.Remove(CategoryListCacheKey);
             return new SuccessResult(Messages.CategoryUpdated);
@@ -222,22 +223,22 @@ namespace Entegrasyon.Business.Concrete
             return await dbContext.Categories.AnyAsync(x => x.Id == id);
         }
 
-        public Task<string?> GetCategoryNameById(int categoryId)
+        public async Task<string?> GetCategoryNameById(int categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            return dbContext.Categories.AsNoTracking().Where(x => x.Id == categoryId).Select(x => x.Name).FirstOrDefaultAsync();
+            return await dbContext.Categories.AsNoTracking().Where(x => x.Id == categoryId).Select(x => x.Name).FirstOrDefaultAsync();
         }
 
-        public Task<Category?> GetCategoryById(int? categoryId)
+        public async Task<Category?> GetCategoryById(int? categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            return dbContext.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
+            return await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
         }
 
-        public Task<Category?> GetCategoryWithAttrById(int? categoryId)
+        public async Task<Category?> GetCategoryWithAttrById(int? categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            return dbContext.Categories.Include(x => x.CategoryAttributes).FirstOrDefaultAsync(x => x.Id == categoryId);
+            return await dbContext.Categories.Include(x => x.CategoryAttributes).FirstOrDefaultAsync(x => x.Id == categoryId);
         }
 
         public async Task UpdatePlainCategory(Category category)
@@ -247,16 +248,17 @@ namespace Entegrasyon.Business.Concrete
             await dbContext.SaveChangesAsync();
         }
 
-        public Task<bool> IsSuper(int? categoryId)
+        public async Task<bool> IsSuper(int? categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            return dbContext.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
+            return await dbContext.Categories.AnyAsync(c => c.Id == categoryId && c.SubCategories.Any());
         }
 
         public async Task<List<Category>> GetAllCategoriesWithHierarchyAsync()
         {
             using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories
+                .AsSingleQuery()
                 .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
                 .Include(c => c.MarketplaceLinks).ThenInclude(ml => ml.MarketPlace)
                 .OrderBy(c => c.Name)
@@ -299,16 +301,24 @@ namespace Entegrasyon.Business.Concrete
 
             using var dbContext = contextFactory.CreateDbContext();
 
-            // Recursive CTE ile alt kategorileri PostgreSQL'de hesapla — tüm tabloyu belleğe yüklemeden
-            var excludeIds = await dbContext.Database
-                .SqlQuery<int>($"SELECT * FROM fn_get_descendant_ids({excludeCategoryId.Value})")
-                .ToListAsync();
-            excludeIds.Add(excludeCategoryId.Value);
+            var descendantIds = await GetDescendantIdsAsync(dbContext, excludeCategoryId.Value);
+            descendantIds.Add(excludeCategoryId.Value);
 
             return await dbContext.Categories
                 .AsNoTracking()
-                .Where(c => !excludeIds.Contains(c.Id))
+                .Where(c => !descendantIds.Contains(c.Id))
                 .Where(c => !c.CategoryAttributes.Any())
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+
+        public async Task<List<Category>> GetLeafCategoriesAsync()
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return await dbContext.Categories
+                .AsSingleQuery()
+                .AsNoTracking()
+                .Where(c => !c.SubCategories.Any())
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -343,11 +353,8 @@ namespace Entegrasyon.Business.Concrete
             var isLeaf = !await dbContext.Categories
                 .AnyAsync(c => c.SuperCategoryId == categoryId);
 
-            // Recursive CTE ile alt kategorileri PostgreSQL'de hesapla
-            var excludeIds = await dbContext.Database
-                .SqlQuery<int>($"SELECT * FROM fn_get_descendant_ids({categoryId})")
-                .ToListAsync();
-            excludeIds.Add(categoryId);
+            var descendantIds = await GetDescendantIdsAsync(dbContext, categoryId);
+            descendantIds.Add(categoryId);
             var categoriesWithAttributes = await dbContext.CategoryAttributeCategories
                 .Select(cac => cac.CategoryId)
                 .Distinct()
@@ -356,7 +363,7 @@ namespace Entegrasyon.Business.Concrete
 
             // validParents — full entity gerekli çünkü DTO'ya Category nesnesi veriliyor
             var validParents = await dbContext.Categories
-                .Where(c => !excludeIds.Contains(c.Id))
+                .Where(c => !descendantIds.Contains(c.Id))
                 .Where(c => !categoriesWithAttributesSet.Contains(c.Id))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
@@ -396,6 +403,32 @@ namespace Entegrasyon.Business.Concrete
                 ValidParentCandidates: validParents,
                 HasSoldProducts: hasSold,
                 HasProducts: hasProducts));
+        }
+
+        private static async Task<HashSet<int>> GetDescendantIdsAsync(IntegrationDbContext dbContext, int categoryId)
+        {
+            var allPairs = await dbContext.Categories
+                .Select(c => new { c.Id, c.SuperCategoryId })
+                .ToListAsync();
+
+            var childrenMap = allPairs
+                .Where(c => c.SuperCategoryId.HasValue)
+                .GroupBy(c => c.SuperCategoryId!.Value)
+                .ToDictionary(g => g.Key, g => g.Select(c => c.Id).ToList());
+
+            var descendants = new HashSet<int>();
+            var queue = new Queue<int>();
+            queue.Enqueue(categoryId);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                if (childrenMap.TryGetValue(current, out var children))
+                    foreach (var childId in children)
+                        if (descendants.Add(childId))
+                            queue.Enqueue(childId);
+            }
+            return descendants;
         }
     }
 }

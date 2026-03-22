@@ -13,7 +13,8 @@ public sealed record SalesReportSummaryDto(
     int TotalSales,
     decimal TotalRevenue,
     decimal AverageOrderValue,
-    int TotalItemsSold);
+    int TotalItemsSold,
+    decimal TotalTax = 0);
 
 public sealed record DailySalesReportDto(
     DateOnly Date,

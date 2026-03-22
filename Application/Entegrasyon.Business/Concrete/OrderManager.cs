@@ -205,7 +205,8 @@ public sealed class OrderManager(
                         MerchantSku = line.MerchantSku,
                         ProductColor = line.ProductColor,
                         ProductSize = line.ProductSize,
-                        Discount = line.Discount
+                        Discount = line.Discount,
+                        VatRate = pkg.Micro ? 0 : line.VatRate
                     });
 
                     // Stok düşme: marketplace satışı gerçekleşti
