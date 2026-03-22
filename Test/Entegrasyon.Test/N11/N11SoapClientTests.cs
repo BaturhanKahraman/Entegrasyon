@@ -29,7 +29,8 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
             .ReturnsDbSet(marketPlaces.ToList());
     }
 
-    private static HttpClient CreateHttpClientWithResponse(string responseBody, HttpStatusCode statusCode = HttpStatusCode.OK)
+    private static (HttpClient client, Mock<HttpMessageHandler> handler) CreateHttpClientWithHandler(
+        string responseBody, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var handlerMock = new Mock<HttpMessageHandler>();
         handlerMock.Protected()
@@ -42,7 +43,13 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
                 Content = new StringContent(responseBody)
             });
 
-        return new HttpClient(handlerMock.Object);
+        return (new HttpClient(handlerMock.Object), handlerMock);
+    }
+
+    private static HttpClient CreateHttpClientWithResponse(string responseBody, HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        var (client, _) = CreateHttpClientWithHandler(responseBody, statusCode);
+        return client;
     }
 
     [Fact]
@@ -60,7 +67,7 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
 
         SetupMarketPlaces([marketplace]);
 
-        string? capturedRequestBody = null;
+        string? capturedBody = null;
 
         var handlerMock = new Mock<HttpMessageHandler>();
         handlerMock.Protected()
@@ -68,22 +75,22 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, _) =>
+            .Returns<HttpRequestMessage, CancellationToken>(async (req, _) =>
             {
-                capturedRequestBody = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
-            })
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    """
-                    <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
-                        <env:Body>
-                            <ns3:GetTopLevelCategoriesResponse xmlns:ns3="http://www.n11.com/ws/schemas">
-                                <result><status>success</status></result>
-                            </ns3:GetTopLevelCategoriesResponse>
-                        </env:Body>
-                    </env:Envelope>
-                    """)
+                capturedBody = await req.Content!.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """
+                        <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+                            <env:Body>
+                                <ns3:GetTopLevelCategoriesResponse xmlns:ns3="http://www.n11.com/ws/schemas">
+                                    <result><status>success</status></result>
+                                </ns3:GetTopLevelCategoriesResponse>
+                            </env:Body>
+                        </env:Envelope>
+                        """)
+                };
             });
 
         var httpClient = new HttpClient(handlerMock.Object);
@@ -100,9 +107,9 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
         var result = await sut.SendAsync("CategoryService", "", bodyContent);
 
         // Assert
-        capturedRequestBody.Should().NotBeNull();
-        capturedRequestBody.Should().Contain("<appKey>test-app-key</appKey>");
-        capturedRequestBody.Should().Contain("<appSecret>test-app-secret</appSecret>");
+        capturedBody.Should().NotBeNull();
+        capturedBody.Should().Contain("<appKey>test-app-key</appKey>");
+        capturedBody.Should().Contain("<appSecret>test-app-secret</appSecret>");
         result.Should().NotBeNull();
     }
 
@@ -162,5 +169,141 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
         // Assert
         result.Should().NotBeNull();
         result.Name.LocalName.Should().Be("TestResponse");
+    }
+
+    [Fact]
+    public async Task SendAsync_WhenHttpError_ShouldThrowHttpRequestException()
+    {
+        // Arrange
+        var marketplace = new MarketPlace
+        {
+            Id = N11MarketPlaceId,
+            Name = "N11",
+            ApiKey = "key",
+            ApiSecret = "secret",
+            BaseUrl = "https://api.n11.com/ws/"
+        };
+
+        SetupMarketPlaces([marketplace]);
+
+        var httpClient = CreateHttpClientWithResponse(
+            "<soapFault>Error details</soapFault>",
+            HttpStatusCode.InternalServerError);
+
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
+        var sut = CreateSut();
+        var bodyContent = new XElement("TestRequest");
+
+        // Act & Assert
+        await sut.Invoking(s => s.SendAsync("TestService", "", bodyContent))
+            .Should().ThrowAsync<HttpRequestException>()
+            .WithMessage("*500*");
+    }
+
+    [Fact]
+    public async Task SendAsync_ShouldNotMutateOriginalBodyContent()
+    {
+        // Arrange
+        var marketplace = new MarketPlace
+        {
+            Id = N11MarketPlaceId,
+            Name = "N11",
+            ApiKey = "key",
+            ApiSecret = "secret",
+            BaseUrl = "https://api.n11.com/ws/"
+        };
+
+        SetupMarketPlaces([marketplace]);
+
+        var httpClient = CreateHttpClientWithResponse(
+            """
+            <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+                <env:Body>
+                    <ns3:TestResponse xmlns:ns3="http://www.n11.com/ws/schemas">
+                        <result><status>success</status></result>
+                    </ns3:TestResponse>
+                </env:Body>
+            </env:Envelope>
+            """);
+
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
+        var sut = CreateSut();
+        var bodyContent = new XElement(
+            XName.Get("TestRequest", "http://www.n11.com/ws/schemas"),
+            new XElement("someField", "value"));
+
+        var childCountBefore = bodyContent.Elements().Count();
+
+        // Act
+        await sut.SendAsync("TestService", "", bodyContent);
+
+        // Assert — bodyContent should NOT have <auth> injected
+        bodyContent.Elements().Count().Should().Be(childCountBefore);
+        bodyContent.Element("auth").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SendAsync_WhenSoapActionProvided_ShouldIncludeInRequestHeaders()
+    {
+        // Arrange
+        var marketplace = new MarketPlace
+        {
+            Id = N11MarketPlaceId,
+            Name = "N11",
+            ApiKey = "key",
+            ApiSecret = "secret",
+            BaseUrl = "https://api.n11.com/ws/"
+        };
+
+        SetupMarketPlaces([marketplace]);
+
+        IEnumerable<string>? soapActionValues = null;
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>((req, _) =>
+            {
+                if (req.Headers.TryGetValues("SOAPAction", out var values))
+                    soapActionValues = values.ToList();
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """
+                        <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+                            <env:Body>
+                                <ns3:TestResponse xmlns:ns3="http://www.n11.com/ws/schemas">
+                                    <result><status>success</status></result>
+                                </ns3:TestResponse>
+                            </env:Body>
+                        </env:Envelope>
+                        """)
+                });
+            });
+
+        var httpClient = new HttpClient(handlerMock.Object);
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(httpClient);
+
+        var sut = CreateSut();
+        var bodyContent = new XElement(
+            XName.Get("TestRequest", "http://www.n11.com/ws/schemas"));
+
+        // Act
+        await sut.SendAsync("TestService", "testAction", bodyContent);
+
+        // Assert
+        soapActionValues.Should().NotBeNull();
+        soapActionValues!.First().Should().Contain("testAction");
     }
 }
