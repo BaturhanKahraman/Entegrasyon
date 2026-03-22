@@ -10,4 +10,7 @@ public interface IN11ProductService
 {
     Task<IDataResult<long>> SaveProductAsync(Guid productId);
     Task<IResult> DeleteProductAsync(Guid productId);
+    Task<IResult> UpdateProductBasicAsync(Guid productId);
+    Task<IResult> StartSellingAsync(Guid productId);
+    Task<IResult> StopSellingAsync(Guid productId);
 }
