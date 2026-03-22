@@ -372,3 +372,6 @@ appsettings.*.local.json
 .env
 *.env
 .env.*
+
+# Git worktrees
+.worktrees/
