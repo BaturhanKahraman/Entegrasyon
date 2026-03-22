@@ -16,6 +16,12 @@ public class MarketPlaceEntityConfiguration:IEntityTypeConfiguration<MarketPlace
             {
                 Id=1,
                 Name = "Trendyol"
+            },
+            new()
+            {
+                Id = 8,
+                Name = "Çiçeksepeti",
+                BaseUrl = "https://apis.ciceksepeti.com"
             }
         });
     }

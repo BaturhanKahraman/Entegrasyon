@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Amazon;
+using Entegrasyon.Business.Concrete.Ciceksepeti;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Pazarama;
@@ -201,6 +202,17 @@ namespace Entegrasyon.ApplicationBootstrap
             }
             services.AddScoped<PazaramaCategoryImporter>();
             services.AddScoped<IPazaramaBrandService, PazaramaBrandService>();
+
+            // Çiçeksepeti servisleri
+            var useCiceksepetiMock = configuration.GetValue<bool>("Ciceksepeti:UseMock", true);
+            if (useCiceksepetiMock)
+            {
+                services.AddScoped<ICiceksepetiApiClient, MockCiceksepetiApiClient>();
+            }
+            else
+            {
+                services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
+            }
 
             services.AddEventChannels();
             services.AddValidators();
