@@ -34,5 +34,10 @@ public enum ImportSource
     /// <summary>
     /// N11 pazaryerinden import edilmiş
     /// </summary>
-    N11 = 101
+    N11 = 101,
+
+    /// <summary>
+    /// Hepsiburada pazaryerinden import edilmiş
+    /// </summary>
+    Hepsiburada = 102
 }

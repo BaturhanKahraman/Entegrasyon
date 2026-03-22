@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
@@ -106,6 +107,30 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             }
 
+            // Hepsiburada servisleri
+            services.AddScoped<IHepsiburadaApiClient, HepsiburadaApiClient>();
+            services.AddScoped<HepsiburadaCategoryImporter>();
+            services.AddScoped<HepsiburadaMappingValidator>();
+            services.AddScoped<IHepsiburadaProductMapper, HepsiburadaProductMapper>();
+
+            var useHbMock = configuration.GetValue<bool>("Hepsiburada:UseMock", true);
+            if (useHbMock)
+            {
+                services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
+                services.AddScoped<IHepsiburadaListingService, MockHepsiburadaListingService>();
+                services.AddScoped<IHepsiburadaOrderService, MockHepsiburadaOrderService>();
+            }
+            else
+            {
+                services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
+                services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
+                services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
+            }
+
+            // Hepsiburada Q&A + Claim (mock/real ayrımı yok — her zaman real, API yoksa hata döner)
+            services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
+            services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
+
             // N11 servisleri
             services.AddScoped<IN11SoapClient, N11SoapClient>();
             services.AddScoped<N11MappingValidator>();
@@ -136,6 +161,10 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHttpClient(StringConstants.TrendyolApi, x =>
             {
                 x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/");
+            });
+            services.AddHttpClient(StringConstants.HepsiburadaApi, x =>
+            {
+                x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/");
             });
             return services;
         }
@@ -171,6 +200,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolOrderPollingService>();
             services.AddHostedService<N11OrderPollingService>();
             services.AddHostedService<DashboardRefreshService>();
+            services.AddHostedService<HepsiburadaStatusPollingService>();
+            services.AddHostedService<HepsiburadaStockPriceSyncService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
