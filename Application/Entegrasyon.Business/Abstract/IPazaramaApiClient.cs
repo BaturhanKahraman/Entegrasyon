@@ -2,7 +2,7 @@ namespace Entegrasyon.Business.Abstract;
 
 /// <summary>
 /// Pazarama API'ye OAuth2 Bearer token ile HTTP çağrıları yapan wrapper.
-/// MarketPlace tablosundan (Id=4) clientId/clientSecret çeker,
+/// MarketPlace tablosundan (Id=5) clientId/clientSecret çeker,
 /// token caching ile otomatik yenileme yapar.
 /// </summary>
 public interface IPazaramaApiClient
