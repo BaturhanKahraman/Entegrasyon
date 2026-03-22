@@ -141,11 +141,13 @@ namespace Entegrasyon.ApplicationBootstrap
             {
                 services.AddScoped<IN11ProductService, MockN11ProductService>();
                 services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
+                services.AddScoped<IN11OrderService, MockN11OrderService>();
             }
             else
             {
                 services.AddScoped<IN11ProductService, N11ProductService>();
                 services.AddScoped<IN11StockPriceService, N11StockPriceService>();
+                services.AddScoped<IN11OrderService, N11OrderService>();
             }
 
             services.AddEventChannels();
@@ -196,6 +198,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolStockPriceSyncService>();
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
+            services.AddHostedService<N11OrderPollingService>();
             services.AddHostedService<DashboardRefreshService>();
             services.AddHostedService<HepsiburadaStatusPollingService>();
             services.AddHostedService<HepsiburadaStockPriceSyncService>();
