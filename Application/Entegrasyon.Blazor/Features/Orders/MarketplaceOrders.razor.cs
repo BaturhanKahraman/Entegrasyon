@@ -15,6 +15,7 @@ public partial class MarketplaceOrders : ComponentBase
     private List<Order> _filteredOrders = [];
     private bool _loading = true;
     private string _searchText = string.Empty;
+    private int? _selectedMarketPlaceId = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,7 +25,7 @@ public partial class MarketplaceOrders : ComponentBase
     private async Task LoadOrdersAsync()
     {
         _loading = true;
-        var result = await OrderManager.GetOrdersAsync(marketPlaceId: 1);
+        var result = await OrderManager.GetOrdersAsync(marketPlaceId: _selectedMarketPlaceId);
         if (result.Success)
         {
             _orders = result.Data;
@@ -59,6 +60,12 @@ public partial class MarketplaceOrders : ComponentBase
         ).ToList();
     }
 
+    private async Task OnMarketPlaceFilterChanged(int? value)
+    {
+        _selectedMarketPlaceId = value;
+        await LoadOrdersAsync();
+    }
+
     private void OnRowClick(DataGridRowClickEventArgs<Order> args)
     {
         NavigationManager.NavigateTo($"/marketplace/orders/{args.Item.Id}");
@@ -66,13 +73,12 @@ public partial class MarketplaceOrders : ComponentBase
 
     private static Color GetStatusColor(string? status) => status switch
     {
-        "Created" => Color.Info,
+        // Trendyol statuses
+        "Created" or "New" => Color.Info,
         "Picking" => Color.Warning,
-        "Invoiced" => Color.Primary,
-        "Shipped" => Color.Success,
-        "Delivered" => Color.Success,
-        "Cancelled" => Color.Error,
-        "UnSupplied" => Color.Error,
-        _ => Color.Default
+        "Invoiced" or "Approved" => Color.Primary,
+        "Shipped" or "Delivered" or "Completed" => Color.Success,
+        "Cancelled" or "UnSupplied" or "Rejected" => Color.Error,
+        _ => Color.Info
     };
 }
