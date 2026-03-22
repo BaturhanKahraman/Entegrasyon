@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,9 @@ public class N11OrderPollingService(
     IConfiguration configuration) : BackgroundService
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(2);
-    private DateTimeOffset _lastPollTime = DateTimeOffset.UtcNow.AddDays(-1); // İlk çalışmada son 1 günü çek
+    // TODO Multi-tenant: Her tenant/marketplace için ayrı poll zamanı takip edilir.
+    // Key = MarketPlaceId (şu an yalnızca 2 = N11)
+    private readonly ConcurrentDictionary<int, DateTimeOffset> _lastPollTimes = new();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -51,7 +54,10 @@ public class N11OrderPollingService(
         var orderService = scope.ServiceProvider.GetRequiredService<IN11OrderService>();
         var orderManager = scope.ServiceProvider.GetRequiredService<IOrderManager>();
 
-        var result = await orderService.FetchOrdersAsync(startDate: _lastPollTime);
+        var marketPlaceId = 2; // TODO: iterate over all active N11 marketplaces when multi-tenant
+        var lastPoll = _lastPollTimes.GetOrAdd(marketPlaceId, _ => DateTimeOffset.UtcNow.AddDays(-1));
+
+        var result = await orderService.FetchOrdersAsync(startDate: lastPoll);
 
         if (!result.Success)
         {
@@ -65,6 +71,6 @@ public class N11OrderPollingService(
             logger.LogInformation("N11: {Count} siparis import edildi", result.Data.Count);
         }
 
-        _lastPollTime = DateTimeOffset.UtcNow;
+        _lastPollTimes[marketPlaceId] = DateTimeOffset.UtcNow;
     }
 }
