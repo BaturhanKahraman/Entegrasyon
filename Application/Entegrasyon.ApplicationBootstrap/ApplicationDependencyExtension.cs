@@ -108,10 +108,18 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // N11 servisleri
             services.AddScoped<IN11SoapClient, N11SoapClient>();
+            services.AddScoped<N11MappingValidator>();
+            services.AddScoped<IN11ProductMapper, N11ProductMapper>();
 
-            // TODO: Sprint 3'te gerçek implementasyonlar eklendiğinde
-            // Trendyol pattern'i gibi N11:UseMock config ile mock/real ayrılacak.
-            services.AddScoped<IN11ProductService, MockN11ProductService>();
+            var useN11Mock = configuration.GetValue<bool>("N11:UseMock", true);
+            if (useN11Mock)
+            {
+                services.AddScoped<IN11ProductService, MockN11ProductService>();
+            }
+            else
+            {
+                services.AddScoped<IN11ProductService, N11ProductService>();
+            }
             services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
 
             services.AddEventChannels();
