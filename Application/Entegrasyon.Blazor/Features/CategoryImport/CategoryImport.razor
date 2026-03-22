@@ -272,6 +272,34 @@
         </MudPaper>
         </ChildContent>
     </MudTabPanel>
+    <MudTabPanel>
+        <TabContent>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                <MarketplaceLogo Name="Amazon" Size="Size.Small" />
+                <MudText>Amazon</MudText>
+            </MudStack>
+        </TabContent>
+        <ChildContent>
+        <MudPaper Class="pa-4">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6">Amazon Product Types</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Amazon'da kategori ağacı yerine Product Type sistemi kullanılır
+                </MudText>
+            </div>
+
+            <AmazonProductTypeSearch @bind-SelectedProductTypes="amazonSelectedProductTypes" />
+
+            @if (amazonSelectedProductTypes.Any())
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-4">
+                    @amazonSelectedProductTypes.Count product type seçildi.
+                    Seçilen product type'lar ürün eşleştirmede kullanılacak.
+                </MudAlert>
+            }
+        </MudPaper>
+        </ChildContent>
+    </MudTabPanel>
 </MudTabs>
 
 @if (importing)
