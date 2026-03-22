@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -12,8 +13,8 @@ namespace Entegrasyon.Business.Concrete.Pazarama;
 
 /// <summary>
 /// Pazarama API'ye OAuth2 Bearer token ile HTTP çağrıları yapan client.
-/// MarketPlace tablosundan (Id=4) clientId/clientSecret/tokenUrl çeker,
-/// token in-memory cache'lenir, son 5 dakikada otomatik yenilenir.
+/// MarketPlace tablosundan (Id=5) clientId/clientSecret/tokenUrl çeker,
+/// token tenant başına izole cache'lenir (multi-tenant uyumlu).
 /// </summary>
 public sealed class PazaramaApiClient(
     IDbContextFactory<IntegrationDbContext> contextFactory,
@@ -24,9 +25,11 @@ public sealed class PazaramaApiClient(
     private const string DefaultTokenUrl = "https://isortagimgiris.pazarama.com/connect/token";
     private static readonly TimeSpan TokenExpiryBuffer = TimeSpan.FromMinutes(5);
 
-    private string? _accessToken;
-    private DateTimeOffset _tokenExpiresAt = DateTimeOffset.MinValue;
-    private readonly SemaphoreSlim _tokenLock = new(1, 1);
+    /// <summary>
+    /// Tenant-aware token cache: key = MarketPlace.Id
+    /// </summary>
+    private readonly ConcurrentDictionary<int, CachedToken> _tokenCache = new();
+    private readonly ConcurrentDictionary<int, SemaphoreSlim> _tokenLocks = new();
 
     public async Task<HttpResponseMessage> GetAsync(string relativeUrl)
     {
@@ -56,10 +59,6 @@ public sealed class PazaramaApiClient(
         return await client.DeleteAsync(absoluteUrl);
     }
 
-    /// <summary>
-    /// Returns a configured HttpClient (Bearer auth, no BaseAddress set) and the resolved absolute URL.
-    /// Avoids setting BaseAddress so the same underlying HttpClient can be reused without issue.
-    /// </summary>
     private async Task<(HttpClient client, string absoluteUrl)> CreateConfiguredClientAsync(string relativeUrl)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
@@ -67,49 +66,54 @@ public sealed class PazaramaApiClient(
         var marketplace = await dbContext.MarketPlaces
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == PazaramaMarketPlaceId)
-            ?? throw new InvalidOperationException("Pazarama marketplace kaydı bulunamadı (Id=4).");
+            ?? throw new InvalidOperationException("Pazarama marketplace kaydı bulunamadı.");
 
         var baseUrl = marketplace.BaseUrl ?? DefaultBaseUrl;
         var tokenUrl = marketplace.TokenUrl ?? DefaultTokenUrl;
         var clientId = marketplace.ApiKey ?? "";
         var clientSecret = marketplace.ApiSecret ?? "";
 
-        await EnsureValidTokenAsync(clientId, clientSecret, tokenUrl);
+        var accessToken = await EnsureValidTokenAsync(marketplace.Id, clientId, clientSecret, tokenUrl);
 
         var client = httpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _accessToken);
+            new AuthenticationHeaderValue("Bearer", accessToken);
 
-        // Build absolute URL — avoids setting BaseAddress after the client has fired requests
         var absoluteUrl = baseUrl.TrimEnd('/') + "/" + relativeUrl.TrimStart('/');
-
         return (client, absoluteUrl);
     }
 
-    private async Task EnsureValidTokenAsync(string clientId, string clientSecret, string tokenUrl)
+    private async Task<string> EnsureValidTokenAsync(int marketPlaceId, string clientId, string clientSecret, string tokenUrl)
     {
-        // Fast-path: token still valid
-        if (_accessToken is not null && DateTimeOffset.UtcNow < _tokenExpiresAt - TokenExpiryBuffer)
-            return;
+        // Fast-path: cache'te geçerli token var
+        if (_tokenCache.TryGetValue(marketPlaceId, out var cached) && cached.IsValid(TokenExpiryBuffer))
+            return cached.AccessToken;
 
-        await _tokenLock.WaitAsync();
+        var semaphore = _tokenLocks.GetOrAdd(marketPlaceId, _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync();
         try
         {
             // Double-check inside lock
-            if (_accessToken is not null && DateTimeOffset.UtcNow < _tokenExpiresAt - TokenExpiryBuffer)
-                return;
+            if (_tokenCache.TryGetValue(marketPlaceId, out cached) && cached.IsValid(TokenExpiryBuffer))
+                return cached.AccessToken;
 
-            logger.LogDebug("Pazarama token yenileniyor...");
+            logger.LogDebug("Pazarama token yenileniyor (MarketPlaceId={MarketPlaceId})...", marketPlaceId);
 
             var tokenResponse = await FetchTokenAsync(clientId, clientSecret, tokenUrl);
-            _accessToken = tokenResponse.AccessToken;
-            _tokenExpiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn);
+            var newCached = new CachedToken(
+                tokenResponse.AccessToken,
+                DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn));
 
-            logger.LogInformation("Pazarama token alındı, geçerlilik: {ExpiresAt:O}", _tokenExpiresAt);
+            _tokenCache[marketPlaceId] = newCached;
+
+            logger.LogInformation("Pazarama token alındı (MarketPlaceId={MarketPlaceId}), geçerlilik: {ExpiresAt:O}",
+                marketPlaceId, newCached.ExpiresAt);
+
+            return tokenResponse.AccessToken;
         }
         finally
         {
-            _tokenLock.Release();
+            semaphore.Release();
         }
     }
 
@@ -117,7 +121,6 @@ public sealed class PazaramaApiClient(
     {
         var tokenClient = httpClientFactory.CreateClient();
 
-        // Basic Auth header for token endpoint — set on the request directly to avoid shared-client issues
         var credentials = Convert.ToBase64String(
             Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
 
@@ -135,6 +138,11 @@ public sealed class PazaramaApiClient(
             ?? throw new InvalidOperationException("Pazarama token endpoint geçersiz yanıt döndürdü.");
 
         return tokenResponse;
+    }
+
+    private sealed record CachedToken(string AccessToken, DateTimeOffset ExpiresAt)
+    {
+        public bool IsValid(TimeSpan buffer) => DateTimeOffset.UtcNow < ExpiresAt - buffer;
     }
 
     private sealed record TokenResponse(
