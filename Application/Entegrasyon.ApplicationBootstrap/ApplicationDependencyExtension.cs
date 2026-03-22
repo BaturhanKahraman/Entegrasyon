@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
@@ -104,7 +105,13 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             }
 
+            // N11 servisleri
+            services.AddScoped<IN11SoapClient, N11SoapClient>();
 
+            // TODO: Sprint 3'te gerçek implementasyonlar eklendiğinde
+            // Trendyol pattern'i gibi N11:UseMock config ile mock/real ayrılacak.
+            services.AddScoped<IN11ProductService, MockN11ProductService>();
+            services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
 
             services.AddEventChannels();
             services.AddValidators();
