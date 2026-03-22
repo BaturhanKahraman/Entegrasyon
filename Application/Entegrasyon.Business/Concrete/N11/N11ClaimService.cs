@@ -406,6 +406,260 @@ public sealed class N11ClaimService(
     }
 
     // -----------------------------------------------------------------------
+    // GetExchangeClaimsAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IDataResult<List<N11ClaimExchangeDto>>> GetExchangeClaimsAsync(string? status = null, int page = 0)
+    {
+        var request = new XElement(Ns + "ClaimExchangeListRequest",
+            new XElement("searchData",
+                new XElement("status", status ?? "REQUESTED")),
+            new XElement("pagingData",
+                new XElement("currentPage", page)));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 GetExchangeClaims SOAP çağrısı başarısız");
+            return new ErrorDataResult<List<N11ClaimExchangeDto>>(null!, $"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 ClaimExchangeList başarısız — Message={Message}", statusCheck.Message);
+            return new ErrorDataResult<List<N11ClaimExchangeDto>>(null!, statusCheck.Message);
+        }
+
+        var claims = response
+            .Element("claimExchangeList")?
+            .Elements("claimExchange")
+            .Select(ParseExchangeClaim)
+            .ToList() ?? [];
+
+        logger.LogInformation("N11 GetExchangeClaims başarılı — {Count} değişim talebi alındı", claims.Count);
+        return new SuccessDataResult<List<N11ClaimExchangeDto>>(claims);
+    }
+
+    // -----------------------------------------------------------------------
+    // ApproveExchangeByTrackingAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> ApproveExchangeByTrackingAsync(long claimExchangeId, string trackingNumber)
+    {
+        var request = new XElement(Ns + "ClaimExchangeApproveByTrackingRequest",
+            new XElement("claimExchangeId", claimExchangeId),
+            new XElement("trackingNumber", trackingNumber));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 ApproveExchangeByTrackingAsync SOAP çağrısı başarısız — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 ApproveExchangeByTrackingAsync başarısız — ClaimExchangeId={ClaimExchangeId}, Message={Message}",
+                claimExchangeId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 ApproveExchangeByTrackingAsync başarılı — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+        return new SuccessResult("Değişim talebi kargo takip numarasıyla onaylandı.");
+    }
+
+    // -----------------------------------------------------------------------
+    // ApproveExchangeByCampaignAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> ApproveExchangeByCampaignAsync(long claimExchangeId, int shipmentCompanyId)
+    {
+        var request = new XElement(Ns + "ClaimExchangeApproveByCampaignRequest",
+            new XElement("claimExchangeId", claimExchangeId),
+            new XElement("shipmentCompanyId", shipmentCompanyId));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 ApproveExchangeByCampaignAsync SOAP çağrısı başarısız — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 ApproveExchangeByCampaignAsync başarısız — ClaimExchangeId={ClaimExchangeId}, Message={Message}",
+                claimExchangeId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 ApproveExchangeByCampaignAsync başarılı — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+        return new SuccessResult("Değişim talebi kargo kampanyasıyla onaylandı.");
+    }
+
+    // -----------------------------------------------------------------------
+    // DenyExchangeAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> DenyExchangeAsync(long claimExchangeId, long denyReasonId, string? denyReasonNote = null)
+    {
+        var request = new XElement(Ns + "ClaimExchangeDenyRequest",
+            new XElement("claimExchangeId", claimExchangeId),
+            new XElement("denyReasonId", denyReasonId),
+            new XElement("denyReasonNote", denyReasonNote ?? string.Empty));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 DenyExchangeAsync SOAP çağrısı başarısız — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 DenyExchangeAsync başarısız — ClaimExchangeId={ClaimExchangeId}, Message={Message}",
+                claimExchangeId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 DenyExchangeAsync başarılı — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+        return new SuccessResult("Değişim talebi reddedildi.");
+    }
+
+    // -----------------------------------------------------------------------
+    // PendExchangeAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IResult> PendExchangeAsync(long claimExchangeId, long pendingReasonId, int pendingDayCount, string? pendingReasonNote = null)
+    {
+        var request = new XElement(Ns + "ClaimExchangePendingRequest",
+            new XElement("claimExchangeId", claimExchangeId),
+            new XElement("pendingReasonId", pendingReasonId),
+            new XElement("pendingDayCount", pendingDayCount),
+            new XElement("pendingReasonNote", pendingReasonNote ?? string.Empty));
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 PendExchangeAsync SOAP çağrısı başarısız — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+            return new ErrorResult($"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 PendExchangeAsync başarısız — ClaimExchangeId={ClaimExchangeId}, Message={Message}",
+                claimExchangeId, statusCheck.Message);
+            return statusCheck;
+        }
+
+        logger.LogInformation("N11 PendExchangeAsync başarılı — ClaimExchangeId={ClaimExchangeId}", claimExchangeId);
+        return new SuccessResult("Değişim talebi beklemeye alındı.");
+    }
+
+    // -----------------------------------------------------------------------
+    // GetExchangeDenyReasonsAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IDataResult<List<N11ReasonTypeDto>>> GetExchangeDenyReasonsAsync()
+    {
+        var request = new XElement(Ns + "ClaimExchangeDenyReasonTypesRequest");
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 GetExchangeDenyReasonsAsync SOAP çağrısı başarısız");
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, $"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 GetExchangeDenyReasonsAsync başarısız — Message={Message}", statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+        }
+
+        var reasons = response
+            .Element("denyReasonTypeDataList")?
+            .Elements("denyReasonType")
+            .Select(ParseReasonType)
+            .ToList() ?? [];
+
+        logger.LogInformation("N11 GetExchangeDenyReasonsAsync başarılı — {Count} neden alındı", reasons.Count);
+        return new SuccessDataResult<List<N11ReasonTypeDto>>(reasons);
+    }
+
+    // -----------------------------------------------------------------------
+    // GetExchangePendingReasonsAsync
+    // -----------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    public async Task<IDataResult<List<N11ReasonTypeDto>>> GetExchangePendingReasonsAsync()
+    {
+        var request = new XElement(Ns + "ClaimExchangePendingReasonTypesRequest");
+
+        XElement response;
+        try
+        {
+            response = await soapClient.SendAsync("ClaimExchangeService", "", request);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "N11 GetExchangePendingReasonsAsync SOAP çağrısı başarısız");
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, $"N11 bağlantı hatası: {ex.Message}");
+        }
+
+        var statusCheck = CheckN11ResponseStatus(response);
+        if (!statusCheck.Success)
+        {
+            logger.LogError("N11 GetExchangePendingReasonsAsync başarısız — Message={Message}", statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+        }
+
+        var reasons = response
+            .Element("denyReasonTypeDataList")?
+            .Elements("denyReasonType")
+            .Select(ParseReasonType)
+            .ToList() ?? [];
+
+        logger.LogInformation("N11 GetExchangePendingReasonsAsync başarılı — {Count} neden alındı", reasons.Count);
+        return new SuccessDataResult<List<N11ReasonTypeDto>>(reasons);
+    }
+
+    // -----------------------------------------------------------------------
     // XML parsing
     // -----------------------------------------------------------------------
 
@@ -475,6 +729,41 @@ public sealed class N11ClaimService(
             RequestDate = requestDate,
             ShipmentCompany = element.Element("shipmentCompany")?.Value,
             TrackingNumber = element.Element("trackingNumber")?.Value
+        };
+    }
+
+    private static N11ClaimExchangeDto ParseExchangeClaim(XElement element)
+    {
+        long.TryParse(element.Element("id")?.Value, out var id);
+        int.TryParse(element.Element("quantity")?.Value, out var quantity);
+        decimal.TryParse(element.Element("unitPrice")?.Value,
+            NumberStyles.Any, CultureInfo.InvariantCulture, out var unitPrice);
+        decimal.TryParse(element.Element("finalPrice")?.Value,
+            NumberStyles.Any, CultureInfo.InvariantCulture, out var finalPrice);
+
+        DateTimeOffset? requestDate = null;
+        var requestDateStr = element.Element("requestDate")?.Value;
+        if (!string.IsNullOrEmpty(requestDateStr) &&
+            DateTime.TryParseExact(requestDateStr, DateTimeFormat,
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+        {
+            requestDate = new DateTimeOffset(parsedDate, TimeSpan.Zero);
+        }
+
+        return new N11ClaimExchangeDto
+        {
+            ClaimExchangeId = id,
+            Status = element.Element("status")?.Value,
+            OrderNumber = element.Element("orderNumber")?.Value,
+            ProductName = element.Element("productName")?.Value,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            FinalPrice = finalPrice,
+            ExchangeReasonType = element.Element("exchangeReasonType")?.Value,
+            ExchangeReasonDescription = element.Element("exchangeReasonDescription")?.Value,
+            BuyerName = element.Element("buyerName")?.Value,
+            BuyerEmail = element.Element("buyerEmail")?.Value,
+            RequestDate = requestDate
         };
     }
 
