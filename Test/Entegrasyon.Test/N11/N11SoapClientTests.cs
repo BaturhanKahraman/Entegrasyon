@@ -16,11 +16,18 @@ public class N11SoapClientTests : Entegrasyon.UnitTest.BaseTest
 {
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ILogger<N11SoapClient>> _loggerMock = new();
+    private readonly Mock<Entegrasyon.Business.Abstract.ITenantContext> _tenantContextMock = new();
+
+    public N11SoapClientTests()
+    {
+        _tenantContextMock.Setup(t => t.GetMarketPlaceId("N11")).Returns(N11MarketPlaceId);
+    }
 
     private N11SoapClient CreateSut() => new(
         mockContextFactory.Object,
         _httpClientFactoryMock.Object,
-        _loggerMock.Object);
+        _loggerMock.Object,
+        _tenantContextMock.Object);
 
     private void SetupMarketPlaces(IEnumerable<MarketPlace> marketPlaces)
     {
