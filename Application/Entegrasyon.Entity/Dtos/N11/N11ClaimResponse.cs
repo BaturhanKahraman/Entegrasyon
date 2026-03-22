@@ -34,3 +34,19 @@ public record N11ClaimReturnDto
 }
 
 public record N11ReasonTypeDto(long Id, string Value);
+
+public record N11ClaimExchangeDto
+{
+    public long ClaimExchangeId { get; init; }
+    public string? Status { get; init; }
+    public string? OrderNumber { get; init; }
+    public string? ProductName { get; init; }
+    public int Quantity { get; init; }
+    public decimal UnitPrice { get; init; }
+    public decimal FinalPrice { get; init; }
+    public string? ExchangeReasonType { get; init; }
+    public string? ExchangeReasonDescription { get; init; }
+    public string? BuyerName { get; init; }
+    public string? BuyerEmail { get; init; }
+    public DateTimeOffset? RequestDate { get; init; }
+}
