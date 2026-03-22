@@ -117,10 +117,12 @@ namespace Entegrasyon.ApplicationBootstrap
             if (useHbMock)
             {
                 services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
+                services.AddScoped<IHepsiburadaListingService, MockHepsiburadaListingService>();
             }
             else
             {
                 services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
+                services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
             }
 
             // N11 servisleri
@@ -190,6 +192,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolOrderPollingService>();
             services.AddHostedService<DashboardRefreshService>();
             services.AddHostedService<HepsiburadaStatusPollingService>();
+            services.AddHostedService<HepsiburadaStockPriceSyncService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
