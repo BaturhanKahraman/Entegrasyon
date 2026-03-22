@@ -29,5 +29,10 @@ public enum ImportSource
     /// <summary>
     /// Trendyol pazaryerinden import edilmiş
     /// </summary>
-    Trendyol = 100
+    Trendyol = 100,
+
+    /// <summary>
+    /// N11 pazaryerinden import edilmis
+    /// </summary>
+    N11 = 101
 }
