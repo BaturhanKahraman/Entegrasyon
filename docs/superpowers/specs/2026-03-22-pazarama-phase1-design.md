@@ -121,11 +121,13 @@ else
 
 ## Veritabanı Değişiklikleri
 
-### Migration 1: AddMarketPlaceStringIds
-**3** match entity'ye nullable string alan eklenir (kategori zaten `ExternalCategoryId` string alanına sahip):
-- `CategoryAttributeMarketPlaceMatch.MarketPlaceCategoryAttributeIdString` (string?, max 50)
-- `CategoryAttributeValueMarketPlaceMatch.MarketPlaceCategoryAttributeValueIdString` (string?, max 50)
-- `BrandMarketPlaceMatch.MarketPlaceBrandIdString` (string?, max 50)
+### Migration 1: AddPazaramaMarketplaceSupport
+`CategoryAttributeMarketPlaceMatch` ve `CategoryAttributeValueMarketPlaceMatch` zaten `MarketPlaceCategoryAttributeExternalId` ve `MarketPlaceCategoryAttributeValueExternalId` (string) alanlarına sahip (Hepsiburada entegrasyonu ile eklenmiş). Pazarama bu mevcut alanları kullanır.
+
+Sadece **1** entity'ye yeni alan eklenir:
+- `BrandMarketPlaceMatch.MarketPlaceBrandExternalId` (string?, nullable)
+
+Ayrıca `MarketPlace` entity'ye `TokenUrl` (string?, max 200) eklenir.
 
 ### Migration 2: AddMarketPlaceTokenUrl
 `MarketPlace` entity'ye `TokenUrl` (string?, max 200) alanı eklenir. Pazarama seed'inde `https://isortagimgiris.pazarama.com/connect/token` olarak set edilir.
@@ -170,15 +172,15 @@ MarketPlace tablosuna Id=4 kaydı eklenir:
 14. `Test/Pazarama/PazaramaCategoryImporterTests.cs`
 15. `Test/Pazarama/PazaramaBrandServiceTests.cs`
 
-### Değişecek Dosyalar (~8)
+### Değişecek Dosyalar (~6)
 1. `Business/Utility/Constants/MarketPlaceConstants.cs` — PazaramaMarketPlaceId = 4
-2. `Entity/Categories/ImportSource.cs` — Pazarama enum value
+2. `Entity/Categories/ImportSource.cs` — Pazarama = 103
 3. `Entity/MarketPlace.cs` — TokenUrl property ekleme
-4. `Entity/Matches/CategoryAttributeMarketPlaceMatch.cs` — string alan
-5. `Entity/Matches/CategoryAttributeValueMarketPlaceMatch.cs` — string alan
-6. `Entity/Matches/BrandMarketPlaceMatch.cs` — string alan
-7. `ApplicationBootstrap/ApplicationDependencyExtension.cs` — Pazarama DI block
-8. `Blazor/Features/CategoryImport/CategoryImport.razor` + `.razor.cs` — Pazarama tab
+4. `Entity/Matches/BrandMarketPlaceMatch.cs` — MarketPlaceBrandExternalId string alan
+5. `ApplicationBootstrap/ApplicationDependencyExtension.cs` — Pazarama DI block
+6. `Blazor/Features/CategoryImport/CategoryImport.razor` + `.razor.cs` — Pazarama tab
+
+**Not:** `CategoryAttributeMarketPlaceMatch` ve `CategoryAttributeValueMarketPlaceMatch` zaten string alanlarına sahip (Hepsiburada ile eklenmiş: `MarketPlaceCategoryAttributeExternalId`, `MarketPlaceCategoryAttributeValueExternalId`). Değişiklik gerekmez.
 
 ---
 
