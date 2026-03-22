@@ -183,14 +183,21 @@ namespace Entegrasyon.ApplicationBootstrap
             }
 
             // Pazarama servisleri
+            services.AddScoped<PazaramaMappingValidator>();
+            services.AddScoped<IPazaramaProductMapper, PazaramaProductMapper>();
+
             var usePazaramaMock = configuration.GetValue<bool>("Pazarama:UseMock", true);
             if (usePazaramaMock)
             {
                 services.AddScoped<IPazaramaApiClient, MockPazaramaApiClient>();
+                services.AddScoped<IPazaramaProductService, MockPazaramaProductService>();
+                services.AddScoped<IPazaramaStockPriceService, MockPazaramaStockPriceService>();
             }
             else
             {
                 services.AddScoped<IPazaramaApiClient, PazaramaApiClient>();
+                services.AddScoped<IPazaramaProductService, PazaramaProductService>();
+                services.AddScoped<IPazaramaStockPriceService, PazaramaStockPriceService>();
             }
             services.AddScoped<PazaramaCategoryImporter>();
             services.AddScoped<IPazaramaBrandService, PazaramaBrandService>();
@@ -251,6 +258,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<AmazonStockPriceSyncService>();
             services.AddHostedService<AmazonFeedStatusPollingService>();
             services.AddHostedService<AmazonListingStatusPollingService>();
+            services.AddHostedService<PazaramaBatchStatusPollingService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
