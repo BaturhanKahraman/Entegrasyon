@@ -35,7 +35,14 @@ public sealed class MarketPlace : BaseEntity
 
     /// <summary>
     /// OAuth2 token endpoint URL — Pazarama: https://isortagimgiris.pazarama.com/connect/token
+    /// Amazon: https://api.amazon.com/auth/o2/token
     /// </summary>
     [StringLength(maximumLength: 200)]
     public string? TokenUrl { get; set; }
+
+    /// <summary>
+    /// OAuth2 refresh token — Amazon SP-API LWA token exchange için.
+    /// Süresiz geçerli, access_token almak için kullanılır.
+    /// </summary>
+    public string? RefreshToken { get; set; }
 }

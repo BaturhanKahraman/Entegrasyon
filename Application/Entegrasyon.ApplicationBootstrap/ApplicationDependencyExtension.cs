@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Pazarama;
@@ -131,6 +132,32 @@ namespace Entegrasyon.ApplicationBootstrap
             // Hepsiburada Q&A + Claim (mock/real ayrımı yok — her zaman real, API yoksa hata döner)
             services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
             services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
+
+            // Amazon servisleri
+            services.AddSingleton<IAmazonTokenManager, AmazonTokenManager>();
+            services.AddScoped<IAmazonApiClient, AmazonApiClient>();
+            services.AddScoped<AmazonMappingValidator>();
+            services.AddScoped<IAmazonProductMapper, AmazonProductMapper>();
+
+            var useAmazonMock = configuration.GetValue<bool>("Amazon:UseMock", true);
+            if (useAmazonMock)
+            {
+                services.AddScoped<IAmazonCatalogService, MockAmazonCatalogService>();
+                services.AddScoped<IAmazonProductTypeService, MockAmazonProductTypeService>();
+                services.AddScoped<IAmazonListingService, MockAmazonListingService>();
+                services.AddScoped<IAmazonProductService, MockAmazonProductService>();
+                services.AddScoped<IAmazonOrderService, MockAmazonOrderService>();
+                services.AddScoped<IAmazonFeedService, MockAmazonFeedService>();
+            }
+            else
+            {
+                services.AddScoped<IAmazonCatalogService, AmazonCatalogService>();
+                services.AddScoped<IAmazonProductTypeService, AmazonProductTypeService>();
+                services.AddScoped<IAmazonListingService, AmazonListingService>();
+                services.AddScoped<IAmazonProductService, AmazonProductService>();
+                services.AddScoped<IAmazonOrderService, AmazonOrderService>();
+                services.AddScoped<IAmazonFeedService, AmazonFeedService>();
+            }
 
             // N11 servisleri
             services.AddScoped<IN11SoapClient, N11SoapClient>();
