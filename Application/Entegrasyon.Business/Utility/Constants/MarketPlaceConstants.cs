@@ -10,4 +10,5 @@ public static class MarketPlaceConstants
     public const int HepsiburadaMarketPlaceId = 3;
     public const int PazaramaMarketPlaceId = 5;
     public const int AmazonMarketPlaceId = 6;
+    public const int PttavmMarketPlaceId = 7;
 }

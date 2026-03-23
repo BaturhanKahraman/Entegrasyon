@@ -275,6 +275,73 @@
     <MudTabPanel>
         <TabContent>
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                <MarketplaceLogo Name="PttAVM" Size="Size.Small" />
+                <MudText>PttAVM</MudText>
+            </MudStack>
+        </TabContent>
+        <ChildContent>
+        <MudPaper Class="pa-4">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6">PttAVM Kategorileri</MudText>
+                <div class="d-flex gap-2">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="LoadPttavmCategoriesAsync"
+                               Disabled="@pttavmLoading">
+                        @if (pttavmLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Kategorileri Yukle
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="ImportPttavmCategoriesAsync"
+                               Disabled="@(importing || pttavmSelectedNodes == null || !pttavmSelectedNodes.Any())">
+                        @if (importing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Secilenleri Ice Aktar (@(pttavmSelectedNodes?.Count ?? 0))
+                    </MudButton>
+                </div>
+            </div>
+
+            @if (pttavmLoading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+                <MudText Align="Align.Center" Color="Color.Secondary">Kategoriler yukleniyor...</MudText>
+            }
+            else if (!pttavmCategories.Any())
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-4">
+                    Kategorileri goruntülemek icin "Kategorileri Yukle" butonuna tiklayin.
+                </MudAlert>
+            }
+            else
+            {
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <PttavmCategoryTreeView Categories="@pttavmCategories"
+                                                @bind-SelectedNodes="pttavmSelectedNodes"
+                                                OnNodeExpanded="OnPttavmNodeExpanded" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <SelectedCategoriesPanel SelectedCategories="@pttavmSelectedNodes"
+                                                 OnRemove="@RemovePttavmSelectedCategory"
+                                                 OnClearAll="@ClearPttavmSelection" />
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudPaper>
+        </ChildContent>
+    </MudTabPanel>
+
+    <MudTabPanel>
+        <TabContent>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                 <MarketplaceLogo Name="Amazon" Size="Size.Small" />
                 <MudText>Amazon</MudText>
             </MudStack>

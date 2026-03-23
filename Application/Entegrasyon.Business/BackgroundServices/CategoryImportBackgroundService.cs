@@ -51,6 +51,8 @@ public class CategoryImportBackgroundService : BackgroundService
                     "Trendyol" => scope.ServiceProvider.GetRequiredService<TrendyolCategoryImporter>(),
                     "N11" => scope.ServiceProvider.GetRequiredService<N11CategoryImporter>(),
                     "Hepsiburada" => scope.ServiceProvider.GetRequiredService<HepsiburadaCategoryImporter>(),
+                    "Pazarama" => scope.ServiceProvider.GetRequiredService<PazaramaCategoryImporter>(),
+                    "PttAVM" => scope.ServiceProvider.GetRequiredService<PttavmCategoryImporter>(),
                     _ => throw new InvalidOperationException($"Bilinmeyen pazaryeri: {importEvent.MarketplaceName}")
                 };
 
