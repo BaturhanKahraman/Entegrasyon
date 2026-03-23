@@ -32,6 +32,9 @@ public partial class CategoryImport
     private PazaramaCategoryImporter PazaramaImporter { get; set; } = null!;
 
     [Inject]
+    private PttavmCategoryImporter PttavmImporter { get; set; } = null!;
+
+    [Inject]
     private NavigationManager NavigationManager { get; set; } = null!;
 
     [Inject]
@@ -63,6 +66,11 @@ public partial class CategoryImport
     private List<CategoryTreeNode> pazaramaCategories = [];
     private IReadOnlyCollection<CategoryTreeNode>? pazaramaSelectedNodes;
     private bool pazaramaLoading;
+
+    // PttAVM state
+    private List<CategoryTreeNode> pttavmCategories = [];
+    private IReadOnlyCollection<CategoryTreeNode>? pttavmSelectedNodes;
+    private bool pttavmLoading;
 
     // Amazon state (product type search — kategori ağacı yok)
     private List<AmazonProductTypeSearchResult> amazonSelectedProductTypes = [];
@@ -375,5 +383,85 @@ public partial class CategoryImport
     private void ClearPazaramaSelection()
     {
         pazaramaSelectedNodes = null;
+    }
+
+    // PttAVM methods
+    private async Task LoadPttavmCategoriesAsync()
+    {
+        pttavmLoading = true;
+        var result = await PttavmImporter.GetExternalCategoriesAsync();
+        if (result.Success && result.Data != null)
+        {
+            pttavmCategories = result.Data.Select(MapToPttavmTreeNode).ToList();
+            Snackbar.Add($"{pttavmCategories.Count} PttAVM ana kategori yuklendi.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "PttAVM kategorileri yuklenemedi.", Severity.Error);
+        }
+        pttavmLoading = false;
+    }
+
+    private async Task OnPttavmNodeExpanded(CategoryTreeNode node)
+    {
+        var children = await PttavmImporter.LoadChildrenAsync(node.ExternalId);
+        foreach (var child in children)
+        {
+            node.Children.Add(MapToPttavmTreeNode(child));
+        }
+        StateHasChanged();
+    }
+
+    private async Task ImportPttavmCategoriesAsync()
+    {
+        if (pttavmSelectedNodes == null || !pttavmSelectedNodes.Any())
+        {
+            Snackbar.Add("Lutfen en az bir kategori secin.", Severity.Warning);
+            return;
+        }
+
+        importing = true;
+        try
+        {
+            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var importRequests = pttavmSelectedNodes.Select(MapToImportRequest).ToList();
+            var importEvent = new CategoryImportRequestedEvent("PttAVM", importRequests, userId);
+            await ImportRequestedChannel.PublishAsync(importEvent);
+            Snackbar.Add("PttAVM kategori ice aktarma islemi baslatildi.", Severity.Info);
+            pttavmSelectedNodes = null;
+            NavigationManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "PttAVM category import request failed");
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            importing = false;
+        }
+    }
+
+    private static CategoryTreeNode MapToPttavmTreeNode(ExternalCategoryDto dto) => new()
+    {
+        ExternalId = dto.ExternalId,
+        Name = dto.Name,
+        ParentExternalId = dto.ParentExternalId,
+        CanExpand = dto.HasChildren
+    };
+
+    private void RemovePttavmSelectedCategory(CategoryTreeNode node)
+    {
+        if (pttavmSelectedNodes != null)
+        {
+            var list = pttavmSelectedNodes.ToList();
+            list.Remove(node);
+            pttavmSelectedNodes = list;
+        }
+    }
+
+    private void ClearPttavmSelection()
+    {
+        pttavmSelectedNodes = null;
     }
 }
