@@ -1,0 +1,56 @@
+@namespace Entegrasyon.Blazor.Features.CategoryImport
+@using Entegrasyon.Blazor.ViewModels
+
+<MudTextField @bind-Value="_searchText"
+              Placeholder="Kategori ara..."
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              Class="mb-2"
+              Immediate="true" />
+
+<div style="max-height: 500px; overflow-y: auto;">
+    @foreach (var node in FilteredCategories)
+    {
+        @RenderNode(node, 0)
+    }
+</div>
+
+@code {
+    private RenderFragment RenderNode(CategoryTreeNode node, int level) => __builder =>
+    {
+        <div style="margin-left: @(level * 16)px; padding: 2px 0;">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                @if (node.CanExpand || node.HasChildren)
+                {
+                    <MudIconButton Icon="@(node.IsExpanded ? Icons.Material.Filled.ExpandMore : Icons.Material.Filled.ChevronRight)"
+                                   Size="Size.Small"
+                                   OnClick="() => ToggleExpand(node)" />
+                }
+                else
+                {
+                    <div style="width: 30px;"></div>
+                }
+
+                <MudCheckBox T="bool"
+                             Value="IsSelected(node)"
+                             ValueChanged="_ => SelectNode(node)"
+                             Size="Size.Small"
+                             Dense="true" />
+
+                <MudIcon Icon="@(node.CanExpand || node.HasChildren ? Icons.Material.Filled.Folder : Icons.Material.Filled.Description)"
+                         Size="Size.Small"
+                         Class="mr-1" />
+
+                <MudText Typo="Typo.body2">@node.Name</MudText>
+            </MudStack>
+        </div>
+
+        @if (node.IsExpanded)
+        {
+            @foreach (var child in node.Children)
+            {
+                @RenderNode(child, level + 1)
+            }
+        }
+    };
+}

@@ -32,6 +32,12 @@ public sealed class CategoryTreeNode : IEquatable<CategoryTreeNode>
     public bool HasChildren => Children.Count > 0;
 
     /// <summary>
+    /// Indicates whether this node can be expanded (may have children not yet loaded).
+    /// Used for lazy-loading: true means "try to load children on expand".
+    /// </summary>
+    public bool CanExpand { get; set; }
+
+    /// <summary>
     /// UI state: whether this node is expanded in the tree view.
     /// </summary>
     public bool IsExpanded { get; set; }
