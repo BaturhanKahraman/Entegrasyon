@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Concrete.Pazarama;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.N11;
 using Entegrasyon.Entity.Dtos.Trendyol;
@@ -29,6 +30,7 @@ public class OrderManager(
     // Şu an single-tenant olduğu için sabit key'ler yeterli.
     private const long AdvisoryLockKeyTrendyolImport = 2001;
     private const long AdvisoryLockKeyN11Import = 2002;
+    private const long AdvisoryLockKeyPazaramaImport = 2005;
 
     public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)
     {
@@ -110,6 +112,162 @@ public class OrderManager(
             await dbContext.Database.ExecuteSqlRawAsync(
                 "SELECT pg_advisory_unlock({0})", AdvisoryLockKeyN11Import);
         }
+    }
+
+    public async Task<IResult> ImportPazaramaOrdersAsync(List<PazaramaOrderDto> orders)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        if (orders.Count == 0)
+            return new SuccessResult("İmport edilecek sipariş yok.");
+
+        // Advisory lock: Eşzamanlı import'u engelle
+        var lockAcquired = await dbContext.Database
+            .SqlQuery<bool>($"""SELECT pg_try_advisory_lock({AdvisoryLockKeyPazaramaImport}) AS "Value" """)
+            .FirstAsync();
+
+        if (!lockAcquired)
+            return new ErrorResult("Pazarama sipariş import işlemi zaten devam ediyor.");
+
+        try
+        {
+            return await ExecutePazaramaImportAsync(dbContext, orders);
+        }
+        finally
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(
+                "SELECT pg_advisory_unlock({0})", AdvisoryLockKeyPazaramaImport);
+        }
+    }
+
+    internal async Task<IResult> ExecutePazaramaImportAsync(IntegrationDbContext dbContext, List<PazaramaOrderDto> orders)
+    {
+        var importedCount = 0;
+
+        // Marketplace'e bağlı depo ID'lerini önceden al
+        var warehouseIds = await dbContext.MarketPlaceWarehouses
+            .Where(w => w.MarketPlaceId == PazaramaMarketPlaceId && !w.IsDeleted)
+            .Select(w => w.BranchOfficeId)
+            .ToListAsync();
+
+        // Batch deduplication: Tüm OrderNumber'ları tek sorguda kontrol et
+        var allOrderNumbers = orders
+            .Select(o => o.OrderNumber.ToString())
+            .Distinct()
+            .ToList();
+
+        var existingOrderNumbers = (await dbContext.Orders
+            .Where(o => o.MarketPlaceId == PazaramaMarketPlaceId && allOrderNumbers.Contains(o.OrderNumber))
+            .Select(o => o.OrderNumber)
+            .ToListAsync()).ToHashSet();
+
+        // Batch barcode lookup: Tüm barkodları tek sorguda çöz
+        var allBarcodes = orders
+            .Where(o => o.Items is not null)
+            .SelectMany(o => o.Items!)
+            .Select(i => i.Product?.Code)
+            .Where(b => !string.IsNullOrEmpty(b))
+            .Distinct()
+            .ToArray();
+
+        var barcodeMap = await dbContext.ProductVariants
+            .AsNoTracking()
+            .Where(v => allBarcodes.Contains(v.Barcode))
+            .ToDictionaryAsync(v => v.Barcode, v => v.Id);
+
+        foreach (var dto in orders)
+        {
+            var orderNumber = dto.OrderNumber.ToString();
+
+            // Deduplication: aynı Pazarama siparişi tekrar gelmesin
+            if (existingOrderNumbers.Contains(orderNumber))
+                continue;
+
+            // Müşteri adı ayrıştırma
+            var nameParts = dto.CustomerName?.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries) ?? [];
+            var firstName = nameParts.Length > 0 ? nameParts[0] : null;
+            var lastName = nameParts.Length > 1 ? nameParts[1] : null;
+
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                MarketPlaceId = PazaramaMarketPlaceId,
+                OrderNumber = orderNumber,
+                MarketplaceOrderStatus = dto.OrderStatus.ToString(),
+                CustomerFirstName = firstName,
+                CustomerLastName = lastName,
+                CustomerEmail = dto.CustomerEmail,
+                GrossAmount = dto.OrderAmount,
+            };
+
+            // Kargo adresi
+            if (dto.ShipmentAddress is not null)
+            {
+                order.ShippingAddress = new Entegrasyon.Entity.Address
+                {
+                    City = dto.ShipmentAddress.CityName ?? "",
+                    County = dto.ShipmentAddress.DistrictName ?? "",
+                    Country = "TR",
+                    FullAddress = dto.ShipmentAddress.DisplayAddressText ?? dto.ShipmentAddress.AddressDetail ?? "",
+                    ZipCode = "",
+                    Street = ""
+                };
+            }
+
+            // Fatura adresi
+            if (dto.BillingAddress is not null)
+            {
+                order.BillingAddress = new Entegrasyon.Entity.Address
+                {
+                    City = dto.BillingAddress.CityName ?? "",
+                    County = dto.BillingAddress.DistrictName ?? "",
+                    Country = "TR",
+                    FullAddress = dto.BillingAddress.DisplayAddressText ?? dto.BillingAddress.AddressDetail ?? "",
+                    ZipCode = "",
+                    Street = ""
+                };
+            }
+
+            // Order items + stok düşme
+            var orderItems = new List<OrderItem>();
+            if (dto.Items is not null)
+            {
+                foreach (var item in dto.Items)
+                {
+                    var barcode = item.Product?.Code;
+
+                    // Barcode ile lokal ürün eşleştirme — dictionary lookup (O(1))
+                    Guid? productVariantId = null;
+                    if (!string.IsNullOrEmpty(barcode) && barcodeMap.TryGetValue(barcode, out var variantId))
+                        productVariantId = variantId;
+
+                    orderItems.Add(new OrderItem
+                    {
+                        OrderId = order.Id,
+                        ProductId = productVariantId,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.SalePrice?.Value ?? 0,
+                        Barcode = barcode,
+                        VatRate = item.Product is not null ? (decimal?)item.Product.VatRate : null,
+                    });
+
+                    // Stok düşme: Pazarama marketplace satışı gerçekleşti
+                    if (productVariantId.HasValue && item.Quantity > 0 && warehouseIds.Count > 0)
+                    {
+                        await DecreaseStockForMarketplaceOrder(
+                            warehouseIds, productVariantId.Value, item.Quantity,
+                            orderNumber);
+                    }
+                }
+            }
+
+            order.OrderItems = orderItems;
+            dbContext.Orders.Add(order);
+            importedCount++;
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Imported {Count} Pazarama orders", importedCount);
+        return new SuccessResult($"{importedCount} Pazarama siparişi import edildi.");
     }
 
     internal async Task<IResult> ExecuteN11ImportAsync(IntegrationDbContext dbContext, List<N11OrderDto> orders)
