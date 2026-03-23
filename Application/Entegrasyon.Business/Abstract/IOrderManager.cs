@@ -1,3 +1,4 @@
+using Entegrasyon.Business.Concrete.Pazarama;
 using Entegrasyon.Entity.Dtos.N11;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Orders;
@@ -11,6 +12,7 @@ public interface IOrderManager
     Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId);
     Task<IResult> ImportTrendyolOrdersAsync(List<TrendyolShipmentPackage> packages);
     Task<IResult> ImportN11OrdersAsync(List<N11OrderDto> orders);
+    Task<IResult> ImportPazaramaOrdersAsync(List<PazaramaOrderDto> orders);
     Task<IResult> UpdateOrderStatusAsync(Guid orderId, string newStatus);
     Task<IResult> UpdateOrderByShipmentPackageAsync(long shipmentPackageId, string? status, string? trackingNumber);
 }
