@@ -4,6 +4,7 @@ using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.Concrete.Pttavm;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
@@ -201,6 +202,15 @@ namespace Entegrasyon.ApplicationBootstrap
             }
             services.AddScoped<PazaramaCategoryImporter>();
             services.AddScoped<IPazaramaBrandService, PazaramaBrandService>();
+
+            // PttAVM
+            var usePttavmMock = configuration.GetValue<bool>("Pttavm:UseMock", true);
+            if (usePttavmMock)
+                services.AddScoped<IPttavmCatalogApiClient, MockPttavmCatalogApiClient>();
+            else
+                services.AddScoped<IPttavmCatalogApiClient, PttavmCatalogApiClient>();
+
+            services.AddScoped<PttavmCategoryImporter>();
 
             services.AddEventChannels();
             services.AddValidators();
