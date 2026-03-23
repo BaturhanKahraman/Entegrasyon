@@ -221,6 +221,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
             services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
             services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
+            services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
 
             services.AddEventChannels();
             services.AddValidators();
