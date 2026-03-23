@@ -193,12 +193,16 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IPazaramaApiClient, MockPazaramaApiClient>();
                 services.AddScoped<IPazaramaProductService, MockPazaramaProductService>();
                 services.AddScoped<IPazaramaStockPriceService, MockPazaramaStockPriceService>();
+                services.AddScoped<IPazaramaOrderService, MockPazaramaOrderService>();
+                services.AddScoped<IPazaramaRefundService, MockPazaramaRefundService>();
             }
             else
             {
                 services.AddScoped<IPazaramaApiClient, PazaramaApiClient>();
                 services.AddScoped<IPazaramaProductService, PazaramaProductService>();
                 services.AddScoped<IPazaramaStockPriceService, PazaramaStockPriceService>();
+                services.AddScoped<IPazaramaOrderService, PazaramaOrderService>();
+                services.AddScoped<IPazaramaRefundService, PazaramaRefundService>();
             }
             services.AddScoped<PazaramaCategoryImporter>();
             services.AddScoped<IPazaramaBrandService, PazaramaBrandService>();
@@ -269,6 +273,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<AmazonFeedStatusPollingService>();
             services.AddHostedService<AmazonListingStatusPollingService>();
             services.AddHostedService<PazaramaBatchStatusPollingService>();
+            services.AddHostedService<PazaramaOrderPollingService>();
+            services.AddHostedService<PazaramaRefundPollingService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
