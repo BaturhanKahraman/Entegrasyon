@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Amazon;
+using Entegrasyon.Business.Concrete.Ciceksepeti;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Pazarama;
@@ -216,6 +217,29 @@ namespace Entegrasyon.ApplicationBootstrap
 
             services.AddScoped<PttavmCategoryImporter>();
 
+            // Çiçeksepeti servisleri
+            var useCiceksepetiMock = configuration.GetValue<bool>("Ciceksepeti:UseMock", true);
+            if (useCiceksepetiMock)
+            {
+                services.AddScoped<ICiceksepetiApiClient, MockCiceksepetiApiClient>();
+            }
+            else
+            {
+                services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
+            }
+
+            services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
+            services.AddScoped<ICiceksepetiCategoryImporter, CiceksepetiCategoryImporter>();
+            services.AddScoped<CiceksepetiCategoryImporter>();
+            services.AddScoped<CiceksepetiMappingValidator>();
+            services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
+            services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
+            services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
+            services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
+            services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
+            services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
+            services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
+
             services.AddEventChannels();
             services.AddValidators();
             services.AddBusinessMapping();
@@ -275,6 +299,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<PazaramaBatchStatusPollingService>();
             services.AddHostedService<PazaramaOrderPollingService>();
             services.AddHostedService<PazaramaRefundPollingService>();
+            services.AddHostedService<CiceksepetiBatchStatusPollingService>();
+            services.AddHostedService<CiceksepetiOrderPollingService>();
+            services.AddHostedService<CiceksepetiStockPriceSyncService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
