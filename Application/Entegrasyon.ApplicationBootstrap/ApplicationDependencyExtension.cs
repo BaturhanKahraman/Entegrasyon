@@ -217,6 +217,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
             services.AddScoped<ICiceksepetiCategoryImporter, CiceksepetiCategoryImporter>();
             services.AddScoped<CiceksepetiCategoryImporter>();
+            services.AddScoped<CiceksepetiMappingValidator>();
+            services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
+            services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
 
             services.AddEventChannels();
             services.AddValidators();
