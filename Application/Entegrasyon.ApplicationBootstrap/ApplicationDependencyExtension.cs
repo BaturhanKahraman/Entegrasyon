@@ -220,6 +220,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<CiceksepetiMappingValidator>();
             services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
             services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
+            services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
 
             services.AddEventChannels();
             services.AddValidators();
