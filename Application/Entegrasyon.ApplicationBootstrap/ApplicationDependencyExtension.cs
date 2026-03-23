@@ -7,6 +7,7 @@ using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Pazarama;
 using Entegrasyon.Business.Concrete.Pttavm;
 using Entegrasyon.Business.Concrete.Trendyol;
+using Entegrasyon.Business.Concrete.Trendyol.EFatura;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Concrete.Import;
@@ -215,12 +216,20 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IPttavmCatalogApiClient, MockPttavmCatalogApiClient>();
                 services.AddScoped<IPttavmProductService, MockPttavmProductService>();
                 services.AddScoped<IPttavmStockPriceService, MockPttavmStockPriceService>();
+                services.AddScoped<IPttavmShipmentApiClient, MockPttavmShipmentApiClient>();
+                services.AddScoped<IPttavmOrderService, MockPttavmOrderService>();
+                services.AddScoped<IPttavmShippingService, MockPttavmShippingService>();
+                services.AddScoped<IPttavmInvoiceService, MockPttavmInvoiceService>();
             }
             else
             {
                 services.AddScoped<IPttavmCatalogApiClient, PttavmCatalogApiClient>();
                 services.AddScoped<IPttavmProductService, PttavmProductService>();
                 services.AddScoped<IPttavmStockPriceService, PttavmStockPriceService>();
+                services.AddScoped<IPttavmShipmentApiClient, PttavmShipmentApiClient>();
+                services.AddScoped<IPttavmOrderService, PttavmOrderService>();
+                services.AddScoped<IPttavmShippingService, PttavmShippingService>();
+                services.AddScoped<IPttavmInvoiceService, PttavmInvoiceService>();
             }
 
             services.AddScoped<PttavmCategoryImporter>();
@@ -249,6 +258,20 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
             services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
             services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
+
+            // Trendyol e-Fatura servisleri
+            var useEFaturaMock = configuration.GetValue<bool>("TrendyolEFatura:UseMock", true);
+            if (useEFaturaMock)
+            {
+                services.AddScoped<ITrendyolEFaturaApiClient, MockTrendyolEFaturaApiClient>();
+                services.AddScoped<ITrendyolEFaturaService, MockTrendyolEFaturaService>();
+            }
+            else
+            {
+                services.AddScoped<ITrendyolEFaturaApiClient, TrendyolEFaturaApiClient>();
+                services.AddScoped<ITrendyolEFaturaService, TrendyolEFaturaService>();
+            }
+            services.AddScoped<TrendyolEFaturaInvoiceBuilder>();
 
             services.AddEventChannels();
             services.AddValidators();
@@ -314,6 +337,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<CiceksepetiStockPriceSyncService>();
             services.AddHostedService<PttavmProductTrackingPollingService>();
             services.AddHostedService<PttavmStockPriceSyncService>();
+            services.AddHostedService<PttavmOrderPollingService>();
+            services.AddHostedService<TrendyolEFaturaStatusPollingService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
