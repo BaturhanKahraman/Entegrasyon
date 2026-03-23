@@ -283,6 +283,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<AmazonFeedStatusPollingService>();
             services.AddHostedService<AmazonListingStatusPollingService>();
             services.AddHostedService<PazaramaBatchStatusPollingService>();
+            services.AddHostedService<CiceksepetiBatchStatusPollingService>();
+            services.AddHostedService<CiceksepetiOrderPollingService>();
+            services.AddHostedService<CiceksepetiStockPriceSyncService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
