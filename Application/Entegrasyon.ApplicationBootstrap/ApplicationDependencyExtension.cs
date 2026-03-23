@@ -222,6 +222,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
             services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
             services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
+            services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
+            services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
+            services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
 
             services.AddEventChannels();
             services.AddValidators();
