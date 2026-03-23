@@ -13,6 +13,7 @@ using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.Notifications;
+using Entegrasyon.Entity.Invoices;
 using Entegrasyon.Entity.Labels;
 using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.User;
@@ -111,6 +112,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<Login> Logins { get; set; }
     public virtual DbSet<ApplicationSetting> ApplicationSettings { get; set; }
     public virtual DbSet<NotificationSetting> NotificationSettings { get; set; }
+    public virtual DbSet<EFaturaRecord> EFaturaRecords { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }
