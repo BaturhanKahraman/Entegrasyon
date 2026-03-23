@@ -119,3 +119,6 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+// Required for WebApplicationFactory<Program> in integration tests
+public partial class Program { }
