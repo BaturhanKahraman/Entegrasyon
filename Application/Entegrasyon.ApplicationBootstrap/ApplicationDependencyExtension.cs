@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
+using Entegrasyon.Business.Concrete.Kargo;
 using Entegrasyon.Business.Concrete.Temu;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
@@ -279,6 +280,43 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITemuApiClient, TemuApiClient>();
             }
             services.AddScoped<TemuCategoryImporter>();
+
+            // Yurtici Kargo servisleri
+            var useYurticiMock = configuration.GetValue<bool>("YurticiKargo:UseMock", true);
+            if (useYurticiMock)
+            {
+                services.AddScoped<IYurticiKargoClient, MockYurticiKargoClient>();
+                services.AddScoped<IYurticiKargoService, MockYurticiKargoService>();
+            }
+            else
+            {
+                services.AddScoped<IYurticiKargoClient, YurticiKargoClient>();
+                services.AddScoped<IYurticiKargoService, YurticiKargoService>();
+            }
+
+            // Sürat Kargo servisleri
+            var useSuratKargoMock = configuration.GetValue<bool>("SuratKargo:UseMock", true);
+            if (useSuratKargoMock)
+            {
+                services.AddScoped<ISuratKargoService, MockSuratKargoService>();
+            }
+            else
+            {
+                services.AddScoped<ISuratKargoClient, SuratKargoClient>();
+                services.AddScoped<ISuratKargoService, SuratKargoService>();
+            }
+
+            // Aras Kargo servisleri
+            var useArasKargoMock = configuration.GetValue<bool>("ArasKargo:UseMock", true);
+            if (useArasKargoMock)
+            {
+                services.AddScoped<IArasKargoService, MockArasKargoService>();
+            }
+            else
+            {
+                services.AddScoped<ArasKargoClient>();
+                services.AddScoped<IArasKargoService, ArasKargoService>();
+            }
 
             // Trendyol e-Fatura servisleri
             var useEFaturaMock = configuration.GetValue<bool>("TrendyolEFatura:UseMock", true);
