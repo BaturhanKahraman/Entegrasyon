@@ -211,11 +211,21 @@ namespace Entegrasyon.ApplicationBootstrap
             // PttAVM
             var usePttavmMock = configuration.GetValue<bool>("Pttavm:UseMock", true);
             if (usePttavmMock)
+            {
                 services.AddScoped<IPttavmCatalogApiClient, MockPttavmCatalogApiClient>();
+                services.AddScoped<IPttavmProductService, MockPttavmProductService>();
+                services.AddScoped<IPttavmStockPriceService, MockPttavmStockPriceService>();
+            }
             else
+            {
                 services.AddScoped<IPttavmCatalogApiClient, PttavmCatalogApiClient>();
+                services.AddScoped<IPttavmProductService, PttavmProductService>();
+                services.AddScoped<IPttavmStockPriceService, PttavmStockPriceService>();
+            }
 
             services.AddScoped<PttavmCategoryImporter>();
+            services.AddScoped<IPttavmProductMapper, PttavmProductMapper>();
+            services.AddScoped<PttavmMappingValidator>();
 
             // Çiçeksepeti servisleri
             var useCiceksepetiMock = configuration.GetValue<bool>("Ciceksepeti:UseMock", true);
@@ -302,6 +312,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<CiceksepetiBatchStatusPollingService>();
             services.AddHostedService<CiceksepetiOrderPollingService>();
             services.AddHostedService<CiceksepetiStockPriceSyncService>();
+            services.AddHostedService<PttavmProductTrackingPollingService>();
+            services.AddHostedService<PttavmStockPriceSyncService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
