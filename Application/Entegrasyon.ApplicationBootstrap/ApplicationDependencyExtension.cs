@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
+using Entegrasyon.Business.Concrete.Temu;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Business.Concrete.Pazarama;
@@ -126,17 +127,17 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
                 services.AddScoped<IHepsiburadaListingService, MockHepsiburadaListingService>();
                 services.AddScoped<IHepsiburadaOrderService, MockHepsiburadaOrderService>();
+                services.AddScoped<IHepsiburadaClaimService, MockHepsiburadaClaimService>();
+                services.AddScoped<IHepsiburadaQnAService, MockHepsiburadaQnAService>();
             }
             else
             {
                 services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
                 services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
                 services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
+                services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
+                services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
             }
-
-            // Hepsiburada Q&A + Claim (mock/real ayrımı yok — her zaman real, API yoksa hata döner)
-            services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
-            services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
 
             // Amazon servisleri
             services.AddSingleton<IAmazonTokenManager, AmazonTokenManager>();
@@ -237,27 +238,47 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<PttavmMappingValidator>();
 
             // Çiçeksepeti servisleri
+            services.AddScoped<ICiceksepetiCategoryImporter, CiceksepetiCategoryImporter>();
+            services.AddScoped<CiceksepetiCategoryImporter>();
+            services.AddScoped<CiceksepetiMappingValidator>();
+
             var useCiceksepetiMock = configuration.GetValue<bool>("Ciceksepeti:UseMock", true);
             if (useCiceksepetiMock)
             {
                 services.AddScoped<ICiceksepetiApiClient, MockCiceksepetiApiClient>();
+                services.AddScoped<ICiceksepetiCategoryService, MockCiceksepetiCategoryService>();
+                services.AddScoped<ICiceksepetiProductMapper, MockCiceksepetiProductMapper>();
+                services.AddScoped<ICiceksepetiProductService, MockCiceksepetiProductService>();
+                services.AddScoped<ICiceksepetiStockPriceService, MockCiceksepetiStockPriceService>();
+                services.AddScoped<ICiceksepetiOrderService, MockCiceksepetiOrderService>();
+                services.AddScoped<ICiceksepetiInvoiceService, MockCiceksepetiInvoiceService>();
+                services.AddScoped<ICiceksepetiReturnService, MockCiceksepetiReturnService>();
+                services.AddScoped<ICiceksepetiQnAService, MockCiceksepetiQnAService>();
             }
             else
             {
                 services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
+                services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
+                services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
+                services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
+                services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
+                services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
+                services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
+                services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
+                services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
             }
 
-            services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
-            services.AddScoped<ICiceksepetiCategoryImporter, CiceksepetiCategoryImporter>();
-            services.AddScoped<CiceksepetiCategoryImporter>();
-            services.AddScoped<CiceksepetiMappingValidator>();
-            services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
-            services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
-            services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
-            services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
-            services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
-            services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
-            services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
+            // Temu servisleri
+            var useTemuMock = configuration.GetValue<bool>("Temu:UseMock", true);
+            if (useTemuMock)
+            {
+                services.AddScoped<ITemuApiClient, MockTemuApiClient>();
+            }
+            else
+            {
+                services.AddScoped<ITemuApiClient, TemuApiClient>();
+            }
+            services.AddScoped<TemuCategoryImporter>();
 
             // Trendyol e-Fatura servisleri
             var useEFaturaMock = configuration.GetValue<bool>("TrendyolEFatura:UseMock", true);
@@ -325,6 +346,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<DashboardRefreshService>();
             services.AddHostedService<HepsiburadaStatusPollingService>();
             services.AddHostedService<HepsiburadaStockPriceSyncService>();
+            services.AddHostedService<HepsiburadaOrderPollingService>();
             services.AddHostedService<AmazonOrderPollingService>();
             services.AddHostedService<AmazonStockPriceSyncService>();
             services.AddHostedService<AmazonFeedStatusPollingService>();
@@ -338,6 +360,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<PttavmProductTrackingPollingService>();
             services.AddHostedService<PttavmStockPriceSyncService>();
             services.AddHostedService<PttavmOrderPollingService>();
+            services.AddHostedService<N11StockPriceSyncService>();
+            services.AddHostedService<PazaramaStockPriceSyncService>();
             services.AddHostedService<TrendyolEFaturaStatusPollingService>();
             return services;
         }
