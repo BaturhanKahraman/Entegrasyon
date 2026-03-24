@@ -463,7 +463,7 @@
 
 ### Prompt
 
-> **Gorev:** Excel dosyasi ile toplu urun, fiyat ve stok guncelleme sistemi olustur. ClosedXML kutuphanesini kullan.
+> **Gorev:** Excel ve csv dosyaları ile toplu urun, fiyat ve stok guncelleme sistemi olustur. ClosedXML kutuphanesini kullan.
 >
 > **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, MudBlazor, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `ProductManager` (bkz: `Business/Concrete/ProductManager.cs`) urun CRUD islemlerini yonetir.
 >

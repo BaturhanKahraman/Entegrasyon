@@ -14,6 +14,7 @@ using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Invoices;
+using Entegrasyon.Entity.Invoicing;
 using Entegrasyon.Entity.Labels;
 using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Marketplace;
@@ -118,6 +119,11 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<ApplicationSetting> ApplicationSettings { get; set; }
     public virtual DbSet<NotificationSetting> NotificationSettings { get; set; }
     public virtual DbSet<EFaturaRecord> EFaturaRecords { get; set; }
+
+    // E-Fatura / E-Arsiv (genel amacli)
+    public virtual DbSet<EInvoice> EInvoices { get; set; }
+    public virtual DbSet<EInvoiceLine> EInvoiceLines { get; set; }
+    public virtual DbSet<EInvoiceIntegratorConfig> EInvoiceIntegratorConfigs { get; set; }
 
     // Template (MatchedEntity) DbSets
     public virtual DbSet<MatchedEntityPackage> MatchedEntityPackages { get; set; }
