@@ -25,6 +25,12 @@ public class SettingsService
         }
     }
 
+    public PosSettings Load()
+    {
+        if (!_loaded) LoadSync();
+        return _settings;
+    }
+
     private void LoadSync()
     {
         try
@@ -59,4 +65,16 @@ public class PosSettings
     public int PrintAgentPort { get; set; } = 19100;
     public string StoreName { get; set; } = "Magaza";
     public string? BranchOfficeId { get; set; }
+
+    /// <summary>
+    /// Velopack güncelleme kaynağı URL'si.
+    /// GitHub: "https://github.com/owner/repo"
+    /// Özel sunucu: "https://updates.example.com/releases"
+    /// </summary>
+    public string UpdateUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Otomatik güncelleme kontrolü aktif mi?
+    /// </summary>
+    public bool AutoUpdateEnabled { get; set; } = true;
 }
