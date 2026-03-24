@@ -1,0 +1,82 @@
+@using Entegrasyon.Entity.Dtos.Templates
+
+<MudDialog>
+    <DialogContent>
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_detail == null)
+        {
+            <MudAlert Severity="Severity.Error">Paket detayı yüklenemedi.</MudAlert>
+        }
+        else
+        {
+            @if (!string.IsNullOrEmpty(_detail.Description))
+            {
+                <MudText Typo="Typo.body2" Class="mb-4">@_detail.Description</MudText>
+            }
+
+            @* Kategoriler *@
+            @if (_detail.Categories.Any())
+            {
+                <MudText Typo="Typo.h6" Class="mb-2">Kategoriler</MudText>
+                @foreach (var cat in _detail.Categories)
+                {
+                    <CategoryDetailNode Category="cat" Depth="0" />
+                }
+            }
+
+            @* Markalar *@
+            @if (_detail.Brands.Any())
+            {
+                <MudText Typo="Typo.h6" Class="mb-2 mt-4">Markalar</MudText>
+                <MudSimpleTable Dense="true" Hover="true">
+                    <thead>
+                        <tr>
+                            <th>Marka</th>
+                            <th>Marketplace Sayısı</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var brand in _detail.Brands)
+                        {
+                            <tr>
+                                <td>@brand.Name</td>
+                                <td>@brand.MarketplaceMappings.Count</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @* Kargo Şirketleri *@
+            @if (_detail.CargoCompanies.Any())
+            {
+                <MudText Typo="Typo.h6" Class="mb-2 mt-4">Kargo Şirketleri</MudText>
+                <MudSimpleTable Dense="true" Hover="true">
+                    <thead>
+                        <tr>
+                            <th>Şirket</th>
+                            <th>Kod</th>
+                            <th>Marketplace Sayısı</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cargo in _detail.CargoCompanies)
+                        {
+                            <tr>
+                                <td>@cargo.Name</td>
+                                <td>@(cargo.Code ?? "-")</td>
+                                <td>@cargo.MarketplaceMappings.Count</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Kapat</MudButton>
+    </DialogActions>
+</MudDialog>

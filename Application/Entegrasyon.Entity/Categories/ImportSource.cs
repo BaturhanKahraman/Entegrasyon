@@ -59,5 +59,15 @@ public enum ImportSource
     /// <summary>
     /// Çiçeksepeti pazaryerinden import edilmiş
     /// </summary>
-    Ciceksepeti = 106
+    Ciceksepeti = 106,
+
+    /// <summary>
+    /// Temu pazaryerinden import edilmiş
+    /// </summary>
+    Temu = 107,
+
+    /// <summary>
+    /// Admin panelden hazır eşleştirilmiş şablon (MatchedEntity) olarak import edilmiş
+    /// </summary>
+    MatchedEntity = 200
 }

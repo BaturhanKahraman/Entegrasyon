@@ -17,6 +17,12 @@ dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj
 # Run a single test
 dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj --filter "FullyQualifiedName~TestClassName"
 
+# Run integration tests (Testcontainers ile PostgreSQL otomatik ayağa kalkar — Docker çalışıyor olmalı)
+dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj
+
+# Run a single integration test
+dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj --filter "FullyQualifiedName~TestClassName"
+
 # Run E2E tests (uygulama debug modda ayakta olmalı — ayrı docker-compose gerekmez)
 dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj
 
@@ -31,6 +37,8 @@ dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess -
 ```
 
 **Infrastructure (docker-compose):** PostgreSQL (5432)
+
+**Integration Testleri:** Testcontainers ile geçici PostgreSQL container'ı otomatik oluşturulur — Docker daemon çalışıyor olmalı. Respawn ile her test sonrası DB temizlenir (seed tablolar korunur). `WebApplicationFactory` üzerinden gerçek DI + EF Core + migration testi yapılır.
 
 **E2E Testleri:** Uygulama genelde debug modda ayaktadır. E2E testleri doğrudan `dotnet test` ile çalıştırılabilir — ayrı bir docker-compose ortamı başlatmaya gerek yoktur. Testler varsayılan olarak `http://localhost:5099` adresine bağlanır (`E2E_BASE_URL` env var ile değiştirilebilir).
 
@@ -128,7 +136,7 @@ EventChannel<CategoryUpdatedEvent> // publisher → subscriber
   4. Testi çalıştır, geçtiğini doğrula
   5. Refactor et (gerekiyorsa)
   6. Tüm testleri çalıştır: `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`
-  7. Entegrasyon testini çalıştır (eklenecek)
+  7. Entegrasyon testini çalıştır: `dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj`
   8. E2E testini çalıştır: `dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj`
 
   Test olmadan özellik tamamlanmış SAYILMAZ. "Testleri sonra yazarız" KABUL EDİLMEZ.

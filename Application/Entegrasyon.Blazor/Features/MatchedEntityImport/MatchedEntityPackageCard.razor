@@ -1,0 +1,50 @@
+@using Entegrasyon.Entity.Dtos.Templates
+@using Entegrasyon.Entity.Templates
+
+<MudCard Elevation="2" Class="h-100">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@Package.Name</MudText>
+            <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="mt-1">
+                @(Package.EntityType switch
+                {
+                    MatchedEntityType.Category => "Kategori",
+                    MatchedEntityType.Brand => "Marka",
+                    MatchedEntityType.CargoCompany => "Kargo Şirketi",
+                    _ => Package.EntityType.ToString()
+                })
+            </MudChip>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @if (!string.IsNullOrEmpty(Package.Description))
+        {
+            <MudText Typo="Typo.body2" Class="mb-2">@Package.Description</MudText>
+        }
+        <MudGrid>
+            <MudItem xs="4">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Entity</MudText>
+                <MudText Typo="Typo.body1">@Package.EntityCount</MudText>
+            </MudItem>
+            <MudItem xs="4">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Marketplace</MudText>
+                <MudText Typo="Typo.body1">@Package.MarketplaceCount</MudText>
+            </MudItem>
+            <MudItem xs="4">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Versiyon</MudText>
+                <MudText Typo="Typo.body1">v@(Package.Version)</MudText>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Text" Color="Color.Info"
+                   OnClick="@(() => OnViewDetail.InvokeAsync(Package))">
+            Detay
+        </MudButton>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="@(() => OnImport.InvokeAsync(Package))">
+            İçe Aktar
+        </MudButton>
+    </MudCardActions>
+</MudCard>
