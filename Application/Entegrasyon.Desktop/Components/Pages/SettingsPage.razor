@@ -56,6 +56,20 @@
                                  Min="1024"
                                  Max="65535"
                                  Class="mb-3" />
+
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Otomatik Güncelleme</MudText>
+
+                <MudTextField @bind-Value="_settings.UpdateUrl"
+                              Label="Güncelleme Kaynağı URL"
+                              Variant="Variant.Outlined"
+                              Class="mb-3"
+                              HelperText="GitHub: https://github.com/owner/repo veya özel sunucu URL"
+                              Placeholder="https://github.com/owner/repo" />
+
+                <MudSwitch @bind-Value="_settings.AutoUpdateEnabled"
+                           Label="Otomatik güncelleme kontrolü"
+                           Color="Color.Primary" />
             </MudCardContent>
         </MudCard>
     </MudItem>

@@ -1,0 +1,32 @@
+@using Entegrasyon.Desktop.Services
+@implements IDisposable
+
+@if (_updateService.HasPendingUpdate)
+{
+    <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2" NoIcon="false">
+        <div class="d-flex align-center gap-2">
+            <MudText Typo="Typo.body2">
+                Yeni sürüm mevcut: <strong>v@(_updateService.PendingVersion)</strong>
+            </MudText>
+            <MudSpacer />
+            @if (_downloading)
+            {
+                <MudProgressLinear Value="_updateService.DownloadProgress" Class="flex-grow-1" Style="max-width: 200px;" />
+            }
+            else if (_downloaded)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"
+                           OnClick="RestartAndUpdate">
+                    Yeniden Başlat
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small"
+                           OnClick="DownloadUpdate">
+                    Güncelle
+                </MudButton>
+            }
+        </div>
+    </MudAlert>
+}

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using Photino.Blazor;
+using Velopack;
 
 namespace Entegrasyon.Desktop;
 
@@ -12,6 +13,10 @@ public class Program
     [STAThread]
     static void Main(string[] args)
     {
+        // Velopack hook — MUTLAKA ilk satırda olmalı.
+        // Installer/uninstaller/update sırasında çağrılır ve process'i yönetir.
+        VelopackApp.Build().Run();
+
         var appBuilder = PhotinoBlazorAppBuilder.CreateDefault(args);
 
         appBuilder.Services.AddLogging();
@@ -32,25 +37,29 @@ public class Program
         appBuilder.Services.AddSingleton<SettingsService>();
         appBuilder.Services.AddSingleton<SyncService>();
         appBuilder.Services.AddScoped<OfflineSaleService>();
+        appBuilder.Services.AddSingleton<UpdateService>();
 
-        // PrintAgent background service — Photino'da IHostedService yok,
-        // ayri thread'de baslat
+        // PrintAgent background service
         appBuilder.Services.AddSingleton<PrintAgentHostedService>();
 
         appBuilder.RootComponents.Add<Components.Routes>("app");
 
         var app = appBuilder.Build();
 
-        // DB olustur
+        // DB oluştur
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<OfflineDbContext>();
             db.Database.EnsureCreated();
         }
 
-        // PrintAgent'i background'da baslat
+        // PrintAgent'ı background'da başlat
         var printAgent = app.Services.GetRequiredService<PrintAgentHostedService>();
         _ = Task.Run(() => printAgent.StartAsync(CancellationToken.None));
+
+        // Oto-güncelleme kontrolünü başlat
+        var updateService = app.Services.GetRequiredService<UpdateService>();
+        _ = Task.Run(() => updateService.CheckForUpdatesAsync());
 
         app.MainWindow
             .SetTitle("Entegrasyon Desktop")
