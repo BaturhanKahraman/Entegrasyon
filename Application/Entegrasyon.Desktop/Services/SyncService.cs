@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Entegrasyon.Desktop.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Desktop.Services;
@@ -16,13 +17,14 @@ public class SyncService : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly SettingsService _settingsService;
-    private readonly IConnectivity _connectivity;
     private readonly ILogger<SyncService> _logger;
     private readonly HttpClient _httpClient;
     private Timer? _syncTimer;
+    private Timer? _connectivityTimer;
     private bool _isSyncing;
+    private bool _isOnline;
 
-    public bool IsOnline => _connectivity.NetworkAccess == NetworkAccess.Internet;
+    public bool IsOnline => _isOnline;
     public DateTimeOffset? LastSyncTime { get; private set; }
     public int PendingCount { get; private set; }
     public string? LastError { get; private set; }
@@ -33,16 +35,42 @@ public class SyncService : IDisposable
     public SyncService(
         IServiceProvider serviceProvider,
         SettingsService settingsService,
-        IConnectivity connectivity,
         ILogger<SyncService> logger)
     {
         _serviceProvider = serviceProvider;
         _settingsService = settingsService;
-        _connectivity = connectivity;
         _logger = logger;
         _httpClient = new HttpClient();
 
-        _connectivity.ConnectivityChanged += HandleConnectivityChanged;
+        // Start connectivity monitoring (every 10 seconds)
+        _connectivityTimer = new Timer(async _ => await CheckConnectivity(), null,
+            TimeSpan.Zero, TimeSpan.FromSeconds(10));
+    }
+
+    private async Task CheckConnectivity()
+    {
+        bool wasOnline = _isOnline;
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            await http.GetAsync("https://www.google.com/generate_204");
+            _isOnline = true;
+        }
+        catch
+        {
+            _isOnline = false;
+        }
+
+        if (wasOnline != _isOnline)
+        {
+            OnConnectivityChanged?.Invoke(_isOnline);
+
+            if (_isOnline)
+            {
+                _logger.LogInformation("Connection restored, triggering sync");
+                await FullSyncAsync();
+            }
+        }
     }
 
     /// <summary>
@@ -59,18 +87,6 @@ public class SyncService : IDisposable
     {
         _syncTimer?.Dispose();
         _syncTimer = null;
-    }
-
-    private async void HandleConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
-    {
-        var online = e.NetworkAccess == NetworkAccess.Internet;
-        OnConnectivityChanged?.Invoke(online);
-
-        if (online)
-        {
-            _logger.LogInformation("Connection restored, triggering sync");
-            await FullSyncAsync();
-        }
     }
 
     private async Task TryAutoSync()
@@ -196,7 +212,8 @@ public class SyncService : IDisposable
                 try
                 {
                     var url = $"{settings.ServerUrl}/api/sync/sales";
-                    var content = new StringContent(entry.Payload, System.Text.Encoding.UTF8, "application/json");
+                    var content = new StringContent(entry.Payload, System.Text.Encoding.UTF8,
+                        new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
                     var response = await _httpClient.PostAsync(url, content);
 
                     if (response.IsSuccessStatusCode)
@@ -293,8 +310,8 @@ public class SyncService : IDisposable
     public void Dispose()
     {
         _syncTimer?.Dispose();
+        _connectivityTimer?.Dispose();
         _httpClient.Dispose();
-        _connectivity.ConnectivityChanged -= HandleConnectivityChanged;
     }
 }
 

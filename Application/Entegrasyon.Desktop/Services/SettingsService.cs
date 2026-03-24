@@ -7,8 +7,11 @@ namespace Entegrasyon.Desktop.Services;
 /// </summary>
 public class SettingsService
 {
-    private static readonly string SettingsPath = Path.Combine(
-        FileSystem.AppDataDirectory, "pos-settings.json");
+    private static readonly string SettingsDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Entegrasyon");
+
+    private static readonly string SettingsPath = Path.Combine(SettingsDir, "pos-settings.json");
 
     private PosSettings _settings = new();
     private bool _loaded;
@@ -26,6 +29,7 @@ public class SettingsService
     {
         try
         {
+            Directory.CreateDirectory(SettingsDir);
             if (File.Exists(SettingsPath))
             {
                 var json = File.ReadAllText(SettingsPath);
@@ -41,6 +45,7 @@ public class SettingsService
 
     public async Task SaveAsync()
     {
+        Directory.CreateDirectory(SettingsDir);
         var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(SettingsPath, json);
     }
