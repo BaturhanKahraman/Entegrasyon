@@ -1,0 +1,63 @@
+@if (Summary is not null)
+{
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent Class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Color="Color.Primary" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.h5">@Summary.TotalShipments</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Default">Toplam</MudText>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent Class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.DirectionsBus" Color="Color.Warning" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.h5">@Summary.InTransitCount</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Default">Yolda</MudText>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent Class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.h5">@Summary.DeliveredCount</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Default">Teslim Edildi</MudText>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent Class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.h5">@(Summary.FailedCount + Summary.PendingCount)</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Default">Sorunlu / Bekleyen</MudText>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+else if (IsLoading)
+{
+    <MudGrid Class="mb-4">
+        @for (int i = 0; i < 4; i++)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="80px" />
+            </MudItem>
+        }
+    </MudGrid>
+}

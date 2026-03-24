@@ -335,6 +335,12 @@ namespace Entegrasyon.ApplicationBootstrap
             }
             services.AddScoped<TrendyolEFaturaInvoiceBuilder>();
 
+            // Shipping Tracking
+            services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.ArasTrackingAdapter>();
+            services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.SuratTrackingAdapter>();
+            services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.YurticiTrackingAdapter>();
+            services.AddScoped<IShipmentTrackingManager, Entegrasyon.Business.Concrete.Shipping.ShipmentTrackingManager>();
+
             services.AddEventChannels();
             services.AddValidators();
             services.AddBusinessMapping();
@@ -404,6 +410,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<N11StockPriceSyncService>();
             services.AddHostedService<PazaramaStockPriceSyncService>();
             services.AddHostedService<TrendyolEFaturaStatusPollingService>();
+            services.AddHostedService<ShipmentStatusUpdateService>();
             return services;
         }
         public static IServiceCollection AddStorageServices(this IServiceCollection services, IConfiguration configuration)
