@@ -26,6 +26,9 @@
 
     <!-- PrintAgent Contracts (printer DTOs) -->
     <ProjectReference Include="..\..\Agent\Entegrasyon.PrintAgent.Contracts\Entegrasyon.PrintAgent.Contracts.csproj" />
+
+    <!-- Full PrintAgent project (PrintService, transports, configuration) -->
+    <ProjectReference Include="..\..\Agent\Entegrasyon.PrintAgent\Entegrasyon.PrintAgent.csproj" />
   </ItemGroup>
 
 </Project>

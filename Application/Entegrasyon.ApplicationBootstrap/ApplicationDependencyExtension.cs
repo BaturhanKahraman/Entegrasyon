@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
+using Entegrasyon.Business.Concrete.Invoicing;
 using Entegrasyon.Business.Concrete.Kargo;
 using Entegrasyon.Business.Concrete.Temu;
 using Entegrasyon.Business.Concrete.Hepsiburada;
@@ -348,6 +349,18 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.SuratTrackingAdapter>();
             services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.YurticiTrackingAdapter>();
             services.AddScoped<IShipmentTrackingManager, Entegrasyon.Business.Concrete.Shipping.ShipmentTrackingManager>();
+
+            // E-Fatura / E-Arsiv (genel amacli) servisleri
+            services.AddScoped<IEInvoiceManager, EInvoiceManager>();
+            var useEInvoiceMock = configuration.GetValue<bool>("EInvoice:UseMock", true);
+            if (useEInvoiceMock)
+            {
+                services.AddScoped<IEInvoiceIntegratorClient, MockInvoiceClient>();
+            }
+            else
+            {
+                services.AddScoped<IEInvoiceIntegratorClient, ParasutInvoiceClient>();
+            }
 
             services.AddEventChannels();
             services.AddValidators();

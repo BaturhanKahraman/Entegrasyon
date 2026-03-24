@@ -16,7 +16,7 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
     {
         { "admin", ["products", "categories", "attributes", "brands", "sales", "orders", "notifications", "shipping", "bulk-operations", "pos"] },
         { "marketplace", ["marketplace"] },
-        { "customers", ["customers", "invoices"] },
+        { "customers", ["customers", "invoices", "invoicing"] },
         { "reports", ["reports"] },
         { "users", ["users", "roles"] },
         { "settings", ["settings"] }

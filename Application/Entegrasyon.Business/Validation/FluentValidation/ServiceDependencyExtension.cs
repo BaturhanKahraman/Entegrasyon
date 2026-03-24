@@ -18,6 +18,7 @@ using Entegrasyon.Entity.Dtos.Product.Discount;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Dtos.POS;
+using Entegrasyon.Entity.Dtos.Invoicing;
 using Entegrasyon.Entity.Dtos.Settings;
 using Entegrasyon.Entity.Dtos.Shipping;
 
@@ -58,6 +59,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<CloseSessionDto>, CloseSessionValidator>();
         services.AddScoped<IValidator<POSTransactionDto>, POSTransactionValidator>();
         services.AddScoped<IValidator<AddCashMovementDto>, AddCashMovementValidator>();
+        services.AddScoped<IValidator<CreateEInvoiceDto>, CreateEInvoiceValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;
