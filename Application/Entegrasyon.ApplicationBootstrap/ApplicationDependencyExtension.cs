@@ -12,6 +12,7 @@ using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Concrete.Trendyol.EFatura;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Concrete.BulkOperations;
 using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.MapperProfiles;
@@ -82,6 +83,11 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<INotificationSettingManager, NotificationSettingManager>();
             services.AddScoped<IReportManager, ReportManager>();
             services.AddScoped<IApplicationSettingManager, ApplicationSettingManager>();
+
+            // Toplu İşlem servisleri
+            services.AddScoped<ExcelParser>();
+            services.AddScoped<ProductImportValidator>();
+            services.AddScoped<IBulkOperationManager, BulkOperationManager>();
 
             // Etiket & Fiş servisleri
             services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
