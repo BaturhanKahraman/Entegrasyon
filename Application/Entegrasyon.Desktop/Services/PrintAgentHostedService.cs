@@ -1,11 +1,15 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Desktop.Services;
 
 /// <summary>
-/// Runs the PrintAgent web API as an embedded background service within the MAUI app.
+/// Runs the PrintAgent web API as an embedded background service within the desktop app.
 /// Listens on https://localhost:{port} (default 19100).
 /// This eliminates the need for a separate PrintAgent installation.
+/// In Photino there is no IHostedService support, so this is started manually via Task.Run.
 /// </summary>
 public class PrintAgentHostedService
 {
@@ -28,11 +32,11 @@ public class PrintAgentHostedService
     /// <summary>
     /// Start the embedded PrintAgent web API.
     /// </summary>
-    public Task StartAsync()
+    public Task StartAsync(CancellationToken cancellationToken = default)
     {
         if (IsRunning) return Task.CompletedTask;
 
-        _cts = new CancellationTokenSource();
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var port = _settingsService.Settings.PrintAgentPort;
 
         _runningTask = Task.Run(async () =>
@@ -63,7 +67,7 @@ public class PrintAgentHostedService
                 IsRunning = true;
                 _logger.LogInformation("PrintAgent listening on https://localhost:{Port}", port);
 
-                await app.RunAsync(_cts.Token);
+                await app.RunAsync();
             }
             catch (OperationCanceledException)
             {
