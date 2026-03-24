@@ -1,0 +1,90 @@
+@page "/marketplace/commission-rates"
+
+<PageTitle>Komisyon Oranları</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Komisyon Oranları</MudText>
+<MudText Class="mb-4" Color="Color.Secondary">
+    Pazaryeri komisyon oranlarını tanımlayın ve yönetin
+</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="4">
+        <MudSelect T="int"
+                   Label="Pazaryeri"
+                   Value="_selectedMarketPlaceId"
+                   ValueChanged="OnMarketplaceChanged"
+                   Variant="Variant.Outlined"
+                   AnchorOrigin="Origin.BottomCenter">
+            @foreach (var mp in _marketplaces)
+            {
+                <MudSelectItem T="int" Value="@mp.Id">@mp.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="12" md="8" Class="d-flex align-end justify-end">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenAddDialog"
+                   Disabled="@(_selectedMarketPlaceId == 0)">
+            Yeni Komisyon Oranı
+        </MudButton>
+    </MudItem>
+</MudGrid>
+
+<MudDivider Class="my-4" />
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+}
+else if (_selectedMarketPlaceId == 0)
+{
+    <MudAlert Severity="Severity.Info" Class="mt-4">
+        Komisyon oranlarını görüntülemek için bir pazaryeri seçin.
+    </MudAlert>
+}
+else
+{
+    <MudDataGrid T="CommissionRateRow"
+                 Items="@_rates.AsEnumerable()"
+                 Dense="true"
+                 Hover="true"
+                 Bordered="true"
+                 Striped="true">
+        <Columns>
+            <PropertyColumn Property="x => x.CategoryName" Title="Kategori" />
+            <PropertyColumn Property="x => x.CommissionPercent" Title="Komisyon (%)" Format="N2" />
+            <PropertyColumn Property="x => x.ServiceFeePercent" Title="Hizmet Bedeli (%)" Format="N2" />
+            <PropertyColumn Property="x => x.TransactionFeeFixed" Title="Sabit Ücret (TL)" Format="N2" />
+            <PropertyColumn Property="x => x.Description" Title="Açıklama" />
+            <TemplateColumn Title="Varsayılan" CellClass="d-flex justify-center">
+                <CellTemplate>
+                    @if (context.Item.IsDefault)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="İşlemler" CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => OpenEditDialog(context.Item))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="@(() => DeleteRate(context.Item))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <NoRecordsContent>
+            <MudText>Bu pazaryeri için komisyon oranı tanımlanmamış.</MudText>
+        </NoRecordsContent>
+    </MudDataGrid>
+
+    <MudDivider Class="my-6" />
+
+    <CommissionCalculatorPanel MarketPlaceId="@_selectedMarketPlaceId" />
+}

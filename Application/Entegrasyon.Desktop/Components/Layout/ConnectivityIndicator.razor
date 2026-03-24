@@ -1,0 +1,16 @@
+@implements IDisposable
+
+@if (_isOnline)
+{
+    <span class="connectivity-badge online">
+        <MudIcon Icon="@Icons.Material.Filled.Wifi" Size="Size.Small" />
+        Online
+    </span>
+}
+else
+{
+    <span class="connectivity-badge offline">
+        <MudIcon Icon="@Icons.Material.Filled.WifiOff" Size="Size.Small" />
+        Offline
+    </span>
+}

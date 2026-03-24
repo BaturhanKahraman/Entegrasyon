@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
-public partial class Sales
+public partial class Sales : IDisposable
 {
     [Inject]
     private IDialogService? DialogService { get; set; }
@@ -19,6 +19,12 @@ public partial class Sales
 
     [Inject]
     private ILabelService? LabelService { get; set; }
+
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+
+    [SupplyParameterFromQuery(Name = "barcode")]
+    public string? BarcodeFromQuery { get; set; }
 
     private string barcodeSearch = string.Empty;
     private string paymentMethod = "Nakit";
@@ -44,6 +50,41 @@ public partial class Sales
             .Where(x => x.Amount > 0)
             .OrderBy(x => x.Rate);
     private decimal Total => SubtotalAfterDiscount + Tax;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager!.LocationChanged += OnLocationChanged;
+        await ProcessBarcodeFromQuery();
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        var uri = new Uri(e.Location);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var barcode = query["barcode"];
+        if (!string.IsNullOrWhiteSpace(barcode))
+        {
+            await InvokeAsync(async () =>
+            {
+                await SearchAndAddProduct(barcode);
+                StateHasChanged();
+            });
+        }
+    }
+
+    private async Task ProcessBarcodeFromQuery()
+    {
+        if (!string.IsNullOrWhiteSpace(BarcodeFromQuery))
+        {
+            await SearchAndAddProduct(BarcodeFromQuery);
+            BarcodeFromQuery = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        NavigationManager!.LocationChanged -= OnLocationChanged;
+    }
 
     private async Task HandleBarcodeSearch(KeyboardEventArgs e)
     {

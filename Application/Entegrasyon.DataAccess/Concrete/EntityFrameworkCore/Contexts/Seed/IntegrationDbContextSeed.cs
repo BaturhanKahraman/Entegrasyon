@@ -49,7 +49,13 @@ public static class IntegrationDbContextSeed
             new ApplicationSetting { Id = 5, Key = "TaxNumber", Value = "", Description = "Vergi numarası", Group = "Firma Bilgileri", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
             new ApplicationSetting { Id = 6, Key = "Currency", Value = "TRY", Description = "Para birimi", Group = "Sistem", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
             new ApplicationSetting { Id = 7, Key = "TaxRate", Value = "20", Description = "Varsayılan vergi oranı (%)", Group = "Sistem", ValueType = SettingValueType.Decimal, CreatedAt = DateTimeOffset.MinValue },
-            new ApplicationSetting { Id = 8, Key = "DefaultLanguage", Value = "tr", Description = "Varsayılan dil", Group = "Sistem", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue }
+            new ApplicationSetting { Id = 8, Key = "DefaultLanguage", Value = "tr", Description = "Varsayılan dil", Group = "Sistem", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue },
+
+            // Barkod Okuyucu ayarları
+            new ApplicationSetting { Id = 9, Key = "BarcodeScanner.Enabled", Value = "true", Description = "Barkod okuyucu aktif mi", Group = "Barkod Okuyucu", ValueType = SettingValueType.Boolean, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 10, Key = "BarcodeScanner.Timeout", Value = "100", Description = "Ardışık tuş basımları arası max süre (ms)", Group = "Barkod Okuyucu", ValueType = SettingValueType.Integer, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 11, Key = "BarcodeScanner.MinLength", Value = "6", Description = "Minimum barkod karakter uzunluğu", Group = "Barkod Okuyucu", ValueType = SettingValueType.Integer, CreatedAt = DateTimeOffset.MinValue },
+            new ApplicationSetting { Id = 12, Key = "BarcodeScanner.DefaultAction", Value = "SalesAdd", Description = "Varsayılan barkod aksiyonu (SalesAdd, ProductSearch, NavigateToSales)", Group = "Barkod Okuyucu", ValueType = SettingValueType.String, CreatedAt = DateTimeOffset.MinValue }
         );
     }
 }

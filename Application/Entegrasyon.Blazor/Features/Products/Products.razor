@@ -2,6 +2,7 @@
 @using Entegrasyon.ApplicationBootstrap.Security
 @attribute [Authorize(Policy = AppPermissions.Products.View)]
 @using Entegrasyon.Entity.Dtos.Product
+@implements IDisposable
 
 <PageTitle>Ürünler</PageTitle>
 

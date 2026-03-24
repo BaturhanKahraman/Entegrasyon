@@ -1,0 +1,132 @@
+@page "/settings"
+
+<PageTitle>Ayarlar</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Ayarlar</MudText>
+
+<MudGrid>
+    <!-- Server Settings -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-3">Sunucu Baglantisi</MudText>
+
+                <MudTextField @bind-Value="_settings.ServerUrl"
+                              Label="Sunucu URL"
+                              Variant="Variant.Outlined"
+                              Class="mb-3"
+                              Placeholder="https://example.com" />
+
+                <MudTextField @bind-Value="_settings.ApiKey"
+                              Label="API Key"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Password"
+                              Class="mb-3" />
+
+                <MudTextField @bind-Value="_settings.BranchOfficeId"
+                              Label="Sube ID"
+                              Variant="Variant.Outlined"
+                              Class="mb-3"
+                              HelperText="Stok senkronizasyonu icin sube kimlik bilgisi" />
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Application Settings -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-3">Uygulama Ayarlari</MudText>
+
+                <MudTextField @bind-Value="_settings.StoreName"
+                              Label="Magaza Adi"
+                              Variant="Variant.Outlined"
+                              Class="mb-3" />
+
+                <MudNumericField @bind-Value="_settings.SyncIntervalSeconds"
+                                 Label="Sync Araligi (saniye)"
+                                 Variant="Variant.Outlined"
+                                 Min="10"
+                                 Max="3600"
+                                 Class="mb-3" />
+
+                <MudNumericField @bind-Value="_settings.PrintAgentPort"
+                                 Label="PrintAgent Portu"
+                                 Variant="Variant.Outlined"
+                                 Min="1024"
+                                 Max="65535"
+                                 Class="mb-3" />
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Save Button -->
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveSettings"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Kaydediliyor...</span>
+            }
+            else
+            {
+                <span>Ayarlari Kaydet</span>
+            }
+        </MudButton>
+    </MudItem>
+
+    <!-- PrintAgent Status -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-3">PrintAgent</MudText>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Durum:</MudText>
+                    @if (_printAgentService.IsRunning)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Calisiyor (port @_printAgentService.Port)</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Durmus</MudChip>
+                    }
+                </div>
+            </MudCardContent>
+            <MudCardActions>
+                @if (_printAgentService.IsRunning)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="StopPrintAgent">Durdur</MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartPrintAgent">Baslat</MudButton>
+                }
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- Database Info -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Class="mb-3">Local Veritabani</MudText>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Urun Sayisi:</MudText>
+                    <MudText>@_productCount</MudText>
+                </div>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Bekleyen Sync:</MudText>
+                    <MudText>@_pendingCount</MudText>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>

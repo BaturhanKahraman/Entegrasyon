@@ -6,7 +6,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
-public partial class Products
+public partial class Products : IDisposable
 {
     [Inject]
     private ISnackbar? Snackbar { get; set; }
@@ -18,8 +18,43 @@ public partial class Products
     [Inject]
     private IProductService ProductManager { get; set; } = null!;
 
+    [SupplyParameterFromQuery(Name = "barcode")]
+    public string? BarcodeFromQuery { get; set; }
+
     private MudDataGrid<ProductsDetailDto> _dataGrid = null!;
     private string searchString = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager!.LocationChanged += OnLocationChanged;
+
+        if (!string.IsNullOrWhiteSpace(BarcodeFromQuery))
+        {
+            searchString = BarcodeFromQuery;
+            BarcodeFromQuery = null;
+        }
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        var uri = new Uri(e.Location);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var barcode = query["barcode"];
+        if (!string.IsNullOrWhiteSpace(barcode))
+        {
+            await InvokeAsync(async () =>
+            {
+                searchString = barcode;
+                await _dataGrid.ReloadServerData();
+                StateHasChanged();
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        NavigationManager!.LocationChanged -= OnLocationChanged;
+    }
 
     private async Task<GridData<ProductsDetailDto>> ServerData(GridState<ProductsDetailDto> state)
     {

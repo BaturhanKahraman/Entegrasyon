@@ -15,6 +15,7 @@ using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Entity.Dtos.Label;
 using Entegrasyon.Entity.Dtos.Product.Discount;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Dtos.Settings;
 
@@ -49,6 +50,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<SaveLabelTemplateDto>, SaveLabelTemplateDtoValidator>();
         services.AddScoped<IValidator<SaveMarketplaceOverridesDto>, SaveMarketplaceOverridesDtoValidator>();
         services.AddScoped<IValidator<UpdateApplicationSettingDto>, UpdateApplicationSettingValidator>();
+        services.AddScoped<IValidator<SaveCommissionRateDto>, SaveCommissionRateDtoValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;
