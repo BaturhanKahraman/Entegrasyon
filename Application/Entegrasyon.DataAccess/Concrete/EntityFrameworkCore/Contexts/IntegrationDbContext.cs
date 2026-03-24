@@ -16,6 +16,7 @@ using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Invoices;
 using Entegrasyon.Entity.Labels;
 using Entegrasyon.Entity.Settings;
+using Entegrasyon.Entity.Templates;
 using Entegrasyon.Entity.User;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -113,6 +114,19 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<ApplicationSetting> ApplicationSettings { get; set; }
     public virtual DbSet<NotificationSetting> NotificationSettings { get; set; }
     public virtual DbSet<EFaturaRecord> EFaturaRecords { get; set; }
+
+    // Template (MatchedEntity) DbSets
+    public virtual DbSet<MatchedEntityPackage> MatchedEntityPackages { get; set; }
+    public virtual DbSet<TemplateCategoryData> TemplateCategoryData { get; set; }
+    public virtual DbSet<TemplateCategoryMarketplaceMapping> TemplateCategoryMarketplaceMappings { get; set; }
+    public virtual DbSet<TemplateCategoryAttributeData> TemplateCategoryAttributeData { get; set; }
+    public virtual DbSet<TemplateCategoryAttrMarketplaceMapping> TemplateCategoryAttrMarketplaceMappings { get; set; }
+    public virtual DbSet<TemplateCategoryAttributeValueData> TemplateCategoryAttributeValueData { get; set; }
+    public virtual DbSet<TemplateCategoryAttrValueMarketplaceMapping> TemplateCategoryAttrValueMarketplaceMappings { get; set; }
+    public virtual DbSet<TemplateBrandData> TemplateBrandData { get; set; }
+    public virtual DbSet<TemplateBrandMarketplaceMapping> TemplateBrandMarketplaceMappings { get; set; }
+    public virtual DbSet<TemplateCargoCompanyData> TemplateCargoCompanyData { get; set; }
+    public virtual DbSet<TemplateCargoCompanyMarketplaceMapping> TemplateCargoCompanyMarketplaceMappings { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

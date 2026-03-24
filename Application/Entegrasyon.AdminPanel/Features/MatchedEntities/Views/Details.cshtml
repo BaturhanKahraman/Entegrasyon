@@ -1,0 +1,151 @@
+@model PackageDetailViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>@Model.Name</h2>
+        <span class="badge bg-info me-1">@(Model.EntityType switch {
+            MatchedEntityType.Category => "Kategori",
+            MatchedEntityType.Brand => "Marka",
+            MatchedEntityType.CargoCompany => "Kargo Şirketi",
+            _ => Model.EntityType.ToString()
+        })</span>
+        @if (Model.IsPublished)
+        {
+            <span class="badge bg-success">Yayında v@(Model.Version)</span>
+        }
+        else
+        {
+            <span class="badge bg-secondary">Taslak</span>
+        }
+    </div>
+    <div class="btn-group">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Düzenle</a>
+        <form asp-action="TogglePublish" asp-route-id="@Model.Id" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn @(Model.IsPublished ? "btn-outline-warning" : "btn-outline-success")">
+                @(Model.IsPublished ? "Yayından Kaldır" : "Yayınla")
+            </button>
+        </form>
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline"
+              onsubmit="return confirm('Bu paketi silmek istediğinize emin misiniz?')">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-danger">Sil</button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] is string msg)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.Description))
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-subtitle text-muted mb-2">Açıklama</h6>
+            <p class="mb-0">@Model.Description</p>
+        </div>
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fs-4 fw-bold">@(Model.Categories.Count + Model.Brands.Count + Model.CargoCompanies.Count)</div>
+                <small class="text-muted">Toplam Entity</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fs-4 fw-bold">v@(Model.Version)</div>
+                <small class="text-muted">Versiyon</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fs-4 fw-bold">@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
+                <small class="text-muted">Oluşturulma</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="fs-4 fw-bold">@(Model.UpdatedAt == default ? "-" : Model.UpdatedAt.ToString("dd.MM.yyyy"))</div>
+                <small class="text-muted">Son Güncelleme</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Kategori ağacı *@
+@if (Model.Categories.Any())
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">Kategoriler</h5>
+        </div>
+        <div class="card-body">
+            @foreach (var cat in Model.Categories)
+            {
+                @await Html.PartialAsync("~/Features/MatchedEntities/Views/_CategoryNode.cshtml", cat)
+            }
+        </div>
+    </div>
+}
+
+@* Markalar *@
+@if (Model.Brands.Any())
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">Markalar</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                @foreach (var brand in Model.Brands)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @brand.Name
+                        <span class="badge bg-primary rounded-pill">@brand.MarketplaceCount MP</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+@* Kargo şirketleri *@
+@if (Model.CargoCompanies.Any())
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">Kargo Şirketleri</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                @foreach (var cargo in Model.CargoCompanies)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @cargo.Name @(cargo.Code != null ? $"({cargo.Code})" : "")
+                        <span class="badge bg-primary rounded-pill">@cargo.MarketplaceCount MP</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary">Listeye Dön</a>

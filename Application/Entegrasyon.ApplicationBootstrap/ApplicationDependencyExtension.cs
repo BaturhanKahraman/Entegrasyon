@@ -66,6 +66,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ITrendyolCategoryImportService, TrendyolCategoryImporterService>();
             services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
             services.AddScoped<IBarcodeService, BarcodeService>();
+            services.AddScoped<IMatchedEntityImportManager, MatchedEntityImportManager>();
             services.AddScoped<IBrandMatchService,BrandMatchService>();
             services.AddScoped<ICategoryMatchService,CategoryMatchService>();
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();

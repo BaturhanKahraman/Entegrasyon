@@ -1,0 +1,54 @@
+@using Entegrasyon.Entity.Dtos.Templates
+
+<MudDialog>
+    <DialogContent>
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            Import sırasında @Conflicts.Count çakışma tespit edildi.
+            Her çakışma için bir strateji seçin.
+        </MudAlert>
+
+        @foreach (var conflict in Conflicts)
+        {
+            <MudPaper Elevation="0" Class="pa-3 mb-3 border rounded">
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle1">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@conflict.EntityType</MudChip>
+                            @conflict.TemplateName
+                        </MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Mevcut: "@conflict.ExistingEntityName" (ID: @conflict.ExistingEntityId)
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudRadioGroup T="ConflictResolutionStrategy"
+                                       Value="_resolutions[conflict.TemplateEntityId]"
+                                       ValueChanged="@(v => _resolutions[conflict.TemplateEntityId] = v)">
+                            <MudRadio T="ConflictResolutionStrategy"
+                                      Value="ConflictResolutionStrategy.UseExisting"
+                                      Color="Color.Primary">
+                                Mevcutu Koru
+                            </MudRadio>
+                            <MudRadio T="ConflictResolutionStrategy"
+                                      Value="ConflictResolutionStrategy.UseImported"
+                                      Color="Color.Secondary">
+                                Şablonu Kullan
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   Disabled="_importing" OnClick="ConfirmImport">
+            @if (_importing)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+            }
+            İçe Aktar
+        </MudButton>
+    </DialogActions>
+</MudDialog>

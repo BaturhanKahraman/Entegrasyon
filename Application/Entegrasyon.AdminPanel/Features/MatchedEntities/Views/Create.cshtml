@@ -1,0 +1,46 @@
+@model PackageFormViewModel
+@{
+    ViewData["Title"] = "Yeni Şablon Paketi";
+}
+
+<h2>Yeni Şablon Paketi Oluştur</h2>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="Örn: Elektronik > Cep Telefonu" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"
+                          placeholder="Paket açıklaması (opsiyonel)"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EntityType" class="form-label"></label>
+                <select asp-for="EntityType" class="form-select">
+                    <option value="@((int)MatchedEntityType.Category)">Kategori</option>
+                    <option value="@((int)MatchedEntityType.Brand)">Marka</option>
+                    <option value="@((int)MatchedEntityType.CargoCompany)">Kargo Şirketi</option>
+                </select>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="IsPublished" class="form-check-input" />
+                <label asp-for="IsPublished" class="form-check-label">Hemen yayınla</label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Oluştur</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>

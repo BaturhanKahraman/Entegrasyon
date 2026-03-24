@@ -1,0 +1,36 @@
+@using Entegrasyon.Entity.Dtos.Templates
+
+<div style="margin-left: @(Depth * 24)px" class="mb-2">
+    <MudPaper Elevation="0" Class="pa-2 border rounded">
+        <div class="d-flex justify-space-between align-center">
+            <div>
+                <MudText Typo="Typo.subtitle2">@Category.Name</MudText>
+                @if (Category.DefaultVatRate.HasValue)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        KDV: %@Category.DefaultVatRate
+                    </MudText>
+                }
+            </div>
+            <div class="d-flex gap-1">
+                @if (Category.Attributes.Any())
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info">
+                        @Category.Attributes.Count özellik
+                    </MudChip>
+                }
+                @if (Category.MarketplaceMappings.Any())
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                        @Category.MarketplaceMappings.Count MP
+                    </MudChip>
+                }
+            </div>
+        </div>
+    </MudPaper>
+</div>
+
+@foreach (var child in Category.Children)
+{
+    <CategoryDetailNode Category="child" Depth="@(Depth + 1)" />
+}

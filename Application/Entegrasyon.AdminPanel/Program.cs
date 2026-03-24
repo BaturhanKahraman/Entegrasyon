@@ -10,6 +10,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AdminPanelDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("AdminPanel") ?? "Data Source=adminpanel.db"));
 
+builder.Services.AddDbContext<TemplateDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("TemplateDb")));
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
