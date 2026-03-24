@@ -19,6 +19,7 @@ using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Marketplace;
 using Entegrasyon.Entity.Templates;
 using Entegrasyon.Entity.User;
+using Entegrasyon.Entity.BulkOperations;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -131,6 +132,9 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
 
     // Commission
     public virtual DbSet<MarketplaceCommissionRate> MarketplaceCommissionRates { get; set; }
+
+    // Bulk Operations
+    public virtual DbSet<BulkOperationLog> BulkOperationLogs { get; set; } = null!;
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }
