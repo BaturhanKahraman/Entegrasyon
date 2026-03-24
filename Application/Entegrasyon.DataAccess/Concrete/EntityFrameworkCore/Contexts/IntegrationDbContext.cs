@@ -16,6 +16,7 @@ using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Invoices;
 using Entegrasyon.Entity.Labels;
 using Entegrasyon.Entity.Settings;
+using Entegrasyon.Entity.Marketplace;
 using Entegrasyon.Entity.Templates;
 using Entegrasyon.Entity.User;
 
@@ -127,6 +128,9 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<TemplateBrandMarketplaceMapping> TemplateBrandMarketplaceMappings { get; set; }
     public virtual DbSet<TemplateCargoCompanyData> TemplateCargoCompanyData { get; set; }
     public virtual DbSet<TemplateCargoCompanyMarketplaceMapping> TemplateCargoCompanyMarketplaceMappings { get; set; }
+
+    // Commission
+    public virtual DbSet<MarketplaceCommissionRate> MarketplaceCommissionRates { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

@@ -1,0 +1,112 @@
+@page "/"
+
+<PageTitle>Dashboard - Entegrasyon POS</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Dashboard</MudText>
+
+<MudGrid>
+    <!-- Sync Status Card -->
+    <MudItem xs="12" md="4">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Senkronizasyon</MudText>
+                <MudDivider Class="my-2" />
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Durum:</MudText>
+                    @if (_syncService.IsOnline)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Online</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Offline</MudChip>
+                    }
+                </div>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Son Sync:</MudText>
+                    <MudText Typo="Typo.body2">
+                        @(_syncService.LastSyncTime?.ToString("dd.MM.yyyy HH:mm") ?? "Henuz yapilmadi")
+                    </MudText>
+                </div>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Bekleyen:</MudText>
+                    <MudChip T="string" Color="@(_pendingCount > 0 ? Color.Warning : Color.Default)" Size="Size.Small">
+                        @_pendingCount islem
+                    </MudChip>
+                </div>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Sync"
+                           OnClick="ManualSync"
+                           Disabled="@(!_syncService.IsOnline || _syncing)">
+                    Simdi Senkronize Et
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- Daily Sales Card -->
+    <MudItem xs="12" md="4">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Bugunku Satislar</MudText>
+                <MudDivider Class="my-2" />
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Toplam Satis:</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary">@_summary.Count adet</MudText>
+                </div>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Toplam Gelir:</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Success">@_summary.TotalRevenue.ToString("C", _trCulture)</MudText>
+                </div>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Senkronize:</MudText>
+                    <MudText>@_summary.SyncedCount / @_summary.Count</MudText>
+                </div>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Href="/offline-sales"
+                           StartIcon="@Icons.Material.Filled.PointOfSale">
+                    Satisa Git
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <!-- Product Stock Card -->
+    <MudItem xs="12" md="4">
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h6">Urun Stok</MudText>
+                <MudDivider Class="my-2" />
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>Local Urun Sayisi:</MudText>
+                    <MudText Typo="Typo.h5">@_productCount</MudText>
+                </div>
+
+                <div class="d-flex justify-space-between my-2">
+                    <MudText>PrintAgent:</MudText>
+                    @if (_printAgentService.IsRunning)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Calisiyor</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Durmus</MudChip>
+                    }
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>

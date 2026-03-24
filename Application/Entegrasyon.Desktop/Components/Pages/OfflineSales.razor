@@ -1,0 +1,183 @@
+@page "/offline-sales"
+
+<PageTitle>Satis - POS</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Satis Noktasi (POS) - Offline</MudText>
+
+<MudGrid>
+    <!-- Left Panel: Product Search & Cart -->
+    <MudItem xs="12" md="8">
+        <MudPaper Class="pa-4 mb-4">
+            <MudTextField @bind-Value="_barcodeSearch"
+                          Label="Barkod Okut veya Urun Ara"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.QrCodeScanner"
+                          OnKeyDown="HandleBarcodeSearch"
+                          Immediate="true"
+                          Placeholder="Barkod okutun veya urun adi girin..." />
+        </MudPaper>
+
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-4">Sepet</MudText>
+
+            @if (_cartItems.Any())
+            {
+                <MudTable Items="@_cartItems" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Urun</MudTh>
+                        <MudTh>Beden</MudTh>
+                        <MudTh>Adet</MudTh>
+                        <MudTh>Birim Fiyat</MudTh>
+                        <MudTh>Indirim</MudTh>
+                        <MudTh>Toplam</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Urun">@context.ProductName</MudTd>
+                        <MudTd DataLabel="Beden">@context.Size</MudTd>
+                        <MudTd DataLabel="Adet">
+                            <MudNumericField @bind-Value="context.Quantity"
+                                             Min="1"
+                                             Step="1"
+                                             Immediate="true"
+                                             Style="width: 80px;" />
+                        </MudTd>
+                        <MudTd DataLabel="Birim Fiyat">@context.UnitPrice.ToString("C", _trCulture)</MudTd>
+                        <MudTd DataLabel="Indirim">
+                            <MudNumericField @bind-Value="context.DiscountPercent"
+                                             Min="0"
+                                             Max="100"
+                                             Step="5"
+                                             Immediate="true"
+                                             Adornment="Adornment.End"
+                                             AdornmentText="%"
+                                             Style="width: 90px;" />
+                        </MudTd>
+                        <MudTd DataLabel="Toplam">@context.TotalPrice.ToString("C", _trCulture)</MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => RemoveFromCart(context))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudText Align="Align.Center" Color="Color.Secondary" Class="py-8">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Class="mb-2" />
+                    <br />
+                    Sepet bos. Urun eklemek icin barkod okutun.
+                </MudText>
+            }
+        </MudPaper>
+    </MudItem>
+
+    <!-- Right Panel: Summary & Payment -->
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-4">Odeme Ozeti</MudText>
+
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText>Ara Toplam:</MudText>
+                        <MudText Typo="Typo.h6">@Subtotal.ToString("C", _trCulture)</MudText>
+                    </div>
+                </MudListItem>
+
+                @if (TotalDiscount > 0)
+                {
+                    <MudListItem T="string">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText Color="Color.Success">Indirim:</MudText>
+                            <MudText Color="Color.Success">-@TotalDiscount.ToString("C", _trCulture)</MudText>
+                        </div>
+                    </MudListItem>
+                }
+
+                <MudDivider />
+
+                @foreach (var tb in TaxBreakdown)
+                {
+                    <MudListItem T="string">
+                        <div class="d-flex justify-space-between" style="width: 100%">
+                            <MudText>KDV (%@tb.Rate.ToString("G29")):</MudText>
+                            <MudText>@tb.Amount.ToString("C", _trCulture)</MudText>
+                        </div>
+                    </MudListItem>
+                }
+
+                <MudDivider />
+
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText Typo="Typo.h5">Toplam:</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Primary">@Total.ToString("C", _trCulture)</MudText>
+                    </div>
+                </MudListItem>
+            </MudList>
+
+            <MudDivider Class="my-4" />
+
+            <MudSelect T="string"
+                       @bind-Value="_paymentMethod"
+                       Label="Odeme Yontemi"
+                       Variant="Variant.Outlined"
+                       Class="mb-4">
+                <MudSelectItem Value="@("Nakit")">Nakit</MudSelectItem>
+                <MudSelectItem Value="@("Kredi Karti")">Kredi Karti</MudSelectItem>
+                <MudSelectItem Value="@("Banka Karti")">Banka Karti</MudSelectItem>
+                <MudSelectItem Value="@("Havale/EFT")">Havale/EFT</MudSelectItem>
+            </MudSelect>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Success"
+                       FullWidth="true"
+                       Size="Size.Large"
+                       Disabled="@(!_cartItems.Any() || _processing)"
+                       OnClick="CompleteSale"
+                       StartIcon="@Icons.Material.Filled.ShoppingCart">
+                @if (_processing)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    <span class="ml-2">Isleniyor...</span>
+                }
+                else
+                {
+                    <span>Satisi Tamamla (@Total.ToString("C", _trCulture))</span>
+                }
+            </MudButton>
+
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Error"
+                       FullWidth="true"
+                       Class="mt-2"
+                       Disabled="@(!_cartItems.Any())"
+                       OnClick="ClearCart">
+                Sepeti Temizle
+            </MudButton>
+        </MudPaper>
+
+        <!-- Today's Sales Summary -->
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-2">Bugunku Satislar</MudText>
+            <MudDivider Class="mb-3" />
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText Typo="Typo.body2">Toplam Satis:</MudText>
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@_todaySummary.Count adet</MudChip>
+                    </div>
+                </MudListItem>
+                <MudListItem T="string">
+                    <div class="d-flex justify-space-between" style="width: 100%">
+                        <MudText Typo="Typo.body2">Toplam Gelir:</MudText>
+                        <MudText Typo="Typo.h6">@_todaySummary.TotalRevenue.ToString("C", _trCulture)</MudText>
+                    </div>
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
