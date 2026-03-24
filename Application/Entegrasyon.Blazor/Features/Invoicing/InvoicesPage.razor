@@ -1,0 +1,67 @@
+@page "/invoicing"
+
+<PageTitle>E-Fatura Yonetimi</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">E-Fatura / E-Arsiv</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" sm="3">
+            <MudSelect T="Entegrasyon.Entity.Invoicing.EInvoiceStatus?" Label="Durum" Value="_statusFilter" ValueChanged="OnStatusFilterChanged" Clearable="true">
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceStatus?" Value="Entegrasyon.Entity.Invoicing.EInvoiceStatus.Draft">Taslak</MudSelectItem>
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceStatus?" Value="Entegrasyon.Entity.Invoicing.EInvoiceStatus.Sent">Gonderildi</MudSelectItem>
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceStatus?" Value="Entegrasyon.Entity.Invoicing.EInvoiceStatus.Accepted">Kabul Edildi</MudSelectItem>
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceStatus?" Value="Entegrasyon.Entity.Invoicing.EInvoiceStatus.Rejected">Reddedildi</MudSelectItem>
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceStatus?" Value="Entegrasyon.Entity.Invoicing.EInvoiceStatus.Cancelled">Iptal</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudSelect T="Entegrasyon.Entity.Invoicing.EInvoiceType?" Label="Tip" Value="_typeFilter" ValueChanged="OnTypeFilterChanged" Clearable="true">
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceType?" Value="Entegrasyon.Entity.Invoicing.EInvoiceType.EFatura">E-Fatura</MudSelectItem>
+                <MudSelectItem T="Entegrasyon.Entity.Invoicing.EInvoiceType?" Value="Entegrasyon.Entity.Invoicing.EInvoiceType.EArsiv">E-Arsiv</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudTextField T="string" Label="Ara" Value="_searchTerm" ValueChanged="OnSearchChanged" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+        <MudItem xs="12" sm="3" Class="d-flex align-end gap-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenCreateDialog" StartIcon="@Icons.Material.Filled.Add">
+                Yeni Fatura
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudDataGrid T="Entegrasyon.Entity.Dtos.Invoicing.EInvoiceListDto"
+             Items="_invoices.AsEnumerable()"
+             Loading="_loading"
+             Hover="true"
+             FixedHeader="true"
+             Height="500px"
+             RowClick="OnRowClick">
+    <Columns>
+        <PropertyColumn Property="x => x.InvoiceNumber" Title="Fatura No" />
+        <TemplateColumn Title="Tip">
+            <CellTemplate>
+                <MudChip T="string" Size="Size.Small" Color="@(context.Item.InvoiceType == Entegrasyon.Entity.Invoicing.EInvoiceType.EFatura ? Color.Primary : Color.Secondary)">
+                    @(context.Item.InvoiceType == Entegrasyon.Entity.Invoicing.EInvoiceType.EFatura ? "E-Fatura" : "E-Arsiv")
+                </MudChip>
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Property="x => x.CustomerTitle" Title="Musteri" />
+        <PropertyColumn Property="x => x.IssueDate" Title="Tarih" Format="dd.MM.yyyy" />
+        <PropertyColumn Property="x => x.GrandTotal" Title="Tutar" Format="N2" />
+        <TemplateColumn Title="Durum">
+            <CellTemplate>
+                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Item.Status)">
+                    @GetStatusText(context.Item.Status)
+                </MudChip>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+    <NoRecordsContent>
+        <MudText>Henuz fatura bulunmuyor.</MudText>
+    </NoRecordsContent>
+</MudDataGrid>
+
+<MudPagination Class="mt-4" Count="_totalPages" Selected="_currentPage" SelectedChanged="OnPageChanged" />
