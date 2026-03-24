@@ -24,8 +24,11 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.InsertData(
                 table: "MarketPlaces",
-                columns: new[] { "Id", "Name", "IsBasicAuth", "IsDeleted", "CreatedAt" },
-                values: new object[] { 3, "Hepsiburada", true, false, new DateTime(2026, 3, 22, 0, 0, 0, DateTimeKind.Utc) });
+                columns: new[] { "Id", "Name", "IsBasicAuth", "IsDeleted", "CreatedAt", "DeletedAt", "UpdatedAt" },
+                values: new object[] { 3, "Hepsiburada", true, false,
+                    new DateTimeOffset(new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                    new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                    new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)) });
         }
 
         /// <inheritdoc />

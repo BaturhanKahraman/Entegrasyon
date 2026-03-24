@@ -25,10 +25,12 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
             migrationBuilder.InsertData(
                 table: "MarketPlaces",
-                columns: new[] { "Id", "Name", "IsBasicAuth", "IsDeleted", "CreatedAt",
+                columns: new[] { "Id", "Name", "IsBasicAuth", "IsDeleted", "CreatedAt", "DeletedAt", "UpdatedAt",
                     "BaseUrl", "TokenUrl" },
                 values: new object[] { 6, "Amazon", false, false,
-                    new DateTime(2026, 3, 22, 0, 0, 0, DateTimeKind.Utc),
+                    new DateTimeOffset(new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                    new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                    new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                     "https://sellingpartnerapi-eu.amazon.com",
                     "https://api.amazon.com/auth/o2/token" });
         }

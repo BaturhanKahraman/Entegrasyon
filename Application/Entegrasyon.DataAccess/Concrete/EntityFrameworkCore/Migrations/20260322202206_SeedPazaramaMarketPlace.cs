@@ -12,12 +12,15 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
         {
             migrationBuilder.InsertData(
                 table: "MarketPlaces",
-                columns: new[] { "Id", "Name", "BaseUrl", "TokenUrl", "IsDeleted", "CreatedAt" },
+                columns: new[] { "Id", "Name", "BaseUrl", "TokenUrl", "IsBasicAuth", "IsDeleted", "CreatedAt", "DeletedAt", "UpdatedAt" },
                 values: new object[] {
                     5, "Pazarama",
                     "https://isortagimapi.pazarama.com",
                     "https://isortagimgiris.pazarama.com/connect/token",
-                    false, new DateTime(2026, 3, 22, 0, 0, 0, DateTimeKind.Utc)
+                    false, false,
+                    new DateTimeOffset(new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                    new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                    new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                 });
         }
 

@@ -1,4 +1,10 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Brands;
+using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Customers;
+using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.User;
 using Entegrasyon.IntegrationTest.Collections;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -108,5 +114,185 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         var scope = Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<T>();
         return (service, scope);
+    }
+
+    // ─── Phase 0: Shared Seed Helper Methods ─────────────────────────────
+
+    /// <summary>
+    /// Product + ProductVariant + BranchOfficeStock olusturur.
+    /// BranchOffice, Brand, Category onceden seed edilmis olmali.
+    /// </summary>
+    protected async Task<(Guid ProductId, Guid VariantId)> SeedProductWithStockAsync(
+        string barcode, int stock, int branchOfficeId = 1, int? brandId = null, int? categoryId = null,
+        string? stockCode = null)
+    {
+        using var dbContext = CreateDbContext();
+
+        // Default brand/category: ilk kayitlari al
+        brandId ??= await dbContext.Brands.Select(b => b.Id).FirstAsync();
+        categoryId ??= await dbContext.Categories.Select(c => c.Id).FirstAsync();
+
+        var productId = Guid.NewGuid();
+        var variantId = Guid.NewGuid();
+
+        dbContext.MainProducts.Add(new Product
+        {
+            Id = productId,
+            Title = $"Test Product {barcode}",
+            Description = "Integration test product",
+            StockCode = stockCode ?? $"SC-{barcode}",
+            BrandId = brandId,
+            CategoryId = categoryId.Value,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        dbContext.ProductVariants.Add(new ProductVariant
+        {
+            Id = variantId,
+            ProductId = productId,
+            Barcode = barcode,
+            ListPrice = 200,
+            SalePrice = 180,
+            CurrencyType = "TRY",
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        dbContext.BranchOfficeStocks.Add(new BranchOfficeStock
+        {
+            BranchOfficeId = branchOfficeId,
+            ProductVariantId = variantId,
+            FirstTotalStock = stock,
+            SoldQuantity = 0
+        });
+
+        await dbContext.SaveChangesAsync();
+        return (productId, variantId);
+    }
+
+    /// <summary>
+    /// MarketPlace kaydı seed eder. Respawn her test class'ta temizler.
+    /// </summary>
+    protected async Task SeedMarketPlaceAsync(int id, string name)
+    {
+        using var dbContext = CreateDbContext();
+        if (!await dbContext.MarketPlaces.AnyAsync(mp => mp.Id == id))
+        {
+            dbContext.MarketPlaces.Add(new MarketPlace
+            {
+                Id = id,
+                Name = name,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            await dbContext.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// MarketPlaceWarehouse kaydı seed eder. Siparis import stok dusme icin gerekli.
+    /// </summary>
+    protected async Task SeedMarketPlaceWarehouseAsync(int marketPlaceId, int branchOfficeId)
+    {
+        using var dbContext = CreateDbContext();
+        var exists = await dbContext.MarketPlaceWarehouses
+            .AnyAsync(w => w.MarketPlaceId == marketPlaceId && w.BranchOfficeId == branchOfficeId);
+        if (!exists)
+        {
+            dbContext.MarketPlaceWarehouses.Add(new MarketPlaceWarehouse
+            {
+                MarketPlaceId = marketPlaceId,
+                BranchOfficeId = branchOfficeId
+            });
+            await dbContext.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// SaleManager testleri icin Customer + ApplicationUser seed eder.
+    /// </summary>
+    protected async Task<(Guid UserId, int CustomerId)> SeedCustomerAndUserAsync()
+    {
+        using var dbContext = CreateDbContext();
+
+        var userId = Guid.NewGuid();
+        dbContext.Users.Add(new ApplicationUser
+        {
+            Id = userId,
+            Name = "Test",
+            Surname = "User",
+            FullName = "Test User",
+            Email = $"test-{userId:N}@test.com",
+            UserName = $"testuser-{userId:N}",
+            NormalizedUserName = $"TESTUSER-{userId:N}",
+            NormalizedEmail = $"TEST-{userId:N}@TEST.COM",
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        dbContext.Customers.Add(new Customer
+        {
+            Name = "Test",
+            Surname = "Customer",
+            FullName = "Test Customer",
+            CustomerType = "Retail",
+            PhoneNumber = "5551234567",
+            Address = new Address
+            {
+                City = "Istanbul",
+                Country = "Turkey",
+                FullAddress = "Test Adres"
+            },
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        await dbContext.SaveChangesAsync();
+
+        var customerId = await dbContext.Customers
+            .Where(c => c.FullName == "Test Customer")
+            .Select(c => c.Id)
+            .FirstAsync();
+
+        return (userId, customerId);
+    }
+
+    /// <summary>
+    /// Ortak seed: BranchOffice, Brand, Category. Cogu test class'in ihtiyaci var.
+    /// </summary>
+    protected async Task SeedBasicEntitiesAsync(
+        string brandName = "Test Marka",
+        string categoryName = "Test Kategori",
+        int branchOfficeId = 1)
+    {
+        using var dbContext = CreateDbContext();
+
+        if (!await dbContext.BranchOffices.AnyAsync(b => b.Id == branchOfficeId))
+        {
+            dbContext.BranchOffices.Add(new BranchOffice
+            {
+                Id = branchOfficeId,
+                Name = "Ana Depo",
+                IsDefaultMarketPlaceStock = true,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        if (!await dbContext.Brands.AnyAsync(b => b.Name == brandName))
+        {
+            dbContext.Brands.Add(new Brand
+            {
+                Name = brandName,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        if (!await dbContext.Categories.AnyAsync(c => c.Name == categoryName))
+        {
+            dbContext.Categories.Add(new Category
+            {
+                Name = categoryName,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }
