@@ -18,6 +18,7 @@ using Entegrasyon.Entity.Dtos.Product.Discount;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Dtos.Settings;
+using Entegrasyon.Entity.Dtos.Shipping;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -51,6 +52,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<SaveMarketplaceOverridesDto>, SaveMarketplaceOverridesDtoValidator>();
         services.AddScoped<IValidator<UpdateApplicationSettingDto>, UpdateApplicationSettingValidator>();
         services.AddScoped<IValidator<SaveCommissionRateDto>, SaveCommissionRateDtoValidator>();
+        services.AddScoped<IValidator<TrackShipmentDto>, TrackShipmentValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;

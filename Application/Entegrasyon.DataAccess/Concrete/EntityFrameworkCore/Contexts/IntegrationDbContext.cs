@@ -17,6 +17,7 @@ using Entegrasyon.Entity.Invoices;
 using Entegrasyon.Entity.Labels;
 using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Marketplace;
+using Entegrasyon.Entity.Shipping;
 using Entegrasyon.Entity.Templates;
 using Entegrasyon.Entity.User;
 
@@ -131,6 +132,10 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
 
     // Commission
     public virtual DbSet<MarketplaceCommissionRate> MarketplaceCommissionRates { get; set; }
+
+    // Shipping
+    public virtual DbSet<ShipmentTracking> ShipmentTrackings { get; set; } = null!;
+    public virtual DbSet<ShipmentStatusHistory> ShipmentStatusHistories { get; set; } = null!;
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }
