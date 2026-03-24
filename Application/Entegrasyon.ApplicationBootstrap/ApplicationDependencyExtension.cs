@@ -14,6 +14,7 @@ using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Concrete.BulkOperations;
 using Entegrasyon.Business.Concrete.Import;
+using Entegrasyon.Business.Concrete.POS;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Utility.Constants;
@@ -83,6 +84,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<INotificationSettingManager, NotificationSettingManager>();
             services.AddScoped<IReportManager, ReportManager>();
             services.AddScoped<IApplicationSettingManager, ApplicationSettingManager>();
+            services.AddScoped<IPOSSessionManager, POSSessionManager>();
 
             // Toplu İşlem servisleri
             services.AddScoped<ExcelParser>();

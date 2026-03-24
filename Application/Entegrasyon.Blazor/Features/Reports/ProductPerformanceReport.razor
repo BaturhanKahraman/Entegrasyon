@@ -1,0 +1,67 @@
+@page "/reports/product-performance"
+@using Entegrasyon.Entity.Dtos.Reports
+
+<PageTitle>Urun Performans Raporu</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Urun Performans Raporu</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" sm="4">
+            <MudDatePicker Label="Baslangic Tarihi" @bind-Date="_startDate"
+                           Variant="Variant.Outlined" DateFormat="dd.MM.yyyy" />
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudDatePicker Label="Bitis Tarihi" @bind-Date="_endDate"
+                           Variant="Variant.Outlined" DateFormat="dd.MM.yyyy" />
+        </MudItem>
+        <MudItem xs="12" sm="4" Class="d-flex align-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="GenerateReportAsync" Disabled="_loading"
+                       StartIcon="@Icons.Material.Filled.Assessment">
+                Rapor Olustur
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+@if (_products.Any())
+{
+    <MudPaper Class="pa-4">
+        <MudDataGrid T="ProductPerformanceDto" Items="@_products.AsEnumerable()"
+                     Hover="true" Striped="true" Dense="true"
+                     SortMode="SortMode.Multiple" Filterable="true"
+                     QuickFilter="@QuickFilter">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Urun Performansi</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchTerm" Placeholder="Urun ara..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium" Class="mt-0" Clearable="true" />
+            </ToolBarContent>
+            <Columns>
+                <PropertyColumn Property="x => x.ProductName" Title="Urun" Sortable="true" />
+                <PropertyColumn Property="x => x.TotalSold" Title="Satilan Adet" Sortable="true" />
+                <PropertyColumn Property="x => x.TotalRevenue" Title="Toplam Ciro (TL)" Format="N2" Sortable="true" />
+                <PropertyColumn Property="x => x.StockTurnoverRate" Title="Stok Devir Hizi" Format="N2" Sortable="true" />
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="ProductPerformanceDto" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudPaper>
+}
+else if (!_loading)
+{
+    <MudPaper Class="pa-4" Style="min-height: 200px;">
+        <MudText Typo="Typo.h6" Color="Color.Dark" Align="Align.Center" Class="mt-8">
+            Rapor olusturmak icin tarih araligi secin.
+        </MudText>
+    </MudPaper>
+}

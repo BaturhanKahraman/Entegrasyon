@@ -1,0 +1,62 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">Oturum Ozeti</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mb-4" />
+        }
+        else if (_summary != null)
+        {
+            <MudSimpleTable Dense="true" Striped="true" Hover="true">
+                <tbody>
+                    <tr>
+                        <td><strong>Acilis Kasasi</strong></td>
+                        <td class="text-right">@_summary.OpeningCash.ToString("C2", _trCulture)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Toplam Satis</strong></td>
+                        <td class="text-right">@_summary.TotalSales.ToString("C2", _trCulture)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nakit Satislar</strong></td>
+                        <td class="text-right">@_summary.TotalCash.ToString("C2", _trCulture)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kart Satislar</strong></td>
+                        <td class="text-right">@_summary.TotalCard.ToString("C2", _trCulture)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Islem Sayisi</strong></td>
+                        <td class="text-right">@_summary.TransactionCount</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Beklenen Kasa</strong></td>
+                        <td class="text-right">@_summary.ExpectedCash.ToString("C2", _trCulture)</td>
+                    </tr>
+                    @if (_summary.ClosingCash.HasValue)
+                    {
+                        <tr>
+                            <td><strong>Kapanis Kasasi</strong></td>
+                            <td class="text-right">@_summary.ClosingCash.Value.ToString("C2", _trCulture)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fark</strong></td>
+                            <td class="text-right" style="color: @(_summary.Difference >= 0 ? "green" : "red")">
+                                @_summary.Difference?.ToString("C2", _trCulture)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Warning">Ozet bilgisi yuklenemedi.</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Filled">Kapat</MudButton>
+    </DialogActions>
+</MudDialog>
