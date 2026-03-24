@@ -1,0 +1,81 @@
+@page "/shipping"
+@using Entegrasyon.Entity.Shipping
+
+<PageTitle>Kargo Takip</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Kargo Takip</MudText>
+
+<CargoSummaryCards Summary="_summary" IsLoading="_isLoadingSummary" />
+
+<MudPaper Elevation="2" Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" sm="3">
+            <MudSelect T="int?" Label="Kargo Sirketi" Value="_selectedCargoCompanyId"
+                       ValueChanged="OnCargoCompanyFilterChanged" Clearable="true"
+                       Variant="Variant.Outlined" Dense="true">
+                <MudSelectItem T="int?" Value="@((int?)18)">Aras Kargo</MudSelectItem>
+                <MudSelectItem T="int?" Value="@((int?)13)">Surat Kargo</MudSelectItem>
+                <MudSelectItem T="int?" Value="@((int?)17)">Yurtici Kargo</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudSelect T="ShipmentStatus?" Label="Durum" Value="_selectedStatus"
+                       ValueChanged="OnStatusFilterChanged" Clearable="true"
+                       Variant="Variant.Outlined" Dense="true">
+                @foreach (ShipmentStatus status in Enum.GetValues<ShipmentStatus>())
+                {
+                    <MudSelectItem T="ShipmentStatus?" Value="@((ShipmentStatus?)status)">@GetStatusText(status)</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudDatePicker Label="Baslangic" Date="_fromDate" DateChanged="OnFromDateChanged"
+                           Variant="Variant.Outlined" Dense="true" />
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudDatePicker Label="Bitis" Date="_toDate" DateChanged="OnToDateChanged"
+                           Variant="Variant.Outlined" Dense="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Elevation="2" Class="pa-4">
+    <div class="d-flex justify-space-between align-center mb-3">
+        <MudText Typo="Typo.h6">Gonderi Listesi</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OnAddTrackingClicked">
+            Takip Ekle
+        </MudButton>
+    </div>
+
+    <MudDataGrid T="Entegrasyon.Entity.Dtos.Shipping.ShipmentTrackingDto"
+                 Items="_shipments.AsEnumerable()"
+                 Loading="_isLoading" Hover="true" FixedHeader="true" Height="500px"
+                 RowClick="OnRowClicked" RowStyleFunc="@((_, _) => "cursor: pointer;")" Dense="true">
+        <Columns>
+            <PropertyColumn Property="x => x.TrackingNumber" Title="Takip No" />
+            <PropertyColumn Property="x => x.CargoCompanyName" Title="Kargo Sirketi" />
+            <TemplateColumn Title="Durum">
+                <CellTemplate>
+                    <MudChip T="string" Color="@GetStatusColor(context.Item.CurrentStatus)" Size="Size.Small">
+                        @GetStatusText(context.Item.CurrentStatus)
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.RecipientName" Title="Alici" />
+            <TemplateColumn Title="Son Guncelleme">
+                <CellTemplate>
+                    @(context.Item.LastStatusUpdate?.ToString("dd.MM.yyyy HH:mm") ?? "-")
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Teslim Tarihi">
+                <CellTemplate>
+                    @(context.Item.ActualDeliveryDate?.ToString("dd.MM.yyyy HH:mm") ?? "-")
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <NoRecordsContent>
+            <MudText>Henuz kargo takip kaydi bulunmuyor.</MudText>
+        </NoRecordsContent>
+    </MudDataGrid>
+</MudPaper>
