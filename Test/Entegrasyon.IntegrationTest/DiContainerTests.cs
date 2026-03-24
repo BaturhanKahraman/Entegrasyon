@@ -154,6 +154,14 @@ public class DiContainerTests : IntegrationTestBase
         typeof(ITrendyolEFaturaApiClient),
         typeof(ITrendyolEFaturaService),
 
+        // Temu
+        typeof(ITemuApiClient),
+
+        // Kargo servisleri
+        typeof(ISuratKargoService),
+        typeof(IArasKargoService),
+        typeof(IYurticiKargoService),
+
         // Validators
         typeof(IFluentValidator),
     };

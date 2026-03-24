@@ -35,6 +35,9 @@ public partial class CategoryImport
     private PttavmCategoryImporter PttavmImporter { get; set; } = null!;
 
     [Inject]
+    private TemuCategoryImporter TemuImporter { get; set; } = null!;
+
+    [Inject]
     private NavigationManager NavigationManager { get; set; } = null!;
 
     [Inject]
@@ -71,6 +74,11 @@ public partial class CategoryImport
     private List<CategoryTreeNode> pttavmCategories = [];
     private IReadOnlyCollection<CategoryTreeNode>? pttavmSelectedNodes;
     private bool pttavmLoading;
+
+    // Temu state
+    private List<CategoryTreeNode> temuCategories = [];
+    private IReadOnlyCollection<CategoryTreeNode>? temuSelectedNodes;
+    private bool temuLoading;
 
     // Amazon state (product type search — kategori ağacı yok)
     private List<AmazonProductTypeSearchResult> amazonSelectedProductTypes = [];
@@ -463,5 +471,68 @@ public partial class CategoryImport
     private void ClearPttavmSelection()
     {
         pttavmSelectedNodes = null;
+    }
+
+    // Temu methods
+    private async Task LoadTemuCategoriesAsync()
+    {
+        temuLoading = true;
+        var result = await TemuImporter.GetExternalCategoriesAsync();
+        if (result.Success && result.Data != null)
+        {
+            temuCategories = result.Data.Select(MapToTreeNode).ToList();
+            var totalCount = CountAllCategories(temuCategories);
+            Snackbar.Add($"{totalCount} Temu kategori yuklendi.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "Temu kategorileri yuklenemedi.", Severity.Error);
+        }
+        temuLoading = false;
+    }
+
+    private async Task ImportTemuCategoriesAsync()
+    {
+        if (temuSelectedNodes == null || !temuSelectedNodes.Any())
+        {
+            Snackbar.Add("Lutfen en az bir kategori secin.", Severity.Warning);
+            return;
+        }
+
+        importing = true;
+        try
+        {
+            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var importRequests = temuSelectedNodes.Select(MapToImportRequest).ToList();
+            var importEvent = new CategoryImportRequestedEvent("Temu", importRequests, userId);
+            await ImportRequestedChannel.PublishAsync(importEvent);
+            Snackbar.Add("Temu kategori ice aktarma islemi baslatildi.", Severity.Info);
+            temuSelectedNodes = null;
+            NavigationManager.NavigateTo("/categories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Temu category import request failed");
+            Snackbar.Add($"Hata: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            importing = false;
+        }
+    }
+
+    private void RemoveTemuSelectedCategory(CategoryTreeNode node)
+    {
+        if (temuSelectedNodes != null)
+        {
+            var list = temuSelectedNodes.ToList();
+            list.Remove(node);
+            temuSelectedNodes = list;
+        }
+    }
+
+    private void ClearTemuSelection()
+    {
+        temuSelectedNodes = null;
     }
 }
