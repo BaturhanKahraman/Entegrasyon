@@ -40,4 +40,10 @@ public sealed class Category : BaseEntity
     /// Bu kategorideki ürünler için varsayılan KDV oranı (%)
     /// </summary>
     public decimal? DefaultVatRate { get; set; }
+
+    // SEO
+    public string? SeoTitle { get; set; }
+    public string? SeoDescription { get; set; }
+    public string? SeoSlug { get; set; }
+    public string? SeoKeywords { get; set; }
 }
