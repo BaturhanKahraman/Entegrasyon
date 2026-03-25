@@ -1,0 +1,9 @@
+using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity.Storefront;
+
+namespace Entegrasyon.Business.Abstract;
+
+public interface IStorefrontBannerManager
+{
+    Task<IDataResult<List<StorefrontBanner>>> GetActiveBannersAsync(int tenantId, BannerPosition position);
+}
