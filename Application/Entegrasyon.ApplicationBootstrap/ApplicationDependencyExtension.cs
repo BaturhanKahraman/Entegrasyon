@@ -4,6 +4,7 @@ using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
 using Entegrasyon.Business.Concrete.Invoicing;
 using Entegrasyon.Business.Concrete.Kargo;
+using Entegrasyon.Business.Concrete.Storefront;
 using Entegrasyon.Business.Concrete.Temu;
 using Entegrasyon.Business.Concrete.Hepsiburada;
 using Entegrasyon.Business.Concrete.N11;
@@ -459,6 +460,16 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             services.AddScoped<ISignalRNotificationSender, SignalRSender>();
             services.AddScoped<IEmailSender, EmailSender>();
+            return services;
+        }
+
+        public static IServiceCollection AddStorefrontServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IStorefrontTenantResolver, StorefrontTenantResolver>();
+            services.AddScoped<IStorefrontTenantContext, StorefrontTenantContext>();
+            services.AddScoped<IStorefrontSettingsManager, StorefrontSettingsManager>();
+            services.AddScoped<IStorefrontPageManager, StorefrontPageManager>();
+            services.AddScoped<IStorefrontBannerManager, StorefrontBannerManager>();
             return services;
         }
     }
