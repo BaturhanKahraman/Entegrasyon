@@ -1,0 +1,14 @@
+@section Head {
+    <seo-meta title="@ViewBag.Title" description="@ViewBag.SeoDescription" />
+}
+
+<section class="py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <article>
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">@ViewBag.Title</h1>
+            <div class="prose prose-lg max-w-none text-gray-700">
+                @Html.Raw(ViewBag.ContentHtml)
+            </div>
+        </article>
+    </div>
+</section>

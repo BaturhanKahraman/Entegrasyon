@@ -1,0 +1,15 @@
+@{
+    Layout = "_Layout";
+    var statusCode = (int)(ViewBag.StatusCode ?? 500);
+    var message = (string)(ViewBag.Message ?? "Beklenmeyen bir hata olustu.");
+}
+
+<section class="flex-1 flex items-center justify-center py-24">
+    <div class="text-center">
+        <p class="text-9xl font-bold text-gray-200">@statusCode</p>
+        <h1 class="text-2xl font-semibold text-gray-800 mt-4">@message</h1>
+        <div class="mt-8">
+            <a href="/" class="btn-primary">Ana Sayfaya Don</a>
+        </div>
+    </div>
+</section>

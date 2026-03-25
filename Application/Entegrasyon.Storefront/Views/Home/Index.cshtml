@@ -1,0 +1,89 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
+}
+
+@{
+    var banners = ViewBag.Banners as List<StorefrontBanner> ?? new List<StorefrontBanner>();
+}
+
+@* Hero Banner Section *@
+@if (banners.Count > 0)
+{
+    <section class="relative">
+        <div class="w-full overflow-hidden">
+            @foreach (var banner in banners)
+            {
+                <div class="relative">
+                    <img src="@banner.ImageUrl" alt="@banner.Title" loading="lazy" class="w-full h-auto object-cover" />
+                    @if (!string.IsNullOrWhiteSpace(banner.LinkUrl))
+                    {
+                        <a href="@banner.LinkUrl" class="absolute inset-0" aria-label="@banner.Title"></a>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@* Trust Badges *@
+<section class="py-8 bg-gray-50 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span class="font-medium text-sm text-gray-700">Hizli Kargo</span>
+            </div>
+            <div class="flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span class="font-medium text-sm text-gray-700">Guvenli Odeme</span>
+            </div>
+            <div class="flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span class="font-medium text-sm text-gray-700">Kolay Iade</span>
+            </div>
+            <div class="flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span class="font-medium text-sm text-gray-700">7/24 Destek</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* Welcome Section *@
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">@Tenant.Settings.StoreName</h1>
+        @if (!string.IsNullOrWhiteSpace(Tenant.Settings.StoreSlogan))
+        {
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">@Tenant.Settings.StoreSlogan</p>
+        }
+    </div>
+</section>
+
+@* Newsletter Section *@
+@if (Tenant.Settings.NewsletterEnabled)
+{
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-xl mx-auto text-center">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Bultenimize Abone Olun</h2>
+                <p class="text-gray-600 mb-6">Kampanya ve yeni urunlerden haberdar olun.</p>
+                <form class="flex flex-col sm:flex-row gap-3">
+                    <input type="email" placeholder="E-posta adresiniz" required
+                           class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+                    <button type="submit" class="btn-primary">Abone Ol</button>
+                </form>
+            </div>
+        </div>
+    </section>
+}
