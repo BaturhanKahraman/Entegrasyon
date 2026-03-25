@@ -1,0 +1,79 @@
+@{
+    var products = ViewBag.Products as Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto>;
+    if (products == null || products.TotalPageCount <= 1) return;
+
+    var currentPage = products.CurrentPageIndex;
+    var totalPages = products.TotalPageCount;
+
+    // Calculate visible page range (max 5 centered on current)
+    var startPage = Math.Max(1, currentPage - 2);
+    var endPage = Math.Min(totalPages, startPage + 4);
+    if (endPage - startPage < 4)
+    {
+        startPage = Math.Max(1, endPage - 4);
+    }
+
+    string BuildPageUrl(int page)
+    {
+        var query = Context.Request.Query
+            .Where(q => !q.Key.Equals("Page", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(q => q.Value.Select(v => $"{Uri.EscapeDataString(q.Key)}={Uri.EscapeDataString(v ?? "")}"))
+            .ToList();
+        query.Add($"Page={page}");
+        return $"{Context.Request.Path}?{string.Join("&", query)}";
+    }
+}
+
+<nav aria-label="Sayfalama" class="flex justify-center mt-8">
+    <ul class="flex items-center gap-1">
+        @* Previous *@
+        <li>
+            @if (currentPage > 1)
+            {
+                <a href="@BuildPageUrl(currentPage - 1)"
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    &laquo; Onceki
+                </a>
+            }
+            else
+            {
+                <span class="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-300 cursor-not-allowed">
+                    &laquo; Onceki
+                </span>
+            }
+        </li>
+
+        @* Page Numbers *@
+        @for (var i = startPage; i <= endPage; i++)
+        {
+            <li>
+                @if (i == currentPage)
+                {
+                    <span class="px-3 py-2 text-sm font-semibold bg-primary text-white rounded-lg">@i</span>
+                }
+                else
+                {
+                    <a href="@BuildPageUrl(i)"
+                       class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">@i</a>
+                }
+            </li>
+        }
+
+        @* Next *@
+        <li>
+            @if (currentPage < totalPages)
+            {
+                <a href="@BuildPageUrl(currentPage + 1)"
+                   class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    Sonraki &raquo;
+                </a>
+            }
+            else
+            {
+                <span class="px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-300 cursor-not-allowed">
+                    Sonraki &raquo;
+                </span>
+            }
+        </li>
+    </ul>
+</nav>

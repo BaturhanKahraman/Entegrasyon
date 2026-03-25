@@ -1,0 +1,52 @@
+@{
+    var query = ViewBag.Query as Entegrasyon.Entity.Dtos.Storefront.StorefrontCatalogQuery;
+}
+
+<form method="get" class="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
+    <h3 class="font-semibold text-gray-900 text-sm">Filtrele & Sirala</h3>
+
+    @* Sort *@
+    <div>
+        <label for="SortBy" class="block text-sm text-gray-600 mb-1">Siralama</label>
+        <select name="SortBy" id="SortBy"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="" selected="@(string.IsNullOrEmpty(query?.SortBy))">Onerilen</option>
+            <option value="newest" selected="@(query?.SortBy == "newest")">Yeni Eklenen</option>
+            <option value="price-asc" selected="@(query?.SortBy == "price-asc")">Fiyat (Artan)</option>
+            <option value="price-desc" selected="@(query?.SortBy == "price-desc")">Fiyat (Azalan)</option>
+            <option value="bestseller" selected="@(query?.SortBy == "bestseller")">Cok Satan</option>
+        </select>
+    </div>
+
+    @* Price Range *@
+    <div>
+        <label class="block text-sm text-gray-600 mb-1">Fiyat Araligi</label>
+        <div class="flex items-center gap-2">
+            <input type="number" name="MinPrice" placeholder="Min"
+                   value="@query?.MinPrice"
+                   min="0" step="0.01"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+            <span class="text-gray-400">-</span>
+            <input type="number" name="MaxPrice" placeholder="Max"
+                   value="@query?.MaxPrice"
+                   min="0" step="0.01"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+        </div>
+    </div>
+
+    @* Hidden inputs to preserve context *@
+    @if (query?.CategoryId.HasValue == true)
+    {
+        <input type="hidden" name="CategoryId" value="@query.CategoryId" />
+    }
+    @if (query?.BrandId.HasValue == true)
+    {
+        <input type="hidden" name="BrandId" value="@query.BrandId" />
+    }
+    @if (!string.IsNullOrWhiteSpace(query?.SearchQuery))
+    {
+        <input type="hidden" name="q" value="@query.SearchQuery" />
+    }
+
+    <button type="submit" class="w-full btn-primary text-sm">Filtrele</button>
+</form>
