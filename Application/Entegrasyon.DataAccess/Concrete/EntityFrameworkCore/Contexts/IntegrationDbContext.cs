@@ -23,6 +23,7 @@ using Entegrasyon.Entity.POS;
 using Entegrasyon.Entity.Templates;
 using Entegrasyon.Entity.User;
 using Entegrasyon.Entity.BulkOperations;
+using Entegrasyon.Entity.Storefront;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -152,6 +153,12 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<POSSession> POSSessions { get; set; }
     public virtual DbSet<POSTransaction> POSTransactions { get; set; }
     public virtual DbSet<CashMovement> CashMovements { get; set; }
+
+    // Storefront
+    public virtual DbSet<StorefrontSettings> StorefrontSettings { get; set; }
+    public virtual DbSet<StorefrontDomainMapping> StorefrontDomainMappings { get; set; }
+    public virtual DbSet<StorefrontBanner> StorefrontBanners { get; set; }
+    public virtual DbSet<StorefrontPage> StorefrontPages { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

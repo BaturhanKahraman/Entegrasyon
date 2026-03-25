@@ -15,6 +15,8 @@ public class BrandEntityConfiguration:IEntityTypeConfiguration<Brand>
             .OnDelete(DeleteBehavior.SetNull);
         builder.HasQueryFilter(x => !x.IsDeleted);
 
+        builder.HasIndex(x => x.SeoSlug).IsUnique().HasFilter("\"SeoSlug\" IS NOT NULL");
+
         //Brand[] brands = new Brand[]
         //{
         //    new Brand { Id = 1,Name = "Nike",CreatedAt = DateTimeOffset.MinValue },

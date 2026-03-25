@@ -31,5 +31,7 @@ public class ProductEntityConfiguration:IEntityTypeConfiguration<Product>
                 p => new { p.Title,p.Description,p.StockCode })
             .HasIndex(p => p.SearchVector)
             .HasMethod("GIN");
+
+        builder.HasIndex(x => x.SeoSlug).IsUnique().HasFilter("\"SeoSlug\" IS NOT NULL");
     }
 }

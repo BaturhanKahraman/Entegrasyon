@@ -19,5 +19,7 @@ public class CategoryEntityConfiguration:IEntityTypeConfiguration<Category>
         builder.Property(x => x.ImportId).IsRequired(false);
         builder.HasIndex(x => x.ImportId);
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        builder.HasIndex(x => x.SeoSlug).IsUnique().HasFilter("\"SeoSlug\" IS NOT NULL");
     }
 }
