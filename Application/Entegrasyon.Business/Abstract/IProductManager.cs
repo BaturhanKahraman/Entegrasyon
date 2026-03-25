@@ -1,5 +1,6 @@
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity;
@@ -22,4 +23,12 @@ public interface IProductService
     Task<IResult> SoftDeleteProduct(Guid id);
     Task<int> GetProductCountByCategoryId(int categoryId);
     Task<bool> HasSoldProductsInCategory(int categoryId);
+
+    // Storefront
+    Task<IDataResult<Product>> GetProductBySeoSlugAsync(string slug);
+    Task<IDataResult<Pageable<StorefrontProductCardDto>>> GetStorefrontProductsAsync(StorefrontCatalogQuery query);
+    Task<IDataResult<List<StorefrontProductCardDto>>> GetNewProductsAsync(int count);
+    Task<IDataResult<List<StorefrontProductCardDto>>> GetBestSellersAsync(int count);
+    Task<IDataResult<List<StorefrontSearchSuggestionDto>>> GetSearchSuggestionsAsync(string query, int maxResults = 8);
+    Task<IDataResult<StorefrontProductDetailDto>> GetStorefrontProductDetailAsync(string seoSlug);
 }

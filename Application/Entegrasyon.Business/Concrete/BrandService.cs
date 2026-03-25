@@ -126,6 +126,18 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         return new SuccessDataResult<BrandDetailDto>(entity);
     }
 
+    public async Task<IDataResult<Brand>> GetBrandBySeoSlugAsync(string slug)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var brand = await dbContext.Brands
+            .FirstOrDefaultAsync(b => b.SeoSlug == slug && !b.IsDeleted);
+
+        if (brand is null)
+            return new ErrorDataResult<Brand>(null!, "Marka bulunamadı.");
+
+        return new SuccessDataResult<Brand>(brand);
+    }
+
     private static async Task<IResult> CheckIfTheSameNameExits(IntegrationDbContext dbContext, string name)
     {
         if (await dbContext.Brands.AnyAsync(x => x.Name == name))

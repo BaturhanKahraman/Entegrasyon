@@ -2,6 +2,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Category;
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -403,6 +404,53 @@ namespace Entegrasyon.Business.Concrete
                 ValidParentCandidates: validParents,
                 HasSoldProducts: hasSold,
                 HasProducts: hasProducts));
+        }
+
+        public async Task<IDataResult<Category>> GetCategoryBySeoSlugAsync(string slug)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var category = await dbContext.Categories
+                .Include(c => c.SubCategories)
+                .Include(c => c.SuperCategory)
+                .FirstOrDefaultAsync(c => c.SeoSlug == slug && !c.IsDeleted);
+
+            if (category is null)
+                return new ErrorDataResult<Category>(null!, "Kategori bulunamadı.");
+
+            return new SuccessDataResult<Category>(category);
+        }
+
+        public async Task<IDataResult<List<CategoryTreeDto>>> GetCategoryTreeAsync()
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+
+            var allCategories = await dbContext.Categories
+                .Where(c => !c.IsDeleted)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    c.SeoSlug,
+                    c.SuperCategoryId,
+                    ProductCount = c.Products.Count()
+                })
+                .ToListAsync();
+
+            CategoryTreeDto BuildNode(int id, string name, string? seoSlug, int productCount)
+            {
+                var children = allCategories
+                    .Where(c => c.SuperCategoryId == id)
+                    .Select(c => BuildNode(c.Id, c.Name, c.SeoSlug, c.ProductCount))
+                    .ToList();
+                return new CategoryTreeDto(id, name, seoSlug, productCount, children);
+            }
+
+            var roots = allCategories
+                .Where(c => c.SuperCategoryId == null)
+                .Select(c => BuildNode(c.Id, c.Name, c.SeoSlug, c.ProductCount))
+                .ToList();
+
+            return new SuccessDataResult<List<CategoryTreeDto>>(roots);
         }
 
         private static async Task<HashSet<int>> GetDescendantIdsAsync(IntegrationDbContext dbContext, int categoryId)
