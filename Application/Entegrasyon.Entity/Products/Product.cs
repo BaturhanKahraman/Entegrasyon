@@ -25,5 +25,9 @@ public sealed class Product : BaseEntity
     public ICollection<ProductMarketplace> ProductMarketplaces { get; set; } = new List<ProductMarketplace>();
     public NpgsqlTsVector SearchVector { get; set; } = null!;
 
-
+    // SEO
+    public string? SeoTitle { get; set; }
+    public string? SeoDescription { get; set; }
+    public string? SeoSlug { get; set; }
+    public string? SeoKeywords { get; set; }
 }
