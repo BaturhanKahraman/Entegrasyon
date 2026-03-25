@@ -10,6 +10,7 @@ using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Branches;
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using MapsterMapper;
@@ -338,6 +339,217 @@ public class ProductManager(
     {
         using var dbContext = contextFactory.CreateDbContext();
         return await dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
+    }
+
+    public async Task<IDataResult<Product>> GetProductBySeoSlugAsync(string slug)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        var product = await dbContext.MainProducts
+            .Include(p => p.Brand)
+            .Include(p => p.Category).ThenInclude(c => c.SuperCategory)
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.ProductVariantAttributes)
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.Images.Where(i => !i.IsDeleted))
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.BranchOfficeStocks)
+            .Include(p => p.AttributeKeyValues).ThenInclude(akv => akv.CategoryAttribute)
+            .Include(p => p.AttributeKeyValues).ThenInclude(akv => akv.AttributeValue)
+            .FirstOrDefaultAsync(p => p.SeoSlug == slug && !p.IsDeleted);
+
+        if (product is null)
+            return new ErrorDataResult<Product>(null!, "Ürün bulunamadı.");
+
+        return new SuccessDataResult<Product>(product);
+    }
+
+    public async Task<IDataResult<Pageable<StorefrontProductCardDto>>> GetStorefrontProductsAsync(StorefrontCatalogQuery query)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        var q = dbContext.MainProducts.Where(p => !p.IsDeleted);
+
+        if (query.CategoryId.HasValue)
+            q = q.Where(p => p.CategoryId == query.CategoryId.Value);
+
+        if (query.BrandId.HasValue)
+            q = q.Where(p => p.BrandId == query.BrandId.Value);
+
+        if (!string.IsNullOrWhiteSpace(query.SearchQuery))
+            q = q.Where(p =>
+                p.SearchVector.Matches(query.SearchQuery.ToFullTextSearchQuery()) ||
+                p.ProductVariants.Any(pv => pv.Barcode != null && pv.Barcode.Contains(query.SearchQuery)));
+
+        if (query.MinPrice.HasValue)
+            q = q.Where(p => p.ProductVariants.Any(pv => pv.SalePrice >= query.MinPrice.Value));
+
+        if (query.MaxPrice.HasValue)
+            q = q.Where(p => p.ProductVariants.Any(pv => pv.SalePrice <= query.MaxPrice.Value));
+
+        int total = await q.CountAsync();
+
+        q = query.SortBy?.ToLowerInvariant() switch
+        {
+            "price_asc" => q.OrderBy(p => p.ProductVariants.Min(pv => pv.SalePrice)),
+            "price_desc" => q.OrderByDescending(p => p.ProductVariants.Max(pv => pv.SalePrice)),
+            "name_asc" => q.OrderBy(p => p.Title),
+            "name_desc" => q.OrderByDescending(p => p.Title),
+            "bestseller" => q.OrderByDescending(p => p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(s => s.SoldQuantity)),
+            _ => q.OrderByDescending(p => p.CreatedAt)
+        };
+
+        var items = await q
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(p => new StorefrontProductCardDto(
+                p.Id,
+                p.Title,
+                p.SeoSlug,
+                p.ProductVariants
+                    .SelectMany(pv => pv.Images.Where(i => !i.IsDeleted))
+                    .OrderBy(i => i.DisplayOrder)
+                    .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src)
+                    .FirstOrDefault(),
+                p.ProductVariants.Min(pv => pv.SalePrice),
+                p.ProductVariants.Max(pv => pv.SalePrice),
+                p.ProductVariants.Max(pv => pv.ListPrice) > p.ProductVariants.Max(pv => pv.SalePrice)
+                    ? p.ProductVariants.Max(pv => pv.ListPrice)
+                    : (decimal?)null,
+                p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(s => s.CurrentStock),
+                p.Brand != null ? p.Brand.Name : null,
+                p.Category.Name,
+                p.CreatedAt > DateTimeOffset.UtcNow.AddDays(-30)
+            ))
+            .ToListAsync();
+
+        // StorageKey -> public URL conversion
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (!string.IsNullOrEmpty(items[i].ImageUrl))
+                items[i] = items[i] with { ImageUrl = minioFileStorage.GetPublicUrl(items[i].ImageUrl!) };
+        }
+
+        return new SuccessDataResult<Pageable<StorefrontProductCardDto>>(
+            new Pageable<StorefrontProductCardDto>(items, query.Page, query.PageSize, total));
+    }
+
+    public async Task<IDataResult<List<StorefrontProductCardDto>>> GetNewProductsAsync(int count)
+    {
+        var result = await GetStorefrontProductsAsync(new StorefrontCatalogQuery(PageSize: count));
+        if (!result.Success)
+            return new ErrorDataResult<List<StorefrontProductCardDto>>(new List<StorefrontProductCardDto>(), result.Message);
+        return new SuccessDataResult<List<StorefrontProductCardDto>>(result.Data.Items.ToList());
+    }
+
+    public async Task<IDataResult<List<StorefrontProductCardDto>>> GetBestSellersAsync(int count)
+    {
+        var result = await GetStorefrontProductsAsync(new StorefrontCatalogQuery(SortBy: "bestseller", PageSize: count));
+        if (!result.Success)
+            return new ErrorDataResult<List<StorefrontProductCardDto>>(new List<StorefrontProductCardDto>(), result.Message);
+        return new SuccessDataResult<List<StorefrontProductCardDto>>(result.Data.Items.ToList());
+    }
+
+    public async Task<IDataResult<List<StorefrontSearchSuggestionDto>>> GetSearchSuggestionsAsync(string query, int maxResults = 8)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Trim().Length < 2)
+            return new SuccessDataResult<List<StorefrontSearchSuggestionDto>>(new List<StorefrontSearchSuggestionDto>());
+
+        using var dbContext = contextFactory.CreateDbContext();
+        var term = query.Trim();
+
+        var products = await dbContext.MainProducts
+            .Where(p => !p.IsDeleted && EF.Functions.ILike(p.Title, $"%{term}%"))
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(5)
+            .Select(p => new StorefrontSearchSuggestionDto(
+                p.Title,
+                $"/urun/{p.SeoSlug}",
+                "Ürün",
+                p.ProductVariants
+                    .SelectMany(pv => pv.Images.Where(i => !i.IsDeleted))
+                    .OrderBy(i => i.DisplayOrder)
+                    .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src)
+                    .FirstOrDefault()))
+            .ToListAsync();
+
+        var categories = await dbContext.Categories
+            .Where(c => !c.IsDeleted && EF.Functions.ILike(c.Name, $"%{term}%"))
+            .Take(2)
+            .Select(c => new StorefrontSearchSuggestionDto(c.Name, $"/kategori/{c.SeoSlug}", "Kategori", null))
+            .ToListAsync();
+
+        var brands = await dbContext.Brands
+            .Where(b => !b.IsDeleted && EF.Functions.ILike(b.Name, $"%{term}%"))
+            .Take(1)
+            .Select(b => new StorefrontSearchSuggestionDto(b.Name, $"/marka/{b.SeoSlug}", "Marka", null))
+            .ToListAsync();
+
+        var suggestions = products.Concat(categories).Concat(brands).Take(maxResults).ToList();
+
+        // StorageKey -> public URL conversion for product images
+        for (int i = 0; i < suggestions.Count; i++)
+        {
+            if (!string.IsNullOrEmpty(suggestions[i].ImageUrl))
+                suggestions[i] = suggestions[i] with { ImageUrl = minioFileStorage.GetPublicUrl(suggestions[i].ImageUrl!) };
+        }
+
+        return new SuccessDataResult<List<StorefrontSearchSuggestionDto>>(suggestions);
+    }
+
+    public async Task<IDataResult<StorefrontProductDetailDto>> GetStorefrontProductDetailAsync(string seoSlug)
+    {
+        var productResult = await GetProductBySeoSlugAsync(seoSlug);
+        if (!productResult.Success || productResult.Data is null)
+            return new ErrorDataResult<StorefrontProductDetailDto>(null!, productResult.Message);
+
+        var p = productResult.Data;
+
+        var variants = p.ProductVariants.Select(pv => new StorefrontVariantDto(
+            pv.Id,
+            pv.Barcode,
+            pv.ListPrice,
+            pv.SalePrice,
+            pv.BranchOfficeStocks.Sum(s => s.CurrentStock),
+            pv.ProductVariantAttributes
+                .Select(a => new StorefrontVariantAttributeDto(
+                    a.CategoryAttributeValue ?? "",
+                    a.CustomValue ?? a.CategoryAttributeValue ?? ""))
+                .ToList(),
+            pv.Images.OrderBy(i => i.DisplayOrder)
+                .Select(i =>
+                {
+                    var key = i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src;
+                    return !string.IsNullOrEmpty(key) ? minioFileStorage.GetPublicUrl(key) : "";
+                })
+                .Where(url => !string.IsNullOrEmpty(url))
+                .ToList()
+        )).ToList();
+
+        var attributes = p.AttributeKeyValues
+            .Where(akv => akv.CategoryAttribute is not null)
+            .Select(akv => new StorefrontAttributeDto(
+                akv.CategoryAttribute.CategoryAttributeKey ?? "",
+                akv.CategoryAttribute.CategoryAttributeHumanized ?? akv.CategoryAttribute.CategoryAttributeKey ?? "",
+                akv.AttributeValueId.HasValue && akv.AttributeValue is not null
+                    ? akv.AttributeValue.Name ?? ""
+                    : akv.CustomValue ?? ""))
+            .ToList();
+
+        // Build breadcrumbs
+        var breadcrumbs = new List<BreadcrumbItemDto> { new("Ana Sayfa", "/") };
+        if (p.Category.SuperCategory is not null)
+            breadcrumbs.Add(new BreadcrumbItemDto(p.Category.SuperCategory.Name, $"/kategori/{p.Category.SuperCategory.SeoSlug}"));
+        breadcrumbs.Add(new BreadcrumbItemDto(p.Category.Name, $"/kategori/{p.Category.SeoSlug}"));
+        breadcrumbs.Add(new BreadcrumbItemDto(p.Title, $"/urun/{p.SeoSlug}"));
+
+        var detail = new StorefrontProductDetailDto(
+            p.Id, p.Title, p.Description, p.StockCode,
+            p.SeoSlug, p.SeoTitle, p.SeoDescription,
+            p.Brand?.Name, p.Brand?.SeoSlug,
+            p.Category.Name, p.Category.SeoSlug, p.CategoryId,
+            p.ProductVariants.Min(pv => pv.SalePrice),
+            p.ProductVariants.Max(pv => pv.SalePrice),
+            variants, attributes, breadcrumbs);
+
+        return new SuccessDataResult<StorefrontProductDetailDto>(detail);
     }
 
     private static MarketplaceSyncStatusDto BuildSyncStatus(ProductMarketplace? marketplace, DateTimeOffset? productUpdatedAt)

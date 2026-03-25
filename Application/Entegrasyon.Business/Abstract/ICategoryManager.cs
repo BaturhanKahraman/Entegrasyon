@@ -1,6 +1,7 @@
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity;
 
@@ -35,4 +36,8 @@ public interface ICategoryService
     Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId);
     Task RefreshCategorySummaryAsync();
     Task<List<Category>> GetLeafCategoriesAsync();
+
+    // Storefront
+    Task<IDataResult<Category>> GetCategoryBySeoSlugAsync(string slug);
+    Task<IDataResult<List<CategoryTreeDto>>> GetCategoryTreeAsync();
 }

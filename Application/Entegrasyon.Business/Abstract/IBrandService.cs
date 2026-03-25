@@ -15,4 +15,7 @@ public interface IBrandService
     Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(BrandDetailPaginatedRequest request);
     Task<IDataResult<Brand>> GetBrandById(int id);
     Task<IDataResult<BrandDetailDto>> GetBrandDetail(int id);
+
+    // Storefront
+    Task<IDataResult<Brand>> GetBrandBySeoSlugAsync(string slug);
 }
