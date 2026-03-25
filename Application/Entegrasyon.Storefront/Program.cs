@@ -31,6 +31,26 @@ app.UseStatusCodePagesWithReExecute("/hata/{0}");
 
 app.MapControllerRoute("home", "/",
     new { controller = "Home", action = "Index" });
+app.MapControllerRoute("categories", "/kategoriler",
+    new { controller = "Catalog", action = "Categories" });
+app.MapControllerRoute("category", "/kategori/{slug}",
+    new { controller = "Catalog", action = "Category" });
+app.MapControllerRoute("subcategory", "/kategori/{parentSlug}/{slug}",
+    new { controller = "Catalog", action = "Category" });
+app.MapControllerRoute("product", "/urun/{slug}",
+    new { controller = "Product", action = "Detail" });
+app.MapControllerRoute("brand", "/marka/{slug}",
+    new { controller = "Catalog", action = "Brand" });
+app.MapControllerRoute("allProducts", "/urunler",
+    new { controller = "Catalog", action = "AllProducts" });
+app.MapControllerRoute("search", "/arama",
+    new { controller = "Catalog", action = "Search" });
+app.MapControllerRoute("searchSuggest", "/api/arama/oneri",
+    new { controller = "Catalog", action = "SearchSuggest" });
+app.MapControllerRoute("newProducts", "/yeni-urunler",
+    new { controller = "Catalog", action = "NewProducts" });
+app.MapControllerRoute("bestSellers", "/cok-satanlar",
+    new { controller = "Catalog", action = "BestSellers" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",
