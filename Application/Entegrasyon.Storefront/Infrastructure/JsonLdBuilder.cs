@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Storefront;
 
 namespace Entegrasyon.Storefront.Infrastructure;
@@ -66,5 +67,50 @@ public static class JsonLdBuilder
         };
 
         return JsonSerializer.Serialize(breadcrumb, JsonOptions);
+    }
+
+    public static string BuildProduct(StorefrontProductDetailDto p, string baseUrl)
+    {
+        var images = p.Variants.SelectMany(v => v.ImageUrls).Distinct().ToList();
+        var totalStock = p.Variants.Sum(v => v.Stock);
+        var availability = totalStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock";
+
+        var product = new Dictionary<string, object>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Product",
+            ["name"] = p.Title,
+            ["url"] = $"{baseUrl}/urun/{p.SeoSlug}",
+            ["offers"] = new Dictionary<string, object>
+            {
+                ["@type"] = "AggregateOffer",
+                ["lowPrice"] = p.MinPrice,
+                ["highPrice"] = p.MaxPrice,
+                ["priceCurrency"] = "TRY",
+                ["availability"] = availability,
+                ["itemCondition"] = "https://schema.org/NewCondition"
+            }
+        };
+
+        if (p.Description is not null) product["description"] = p.Description;
+        if (p.StockCode is not null) product["sku"] = p.StockCode;
+        if (images.Count > 0) product["image"] = images;
+        if (p.BrandName is not null)
+            product["brand"] = new Dictionary<string, object> { ["@type"] = "Brand", ["name"] = p.BrandName };
+
+        return JsonSerializer.Serialize(product, JsonOptions);
+    }
+
+    public static string BuildCollectionPage(string name, string? description, string url)
+    {
+        var page = new Dictionary<string, object>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "CollectionPage",
+            ["name"] = name,
+            ["url"] = url
+        };
+        if (description is not null) page["description"] = description;
+        return JsonSerializer.Serialize(page, JsonOptions);
     }
 }

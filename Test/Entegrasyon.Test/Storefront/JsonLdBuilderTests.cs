@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Storefront;
 using Entegrasyon.Storefront.Infrastructure;
 using FluentAssertions;
@@ -112,5 +113,70 @@ public class JsonLdBuilderTests
         var third = elements[2];
         third.GetProperty("position").GetInt32().Should().Be(3);
         third.GetProperty("item").GetProperty("name").GetString().Should().Be("Telefonlar");
+    }
+
+    [Fact]
+    public void BuildProduct_ValidProduct_ReturnsProductSchema()
+    {
+        var detail = new StorefrontProductDetailDto(
+            Guid.NewGuid(), "Siyah Tisort", "Pamuk", "TSR-001",
+            "siyah-tisort", null, null, "TestBrand", "testbrand",
+            "Tisort", "tisort", 1, 199.90m, 299.90m,
+            new List<StorefrontVariantDto>
+            {
+                new(Guid.NewGuid(), "TSR-001-S", 299.90m, 199.90m, 5,
+                    new List<StorefrontVariantAttributeDto> { new("Beden", "S") },
+                    new List<string> { "/img/1.jpg" })
+            },
+            new List<StorefrontAttributeDto>(),
+            new List<BreadcrumbItemDto>());
+
+        var json = JsonLdBuilder.BuildProduct(detail, "https://test.com");
+        var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        root.GetProperty("@type").GetString().Should().Be("Product");
+        root.GetProperty("name").GetString().Should().Be("Siyah Tisort");
+        root.GetProperty("brand").GetProperty("name").GetString().Should().Be("TestBrand");
+        root.GetProperty("offers").GetProperty("lowPrice").GetDecimal().Should().Be(199.90m);
+    }
+
+    [Fact]
+    public void BuildProduct_OutOfStock_SetsOutOfStockAvailability()
+    {
+        var detail = new StorefrontProductDetailDto(
+            Guid.NewGuid(), "Test Product", null, null,
+            "test-product", null, null, null, null,
+            "Category", "category", 1, 100m, 100m,
+            new List<StorefrontVariantDto>
+            {
+                new(Guid.NewGuid(), "B001", 100m, 100m, 0,
+                    new List<StorefrontVariantAttributeDto>(),
+                    new List<string>())
+            },
+            new List<StorefrontAttributeDto>(),
+            new List<BreadcrumbItemDto>());
+
+        var json = JsonLdBuilder.BuildProduct(detail, "https://test.com");
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("offers")
+            .GetProperty("availability").GetString()
+            .Should().Be("https://schema.org/OutOfStock");
+    }
+
+    [Fact]
+    public void BuildCollectionPage_ReturnsCorrectSchema()
+    {
+        var json = JsonLdBuilder.BuildCollectionPage("Tisort", "Tisortler", "https://test.com/kategori/tisort");
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("@type").GetString().Should().Be("CollectionPage");
+        doc.RootElement.GetProperty("name").GetString().Should().Be("Tisort");
+    }
+
+    [Fact]
+    public void BuildCollectionPage_NullDescription_OmitsDescription()
+    {
+        var json = JsonLdBuilder.BuildCollectionPage("Marka", null, "https://test.com/marka/test");
+        var doc = JsonDocument.Parse(json);
+        doc.RootElement.TryGetProperty("description", out _).Should().BeFalse();
     }
 }
