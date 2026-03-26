@@ -86,8 +86,18 @@ app.MapControllerRoute("resetPassword", "/sifre-sifirla",
     new { controller = "Auth", action = "ResetPassword" });
 app.MapControllerRoute("confirmEmail", "/email-dogrula",
     new { controller = "Auth", action = "ConfirmEmail" });
+app.MapControllerRoute("orderDetail", "/hesabim/siparis/{id}",
+    new { controller = "Account", action = "OrderDetail" });
+app.MapControllerRoute("orderCancel", "/hesabim/siparis/{id}/iptal",
+    new { controller = "Account", action = "CancelOrder" });
+app.MapControllerRoute("orderInvoice", "/hesabim/siparis/{id}/fatura",
+    new { controller = "Account", action = "DownloadInvoice" });
 app.MapControllerRoute("account", "/hesabim/{action=Index}",
     new { controller = "Account" });
+app.MapControllerRoute("tracking", "/siparis-takip",
+    new { controller = "Tracking", action = "Index" });
+app.MapControllerRoute("trackingResult", "/siparis-takip/sonuc",
+    new { controller = "Tracking", action = "Result" });
 app.MapControllerRoute("cart", "/sepet",
     new { controller = "Cart", action = "Index" });
 app.MapControllerRoute("cartApi", "/api/sepet/{action}",

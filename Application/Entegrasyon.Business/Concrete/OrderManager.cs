@@ -569,6 +569,87 @@ public class OrderManager(
         return new SuccessResult("Sipariş güncellendi.");
     }
 
+    // ── Storefront methods ──
+
+    public async Task<IDataResult<List<Order>>> GetCustomerOrdersAsync(int customerId, int tenantId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var orders = await dbContext.Orders.AsNoTracking()
+            .Include(o => o.OrderItems)
+            .Where(o => o.CustomerId == customerId)
+            .OrderByDescending(o => o.OrderDate ?? o.CreatedAt)
+            .ToListAsync();
+
+        return new SuccessDataResult<List<Order>>(orders);
+    }
+
+    public async Task<IDataResult<Order>> GetOrderDetailAsync(Guid orderId, int customerId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var order = await dbContext.Orders.AsNoTracking()
+            .Include(o => o.OrderItems)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(v => v!.Product)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order is null)
+            return new ErrorDataResult<Order>(null!, "Siparis bulunamadi.");
+
+        if (order.CustomerId != customerId)
+            return new ErrorDataResult<Order>(null!, "Bu siparise erisim yetkiniz yok.");
+
+        return new SuccessDataResult<Order>(order);
+    }
+
+    public async Task<IResult> CancelOrderAsync(Guid orderId, int customerId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var order = await dbContext.Orders
+            .Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order is null)
+            return new ErrorResult("Siparis bulunamadi.");
+
+        if (order.CustomerId != customerId)
+            return new ErrorResult("Bu siparise erisim yetkiniz yok.");
+
+        if (order.StorefrontOrderStatus != Entity.Storefront.OrderStatus.Received)
+            return new ErrorResult("Sadece 'Alindi' durumundaki siparisler iptal edilebilir.");
+
+        order.StorefrontOrderStatus = Entity.Storefront.OrderStatus.Cancelled;
+        order.StorefrontPaymentStatus = Entity.Storefront.PaymentStatus.Refunded;
+
+        // Restore stock for each order item (decrease SoldQuantity to increase CurrentStock)
+        foreach (var item in order.OrderItems)
+        {
+            if (item.ProductId.HasValue && item.Quantity > 0)
+            {
+                var stock = await dbContext.BranchOfficeStocks.AsTracking()
+                    .FirstOrDefaultAsync(s => s.BranchOfficeId == 1 && s.ProductVariantId == item.ProductId);
+                if (stock is not null)
+                    stock.SoldQuantity -= item.Quantity;
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Storefront order cancelled: {OrderId} by customer {CustomerId}", orderId, customerId);
+        return new SuccessResult("Siparis basariyla iptal edildi.");
+    }
+
+    public async Task<IDataResult<Order>> GetOrderByNumberAsync(string orderNumber)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var order = await dbContext.Orders.AsNoTracking()
+            .Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
+
+        if (order is null)
+            return new ErrorDataResult<Order>(null!, "Siparis bulunamadi.");
+
+        return new SuccessDataResult<Order>(order);
+    }
+
     private async Task DecreaseStockForMarketplaceOrder(
         List<int> warehouseIds, Guid productVariantId, int quantity, string referenceId)
     {

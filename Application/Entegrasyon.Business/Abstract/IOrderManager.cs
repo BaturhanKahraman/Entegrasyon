@@ -15,4 +15,10 @@ public interface IOrderManager
     Task<IResult> ImportPazaramaOrdersAsync(List<PazaramaOrderDto> orders);
     Task<IResult> UpdateOrderStatusAsync(Guid orderId, string newStatus);
     Task<IResult> UpdateOrderByShipmentPackageAsync(long shipmentPackageId, string? status, string? trackingNumber);
+
+    // Storefront
+    Task<IDataResult<List<Order>>> GetCustomerOrdersAsync(int customerId, int tenantId);
+    Task<IDataResult<Order>> GetOrderDetailAsync(Guid orderId, int customerId);
+    Task<IResult> CancelOrderAsync(Guid orderId, int customerId);
+    Task<IDataResult<Order>> GetOrderByNumberAsync(string orderNumber);
 }
