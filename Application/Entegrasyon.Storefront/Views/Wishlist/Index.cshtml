@@ -1,0 +1,88 @@
+@using Entegrasyon.Entity.Storefront
+@using Entegrasyon.Entity.Dtos.Storefront
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" />
+}
+
+@{
+    var items = ViewBag.WishlistItems as List<StorefrontWishlistItem> ?? new List<StorefrontWishlistItem>();
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Favorilerim</h1>
+
+    @if (items.Count == 0)
+    {
+        <div class="text-center py-16">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <p class="text-gray-500 mb-4">Henuz favori urun eklemediniz.</p>
+            <a href="/urunler" class="btn-primary inline-block">Urunlere Goz At</a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            @foreach (var item in items)
+            {
+                <div class="relative group">
+                    <a href="/urun/@item.Product?.SeoSlug" class="block bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
+                        <div class="relative aspect-square overflow-hidden bg-gray-100">
+                            @{
+                                var firstImage = item.Product?.ProductVariants?.FirstOrDefault()?.Images?.FirstOrDefault()?.Src;
+                            }
+                            @if (!string.IsNullOrWhiteSpace(firstImage))
+                            {
+                                <img src="@firstImage" alt="@item.Product?.Title" loading="lazy"
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            }
+                            else
+                            {
+                                <div class="w-full h-full flex items-center justify-center text-gray-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            }
+                        </div>
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem]">@item.Product?.Title</h3>
+                        </div>
+                    </a>
+                    <button onclick="removeFromWishlist('@item.ProductId', this)"
+                            class="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow hover:bg-red-50 transition-colors"
+                            title="Favorilerden cikar">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function removeFromWishlist(productId, btn) {
+            fetch('/api/favori/Sil', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: productId })
+            }).then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success) {
+                    var card = btn.closest('.relative.group');
+                    if (card) card.remove();
+                    var grid = document.querySelector('.grid');
+                    if (grid && grid.children.length === 0) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+    </script>
+}

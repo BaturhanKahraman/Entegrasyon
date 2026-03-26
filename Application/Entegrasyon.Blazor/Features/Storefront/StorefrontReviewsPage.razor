@@ -1,0 +1,53 @@
+@page "/storefront/reviews"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Degerlendirmeler</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Degerlendirmeler</MudText>
+
+<MudDataGrid Items="@_reviews.AsEnumerable()" Hover="true" Loading="@_loading" Dense="true" Filterable="true">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="ID" />
+        <PropertyColumn Property="x => x.Rating" Title="Puan" />
+        <PropertyColumn Property="x => x.Title" Title="Baslik" />
+        <PropertyColumn Property="x => x.Comment" Title="Yorum" />
+        <TemplateColumn Title="Onay">
+            <CellTemplate>
+                @if (context.Item.IsApproved)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small">Onayli</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small">Bekliyor</MudChip>
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Dogrulanmis">
+            <CellTemplate>
+                @if (context.Item.IsVerifiedPurchase)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Success" />
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Tarih">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Islemler" CellStyle="text-align:right">
+            <CellTemplate>
+                @if (!context.Item.IsApproved)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
+                        OnClick="@(() => ApproveAsync(context.Item))" Title="Onayla" />
+                }
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                    OnClick="@(() => RejectAsync(context.Item))" Title="Reddet" />
+                <MudIconButton Icon="@Icons.Material.Filled.Reply" Color="Color.Primary"
+                    OnClick="@(() => OpenReplyDialog(context.Item))" Title="Yanitla" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
