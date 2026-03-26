@@ -183,6 +183,71 @@ public class AuthController(
         return View();
     }
 
+    [HttpGet]
+    public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+    {
+        var redirectUrl = Url.Action("ExternalLoginCallback", "Auth", new { returnUrl });
+        var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+        return Challenge(properties, provider);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null)
+    {
+        // Read the external authentication result
+        var authenticateResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        if (authenticateResult?.Principal is null)
+            return RedirectToAction("Login");
+
+        var claims = authenticateResult.Principal.Claims.ToList();
+        var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        var externalId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value
+                   ?? claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "";
+        var surname = claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? "";
+
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(externalId))
+        {
+            ViewBag.Error = "Sosyal giris sirasinda e-posta bilgisi alinamadi.";
+            return View("Login");
+        }
+
+        // Determine provider from the identity
+        var provider = authenticateResult.Principal.Identity?.AuthenticationType ?? "External";
+
+        var result = await authManager.ExternalLoginAsync(
+            tenant.TenantId, provider, externalId, email, name, surname);
+
+        if (!result.Success)
+        {
+            ViewBag.Error = result.Message;
+            return View("Login");
+        }
+
+        var auth = result.Data;
+
+        // Sign in with application cookie
+        var appClaims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, auth.CustomerId.ToString()),
+            new(ClaimTypes.Email, auth.Email),
+            new(ClaimTypes.Name, $"{name} {surname}".Trim()),
+            new("TenantId", auth.TenantId.ToString()),
+            new("AuthId", auth.Id.ToString())
+        };
+
+        var identity = new ClaimsIdentity(appClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties { IsPersistent = true, ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30) });
+
+        return Redirect(returnUrl ?? "/");
+    }
+
     public async Task<IActionResult> ConfirmEmail(string? token)
     {
         if (string.IsNullOrEmpty(token))

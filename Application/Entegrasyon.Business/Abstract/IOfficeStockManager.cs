@@ -29,4 +29,12 @@ public interface IOfficeStockManager
     Task<IDataResult<StockMovement>> ForceDecreaseStockAsync(
         int branchOfficeId, Guid productVariantId, int quantity,
         StockMovementType type, string? referenceType = null, string? referenceId = null);
+
+    /// <summary>
+    /// Atomic stok artirma — SoldQuantity azaltilir, stok geri verilir.
+    /// Odeme basarisiz oldugunda veya iptal/iade senaryolarinda kullanilir.
+    /// </summary>
+    Task<IDataResult<StockMovement>> IncreaseStockAtomicAsync(
+        int branchOfficeId, Guid productVariantId, int quantity,
+        StockMovementType type, string? referenceType = null, string? referenceId = null);
 }

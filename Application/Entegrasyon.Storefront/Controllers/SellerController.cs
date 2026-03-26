@@ -9,12 +9,16 @@ namespace Entegrasyon.Storefront.Controllers;
 
 public class SellerController(
     IStorefrontTenantContext tenant,
-    ISellerManager sellerManager) : Controller
+    ISellerManager sellerManager,
+    ISellerOrderManager sellerOrderManager,
+    ISellerPayoutManager sellerPayoutManager) : Controller
 {
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> Register()
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var customerId = GetCustomerId();
         if (customerId is null) return RedirectToAction("Login", "Auth");
 
@@ -39,6 +43,8 @@ public class SellerController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(SellerRegistrationDto dto)
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var customerId = GetCustomerId();
         if (customerId is null) return RedirectToAction("Login", "Auth");
 
@@ -56,6 +62,8 @@ public class SellerController(
     [HttpGet]
     public async Task<IActionResult> Panel()
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register");
 
@@ -67,6 +75,8 @@ public class SellerController(
     [HttpGet]
     public async Task<IActionResult> Profile()
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register");
 
@@ -79,6 +89,8 @@ public class SellerController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Profile(SellerProfileDto dto)
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register");
 
@@ -93,6 +105,8 @@ public class SellerController(
     [HttpGet]
     public async Task<IActionResult> Pending()
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var customerId = GetCustomerId();
         if (customerId is null) return RedirectToAction("Login", "Auth");
 
@@ -104,6 +118,74 @@ public class SellerController(
 
         ViewBag.Seller = existing.Data;
         return View();
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Orders()
+    {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
+        var seller = await GetApprovedSellerAsync();
+        if (seller is null) return RedirectToAction("Register");
+
+        var result = await sellerOrderManager.GetSellerOrdersAsync(seller.Id);
+        ViewBag.Seller = seller;
+        ViewBag.Orders = result.Success ? result.Data : new List<Entity.Orders.Order>();
+        return View();
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> OrderDetail(Guid id)
+    {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
+        var seller = await GetApprovedSellerAsync();
+        if (seller is null) return RedirectToAction("Register");
+
+        var result = await sellerOrderManager.GetSellerOrderDetailAsync(seller.Id, id);
+        if (!result.Success)
+            return NotFound();
+
+        ViewBag.Seller = seller;
+        return View(result.Data);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Balance()
+    {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
+        var seller = await GetApprovedSellerAsync();
+        if (seller is null) return RedirectToAction("Register");
+
+        var balanceResult = await sellerPayoutManager.GetBalanceAsync(seller.Id);
+        var transactionsResult = await sellerPayoutManager.GetTransactionsAsync(seller.Id);
+        var payoutsResult = await sellerPayoutManager.GetPayoutRequestsAsync(seller.Id);
+
+        ViewBag.Seller = seller;
+        ViewBag.Balance = balanceResult.Success ? balanceResult.Data : null;
+        ViewBag.Transactions = transactionsResult.Success ? transactionsResult.Data : new List<SellerTransaction>();
+        ViewBag.Payouts = payoutsResult.Success ? payoutsResult.Data : new List<PayoutRequest>();
+        return View();
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestPayout(decimal amount)
+    {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
+        var seller = await GetApprovedSellerAsync();
+        if (seller is null) return RedirectToAction("Register");
+
+        var result = await sellerPayoutManager.RequestPayoutAsync(seller.Id, amount);
+        TempData["PayoutMessage"] = result.Message;
+        TempData["PayoutSuccess"] = result.Success;
+        return RedirectToAction("Balance");
     }
 
     private int? GetCustomerId()

@@ -74,6 +74,13 @@ public class CheckoutManager(
                 Country = "Turkiye"
             };
 
+        // Check if iyzico payment config exists — if yes, order starts as Pending
+        var hasPaymentConfig = await dbContext.Set<StorefrontPaymentConfig>()
+            .AnyAsync(c => c.IsActive && c.PaymentProvider == "Iyzico");
+
+        var paymentStatus = hasPaymentConfig ? PaymentStatus.Pending : PaymentStatus.Paid;
+        var orderStatus = hasPaymentConfig ? OrderStatus.Received : OrderStatus.Received;
+
         // Create order
         var order = new Order
         {
@@ -88,8 +95,8 @@ public class CheckoutManager(
             SubTotal = subTotal,
             ShippingCost = shippingCost,
             GrossAmount = grandTotal,
-            StorefrontPaymentStatus = PaymentStatus.Paid,
-            StorefrontOrderStatus = OrderStatus.Received,
+            StorefrontPaymentStatus = paymentStatus,
+            StorefrontOrderStatus = orderStatus,
             OrderNote = dto.OrderNote,
             MarketPlaceId = null
         };
@@ -107,7 +114,7 @@ public class CheckoutManager(
 
         dbContext.Orders.Add(order);
 
-        // Decrease stock for each item
+        // Decrease stock for each item (reserve)
         foreach (var item in cart.Items)
         {
             await stockManager.DecreaseStockAtomicAsync(
@@ -125,5 +132,58 @@ public class CheckoutManager(
         await dbContext.SaveChangesAsync();
 
         return new SuccessDataResult<Order>(order, "Siparis basariyla olusturuldu.");
+    }
+
+    public async Task<IResult> CompleteOrderPaymentAsync(Guid orderId, string transactionId, decimal paidAmount)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+        if (order is null)
+            return new ErrorResult("Siparis bulunamadi.");
+
+        order.StorefrontPaymentStatus = PaymentStatus.Paid;
+        order.PaymentTransactionId = transactionId;
+        order.PaymentMethodType = "IyzicoCheckoutForm";
+
+        dbContext.Orders.Update(order);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Odeme basariyla tamamlandi.");
+    }
+
+    public async Task<IResult> FailOrderPaymentAsync(Guid orderId, string? errorMessage)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var order = await dbContext.Orders
+            .Include(o => o.OrderItems)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order is null)
+            return new ErrorResult("Siparis bulunamadi.");
+
+        order.StorefrontPaymentStatus = PaymentStatus.Failed;
+        order.OrderNote = string.IsNullOrEmpty(order.OrderNote)
+            ? $"Odeme hatasi: {errorMessage}"
+            : $"{order.OrderNote} | Odeme hatasi: {errorMessage}";
+
+        dbContext.Orders.Update(order);
+
+        // Restore stock for each item
+        foreach (var item in order.OrderItems)
+        {
+            await stockManager.IncreaseStockAtomicAsync(
+                branchOfficeId: 1,
+                productVariantId: item.ProductId!.Value,
+                quantity: item.Quantity,
+                type: StockMovementType.Return,
+                referenceType: "StorefrontPaymentFailed",
+                referenceId: order.Id.ToString());
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Siparis odeme hatasi islendi.");
     }
 }

@@ -490,6 +490,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IStorefrontPushManager, StorefrontPushManager>();
             services.AddScoped<IStorefrontCampaignManager, StorefrontCampaignManager>();
             services.AddScoped<ISellerManager, SellerManager>();
+            services.AddScoped<ISellerOrderManager, SellerOrderManager>();
+            services.AddScoped<ISellerCommissionManager, SellerCommissionManager>();
+            services.AddScoped<ISellerPayoutManager, SellerPayoutManager>();
             return services;
         }
     }
