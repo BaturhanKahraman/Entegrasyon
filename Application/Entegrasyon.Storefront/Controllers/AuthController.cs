@@ -10,7 +10,8 @@ namespace Entegrasyon.Storefront.Controllers;
 public class AuthController(
     IStorefrontTenantContext tenant,
     IStorefrontAuthManager authManager,
-    IStorefrontEmailService emailService) : Controller
+    IStorefrontEmailService emailService,
+    IStorefrontReferralManager referralManager) : Controller
 {
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
@@ -77,15 +78,16 @@ public class AuthController(
     }
 
     [HttpGet]
-    public IActionResult Register()
+    public IActionResult Register(string? @ref = null)
     {
         if (User.Identity?.IsAuthenticated == true) return Redirect("/");
+        ViewBag.ReferralCode = @ref;
         return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(StorefrontRegisterDto dto)
+    public async Task<IActionResult> Register(StorefrontRegisterDto dto, string? referralCode = null)
     {
         if (User.Identity?.IsAuthenticated == true) return Redirect("/");
 
@@ -94,6 +96,7 @@ public class AuthController(
         if (!result.Success)
         {
             ViewBag.Error = result.Message;
+            ViewBag.ReferralCode = referralCode;
             return View();
         }
 
@@ -115,6 +118,12 @@ public class AuthController(
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+        // Process referral code if provided
+        if (!string.IsNullOrWhiteSpace(referralCode))
+        {
+            _ = referralManager.RegisterReferralAsync(tenant.TenantId, referralCode, auth.CustomerId);
+        }
 
         return Redirect("/hesabim");
     }

@@ -173,6 +173,11 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontSizeGuide> StorefrontSizeGuides { get; set; }
     public virtual DbSet<StorefrontSavedCartItem> StorefrontSavedCartItems { get; set; }
     public virtual DbSet<StorefrontLoginHistory> StorefrontLoginHistories { get; set; }
+    public virtual DbSet<StorefrontGiftCard> StorefrontGiftCards { get; set; }
+    public virtual DbSet<StorefrontGiftCardTransaction> StorefrontGiftCardTransactions { get; set; }
+    public virtual DbSet<StorefrontLoyaltyPoints> StorefrontLoyaltyPoints { get; set; }
+    public virtual DbSet<StorefrontLoyaltyTransaction> StorefrontLoyaltyTransactions { get; set; }
+    public virtual DbSet<StorefrontReferral> StorefrontReferrals { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

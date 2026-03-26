@@ -81,4 +81,13 @@ public sealed class StorefrontSettings : BaseEntity
     public int? AutoWelcomeCouponPercent { get; set; }
     public bool AutoReviewRewardEnabled { get; set; }
     public int? AutoReviewRewardPercent { get; set; }
+
+    // Loyalty Program
+    public bool LoyaltyProgramEnabled { get; set; }
+    public int LoyaltyPointsPerLira { get; set; } = 1; // every 1 TL = 1 point
+    public int LoyaltyPointsRedemptionRate { get; set; } = 100; // 100 points = 1 TL
+    public int LoyaltyMinRedemption { get; set; } = 500; // min points to redeem
+    public int LoyaltyWelcomeBonus { get; set; } = 50;
+    public int LoyaltyReviewBonus { get; set; } = 50;
+    public int LoyaltyReferralBonus { get; set; } = 200;
 }

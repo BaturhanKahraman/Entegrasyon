@@ -104,6 +104,10 @@ app.MapControllerRoute("accountSecurity", "/hesabim/guvenlik",
     new { controller = "Account", action = "Security" });
 app.MapControllerRoute("accountExportData", "/hesabim/veri-indir",
     new { controller = "Account", action = "ExportData" });
+app.MapControllerRoute("accountLoyalty", "/hesabim/puan-programi",
+    new { controller = "Account", action = "LoyaltyPoints" });
+app.MapControllerRoute("accountReferral", "/hesabim/arkadasini-getir",
+    new { controller = "Account", action = "Referral" });
 app.MapControllerRoute("account", "/hesabim/{action=Index}",
     new { controller = "Account" });
 app.MapControllerRoute("tracking", "/siparis-takip",
@@ -118,6 +122,10 @@ app.MapControllerRoute("paymentCallback", "/odeme/callback",
     new { controller = "Checkout", action = "Callback" });
 app.MapControllerRoute("checkout", "/odeme/{action=Index}",
     new { controller = "Checkout" });
+app.MapControllerRoute("giftCard", "/hediye-karti",
+    new { controller = "GiftCard", action = "Index" });
+app.MapControllerRoute("giftCardBalance", "/hediye-karti-sorgula",
+    new { controller = "GiftCard", action = "Balance" });
 app.MapControllerRoute("contact", "/iletisim",
     new { controller = "Contact", action = "Index" });
 app.MapControllerRoute("wishlist", "/favorilerim",

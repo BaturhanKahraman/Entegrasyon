@@ -13,7 +13,9 @@ public class AccountController(
     IStorefrontTenantContext tenant,
     IStorefrontAuthManager authManager,
     IOrderManager orderManager,
-    IStorefrontReturnManager returnManager) : Controller
+    IStorefrontReturnManager returnManager,
+    IStorefrontLoyaltyManager loyaltyManager,
+    IStorefrontReferralManager referralManager) : Controller
 {
     private int GetCustomerId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
     private int GetAuthId() => int.Parse(User.FindFirst("AuthId")!.Value);
@@ -246,6 +248,33 @@ public class AccountController(
 
         var bytes = System.Text.Encoding.UTF8.GetBytes(result.Data);
         return File(bytes, "application/json", $"kvkk-veri-export-{DateTime.Now:yyyyMMdd}.json");
+    }
+
+    [HttpGet("/hesabim/puan-programi")]
+    public async Task<IActionResult> LoyaltyPoints()
+    {
+        var customerId = GetCustomerId();
+        var balanceResult = await loyaltyManager.GetBalanceAsync(tenant.TenantId, customerId);
+        var transactionsResult = await loyaltyManager.GetTransactionsAsync(tenant.TenantId, customerId);
+
+        ViewBag.Balance = balanceResult.Data;
+        ViewBag.Transactions = transactionsResult.Data ?? new List<Entity.Storefront.StorefrontLoyaltyTransaction>();
+        ViewBag.Settings = tenant.Settings;
+        return View();
+    }
+
+    [HttpGet("/hesabim/arkadasini-getir")]
+    public async Task<IActionResult> Referral()
+    {
+        var customerId = GetCustomerId();
+        var codeResult = await referralManager.GetOrCreateReferralCodeAsync(tenant.TenantId, customerId);
+        var referralsResult = await referralManager.GetReferralsAsync(tenant.TenantId, customerId);
+
+        ViewBag.ReferralCode = codeResult.Data;
+        ViewBag.Referrals = referralsResult.Data ?? new List<Entity.Storefront.StorefrontReferral>();
+        ViewBag.Domain = tenant.Domain.DomainName;
+        ViewBag.Settings = tenant.Settings;
+        return View();
     }
 
     private static string MapOrderStatus(OrderStatus? status) => status switch
