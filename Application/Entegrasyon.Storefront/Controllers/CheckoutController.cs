@@ -10,7 +10,8 @@ namespace Entegrasyon.Storefront.Controllers;
 public class CheckoutController(
     IStorefrontTenantContext tenant,
     ICartManager cartManager,
-    ICheckoutManager checkoutManager) : Controller
+    ICheckoutManager checkoutManager,
+    IStorefrontEmailService emailService) : Controller
 {
     private int GetCustomerId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
@@ -52,6 +53,18 @@ public class CheckoutController(
             ViewBag.Cart = cartResult.Data;
             ViewBag.Error = result.Message;
             return View("Index");
+        }
+
+        // Send order confirmation email (fire-and-forget)
+        var customerEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        var customerName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        if (customerEmail != null)
+        {
+            _ = emailService.SendOrderConfirmationAsync(
+                customerEmail, customerName ?? "Musterimiz",
+                result.Data.OrderNumber!,
+                result.Data.GrossAmount ?? 0,
+                s.StoreName, tenant.Domain.DomainName);
         }
 
         // Clear cart session

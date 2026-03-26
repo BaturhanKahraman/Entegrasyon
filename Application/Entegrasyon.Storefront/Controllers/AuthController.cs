@@ -9,7 +9,8 @@ namespace Entegrasyon.Storefront.Controllers;
 
 public class AuthController(
     IStorefrontTenantContext tenant,
-    IStorefrontAuthManager authManager) : Controller
+    IStorefrontAuthManager authManager,
+    IStorefrontEmailService emailService) : Controller
 {
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
@@ -79,6 +80,12 @@ public class AuthController(
             return View();
         }
 
+        // Send verification email (fire-and-forget, don't block registration)
+        var authData = result.Data;
+        _ = emailService.SendEmailVerificationAsync(
+            authData.Email, dto.Name, authData.EmailConfirmationToken!,
+            tenant.Settings.StoreName, tenant.Domain.DomainName);
+
         // Auto login after register
         var auth = result.Data;
         var claims = new List<Claim>
@@ -108,7 +115,14 @@ public class AuthController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ForgotPassword(string email)
     {
-        await authManager.RequestPasswordResetAsync(tenant.TenantId, email);
+        var resetResult = await authManager.RequestPasswordResetAsync(tenant.TenantId, email);
+        if (resetResult.Success)
+        {
+            // Fire-and-forget password reset email
+            _ = emailService.SendPasswordResetAsync(
+                email, email, resetResult.Data,
+                tenant.Settings.StoreName, tenant.Domain.DomainName);
+        }
         // Always show success to prevent email enumeration
         ViewBag.Success = true;
         return View();
