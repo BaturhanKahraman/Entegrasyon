@@ -72,7 +72,8 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             new Claim(ClaimTypes.Name, session.UserName),
             new Claim(ClaimTypes.Email, session.Email),
             new Claim(ClaimTypes.NameIdentifier, session.UserId),
-            new Claim("Token", session.Token)
+            new Claim("Token", session.Token),
+            new Claim("TenantId", session.TenantId.ToString())
         }
         .Concat(session.Roles.Select(r => new Claim(ClaimTypes.Role, r)))
         .Concat(session.Permissions.Select(p => new Claim("Permission", p))),
@@ -87,5 +88,6 @@ public class UserSession
     public string Email { get; set; }
     public string Token { get; set; }
     public List<string> Roles { get; set; } = new();
+    public int TenantId { get; set; }
     public List<string> Permissions { get; set; } = new();
 }
