@@ -1,11 +1,24 @@
 using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Storefront.Middleware;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddCustomDbContext(builder.Configuration);
 builder.Services.AddStorefrontServices(); // will fail until Task 7, that's OK
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/giris";
+        options.LogoutPath = "/cikis";
+        options.AccessDeniedPath = "/giris";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        options.Cookie.Name = "Storefront.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+    });
 builder.Services.AddControllersWithViews();
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
@@ -27,6 +40,8 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseResponseCaching();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/hata/{0}");
 
 app.MapControllerRoute("home", "/",
@@ -51,6 +66,20 @@ app.MapControllerRoute("newProducts", "/yeni-urunler",
     new { controller = "Catalog", action = "NewProducts" });
 app.MapControllerRoute("bestSellers", "/cok-satanlar",
     new { controller = "Catalog", action = "BestSellers" });
+app.MapControllerRoute("login", "/giris",
+    new { controller = "Auth", action = "Login" });
+app.MapControllerRoute("register", "/kayit",
+    new { controller = "Auth", action = "Register" });
+app.MapControllerRoute("logout", "/cikis",
+    new { controller = "Auth", action = "Logout" });
+app.MapControllerRoute("forgotPassword", "/sifremi-unuttum",
+    new { controller = "Auth", action = "ForgotPassword" });
+app.MapControllerRoute("resetPassword", "/sifre-sifirla",
+    new { controller = "Auth", action = "ResetPassword" });
+app.MapControllerRoute("confirmEmail", "/email-dogrula",
+    new { controller = "Auth", action = "ConfirmEmail" });
+app.MapControllerRoute("account", "/hesabim/{action=Index}",
+    new { controller = "Account" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",
