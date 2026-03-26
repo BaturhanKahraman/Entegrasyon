@@ -1,0 +1,72 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    var wallet = ViewBag.Wallet as Entegrasyon.Entity.Storefront.StorefrontWallet;
+    var transactions = ViewBag.Transactions as List<Entegrasyon.Entity.Storefront.StorefrontWalletTransaction>
+        ?? new List<Entegrasyon.Entity.Storefront.StorefrontWalletTransaction>();
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col md:flex-row gap-8">
+        <div class="w-full md:w-64 flex-shrink-0">
+            @await Html.PartialAsync("_AccountSidebar", "Wallet")
+        </div>
+
+        <div class="flex-1">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Cuzdanim</h1>
+
+            @* Balance Card *@
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white mb-8">
+                <p class="text-blue-200 text-sm mb-1">Mevcut Bakiye</p>
+                <p class="text-4xl font-bold">@(wallet?.Balance.ToString("N2") ?? "0,00") TL</p>
+            </div>
+
+            @* Transactions *@
+            <div class="bg-white rounded-lg border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Islem Gecmisi</h2>
+                </div>
+
+                @if (transactions.Count > 0)
+                {
+                    <div class="divide-y divide-gray-100">
+                        @foreach (var tx in transactions)
+                        {
+                            var isCredit = tx.Amount > 0;
+                            <div class="px-6 py-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center @(isCredit ? "bg-green-100" : "bg-red-100")">
+                                        @if (isCredit)
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                            </svg>
+                                        }
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">@(tx.Description ?? tx.TransactionType.ToString())</p>
+                                        <p class="text-xs text-gray-500">@tx.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                    </div>
+                                </div>
+                                <span class="font-semibold @(isCredit ? "text-green-600" : "text-red-600")">
+                                    @(isCredit ? "+" : "")@tx.Amount.ToString("N2") TL
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="px-6 py-12 text-center text-gray-500">
+                        <p>Henuz islem gecmisiniz bulunmuyor.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

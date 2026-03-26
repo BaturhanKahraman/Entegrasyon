@@ -9,4 +9,5 @@ public interface IStorefrontEmailService
     Task<IResult> SendWelcomeAsync(string toEmail, string customerName, string storeName);
     Task<IResult> SendOrderConfirmationAsync(string toEmail, string customerName, string orderNumber, decimal total, string storeName, string domain);
     Task<IResult> SendAsync(string toEmail, string subject, string htmlBody);
+    Task<IResult> SendAbandonedCartReminderAsync(string toEmail, string customerName, string storeName, string domain, int step, List<string> productNames, string? couponCode);
 }

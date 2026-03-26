@@ -181,6 +181,13 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontPushSubscription> StorefrontPushSubscriptions { get; set; }
     public virtual DbSet<StorefrontEmailCampaign> StorefrontEmailCampaigns { get; set; }
 
+    // Storefront F5: Abandoned Cart, Q&A, Wallet, 2FA
+    public virtual DbSet<StorefrontAbandonedCartEmail> StorefrontAbandonedCartEmails { get; set; }
+    public virtual DbSet<StorefrontProductQuestion> StorefrontProductQuestions { get; set; }
+    public virtual DbSet<StorefrontWallet> StorefrontWallets { get; set; }
+    public virtual DbSet<StorefrontWalletTransaction> StorefrontWalletTransactions { get; set; }
+    public virtual DbSet<StorefrontTwoFactorRecoveryCode> StorefrontTwoFactorRecoveryCodes { get; set; }
+
     // Storefront Marketplace (Multi-Vendor)
     public virtual DbSet<Seller> Sellers { get; set; }
     public virtual DbSet<SellerProduct> SellerProducts { get; set; }

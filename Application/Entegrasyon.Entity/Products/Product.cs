@@ -30,4 +30,9 @@ public sealed class Product : BaseEntity
     public string? SeoDescription { get; set; }
     public string? SeoSlug { get; set; }
     public string? SeoKeywords { get; set; }
+
+    // Pre-order
+    public bool IsPreOrder { get; set; }
+    public DateOnly? PreOrderEstimatedDate { get; set; }
+    public int? PreOrderLimit { get; set; }
 }

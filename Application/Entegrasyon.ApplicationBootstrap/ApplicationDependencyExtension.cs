@@ -493,6 +493,12 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ISellerOrderManager, SellerOrderManager>();
             services.AddScoped<ISellerCommissionManager, SellerCommissionManager>();
             services.AddScoped<ISellerPayoutManager, SellerPayoutManager>();
+
+            // F5: Abandoned Cart, Q&A, Wallet
+            services.AddScoped<IStorefrontAbandonedCartManager, StorefrontAbandonedCartManager>();
+            services.AddScoped<IStorefrontQnAManager, StorefrontQnAManager>();
+            services.AddScoped<IStorefrontWalletManager, StorefrontWalletManager>();
+            services.AddHostedService<AbandonedCartBackgroundService>();
             return services;
         }
     }

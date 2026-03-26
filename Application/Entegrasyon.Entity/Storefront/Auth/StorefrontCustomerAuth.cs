@@ -24,4 +24,9 @@ public sealed class StorefrontCustomerAuth : BaseEntity
     public DateTimeOffset KvkkConsentDate { get; set; }
     public string? ExternalLoginProvider { get; set; }
     public string? ExternalLoginId { get; set; }
+
+    // Two-Factor Authentication
+    public bool TwoFactorEnabled { get; set; }
+    public string? TwoFactorSecret { get; set; }
+    public ICollection<StorefrontTwoFactorRecoveryCode> RecoveryCodes { get; set; } = new List<StorefrontTwoFactorRecoveryCode>();
 }

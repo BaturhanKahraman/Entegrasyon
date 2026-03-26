@@ -112,6 +112,33 @@ public class StorefrontEmailService(
         }
     }
 
+    public async Task<IResult> SendAbandonedCartReminderAsync(string toEmail, string customerName, string storeName, string domain, int step, List<string> productNames, string? couponCode)
+    {
+        var cartUrl = $"https://{domain}/sepet";
+        var productList = string.Join(", ", productNames);
+        var stepSubjects = new Dictionary<int, string>
+        {
+            { 1, $"Sepetinizdeki urunler sizi bekliyor - {storeName}" },
+            { 2, $"Sepetinizdeki urunleri unutmayin! - {storeName}" },
+            { 3, $"Ozel indirim! Sepetinizdeki urunler - {storeName}" }
+        };
+        var subject = stepSubjects.GetValueOrDefault(step, stepSubjects[1]);
+
+        var couponHtml = !string.IsNullOrEmpty(couponCode)
+            ? $"<div style='background:#f0fdf4;border:1px solid #22c55e;border-radius:8px;padding:16px;margin:20px 0;text-align:center;'><p style='margin:0;color:#166534;font-size:14px;'>Ozel indirim kodunuz:</p><p style='margin:8px 0 0;font-size:24px;font-weight:bold;color:#15803d;letter-spacing:2px;'>{Encode(couponCode)}</p></div>"
+            : "";
+
+        var body = BuildTemplate(storeName, $@"
+            <h2>Merhaba {Encode(customerName)},</h2>
+            <p>Sepetinizde birakmis oldugunuz urunler hala sizin icin bekliyor:</p>
+            <p style='font-weight:bold;color:#333;'>{Encode(productList)}</p>
+            {couponHtml}
+            <p style='text-align:center;margin:30px 0;'>
+                <a href='{cartUrl}' style='background-color:#2563EB;color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-weight:bold;'>Sepetime Git</a>
+            </p>");
+        return await SendAsync(toEmail, subject, body);
+    }
+
     private static string BuildTemplate(string storeName, string content)
     {
         return $@"<!DOCTYPE html>

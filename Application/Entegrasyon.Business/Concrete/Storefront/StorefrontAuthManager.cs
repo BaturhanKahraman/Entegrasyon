@@ -444,4 +444,144 @@ public class StorefrontAuthManager(
 
     private static string GenerateToken()
         => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+    // --- Two-Factor Authentication ---
+
+    public async Task<IDataResult<string>> Enable2FAAsync(int authId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
+        if (auth is null)
+            return new ErrorDataResult<string>(null!, "Hesap bulunamadi.");
+
+        // Generate TOTP secret
+        var secret = OtpNet.Base32Encoding.ToString(RandomNumberGenerator.GetBytes(20));
+        auth.TwoFactorSecret = secret;
+        dbContext.StorefrontCustomerAuths.Update(auth);
+        await dbContext.SaveChangesAsync();
+
+        // Return otpauth URI for QR code generation
+        var uri = $"otpauth://totp/Storefront:{Uri.EscapeDataString(auth.Email)}?secret={secret}&issuer=Storefront&digits=6&period=30";
+        return new SuccessDataResult<string>(uri);
+    }
+
+    public async Task<IResult> Verify2FAAsync(int authId, string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return new ErrorResult("Dogrulama kodu bos olamaz.");
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
+        if (auth is null)
+            return new ErrorResult("Hesap bulunamadi.");
+
+        if (string.IsNullOrEmpty(auth.TwoFactorSecret))
+            return new ErrorResult("2FA yapilandirilmamis.");
+
+        var secretBytes = OtpNet.Base32Encoding.ToBytes(auth.TwoFactorSecret);
+        var totp = new OtpNet.Totp(secretBytes, step: 30, totpSize: 6);
+        var isValid = totp.VerifyTotp(code.Trim(), out _, new OtpNet.VerificationWindow(previous: 1, future: 1));
+
+        if (!isValid)
+            return new ErrorResult("Gecersiz dogrulama kodu.");
+
+        if (!auth.TwoFactorEnabled)
+        {
+            auth.TwoFactorEnabled = true;
+            dbContext.StorefrontCustomerAuths.Update(auth);
+            await dbContext.SaveChangesAsync();
+        }
+
+        return new SuccessResult("Dogrulama basarili.");
+    }
+
+    public async Task<IResult> Disable2FAAsync(int authId, string code)
+    {
+        var verifyResult = await Verify2FAAsync(authId, code);
+        if (!verifyResult.Success)
+            return verifyResult;
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
+        if (auth is null)
+            return new ErrorResult("Hesap bulunamadi.");
+
+        auth.TwoFactorEnabled = false;
+        auth.TwoFactorSecret = null;
+        dbContext.StorefrontCustomerAuths.Update(auth);
+
+        // Remove recovery codes
+        var codes = await dbContext.StorefrontTwoFactorRecoveryCodes
+            .Where(c => c.AuthId == authId)
+            .ToListAsync();
+        dbContext.StorefrontTwoFactorRecoveryCodes.RemoveRange(codes);
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Iki faktorlu dogrulama devre disi birakildi.");
+    }
+
+    public async Task<IDataResult<List<string>>> GenerateRecoveryCodesAsync(int authId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Remove existing codes
+        var existingCodes = await dbContext.StorefrontTwoFactorRecoveryCodes
+            .Where(c => c.AuthId == authId)
+            .ToListAsync();
+        dbContext.StorefrontTwoFactorRecoveryCodes.RemoveRange(existingCodes);
+
+        var plainCodes = new List<string>();
+        for (var i = 0; i < 10; i++)
+        {
+            var code = $"{RandomNumberGenerator.GetInt32(100000, 999999)}-{RandomNumberGenerator.GetInt32(100000, 999999)}";
+            plainCodes.Add(code);
+
+            var hashedCode = Convert.ToBase64String(
+                SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(code)));
+
+            dbContext.StorefrontTwoFactorRecoveryCodes.Add(new StorefrontTwoFactorRecoveryCode
+            {
+                AuthId = authId,
+                Code = hashedCode,
+                IsUsed = false
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessDataResult<List<string>>(plainCodes);
+    }
+
+    public async Task<IResult> VerifyRecoveryCodeAsync(int authId, string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return new ErrorResult("Kurtarma kodu bos olamaz.");
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var hashedInput = Convert.ToBase64String(
+            SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(code.Trim())));
+
+        var recoveryCode = await dbContext.StorefrontTwoFactorRecoveryCodes
+            .FirstOrDefaultAsync(c => c.AuthId == authId && c.Code == hashedInput && !c.IsUsed);
+
+        if (recoveryCode is null)
+            return new ErrorResult("Gecersiz veya kullanilmis kurtarma kodu.");
+
+        recoveryCode.IsUsed = true;
+        recoveryCode.UsedAt = DateTimeOffset.UtcNow;
+        dbContext.StorefrontTwoFactorRecoveryCodes.Update(recoveryCode);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Kurtarma kodu ile giris basarili.");
+    }
+
+    public async Task<IDataResult<bool>> IsTwoFactorEnabledAsync(int authId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
+        return new SuccessDataResult<bool>(auth?.TwoFactorEnabled ?? false);
+    }
 }

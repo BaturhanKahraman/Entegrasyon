@@ -156,6 +156,14 @@ app.MapControllerRoute("newsletterApi", "/newsletter",
     new { controller = "Newsletter", action = "Subscribe" });
 app.MapControllerRoute("reviewApi", "/urun/{slug}/yorum",
     new { controller = "Product", action = "AddReview" });
+app.MapControllerRoute("askQuestion", "/urun/{slug}/soru",
+    new { controller = "Product", action = "AskQuestion" });
+app.MapControllerRoute("twoFactor", "/giris/2fa",
+    new { controller = "Auth", action = "TwoFactor" });
+app.MapControllerRoute("wallet", "/hesabim/cuzdanim",
+    new { controller = "Account", action = "Wallet" });
+app.MapControllerRoute("twoFactorSetup", "/hesabim/guvenlik/2fa",
+    new { controller = "Account", action = "TwoFactorSetup" });
 app.MapControllerRoute("compare", "/karsilastir",
     new { controller = "Compare", action = "Index" });
 app.MapControllerRoute("stockNotifyApi", "/api/stok-bildirim",

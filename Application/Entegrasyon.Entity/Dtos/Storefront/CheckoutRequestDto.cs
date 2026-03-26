@@ -5,4 +5,5 @@ public record CheckoutRequestDto(
     string ShippingCity, string ShippingDistrict, string ShippingAddress,
     string? ShippingPostalCode, bool UseSameAddressForBilling,
     string? BillingFullName, string? BillingCity, string? BillingAddress,
-    string? OrderNote);
+    string? OrderNote,
+    bool IsGiftWrapped = false, string? GiftMessage = null, bool HideInvoice = false);

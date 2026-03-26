@@ -81,4 +81,15 @@ public sealed class Order : BaseEntity
 
     [Column(TypeName = "money")]
     public decimal? DiscountAmount { get; set; }
+
+    // Gift Wrapping
+    public bool IsGiftWrapped { get; set; }
+
+    [Column(TypeName = "money")]
+    public decimal? GiftWrappingFee { get; set; }
+
+    [StringLength(500)]
+    public string? GiftMessage { get; set; }
+
+    public bool HideInvoice { get; set; }
 }
