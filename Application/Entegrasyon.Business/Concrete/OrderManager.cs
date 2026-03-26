@@ -650,6 +650,60 @@ public class OrderManager(
         return new SuccessDataResult<Order>(order);
     }
 
+    public async Task<IDataResult<List<Entity.Dtos.Storefront.StorefrontProductCardDto>>> GetPreviouslyPurchasedProductsAsync(int customerId, int count = 24)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Get distinct product variant IDs from this customer's orders, most recent first
+        var variantIds = await dbContext.OrderItems.AsNoTracking()
+            .Where(oi => oi.Order.CustomerId == customerId && oi.ProductId.HasValue)
+            .OrderByDescending(oi => oi.Order.OrderDate ?? oi.Order.CreatedAt)
+            .Select(oi => oi.ProductId!.Value)
+            .Distinct()
+            .Take(count)
+            .ToListAsync();
+
+        if (variantIds.Count == 0)
+            return new SuccessDataResult<List<Entity.Dtos.Storefront.StorefrontProductCardDto>>([]);
+
+        // Load product variants with their products
+        var variants = await dbContext.ProductVariants.AsNoTracking()
+            .Include(v => v.Product)
+            .Include(v => v.Images)
+            .Include(v => v.BranchOfficeStocks)
+            .Where(v => variantIds.Contains(v.Id))
+            .ToListAsync();
+
+        // Group by Product to get distinct products
+        var cards = variants
+            .Where(v => v.Product is not null)
+            .GroupBy(v => v.Product!.Id)
+            .Select(g =>
+            {
+                var product = g.First().Product!;
+                var allVariants = g.ToList();
+                var minPrice = allVariants.Min(v => v.SalePrice);
+                var maxPrice = allVariants.Max(v => v.SalePrice);
+                var totalStock = allVariants.Sum(v => v.BranchOfficeStocks.Sum(s => s.CurrentStock));
+                var mainImage = allVariants
+                    .SelectMany(v => v.Images)
+                    .OrderBy(i => i.DisplayOrder)
+                    .FirstOrDefault();
+
+                var maxListPrice = allVariants.Max(v => v.ListPrice);
+                return new Entity.Dtos.Storefront.StorefrontProductCardDto(
+                    product.Id, product.Title ?? "", product.SeoSlug,
+                    mainImage?.StorageKey, minPrice, maxPrice,
+                    maxListPrice > minPrice ? maxListPrice : null,
+                    totalStock, product.Brand?.Name, product.Category?.Name ?? "",
+                    product.CreatedAt > DateTimeOffset.UtcNow.AddDays(-30));
+            })
+            .Take(count)
+            .ToList();
+
+        return new SuccessDataResult<List<Entity.Dtos.Storefront.StorefrontProductCardDto>>(cards);
+    }
+
     private async Task DecreaseStockForMarketplaceOrder(
         List<int> warehouseIds, Guid productVariantId, int quantity, string referenceId)
     {

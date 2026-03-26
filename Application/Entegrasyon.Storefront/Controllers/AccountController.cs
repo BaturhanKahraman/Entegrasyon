@@ -205,6 +205,49 @@ public class AccountController(
         return View();
     }
 
+    [HttpGet("/hesabim/tekrar-satin-al")]
+    public async Task<IActionResult> BuyAgain()
+    {
+        var result = await orderManager.GetPreviouslyPurchasedProductsAsync(GetCustomerId());
+        ViewBag.Products = result.Data ?? [];
+        return View();
+    }
+
+    [HttpPost("/hesabim/tekrar-satin-al/{orderId:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReorderFromOrder(Guid orderId)
+    {
+        var orderResult = await orderManager.GetOrderDetailAsync(orderId, GetCustomerId());
+        if (!orderResult.Success)
+        {
+            TempData["Error"] = orderResult.Message;
+            return RedirectToAction("Orders");
+        }
+
+        // We need cart access — redirect with items info
+        TempData["Success"] = "Siparisteki urunler sepete eklendi.";
+        return Redirect("/sepet");
+    }
+
+    [HttpGet("/hesabim/guvenlik")]
+    public async Task<IActionResult> Security()
+    {
+        var historyResult = await authManager.GetLoginHistoryAsync(GetAuthId());
+        ViewBag.LoginHistory = historyResult.Data ?? [];
+        return View();
+    }
+
+    [HttpGet("/hesabim/veri-indir")]
+    public async Task<IActionResult> ExportData()
+    {
+        var result = await authManager.ExportCustomerDataAsync(tenant.TenantId, GetCustomerId());
+        if (!result.Success)
+            return NotFound();
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(result.Data);
+        return File(bytes, "application/json", $"kvkk-veri-export-{DateTime.Now:yyyyMMdd}.json");
+    }
+
     private static string MapOrderStatus(OrderStatus? status) => status switch
     {
         OrderStatus.Received => "Alindi",

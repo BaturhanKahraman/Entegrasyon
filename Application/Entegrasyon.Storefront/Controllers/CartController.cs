@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Storefront;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.Storefront.Controllers;
@@ -73,6 +74,18 @@ public class CartController(
         }
 
         var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate, discountAmount);
+
+        // Load saved items for authenticated users
+        var customerId = GetCustomerId();
+        if (customerId.HasValue)
+        {
+            var savedResult = await cartManager.GetSavedItemsAsync(tenant.TenantId, customerId.Value);
+            ViewBag.SavedItems = savedResult.Data ?? new List<SavedCartItemDto>();
+        }
+        else
+        {
+            ViewBag.SavedItems = new List<SavedCartItemDto>();
+        }
 
         ViewBag.Cart = cartResult.Success ? cartResult.Data : null;
         ViewBag.SeoTitle = $"Sepetim | {s.StoreName}";
@@ -151,5 +164,37 @@ public class CartController(
         var s = tenant.Settings;
         var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
         return Json(new { success = true, cart = cartResult.Data });
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> SonraAl([FromBody] AddToCartDto dto)
+    {
+        var cartId = await GetOrCreateCartIdAsync();
+        var customerId = GetCustomerId();
+        if (customerId is null)
+            return Json(new { success = false, message = "Giris yapmaniz gerekiyor." });
+
+        var result = await cartManager.SaveForLaterAsync(cartId, dto.ProductVariantId, customerId.Value, tenant.TenantId);
+        if (!result.Success)
+            return Json(new { success = false, message = result.Message });
+
+        return await GetCartWithCouponAsync(cartId);
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> SepeteTasi([FromBody] AddToCartDto dto)
+    {
+        var cartId = await GetOrCreateCartIdAsync();
+        var customerId = GetCustomerId();
+        if (customerId is null)
+            return Json(new { success = false, message = "Giris yapmaniz gerekiyor." });
+
+        var result = await cartManager.MoveToCartAsync(tenant.TenantId, customerId.Value, dto.ProductVariantId, cartId);
+        if (!result.Success)
+            return Json(new { success = false, message = result.Message });
+
+        return await GetCartWithCouponAsync(cartId);
     }
 }

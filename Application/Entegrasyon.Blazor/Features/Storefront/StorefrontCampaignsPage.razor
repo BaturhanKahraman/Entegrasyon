@@ -1,0 +1,78 @@
+@page "/storefront/campaigns"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Otomatik Kampanyalar</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Otomatik Kampanyalar</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-6" Elevation="2">
+        <MudText Typo="Typo.subtitle1" Class="mb-4">
+            Otomatik kampanyalari yoneterek musterilerinize ozel firsatlar sunun.
+        </MudText>
+
+        <MudGrid>
+            @* Welcome Coupon *@
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Outlined="true">
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h6">Hos Geldin Kuponu</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                Yeni uye olan musterilere otomatik indirim kuponu gonderilir.
+                            </MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Value="_settings.AutoWelcomeCouponEnabled"
+                                   Color="Color.Primary" Label="@(_settings.AutoWelcomeCouponEnabled ? "Aktif" : "Pasif")" />
+                    </div>
+                    @if (_settings.AutoWelcomeCouponEnabled)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudNumericField T="int?" @bind-Value="_settings.AutoWelcomeCouponPercent"
+                                         Label="Indirim Orani (%)" Variant="Variant.Outlined"
+                                         Min="1" Max="100" Class="mt-2" Style="max-width: 200px;" />
+                    }
+                </MudPaper>
+            </MudItem>
+
+            @* Review Reward Coupon *@
+            <MudItem xs="12">
+                <MudPaper Class="pa-4" Outlined="true">
+                    <div class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.h6">Degerlendirme Odulu</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                Degerlendirmesi onaylanan musterilere otomatik indirim kuponu gonderilir.
+                            </MudText>
+                        </div>
+                        <MudSwitch T="bool" @bind-Value="_settings.AutoReviewRewardEnabled"
+                                   Color="Color.Primary" Label="@(_settings.AutoReviewRewardEnabled ? "Aktif" : "Pasif")" />
+                    </div>
+                    @if (_settings.AutoReviewRewardEnabled)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudNumericField T="int?" @bind-Value="_settings.AutoReviewRewardPercent"
+                                         Label="Indirim Orani (%)" Variant="Variant.Outlined"
+                                         Min="1" Max="100" Class="mt-2" Style="max-width: 200px;" />
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <div class="d-flex justify-end mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync"
+                       Disabled="_saving" StartIcon="@Icons.Material.Filled.Save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Kaydet
+            </MudButton>
+        </div>
+    </MudPaper>
+}

@@ -1,0 +1,40 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    var products = ViewBag.Products as List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto> ?? new();
+}
+
+@section Head {
+    <seo-meta title="Tekrar Satin Al | @Tenant.Settings.StoreName" />
+}
+
+<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
+    <aside class="w-full md:w-64 shrink-0">
+        @await Html.PartialAsync("_AccountSidebar", "BuyAgain")
+    </aside>
+    <div class="flex-1">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Tekrar Satin Al</h1>
+
+            @if (products.Count == 0)
+            {
+                <div class="text-center py-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <p class="text-gray-500">Henuz siparis vermediniz.</p>
+                    <a href="/urunler" class="btn-primary inline-block px-6 py-2 mt-4 no-underline">Alisverise Basla</a>
+                </div>
+            }
+            else
+            {
+                <p class="text-sm text-gray-500 mb-4">Daha once satin aldiginiz urunler</p>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    @foreach (var product in products)
+                    {
+                        @await Html.PartialAsync("_ProductCard", product)
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -21,4 +21,7 @@ public interface IOrderManager
     Task<IDataResult<Order>> GetOrderDetailAsync(Guid orderId, int customerId);
     Task<IResult> CancelOrderAsync(Guid orderId, int customerId);
     Task<IDataResult<Order>> GetOrderByNumberAsync(string orderNumber);
+
+    // Buy Again
+    Task<IDataResult<List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto>>> GetPreviouslyPurchasedProductsAsync(int customerId, int count = 24);
 }
