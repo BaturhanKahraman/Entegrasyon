@@ -67,6 +67,9 @@ public sealed class Order : BaseEntity
     public Storefront.PaymentStatus? StorefrontPaymentStatus { get; set; }
     public Storefront.OrderStatus? StorefrontOrderStatus { get; set; }
 
+    // Marketplace seller (multi-vendor)
+    public int? SellerId { get; set; }
+
     [StringLength(500)]
     public string? OrderNote { get; set; }
 

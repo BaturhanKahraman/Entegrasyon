@@ -18,6 +18,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.Name = "Storefront.Auth";
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
+    })
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+        options.CallbackPath = "/signin-google";
+    })
+    .AddFacebook(options =>
+    {
+        options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "";
+        options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "";
+        options.CallbackPath = "/signin-facebook";
     });
 builder.Services.AddControllersWithViews();
 builder.Services.AddResponseCaching();
@@ -88,6 +100,14 @@ app.MapControllerRoute("resetPassword", "/sifre-sifirla",
     new { controller = "Auth", action = "ResetPassword" });
 app.MapControllerRoute("confirmEmail", "/email-dogrula",
     new { controller = "Auth", action = "ConfirmEmail" });
+app.MapControllerRoute("externalLogin", "/auth/external-login",
+    new { controller = "Auth", action = "ExternalLogin" });
+app.MapControllerRoute("externalCallback", "/auth/external-callback",
+    new { controller = "Auth", action = "ExternalLoginCallback" });
+app.MapControllerRoute("pushSubscribe", "/api/push/subscribe",
+    new { controller = "Push", action = "Subscribe" });
+app.MapControllerRoute("pushUnsubscribe", "/api/push/unsubscribe",
+    new { controller = "Push", action = "Unsubscribe" });
 app.MapControllerRoute("orderDetail", "/hesabim/siparis/{id}",
     new { controller = "Account", action = "OrderDetail" });
 app.MapControllerRoute("orderCancel", "/hesabim/siparis/{id}/iptal",
@@ -140,6 +160,18 @@ app.MapControllerRoute("compare", "/karsilastir",
     new { controller = "Compare", action = "Index" });
 app.MapControllerRoute("stockNotifyApi", "/api/stok-bildirim",
     new { controller = "StockNotification", action = "Subscribe" });
+app.MapControllerRoute("sellerRegister", "/satici/kayit",
+    new { controller = "Seller", action = "Register" });
+app.MapControllerRoute("sellerPanel", "/satici/{action=Panel}",
+    new { controller = "Seller" });
+app.MapControllerRoute("sellerProducts", "/satici/urunlerim",
+    new { controller = "SellerProduct", action = "Index" });
+app.MapControllerRoute("sellerAddProduct", "/satici/urun-ekle",
+    new { controller = "SellerProduct", action = "Add" });
+app.MapControllerRoute("sellerUpdateProduct", "/satici/urun-guncelle",
+    new { controller = "SellerProduct", action = "Update" });
+app.MapControllerRoute("sellerStore", "/magaza/{slug}",
+    new { controller = "Catalog", action = "SellerStore" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",

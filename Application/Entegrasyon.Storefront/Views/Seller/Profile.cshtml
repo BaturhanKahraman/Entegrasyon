@@ -1,0 +1,77 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="Magaza Profili | @Tenant.Settings.StoreName" />
+}
+
+@{
+    var seller = ViewBag.Seller as Entegrasyon.Entity.Storefront.Seller;
+}
+
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Magaza Profili</h1>
+
+        @if (ViewBag.Success == true)
+        {
+            <div class="bg-green-50 text-green-700 text-sm rounded-lg p-3 mb-4">
+                Profiliniz basariyla guncellendi.
+            </div>
+        }
+        @if (ViewBag.Error != null)
+        {
+            <div class="bg-red-50 text-red-700 text-sm rounded-lg p-3 mb-4">
+                @ViewBag.Error
+            </div>
+        }
+
+        <form method="post" asp-antiforgery="true" class="space-y-4">
+            <div>
+                <label for="StoreName" class="block text-sm font-medium text-gray-700 mb-1">Magaza Adi</label>
+                <input type="text" id="StoreName" name="StoreName" required value="@seller?.StoreName"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+            </div>
+            <div>
+                <label for="StoreDescription" class="block text-sm font-medium text-gray-700 mb-1">Magaza Aciklamasi</label>
+                <textarea id="StoreDescription" name="StoreDescription" rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm">@seller?.StoreDescription</textarea>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="ContactPhone" class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                    <input type="tel" id="ContactPhone" name="ContactPhone" required value="@seller?.ContactPhone"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+                <div>
+                    <label for="ContactEmail" class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                    <input type="email" id="ContactEmail" name="ContactEmail" required value="@seller?.ContactEmail"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+                <div class="md:col-span-2">
+                    <label for="Address" class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                    <textarea id="Address" name="Address" rows="2" required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm">@seller?.Address</textarea>
+                </div>
+                <div>
+                    <label for="City" class="block text-sm font-medium text-gray-700 mb-1">Sehir</label>
+                    <input type="text" id="City" name="City" required value="@seller?.City"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+                <div>
+                    <label for="Iban" class="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
+                    <input type="text" id="Iban" name="Iban" value="@seller?.Iban"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+                </div>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg font-medium hover:bg-opacity-90 transition">
+                    Kaydet
+                </button>
+                <a href="/satici/panel" class="flex-1 text-center bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200 transition no-underline">
+                    Geri Don
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

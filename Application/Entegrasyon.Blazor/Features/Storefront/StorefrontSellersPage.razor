@@ -1,0 +1,65 @@
+@page "/storefront/sellers"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Satici Yonetimi</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Satici Yonetimi</MudText>
+
+<MudDataGrid Items="@_sellers.AsEnumerable()" Hover="true" Loading="@_loading" Dense="true" Filterable="true">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="ID" />
+        <PropertyColumn Property="x => x.StoreName" Title="Magaza Adi" />
+        <PropertyColumn Property="x => x.CompanyName" Title="Sirket" />
+        <TemplateColumn Title="Durum">
+            <CellTemplate>
+                @switch (context.Item.Status)
+                {
+                    case SellerStatus.Pending:
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">Bekliyor</MudChip>
+                        break;
+                    case SellerStatus.Approved:
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Onayli</MudChip>
+                        break;
+                    case SellerStatus.Suspended:
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Askida</MudChip>
+                        break;
+                    case SellerStatus.Rejected:
+                        <MudChip T="string" Color="Color.Dark" Size="Size.Small">Reddedildi</MudChip>
+                        break;
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Puan">
+            <CellTemplate>
+                @context.Item.AverageRating.ToString("F1")
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Property="x => x.TotalSales" Title="Satis" />
+        <TemplateColumn Title="Komisyon">
+            <CellTemplate>
+                %@context.Item.DefaultCommissionRate
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Kayit Tarihi">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd.MM.yyyy")
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Islemler" CellStyle="text-align:right">
+            <CellTemplate>
+                @if (context.Item.Status == SellerStatus.Pending)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
+                        OnClick="@(() => ApproveAsync(context.Item))" Title="Onayla" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
+                        OnClick="@(() => OpenRejectDialog(context.Item))" Title="Reddet" />
+                }
+                @if (context.Item.Status == SellerStatus.Approved)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Block" Color="Color.Warning"
+                        OnClick="@(() => OpenSuspendDialog(context.Item))" Title="Askiya Al" />
+                }
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>

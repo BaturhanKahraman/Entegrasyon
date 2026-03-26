@@ -1,0 +1,71 @@
+@using Entegrasyon.Entity.Storefront
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@{
+    var seller = ViewBag.Seller as Seller;
+    var products = ViewBag.SellerProducts as List<SellerProduct> ?? new List<SellerProduct>();
+}
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <div class="flex items-center gap-4">
+            @if (!string.IsNullOrEmpty(seller?.LogoUrl))
+            {
+                <img src="@seller.LogoUrl" alt="@seller?.StoreName" class="w-16 h-16 rounded-full object-cover" />
+            }
+            else
+            {
+                <div class="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
+                    <span class="text-2xl font-bold text-primary">@seller?.StoreName?.FirstOrDefault()</span>
+                </div>
+            }
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">@seller?.StoreName</h1>
+                @if (!string.IsNullOrEmpty(seller?.StoreDescription))
+                {
+                    <p class="text-gray-600 text-sm mt-1">@seller.StoreDescription</p>
+                }
+                <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <span>@seller?.City</span>
+                    @if (seller?.AverageRating > 0)
+                    {
+                        <span>@seller.AverageRating.ToString("F1") puan</span>
+                    }
+                    @if (seller?.TotalSales > 0)
+                    {
+                        <span>@seller.TotalSales satis</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (products.Count == 0)
+    {
+        <div class="text-center py-12">
+            <p class="text-gray-500">Bu magazada henuz urun bulunmuyor.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            @foreach (var sp in products)
+            {
+                <a href="/urun/@sp.Product?.SeoSlug" class="bg-white rounded-lg shadow hover:shadow-md transition block no-underline">
+                    <div class="p-4">
+                        <h3 class="text-sm font-medium text-gray-900 mb-2 line-clamp-2">@sp.Product?.Title</h3>
+                        <p class="text-lg font-bold text-primary">@sp.Price.ToString("N2") TL</p>
+                        @if (sp.Stock <= 3 && sp.Stock > 0)
+                        {
+                            <p class="text-xs text-orange-600 mt-1">Son @sp.Stock adet</p>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>
