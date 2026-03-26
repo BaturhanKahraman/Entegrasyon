@@ -87,6 +87,36 @@
                         }
                     </div>
                 </div>
+
+                @* Coupon Code Section *@
+                <div class="mt-4 bg-white rounded-lg border border-gray-200 p-4">
+                    <div id="coupon-section">
+                        @if (!string.IsNullOrWhiteSpace(cart.CouponCode))
+                        {
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm font-medium text-green-700">Kupon uygulandi: <strong>@cart.CouponCode</strong></span>
+                                </div>
+                                <button onclick="removeCoupon()" class="text-sm text-red-500 hover:text-red-700 font-medium">Kaldır</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="flex gap-2">
+                                <input type="text" id="coupon-input" placeholder="Kupon kodunuz" maxlength="20"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+                                <button onclick="applyCoupon()" id="coupon-btn"
+                                        class="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
+                                    Uygula
+                                </button>
+                            </div>
+                            <p id="coupon-error" class="text-xs text-red-500 mt-1 hidden"></p>
+                        }
+                    </div>
+                </div>
             </div>
 
             @* Order Summary Sidebar *@
@@ -99,6 +129,13 @@
                             <span>Ara Toplam</span>
                             <span id="summary-subtotal">@cart.SubTotal.ToString("N2") TL</span>
                         </div>
+                        @if (cart.DiscountAmount > 0)
+                        {
+                            <div class="flex justify-between text-green-600">
+                                <span>Kupon Indirimi</span>
+                                <span id="summary-discount">-@cart.DiscountAmount.ToString("N2") TL</span>
+                            </div>
+                        }
                         <div class="flex justify-between text-gray-600">
                             <span>Kargo</span>
                             <span id="summary-shipping">
@@ -169,6 +206,62 @@
         .then(function(d) {
             if (d.success) { location.reload(); }
         }).catch(function() { alert('Bir hata olustu'); });
+    }
+
+    function applyCoupon() {
+        var input = document.getElementById('coupon-input');
+        var errorEl = document.getElementById('coupon-error');
+        var btn = document.getElementById('coupon-btn');
+        var code = input.value.trim();
+
+        if (!code) {
+            errorEl.textContent = 'Lutfen bir kupon kodu girin.';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Kontrol ediliyor...';
+        errorEl.classList.add('hidden');
+
+        fetch('/api/sepet/KuponUygula', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        }).then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) {
+                location.reload();
+            } else {
+                errorEl.textContent = d.message || 'Gecersiz kupon kodu.';
+                errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = 'Uygula';
+            }
+        }).catch(function() {
+            errorEl.textContent = 'Bir hata olustu. Lutfen tekrar deneyin.';
+            errorEl.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Uygula';
+        });
+    }
+
+    function removeCoupon() {
+        fetch('/api/sepet/KuponKaldir', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) { location.reload(); }
+        }).catch(function() { alert('Bir hata olustu'); });
+    }
+
+    // Allow pressing Enter in coupon input
+    var couponInput = document.getElementById('coupon-input');
+    if (couponInput) {
+        couponInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { applyCoupon(); }
+        });
     }
 </script>
 }
