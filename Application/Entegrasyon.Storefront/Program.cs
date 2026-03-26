@@ -22,6 +22,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddControllersWithViews();
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.Name = "Storefront.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -38,6 +45,7 @@ app.UseStaticFiles(new StaticFileOptions
         ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000"
 });
 app.UseResponseCaching();
+app.UseSession();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseRouting();
 app.UseAuthentication();
@@ -80,6 +88,12 @@ app.MapControllerRoute("confirmEmail", "/email-dogrula",
     new { controller = "Auth", action = "ConfirmEmail" });
 app.MapControllerRoute("account", "/hesabim/{action=Index}",
     new { controller = "Account" });
+app.MapControllerRoute("cart", "/sepet",
+    new { controller = "Cart", action = "Index" });
+app.MapControllerRoute("cartApi", "/api/sepet/{action}",
+    new { controller = "Cart" });
+app.MapControllerRoute("checkout", "/odeme/{action=Index}",
+    new { controller = "Checkout" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",
