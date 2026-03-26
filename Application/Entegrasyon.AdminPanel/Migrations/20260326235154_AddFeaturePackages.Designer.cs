@@ -3,6 +3,7 @@ using System;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Entegrasyon.AdminPanel.Migrations
 {
     [DbContext(typeof(AdminPanelDbContext))]
-    partial class AdminPanelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260326235154_AddFeaturePackages")]
+    partial class AddFeaturePackages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.25");
