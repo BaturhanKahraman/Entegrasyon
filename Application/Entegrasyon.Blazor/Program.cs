@@ -36,6 +36,7 @@ builder.Host.UseDefaultServiceProvider((host, options) =>
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddClients();
 builder.Services.AddBackgroundServices();
+builder.Services.AddStorefrontServices();
 
 // Event channels and background services are registered via AddEventChannels() and AddBackgroundServices()
 
