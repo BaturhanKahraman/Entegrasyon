@@ -1,0 +1,25 @@
+@page "/settings/storefront/legal"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Yasal Metinler</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Yasal Metinler</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        @foreach (var tab in _legalTabs)
+        {
+            <MudTabPanel Text="@tab.DisplayName">
+                <MudTextField @bind-Value="tab.Content" Label="@($"{tab.DisplayName} (HTML)")" Variant="Variant.Outlined" Lines="15" />
+                <div class="d-flex justify-end mt-4">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SaveLegalTextAsync(tab))" Disabled="_saving">Kaydet</MudButton>
+                </div>
+            </MudTabPanel>
+        }
+    </MudTabs>
+}

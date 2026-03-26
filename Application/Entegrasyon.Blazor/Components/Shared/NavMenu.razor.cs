@@ -19,6 +19,7 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
         { "customers", ["customers", "invoices", "invoicing"] },
         { "reports", ["reports"] },
         { "users", ["users", "roles"] },
+        { "storefront", ["settings/storefront"] },
         { "settings", ["settings"] }
     };
 
@@ -67,7 +68,7 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
 
         foreach (var section in sectionRoutes)
         {
-            if (section.Value.Any(route => firstSegment == route))
+            if (section.Value.Any(route => relativePath.StartsWith(route) || firstSegment == route))
             {
                 ExpandedSections[section.Key] = true;
                 break;
