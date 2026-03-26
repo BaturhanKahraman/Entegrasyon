@@ -167,6 +167,8 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontWishlistItem> StorefrontWishlistItems { get; set; }
     public virtual DbSet<StorefrontContactMessage> StorefrontContactMessages { get; set; }
     public virtual DbSet<StorefrontNewsletter> StorefrontNewsletters { get; set; }
+    public virtual DbSet<StorefrontReturnRequest> StorefrontReturnRequests { get; set; }
+    public virtual DbSet<StorefrontPopularSearch> StorefrontPopularSearches { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

@@ -480,6 +480,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IStorefrontWishlistManager, StorefrontWishlistManager>();
             services.AddScoped<IStorefrontContactManager, StorefrontContactManager>();
             services.AddScoped<IStorefrontNewsletterManager, StorefrontNewsletterManager>();
+            services.AddScoped<IStorefrontReturnManager, StorefrontReturnManager>();
+            services.AddScoped<IStorefrontSearchHistoryManager, StorefrontSearchHistoryManager>();
             return services;
         }
     }

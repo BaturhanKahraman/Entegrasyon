@@ -70,6 +70,8 @@ app.MapControllerRoute("search", "/arama",
     new { controller = "Catalog", action = "Search" });
 app.MapControllerRoute("searchSuggest", "/api/arama/oneri",
     new { controller = "Catalog", action = "SearchSuggest" });
+app.MapControllerRoute("popularSearches", "/api/arama/populer",
+    new { controller = "Catalog", action = "PopularSearches" });
 app.MapControllerRoute("newProducts", "/yeni-urunler",
     new { controller = "Catalog", action = "NewProducts" });
 app.MapControllerRoute("bestSellers", "/cok-satanlar",
@@ -92,6 +94,10 @@ app.MapControllerRoute("orderCancel", "/hesabim/siparis/{id}/iptal",
     new { controller = "Account", action = "CancelOrder" });
 app.MapControllerRoute("orderInvoice", "/hesabim/siparis/{id}/fatura",
     new { controller = "Account", action = "DownloadInvoice" });
+app.MapControllerRoute("accountReturns", "/hesabim/iadelerim",
+    new { controller = "Account", action = "Returns" });
+app.MapControllerRoute("accountCreateReturn", "/hesabim/iade-talebi/{orderId}",
+    new { controller = "Account", action = "CreateReturn" });
 app.MapControllerRoute("account", "/hesabim/{action=Index}",
     new { controller = "Account" });
 app.MapControllerRoute("tracking", "/siparis-takip",

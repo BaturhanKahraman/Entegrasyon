@@ -9,7 +9,8 @@ public class CatalogController(
     IStorefrontTenantContext tenant,
     IProductService productService,
     ICategoryService categoryService,
-    IBrandService brandService) : Controller
+    IBrandService brandService,
+    IStorefrontSearchHistoryManager searchHistoryManager) : Controller
 {
     [ResponseCache(Duration = 300)]
     public async Task<IActionResult> Categories()
@@ -129,6 +130,9 @@ public class CatalogController(
         var productsResult = await productService.GetStorefrontProductsAsync(searchQuery);
         var products = productsResult.Success ? productsResult.Data : EmptyPage();
 
+        // Record search query (fire-and-forget)
+        _ = searchHistoryManager.RecordSearchAsync(tenant.TenantId, q!);
+
         ViewBag.Products = products;
         ViewBag.Query = searchQuery;
 
@@ -214,12 +218,23 @@ public class CatalogController(
     public async Task<IActionResult> SearchSuggest([FromQuery(Name = "q")] string? q)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
-            return Json(Array.Empty<object>());
+        {
+            var popularResult = await searchHistoryManager.GetPopularSearchesAsync(tenant.TenantId, 8);
+            var popular = popularResult.Success ? popularResult.Data : [];
+            return Json(popular.Select(s => new { text = s, url = $"/arama?q={Uri.EscapeDataString(s)}", type = "popular", imageUrl = (string?)null }));
+        }
 
         var result = await productService.GetSearchSuggestionsAsync(q);
         var suggestions = result.Success ? result.Data : new List<StorefrontSearchSuggestionDto>();
 
         return Json(suggestions);
+    }
+
+    [ResponseCache(Duration = 60)]
+    public async Task<IActionResult> PopularSearches()
+    {
+        var result = await searchHistoryManager.GetPopularSearchesAsync(tenant.TenantId, 10);
+        return Json(result.Success ? result.Data : new List<string>());
     }
 
     private static Entegrasyon.Entity.Pageable<StorefrontProductCardDto> EmptyPage()
