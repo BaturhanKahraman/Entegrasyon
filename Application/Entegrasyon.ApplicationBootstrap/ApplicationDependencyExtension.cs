@@ -470,6 +470,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IStorefrontSettingsManager, StorefrontSettingsManager>();
             services.AddScoped<IStorefrontPageManager, StorefrontPageManager>();
             services.AddScoped<IStorefrontBannerManager, StorefrontBannerManager>();
+            services.AddScoped<IStorefrontAuthManager, StorefrontAuthManager>();
             return services;
         }
     }

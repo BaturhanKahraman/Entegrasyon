@@ -159,6 +159,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontDomainMapping> StorefrontDomainMappings { get; set; }
     public virtual DbSet<StorefrontBanner> StorefrontBanners { get; set; }
     public virtual DbSet<StorefrontPage> StorefrontPages { get; set; }
+    public virtual DbSet<StorefrontCustomerAuth> StorefrontCustomerAuths { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }
