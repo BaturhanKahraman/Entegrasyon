@@ -10,6 +10,9 @@ public class AdminPanelDbContext(DbContextOptions<AdminPanelDbContext> options) 
     public DbSet<ApplicationLog> ApplicationLogs => Set<ApplicationLog>();
     public DbSet<AiCreditAccount> AiCreditAccounts => Set<AiCreditAccount>();
     public DbSet<AiCreditTransaction> AiCreditTransactions => Set<AiCreditTransaction>();
+    public DbSet<FeaturePackage> FeaturePackages => Set<FeaturePackage>();
+    public DbSet<FeaturePackagePermission> FeaturePackagePermissions => Set<FeaturePackagePermission>();
+    public DbSet<TenantSubscription> TenantSubscriptions => Set<TenantSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +34,18 @@ public class AdminPanelDbContext(DbContextOptions<AdminPanelDbContext> options) 
         modelBuilder.Entity<AdminUser>(e =>
         {
             e.HasIndex(u => u.Username).IsUnique();
+        });
+
+        modelBuilder.Entity<FeaturePackage>(e =>
+        {
+            e.HasIndex(p => p.Name).IsUnique();
+            e.HasMany(p => p.Permissions).WithOne(pp => pp.Package).HasForeignKey(pp => pp.FeaturePackageId);
+            e.HasMany(p => p.Subscriptions).WithOne(s => s.Package).HasForeignKey(s => s.FeaturePackageId);
+        });
+
+        modelBuilder.Entity<TenantSubscription>(e =>
+        {
+            e.HasOne(s => s.Tenant).WithMany().HasForeignKey(s => s.TenantId);
         });
     }
 }
