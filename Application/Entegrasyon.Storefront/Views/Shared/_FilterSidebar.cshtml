@@ -34,14 +34,40 @@
         </div>
     </div>
 
+    @* Brand Filter *@
+    @{
+        var brands = ViewBag.AvailableBrands as List<Entegrasyon.Entity.Dtos.Storefront.BrandFilterDto>;
+    }
+    @if (brands is { Count: > 0 })
+    {
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Marka</label>
+            <div class="max-h-40 overflow-y-auto space-y-1">
+                @foreach (var brand in brands)
+                {
+                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-gray-900">
+                        <input type="radio" name="BrandId" value="@brand.BrandId"
+                               @(query?.BrandId == brand.BrandId ? "checked" : "")
+                               class="rounded text-primary focus:ring-primary" />
+                        <span>@brand.BrandName (@brand.ProductCount)</span>
+                    </label>
+                }
+            </div>
+            @if (query?.BrandId.HasValue == true)
+            {
+                <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer mt-1">
+                    <input type="radio" name="BrandId" value=""
+                           class="rounded text-primary focus:ring-primary" />
+                    <span>Tumu</span>
+                </label>
+            }
+        </div>
+    }
+
     @* Hidden inputs to preserve context *@
     @if (query?.CategoryId.HasValue == true)
     {
         <input type="hidden" name="CategoryId" value="@query.CategoryId" />
-    }
-    @if (query?.BrandId.HasValue == true)
-    {
-        <input type="hidden" name="BrandId" value="@query.BrandId" />
     }
     @if (!string.IsNullOrWhiteSpace(query?.SearchQuery))
     {

@@ -31,4 +31,6 @@ public interface IProductService
     Task<IDataResult<List<StorefrontProductCardDto>>> GetBestSellersAsync(int count);
     Task<IDataResult<List<StorefrontSearchSuggestionDto>>> GetSearchSuggestionsAsync(string query, int maxResults = 8);
     Task<IDataResult<StorefrontProductDetailDto>> GetStorefrontProductDetailAsync(string seoSlug);
+    Task<IDataResult<List<StorefrontProductDetailDto>>> GetProductsByIdsAsync(List<Guid> ids);
+    Task<IDataResult<List<BrandFilterDto>>> GetBrandsForCategoryAsync(int categoryId);
 }

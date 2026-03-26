@@ -1,0 +1,124 @@
+@model List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductDetailDto>
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    @await Html.PartialAsync("_Breadcrumb")
+
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Urun Karsilastirma</h1>
+
+    @if (Model.Count == 0)
+    {
+        <div class="text-center py-16">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <p class="text-gray-500 text-lg mb-4">Karsilastirilacak urun secilmedi.</p>
+            <p class="text-gray-400 text-sm mb-6">Urun kartlarindaki karsilastirma butonunu kullanarak en fazla 4 urun ekleyebilirsiniz.</p>
+            <a href="/urunler" class="btn-primary px-6 py-2 inline-block">Urunlere Git</a>
+        </div>
+    }
+    else
+    {
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="p-4 text-left text-sm font-medium text-gray-500 bg-gray-50 w-32"></th>
+                        @foreach (var product in Model)
+                        {
+                            <th class="p-4 text-center bg-gray-50 min-w-[200px]">
+                                <a href="/urun/@product.SeoSlug" class="hover:text-primary">
+                                    @{
+                                        var img = product.Variants.FirstOrDefault()?.ImageUrls.FirstOrDefault();
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(img))
+                                    {
+                                        <img src="@img" alt="@product.Title" class="w-32 h-32 object-contain mx-auto mb-2 rounded" />
+                                    }
+                                    <span class="text-sm font-semibold text-gray-900 line-clamp-2">@product.Title</span>
+                                </a>
+                                <button onclick="removeFromCompare('@product.Id')"
+                                        class="mt-2 text-xs text-red-500 hover:text-red-700">
+                                    Kaldir
+                                </button>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Price *@
+                    <tr class="border-b border-gray-100">
+                        <td class="p-4 text-sm font-medium text-gray-600">Fiyat</td>
+                        @foreach (var product in Model)
+                        {
+                            var fv = product.Variants.FirstOrDefault();
+                            <td class="p-4 text-center">
+                                <span class="text-lg font-bold text-primary">@product.MinPrice.ToString("N2") TL</span>
+                            </td>
+                        }
+                    </tr>
+
+                    @* Brand *@
+                    <tr class="border-b border-gray-100 bg-gray-50/50">
+                        <td class="p-4 text-sm font-medium text-gray-600">Marka</td>
+                        @foreach (var product in Model)
+                        {
+                            <td class="p-4 text-center text-sm text-gray-900">@(product.BrandName ?? "-")</td>
+                        }
+                    </tr>
+
+                    @* Stock *@
+                    <tr class="border-b border-gray-100">
+                        <td class="p-4 text-sm font-medium text-gray-600">Stok</td>
+                        @foreach (var product in Model)
+                        {
+                            var totalStock = product.Variants.Sum(v => v.Stock);
+                            <td class="p-4 text-center text-sm @(totalStock > 0 ? "text-green-600" : "text-red-500")">
+                                @(totalStock > 0 ? "Stokta var" : "Stokta yok")
+                            </td>
+                        }
+                    </tr>
+
+                    @* Attributes - collect all unique keys *@
+                    @{
+                        var allKeys = Model
+                            .SelectMany(p => p.Attributes)
+                            .Select(a => a.HumanizedKey)
+                            .Distinct()
+                            .ToList();
+                    }
+                    @foreach (var key in allKeys)
+                    {
+                        <tr class="border-b border-gray-100">
+                            <td class="p-4 text-sm font-medium text-gray-600">@key</td>
+                            @foreach (var product in Model)
+                            {
+                                var attrVal = product.Attributes.FirstOrDefault(a => a.HumanizedKey == key);
+                                <td class="p-4 text-center text-sm text-gray-900">@(attrVal?.Value ?? "-")</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/compare.js"></script>
+    <script>
+        function removeFromCompare(productId) {
+            if (window.ProductCompare) {
+                window.ProductCompare.remove(productId);
+                // Rebuild URL without this product
+                var items = window.ProductCompare.get();
+                var ids = items.map(function(p) { return p.id; }).join(',');
+                window.location.href = '/karsilastir' + (ids ? '?ids=' + ids : '');
+            }
+        }
+    </script>
+}
