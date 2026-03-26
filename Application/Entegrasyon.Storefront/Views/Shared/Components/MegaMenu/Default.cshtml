@@ -1,0 +1,47 @@
+@model List<Entegrasyon.Entity.Dtos.Storefront.CategoryTreeDto>
+
+@if (Model.Count > 0)
+{
+    <nav class="hidden md:block bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ul class="flex items-center gap-1 h-10 text-sm">
+                <li class="relative">
+                    <a href="/kategoriler" class="px-3 py-2 text-gray-700 hover:text-primary font-medium transition-colors">
+                        Tum Kategoriler
+                    </a>
+                </li>
+                <li class="text-gray-300">|</li>
+                @foreach (var category in Model)
+                {
+                    <li class="relative group">
+                        <a href="/kategori/@category.SeoSlug"
+                           class="px-3 py-2 text-gray-600 hover:text-primary transition-colors inline-flex items-center">
+                            @category.Name
+                            @if (category.Children.Count > 0)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            }
+                        </a>
+                        @if (category.Children.Count > 0)
+                        {
+                            <div class="absolute left-0 top-full pt-1 hidden group-hover:block z-40">
+                                <div class="bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-[200px]">
+                                    @foreach (var child in category.Children)
+                                    {
+                                        <a href="/kategori/@category.SeoSlug/@child.SeoSlug"
+                                           class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors no-underline">
+                                            @child.Name
+                                            <span class="text-xs text-gray-400 ml-1">(@child.ProductCount)</span>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </nav>
+}
