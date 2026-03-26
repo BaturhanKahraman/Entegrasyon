@@ -52,11 +52,12 @@ builder.Services.AddAuthorization(options =>
     foreach (var permission in Entegrasyon.ApplicationBootstrap.Security.AppPermissions.GetAllPermissions())
     {
         options.AddPolicy(permission, policy =>
-            policy.RequireAssertion(ctx =>
-                ctx.User.IsInRole("Admin") || ctx.User.HasClaim("Permission", permission))
-        );
+            policy.Requirements.Add(
+                new Entegrasyon.ApplicationBootstrap.Security.PermissionRequirement(permission)));
     }
 });
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler,
+    Entegrasyon.ApplicationBootstrap.Security.TenantFeatureAuthorizationHandler>();
 builder.Services.AddStackExchangeRedisCache(opt =>
 {
     opt.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";

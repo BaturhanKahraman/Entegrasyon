@@ -49,6 +49,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ITenantContext, HttpTenantContext>();
             services.AddSingleton<ITenantRegistryDataSource, AdminPanelTenantDataSource>();
             services.AddSingleton<ITenantRegistry, TenantRegistryService>();
+            services.AddSingleton<IFeatureDataSource, AdminPanelFeatureDataSource>();
+            services.AddScoped<IFeatureService, FeatureService>();
 
             services.AddScoped<ApplicationLifetimeManager>();
             //services.AddScoped<DbContext,IntegrationDbContext>();
