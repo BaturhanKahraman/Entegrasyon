@@ -1,0 +1,31 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="Adreslerim | @Tenant.Settings.StoreName" />
+}
+
+<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
+    <aside class="w-full md:w-64 shrink-0">
+        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
+            <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
+            <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
+            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparislerim</a>
+            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Adreslerim</a>
+            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
+            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
+        </nav>
+    </aside>
+    <div class="flex-1">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Adreslerim</h1>
+
+            <div class="text-center py-12">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <p class="text-gray-500">Henuz kayitli adresiniz bulunmuyor.</p>
+            </div>
+        </div>
+    </div>
+</div>

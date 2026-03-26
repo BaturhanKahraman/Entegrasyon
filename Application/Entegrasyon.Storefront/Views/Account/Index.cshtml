@@ -1,0 +1,42 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="Hesabim | @Tenant.Settings.StoreName" />
+}
+
+<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
+    <aside class="w-full md:w-64 shrink-0">
+        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
+            <a href="/hesabim" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Hesap Ozeti</a>
+            <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
+            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparislerim</a>
+            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
+            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
+            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
+        </nav>
+    </aside>
+    <div class="flex-1">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Hos geldin, @ViewBag.CustomerName!</h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/hesabim/Orders" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
+                    <h3 class="font-semibold text-gray-900 mb-1">Siparislerim</h3>
+                    <p class="text-sm text-gray-600">Siparislerinizi goruntuleyin ve takip edin.</p>
+                </a>
+                <a href="/hesabim/Profile" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
+                    <h3 class="font-semibold text-gray-900 mb-1">Profilim</h3>
+                    <p class="text-sm text-gray-600">Kisisel bilgilerinizi duzenleyin.</p>
+                </a>
+                <a href="/hesabim/Addresses" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
+                    <h3 class="font-semibold text-gray-900 mb-1">Adreslerim</h3>
+                    <p class="text-sm text-gray-600">Teslimat adreslerinizi yonetin.</p>
+                </a>
+                <a href="/hesabim/ChangePassword" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
+                    <h3 class="font-semibold text-gray-900 mb-1">Sifre Degistir</h3>
+                    <p class="text-sm text-gray-600">Hesap sifrenizi guncelleyin.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

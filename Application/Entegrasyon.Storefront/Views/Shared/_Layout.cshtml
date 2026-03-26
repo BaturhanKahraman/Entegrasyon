@@ -76,9 +76,25 @@
                         </svg>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/hesabim" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">Hesabim</a>
-                    <a href="/sepet" class="relative text-gray-600 hover:text-primary transition-colors">
+                <div class="flex items-center space-x-4 text-sm">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="relative group">
+                            <button class="text-gray-600 hover:text-primary transition-colors font-medium">@User.Identity.Name</button>
+                            <div class="absolute right-0 top-full hidden group-hover:block bg-white border rounded-lg shadow-lg py-2 min-w-[160px] z-50">
+                                <a href="/hesabim" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 no-underline">Hesabim</a>
+                                <a href="/hesabim/Orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 no-underline">Siparislerim</a>
+                                <hr class="my-1" />
+                                <a href="/cikis" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <a href="/giris" class="text-gray-600 hover:text-primary transition-colors font-medium no-underline">Giris Yap</a>
+                        <a href="/kayit" class="btn-primary text-sm !py-2 !px-4 no-underline">Kayit Ol</a>
+                    }
+                    <a href="/sepet" class="relative text-gray-600 hover:text-primary transition-colors no-underline">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                         </svg>

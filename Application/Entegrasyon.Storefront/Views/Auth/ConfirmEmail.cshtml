@@ -1,0 +1,19 @@
+@model string
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="Email Dogrulama | @Tenant.Settings.StoreName" />
+}
+
+<div class="max-w-md mx-auto px-4 py-16">
+    <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Email Dogrulama</h1>
+
+        <p class="text-gray-600 mb-6">@Model</p>
+
+        <div class="space-x-4">
+            <a href="/" class="text-primary hover:underline no-underline">Ana Sayfa</a>
+            <a href="/giris" class="text-primary hover:underline no-underline">Giris Yap</a>
+        </div>
+    </div>
+</div>
