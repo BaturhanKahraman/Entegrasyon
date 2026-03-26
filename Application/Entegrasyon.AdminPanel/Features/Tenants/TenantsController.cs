@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Entegrasyon.AdminPanel.Infrastructure;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 
 namespace Entegrasyon.AdminPanel.Features.Tenants;
 
 [Authorize]
-public class TenantsController(AdminPanelDbContext dbContext) : Controller
+public class TenantsController(
+    AdminPanelDbContext dbContext,
+    TenantProvisioningService provisioningService) : Controller
 {
     private const string ViewBase = "~/Features/Tenants/Views";
 
@@ -114,6 +117,15 @@ public class TenantsController(AdminPanelDbContext dbContext) : Controller
 
         dbContext.Tenants.Add(tenant);
         await dbContext.SaveChangesAsync();
+
+        var provisionResult = await provisioningService.ProvisionAsync(tenant.ConnectionString);
+        if (!provisionResult.Success)
+        {
+            ModelState.AddModelError("", $"Veritabani olusturulamadi: {provisionResult.ErrorMessage}");
+            dbContext.Tenants.Remove(tenant);
+            await dbContext.SaveChangesAsync();
+            return View($"{ViewBase}/Create.cshtml", model);
+        }
 
         TempData["Success"] = "Firma başarıyla eklendi.";
         return RedirectToAction(nameof(Index));
