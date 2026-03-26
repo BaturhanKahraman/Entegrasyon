@@ -160,6 +160,8 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontBanner> StorefrontBanners { get; set; }
     public virtual DbSet<StorefrontPage> StorefrontPages { get; set; }
     public virtual DbSet<StorefrontCustomerAuth> StorefrontCustomerAuths { get; set; }
+    public virtual DbSet<Cart> Carts { get; set; }
+    public virtual DbSet<CartItem> CartItems { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }
