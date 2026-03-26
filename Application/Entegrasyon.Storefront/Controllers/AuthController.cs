@@ -53,6 +53,23 @@ public class AuthController(
             HttpContext.Connection.RemoteIpAddress?.ToString(),
             Request.Headers.UserAgent.ToString(),
             true);
+
+        // Check if 2FA is enabled
+        if (auth.TwoFactorEnabled)
+        {
+            // Store auth info temporarily in session for 2FA verification
+            HttpContext.Session.SetInt32("Pending2FA_AuthId", auth.Id);
+            HttpContext.Session.SetInt32("Pending2FA_CustomerId", auth.CustomerId);
+            HttpContext.Session.SetString("Pending2FA_Email", auth.Email);
+            HttpContext.Session.SetString("Pending2FA_Name", auth.Customer.FullName ?? $"{auth.Customer.Name} {auth.Customer.Surname}");
+            HttpContext.Session.SetInt32("Pending2FA_TenantId", auth.TenantId);
+            HttpContext.Session.SetString("Pending2FA_ReturnUrl", returnUrl ?? "/");
+            if (dto.RememberMe)
+                HttpContext.Session.SetString("Pending2FA_RememberMe", "true");
+
+            return Redirect("/giris/2fa");
+        }
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, auth.CustomerId.ToString()),
@@ -255,5 +272,78 @@ public class AuthController(
 
         var result = await authManager.ConfirmEmailAsync(tenant.TenantId, token);
         return View(model: result.Success ? (object)"Email adresiniz dogrulandi!" : result.Message);
+    }
+
+    [HttpGet]
+    public IActionResult TwoFactor()
+    {
+        var authId = HttpContext.Session.GetInt32("Pending2FA_AuthId");
+        if (authId is null)
+            return RedirectToAction("Login");
+
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TwoFactor(string code, bool useRecovery = false)
+    {
+        var authId = HttpContext.Session.GetInt32("Pending2FA_AuthId");
+        var customerId = HttpContext.Session.GetInt32("Pending2FA_CustomerId");
+        var email = HttpContext.Session.GetString("Pending2FA_Email");
+        var name = HttpContext.Session.GetString("Pending2FA_Name");
+        var tenantId = HttpContext.Session.GetInt32("Pending2FA_TenantId");
+        var returnUrl = HttpContext.Session.GetString("Pending2FA_ReturnUrl") ?? "/";
+        var rememberMe = HttpContext.Session.GetString("Pending2FA_RememberMe") == "true";
+
+        if (authId is null || customerId is null || email is null || name is null || tenantId is null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        Entity.Results.IResult result;
+        if (useRecovery)
+            result = await authManager.VerifyRecoveryCodeAsync(authId.Value, code);
+        else
+            result = await authManager.Verify2FAAsync(authId.Value, code);
+
+        if (!result.Success)
+        {
+            ViewBag.Error = result.Message;
+            return View();
+        }
+
+        // Clear 2FA session data
+        HttpContext.Session.Remove("Pending2FA_AuthId");
+        HttpContext.Session.Remove("Pending2FA_CustomerId");
+        HttpContext.Session.Remove("Pending2FA_Email");
+        HttpContext.Session.Remove("Pending2FA_Name");
+        HttpContext.Session.Remove("Pending2FA_TenantId");
+        HttpContext.Session.Remove("Pending2FA_ReturnUrl");
+        HttpContext.Session.Remove("Pending2FA_RememberMe");
+
+        // Sign in
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, customerId.Value.ToString()),
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Name, name),
+            new("TenantId", tenantId.Value.ToString()),
+            new("AuthId", authId.Value.ToString())
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = rememberMe,
+                ExpiresUtc = rememberMe ? DateTimeOffset.UtcNow.AddDays(30) : null
+            });
+
+        return Redirect(returnUrl);
     }
 }

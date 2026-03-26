@@ -15,7 +15,8 @@ public class AccountController(
     IOrderManager orderManager,
     IStorefrontReturnManager returnManager,
     IStorefrontLoyaltyManager loyaltyManager,
-    IStorefrontReferralManager referralManager) : Controller
+    IStorefrontReferralManager referralManager,
+    IStorefrontWalletManager walletManager) : Controller
 {
     private int GetCustomerId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
     private int GetAuthId() => int.Parse(User.FindFirst("AuthId")!.Value);
@@ -275,6 +276,75 @@ public class AccountController(
         ViewBag.Domain = tenant.Domain.DomainName;
         ViewBag.Settings = tenant.Settings;
         return View();
+    }
+
+    [HttpGet("/hesabim/cuzdanim")]
+    public async Task<IActionResult> Wallet()
+    {
+        var customerId = GetCustomerId();
+        var walletResult = await walletManager.GetOrCreateWalletAsync(tenant.TenantId, customerId);
+        var transactionsResult = await walletManager.GetTransactionsAsync(tenant.TenantId, customerId);
+
+        ViewBag.Wallet = walletResult.Data;
+        ViewBag.Transactions = transactionsResult.Data ?? new List<Entity.Storefront.StorefrontWalletTransaction>();
+        return View();
+    }
+
+    [HttpGet("/hesabim/guvenlik/2fa")]
+    public async Task<IActionResult> TwoFactorSetup()
+    {
+        var authId = GetAuthId();
+        var isEnabledResult = await authManager.IsTwoFactorEnabledAsync(authId);
+        ViewBag.TwoFactorEnabled = isEnabledResult.Data;
+        return View();
+    }
+
+    [HttpPost("/hesabim/guvenlik/2fa/etkinlestir")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableTwoFactor()
+    {
+        var authId = GetAuthId();
+        var result = await authManager.Enable2FAAsync(authId);
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Message;
+            return Redirect("/hesabim/guvenlik/2fa");
+        }
+
+        ViewBag.QrCodeUri = result.Data;
+        ViewBag.TwoFactorEnabled = false;
+        ViewBag.ShowVerification = true;
+        return View("TwoFactorSetup");
+    }
+
+    [HttpPost("/hesabim/guvenlik/2fa/dogrula")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> VerifyTwoFactor(string code)
+    {
+        var authId = GetAuthId();
+        var result = await authManager.Verify2FAAsync(authId, code);
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Message;
+            return Redirect("/hesabim/guvenlik/2fa");
+        }
+
+        // Generate recovery codes
+        var codesResult = await authManager.GenerateRecoveryCodesAsync(authId);
+        ViewBag.RecoveryCodes = codesResult.Data;
+        ViewBag.TwoFactorEnabled = true;
+        TempData["Success"] = "Iki faktorlu dogrulama etkinlestirildi.";
+        return View("TwoFactorSetup");
+    }
+
+    [HttpPost("/hesabim/guvenlik/2fa/devre-disi")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DisableTwoFactor(string code)
+    {
+        var authId = GetAuthId();
+        var result = await authManager.Disable2FAAsync(authId, code);
+        TempData[result.Success ? "Success" : "Error"] = result.Message;
+        return Redirect("/hesabim/guvenlik/2fa");
     }
 
     private static string MapOrderStatus(OrderStatus? status) => status switch

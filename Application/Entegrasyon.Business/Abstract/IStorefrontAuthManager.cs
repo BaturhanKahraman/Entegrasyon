@@ -24,4 +24,12 @@ public interface IStorefrontAuthManager
 
     // KVKK Data Export
     Task<IDataResult<string>> ExportCustomerDataAsync(int tenantId, int customerId);
+
+    // Two-Factor Authentication
+    Task<IDataResult<string>> Enable2FAAsync(int authId);
+    Task<IResult> Verify2FAAsync(int authId, string code);
+    Task<IResult> Disable2FAAsync(int authId, string code);
+    Task<IDataResult<List<string>>> GenerateRecoveryCodesAsync(int authId);
+    Task<IResult> VerifyRecoveryCodeAsync(int authId, string code);
+    Task<IDataResult<bool>> IsTwoFactorEnabledAsync(int authId);
 }

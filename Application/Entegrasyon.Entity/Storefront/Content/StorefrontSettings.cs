@@ -93,4 +93,15 @@ public sealed class StorefrontSettings : BaseEntity
     public int LoyaltyWelcomeBonus { get; set; } = 50;
     public int LoyaltyReviewBonus { get; set; } = 50;
     public int LoyaltyReferralBonus { get; set; } = 200;
+
+    // Abandoned Cart Recovery
+    public bool AbandonedCartRecoveryEnabled { get; set; }
+    public int AbandonedCartEmail1Hours { get; set; } = 1;
+    public int AbandonedCartEmail2Hours { get; set; } = 24;
+    public bool AbandonedCartEmail3Enabled { get; set; }
+    public int? AbandonedCartEmail3DiscountPercent { get; set; } = 5;
+
+    // Gift Wrapping
+    public bool GiftWrappingEnabled { get; set; }
+    public decimal GiftWrappingFee { get; set; } = 14.90m;
 }

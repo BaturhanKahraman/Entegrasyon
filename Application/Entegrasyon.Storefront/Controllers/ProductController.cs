@@ -11,7 +11,8 @@ public class ProductController(
     IStorefrontTenantContext tenant,
     IProductService productService,
     IStorefrontReviewManager reviewManager,
-    IStorefrontSizeGuideManager sizeGuideManager) : Controller
+    IStorefrontSizeGuideManager sizeGuideManager,
+    IStorefrontQnAManager qnaManager) : Controller
 {
     [ResponseCache(Duration = 300)]
     public async Task<IActionResult> Detail(string slug)
@@ -50,6 +51,10 @@ public class ProductController(
         var sizeGuideResult = await sizeGuideManager.GetSizeGuideForCategoryAsync(tenant.TenantId, product.CategoryId);
         ViewBag.SizeGuide = sizeGuideResult.Success ? sizeGuideResult.Data : null;
 
+        // Fetch Q&A
+        var qnaResult = await qnaManager.GetProductQuestionsAsync(tenant.TenantId, product.Id);
+        ViewBag.Questions = qnaResult.Success ? qnaResult.Data : new List<Entity.Storefront.StorefrontProductQuestion>();
+
         ViewBag.RelatedProducts = relatedProducts;
         ViewBag.SeoTitle = product.SeoTitle ?? $"{product.Title} - {tenant.Settings.StoreName}";
         ViewBag.SeoDescription = product.SeoDescription
@@ -76,5 +81,24 @@ public class ProductController(
 
         TempData[result.Success ? "ReviewSuccess" : "ReviewError"] = result.Message;
         return Redirect($"/urun/{slug}#reviews");
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> AskQuestion(string slug, string question)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return NotFound();
+
+        var productResult = await productService.GetStorefrontProductDetailAsync(slug);
+        if (!productResult.Success || productResult.Data is null)
+            return NotFound();
+
+        var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await qnaManager.AskQuestionAsync(
+            tenant.TenantId, productResult.Data.Id, customerId, question);
+
+        TempData[result.Success ? "QnASuccess" : "QnAError"] = result.Message;
+        return Redirect($"/urun/{slug}#qna");
     }
 }
