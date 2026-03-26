@@ -125,6 +125,18 @@
         </Authorized>
     </AuthorizeView>
 
+    <MudNavGroup Title="Magaza" Icon="@Icons.Material.Filled.Storefront" Expanded="@ExpandedSections["storefront"]">
+        <MudNavLink Href="/settings/storefront" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Settings">
+            Magaza Ayarlari
+        </MudNavLink>
+        <MudNavLink Href="/settings/storefront/legal" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Gavel">
+            Yasal Metinler
+        </MudNavLink>
+        <MudNavLink Href="/settings/storefront/banners" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.ViewCarousel">
+            Banner Yonetimi
+        </MudNavLink>
+    </MudNavGroup>
+
     <MudNavGroup Title="Ayarlar" Icon="@Icons.Material.Filled.Settings" Expanded="@ExpandedSections["settings"]">
         <MudNavLink Href="/settings/general" Icon="@Icons.Material.Filled.Tune">
             Genel Ayarlar

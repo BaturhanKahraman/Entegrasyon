@@ -1,0 +1,191 @@
+@page "/settings/storefront"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Magaza Ayarlari</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Magaza Ayarlari</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        <MudTabPanel Text="Genel">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.StoreName" Label="Magaza Adi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.StoreSlogan" Label="Magaza Slogani" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_settings.PrimaryColor" Label="Ana Renk" Variant="Variant.Outlined" Placeholder="#2563EB" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_settings.SecondaryColor" Label="Ikincil Renk" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_settings.AccentColor" Label="Vurgu Rengi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.LogoUrl" Label="Logo URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.FaviconUrl" Label="Favicon URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Firma Bilgileri">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.CompanyName" Label="Firma Adi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.CompanyTaxOffice" Label="Vergi Dairesi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.CompanyTaxNumber" Label="Vergi Numarasi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.MersisNumber" Label="Mersis Numarasi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.KepAddress" Label="KEP Adresi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.ContactPhone" Label="Telefon" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.WhatsAppNumber" Label="WhatsApp Numarasi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.ContactEmail" Label="E-posta" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_settings.Address" Label="Adres" Variant="Variant.Outlined" Lines="2" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.City" Label="Sehir" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.District" Label="Ilce" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Sosyal Medya">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.InstagramUrl" Label="Instagram URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.FacebookUrl" Label="Facebook URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.TwitterUrl" Label="Twitter URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.YouTubeUrl" Label="YouTube URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.TikTokUrl" Label="TikTok URL" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="SEO">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.DefaultSeoTitle" Label="Varsayilan SEO Basligi" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_settings.DefaultSeoDescription" Label="Varsayilan SEO Aciklamasi" Variant="Variant.Outlined" Lines="3" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_settings.DefaultSeoKeywords" Label="Varsayilan SEO Anahtar Kelimeler" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_settings.GoogleAnalyticsId" Label="Google Analytics ID" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_settings.GoogleTagManagerId" Label="Google Tag Manager ID" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_settings.FacebookPixelId" Label="Facebook Pixel ID" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Kargo">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="_settings.FreeShippingThreshold" Label="Ucretsiz Kargo Limiti (TL)" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="_settings.FlatShippingRate" Label="Sabit Kargo Ucreti (TL)" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudNumericField @bind-Value="_settings.EstimatedDeliveryDays" Label="Tahmini Teslimat Suresi (Gun)" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Duyuru">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="_settings.AnnouncementBarActive" Label="Duyuru Cubugu Aktif" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_settings.AnnouncementBarText" Label="Duyuru Metni" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_settings.AnnouncementBarColor" Label="Duyuru Cubugu Rengi" Variant="Variant.Outlined" Placeholder="#EF4444" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Diger">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="_settings.CookieConsentActive" Label="Cerez Onay Bildirimi" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="_settings.IsWhatsAppWidgetActive" Label="WhatsApp Widget" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="_settings.NewsletterEnabled" Label="Bulten Aboneligi" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="_settings.IsMaintenanceMode" Label="Bakim Modu" Color="Color.Warning" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_settings.MaintenanceMessage" Label="Bakim Modu Mesaji" Variant="Variant.Outlined" Lines="3" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
+}

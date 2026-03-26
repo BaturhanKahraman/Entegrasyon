@@ -1,0 +1,26 @@
+@using Entegrasyon.Entity.Storefront
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_isValid">
+            <MudTextField @bind-Value="Banner.Title" Label="Baslik" Required="true" RequiredError="Baslik gerekli" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="Banner.ImageUrl" Label="Gorsel URL" Required="true" RequiredError="Gorsel URL gerekli" Variant="Variant.Outlined" Class="mt-3" />
+            <MudTextField @bind-Value="Banner.MobileImageUrl" Label="Mobil Gorsel URL" Variant="Variant.Outlined" Class="mt-3" />
+            <MudTextField @bind-Value="Banner.LinkUrl" Label="Baglanti URL" Variant="Variant.Outlined" Class="mt-3" />
+            <MudSelect @bind-Value="Banner.Position" Label="Pozisyon" Variant="Variant.Outlined" Class="mt-3">
+                @foreach (BannerPosition pos in Enum.GetValues<BannerPosition>())
+                {
+                    <MudSelectItem Value="pos">@pos.ToString()</MudSelectItem>
+                }
+            </MudSelect>
+            <MudNumericField @bind-Value="Banner.DisplayOrder" Label="Siralama" Variant="Variant.Outlined" Class="mt-3" />
+            <MudDatePicker @bind-Date="_startDate" Label="Baslangic Tarihi" Variant="Variant.Outlined" Class="mt-3" />
+            <MudDatePicker @bind-Date="_endDate" Label="Bitis Tarihi" Variant="Variant.Outlined" Class="mt-3" />
+            <MudSwitch @bind-Value="Banner.IsActive" Label="Aktif" Color="Color.Primary" Class="mt-3" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Iptal</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!_isValid)">Kaydet</MudButton>
+    </DialogActions>
+</MudDialog>
