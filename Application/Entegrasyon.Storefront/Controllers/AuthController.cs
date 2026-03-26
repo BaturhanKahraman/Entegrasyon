@@ -29,12 +29,29 @@ public class AuthController(
         var result = await authManager.LoginAsync(tenant.TenantId, dto.Email, dto.Password);
         if (!result.Success)
         {
+            // Record failed login if auth record exists (email found but wrong password)
+            if (result.Data is not null && result.Data.Id > 0)
+            {
+                await authManager.RecordLoginAttemptAsync(
+                    result.Data.Id,
+                    HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    Request.Headers.UserAgent.ToString(),
+                    false, result.Message);
+            }
+
             ViewBag.Error = result.Message;
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
         var auth = result.Data;
+
+        // Record successful login
+        await authManager.RecordLoginAttemptAsync(
+            auth.Id,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Request.Headers.UserAgent.ToString(),
+            true);
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, auth.CustomerId.ToString()),

@@ -98,6 +98,12 @@ app.MapControllerRoute("accountReturns", "/hesabim/iadelerim",
     new { controller = "Account", action = "Returns" });
 app.MapControllerRoute("accountCreateReturn", "/hesabim/iade-talebi/{orderId}",
     new { controller = "Account", action = "CreateReturn" });
+app.MapControllerRoute("accountBuyAgain", "/hesabim/tekrar-satin-al",
+    new { controller = "Account", action = "BuyAgain" });
+app.MapControllerRoute("accountSecurity", "/hesabim/guvenlik",
+    new { controller = "Account", action = "Security" });
+app.MapControllerRoute("accountExportData", "/hesabim/veri-indir",
+    new { controller = "Account", action = "ExportData" });
 app.MapControllerRoute("account", "/hesabim/{action=Index}",
     new { controller = "Account" });
 app.MapControllerRoute("tracking", "/siparis-takip",

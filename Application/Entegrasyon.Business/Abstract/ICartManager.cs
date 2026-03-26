@@ -16,4 +16,9 @@ public interface ICartManager
     Task<IResult> MergeCartsAsync(string sessionId, int customerId, int tenantId);
     Task<IResult> ApplyCouponAsync(Guid cartId, string couponCode);
     Task<IResult> RemoveCouponAsync(Guid cartId);
+
+    // Save for Later
+    Task<IResult> SaveForLaterAsync(Guid cartId, Guid productVariantId, int customerId, int tenantId);
+    Task<IDataResult<List<SavedCartItemDto>>> GetSavedItemsAsync(int tenantId, int customerId);
+    Task<IResult> MoveToCartAsync(int tenantId, int customerId, Guid productVariantId, Guid cartId);
 }

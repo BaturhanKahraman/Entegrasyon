@@ -75,4 +75,10 @@ public sealed class StorefrontSettings : BaseEntity
     public bool CookieConsentActive { get; set; } = true;
     public bool IsWhatsAppWidgetActive { get; set; }
     public bool NewsletterEnabled { get; set; }
+
+    // Auto Campaigns
+    public bool AutoWelcomeCouponEnabled { get; set; }
+    public int? AutoWelcomeCouponPercent { get; set; }
+    public bool AutoReviewRewardEnabled { get; set; }
+    public int? AutoReviewRewardPercent { get; set; }
 }

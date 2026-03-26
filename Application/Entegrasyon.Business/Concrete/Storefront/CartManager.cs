@@ -313,4 +313,119 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
 
         return new SuccessResult("Kupon kaldirildi.");
     }
+
+    public async Task<IResult> SaveForLaterAsync(Guid cartId, Guid productVariantId, int customerId, int tenantId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var cartItem = await dbContext.CartItems
+            .FirstOrDefaultAsync(i => i.CartId == cartId && i.ProductVariantId == productVariantId);
+
+        if (cartItem is null)
+            return new ErrorResult("Sepet ogesi bulunamadi.");
+
+        // Check if already saved
+        var alreadySaved = await dbContext.StorefrontSavedCartItems
+            .AnyAsync(s => s.TenantId == tenantId && s.CustomerId == customerId && s.ProductVariantId == productVariantId);
+
+        if (!alreadySaved)
+        {
+            dbContext.StorefrontSavedCartItems.Add(new StorefrontSavedCartItem
+            {
+                TenantId = tenantId,
+                CustomerId = customerId,
+                ProductVariantId = productVariantId,
+                OriginalPrice = cartItem.UnitPrice,
+                SavedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        // Remove from cart
+        dbContext.CartItems.Remove(cartItem);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Urun sonra almak uzere kaydedildi.");
+    }
+
+    public async Task<IDataResult<List<SavedCartItemDto>>> GetSavedItemsAsync(int tenantId, int customerId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var items = await dbContext.StorefrontSavedCartItems
+            .Include(s => s.ProductVariant)
+                .ThenInclude(v => v.Product)
+            .Include(s => s.ProductVariant)
+                .ThenInclude(v => v.Images)
+            .Where(s => s.TenantId == tenantId && s.CustomerId == customerId)
+            .OrderByDescending(s => s.SavedAt)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var dtos = items.Select(s =>
+        {
+            var mainImage = s.ProductVariant.Images
+                .OrderBy(img => img.DisplayOrder)
+                .FirstOrDefault();
+
+            return new SavedCartItemDto(
+                ProductVariantId: s.ProductVariantId,
+                ProductTitle: s.ProductVariant.Product?.Title ?? "",
+                ImageUrl: mainImage?.StorageKey,
+                OriginalPrice: s.OriginalPrice,
+                CurrentPrice: s.ProductVariant.SalePrice,
+                SavedAt: s.SavedAt);
+        }).ToList();
+
+        return new SuccessDataResult<List<SavedCartItemDto>>(dtos);
+    }
+
+    public async Task<IResult> MoveToCartAsync(int tenantId, int customerId, Guid productVariantId, Guid cartId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var savedItem = await dbContext.StorefrontSavedCartItems
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.CustomerId == customerId && s.ProductVariantId == productVariantId);
+
+        if (savedItem is null)
+            return new ErrorResult("Kaydedilmis urun bulunamadi.");
+
+        // Get current price from variant
+        var variant = await dbContext.ProductVariants
+            .Include(v => v.BranchOfficeStocks)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(v => v.Id == productVariantId);
+
+        if (variant is null)
+            return new ErrorResult("Urun varyanti bulunamadi.");
+
+        var availableStock = variant.BranchOfficeStocks.Sum(s => s.CurrentStock);
+        if (availableStock <= 0)
+            return new ErrorResult("Urun stokta yok.");
+
+        // Add to cart
+        var existingCartItem = await dbContext.CartItems
+            .FirstOrDefaultAsync(i => i.CartId == cartId && i.ProductVariantId == productVariantId);
+
+        if (existingCartItem is not null)
+        {
+            existingCartItem.Quantity += 1;
+        }
+        else
+        {
+            dbContext.CartItems.Add(new CartItem
+            {
+                CartId = cartId,
+                ProductVariantId = productVariantId,
+                Quantity = 1,
+                UnitPrice = variant.SalePrice,
+                AddedAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        // Remove from saved
+        dbContext.StorefrontSavedCartItems.Remove(savedItem);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Urun sepete tasinidi.");
+    }
 }

@@ -95,7 +95,7 @@ public class StorefrontAuthManager(
             dbContext.StorefrontCustomerAuths.Update(auth);
             await dbContext.SaveChangesAsync();
 
-            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "E-posta veya sifre hatali.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(auth, "E-posta veya sifre hatali.");
         }
 
         // Success: reset counters
@@ -239,6 +239,150 @@ public class StorefrontAuthManager(
         await dbContext.SaveChangesAsync();
 
         return new SuccessResult("Profil guncellendi.");
+    }
+
+    public async Task RecordLoginAttemptAsync(int authId, string? ipAddress, string? userAgent, bool isSuccessful, string? failureReason = null)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var deviceType = DetectDeviceType(userAgent);
+
+        dbContext.StorefrontLoginHistories.Add(new StorefrontLoginHistory
+        {
+            AuthId = authId,
+            IpAddress = ipAddress,
+            UserAgent = userAgent,
+            DeviceType = deviceType,
+            LoginAt = DateTimeOffset.UtcNow,
+            IsSuccessful = isSuccessful,
+            FailureReason = failureReason
+        });
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<IDataResult<List<StorefrontLoginHistory>>> GetLoginHistoryAsync(int authId, int count = 20)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var history = await dbContext.StorefrontLoginHistories
+            .Where(h => h.AuthId == authId)
+            .OrderByDescending(h => h.LoginAt)
+            .Take(count)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return new SuccessDataResult<List<StorefrontLoginHistory>>(history);
+    }
+
+    public async Task<IDataResult<string>> ExportCustomerDataAsync(int tenantId, int customerId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Profile
+        var auth = await dbContext.StorefrontCustomerAuths
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.TenantId == tenantId && a.CustomerId == customerId);
+
+        if (auth is null)
+            return new ErrorDataResult<string>(null!, "Musteri bulunamadi.");
+
+        var customer = await dbContext.Customers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == customerId);
+
+        // Orders
+        var orders = await dbContext.Orders.AsNoTracking()
+            .Include(o => o.OrderItems)
+            .Where(o => o.CustomerId == customerId)
+            .Select(o => new
+            {
+                o.OrderNumber,
+                OrderDate = o.OrderDate ?? o.CreatedAt,
+                o.GrossAmount,
+                o.SubTotal,
+                o.ShippingCost,
+                Status = o.StorefrontOrderStatus.ToString(),
+                Items = o.OrderItems.Select(i => new
+                {
+                    i.Barcode,
+                    i.Quantity,
+                    i.UnitPrice,
+                    i.ProductColor,
+                    i.ProductSize
+                }).ToList()
+            })
+            .ToListAsync();
+
+        // Reviews
+        var reviews = await dbContext.StorefrontReviews
+            .Where(r => r.CustomerId == customerId)
+            .AsNoTracking()
+            .Select(r => new { r.Rating, r.Comment, r.CreatedAt })
+            .ToListAsync();
+
+        // Wishlist
+        var wishlist = await dbContext.StorefrontWishlistItems
+            .Where(w => w.TenantId == tenantId && w.CustomerId == customerId)
+            .Include(w => w.Product)
+            .AsNoTracking()
+            .Select(w => new { ProductTitle = w.Product.Title, w.AddedAt })
+            .ToListAsync();
+
+        // Addresses
+        var addresses = customer?.Address is not null
+            ? new { customer.Address.FullAddress, customer.Address.County, customer.Address.City }
+            : null;
+
+        // Login history
+        var loginHistory = await dbContext.StorefrontLoginHistories
+            .Where(h => h.AuthId == auth.Id)
+            .OrderByDescending(h => h.LoginAt)
+            .Take(50)
+            .AsNoTracking()
+            .Select(h => new { h.LoginAt, h.IpAddress, h.DeviceType, h.IsSuccessful })
+            .ToListAsync();
+
+        var exportData = new
+        {
+            ExportDate = DateTimeOffset.UtcNow,
+            Profile = new
+            {
+                customer?.Name,
+                customer?.Surname,
+                auth.Email,
+                customer?.PhoneNumber,
+                auth.KvkkConsentDate,
+                auth.MarketingConsent,
+                auth.MarketingConsentDate,
+                auth.EmailConfirmed,
+                RegisterDate = auth.CreatedAt
+            },
+            Address = addresses,
+            Orders = orders,
+            Reviews = reviews,
+            Wishlist = wishlist,
+            LoginHistory = loginHistory
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        });
+
+        return new SuccessDataResult<string>(json);
+    }
+
+    private static string DetectDeviceType(string? userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent)) return "Bilinmiyor";
+        var ua = userAgent.ToLowerInvariant();
+        if (ua.Contains("mobile") || ua.Contains("android") || ua.Contains("iphone"))
+            return "Mobil";
+        if (ua.Contains("tablet") || ua.Contains("ipad"))
+            return "Tablet";
+        return "Masaustu";
     }
 
     private static string GenerateToken()

@@ -14,4 +14,11 @@ public interface IStorefrontAuthManager
     Task<IResult> ChangePasswordAsync(int authId, string currentPassword, string newPassword);
     Task<IDataResult<StorefrontCustomerAuth>> GetAuthByCustomerIdAsync(int tenantId, int customerId);
     Task<IResult> UpdateProfileAsync(int customerId, StorefrontProfileDto dto);
+
+    // Login History
+    Task RecordLoginAttemptAsync(int authId, string? ipAddress, string? userAgent, bool isSuccessful, string? failureReason = null);
+    Task<IDataResult<List<StorefrontLoginHistory>>> GetLoginHistoryAsync(int authId, int count = 20);
+
+    // KVKK Data Export
+    Task<IDataResult<string>> ExportCustomerDataAsync(int tenantId, int customerId);
 }
