@@ -1,0 +1,55 @@
+@using Entegrasyon.Entity.Dtos.Storefront
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@{
+    var products = ViewBag.Products as Entegrasyon.Entity.Pageable<StorefrontProductCardDto>;
+    var pageTitle = (ViewBag.PageTitle as string) ?? "Tum Urunler";
+}
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    @await Html.PartialAsync("_Breadcrumb")
+
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">@pageTitle</h1>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        @* Filter Sidebar *@
+        <aside class="w-full lg:w-1/4 flex-shrink-0">
+            @await Html.PartialAsync("_FilterSidebar")
+        </aside>
+
+        @* Product Grid *@
+        <div class="w-full lg:w-3/4">
+            @if (products != null && products.HasItem)
+            {
+                <p class="text-sm text-gray-500 mb-4">
+                    @products.TotalItemCount urun bulundu
+                </p>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                    @foreach (var product in products.Items)
+                    {
+                        @await Html.PartialAsync("_ProductCard", product)
+                    }
+                </div>
+
+                @await Html.PartialAsync("_Pagination")
+            }
+            else
+            {
+                <div class="text-center py-16">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                    <p class="text-gray-500 text-lg mb-4">Bu kriterlere uygun urun bulunamadi.</p>
+                    <a href="@Context.Request.Path" class="text-primary hover:underline font-medium">
+                        Filtreleri temizle
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
