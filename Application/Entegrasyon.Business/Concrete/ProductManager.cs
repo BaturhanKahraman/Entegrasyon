@@ -552,6 +552,97 @@ public class ProductManager(
         return new SuccessDataResult<StorefrontProductDetailDto>(detail);
     }
 
+    public async Task<IDataResult<List<StorefrontProductDetailDto>>> GetProductsByIdsAsync(List<Guid> ids)
+    {
+        if (ids is null || ids.Count == 0)
+            return new SuccessDataResult<List<StorefrontProductDetailDto>>(new List<StorefrontProductDetailDto>());
+
+        var distinctIds = ids.Distinct().Take(10).ToList();
+        using var dbContext = contextFactory.CreateDbContext();
+
+        var products = await dbContext.MainProducts
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.BranchOfficeStocks)
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.Images)
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.ProductVariantAttributes)
+            .Include(p => p.AttributeKeyValues).ThenInclude(akv => akv.CategoryAttribute)
+            .Include(p => p.AttributeKeyValues).ThenInclude(akv => akv.AttributeValue)
+            .Include(p => p.Category).ThenInclude(c => c.SuperCategory)
+            .Include(p => p.Brand)
+            .AsNoTracking()
+            .Where(p => distinctIds.Contains(p.Id) && !p.IsDeleted)
+            .ToListAsync();
+
+        var results = products.Select(p =>
+        {
+            var variants = p.ProductVariants.Select(pv => new StorefrontVariantDto(
+                pv.Id, pv.Barcode, pv.ListPrice, pv.SalePrice,
+                pv.BranchOfficeStocks.Sum(s => s.CurrentStock),
+                pv.ProductVariantAttributes
+                    .Select(a => new StorefrontVariantAttributeDto(
+                        a.CategoryAttributeValue ?? "", a.CustomValue ?? a.CategoryAttributeValue ?? ""))
+                    .ToList(),
+                pv.Images.OrderBy(i => i.DisplayOrder)
+                    .Select(i =>
+                    {
+                        var key = i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src;
+                        return !string.IsNullOrEmpty(key) ? minioFileStorage.GetPublicUrl(key) : "";
+                    })
+                    .Where(url => !string.IsNullOrEmpty(url))
+                    .ToList()
+            )).ToList();
+
+            var attributes = p.AttributeKeyValues
+                .Where(akv => akv.CategoryAttribute is not null)
+                .Select(akv => new StorefrontAttributeDto(
+                    akv.CategoryAttribute.CategoryAttributeKey ?? "",
+                    akv.CategoryAttribute.CategoryAttributeHumanized ?? akv.CategoryAttribute.CategoryAttributeKey ?? "",
+                    akv.AttributeValueId.HasValue && akv.AttributeValue is not null
+                        ? akv.AttributeValue.Name ?? ""
+                        : akv.CustomValue ?? ""))
+                .ToList();
+
+            var breadcrumbs = new List<BreadcrumbItemDto> { new("Ana Sayfa", "/") };
+            if (p.Category?.SuperCategory is not null)
+                breadcrumbs.Add(new BreadcrumbItemDto(p.Category.SuperCategory.Name, $"/kategori/{p.Category.SuperCategory.SeoSlug}"));
+            if (p.Category is not null)
+                breadcrumbs.Add(new BreadcrumbItemDto(p.Category.Name, $"/kategori/{p.Category.SeoSlug}"));
+            breadcrumbs.Add(new BreadcrumbItemDto(p.Title, $"/urun/{p.SeoSlug}"));
+
+            return new StorefrontProductDetailDto(
+                p.Id, p.Title, p.Description, p.StockCode,
+                p.SeoSlug, p.SeoTitle, p.SeoDescription,
+                p.Brand?.Name, p.Brand?.SeoSlug,
+                p.Category?.Name ?? "", p.Category?.SeoSlug, p.CategoryId,
+                p.ProductVariants.Any() ? p.ProductVariants.Min(pv => pv.SalePrice) : 0,
+                p.ProductVariants.Any() ? p.ProductVariants.Max(pv => pv.SalePrice) : 0,
+                variants, attributes, breadcrumbs);
+        }).ToList();
+
+        // Preserve original order from ids
+        var ordered = distinctIds
+            .Select(id => results.FirstOrDefault(r => r.Id == id))
+            .Where(r => r is not null)
+            .Cast<StorefrontProductDetailDto>()
+            .ToList();
+
+        return new SuccessDataResult<List<StorefrontProductDetailDto>>(ordered);
+    }
+
+    public async Task<IDataResult<List<BrandFilterDto>>> GetBrandsForCategoryAsync(int categoryId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        var brands = await dbContext.MainProducts
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted && p.CategoryId == categoryId && p.BrandId.HasValue)
+            .GroupBy(p => new { p.BrandId, p.Brand!.Name })
+            .Select(g => new BrandFilterDto(g.Key.BrandId!.Value, g.Key.Name, g.Count()))
+            .OrderBy(b => b.BrandName)
+            .ToListAsync();
+
+        return new SuccessDataResult<List<BrandFilterDto>>(brands);
+    }
+
     private static MarketplaceSyncStatusDto BuildSyncStatus(ProductMarketplace? marketplace, DateTimeOffset? productUpdatedAt)
     {
         if (marketplace is null)

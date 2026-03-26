@@ -122,6 +122,10 @@ app.MapControllerRoute("newsletterApi", "/newsletter",
     new { controller = "Newsletter", action = "Subscribe" });
 app.MapControllerRoute("reviewApi", "/urun/{slug}/yorum",
     new { controller = "Product", action = "AddReview" });
+app.MapControllerRoute("compare", "/karsilastir",
+    new { controller = "Compare", action = "Index" });
+app.MapControllerRoute("stockNotifyApi", "/api/stok-bildirim",
+    new { controller = "StockNotification", action = "Subscribe" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",

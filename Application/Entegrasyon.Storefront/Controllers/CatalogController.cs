@@ -52,6 +52,10 @@ public class CatalogController(
         ViewData["JsonLd"] = JsonLdBuilder.BuildCollectionPage(
             category.Name, category.SeoDescription, pageUrl);
 
+        // Fetch available brands for filter sidebar
+        var brandsResult = await productService.GetBrandsForCategoryAsync(category.Id);
+        ViewBag.AvailableBrands = brandsResult.Success ? brandsResult.Data : new List<Entity.Dtos.Storefront.BrandFilterDto>();
+
         ViewBag.Products = products;
         ViewBag.Query = filteredQuery;
         ViewBag.Category = category;

@@ -482,6 +482,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IStorefrontNewsletterManager, StorefrontNewsletterManager>();
             services.AddScoped<IStorefrontReturnManager, StorefrontReturnManager>();
             services.AddScoped<IStorefrontSearchHistoryManager, StorefrontSearchHistoryManager>();
+            services.AddScoped<IStorefrontStockNotificationManager, StorefrontStockNotificationManager>();
+            services.AddScoped<IStorefrontSizeGuideManager, StorefrontSizeGuideManager>();
             return services;
         }
     }

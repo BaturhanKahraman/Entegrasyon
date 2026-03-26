@@ -10,7 +10,8 @@ namespace Entegrasyon.Storefront.Controllers;
 public class ProductController(
     IStorefrontTenantContext tenant,
     IProductService productService,
-    IStorefrontReviewManager reviewManager) : Controller
+    IStorefrontReviewManager reviewManager,
+    IStorefrontSizeGuideManager sizeGuideManager) : Controller
 {
     [ResponseCache(Duration = 300)]
     public async Task<IActionResult> Detail(string slug)
@@ -44,6 +45,10 @@ public class ProductController(
         ViewBag.Reviews = reviewsResult.Success ? reviewsResult.Data : new List<Entity.Storefront.StorefrontReview>();
         ViewBag.AverageRating = ratingResult.Success ? ratingResult.Data.AverageRating : 0.0;
         ViewBag.ReviewCount = ratingResult.Success ? ratingResult.Data.ReviewCount : 0;
+
+        // Fetch size guide for category
+        var sizeGuideResult = await sizeGuideManager.GetSizeGuideForCategoryAsync(tenant.TenantId, product.CategoryId);
+        ViewBag.SizeGuide = sizeGuideResult.Success ? sizeGuideResult.Data : null;
 
         ViewBag.RelatedProducts = relatedProducts;
         ViewBag.SeoTitle = product.SeoTitle ?? $"{product.Title} - {tenant.Settings.StoreName}";
