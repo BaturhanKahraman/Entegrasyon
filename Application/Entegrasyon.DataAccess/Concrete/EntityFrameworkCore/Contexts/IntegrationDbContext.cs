@@ -162,6 +162,11 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontCustomerAuth> StorefrontCustomerAuths { get; set; }
     public virtual DbSet<Cart> Carts { get; set; }
     public virtual DbSet<CartItem> CartItems { get; set; }
+    public virtual DbSet<StorefrontPaymentConfig> StorefrontPaymentConfigs { get; set; }
+    public virtual DbSet<StorefrontReview> StorefrontReviews { get; set; }
+    public virtual DbSet<StorefrontWishlistItem> StorefrontWishlistItems { get; set; }
+    public virtual DbSet<StorefrontContactMessage> StorefrontContactMessages { get; set; }
+    public virtual DbSet<StorefrontNewsletter> StorefrontNewsletters { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

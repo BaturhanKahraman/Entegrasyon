@@ -102,8 +102,20 @@ app.MapControllerRoute("cart", "/sepet",
     new { controller = "Cart", action = "Index" });
 app.MapControllerRoute("cartApi", "/api/sepet/{action}",
     new { controller = "Cart" });
+app.MapControllerRoute("paymentCallback", "/odeme/callback",
+    new { controller = "Checkout", action = "Callback" });
 app.MapControllerRoute("checkout", "/odeme/{action=Index}",
     new { controller = "Checkout" });
+app.MapControllerRoute("contact", "/iletisim",
+    new { controller = "Contact", action = "Index" });
+app.MapControllerRoute("wishlist", "/favorilerim",
+    new { controller = "Wishlist", action = "Index" });
+app.MapControllerRoute("wishlistApi", "/api/favori/{action}",
+    new { controller = "Wishlist" });
+app.MapControllerRoute("newsletterApi", "/newsletter",
+    new { controller = "Newsletter", action = "Subscribe" });
+app.MapControllerRoute("reviewApi", "/urun/{slug}/yorum",
+    new { controller = "Product", action = "AddReview" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",

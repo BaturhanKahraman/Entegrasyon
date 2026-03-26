@@ -1,0 +1,31 @@
+@page "/storefront/newsletter"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Bulten Aboneleri</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Bulten Aboneleri</MudText>
+
+<MudDataGrid Items="@_subscribers.AsEnumerable()" Hover="true" Loading="@_loading" Dense="true" Filterable="true">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="ID" />
+        <PropertyColumn Property="x => x.Email" Title="E-posta" />
+        <PropertyColumn Property="x => x.Name" Title="Ad" />
+        <TemplateColumn Title="Durum">
+            <CellTemplate>
+                @if (context.Item.IsActive)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small">Aktif</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Default" Size="Size.Small">Pasif</MudChip>
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Kayit Tarihi">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>

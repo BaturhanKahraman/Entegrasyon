@@ -94,6 +94,14 @@
                         <a href="/giris" class="text-gray-600 hover:text-primary transition-colors font-medium no-underline">Giris Yap</a>
                         <a href="/kayit" class="btn-primary text-sm !py-2 !px-4 no-underline">Kayit Ol</a>
                     }
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="/favorilerim" class="text-gray-600 hover:text-primary transition-colors no-underline" title="Favorilerim">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </a>
+                    }
                     <a href="/sepet" class="relative text-gray-600 hover:text-primary transition-colors no-underline">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
@@ -238,6 +246,60 @@
         }).catch(function(){});
     </script>
     <script src="~/js/search.js"></script>
+    <script>
+        // Wishlist toggle for product cards
+        function toggleWishlist(productId, btn) {
+            var svg = btn.querySelector('svg');
+            var isFilled = svg.getAttribute('fill') === 'currentColor';
+            var url = isFilled ? '/api/favori/Sil' : '/api/favori/Ekle';
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: productId })
+            }).then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success) {
+                    if (isFilled) {
+                        svg.setAttribute('fill', 'none');
+                        svg.classList.remove('text-red-500');
+                        svg.classList.add('text-gray-400');
+                    } else {
+                        svg.setAttribute('fill', 'currentColor');
+                        svg.classList.remove('text-gray-400');
+                        svg.classList.add('text-red-500');
+                    }
+                }
+            });
+        }
+
+        // Newsletter subscribe
+        document.querySelectorAll('form').forEach(function(form) {
+            var emailInput = form.querySelector('input[type="email"]');
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (emailInput && submitBtn && submitBtn.textContent.trim() === 'Abone Ol') {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var email = emailInput.value;
+                    if (!email) return;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Gonderiliyor...';
+                    fetch('/newsletter', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, name: null })
+                    }).then(function(r) { return r.json(); })
+                    .then(function(d) {
+                        submitBtn.textContent = d.success ? 'Abone Olundu!' : (d.message || 'Hata');
+                        if (d.success) emailInput.value = '';
+                        setTimeout(function() { submitBtn.textContent = 'Abone Ol'; submitBtn.disabled = false; }, 3000);
+                    }).catch(function() {
+                        submitBtn.textContent = 'Abone Ol';
+                        submitBtn.disabled = false;
+                    });
+                });
+            }
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
