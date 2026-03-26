@@ -54,4 +54,28 @@ public sealed class Order : BaseEntity
 
     [StringLength(200)]
     public string? CustomerEmail { get; set; }
+
+    // Storefront B2C
+    public int? CustomerId { get; set; }
+
+    [StringLength(50)]
+    public string? PaymentMethodType { get; set; }
+
+    [StringLength(200)]
+    public string? PaymentTransactionId { get; set; }
+
+    public Storefront.PaymentStatus? StorefrontPaymentStatus { get; set; }
+    public Storefront.OrderStatus? StorefrontOrderStatus { get; set; }
+
+    [StringLength(500)]
+    public string? OrderNote { get; set; }
+
+    [Column(TypeName = "money")]
+    public decimal? SubTotal { get; set; }
+
+    [Column(TypeName = "money")]
+    public decimal? ShippingCost { get; set; }
+
+    [Column(TypeName = "money")]
+    public decimal? DiscountAmount { get; set; }
 }
