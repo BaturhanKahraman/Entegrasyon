@@ -1,3 +1,4 @@
+@using Entegrasyon.Entity.Dtos.Storefront
 @inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 
 @section Head {
@@ -6,6 +7,9 @@
 
 @{
     var banners = ViewBag.Banners as List<StorefrontBanner> ?? new List<StorefrontBanner>();
+    var topCategories = ViewBag.TopCategories as List<CategoryTreeDto> ?? new List<CategoryTreeDto>();
+    var newProducts = ViewBag.NewProducts as List<StorefrontProductCardDto> ?? new List<StorefrontProductCardDto>();
+    var bestSellers = ViewBag.BestSellers as List<StorefrontProductCardDto> ?? new List<StorefrontProductCardDto>();
 }
 
 @* Hero Banner Section *@
@@ -69,6 +73,68 @@
         }
     </div>
 </section>
+
+@* One Cikan Kategoriler *@
+@if (topCategories.Count > 0)
+{
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">One Cikan Kategoriler</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var cat in topCategories)
+                {
+                    <a href="/kategori/@cat.SeoSlug"
+                       class="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow text-center no-underline">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-1">@cat.Name</h3>
+                        <p class="text-sm text-gray-500">@cat.ProductCount urun</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@* Yeni Urunler *@
+@if (newProducts.Count > 0)
+{
+    <section class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Yeni Urunler</h2>
+                <a href="/yeni-urunler" class="text-primary hover:underline text-sm font-medium">Tumunu Gor &gt;</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory">
+                @foreach (var product in newProducts)
+                {
+                    <div class="flex-none w-56 snap-start">
+                        @await Html.PartialAsync("_ProductCard", product)
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@* Cok Satanlar *@
+@if (bestSellers.Count > 0)
+{
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Cok Satanlar</h2>
+                <a href="/cok-satanlar" class="text-primary hover:underline text-sm font-medium">Tumunu Gor &gt;</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory">
+                @foreach (var product in bestSellers)
+                {
+                    <div class="flex-none w-56 snap-start">
+                        @await Html.PartialAsync("_ProductCard", product)
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
 
 @* Newsletter Section *@
 @if (Tenant.Settings.NewsletterEnabled)

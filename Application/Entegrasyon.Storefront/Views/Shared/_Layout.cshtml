@@ -89,6 +89,9 @@
         </div>
     </header>
 
+    @* Mega Menu *@
+    @await Component.InvokeAsync("MegaMenu")
+
     @* Main Content *@
     <main class="flex-1">
         @RenderBody()
