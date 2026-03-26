@@ -1,0 +1,48 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    var giftCard = ViewBag.GiftCard as Entegrasyon.Entity.Storefront.StorefrontGiftCard;
+}
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" />
+}
+
+<div class="max-w-lg mx-auto px-4 py-8 text-center">
+    <div class="bg-white rounded-lg border border-gray-200 p-8">
+        <div class="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Hediye Karti Hazir!</h1>
+
+        @if (giftCard is not null)
+        {
+            <p class="text-gray-600 mb-6">Hediye karti kodunuzu asagida bulabilirsiniz.</p>
+
+            <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6">
+                <p class="text-sm text-gray-500 mb-2">Hediye Karti Kodu</p>
+                <p id="gift-code" class="text-2xl font-mono font-bold text-gray-900 tracking-wider">@giftCard.Code</p>
+                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('gift-code').textContent)"
+                        class="mt-3 text-sm text-primary hover:underline">
+                    Kodu Kopyala
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-600 space-y-1">
+                <p>Tutar: <strong>@giftCard.InitialAmount.ToString("N2") TL</strong></p>
+                <p>Gecerlilik: <strong>@giftCard.ExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")</strong></p>
+                @if (!string.IsNullOrWhiteSpace(giftCard.RecipientName))
+                {
+                    <p>Alici: <strong>@giftCard.RecipientName</strong></p>
+                }
+            </div>
+        }
+
+        <div class="mt-8 space-y-3">
+            <a href="/" class="block btn-primary py-2 no-underline">Alisverise Devam Et</a>
+            <a href="/hediye-karti" class="block text-sm text-primary hover:underline no-underline">Baska Hediye Karti Olustur</a>
+        </div>
+    </div>
+</div>
