@@ -1,0 +1,327 @@
+@model Entegrasyon.Entity.Dtos.Storefront.StorefrontProductDetailDto
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@{
+    var relatedProducts = ViewBag.RelatedProducts as List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto>
+        ?? new List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto>();
+    var firstVariant = Model.Variants.FirstOrDefault();
+    var allImages = Model.Variants.SelectMany(v => v.ImageUrls).Distinct().ToList();
+    var mainImage = allImages.FirstOrDefault();
+    var hasDiscount = firstVariant != null && firstVariant.ListPrice > firstVariant.SalePrice;
+    var totalStock = Model.Variants.Sum(v => v.Stock);
+}
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription"
+              image="@mainImage" og-type="product" />
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    @await Html.PartialAsync("_Breadcrumb")
+
+    @* Product Main Section *@
+    <div class="flex flex-col md:flex-row gap-8 mb-12">
+        @* Image Gallery *@
+        <div class="w-full md:w-1/2">
+            <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                @if (!string.IsNullOrWhiteSpace(mainImage))
+                {
+                    <img id="main-product-image" src="@mainImage" alt="@Model.Title"
+                         class="w-full h-full object-contain" />
+                }
+                else
+                {
+                    <div class="w-full h-full flex items-center justify-center text-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                }
+            </div>
+
+            @if (allImages.Count > 1)
+            {
+                <div class="flex gap-2 overflow-x-auto pb-2">
+                    @foreach (var img in allImages)
+                    {
+                        <button onclick="document.getElementById('main-product-image').src='@img'"
+                                class="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden hover:border-primary transition-colors">
+                            <img src="@img" alt="@Model.Title" loading="lazy"
+                                 class="w-full h-full object-cover" />
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        @* Product Info *@
+        <div class="w-full md:w-1/2">
+            @if (!string.IsNullOrWhiteSpace(Model.BrandName))
+            {
+                <a href="/marka/@Model.BrandSlug" class="text-sm text-primary hover:underline font-medium">
+                    @Model.BrandName
+                </a>
+            }
+
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mt-1 mb-4">@Model.Title</h1>
+
+            @if (!string.IsNullOrWhiteSpace(Model.StockCode))
+            {
+                <p class="text-xs text-gray-400 mb-4">Stok Kodu: @Model.StockCode</p>
+            }
+
+            @* Price *@
+            <div class="mb-6">
+                @if (hasDiscount)
+                {
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg text-gray-400 line-through">@firstVariant!.ListPrice.ToString("N2") TL</span>
+                        <span class="text-2xl font-bold text-primary">@firstVariant.SalePrice.ToString("N2") TL</span>
+                        @{
+                            var discountPct = (int)Math.Round((1 - firstVariant.SalePrice / firstVariant.ListPrice) * 100);
+                        }
+                        <span class="bg-red-100 text-red-600 text-sm font-semibold px-2 py-0.5 rounded">%@discountPct</span>
+                    </div>
+                }
+                else if (Model.MinPrice != Model.MaxPrice)
+                {
+                    <span class="text-2xl font-bold text-gray-900">@Model.MinPrice.ToString("N2") - @Model.MaxPrice.ToString("N2") TL</span>
+                }
+                else
+                {
+                    <span class="text-2xl font-bold text-gray-900">@Model.MinPrice.ToString("N2") TL</span>
+                }
+            </div>
+
+            @* Stock Status *@
+            <div class="mb-6">
+                @if (totalStock > 5)
+                {
+                    <span class="inline-flex items-center gap-1 text-sm text-green-600">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Stokta var
+                    </span>
+                }
+                else if (totalStock > 0)
+                {
+                    <span class="inline-flex items-center gap-1 text-sm text-orange-600">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Son @totalStock adet kaldi!
+                    </span>
+                }
+                else
+                {
+                    <span class="inline-flex items-center gap-1 text-sm text-red-500">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        Stokta yok
+                    </span>
+                }
+            </div>
+
+            @* Variant Attributes *@
+            @if (Model.Variants.Count > 1)
+            {
+                var variantAttributeKeys = Model.Variants
+                    .SelectMany(v => v.Attributes)
+                    .Select(a => a.AttributeKey)
+                    .Distinct()
+                    .ToList();
+
+                @foreach (var key in variantAttributeKeys)
+                {
+                    var values = Model.Variants
+                        .SelectMany(v => v.Attributes)
+                        .Where(a => a.AttributeKey == key)
+                        .Select(a => a.AttributeValue)
+                        .Distinct()
+                        .ToList();
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">@key</label>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach (var val in values)
+                            {
+                                <span class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 cursor-pointer hover:border-primary transition-colors">
+                                    @val
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            @* Quantity + Add to Cart *@
+            <div class="flex items-center gap-4 mt-6">
+                <div class="flex items-center border border-gray-300 rounded-lg">
+                    <button class="px-3 py-2 text-gray-600 hover:text-gray-900" disabled>-</button>
+                    <input type="number" value="1" min="1" max="@totalStock"
+                           class="w-14 text-center border-x border-gray-300 py-2 text-sm" readonly />
+                    <button class="px-3 py-2 text-gray-600 hover:text-gray-900" disabled>+</button>
+                </div>
+                <button class="btn-primary flex-1 py-3 @(totalStock == 0 ? "opacity-50 cursor-not-allowed" : "")"
+                        disabled>
+                    Sepete Ekle
+                </button>
+            </div>
+
+            @* Shipping Info *@
+            <div class="mt-6 pt-6 border-t border-gray-200 space-y-2 text-sm text-gray-600">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Tahmini teslimat: @Tenant.Settings.EstimatedDeliveryDays is gunu</span>
+                </div>
+                @if (Tenant.Settings.FreeShippingThreshold > 0)
+                {
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
+                        </svg>
+                        <span>@Tenant.Settings.FreeShippingThreshold.ToString("N2") TL ustu ucretsiz kargo</span>
+                    </div>
+                }
+                else if (Tenant.Settings.FlatShippingRate > 0)
+                {
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
+                        </svg>
+                        <span>Kargo ucreti: @Tenant.Settings.FlatShippingRate.ToString("N2") TL</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Tabs Section *@
+    <div class="mb-12">
+        <div class="border-b border-gray-200">
+            <nav class="flex gap-6 -mb-px" id="product-tabs">
+                <button onclick="showTab('tab-description')" class="tab-btn active-tab py-3 text-sm font-medium border-b-2 border-primary text-primary" data-tab="tab-description">
+                    Aciklama
+                </button>
+                @if (Model.Attributes.Count > 0)
+                {
+                    <button onclick="showTab('tab-attributes')" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="tab-attributes">
+                        Ozellikler
+                    </button>
+                }
+                <button onclick="showTab('tab-delivery')" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="tab-delivery">
+                    Teslimat Bilgisi
+                </button>
+                <button onclick="showTab('tab-return')" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="tab-return">
+                    Iade Bilgisi
+                </button>
+            </nav>
+        </div>
+
+        <div class="py-6">
+            @* Description *@
+            <div id="tab-description" class="tab-content">
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <div class="prose max-w-none text-gray-700">
+                        @Html.Raw(Model.Description)
+                    </div>
+                }
+                else
+                {
+                    <p class="text-gray-500">Bu urun icin aciklama bulunmamaktadir.</p>
+                }
+            </div>
+
+            @* Attributes *@
+            <div id="tab-attributes" class="tab-content hidden">
+                @if (Model.Attributes.Count > 0)
+                {
+                    <table class="w-full text-sm">
+                        <tbody>
+                            @foreach (var attr in Model.Attributes)
+                            {
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 pr-4 font-medium text-gray-600 w-1/3">@attr.HumanizedKey</td>
+                                    <td class="py-3 text-gray-900">@attr.Value</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            @* Delivery Info *@
+            <div id="tab-delivery" class="tab-content hidden">
+                @if (!string.IsNullOrWhiteSpace(Tenant.Settings.DeliveryTermsHtml))
+                {
+                    <div class="prose max-w-none text-gray-700">
+                        @Html.Raw(Tenant.Settings.DeliveryTermsHtml)
+                    </div>
+                }
+                else
+                {
+                    <div class="text-gray-700 space-y-2">
+                        <p>Siparisleriniz en gec @Tenant.Settings.EstimatedDeliveryDays is gununde kargoya teslim edilir.</p>
+                        @if (Tenant.Settings.FreeShippingThreshold > 0)
+                        {
+                            <p>@Tenant.Settings.FreeShippingThreshold.ToString("N2") TL ve uzerindeki siparislerde kargo ucretsuizdir.</p>
+                        }
+                        @if (Tenant.Settings.FlatShippingRate > 0)
+                        {
+                            <p>Standart kargo ucreti @Tenant.Settings.FlatShippingRate.ToString("N2") TL'dir.</p>
+                        }
+                    </div>
+                }
+            </div>
+
+            @* Return Info *@
+            <div id="tab-return" class="tab-content hidden">
+                @if (!string.IsNullOrWhiteSpace(Tenant.Settings.ReturnPolicyHtml))
+                {
+                    <div class="prose max-w-none text-gray-700">
+                        @Html.Raw(Tenant.Settings.ReturnPolicyHtml)
+                    </div>
+                }
+                else
+                {
+                    <p class="text-gray-500">Iade politikasi hakkinda detayli bilgi icin <a href="/iade-politikasi" class="text-primary hover:underline">tiklayiniz</a>.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Related Products *@
+    @if (relatedProducts.Count > 0)
+    {
+        <div class="mb-12">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Ilgili Urunler</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var product in relatedProducts)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-primary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            activeBtn.classList.add('border-primary', 'text-primary');
+        }
+    </script>
+}
