@@ -36,4 +36,11 @@ public sealed class OrderItem : BaseEntity
     /// Sipariş satırına uygulanan KDV oranı (%)
     /// </summary>
     public decimal? VatRate { get; set; }
+
+    // Marketplace seller (multi-vendor)
+    public int? SellerId { get; set; }
+    public decimal? CommissionRate { get; set; }
+
+    [Column(TypeName = "money")]
+    public decimal? CommissionAmount { get; set; }
 }

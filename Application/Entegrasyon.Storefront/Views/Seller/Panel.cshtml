@@ -1,0 +1,55 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+
+@section Head {
+    <seo-meta title="Satici Paneli | @Tenant.Settings.StoreName" />
+}
+
+@{
+    var seller = ViewBag.Seller as Entegrasyon.Entity.Storefront.Seller;
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Satici Paneli</h1>
+            <p class="text-gray-600">Hosgeldiniz, @seller?.StoreName</p>
+        </div>
+        <a href="/magaza/@seller?.StoreSlug" class="text-primary hover:underline text-sm" target="_blank">
+            Magazami Gor
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-500">Toplam Satis</p>
+            <p class="text-3xl font-bold text-gray-900">@(seller?.TotalSales ?? 0)</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-500">Ortalama Puan</p>
+            <p class="text-3xl font-bold text-gray-900">@(seller?.AverageRating.ToString("F1") ?? "0.0")</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-500">Komisyon Orani</p>
+            <p class="text-3xl font-bold text-gray-900">%@(seller?.DefaultCommissionRate ?? 0)</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <a href="/satici/urunlerim" class="bg-white rounded-lg shadow p-6 hover:shadow-md transition block no-underline">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Urunlerim</h2>
+            <p class="text-gray-600 text-sm">Sattginiz urunleri yonetin, fiyat ve stok guncelleyin.</p>
+        </a>
+        <a href="/satici/urun-ekle" class="bg-white rounded-lg shadow p-6 hover:shadow-md transition block no-underline">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Urun Ekle</h2>
+            <p class="text-gray-600 text-sm">Katalogdan yeni urun secin ve fiyatlandirin.</p>
+        </a>
+        <a href="/satici/Profile" class="bg-white rounded-lg shadow p-6 hover:shadow-md transition block no-underline">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Magaza Profili</h2>
+            <p class="text-gray-600 text-sm">Magaza bilgilerinizi ve iletisim detaylarinizi guncelleyin.</p>
+        </a>
+        <a href="/hesabim" class="bg-white rounded-lg shadow p-6 hover:shadow-md transition block no-underline">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Hesabim</h2>
+            <p class="text-gray-600 text-sm">Kisisel hesap ayarlariniza donun.</p>
+        </a>
+    </div>
+</div>

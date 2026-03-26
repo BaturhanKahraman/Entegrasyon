@@ -487,6 +487,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IStorefrontGiftCardManager, StorefrontGiftCardManager>();
             services.AddScoped<IStorefrontLoyaltyManager, StorefrontLoyaltyManager>();
             services.AddScoped<IStorefrontReferralManager, StorefrontReferralManager>();
+            services.AddScoped<IStorefrontPushManager, StorefrontPushManager>();
+            services.AddScoped<IStorefrontCampaignManager, StorefrontCampaignManager>();
+            services.AddScoped<ISellerManager, SellerManager>();
             return services;
         }
     }
