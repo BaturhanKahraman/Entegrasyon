@@ -32,6 +32,7 @@ using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
+using Entegrasyon.ApplicationBootstrap.Tenants;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Labels;
@@ -46,6 +47,7 @@ namespace Entegrasyon.ApplicationBootstrap
         public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ITenantContext, HttpTenantContext>();
+            services.AddSingleton<ITenantRegistryDataSource, AdminPanelTenantDataSource>();
             services.AddSingleton<ITenantRegistry, TenantRegistryService>();
 
             services.AddScoped<ApplicationLifetimeManager>();
