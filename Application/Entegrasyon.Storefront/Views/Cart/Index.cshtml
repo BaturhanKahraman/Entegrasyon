@@ -1,0 +1,174 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    var cart = ViewBag.Cart as Entegrasyon.Entity.Dtos.Storefront.CartDto;
+    var freeShippingThreshold = (decimal)ViewBag.FreeShippingThreshold;
+}
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" />
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Sepetim</h1>
+
+    @if (cart == null || cart.ItemCount == 0)
+    {
+        <div class="text-center py-16">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+            </svg>
+            <p class="text-gray-500 text-lg mb-6">Sepetiniz bos</p>
+            <a href="/urunler" class="btn-primary inline-block px-8 py-3 no-underline">Alisverise Basla</a>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col lg:flex-row gap-8">
+            @* Cart Items *@
+            <div class="flex-1">
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    @* Header *@
+                    <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-sm font-medium text-gray-500 border-b">
+                        <div class="col-span-6">Urun</div>
+                        <div class="col-span-2 text-center">Birim Fiyat</div>
+                        <div class="col-span-2 text-center">Adet</div>
+                        <div class="col-span-2 text-right">Toplam</div>
+                    </div>
+
+                    @* Items *@
+                    <div id="cart-items">
+                        @foreach (var item in cart.Items)
+                        {
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 items-center cart-item" data-variant-id="@item.ProductVariantId">
+                                @* Product Info *@
+                                <div class="col-span-6 flex items-center gap-4">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" alt="@item.ProductTitle" class="w-full h-full object-cover" />
+                                        }
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900 text-sm">@item.ProductTitle</p>
+                                        @if (!string.IsNullOrWhiteSpace(item.VariantInfo))
+                                        {
+                                            <p class="text-xs text-gray-500 mt-1">@item.VariantInfo</p>
+                                        }
+                                    </div>
+                                </div>
+
+                                @* Unit Price *@
+                                <div class="col-span-2 text-center text-sm text-gray-600">
+                                    <span class="md:hidden text-gray-400">Birim: </span>
+                                    <span class="item-unit-price">@item.UnitPrice.ToString("N2")</span> TL
+                                </div>
+
+                                @* Quantity *@
+                                <div class="col-span-2 flex items-center justify-center">
+                                    <div class="flex items-center border border-gray-300 rounded-lg">
+                                        <button onclick="updateQuantity('@item.ProductVariantId', @(item.Quantity - 1))"
+                                                class="px-2 py-1 text-gray-600 hover:text-gray-900 text-sm" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
+                                        <span class="w-10 text-center text-sm item-quantity">@item.Quantity</span>
+                                        <button onclick="updateQuantity('@item.ProductVariantId', @(item.Quantity + 1))"
+                                                class="px-2 py-1 text-gray-600 hover:text-gray-900 text-sm" @(item.Quantity >= item.AvailableStock ? "disabled" : "")>+</button>
+                                    </div>
+                                </div>
+
+                                @* Line Total + Remove *@
+                                <div class="col-span-2 flex items-center justify-end gap-3">
+                                    <span class="font-semibold text-gray-900 text-sm item-line-total">@item.LineTotal.ToString("N2") TL</span>
+                                    <button onclick="removeItem('@item.ProductVariantId')" class="text-gray-400 hover:text-red-500 transition-colors" title="Kaldir">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Order Summary Sidebar *@
+            <div class="w-full lg:w-80">
+                <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Siparis Ozeti</h2>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Ara Toplam</span>
+                            <span id="summary-subtotal">@cart.SubTotal.ToString("N2") TL</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Kargo</span>
+                            <span id="summary-shipping">
+                                @if (cart.ShippingCost == 0)
+                                {
+                                    <span class="text-green-600 font-medium">Ucretsiz</span>
+                                }
+                                else
+                                {
+                                    @cart.ShippingCost.ToString("N2") <text>TL</text>
+                                }
+                            </span>
+                        </div>
+                        <hr />
+                        <div class="flex justify-between font-bold text-gray-900 text-base">
+                            <span>Genel Toplam</span>
+                            <span id="summary-total">@cart.GrandTotal.ToString("N2") TL</span>
+                        </div>
+                    </div>
+
+                    @if (freeShippingThreshold > 0 && cart.SubTotal < freeShippingThreshold)
+                    {
+                        <div id="free-shipping-info" class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                            @((freeShippingThreshold - cart.SubTotal).ToString("N2")) TL daha ekleyin, <strong>ucretsiz kargo</strong> firsatindan yararlanin!
+                        </div>
+                    }
+
+                    <div class="mt-6">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a href="/odeme" class="btn-primary block text-center py-3 no-underline">Odemeye Gec</a>
+                        }
+                        else
+                        {
+                            <a href="/giris?returnUrl=/sepet" class="btn-primary block text-center py-3 no-underline">Odemeye Gec</a>
+                            <p class="text-xs text-gray-500 text-center mt-2">Odeme icin giris yapmaniz gerekiyor</p>
+                        }
+                    </div>
+
+                    <a href="/urunler" class="block text-center text-sm text-primary hover:underline mt-4 no-underline">Alisverise Devam Et</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    function updateQuantity(variantId, quantity) {
+        if (quantity < 1) return;
+        fetch('/api/sepet/Guncelle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productVariantId: variantId, quantity: quantity })
+        }).then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) { location.reload(); }
+            else { alert(d.message || 'Bir hata olustu'); }
+        }).catch(function() { alert('Bir hata olustu'); });
+    }
+
+    function removeItem(variantId) {
+        fetch('/api/sepet/Sil', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productVariantId: variantId, quantity: 0 })
+        }).then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) { location.reload(); }
+        }).catch(function() { alert('Bir hata olustu'); });
+    }
+</script>
+}

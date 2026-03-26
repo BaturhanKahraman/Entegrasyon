@@ -159,13 +159,19 @@
             @* Quantity + Add to Cart *@
             <div class="flex items-center gap-4 mt-6">
                 <div class="flex items-center border border-gray-300 rounded-lg">
-                    <button class="px-3 py-2 text-gray-600 hover:text-gray-900" disabled>-</button>
-                    <input type="number" value="1" min="1" max="@totalStock"
-                           class="w-14 text-center border-x border-gray-300 py-2 text-sm" readonly />
-                    <button class="px-3 py-2 text-gray-600 hover:text-gray-900" disabled>+</button>
+                    <button type="button" class="px-3 py-2 text-gray-600 hover:text-gray-900"
+                            onclick="var i=document.getElementById('quantity-input');if(parseInt(i.value)>1)i.value=parseInt(i.value)-1;"
+                            @(totalStock == 0 ? "disabled" : "")>-</button>
+                    <input type="number" id="quantity-input" value="1" min="1" max="@totalStock"
+                           class="w-14 text-center border-x border-gray-300 py-2 text-sm" />
+                    <button type="button" class="px-3 py-2 text-gray-600 hover:text-gray-900"
+                            onclick="var i=document.getElementById('quantity-input');if(parseInt(i.value)<parseInt(i.max))i.value=parseInt(i.value)+1;"
+                            @(totalStock == 0 ? "disabled" : "")>+</button>
                 </div>
-                <button class="btn-primary flex-1 py-3 @(totalStock == 0 ? "opacity-50 cursor-not-allowed" : "")"
-                        disabled>
+                <button id="add-to-cart-btn"
+                        data-variant-id="@(firstVariant?.Id)"
+                        class="btn-primary flex-1 py-3 @(totalStock == 0 ? "opacity-50 cursor-not-allowed" : "")"
+                        @(totalStock == 0 ? "disabled" : "")>
                     Sepete Ekle
                 </button>
             </div>
@@ -322,6 +328,35 @@
             const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
             activeBtn.classList.remove('border-transparent', 'text-gray-500');
             activeBtn.classList.add('border-primary', 'text-primary');
+        }
+
+        var addBtn = document.getElementById('add-to-cart-btn');
+        if (addBtn && !addBtn.disabled) {
+            addBtn.addEventListener('click', function() {
+                var variantId = addBtn.getAttribute('data-variant-id');
+                var qty = parseInt(document.getElementById('quantity-input').value || '1');
+                addBtn.disabled = true;
+                addBtn.textContent = 'Ekleniyor...';
+                fetch('/api/sepet/Ekle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productVariantId: variantId, quantity: qty })
+                }).then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success) {
+                        addBtn.textContent = 'Sepete Eklendi!';
+                        var badge = document.getElementById('cart-badge');
+                        if (badge) { badge.textContent = d.itemCount; badge.style.display = 'flex'; }
+                        setTimeout(function() { addBtn.textContent = 'Sepete Ekle'; addBtn.disabled = false; }, 2000);
+                    } else {
+                        addBtn.textContent = d.message || 'Hata olustu';
+                        setTimeout(function() { addBtn.textContent = 'Sepete Ekle'; addBtn.disabled = false; }, 2000);
+                    }
+                }).catch(function() {
+                    addBtn.textContent = 'Sepete Ekle';
+                    addBtn.disabled = false;
+                });
+            });
         }
     </script>
 }

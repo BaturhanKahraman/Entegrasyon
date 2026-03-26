@@ -1,0 +1,163 @@
+@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    var cart = ViewBag.Cart as Entegrasyon.Entity.Dtos.Storefront.CartDto;
+    var customerName = ViewBag.CustomerName as string ?? "";
+    var error = ViewBag.Error as string;
+}
+
+@section Head {
+    <seo-meta title="@ViewBag.SeoTitle" />
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Odeme</h1>
+
+    @if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            @error
+        </div>
+    }
+
+    <form method="post" asp-action="Confirm" asp-controller="Checkout">
+        @Html.AntiForgeryToken()
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            @* Shipping & Billing Form *@
+            <div class="flex-1 space-y-6">
+                @* Shipping Address *@
+                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Teslimat Adresi</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                            <input type="text" name="ShippingFullName" value="@customerName" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                            <input type="tel" name="ShippingPhone" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Posta Kodu</label>
+                            <input type="text" name="ShippingPostalCode"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Il</label>
+                            <input type="text" name="ShippingCity" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ilce</label>
+                            <input type="text" name="ShippingDistrict" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                            <textarea name="ShippingAddress" rows="3" required
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                @* Billing Address Toggle *@
+                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <input type="checkbox" id="same-address" name="UseSameAddressForBilling" value="true" checked
+                               class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                               onchange="document.getElementById('billing-section').classList.toggle('hidden', this.checked)" />
+                        <label for="same-address" class="text-sm font-medium text-gray-700">Fatura adresi teslimat adresi ile ayni</label>
+                    </div>
+
+                    <div id="billing-section" class="hidden space-y-4">
+                        <h3 class="text-lg font-bold text-gray-900">Fatura Adresi</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad / Firma Unvani</label>
+                                <input type="text" name="BillingFullName"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Il</label>
+                                <input type="text" name="BillingCity"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                                <textarea name="BillingAddress" rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Order Note *@
+                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Siparis Notu</h2>
+                    <textarea name="OrderNote" rows="3" placeholder="Siparisizle ilgili eklemek istediginiz bir not var mi?"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
+                </div>
+            </div>
+
+            @* Order Summary Sidebar *@
+            <div class="w-full lg:w-96">
+                <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4">Siparis Ozeti</h2>
+
+                    @if (cart != null)
+                    {
+                        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            @foreach (var item in cart.Items)
+                            {
+                                <div class="flex items-center gap-3 text-sm">
+                                    <div class="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" alt="@item.ProductTitle" class="w-full h-full object-cover" />
+                                        }
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-gray-900 truncate">@item.ProductTitle</p>
+                                        <p class="text-gray-500">@item.Quantity x @item.UnitPrice.ToString("N2") TL</p>
+                                    </div>
+                                    <span class="font-semibold text-gray-900 flex-shrink-0">@item.LineTotal.ToString("N2") TL</span>
+                                </div>
+                            }
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Ara Toplam</span>
+                                <span>@cart.SubTotal.ToString("N2") TL</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Kargo</span>
+                                @if (cart.ShippingCost == 0)
+                                {
+                                    <span class="text-green-600 font-medium">Ucretsiz</span>
+                                }
+                                else
+                                {
+                                    <span>@cart.ShippingCost.ToString("N2") TL</span>
+                                }
+                            </div>
+                            <hr />
+                            <div class="flex justify-between font-bold text-gray-900 text-base">
+                                <span>Genel Toplam</span>
+                                <span>@cart.GrandTotal.ToString("N2") TL</span>
+                            </div>
+                        </div>
+                    }
+
+                    <button type="submit" class="btn-primary w-full py-3 mt-6">Siparisi Tamamla</button>
+
+                    <a href="/sepet" class="block text-center text-sm text-primary hover:underline mt-3 no-underline">Sepete Don</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
