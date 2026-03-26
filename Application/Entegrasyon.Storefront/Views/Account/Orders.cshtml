@@ -1,7 +1,12 @@
+@using Entegrasyon.Entity.Dtos.Storefront
 @inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 
 @section Head {
     <seo-meta title="Siparislerim | @Tenant.Settings.StoreName" />
+}
+
+@{
+    var orders = ViewBag.Orders as List<StorefrontOrderListDto> ?? new List<StorefrontOrderListDto>();
 }
 
 <div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
@@ -19,13 +24,71 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h1 class="text-2xl font-bold text-gray-900 mb-6">Siparislerim</h1>
 
-            <div class="text-center py-12">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <p class="text-gray-500">Henuz siparisiniz bulunmuyor.</p>
-                <a href="/urunler" class="inline-block mt-4 text-primary hover:underline no-underline">Alisverise basla</a>
-            </div>
+            @if (TempData["Error"] is string error)
+            {
+                <div class="bg-red-50 text-red-700 p-3 rounded mb-4">@error</div>
+            }
+
+            @if (!orders.Any())
+            {
+                <div class="text-center py-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <p class="text-gray-500">Henuz siparisiniz bulunmuyor.</p>
+                    <a href="/urunler" class="inline-block mt-4 text-primary hover:underline no-underline">Alisverise basla</a>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-2 font-semibold text-gray-600">Siparis No</th>
+                                <th class="text-left py-3 px-2 font-semibold text-gray-600">Tarih</th>
+                                <th class="text-center py-3 px-2 font-semibold text-gray-600">Urun</th>
+                                <th class="text-right py-3 px-2 font-semibold text-gray-600">Toplam</th>
+                                <th class="text-center py-3 px-2 font-semibold text-gray-600">Durum</th>
+                                <th class="text-center py-3 px-2 font-semibold text-gray-600">Islem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in orders)
+                            {
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-2 font-medium text-gray-900">@order.OrderNumber</td>
+                                    <td class="py-3 px-2 text-gray-600">@order.OrderDate.ToString("dd.MM.yyyy")</td>
+                                    <td class="py-3 px-2 text-center text-gray-600">@order.ItemCount adet</td>
+                                    <td class="py-3 px-2 text-right font-medium">@order.Total.ToString("N2") TL</td>
+                                    <td class="py-3 px-2 text-center">
+                                        @{
+                                            var badgeClass = order.Status switch
+                                            {
+                                                "Alindi" => "bg-blue-100 text-blue-700",
+                                                "Hazirlaniyor" => "bg-yellow-100 text-yellow-700",
+                                                "Kargoda" => "bg-orange-100 text-orange-700",
+                                                "Teslim Edildi" => "bg-green-100 text-green-700",
+                                                "Iptal Edildi" => "bg-red-100 text-red-700",
+                                                "Iade Edildi" => "bg-purple-100 text-purple-700",
+                                                _ => "bg-gray-100 text-gray-700"
+                                            };
+                                        }
+                                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium @badgeClass">@order.Status</span>
+                                    </td>
+                                    <td class="py-3 px-2 text-center space-x-2">
+                                        <a href="/hesabim/siparis/@order.Id" class="text-primary hover:underline no-underline text-xs">Detay</a>
+                                        @if (!string.IsNullOrEmpty(order.TrackingNumber))
+                                        {
+                                            <a href="/siparis-takip?orderNumber=@order.OrderNumber" class="text-orange-600 hover:underline no-underline text-xs">Kargo</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
