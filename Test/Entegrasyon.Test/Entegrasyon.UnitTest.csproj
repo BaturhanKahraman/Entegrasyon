@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\Application\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.ApplicationBootstrap\Entegrasyon.ApplicationBootstrap.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.Storefront\Entegrasyon.Storefront.csproj" />
+    <ProjectReference Include="..\..\Application\Entegrasyon.Blazor\Entegrasyon.Blazor.csproj" />
   </ItemGroup>
 
 </Project>
