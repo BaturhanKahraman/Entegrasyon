@@ -18,6 +18,7 @@
             --color-accent: @(Tenant.Settings.AccentColor ?? "#F59E0B");
         }
     </style>
+    <link rel="preload" href="~/css/site.css" as="style" />
     <link rel="stylesheet" href="~/css/site.css" />
     @if (!string.IsNullOrWhiteSpace(Tenant.Settings.CustomCss))
     {
@@ -242,17 +243,17 @@
         </div>
     }
 
-    <script src="~/js/site.js"></script>
-    <script src="~/js/recently-viewed.js"></script>
-    <script src="~/js/compare.js"></script>
+    <script src="~/js/site.js" defer></script>
+    <script src="~/js/recently-viewed.js" defer></script>
+    <script src="~/js/compare.js" defer></script>
     <script>
         fetch('/api/sepet/Ozet').then(function(r){return r.json()}).then(function(d){
             var b=document.getElementById('cart-badge');
             if(b&&d.itemCount>0){b.textContent=d.itemCount;b.style.display='flex';}
         }).catch(function(){});
     </script>
-    <script src="~/js/search.js"></script>
-    <script src="~/js/push.js"></script>
+    <script src="~/js/search.js" defer></script>
+    <script src="~/js/push.js" defer></script>
     <script>
         // Wishlist toggle for product cards
         function toggleWishlist(productId, btn) {

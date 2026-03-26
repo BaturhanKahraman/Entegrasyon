@@ -1,12 +1,46 @@
 using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Storefront.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddCustomDbContext(builder.Configuration);
 builder.Services.AddStorefrontServices(); // will fail until Task 7, that's OK
+
+// Response compression (Brotli + GZip)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/javascript", "text/css", "image/svg+xml" });
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+
+// Distributed cache: Redis when configured, in-memory fallback for dev
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "Storefront:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
+// Health checks
+builder.Services.AddHealthChecks();
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -50,11 +84,15 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseResponseCompression();
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
-        ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000"
+    {
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        ctx.Context.Response.Headers.Vary = "Accept-Encoding";
+    }
 });
 app.UseResponseCaching();
 app.UseSession();
@@ -196,6 +234,8 @@ app.MapControllerRoute("sitemap", "/sitemap.xml",
     new { controller = "Seo", action = "Sitemap" });
 app.MapControllerRoute("error", "/hata/{statusCode}",
     new { controller = "Error", action = "Index" });
+
+app.MapHealthChecks("/health");
 
 app.Run();
 
