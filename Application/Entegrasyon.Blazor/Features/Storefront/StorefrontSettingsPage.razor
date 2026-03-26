@@ -165,6 +165,23 @@ else
             </MudGrid>
         </MudTabPanel>
 
+        <MudTabPanel Text="Marketplace">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudAlert Severity="Severity.Info" Class="mb-4">
+                        Bu ozellik aktif edildiginde, kullanicilar satici olarak kayit olabilir ve urun satabilir.
+                        Varsayilan olarak kapalidir (tek magaza modu).
+                    </MudAlert>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSwitch @bind-Value="_settings.MarketplaceEnabled" Label="Marketplace Aktif" Color="Color.Primary" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">Kaydet</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
         <MudTabPanel Text="Diger">
             <MudGrid>
                 <MudItem xs="12" md="6">

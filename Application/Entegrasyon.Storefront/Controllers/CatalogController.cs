@@ -249,6 +249,8 @@ public class CatalogController(
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> SellerStore(string slug)
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         if (string.IsNullOrWhiteSpace(slug))
             return NotFound();
 

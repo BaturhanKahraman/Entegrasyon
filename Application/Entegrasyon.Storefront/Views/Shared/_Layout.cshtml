@@ -131,6 +131,10 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="/hakkimizda" class="hover:text-white transition-colors">Hakkimizda</a></li>
                         <li><a href="/iletisim" class="hover:text-white transition-colors">Iletisim</a></li>
+                        @if (Tenant.Settings.MarketplaceEnabled)
+                        {
+                            <li><a href="/satici/kayit" class="hover:text-white transition-colors">Satici Ol</a></li>
+                        }
                     </ul>
                 </div>
                 @* Musteri Hizmetleri *@
@@ -248,6 +252,7 @@
         }).catch(function(){});
     </script>
     <script src="~/js/search.js"></script>
+    <script src="~/js/push.js"></script>
     <script>
         // Wishlist toggle for product cards
         function toggleWishlist(productId, btn) {

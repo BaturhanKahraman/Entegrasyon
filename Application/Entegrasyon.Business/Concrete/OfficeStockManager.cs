@@ -172,6 +172,45 @@ public class OfficeStockManager(
         return new SuccessDataResult<StockMovement>(movement, "Stok zorla düşüldü.");
     }
 
+    public async Task<IDataResult<StockMovement>> IncreaseStockAtomicAsync(
+        int branchOfficeId, Guid productVariantId, int quantity,
+        StockMovementType type, string? referenceType = null, string? referenceId = null)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+
+        // Atomic update — SoldQuantity azalt (stok geri ver)
+        var affected = await dbContext.BranchOfficeStocks
+            .Where(s => s.BranchOfficeId == branchOfficeId
+                && s.ProductVariantId == productVariantId)
+            .ExecuteUpdateAsync(s => s.SetProperty(b => b.SoldQuantity, b => b.SoldQuantity - quantity));
+
+        if (affected == 0)
+            return new ErrorDataResult<StockMovement>(null!, "Stok kaydi bulunamadi.");
+
+        var currentStock = await dbContext.BranchOfficeStocks.AsNoTracking()
+            .Where(s => s.BranchOfficeId == branchOfficeId && s.ProductVariantId == productVariantId)
+            .Select(s => s.CurrentStock)
+            .FirstOrDefaultAsync();
+
+        var movement = new StockMovement
+        {
+            BranchOfficeId = branchOfficeId,
+            ProductVariantId = productVariantId,
+            Type = type,
+            Quantity = quantity,
+            StockBefore = currentStock - quantity,
+            StockAfter = currentStock,
+            ReferenceType = referenceType,
+            ReferenceId = referenceId
+        };
+        dbContext.StockMovements.Add(movement);
+        await dbContext.SaveChangesAsync();
+
+        await CheckStockLevelsAsync(branchOfficeId, productVariantId, currentStock);
+
+        return new SuccessDataResult<StockMovement>(movement, "Stok basariyla geri verildi.");
+    }
+
     private async Task CheckStockLevelsAsync(int branchOfficeId, Guid productVariantId, int currentStock)
     {
         using var dbContext = contextFactory.CreateDbContext();

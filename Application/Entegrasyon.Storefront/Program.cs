@@ -164,6 +164,14 @@ app.MapControllerRoute("sellerRegister", "/satici/kayit",
     new { controller = "Seller", action = "Register" });
 app.MapControllerRoute("sellerPanel", "/satici/{action=Panel}",
     new { controller = "Seller" });
+app.MapControllerRoute("sellerOrders", "/satici/siparislerim",
+    new { controller = "Seller", action = "Orders" });
+app.MapControllerRoute("sellerOrderDetail", "/satici/siparis/{id}",
+    new { controller = "Seller", action = "OrderDetail" });
+app.MapControllerRoute("sellerBalance", "/satici/bakiye",
+    new { controller = "Seller", action = "Balance" });
+app.MapControllerRoute("sellerPayout", "/satici/odeme-talebi",
+    new { controller = "Seller", action = "RequestPayout" });
 app.MapControllerRoute("sellerProducts", "/satici/urunlerim",
     new { controller = "SellerProduct", action = "Index" });
 app.MapControllerRoute("sellerAddProduct", "/satici/urun-ekle",

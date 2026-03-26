@@ -82,6 +82,9 @@ public sealed class StorefrontSettings : BaseEntity
     public bool AutoReviewRewardEnabled { get; set; }
     public int? AutoReviewRewardPercent { get; set; }
 
+    // Marketplace
+    public bool MarketplaceEnabled { get; set; } // DEFAULT false — single-shop by default
+
     // Loyalty Program
     public bool LoyaltyProgramEnabled { get; set; }
     public int LoyaltyPointsPerLira { get; set; } = 1; // every 1 TL = 1 point

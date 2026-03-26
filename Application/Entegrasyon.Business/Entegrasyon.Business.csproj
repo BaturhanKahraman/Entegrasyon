@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="BinaryKits.Zpl.Label" Version="3.3.1" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Iyzipay" Version="2.1.62" />
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.1" />

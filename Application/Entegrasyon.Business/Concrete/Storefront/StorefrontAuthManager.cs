@@ -275,6 +275,63 @@ public class StorefrontAuthManager(
         return new SuccessDataResult<List<StorefrontLoginHistory>>(history);
     }
 
+    public async Task<IDataResult<StorefrontCustomerAuth>> ExternalLoginAsync(
+        int tenantId, string provider, string externalId, string email, string name, string surname)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Check if auth already exists for this tenant + email
+        var existing = await dbContext.StorefrontCustomerAuths
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Email == email);
+
+        if (existing is not null)
+        {
+            // Link external provider if not already linked
+            existing.ExternalLoginProvider = provider;
+            existing.ExternalLoginId = externalId;
+            existing.EmailConfirmed = true; // Provider-verified email
+            existing.LastLoginAt = DateTimeOffset.UtcNow;
+
+            dbContext.StorefrontCustomerAuths.Update(existing);
+            await dbContext.SaveChangesAsync();
+
+            return new SuccessDataResult<StorefrontCustomerAuth>(existing, "Giris basarili.");
+        }
+
+        // Create new customer + auth for external login (no password)
+        var customer = new RetailCustomer
+        {
+            Name = name,
+            Surname = surname,
+            FullName = $"{name} {surname}",
+            CustomerType = "Retail",
+            Address = new Address()
+        };
+
+        dbContext.Customers.Add(customer);
+        await dbContext.SaveChangesAsync();
+
+        var auth = new StorefrontCustomerAuth
+        {
+            TenantId = tenantId,
+            CustomerId = customer.Id,
+            Email = email,
+            PasswordHash = Array.Empty<byte>(),
+            PasswordSalt = Array.Empty<byte>(),
+            EmailConfirmed = true, // Provider verified
+            ExternalLoginProvider = provider,
+            ExternalLoginId = externalId,
+            LastLoginAt = DateTimeOffset.UtcNow,
+            KvkkConsentDate = DateTimeOffset.UtcNow
+        };
+
+        dbContext.StorefrontCustomerAuths.Add(auth);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessDataResult<StorefrontCustomerAuth>(auth, "Kayit ve giris basarili.");
+    }
+
     public async Task<IDataResult<string>> ExportCustomerDataAsync(int tenantId, int customerId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();

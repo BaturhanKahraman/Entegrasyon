@@ -1,0 +1,75 @@
+@page "/settings/storefront/payment"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Odeme Ayarlari</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Odeme Ayarlari</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-6" Elevation="2">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="_config.PaymentProvider" Label="Odeme Saglayici" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Iyzico")">iyzico</MudSelectItem>
+                    <MudSelectItem Value="@("PayTR")">PayTR</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch @bind-Value="_config.IsActive" Label="Aktif" Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_config.ApiKey" Label="API Key"
+                    Variant="Variant.Outlined" InputType="InputType.Password" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_config.SecretKey" Label="Secret Key"
+                    Variant="Variant.Outlined" InputType="InputType.Password" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudSwitch @bind-Value="_config.IsLive" Label="Canli Mod (Production)" Color="Color.Warning" />
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="_config.BaseUrl" Label="Base URL (opsiyonel)"
+                    Variant="Variant.Outlined"
+                    HelperText="Bos birakilirsa sandbox/production otomatik secilir" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudSwitch @bind-Value="_config.InstallmentEnabled" Label="Taksit Aktif" Color="Color.Primary" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="_config.MaxInstallmentCount" Label="Maksimum Taksit Sayisi"
+                    Variant="Variant.Outlined" Min="1" Max="12" />
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="_config.MinInstallmentAmount" Label="Minimum Taksit Tutari (TL)"
+                    Variant="Variant.Outlined" />
+            </MudItem>
+
+            <MudItem xs="12" Class="d-flex justify-end gap-2">
+                <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="TestConnectionAsync" Disabled="_testing">
+                    @if (_testing)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    }
+                    Baglaniyi Test Et
+                </MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync" Disabled="_saving">
+                    Kaydet
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}

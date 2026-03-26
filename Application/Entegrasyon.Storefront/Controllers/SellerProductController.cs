@@ -17,6 +17,8 @@ public class SellerProductController(
     [HttpGet]
     public async Task<IActionResult> Index()
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register", "Seller");
 
@@ -34,6 +36,8 @@ public class SellerProductController(
     [HttpGet]
     public async Task<IActionResult> Add([FromQuery] string? search)
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register", "Seller");
 
@@ -64,6 +68,8 @@ public class SellerProductController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(Guid productId, decimal price, int stock)
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register", "Seller");
 
@@ -98,6 +104,8 @@ public class SellerProductController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(int id, decimal price, int stock, bool isActive)
     {
+        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
+
         var seller = await GetApprovedSellerAsync();
         if (seller is null) return RedirectToAction("Register", "Seller");
 

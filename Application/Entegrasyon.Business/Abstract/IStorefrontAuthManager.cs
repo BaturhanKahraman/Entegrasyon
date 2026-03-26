@@ -19,6 +19,9 @@ public interface IStorefrontAuthManager
     Task RecordLoginAttemptAsync(int authId, string? ipAddress, string? userAgent, bool isSuccessful, string? failureReason = null);
     Task<IDataResult<List<StorefrontLoginHistory>>> GetLoginHistoryAsync(int authId, int count = 20);
 
+    // External Login (Social Login)
+    Task<IDataResult<StorefrontCustomerAuth>> ExternalLoginAsync(int tenantId, string provider, string externalId, string email, string name, string surname);
+
     // KVKK Data Export
     Task<IDataResult<string>> ExportCustomerDataAsync(int tenantId, int customerId);
 }

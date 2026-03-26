@@ -1,0 +1,58 @@
+@page "/storefront/payouts"
+@using Entegrasyon.Entity.Storefront
+
+<PageTitle>Odeme Talepleri</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Odeme Talepleri</MudText>
+
+<MudDataGrid Items="@_payouts.AsEnumerable()" Hover="true" Loading="@_loading" Dense="true" Filterable="true">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="ID" />
+        <TemplateColumn Title="Satici">
+            <CellTemplate>
+                @context.Item.Seller?.StoreName
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Tutar">
+            <CellTemplate>
+                @context.Item.Amount.ToString("C2")
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Property="x => x.Iban" Title="IBAN" />
+        <TemplateColumn Title="Durum">
+            <CellTemplate>
+                @switch (context.Item.Status)
+                {
+                    case PayoutStatus.Pending:
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small">Bekliyor</MudChip>
+                        break;
+                    case PayoutStatus.Processing:
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">Isleniyor</MudChip>
+                        break;
+                    case PayoutStatus.Completed:
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Tamamlandi</MudChip>
+                        break;
+                    case PayoutStatus.Rejected:
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small">Reddedildi</MudChip>
+                        break;
+                }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Tarih">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="Islemler" CellStyle="text-align:right">
+            <CellTemplate>
+                @if (context.Item.Status == PayoutStatus.Pending)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
+                        OnClick="@(() => ProcessAsync(context.Item, true))" Title="Onayla" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
+                        OnClick="@(() => ProcessAsync(context.Item, false))" Title="Reddet" />
+                }
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
