@@ -11,7 +11,7 @@ public class TenantProvisioningService(ILogger<TenantProvisioningService> logger
     /// <summary>
     /// Yeni tenant icin PostgreSQL veritabani olusturur ve migration uygular.
     /// </summary>
-    public async Task<ProvisionResult> ProvisionAsync(string connectionString, CancellationToken ct = default)
+    public virtual async Task<ProvisionResult> ProvisionAsync(string connectionString, CancellationToken ct = default)
     {
         var builder = new NpgsqlConnectionStringBuilder(connectionString);
         var databaseName = builder.Database
