@@ -15,6 +15,7 @@
             <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
             <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
             <a href="/hesabim/Orders" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Siparislerim</a>
+            <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Iadelerim</a>
             <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
             <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
             <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
@@ -227,6 +228,15 @@
                             Siparisi Iptal Et
                         </button>
                     </form>
+                }
+                @if (order.Status == "Teslim Edildi")
+                {
+                    <a href="/hesabim/iade-talebi/@order.Id" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 no-underline text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                        Iade Talebi
+                    </a>
                 }
             </div>
         }

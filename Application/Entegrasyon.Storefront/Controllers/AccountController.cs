@@ -12,7 +12,8 @@ namespace Entegrasyon.Storefront.Controllers;
 public class AccountController(
     IStorefrontTenantContext tenant,
     IStorefrontAuthManager authManager,
-    IOrderManager orderManager) : Controller
+    IOrderManager orderManager,
+    IStorefrontReturnManager returnManager) : Controller
 {
     private int GetCustomerId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
     private int GetAuthId() => int.Parse(User.FindFirst("AuthId")!.Value);
@@ -153,6 +154,49 @@ public class AccountController(
         var html = GenerateInvoiceHtml(o, settings);
         var bytes = Encoding.UTF8.GetBytes(html);
         return File(bytes, "text/html", $"fatura-{o.OrderNumber}.html");
+    }
+
+    [HttpGet("/hesabim/iadelerim")]
+    public async Task<IActionResult> Returns()
+    {
+        var result = await returnManager.GetCustomerReturnsAsync(tenant.TenantId, GetCustomerId());
+        ViewBag.Returns = result.Data ?? [];
+        return View();
+    }
+
+    [HttpGet("/hesabim/iade-talebi/{orderId:guid}")]
+    public async Task<IActionResult> CreateReturn(Guid orderId)
+    {
+        var orderResult = await orderManager.GetOrderDetailAsync(orderId, GetCustomerId());
+        if (!orderResult.Success)
+        {
+            TempData["Error"] = orderResult.Message;
+            return RedirectToAction("Orders");
+        }
+
+        ViewBag.OrderId = orderId;
+        ViewBag.OrderNumber = orderResult.Data.OrderNumber;
+        return View();
+    }
+
+    [HttpPost("/hesabim/iade-talebi/{orderId:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateReturn(Guid orderId, string reason, string? description)
+    {
+        var result = await returnManager.CreateReturnRequestAsync(
+            tenant.TenantId, orderId, GetCustomerId(), reason, description);
+
+        if (result.Success)
+        {
+            TempData["Success"] = result.Message;
+            return Redirect("/hesabim/iadelerim");
+        }
+
+        TempData["Error"] = result.Message;
+        var orderResult = await orderManager.GetOrderDetailAsync(orderId, GetCustomerId());
+        ViewBag.OrderId = orderId;
+        ViewBag.OrderNumber = orderResult.Data?.OrderNumber;
+        return View();
     }
 
     public IActionResult Addresses()

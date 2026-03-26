@@ -489,6 +489,12 @@
             </div>
         </div>
     }
+
+    @* Recently Viewed Products *@
+    <section id="recently-viewed" style="display:none;" class="mb-12">
+        <h3 class="text-lg font-bold mb-4">Son Goruntulenenler</h3>
+        <div data-recently-grid class="flex gap-4 overflow-x-auto pb-2"></div>
+    </section>
 </div>
 
 @section Scripts {
@@ -561,6 +567,16 @@
         if (window.location.hash === '#reviews') {
             showTab('tab-reviews');
         }
+
+        // Recently viewed
+        RecentlyViewed.add({
+            id: '@Model.Id',
+            title: '@Html.Raw(Model.Title.Replace("'", "\\'"))',
+            slug: '@Model.SeoSlug',
+            image: '@(Model.Variants.FirstOrDefault()?.ImageUrls.FirstOrDefault())',
+            price: '@Model.MinPrice.ToString("N2")'
+        });
+        RecentlyViewed.render('recently-viewed');
 
         var addBtn = document.getElementById('add-to-cart-btn');
         if (addBtn && !addBtn.disabled) {
