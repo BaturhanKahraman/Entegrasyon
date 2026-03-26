@@ -7,7 +7,8 @@ namespace Entegrasyon.Storefront.Controllers;
 
 public class CartController(
     IStorefrontTenantContext tenant,
-    ICartManager cartManager) : Controller
+    ICartManager cartManager,
+    IStorefrontCouponManager couponManager) : Controller
 {
     private async Task<Guid> GetOrCreateCartIdAsync()
     {
@@ -25,11 +26,53 @@ public class CartController(
         return cartId;
     }
 
+    private int? GetCustomerId()
+        => User.Identity?.IsAuthenticated == true
+            ? int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value)
+            : null;
+
+    private async Task<IActionResult> GetCartWithCouponAsync(Guid cartId)
+    {
+        var s = tenant.Settings;
+        var summary = await cartManager.GetCartSummaryAsync(cartId);
+        decimal discountAmount = 0;
+
+        // Check if cart has a coupon and validate it
+        var tempCart = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
+        if (tempCart.Success && !string.IsNullOrWhiteSpace(tempCart.Data.CouponCode))
+        {
+            var couponResult = await couponManager.ValidateCouponAsync(
+                tempCart.Data.CouponCode, summary.Data.Total, GetCustomerId());
+            if (couponResult.Success)
+                discountAmount = couponResult.Data.DiscountAmount;
+            else
+                await cartManager.RemoveCouponAsync(cartId); // Remove invalid coupon
+        }
+
+        var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate, discountAmount);
+        return Json(new { success = true, cart = cartResult.Data });
+    }
+
     public async Task<IActionResult> Index()
     {
         var cartId = await GetOrCreateCartIdAsync();
         var s = tenant.Settings;
-        var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
+
+        // Calculate discount if coupon exists
+        var summary = await cartManager.GetCartSummaryAsync(cartId);
+        decimal discountAmount = 0;
+        var tempCart = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
+        if (tempCart.Success && !string.IsNullOrWhiteSpace(tempCart.Data.CouponCode))
+        {
+            var couponResult = await couponManager.ValidateCouponAsync(
+                tempCart.Data.CouponCode, summary.Data.Total, GetCustomerId());
+            if (couponResult.Success)
+                discountAmount = couponResult.Data.DiscountAmount;
+            else
+                await cartManager.RemoveCouponAsync(cartId);
+        }
+
+        var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate, discountAmount);
 
         ViewBag.Cart = cartResult.Success ? cartResult.Data : null;
         ViewBag.SeoTitle = $"Sepetim | {s.StoreName}";
@@ -58,9 +101,7 @@ public class CartController(
         if (!result.Success)
             return Json(new { success = false, message = result.Message });
 
-        var s = tenant.Settings;
-        var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
-        return Json(new { success = true, cart = cartResult.Data });
+        return await GetCartWithCouponAsync(cartId);
     }
 
     [HttpPost]
@@ -69,9 +110,7 @@ public class CartController(
         var cartId = await GetOrCreateCartIdAsync();
         await cartManager.RemoveItemAsync(cartId, dto.ProductVariantId);
 
-        var s = tenant.Settings;
-        var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
-        return Json(new { success = true, cart = cartResult.Data });
+        return await GetCartWithCouponAsync(cartId);
     }
 
     [HttpGet]
@@ -83,5 +122,34 @@ public class CartController(
 
         var result = await cartManager.GetCartSummaryAsync(cartId);
         return Json(result.Success ? result.Data : new CartSummaryDto(0, 0));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> KuponUygula([FromBody] CouponApplyDto dto)
+    {
+        var cartId = await GetOrCreateCartIdAsync();
+        var summary = await cartManager.GetCartSummaryAsync(cartId);
+
+        var result = await couponManager.ValidateCouponAsync(dto.Code, summary.Data.Total, GetCustomerId());
+        if (!result.Success)
+            return Json(new { success = false, message = result.Message });
+
+        await cartManager.ApplyCouponAsync(cartId, dto.Code);
+
+        var s = tenant.Settings;
+        var cartResult = await cartManager.GetCartDtoAsync(
+            cartId, s.FreeShippingThreshold, s.FlatShippingRate, result.Data.DiscountAmount);
+        return Json(new { success = true, discount = result.Data.DiscountAmount, description = result.Data.Description, cart = cartResult.Data });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> KuponKaldir()
+    {
+        var cartId = await GetOrCreateCartIdAsync();
+        await cartManager.RemoveCouponAsync(cartId);
+
+        var s = tenant.Settings;
+        var cartResult = await cartManager.GetCartDtoAsync(cartId, s.FreeShippingThreshold, s.FlatShippingRate);
+        return Json(new { success = true, cart = cartResult.Data });
     }
 }

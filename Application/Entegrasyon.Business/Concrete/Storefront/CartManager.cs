@@ -92,7 +92,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
         return new SuccessResult("Urun sepete eklendi.");
     }
 
-    public async Task<IDataResult<CartDto>> GetCartDtoAsync(Guid cartId, decimal freeShippingThreshold, decimal flatShippingRate)
+    public async Task<IDataResult<CartDto>> GetCartDtoAsync(Guid cartId, decimal freeShippingThreshold, decimal flatShippingRate, decimal discountAmount = 0m)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
@@ -134,14 +134,17 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
         }).ToList();
 
         var subTotal = items.Sum(i => i.LineTotal);
-        var shippingCost = subTotal >= freeShippingThreshold ? 0m : flatShippingRate;
-        var grandTotal = subTotal + shippingCost;
+        var appliedDiscount = Math.Min(discountAmount, subTotal);
+        var afterDiscount = subTotal - appliedDiscount;
+        var shippingCost = afterDiscount >= freeShippingThreshold ? 0m : flatShippingRate;
+        var grandTotal = afterDiscount + shippingCost;
 
         var dto = new CartDto(
             Id: cart.Id,
             Items: items,
             CouponCode: cart.CouponCode,
             SubTotal: subTotal,
+            DiscountAmount: appliedDiscount,
             ShippingCost: shippingCost,
             GrandTotal: grandTotal,
             ItemCount: items.Sum(i => i.Quantity));
@@ -281,5 +284,33 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
 
         await dbContext.SaveChangesAsync();
         return new SuccessResult("Sepetler birlestirildi.");
+    }
+
+    public async Task<IResult> ApplyCouponAsync(Guid cartId, string couponCode)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var cart = await dbContext.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+        if (cart is null)
+            return new ErrorResult("Sepet bulunamadi.");
+
+        cart.CouponCode = couponCode;
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Kupon uygulandi.");
+    }
+
+    public async Task<IResult> RemoveCouponAsync(Guid cartId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var cart = await dbContext.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+        if (cart is null)
+            return new ErrorResult("Sepet bulunamadi.");
+
+        cart.CouponCode = null;
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Kupon kaldirildi.");
     }
 }
