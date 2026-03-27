@@ -35,4 +35,35 @@ public class TenantDbContextFactoryTests
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*not initialized*");
     }
+
+    [Fact]
+    public void CreateDbContext_AppendsMaxPoolSizeIfMissing()
+    {
+        var loggerFactory = LoggerFactory.Create(b => { });
+        var factory = new TenantDbContextFactory(
+            () => "Host=localhost;Database=tenant_test;Username=test;Password=test",
+            loggerFactory);
+
+        using var dbContext = factory.CreateDbContext();
+
+        dbContext.Database.GetConnectionString()
+            .Should().Contain("Maximum Pool Size=10");
+    }
+
+    [Fact]
+    public void CreateDbContext_DoesNotDuplicateMaxPoolSize()
+    {
+        var loggerFactory = LoggerFactory.Create(b => { });
+        var factory = new TenantDbContextFactory(
+            () => "Host=localhost;Database=tenant_test;Username=test;Password=test;Maximum Pool Size=5",
+            loggerFactory);
+
+        using var dbContext = factory.CreateDbContext();
+
+        // Should keep the existing value, not append another
+        dbContext.Database.GetConnectionString()
+            .Should().Contain("Maximum Pool Size=5");
+        dbContext.Database.GetConnectionString()
+            .Should().NotContain("Maximum Pool Size=10");
+    }
 }

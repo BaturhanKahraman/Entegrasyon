@@ -18,7 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Blazor Server services
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor(options =>
+{
+    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+    options.DisconnectedCircuitMaxRetained = 100;
+});
 
 // Add MudBlazor services
 builder.Services.AddMudServices(config =>
