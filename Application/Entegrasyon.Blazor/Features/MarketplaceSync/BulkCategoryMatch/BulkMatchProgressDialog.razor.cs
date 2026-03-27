@@ -12,5 +12,13 @@ public partial class BulkMatchProgressDialog : ComponentBase
     [Parameter]
     public BulkCategoryMatchResultDto Result { get; set; } = new();
 
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
     private void Close() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void GoToAttributeSync()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+        NavigationManager.NavigateTo("/marketplace/sync/attributes");
+    }
 }

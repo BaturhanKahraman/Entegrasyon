@@ -85,6 +85,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IBrandMatchService,BrandMatchService>();
             services.AddScoped<ICategoryMatchService,CategoryMatchService>();
             services.AddScoped<ICategoryMatchValidationService,CategoryMatchValidationService>();
+            services.AddScoped<ICategoryAutoMatchService,CategoryAutoMatchService>();
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
@@ -389,6 +390,11 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHttpClient(StringConstants.HepsiburadaApi, x =>
             {
                 x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/");
+            });
+            services.AddHttpClient("Ollama", x =>
+            {
+                x.BaseAddress = new Uri("http://localhost:11434/");
+                x.Timeout = TimeSpan.FromSeconds(120);
             });
             return services;
         }

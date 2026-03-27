@@ -8,22 +8,34 @@
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
         <MudText Typo="Typo.h5">Kategori Eşleştirme</MudText>
         <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="OpenSaveTemplateDialog">
+                Template Kaydet
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                       OnClick="OpenApplyTemplateDialog">
+                Template Uygula
+            </MudButton>
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.PlaylistAddCheck"
                        Href="/marketplace/sync/categories/bulk">
-                Toplu Eşleştirme
+                Toplu Eslestirme
             </MudButton>
             <MudButton Variant="Variant.Outlined"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Download"
                        Href="/categories/import">
-                Trendyol'dan İçe Aktar
+                Trendyol'dan Ice Aktar
             </MudButton>
         </MudStack>
     </MudStack>
 
-    <MudGrid Spacing="2" Class="mb-6">
+    <MudGrid Spacing="2" Class="mb-4">
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
                 <MudText Typo="Typo.subtitle2">Toplam Kategori</MudText>
@@ -32,17 +44,35 @@
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
-                <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirilmiş</MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Success">Eslestirilmis</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@_summary.MappedCategories</MudText>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudPaper Elevation="1" Class="pa-4">
-                <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirilmemiş</MudText>
+                <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eslestirilmemis</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@_summary.UnmappedCategories</MudText>
             </MudPaper>
         </MudItem>
     </MudGrid>
+
+    @if (_summary.PerMarketplace.Count > 0)
+    {
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Marketplace Bazli Ozet</MudText>
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                @foreach (var mp in _summary.PerMarketplace)
+                {
+                    <MudChip T="string"
+                             Size="Size.Medium"
+                             Color="@(mp.MappedCount > 0 ? Color.Success : Color.Default)"
+                             Variant="Variant.Outlined">
+                        @mp.MarketPlaceName: @mp.MappedCount eslestirme
+                    </MudChip>
+                }
+            </MudStack>
+        </MudPaper>
+    }
 
     @if (_isLoading)
     {

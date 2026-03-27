@@ -1,3 +1,4 @@
+using Entegrasyon.Blazor.Features.MarketplaceSync.Templates;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
@@ -121,5 +122,30 @@ public partial class CategorySync
     private bool IsLeaf(Category category)
     {
         return !_categories.Any(c => c.SuperCategoryId == category.Id);
+    }
+
+    private async Task OpenSaveTemplateDialog()
+    {
+        var parameters = new DialogParameters<SaveTemplateDialog>
+        {
+            { x => x.MarketPlaceId, TrendyolMarketPlaceId }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<SaveTemplateDialog>("Template Kaydet", parameters, options);
+        await dialog.Result;
+    }
+
+    private async Task OpenApplyTemplateDialog()
+    {
+        var parameters = new DialogParameters<ApplyTemplateDialog>
+        {
+            { x => x.MarketPlaceId, TrendyolMarketPlaceId }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<ApplyTemplateDialog>("Template Uygula", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+            await LoadData();
     }
 }
