@@ -1,5 +1,6 @@
 @page "/storefront/campaigns"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Otomatik Kampanyalar</PageTitle>

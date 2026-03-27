@@ -1,6 +1,7 @@
 @page "/reports/marketplace"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@attribute [Authorize(Policy = AppPermissions.Reports.View)]
 @using Entegrasyon.Entity.Dtos.Reports
 
 <PageTitle>Pazaryeri Raporları</PageTitle>

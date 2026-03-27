@@ -1,6 +1,7 @@
 @page "/categories"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@attribute [Authorize(Policy = AppPermissions.Categories.View)]
 @using Entegrasyon.Entity.Categories
 
 <PageTitle>Kategoriler</PageTitle>

@@ -1,5 +1,6 @@
 @page "/storefront/email-campaigns"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>E-posta Kampanyalari</PageTitle>

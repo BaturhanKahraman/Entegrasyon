@@ -1,5 +1,6 @@
 @page "/settings/storefront/legal"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Yasal Metinler</PageTitle>

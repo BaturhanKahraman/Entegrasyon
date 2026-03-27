@@ -1,7 +1,6 @@
 @page "/customers"
 @rendermode InteractiveServer
 @using Entegrasyon.Entity.Dtos.Customers
-@using Entegrasyon.ApplicationBootstrap.Security
 @attribute [Authorize(Policy = AppPermissions.Customers.View)]
 
 <MudDataGrid @ref="dataGrid" T="CustomerDetailDto" ServerData="ServerData" Filterable="false">

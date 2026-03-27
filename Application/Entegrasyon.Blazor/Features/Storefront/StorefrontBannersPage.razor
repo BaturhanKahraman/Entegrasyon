@@ -1,5 +1,6 @@
 @page "/settings/storefront/banners"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 @using Entegrasyon.Blazor.Features.Storefront
 

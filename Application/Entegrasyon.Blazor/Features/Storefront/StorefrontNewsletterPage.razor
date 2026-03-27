@@ -1,5 +1,6 @@
 @page "/storefront/newsletter"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Bulten Aboneleri</PageTitle>
