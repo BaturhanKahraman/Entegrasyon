@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Entity.Dtos.Hepsiburada;
 using Entegrasyon.Entity.Results;
 using FluentAssertions;
@@ -12,6 +13,7 @@ namespace Entegrasyon.Test.Hepsiburada;
 public class HepsiburadaOrderPollingServiceTests
 {
     private readonly Mock<IServiceScopeFactory> _scopeFactoryMock = new();
+    private readonly Mock<ITenantRegistry> _tenantRegistryMock = new();
     private readonly Mock<IServiceScope> _scopeMock = new();
     private readonly Mock<IServiceProvider> _providerMock = new();
     private readonly Mock<IHepsiburadaOrderService> _orderServiceMock = new();
@@ -24,12 +26,16 @@ public class HepsiburadaOrderPollingServiceTests
         _providerMock
             .Setup(x => x.GetService(typeof(IHepsiburadaOrderService)))
             .Returns(_orderServiceMock.Object);
+        _tenantRegistryMock
+            .Setup(x => x.GetAllActiveAsync())
+            .ReturnsAsync(Array.Empty<TenantRegistryEntry>());
     }
 
     [Fact]
     public void Constructor_Should_Not_Throw()
     {
-        var act = () => new HepsiburadaOrderPollingService(_scopeFactoryMock.Object, _loggerMock.Object);
+        var act = () => new HepsiburadaOrderPollingService(
+            _scopeFactoryMock.Object, _tenantRegistryMock.Object, _loggerMock.Object);
         act.Should().NotThrow();
     }
 
@@ -40,7 +46,8 @@ public class HepsiburadaOrderPollingServiceTests
             .Setup(x => x.GetOrdersAsync(It.IsAny<DateTimeOffset?>(), It.IsAny<DateTimeOffset?>(), It.IsAny<int>(), It.IsAny<int>()))
             .ReturnsAsync(new SuccessDataResult<List<HepsiburadaOrderDto>>([]));
 
-        var sut = new HepsiburadaOrderPollingService(_scopeFactoryMock.Object, _loggerMock.Object);
+        var sut = new HepsiburadaOrderPollingService(
+            _scopeFactoryMock.Object, _tenantRegistryMock.Object, _loggerMock.Object);
         using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
 
         // StartAsync + StopAsync will exercise ExecuteAsync briefly

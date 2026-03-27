@@ -1,11 +1,11 @@
 using System.Net.Http.Json;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
@@ -14,40 +14,24 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// <summary>
 /// Periyodik olarak Trendyol'dan ürün onay/red/arşiv durumlarını çeker ve
 /// ProductMarketplace.IsApproved / IsArchived / ContentId alanlarını günceller.
-/// Her 5 dakikada bir çalışır.
+/// Her 5 dakikada bir çalışır. Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class TrendyolProductStatusSyncService(
     IServiceScopeFactory scopeFactory,
-    ILogger<TrendyolProductStatusSyncService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<TrendyolProductStatusSyncService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(5);
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(5);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        // İlk çalışmadan önce kısa bir gecikme
-        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await SyncProductStatusesAsync(stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error during Trendyol product status sync");
-            }
-
-            await Task.Delay(PollInterval, stoppingToken);
-        }
-    }
-
-    private async Task SyncProductStatusesAsync(CancellationToken ct)
-    {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
-        var apiClient = scope.ServiceProvider.GetRequiredService<ITrendyolApiClient>();
-        var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var apiClient = services.GetRequiredService<ITrendyolApiClient>();
+        var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
         // Trendyol'da published durumunda olan ürünleri al
         var trackedProducts = await dbContext.ProductMarketplaces
@@ -64,7 +48,8 @@ public class TrendyolProductStatusSyncService(
 
         if (marketplace?.SellerId is null)
         {
-            logger.LogWarning("Trendyol SellerId not configured, skipping status sync");
+            logger.LogWarning("Tenant {TenantId}: Trendyol SellerId not configured, skipping status sync",
+                tenantId);
             return;
         }
 
@@ -146,13 +131,14 @@ public class TrendyolProductStatusSyncService(
                 if (changed)
                 {
                     logger.LogInformation(
-                        "Product {ProductId} status updated: Approved={Approved}, Archived={Archived}, ContentId={ContentId}",
-                        pm.ProductId, content.Approved, content.Archived, content.ContentId);
+                        "Tenant {TenantId}: Product {ProductId} status updated: Approved={Approved}, Archived={Archived}, ContentId={ContentId}",
+                        tenantId, pm.ProductId, content.Approved, content.Archived, content.ContentId);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to sync status for product {ProductId}", pm.ProductId);
+                logger.LogWarning(ex, "Tenant {TenantId}: Failed to sync status for product {ProductId}",
+                    tenantId, pm.ProductId);
             }
         }
 

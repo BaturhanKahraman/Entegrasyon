@@ -1,11 +1,11 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -14,41 +14,27 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// Hepsiburada ürün durumu periyodik polling servisi.
 /// Pending + trackingId olan ProductMarketplace kayıtlarını izler.
 /// PRE_MATCHED → otomatik onay, CREATED → Published, REJECTED/BLOCKED → Failed.
+/// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class HepsiburadaStatusPollingService(
     IServiceScopeFactory scopeFactory,
-    ILogger<HepsiburadaStatusPollingService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<HepsiburadaStatusPollingService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int HbMarketPlaceId = MarketPlaceConstants.HepsiburadaMarketPlaceId;
-    private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan TimeoutThreshold = TimeSpan.FromHours(24);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override TimeSpan PollInterval => TimeSpan.FromSeconds(60);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
+
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        // İlk çalışmada biraz bekle (uygulama başlangıcı için)
-        await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollPendingProductsAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "HB status polling cycle failed");
-            }
-
-            await Task.Delay(PollingInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollPendingProductsAsync(CancellationToken ct)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var productService = scope.ServiceProvider.GetRequiredService<IHepsiburadaProductService>();
-        var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var productService = services.GetRequiredService<IHepsiburadaProductService>();
+        var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -60,7 +46,8 @@ public class HepsiburadaStatusPollingService(
 
         if (!pendingRecords.Any()) return;
 
-        logger.LogDebug("HB polling: {Count} pending records", pendingRecords.Count);
+        logger.LogDebug("Tenant {TenantId}: HB polling: {Count} pending records",
+            tenantId, pendingRecords.Count);
 
         foreach (var record in pendingRecords)
         {
@@ -83,7 +70,7 @@ public class HepsiburadaStatusPollingService(
 
             foreach (var item in statusResult.Data)
             {
-                await ProcessStatusItemAsync(dbContext, record, item, productService, activityLogger, ct);
+                await ProcessStatusItemAsync(tenantId, dbContext, record, item, productService, activityLogger, ct);
             }
         }
 
@@ -91,6 +78,7 @@ public class HepsiburadaStatusPollingService(
     }
 
     private async Task ProcessStatusItemAsync(
+        int tenantId,
         IntegrationDbContext dbContext,
         ProductMarketplace record,
         Entity.Dtos.Hepsiburada.HepsiburadaProductStatusItem item,
@@ -108,7 +96,7 @@ public class HepsiburadaStatusPollingService(
                 break;
 
             case "SUCCESS":
-                await HandleSuccessStatusAsync(record, item, productStatus, productService, activityLogger);
+                await HandleSuccessStatusAsync(tenantId, record, item, productStatus, productService, activityLogger);
                 break;
 
             case "FAILED":
@@ -125,13 +113,14 @@ public class HepsiburadaStatusPollingService(
                 break;
 
             default:
-                logger.LogWarning("HB unknown importStatus: {Status} for product {ProductId}",
-                    importStatus, record.ProductId);
+                logger.LogWarning("Tenant {TenantId}: HB unknown importStatus: {Status} for product {ProductId}",
+                    tenantId, importStatus, record.ProductId);
                 break;
         }
     }
 
     private async Task HandleSuccessStatusAsync(
+        int tenantId,
         ProductMarketplace record,
         Entity.Dtos.Hepsiburada.HepsiburadaProductStatusItem item,
         string? productStatus,
@@ -142,7 +131,8 @@ public class HepsiburadaStatusPollingService(
         {
             case "PRE_MATCHED":
                 // Otomatik onay
-                logger.LogInformation("HB PRE_MATCHED detected, auto-approving: {MerchantSku}", item.MerchantSku);
+                logger.LogInformation("Tenant {TenantId}: HB PRE_MATCHED detected, auto-approving: {MerchantSku}",
+                    tenantId, item.MerchantSku);
                 if (item.MerchantSku != null)
                 {
                     var approveResult = await productService.ApprovePreMatchAsync(item.MerchantSku);
@@ -202,7 +192,8 @@ public class HepsiburadaStatusPollingService(
                 break;
 
             default:
-                logger.LogWarning("HB unknown productStatus: {Status}", productStatus);
+                logger.LogWarning("Tenant {TenantId}: HB unknown productStatus: {Status}",
+                    tenantId, productStatus);
                 break;
         }
     }

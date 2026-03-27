@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Amazon;
@@ -6,7 +7,6 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -14,39 +14,26 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// <summary>
 /// Amazon feed durumu periyodik polling servisi.
 /// Submit edilen feed'lerin işlenme durumunu kontrol eder.
+/// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class AmazonFeedStatusPollingService(
     IServiceScopeFactory scopeFactory,
-    ILogger<AmazonFeedStatusPollingService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<AmazonFeedStatusPollingService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int AmazonMpId = MarketPlaceConstants.AmazonMarketPlaceId;
-    private static readonly TimeSpan PollingInterval = TimeSpan.FromMinutes(5);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(5);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
+
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollFeedStatusesAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Amazon feed status polling cycle failed");
-            }
-
-            await Task.Delay(PollingInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollFeedStatusesAsync(CancellationToken ct)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var feedService = scope.ServiceProvider.GetRequiredService<IAmazonFeedService>();
-        var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var feedService = services.GetRequiredService<IAmazonFeedService>();
+        var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -60,7 +47,8 @@ public class AmazonFeedStatusPollingService(
 
         if (!pendingRecords.Any()) return;
 
-        logger.LogDebug("Amazon feed polling: {Count} pending feeds", pendingRecords.Count);
+        logger.LogDebug("Tenant {TenantId}: Amazon feed polling: {Count} pending feeds",
+            tenantId, pendingRecords.Count);
 
         foreach (var record in pendingRecords)
         {

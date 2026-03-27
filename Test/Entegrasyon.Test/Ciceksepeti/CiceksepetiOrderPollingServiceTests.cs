@@ -1,4 +1,5 @@
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Tenants;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -13,7 +14,15 @@ namespace Entegrasyon.Test.Ciceksepeti;
 public class CiceksepetiOrderPollingServiceTests
 {
     private readonly Mock<IServiceScopeFactory> _mockScopeFactory = new();
+    private readonly Mock<ITenantRegistry> _mockTenantRegistry = new();
     private readonly Mock<ILogger<CiceksepetiOrderPollingService>> _mockLogger = new();
+
+    public CiceksepetiOrderPollingServiceTests()
+    {
+        _mockTenantRegistry
+            .Setup(x => x.GetAllActiveAsync())
+            .ReturnsAsync(Array.Empty<TenantRegistryEntry>());
+    }
 
     [Fact]
     public void Service_CanBeInstantiated()
@@ -21,6 +30,7 @@ public class CiceksepetiOrderPollingServiceTests
         // Arrange & Act
         var sut = new CiceksepetiOrderPollingService(
             _mockScopeFactory.Object,
+            _mockTenantRegistry.Object,
             _mockLogger.Object);
 
         // Assert
@@ -41,6 +51,7 @@ public class CiceksepetiOrderPollingServiceTests
 
         var sut = new CiceksepetiOrderPollingService(
             _mockScopeFactory.Object,
+            _mockTenantRegistry.Object,
             _mockLogger.Object);
 
         // Act — start and stop gracefully; TaskCanceledException during initial delay is expected
