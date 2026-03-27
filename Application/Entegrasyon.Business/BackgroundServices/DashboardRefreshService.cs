@@ -1,56 +1,44 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Periyodik olarak mv_product_stock_summary materialized view'ını refresh eder
-/// ve dashboard cache'ini ısıtır. 3 dakikada bir çalışır.
+/// ve dashboard cache'ini ısıtır. 3 dakikada bir, her tenant için çalışır.
 /// </summary>
 public class DashboardRefreshService(
     IServiceScopeFactory scopeFactory,
-    ILogger<DashboardRefreshService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<DashboardRefreshService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(3);
+
+    /// <summary>Tüm tenantlar için çalışır — feature kontrolü yok.</summary>
+    protected override string? RequiredFeature => null;
+
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        // Başlangıçta ısıt
-        await RefreshAsync(stoppingToken);
+        // Materialized view'ı refresh et
+        var dbFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var db = await dbFactory.CreateDbContextAsync(ct);
+        await db.Database.ExecuteSqlRawAsync(
+            "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_product_stock_summary", ct);
 
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(3));
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-        {
-            await RefreshAsync(stoppingToken);
-        }
-    }
+        // Cache'i ısıt
+        var dashboard = services.GetRequiredService<IDashboardManager>();
+        await dashboard.GetStatsAsync();
+        await dashboard.GetWeeklySalesAsync();
+        await dashboard.GetMarketplaceStatusesAsync();
+        await dashboard.GetRecentActivitiesAsync();
 
-    private async Task RefreshAsync(CancellationToken ct)
-    {
-        try
-        {
-            await using var scope = scopeFactory.CreateAsyncScope();
-
-            // Materialized view'ı refresh et
-            var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-            await using var db = await dbFactory.CreateDbContextAsync(ct);
-            await db.Database.ExecuteSqlRawAsync(
-                "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_product_stock_summary", ct);
-
-            // Cache'i ısıt
-            var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardManager>();
-            await dashboard.GetStatsAsync();
-            await dashboard.GetWeeklySalesAsync();
-            await dashboard.GetMarketplaceStatusesAsync();
-            await dashboard.GetRecentActivitiesAsync();
-
-            logger.LogDebug("Dashboard cache refreshed successfully");
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogWarning(ex, "Dashboard refresh failed, will retry in next cycle");
-        }
+        logger.LogDebug("Dashboard cache refreshed successfully for tenant {TenantId}", tenantId);
     }
 }

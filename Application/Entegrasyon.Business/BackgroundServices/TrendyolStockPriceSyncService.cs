@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Products;
@@ -16,6 +17,7 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// <summary>
 /// StockPriceChangedEvent'leri tüketir ve Trendyol'a stok/fiyat güncelleme gönderir.
 /// Yalnızca Trendyol'da yayında olan ürünlerin varyantları için çalışır.
+/// Aynı event ile Pazarama sync de yapılır.
 /// </summary>
 public class TrendyolStockPriceSyncService(
     EventChannel<StockPriceChangedEvent> channel,
@@ -28,21 +30,35 @@ public class TrendyolStockPriceSyncService(
         {
             try
             {
-                await HandleTrendyolSyncAsync(evt, stoppingToken);
-                await HandlePazaramaSyncAsync(evt, stoppingToken);
+                await using var scope = scopeFactory.CreateAsyncScope();
+
+                // Tenant context initialize
+                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+                var tenantRegistry = scope.ServiceProvider.GetRequiredService<ITenantRegistry>();
+                var tenant = await tenantRegistry.GetByIdAsync(evt.TenantId);
+                if (tenant is null || !tenant.IsActive)
+                {
+                    logger.LogWarning("{Service}: Tenant {TenantId} not found or inactive, skipping event",
+                        nameof(TrendyolStockPriceSyncService), evt.TenantId);
+                    continue;
+                }
+                tenantContext.Initialize(tenant);
+
+                await HandleTrendyolSyncAsync(scope.ServiceProvider, evt, stoppingToken);
+                await HandlePazaramaSyncAsync(scope.ServiceProvider, evt, stoppingToken);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to sync stock/price for variant {VariantId}", evt.ProductVariantId);
+                logger.LogError(ex, "Failed to sync stock/price for variant {VariantId}, TenantId={TenantId}",
+                    evt.ProductVariantId, evt.TenantId);
             }
         }
     }
 
-    private async Task HandleTrendyolSyncAsync(StockPriceChangedEvent evt, CancellationToken stoppingToken)
+    private async Task HandleTrendyolSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken)
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
-        var stockPriceService = scope.ServiceProvider.GetRequiredService<ITrendyolStockPriceService>();
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var stockPriceService = services.GetRequiredService<ITrendyolStockPriceService>();
 
         // Ürünün Trendyol'da yayında olup olmadığını kontrol et
         var pm = await dbContext.ProductMarketplaces.AsNoTracking()
@@ -97,11 +113,10 @@ public class TrendyolStockPriceSyncService(
             logger.LogWarning("Stock/price update failed for variant {Barcode}: {Message}", variant.Barcode, result.Message);
     }
 
-    private async Task HandlePazaramaSyncAsync(StockPriceChangedEvent evt, CancellationToken stoppingToken)
+    private async Task HandlePazaramaSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken)
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
-        var stockPriceService = scope.ServiceProvider.GetRequiredService<IPazaramaStockPriceService>();
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var stockPriceService = services.GetRequiredService<IPazaramaStockPriceService>();
 
         // Ürünün Pazarama'da yayında olup olmadığını kontrol et
         var pm = await dbContext.ProductMarketplaces.AsNoTracking()

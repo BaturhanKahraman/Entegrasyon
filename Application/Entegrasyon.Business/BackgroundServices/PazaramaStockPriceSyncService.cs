@@ -1,55 +1,35 @@
-using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 15 dakikada Pazarama'daki yayında ürünlerin stok ve fiyat bilgilerini senkronize eder.
-/// Multi-tenant hazır: ConcurrentDictionary ile tenant başına son sync zamanı takip edilir.
 /// Pazarama REST API ile toplu stok/fiyat güncelleme yapar.
 /// </summary>
 public class PazaramaStockPriceSyncService(
     IServiceScopeFactory scopeFactory,
-    ILogger<PazaramaStockPriceSyncService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<PazaramaStockPriceSyncService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int PazaramaMarketPlaceId = MarketPlaceConstants.PazaramaMarketPlaceId;
-    private static readonly TimeSpan SyncInterval = TimeSpan.FromMinutes(15);
 
-    // Multi-tenant: tenant başına son sync zamanı (key = tenantId)
-    private readonly ConcurrentDictionary<int, DateTime> _lastSyncTime = new();
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(15);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await SyncAllPublishedProductsAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Pazarama stock/price sync cycle failed");
-            }
-
-            await Task.Delay(SyncInterval, stoppingToken);
-        }
-    }
-
-    private async Task SyncAllPublishedProductsAsync(CancellationToken ct)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var stockPriceService = scope.ServiceProvider.GetRequiredService<IPazaramaStockPriceService>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var stockPriceService = services.GetRequiredService<IPazaramaStockPriceService>();
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -64,11 +44,12 @@ public class PazaramaStockPriceSyncService(
 
         if (!publishedProducts.Any())
         {
-            logger.LogDebug("Pazarama stock/price sync: yayında ürün yok");
+            logger.LogDebug("Pazarama stock/price sync: yayında ürün yok, tenant {TenantId}", tenantId);
             return;
         }
 
-        logger.LogInformation("Pazarama stock/price sync: {Count} ürün kontrol ediliyor", publishedProducts.Count);
+        logger.LogInformation("Pazarama stock/price sync: {Count} ürün kontrol ediliyor, tenant {TenantId}",
+            publishedProducts.Count, tenantId);
 
         // Pazarama toplu güncelleme destekler — tüm item'ları toplayıp tek istekte gönder
         var stockItems = publishedProducts
@@ -88,32 +69,32 @@ public class PazaramaStockPriceSyncService(
 
         if (stockItems.Count == 0)
         {
-            logger.LogDebug("Pazarama stock/price sync: güncellenecek item yok");
+            logger.LogDebug("Pazarama stock/price sync: güncellenecek item yok, tenant {TenantId}", tenantId);
             return;
         }
 
         var stockResult = await stockPriceService.UpdateStockAsync(stockItems);
         if (stockResult.Success)
         {
-            logger.LogInformation("Pazarama stock sync tamamlandı: {Count} item, dataId={DataId}",
-                stockItems.Count, stockResult.Data);
+            logger.LogInformation("Pazarama stock sync tamamlandı, tenant {TenantId}: {Count} item, dataId={DataId}",
+                tenantId, stockItems.Count, stockResult.Data);
         }
         else
         {
-            logger.LogWarning("Pazarama stock sync başarısız: {Message}", stockResult.Message);
+            logger.LogWarning("Pazarama stock sync başarısız, tenant {TenantId}: {Message}",
+                tenantId, stockResult.Message);
         }
 
         var priceResult = await stockPriceService.UpdatePriceAsync(priceItems);
         if (priceResult.Success)
         {
-            logger.LogInformation("Pazarama price sync tamamlandı: {Count} item, dataId={DataId}",
-                priceItems.Count, priceResult.Data);
+            logger.LogInformation("Pazarama price sync tamamlandı, tenant {TenantId}: {Count} item, dataId={DataId}",
+                tenantId, priceItems.Count, priceResult.Data);
         }
         else
         {
-            logger.LogWarning("Pazarama price sync başarısız: {Message}", priceResult.Message);
+            logger.LogWarning("Pazarama price sync başarısız, tenant {TenantId}: {Message}",
+                tenantId, priceResult.Message);
         }
-
-        _lastSyncTime[0] = DateTime.UtcNow; // tenantId=0 şimdilik tek tenant
     }
 }

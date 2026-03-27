@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
@@ -33,10 +34,22 @@ public class TrendyolProductPublishBackgroundService(
             try
             {
                 logger.LogInformation(
-                    "Processing marketplace publish for product {ProductId}: {Marketplaces}",
-                    evt.ProductId, string.Join(", ", evt.Marketplaces));
+                    "Processing marketplace publish for product {ProductId}: {Marketplaces}, TenantId={TenantId}",
+                    evt.ProductId, string.Join(", ", evt.Marketplaces), evt.TenantId);
 
                 await using var scope = scopeFactory.CreateAsyncScope();
+
+                // Tenant context initialize
+                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+                var tenantRegistry = scope.ServiceProvider.GetRequiredService<ITenantRegistry>();
+                var tenant = await tenantRegistry.GetByIdAsync(evt.TenantId);
+                if (tenant is null || !tenant.IsActive)
+                {
+                    logger.LogWarning("{Service}: Tenant {TenantId} not found or inactive, skipping event",
+                        nameof(TrendyolProductPublishBackgroundService), evt.TenantId);
+                    continue;
+                }
+                tenantContext.Initialize(tenant);
 
                 foreach (var marketplace in evt.Marketplaces)
                 {
@@ -59,7 +72,8 @@ public class TrendyolProductPublishBackgroundService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to publish product {ProductId} to marketplace", evt.ProductId);
+                logger.LogError(ex, "Failed to publish product {ProductId} to marketplace, TenantId={TenantId}",
+                    evt.ProductId, evt.TenantId);
             }
         }
     }
