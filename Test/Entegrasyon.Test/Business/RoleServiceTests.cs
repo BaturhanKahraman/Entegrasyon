@@ -1,8 +1,10 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Auth;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.User;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Entegrasyon.UnitTest.Business;
 
@@ -12,7 +14,8 @@ public class RoleServiceTests : BaseTest
 
     public RoleServiceTests()
     {
-        roleService = new RoleService(mockApplicationLogger.Object, mockContextFactory.Object, mockMemoryCache.Object, new AddRoleDtoValidator(), new EditRoleDtoValidator());
+        var tenantCache = new TenantMemoryCache(new MemoryCache(new MemoryCacheOptions()), mockTenantContext.Object);
+        roleService = new RoleService(mockApplicationLogger.Object, mockContextFactory.Object, tenantCache, new AddRoleDtoValidator(), new EditRoleDtoValidator());
     }
 
     public static IEnumerable<object[]> invalidMembers => new List<object[]>() {
