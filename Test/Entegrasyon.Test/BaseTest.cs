@@ -17,6 +17,7 @@ public class BaseTest
     protected Mock<IApplicationLogManager> mockApplicationLogger = null!;
     protected Mock<IFluentValidator> MockValidator = null!;
     protected Mock<IMemoryCache> mockMemoryCache = null!;
+    protected Mock<ITenantContext> mockTenantContext = null!;
     public BaseTest()
     {
         //mock dbcontextoptions
@@ -40,6 +41,10 @@ public class BaseTest
 
         //memory cachemock
         mockMemoryCache = new Mock<IMemoryCache>();
+        //tenant context mock
+        mockTenantContext = new Mock<ITenantContext>();
+        mockTenantContext.Setup(t => t.TenantId).Returns(1);
+        mockTenantContext.Setup(t => t.IsInitialized).Returns(true);
         //MockValidator
     }
 }

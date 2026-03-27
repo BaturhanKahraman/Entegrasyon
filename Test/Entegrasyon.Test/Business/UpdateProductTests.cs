@@ -47,7 +47,8 @@ public class UpdateProductTests : BaseTest
             _mockBarcodeService.Object,
             _productAddedChannel,
             _productUpdatedChannel,
-            _mockMinioFileStorage.Object
+            _mockMinioFileStorage.Object,
+            mockTenantContext.Object
         );
     }
 
