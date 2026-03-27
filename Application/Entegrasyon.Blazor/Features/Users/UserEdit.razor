@@ -87,8 +87,10 @@ else
                                               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge" />
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudSelect T="int" Label="Rol" @bind-Value="_selectedRoleId" Required="true"
-                                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Security">
+                                <MudSelect T="int" Label="Roller" @bind-SelectedValues="_selectedRoleIds"
+                                           MultiSelection="true" Required="true"
+                                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Security"
+                                           AnchorOrigin="Origin.BottomCenter">
                                     @foreach (var role in _roles)
                                     {
                                         <MudSelectItem @key="role.Id" Value="@role.Id">@role.Name</MudSelectItem>

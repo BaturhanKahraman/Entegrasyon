@@ -5,44 +5,42 @@
 @using Entegrasyon.Entity.Dtos.Users
 @using Entegrasyon.Blazor.Features.Users
 
-<PageTitle>Kullanıcılar</PageTitle>
+<PageTitle>Kullanicilar</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Kullanıcılar</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Kullanicilar</MudText>
 
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
         <MudItem xs="12" md="8">
-            <MudTextField @bind-Value="_searchString" Placeholder="Kullanıcı ara..." Adornment="Adornment.Start"
+            <MudTextField @bind-Value="_searchString" Placeholder="Kullanici ara..." Adornment="Adornment.Start"
                 AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" />
         </MudItem>
         <MudItem xs="12" md="4" Class="d-flex justify-end">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd"
                 OnClick="OpenAddUserDialog">
-                Yeni Kullanıcı
+                Yeni Kullanici
             </MudButton>
         </MudItem>
     </MudGrid>
 </MudPaper>
 
-<MudDataGrid T="UserDetailListDto" Items="@_users" Filterable="true" SortMode="SortMode.Multiple" Hover="true"
+<MudDataGrid T="UserDetailListDto" Items="@_users" QuickFilter="@FilterFunc" Filterable="true" SortMode="SortMode.Multiple" Hover="true"
     Loading="@_loading" Virtualize="true" FixedHeader="true" Height="600px">
     <Columns>
-        <PropertyColumn Property="x => x.UserName" Title="Kullanıcı Adı" />
+        <PropertyColumn Property="x => x.UserName" Title="Kullanici Adi" />
         <PropertyColumn Property="x => x.Name" Title="Ad" />
         <PropertyColumn Property="x => x.Surname" Title="Soyad" />
+        <PropertyColumn Property="x => x.RoleNames" Title="Roller" />
         <TemplateColumn Title="Durum">
             <CellTemplate>
-                @if (context.Item.IsActive)
-                {
-                    <MudChip Color="Color.Success" Size="Size.Small">Aktif</MudChip>
-                }
-                else
-                {
-                    <MudChip Color="Color.Default" Size="Size.Small">Pasif</MudChip>
-                }
+                <MudSwitch T="bool" Value="@context.Item.IsActive"
+                           ValueChanged="@(val => ToggleUserActive(context.Item))"
+                           Color="Color.Success"
+                           Label="@(context.Item.IsActive ? "Aktif" : "Pasif")"
+                           Size="Size.Small" />
             </CellTemplate>
         </TemplateColumn>
-        <TemplateColumn Title="Şifre Değişimi">
+        <TemplateColumn Title="Sifre Degisimi">
             <CellTemplate>
                 @if (context.Item.NeedsTakeNewPassword)
                 {
@@ -50,17 +48,17 @@
                 }
                 else
                 {
-                    <MudChip Color="Color.Success" Size="Size.Small">Güncel</MudChip>
+                    <MudChip Color="Color.Success" Size="Size.Small">Guncel</MudChip>
                 }
             </CellTemplate>
         </TemplateColumn>
-        <TemplateColumn CellClass="d-flex justify-center" Title="İşlemler">
+        <TemplateColumn CellClass="d-flex justify-center" Title="Islemler">
             <CellTemplate>
-                <MudTooltip Text="Düzenle">
+                <MudTooltip Text="Duzenle">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
                         OnClick="@(() => EditUser(context.Item))" />
                 </MudTooltip>
-                <MudTooltip Text="Şifre Sıfırla">
+                <MudTooltip Text="Sifre Sifirla">
                     <MudIconButton Icon="@Icons.Material.Filled.Lock"
                                    Color="Color.Warning"
                                    Size="Size.Small"
