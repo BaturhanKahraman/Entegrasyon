@@ -1,4 +1,5 @@
 using Entegrasyon.Business.BackgroundServices;
+using Entegrasyon.Business.Tenants;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -12,7 +13,15 @@ namespace Entegrasyon.Test.Amazon;
 public class AmazonFeedStatusPollingServiceTests
 {
     private readonly Mock<IServiceScopeFactory> _mockScopeFactory = new();
+    private readonly Mock<ITenantRegistry> _mockTenantRegistry = new();
     private readonly Mock<ILogger<AmazonFeedStatusPollingService>> _mockLogger = new();
+
+    public AmazonFeedStatusPollingServiceTests()
+    {
+        _mockTenantRegistry
+            .Setup(x => x.GetAllActiveAsync())
+            .ReturnsAsync(Array.Empty<TenantRegistryEntry>());
+    }
 
     [Fact]
     public void Service_CanBeInstantiated()
@@ -20,6 +29,7 @@ public class AmazonFeedStatusPollingServiceTests
         // Arrange & Act
         var sut = new AmazonFeedStatusPollingService(
             _mockScopeFactory.Object,
+            _mockTenantRegistry.Object,
             _mockLogger.Object);
 
         // Assert
@@ -40,6 +50,7 @@ public class AmazonFeedStatusPollingServiceTests
 
         var sut = new AmazonFeedStatusPollingService(
             _mockScopeFactory.Object,
+            _mockTenantRegistry.Object,
             _mockLogger.Object);
 
         // Act — start and stop with already-cancelled token
@@ -74,6 +85,7 @@ public class AmazonFeedStatusPollingServiceTests
 
         var sut = new AmazonFeedStatusPollingService(
             _mockScopeFactory.Object,
+            _mockTenantRegistry.Object,
             _mockLogger.Object);
 
         // Act
