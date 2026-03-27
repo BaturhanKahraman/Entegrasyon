@@ -125,17 +125,29 @@
                     </TemplateColumn>
                     <TemplateColumn Title="Marketplace Detayları">
                         <CellTemplate>
-                            @if (context.Item.MarketplaceLinks?.Any() == true)
+                            @if (context.Item.MarketplaceLinks?.Any(l => l.IsActive) == true)
                             {
-                                @foreach (var link in context.Item.MarketplaceLinks)
-                                {
-                                    <MudStack @key="link.MarketPlaceCategoryId" Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                        <MarketplaceLogo Name="@(link.MarketPlace?.Name ?? "Trendyol")" Size="Size.Small" />
-                                        <MudText Typo="Typo.caption">
-                                            @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
-                                        </MudText>
-                                    </MudStack>
-                                }
+                                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                    @foreach (var link in context.Item.MarketplaceLinks.Where(l => l.IsActive))
+                                    {
+                                        <MudTooltip Text="@($"{link.MarketPlaceCategoryName} (ID: {link.ExternalCategoryId})")">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                                <MarketplaceLogo Name="@(link.MarketPlace?.Name ?? "")" Size="Size.Small" Class="mr-1" />
+                                                @(link.MarketPlace?.Name ?? "MP#" + link.MarketPlaceId)
+                                            </MudChip>
+                                        </MudTooltip>
+                                    }
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        (@context.Item.MarketplaceLinks.Count(l => l.IsActive) eşleşme)
+                                    </MudText>
+                                </MudStack>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Text">
+                                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Class="mr-1" />
+                                    Eşleştirilmemiş
+                                </MudChip>
                             }
                         </CellTemplate>
                     </TemplateColumn>
