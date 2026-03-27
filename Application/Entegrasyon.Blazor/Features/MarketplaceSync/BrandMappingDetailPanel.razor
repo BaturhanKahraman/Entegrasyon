@@ -1,0 +1,80 @@
+@using Entegrasyon.Entity.Dtos.Brand
+@using Entegrasyon.Entity.Dtos.Marketplace
+
+@if (Brand is null)
+{
+    <MudPaper Elevation="1" Class="pa-8" Style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.TouchApp" Size="Size.Large" Color="Color.Default" />
+            <MudText Typo="Typo.body1" Color="Color.Secondary">Soldaki listeden bir marka seçin</MudText>
+        </MudStack>
+    </MudPaper>
+}
+else
+{
+    <MudPaper Elevation="1" Class="pa-4">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <MudText Typo="Typo.h6">@Brand.Name</MudText>
+            <MudChip T="string" Size="Size.Small"
+                     Color="@(MappedCount == TotalCount ? Color.Success : Color.Warning)">
+                @MappedCount / @TotalCount Eşleşti
+            </MudChip>
+        </div>
+
+        <MudStack Spacing="2">
+            @foreach (var mp in Marketplaces)
+            {
+                var mapping = GetMapping(mp.Id);
+                <MudPaper Elevation="0" Outlined="true" Class="pa-3">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 100px; flex-shrink: 0; text-align: center;">
+                            <MarketplaceLogo Name="@mp.Name" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Align="Align.Center">@mp.Name</MudText>
+                        </div>
+
+                        @if (mapping is not null)
+                        {
+                            <MudPaper Elevation="0" Class="pa-2 flex-grow-1"
+                                      Style="background: var(--mud-palette-success-lighten); border-radius: 4px;">
+                                <MudText Typo="Typo.body2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Color="Color.Success" />
+                                    @(string.IsNullOrEmpty(mapping.MarketPlaceBrandName) ? $"Brand #{mapping.MarketPlaceBrandId}" : mapping.MarketPlaceBrandName)
+                                    (#@mapping.MarketPlaceBrandId)
+                                </MudText>
+                            </MudPaper>
+                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => RemoveMapping(mp.Id))"
+                                           title="Eşleştirmeyi kaldır" />
+                        }
+                        else
+                        {
+                            <MudAutocomplete T="MarketplaceBrandSearchResult"
+                                             Value="@(_selectedResults.GetValueOrDefault(mp.Id))"
+                                             ValueChanged="@(v => OnResultSelected(mp.Id, v))"
+                                             SearchFunc="@((value, ct) => SearchBrands(mp.Id, value, ct))"
+                                             Placeholder="Marketplace markası ara..."
+                                             Variant="Variant.Outlined"
+                                             Dense="true"
+                                             ToStringFunc="@(x => x?.Name ?? "")"
+                                             DebounceInterval="300"
+                                             MinCharacters="0"
+                                             Class="flex-grow-1" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Save"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           Disabled="@(!_selectedResults.ContainsKey(mp.Id) || _selectedResults[mp.Id] is null || _savingMarketplaces.Contains(mp.Id))"
+                                           OnClick="@(() => SaveMapping(mp.Id))"
+                                           title="Kaydet" />
+                        }
+                    </div>
+                </MudPaper>
+            }
+        </MudStack>
+
+        <MudAlert Severity="Severity.Info" Dense="true" Class="mt-4" NoIcon="true">
+            <MudText Typo="Typo.caption">Her satırda marketplace markasını arayıp seçin. Yeşil = eşleştirilmiş, gri = bekleyen.</MudText>
+        </MudAlert>
+    </MudPaper>
+}
