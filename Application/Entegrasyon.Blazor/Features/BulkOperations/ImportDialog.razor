@@ -1,4 +1,5 @@
 @using Entegrasyon.Entity.BulkOperations
+@using Entegrasyon.Entity.Dtos.BulkOperations
 
 <MudDialog>
     <TitleContent>
@@ -9,7 +10,7 @@
     </TitleContent>
     <DialogContent>
         <MudFileUpload T="IBrowserFile"
-                       Accept=".xlsx,.xls"
+                       Accept=".xlsx,.xls,.csv"
                        FilesChanged="OnFileSelected"
                        MaximumFileCount="1">
             <ActivatorContent>
@@ -17,7 +18,7 @@
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.AttachFile"
                            FullWidth="true">
-                    Dosya Sec (.xlsx)
+                    Dosya Sec (.xlsx, .csv)
                 </MudButton>
             </ActivatorContent>
         </MudFileUpload>
@@ -39,8 +40,30 @@
 
         @if (_isImporting)
         {
-            <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
-            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Ice aktarilıyor...</MudText>
+            @if (_currentProgress is not null && _currentProgress.Total > 0)
+            {
+                <MudProgressLinear Value="@((double)_currentProgress.Current / _currentProgress.Total * 100)"
+                                   Color="Color.Primary"
+                                   Class="mt-3"
+                                   Rounded="true"
+                                   Size="Size.Large">
+                    <MudText Typo="Typo.body2">@($"{(int)((double)_currentProgress.Current / _currentProgress.Total * 100)}%")</MudText>
+                </MudProgressLinear>
+                <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-1">@_currentProgress.Message</MudText>
+            }
+            else
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
+            }
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center" Class="mt-2">
+                <MudText Typo="Typo.body2">Ice aktarilıyor...</MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Error"
+                           Size="Size.Small"
+                           OnClick="CancelImport">
+                    Iptal Et
+                </MudButton>
+            </MudStack>
         }
 
         @if (_errorMessage is not null)

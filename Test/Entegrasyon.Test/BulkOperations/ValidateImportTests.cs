@@ -36,6 +36,7 @@ public class ValidateImportTests : BaseTest
         _manager = new BulkOperationManager(
             mockContextFactory.Object,
             _excelParser,
+            new CsvParser(),
             _importValidator,
             mockApplicationLogger.Object,
             _mockLogger.Object);

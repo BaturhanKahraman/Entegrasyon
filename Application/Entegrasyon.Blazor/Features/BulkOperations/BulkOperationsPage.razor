@@ -111,53 +111,101 @@
                                                 Clearable="true"
                                                 DateFormat="dd.MM.yyyy" />
                         </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="ExportFormat" @bind-Value="_exportFormat" Label="Format">
+                                <MudSelectItem Value="ExportFormat.Excel">Excel (.xlsx)</MudSelectItem>
+                                <MudSelectItem Value="ExportFormat.Csv">CSV (.csv)</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
                     </MudGrid>
+                    <MudDivider Class="my-3" />
+                    <MudTabs>
+                        <MudTabPanel Text="Ürün Kolonları">
+                            <ExportColumnSelector AvailableColumns="_availableProductColumns"
+                                                  SelectedColumns="_selectedProductColumns"
+                                                  SelectedColumnsChanged="@(v => { _selectedProductColumns = v; StateHasChanged(); })" />
+                        </MudTabPanel>
+                        <MudTabPanel Text="Fiyat Kolonları">
+                            <ExportColumnSelector AvailableColumns="_availablePriceColumns"
+                                                  SelectedColumns="_selectedPriceColumns"
+                                                  SelectedColumnsChanged="@(v => { _selectedPriceColumns = v; StateHasChanged(); })" />
+                        </MudTabPanel>
+                        <MudTabPanel Text="Stok Kolonları">
+                            <ExportColumnSelector AvailableColumns="_availableStockColumns"
+                                                  SelectedColumns="_selectedStockColumns"
+                                                  SelectedColumnsChanged="@(v => { _selectedStockColumns = v; StateHasChanged(); })" />
+                        </MudTabPanel>
+                    </MudTabs>
                 </MudPaper>
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           StartIcon="@Icons.Material.Filled.Download"
-                           Disabled="_isExporting"
-                           OnClick="@(() => ExportAsync(BulkOperationType.ProductExport))">
+                <MudStack Spacing="1">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               Disabled="_isExporting"
+                               OnClick="@(() => ExportAsync(BulkOperationType.ProductExport))">
+                        @if (_isExporting && _currentExportType == BulkOperationType.ProductExport)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Ürünleri Dışa Aktar
+                    </MudButton>
                     @if (_isExporting && _currentExportType == BulkOperationType.ProductExport)
                     {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true" OnClick="CancelExport">
+                            İptal Et
+                        </MudButton>
                     }
-                    Ürünleri Dışa Aktar
-                </MudButton>
+                </MudStack>
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Secondary"
-                           FullWidth="true"
-                           StartIcon="@Icons.Material.Filled.Download"
-                           Disabled="_isExporting"
-                           OnClick="@(() => ExportAsync(BulkOperationType.PriceExport))">
+                <MudStack Spacing="1">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Secondary"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               Disabled="_isExporting"
+                               OnClick="@(() => ExportAsync(BulkOperationType.PriceExport))">
+                        @if (_isExporting && _currentExportType == BulkOperationType.PriceExport)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Fiyatları Dışa Aktar
+                    </MudButton>
                     @if (_isExporting && _currentExportType == BulkOperationType.PriceExport)
                     {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true" OnClick="CancelExport">
+                            İptal Et
+                        </MudButton>
                     }
-                    Fiyatları Dışa Aktar
-                </MudButton>
+                </MudStack>
             </MudItem>
 
             <MudItem xs="12" md="4">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Tertiary"
-                           FullWidth="true"
-                           StartIcon="@Icons.Material.Filled.Download"
-                           Disabled="_isExporting"
-                           OnClick="@(() => ExportAsync(BulkOperationType.StockExport))">
+                <MudStack Spacing="1">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Tertiary"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               Disabled="_isExporting"
+                               OnClick="@(() => ExportAsync(BulkOperationType.StockExport))">
+                        @if (_isExporting && _currentExportType == BulkOperationType.StockExport)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Stokları Dışa Aktar
+                    </MudButton>
                     @if (_isExporting && _currentExportType == BulkOperationType.StockExport)
                     {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" FullWidth="true" OnClick="CancelExport">
+                            İptal Et
+                        </MudButton>
                     }
-                    Stokları Dışa Aktar
-                </MudButton>
+                </MudStack>
             </MudItem>
         </MudGrid>
     </MudTabPanel>
