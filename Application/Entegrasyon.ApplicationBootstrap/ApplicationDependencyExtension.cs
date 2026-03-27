@@ -47,6 +47,7 @@ namespace Entegrasyon.ApplicationBootstrap
         public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ITenantContext, HttpTenantContext>();
+            services.AddScoped<TenantMemoryCache>();
             services.AddSingleton<ITenantRegistryDataSource, AdminPanelTenantDataSource>();
             services.AddSingleton<ITenantRegistry, TenantRegistryService>();
             services.AddSingleton<IFeatureDataSource, AdminPanelFeatureDataSource>();
