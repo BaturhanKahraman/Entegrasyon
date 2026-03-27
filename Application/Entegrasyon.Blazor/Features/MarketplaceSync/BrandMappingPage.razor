@@ -1,127 +1,55 @@
 @page "/marketplace/sync/brands"
 @rendermode InteractiveServer
 @using Entegrasyon.Entity.Dtos.Brand
-@using MudBlazor
 
-<PageTitle>Brand Marketplace Mapping - Entegrasyon</PageTitle>
+<PageTitle>Marka Eşleştirme - Entegrasyon</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
-    <MudPaper Elevation="0" Class="mb-6">
-        <MudText Typo="Typo.h5" Class="mb-4">Marka Eşleştirme</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Marka Eşleştirme</MudText>
 
-        <!-- Summary Stats -->
-        <MudGrid Spacing="2" Class="mb-6">
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="1" Class="pa-4">
-                    <MudText Typo="Typo.subtitle2">Toplam Marka</MudText>
-                    <MudText Typo="Typo.h5"  Class="mt-2">@MappingSummary.TotalBrands</MudText>
-                </MudPaper>
+    <!-- Summary Stats -->
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-3">
+                <MudText Typo="Typo.subtitle2">Toplam Marka</MudText>
+                <MudText Typo="Typo.h6" Class="mt-1">@_summary.TotalBrands</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirilen</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Success" Class="mt-1">@_summary.MappedBrands</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="1" Class="pa-3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eksik</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Warning" Class="mt-1">@_summary.UnmappedBrands</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mb-4" />
+    }
+    else
+    {
+        <!-- Master-Detail Layout -->
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="5">
+                <BrandMappingListPanel Brands="_brands"
+                                       AllMappings="_allMappings"
+                                       Marketplaces="_marketplaces"
+                                       SelectedBrand="_selectedBrand"
+                                       SelectedBrandChanged="OnBrandSelected" />
             </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="1" Class="pa-4">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Success">Eşleştirme Yapılan</MudText>
-                    <MudText Typo="Typo.h5" Color="Color.Success" Class="mt-2">@MappingSummary.MappedBrands</MudText>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="1" Class="pa-4">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Warning">Eşleştirme Yapılmayan</MudText>
-                    <MudText Typo="Typo.h5" Color="Color.Warning" Class="mt-2">@MappingSummary.UnmappedBrands</MudText>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Elevation="1" Class="pa-4">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Info">Tamamlanma %</MudText>
-                    <MudText Typo="Typo.h5" Color="Color.Info" Class="mt-2">
-                        @(MappingSummary.TotalBrands > 0 ? Math.Round((double)MappingSummary.MappedBrands / MappingSummary.TotalBrands * 100, 0) : 0)%
-                    </MudText>
-                </MudPaper>
+            <MudItem xs="12" md="7">
+                <BrandMappingDetailPanel Brand="_selectedBrand"
+                                         BrandMappings="_selectedBrandMappings"
+                                         Marketplaces="_marketplaces"
+                                         OnMappingChanged="OnMappingChanged" />
             </MudItem>
         </MudGrid>
-    </MudPaper>
-
-    <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true" Class="mt-8" @bind-ActivePanelIndex="SelectedTabIndex">
-
-        <!-- Tab 1: Mappings List -->
-        <MudTabPanel Text="Mapping'ler Listesi" Icon="@Icons.Material.Filled.List">
-            <MudPaper Class="pa-4">
-                @if (IsLoading)
-                {
-                    <MudProgressCircular Indeterminate="true" Class="mx-auto my-4" />
-                }
-                else if (BrandMappings.Count == 0)
-                {
-                    <MudAlert Severity="Severity.Info" Class="mt-4">
-                        Henüz eşleştirme oluşturulmamıştır. Aşağıdaki sekmelerden bir eşleştirme ekleyin.
-                    </MudAlert>
-                }
-                else
-                {
-                    <BrandMappingList Mappings="BrandMappings" OnDelete="DeleteMapping" />
-                }
-            </MudPaper>
-        </MudTabPanel>
-
-        <!-- Tab 2: Unmapped Brands -->
-        <MudTabPanel Text="Eşleştirilmemiş Markalar" Icon="@Icons.Material.Filled.LinkOff">
-            <MudPaper Class="pa-4">
-                @if (IsLoading)
-                {
-                    <MudProgressCircular Indeterminate="true" Class="mx-auto my-4" />
-                }
-                else if (UnmappedBrands.Count == 0)
-                {
-                    <MudAlert Severity="Severity.Success" Class="mt-4">
-                        Tüm markalar eşleştirilmiş durumda.
-                    </MudAlert>
-                }
-                else
-                {
-                    <MudDataGrid T="BrandDto" Items="UnmappedBrands.AsEnumerable()" Dense="true" Hover="true" Striped="true"
-                                 FixedHeader="true" Height="500px">
-                        <Columns>
-                            <PropertyColumn Property="x => x.Name" Title="Marka Adı" />
-                            <TemplateColumn Title="İşlemler">
-                                <CellTemplate>
-                                    <MudButton Variant="Variant.Text"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               StartIcon="@Icons.Material.Filled.Link"
-                                               OnClick="@(() => OpenRowMappingDialog(context.Item))">
-                                        Eşleştir
-                                    </MudButton>
-                                </CellTemplate>
-                            </TemplateColumn>
-                        </Columns>
-                        <PagerContent>
-                            <MudDataGridPager T="BrandDto" />
-                        </PagerContent>
-                    </MudDataGrid>
-                }
-            </MudPaper>
-        </MudTabPanel>
-
-        <!-- Tab 3: Import -->
-        <MudTabPanel Icon="@Icons.Material.Filled.Download">
-            <TabContent>
-                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                    <MarketplaceLogo Name="Trendyol" Size="Size.Small" />
-                    <MudText>Trendyol Marka'larını İçe Aktar</MudText>
-                </MudStack>
-            </TabContent>
-            <ChildContent>
-            <MudPaper Class="pa-4">
-                <MudAlert Severity="Severity.Warning" Class="mb-4">
-                    <MudIcon Icon="@Icons.Material.Filled.Info" />
-                    Bu işlev henüz implement edilmemiştir. Lütfen daha sonra tekrar deneyiniz.
-                </MudAlert>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ImportBrands" Disabled="true">
-                    <MudIcon Icon="@Icons.Material.Filled.Download" Class="mr-2" />
-                    Trendyol Marka'larını İndir
-                </MudButton>
-            </MudPaper>
-            </ChildContent>
-        </MudTabPanel>
-
-    </MudTabs>
+    }
 </MudContainer>

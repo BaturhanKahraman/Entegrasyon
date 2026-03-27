@@ -1,123 +1,85 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Brand;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
 
-public partial class BrandMappingPage : ComponentBase
+public partial class BrandMappingPage
 {
-    [Inject]
-    public IBrandMatchService BrandMatchService { get; set; } = null!;
+    [Inject] private IBrandMatchService BrandMatchService { get; set; } = null!;
+    [Inject] private IBrandService BrandService { get; set; } = null!;
+    [Inject] private IMarketPlaceManager MarketPlaceManager { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
-    [Inject]
-    public ISnackbar Snackbar { get; set; } = null!;
-
-    [Inject]
-    public IDialogService DialogService { get; set; } = null!;
-
-    // State
-    public List<BrandMarketPlaceMatchDto> BrandMappings { get; set; } = [];
-    public List<BrandDto> UnmappedBrands { get; set; } = [];
-    public BrandMappingSummaryDto MappingSummary { get; set; } = new();
-    public bool IsLoading { get; set; } = true;
-    public int SelectedTabIndex { get; set; } = 0;
+    private List<BrandDto> _brands = [];
+    private List<BrandMarketPlaceMatchDto> _allMappings = [];
+    private List<MarketPlace> _marketplaces = [];
+    private BrandMappingSummaryDto _summary = new();
+    private BrandDto? _selectedBrand;
+    private List<BrandMarketPlaceMatchDto> _selectedBrandMappings = [];
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        IsLoading = true;
-        await LoadMappings();
-        await LoadSummary();
-        await LoadUnmappedBrands();
-        IsLoading = false;
+        await LoadAllData();
     }
 
-    private async Task LoadMappings()
+    private async Task LoadAllData()
     {
-        BrandMappings = await BrandMatchService.GetAllBrandMappingsAsync(TrendyolMarketPlaceId);
+        _isLoading = true;
+
+        var brandsResult = await BrandService.GetBrandListDetails();
+        if (brandsResult.Success && brandsResult.Data is not null)
+            _brands = brandsResult.Data.Select(b => new BrandDto { Id = b.Id, Name = b.Name }).ToList();
+
+        var mpResult = await MarketPlaceManager.GetAllAsync();
+        if (mpResult.Success && mpResult.Data is not null)
+            _marketplaces = mpResult.Data;
+
+        _summary = await BrandMatchService.GetBrandMappingsSummaryAsync();
+
+        await LoadAllMappings();
+
+        _isLoading = false;
     }
 
-    private async Task LoadSummary()
+    private async Task LoadAllMappings()
     {
-        MappingSummary = await BrandMatchService.GetBrandMappingsSummaryAsync();
-    }
-
-    private async Task LoadUnmappedBrands()
-    {
-        UnmappedBrands = await BrandMatchService.GetUnmappedBrandsAsync(TrendyolMarketPlaceId);
-    }
-
-    public async Task OpenRowMappingDialog(BrandDto brand)
-    {
-        var parameters = new DialogParameters<BrandMappingDialog>
+        _allMappings = [];
+        foreach (var mp in _marketplaces)
         {
-            { x => x.ApplicationBrand, brand }
-        };
-        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<BrandMappingDialog>("Marka Eşleştirme", parameters, options);
-        var result = await dialog.Result;
-
-        if (result is not null && !result.Canceled)
-            await RefreshData();
-    }
-
-    public async Task DeleteMapping(BrandMarketPlaceMatchDto mapping)
-    {
-        var confirmed = await DialogService.ShowMessageBox(
-            "Mapping'i Sil",
-            $"'{mapping.ApplicationBrandName}' brand'ı için mapping'i silmek istediğinize emin misiniz?",
-            yesText: "Evet", cancelText: "İptal");
-
-        if (confirmed.HasValue && confirmed.Value)
-        {
-            try
-            {
-                var result = await BrandMatchService.RemoveBrandMappingAsync(mapping.ApplicationBrandId, mapping.MarketPlaceId);
-                if (result.Success)
-                {
-                    Snackbar.Add("Mapping başarıyla silindi.", Severity.Success);
-                    await RefreshData();
-                }
-                else
-                {
-                    Snackbar.Add($"Hata: {result.Message}", Severity.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Silme işlemi sırasında hata oluştu: {ex.Message}", Severity.Error);
-            }
+            var mappings = await BrandMatchService.GetAllBrandMappingsAsync(mp.Id);
+            _allMappings.AddRange(mappings);
         }
     }
 
-    public async Task ImportBrands()
+    private async Task OnBrandSelected(BrandDto brand)
     {
-        try
-        {
-            var result = await BrandMatchService.ImportTrendyolBrandsAsync();
-            if (result.Success)
-            {
-                Snackbar.Add("Brand'lar başarıyla import edildi.", Severity.Success);
-                await RefreshData();
-            }
-            else
-            {
-                Snackbar.Add(result.Message ?? "", Severity.Warning);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Import sırasında hata oluştu: {ex.Message}", Severity.Error);
-        }
+        _selectedBrand = brand;
+        await LoadSelectedBrandMappings();
     }
 
-    private async Task RefreshData()
+    private async Task LoadSelectedBrandMappings()
     {
-        IsLoading = true;
-        await LoadMappings();
-        await LoadSummary();
-        await LoadUnmappedBrands();
-        IsLoading = false;
+        if (_selectedBrand is null)
+        {
+            _selectedBrandMappings = [];
+            return;
+        }
+
+        var result = await BrandMatchService.GetBrandMappingsByBrandIdAsync(_selectedBrand.Id);
+        _selectedBrandMappings = result.Success && result.Data is not null ? result.Data : [];
+    }
+
+    private async Task OnMappingChanged()
+    {
+        await LoadAllMappings();
+        await LoadSelectedBrandMappings();
+
+        _summary = await BrandMatchService.GetBrandMappingsSummaryAsync();
+
+        StateHasChanged();
     }
 }
