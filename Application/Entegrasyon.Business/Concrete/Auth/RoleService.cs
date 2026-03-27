@@ -35,7 +35,10 @@ namespace Entegrasyon.Business.Concrete.Auth
             {
                 Name = dto.Name,
                 CreatedAt = DateTimeOffset.UtcNow,
-                NormalizedName = dto.Name.ToUpperInvariant()
+                NormalizedName = dto.Name.ToUpperInvariant(),
+                RoleClaims = dto.PermissionNames
+                    .Select(p => new RolesClaims { Permission = p })
+                    .ToList()
             };
             await context.Roles.AddAsync(role, token);
             await context.SaveChangesAsync(token);
@@ -59,7 +62,9 @@ namespace Entegrasyon.Business.Concrete.Auth
                 return validationResult.ToResult();
             await applicationLogManager.AddLog("Rol guncelleniyor.", LogType.Role, LogAction.Update, dto);
             await using var context = await contextFactory.CreateDbContextAsync();
-            var dbRole = await context.Roles.FindAsync([dto.Id], token);
+            var dbRole = await context.Roles
+                .Include(r => r.RoleClaims)
+                .FirstOrDefaultAsync(r => r.Id == dto.Id, token);
             if (dbRole is null)
                 return new ErrorResult(Messages.RoleNotFound);
 
@@ -69,6 +74,13 @@ namespace Entegrasyon.Business.Concrete.Auth
 
             dbRole.Name = dto.Name;
             dbRole.NormalizedName = dto.Name.ToUpperInvariant();
+
+            // Replace existing RoleClaims with new permissions
+            dbRole.RoleClaims.Clear();
+            foreach (var permission in dto.PermissionNames)
+            {
+                dbRole.RoleClaims.Add(new RolesClaims { Permission = permission });
+            }
 
             await context.SaveChangesAsync(token);
 

@@ -70,6 +70,32 @@ public class RoleServiceTests : BaseTest
         mockIntegrationDbContext.Verify(x => x.Roles.AddAsync(It.IsAny<Role>(), default), Times.Once);
     }
 
+    [Fact]
+    public async Task AddRole_WithPermissions_SavesRoleClaimsToDatabase()
+    {
+        //arrange
+        const string RoleName = "Editor";
+        var permissions = new List<string> { "Products.Read", "Products.Write", "Categories.Read" };
+        AddRoleDto dto = new AddRoleDto(RoleName, permissions);
+        IList<Role> roles = [];
+        mockIntegrationDbContext.Setup(x => x.Roles).ReturnsDbSet(roles);
+
+        Role? capturedRole = null;
+        mockIntegrationDbContext.Setup(x => x.Roles.AddAsync(It.IsAny<Role>(), default))
+            .Callback<Role, CancellationToken>((r, _) => capturedRole = r)
+            .ReturnsAsync((Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<Role>)null!);
+
+        //act
+        var result = await roleService.AddRole(dto);
+
+        //assert
+        result.Success.Should().BeTrue();
+        capturedRole.Should().NotBeNull();
+        capturedRole!.RoleClaims.Should().HaveCount(3);
+        capturedRole.RoleClaims.Select(rc => rc.Permission).Should()
+            .BeEquivalentTo(permissions);
+    }
+
     public static IEnumerable<object[]> invalidEditDtoMembers => new List<object[]>() {
         new object[]{new EditRoleDto(0,"name",["perm1"])},
         new object[]{new EditRoleDto(1,"",["perm1"])},
@@ -93,5 +119,40 @@ public class RoleServiceTests : BaseTest
         mockIntegrationDbContext.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
     }
 
-    //TODO edit business logic
+    [Fact]
+    public async Task UpdateRole_WithNewPermissions_ReplacesExistingRoleClaims()
+    {
+        //arrange
+        const int roleId = 1;
+        const string roleName = "Editor";
+        var oldClaims = new List<RolesClaims>
+        {
+            new() { RoleId = roleId, Permission = "Products.Read" },
+            new() { RoleId = roleId, Permission = "Products.Write" }
+        };
+        var dbRole = new Role
+        {
+            Id = roleId,
+            Name = "OldName",
+            NormalizedName = "OLDNAME",
+            RoleClaims = oldClaims
+        };
+        var newPermissions = new List<string> { "Categories.Read", "Categories.Write", "Users.View" };
+        var dto = new EditRoleDto(roleId, roleName, newPermissions);
+
+        IList<Role> roles = [dbRole];
+        mockIntegrationDbContext.Setup(x => x.Roles).ReturnsDbSet(roles);
+
+        //act
+        var result = await roleService.UpdateRole(dto);
+
+        //assert
+        result.Success.Should().BeTrue();
+        result.Message.Should().Be(Messages.RoleUpdated);
+        dbRole.Name.Should().Be(roleName);
+        dbRole.RoleClaims.Should().HaveCount(3);
+        dbRole.RoleClaims.Select(rc => rc.Permission).Should()
+            .BeEquivalentTo(newPermissions);
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(default), Times.Once);
+    }
 }

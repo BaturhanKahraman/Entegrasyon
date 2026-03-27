@@ -9,6 +9,7 @@ public sealed record UserDetailListDto(
     bool IsTwoFactorAuthActive,
     bool NeedsTakeNewPassword,
     DateTimeOffset CreatedAt,
-    string DefaultOfficeName);
+    string DefaultOfficeName,
+    string RoleNames = "");
 
 

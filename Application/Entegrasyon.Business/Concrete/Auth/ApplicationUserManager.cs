@@ -136,7 +136,8 @@ public class ApplicationUserManager(
                     u.IsTwoFactorAuthActive,
                     u.NeedsTakeNewPassword,
                     u.CreatedAt,
-                    u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name! : ""
+                    u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name! : "",
+                    string.Join(", ", u.Roles.Select(r => r.Name))
                     ))
             .ToPageableAsync(request);
 
@@ -216,6 +217,27 @@ public class ApplicationUserManager(
             return new ErrorResult("Bu kayit guncellenmis ve sizdeki versiyonu eski olabilir. Lutfen tekrar deneyin");
         }
         return new SuccessResult(Messages.ProcessSuccess);
+    }
+
+    public async Task<IResult> ToggleActive(Guid userId, CancellationToken token = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FindAsync(userId);
+        if (user is null)
+            return new ErrorResult(Messages.UserNotFound);
+        user.IsActive = !user.IsActive;
+        try
+        {
+            await context.SaveChangesAsync(token);
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            logger.LogError(e, "Concurrency hatasi");
+            return new ErrorResult("Bu kayit guncellenmis ve sizdeki versiyonu eski olabilir. Lutfen tekrar deneyin");
+        }
+        var statusText = user.IsActive ? "aktif" : "pasif";
+        await applicationLogManager.AddLog($"Kullanici {statusText} yapildi.", LogType.User, LogAction.Update, token: token);
+        return new SuccessResult($"Kullanici basariyla {statusText} yapildi.");
     }
 
     public async Task<IResult> SoftDelete(Guid userId, CancellationToken token = default)
