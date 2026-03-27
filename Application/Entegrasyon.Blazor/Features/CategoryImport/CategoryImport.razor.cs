@@ -49,6 +49,9 @@ public partial class CategoryImport
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
 
+    [Inject]
+    private ITenantContext TenantContext { get; set; } = null!;
+
     private List<CategoryTreeNode> categories = [];
     private IReadOnlyCollection<CategoryTreeNode>? selectedNodes;
     private bool loading;
@@ -150,7 +153,10 @@ public partial class CategoryImport
             var importRequests = selectedNodes!.Select(MapToImportRequest).ToList();
 
             // Publish import request event
-            var importEvent = new CategoryImportRequestedEvent("Trendyol", importRequests, userId);
+            var importEvent = new CategoryImportRequestedEvent("Trendyol", importRequests, userId)
+            {
+                TenantId = TenantContext.TenantId
+            };
             await ImportRequestedChannel.PublishAsync(importEvent);
 
             Snackbar.Add("Kategori içe aktarma işlemi başlatıldı. Tamamlandığında bildirim alacaksınız.", Severity.Info);
@@ -236,7 +242,10 @@ public partial class CategoryImport
         {
             var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var importRequests = n11SelectedNodes.Select(MapToImportRequest).ToList();
-            var importEvent = new CategoryImportRequestedEvent("N11", importRequests, userId);
+            var importEvent = new CategoryImportRequestedEvent("N11", importRequests, userId)
+            {
+                TenantId = TenantContext.TenantId
+            };
             await ImportRequestedChannel.PublishAsync(importEvent);
             Snackbar.Add("N11 kategori içe aktarma işlemi başlatıldı.", Severity.Info);
             n11SelectedNodes = null;
@@ -298,7 +307,10 @@ public partial class CategoryImport
         {
             var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var importRequests = hbSelectedNodes.Select(MapToImportRequest).ToList();
-            var importEvent = new CategoryImportRequestedEvent("Hepsiburada", importRequests, userId);
+            var importEvent = new CategoryImportRequestedEvent("Hepsiburada", importRequests, userId)
+            {
+                TenantId = TenantContext.TenantId
+            };
             await ImportRequestedChannel.PublishAsync(importEvent);
             Snackbar.Add("Hepsiburada kategori içe aktarma işlemi başlatıldı.", Severity.Info);
             hbSelectedNodes = null;
@@ -361,7 +373,10 @@ public partial class CategoryImport
         {
             var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var importRequests = pazaramaSelectedNodes.Select(MapToImportRequest).ToList();
-            var importEvent = new CategoryImportRequestedEvent("Pazarama", importRequests, userId);
+            var importEvent = new CategoryImportRequestedEvent("Pazarama", importRequests, userId)
+            {
+                TenantId = TenantContext.TenantId
+            };
             await ImportRequestedChannel.PublishAsync(importEvent);
             Snackbar.Add("Pazarama kategori ice aktarma islemi baslatildi.", Severity.Info);
             pazaramaSelectedNodes = null;
@@ -433,7 +448,10 @@ public partial class CategoryImport
         {
             var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var importRequests = pttavmSelectedNodes.Select(MapToImportRequest).ToList();
-            var importEvent = new CategoryImportRequestedEvent("PttAVM", importRequests, userId);
+            var importEvent = new CategoryImportRequestedEvent("PttAVM", importRequests, userId)
+            {
+                TenantId = TenantContext.TenantId
+            };
             await ImportRequestedChannel.PublishAsync(importEvent);
             Snackbar.Add("PttAVM kategori ice aktarma islemi baslatildi.", Severity.Info);
             pttavmSelectedNodes = null;
@@ -504,7 +522,10 @@ public partial class CategoryImport
         {
             var userId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var importRequests = temuSelectedNodes.Select(MapToImportRequest).ToList();
-            var importEvent = new CategoryImportRequestedEvent("Temu", importRequests, userId);
+            var importEvent = new CategoryImportRequestedEvent("Temu", importRequests, userId)
+            {
+                TenantId = TenantContext.TenantId
+            };
             await ImportRequestedChannel.PublishAsync(importEvent);
             Snackbar.Add("Temu kategori ice aktarma islemi baslatildi.", Severity.Info);
             temuSelectedNodes = null;

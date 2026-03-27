@@ -78,7 +78,10 @@ public class CategoryImportBackgroundService(
                     importEvent.Categories.Count(),
                     result.Success,
                     result.Success ? null : result.Message,
-                    importEvent.UserId));
+                    importEvent.UserId)
+                {
+                    TenantId = importEvent.TenantId
+                });
 
                 var header = result.Success
                     ? $"{importEvent.MarketplaceName} kategori içe aktarma tamamlandı"

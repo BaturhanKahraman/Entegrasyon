@@ -23,6 +23,7 @@ public class OfficeStockManagerTests : BaseTest
             _mockProductVariantManager.Object,
             _mockNotificationManager.Object,
             new EventChannel<StockPriceChangedEvent>(),
+            mockTenantContext.Object,
             _mockLogger.Object
         );
     }

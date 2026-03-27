@@ -19,6 +19,7 @@ public class OfficeStockManager(
     IProductVariantManager productVariantManager,
     INotificationManager notificationManager,
     EventChannel<StockPriceChangedEvent> stockPriceChannel,
+    ITenantContext tenantContext,
     ILogger<OfficeStockManager> logger) : IOfficeStockManager
 {
     public async Task<IResult> AddOfficeStocks(IEnumerable<BranchOfficeStock> stocks)
@@ -221,7 +222,10 @@ public class OfficeStockManager(
             .FirstOrDefaultAsync();
 
         // Stok değişti → marketplace sync event yayınla
-        stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId));
+        stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId)
+        {
+            TenantId = tenantContext.TenantId
+        });
 
         // Admin kullanıcılarının ID'lerini al (bildirimleri onlara gönder)
         var adminUserIds = await dbContext.Users.AsNoTracking()

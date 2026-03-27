@@ -15,7 +15,8 @@ public sealed class ProductSyncManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     EventChannel<ProductCreatedForMarketplaceEvent> eventChannel,
     IApplicationLogManager applicationLogManager,
-    IProductActivityLogger activityLogger) : IProductSyncManager
+    IProductActivityLogger activityLogger,
+    ITenantContext tenantContext) : IProductSyncManager
 {
     private const long AdvisoryLockKeySyncAll = 1001;
     private const long AdvisoryLockKeyRetryFailed = 1002;
@@ -196,7 +197,10 @@ public sealed class ProductSyncManager(
         await dbContext.SaveChangesAsync();
 
         var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
+        {
+            TenantId = tenantContext.TenantId
+        });
 
         await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
             $"{marketplaceName} senkronizasyon kuyruğuna eklendi",
@@ -226,7 +230,10 @@ public sealed class ProductSyncManager(
         await dbContext.SaveChangesAsync();
 
         var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
+        {
+            TenantId = tenantContext.TenantId
+        });
 
         await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
             $"{marketplaceName} için yeniden kuyruğa eklendi",
@@ -269,7 +276,10 @@ public sealed class ProductSyncManager(
             var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
             foreach (var productId in unsyncedProductIds)
             {
-                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName]));
+                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
+                {
+                    TenantId = tenantContext.TenantId
+                });
             }
 
             await applicationLogManager.AddLog(
@@ -316,7 +326,10 @@ public sealed class ProductSyncManager(
             var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
             foreach (var record in failedRecords)
             {
-                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName]));
+                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName])
+                {
+                    TenantId = tenantContext.TenantId
+                });
             }
 
             await applicationLogManager.AddLog(

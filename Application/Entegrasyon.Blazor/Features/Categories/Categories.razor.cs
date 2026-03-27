@@ -14,6 +14,7 @@ public partial class Categories
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private ITenantContext TenantContext { get; set; } = null!;
 
     private List<Category> _categories = [];
     private Category? _selectedCategory;
@@ -98,7 +99,10 @@ public partial class Categories
                 if (result.Success)
                 {
                     Snackbar.Add(result.Message, Severity.Success);
-                    await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(_selectedCategory.Id, "Deleted"));
+                    await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(_selectedCategory.Id, "Deleted")
+                    {
+                        TenantId = TenantContext.TenantId
+                    });
                     _selectedCategory = null;
                     await LoadCategories();
                 }

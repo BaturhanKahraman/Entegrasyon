@@ -14,7 +14,8 @@ public sealed class NotificationManager(
     IEnumerable<INotificationSender> notificationSenders,
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
-    EventChannel<NotificationEvent> eventChannel) : INotificationManager
+    EventChannel<NotificationEvent> eventChannel,
+    ITenantContext tenantContext) : INotificationManager
 {
     public async Task SendNotification(
         string header,
@@ -66,7 +67,10 @@ public sealed class NotificationManager(
 
         // EventChannel'a yaz → NotificationEventPublisher → INotificationDeliveryService
         var evt = new NotificationEvent(
-            notification.Id, header, content, existingUserIds, severity, category, actionUrl);
+            notification.Id, header, content, existingUserIds, severity, category, actionUrl)
+        {
+            TenantId = tenantContext.TenantId
+        };
         await eventChannel.Writer.WriteAsync(evt);
     }
 

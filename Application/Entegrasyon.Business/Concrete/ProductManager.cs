@@ -35,7 +35,8 @@ public class ProductManager(
     IBarcodeService barcodeService,
     EventChannel<ProductAddedEvent> productAddedChannel,
     EventChannel<ProductUpdatedEvent> productUpdatedChannel,
-    IMinioFileStorage minioFileStorage) : IProductService
+    IMinioFileStorage minioFileStorage,
+    ITenantContext tenantContext) : IProductService
 {
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
@@ -79,7 +80,10 @@ public class ProductManager(
         dbContext.MainProducts.Add(product);
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add);
-        productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title));
+        productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title)
+        {
+            TenantId = tenantContext.TenantId
+        });
         return new SuccessDataResult<Product>(product, Messages.ProductAdded);
     }
 
@@ -242,7 +246,10 @@ public class ProductManager(
         if (categoryChanged)
             await applicationLogManager.AddLog("Ürünün kategorisi değiştirildi, mevcut özellikler temizlendi.", LogType.Product, LogAction.Update);
 
-        productUpdatedChannel.TryPublish(new ProductUpdatedEvent(product.Id, product.Title, categoryChanged));
+        productUpdatedChannel.TryPublish(new ProductUpdatedEvent(product.Id, product.Title, categoryChanged)
+        {
+            TenantId = tenantContext.TenantId
+        });
 
         return new SuccessResult("Ürün güncellendi.");
     }

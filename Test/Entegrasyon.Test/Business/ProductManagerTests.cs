@@ -50,7 +50,8 @@ public class ProductManagerTests : BaseTest
             _mockBarcodeService.Object,
             _productAddedChannel,
             _productUpdatedChannel,
-            _mockMinioFileStorage.Object
+            _mockMinioFileStorage.Object,
+            mockTenantContext.Object
         );
     }
 
