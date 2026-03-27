@@ -221,4 +221,41 @@ public class TenantsController(
         TempData["Success"] = $"\"{tenant.CompanyName}\" {status} duruma alındı.";
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MigrateAll()
+    {
+        var tenants = await dbContext.Tenants
+            .Where(t => t.IsActive)
+            .ToListAsync();
+
+        var results = new List<(string Subdomain, bool Success, string? Error)>();
+
+        foreach (var tenant in tenants)
+        {
+            try
+            {
+                var result = await provisioningService.ProvisionAsync(tenant.ConnectionString);
+                results.Add((tenant.Subdomain, result.Success, result.ErrorMessage));
+            }
+            catch (Exception ex)
+            {
+                results.Add((tenant.Subdomain, false, ex.Message));
+            }
+        }
+
+        var failed = results.Where(r => !r.Success).ToList();
+        if (failed.Count == 0)
+        {
+            TempData["Success"] = $"Tüm {results.Count} tenant veritabanı güncellendi.";
+        }
+        else
+        {
+            TempData["Error"] = $"{failed.Count}/{results.Count} tenant başarısız: " +
+                                string.Join(", ", failed.Select(f => $"{f.Subdomain}: {f.Error}"));
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
 }
