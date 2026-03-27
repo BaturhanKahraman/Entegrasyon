@@ -84,6 +84,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICommissionCalculator, CommissionCalculator>();
             services.AddScoped<IBrandMatchService,BrandMatchService>();
             services.AddScoped<ICategoryMatchService,CategoryMatchService>();
+            services.AddScoped<ICategoryMatchValidationService,CategoryMatchValidationService>();
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
