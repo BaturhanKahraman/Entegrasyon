@@ -1,6 +1,7 @@
 using System.Net;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Tenants;
+using Serilog.Context;
 
 namespace Entegrasyon.Storefront.Middleware;
 
@@ -128,6 +129,10 @@ public class TenantResolutionMiddleware(RequestDelegate next)
             tenantContext.Initialize(tenantEntry);
         }
 
-        await next(context);
+        using (LogContext.PushProperty("TenantId", tenantInfo.TenantId))
+        using (LogContext.PushProperty("TenantDomain", tenantInfo.Domain.DomainName))
+        {
+            await next(context);
+        }
     }
 }
