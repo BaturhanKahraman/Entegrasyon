@@ -13,6 +13,7 @@ public interface IBulkOperationManager
     Task<IDataResult<byte[]>> ExportPricesAsync(ExportFilterDto filter);
     Task<IDataResult<byte[]>> ExportStockAsync(ExportFilterDto filter);
     Task<IDataResult<byte[]>> GetImportTemplateAsync(BulkOperationType type);
+    Task<IDataResult<ImportValidationPreviewDto>> ValidateImportAsync(Stream excelStream, BulkOperationType operationType);
     Task<IDataResult<BulkOperationLog>> GetOperationLogAsync(long id);
     Task<IDataResult<List<BulkOperationLog>>> GetRecentOperationsAsync(int count = 20);
 }

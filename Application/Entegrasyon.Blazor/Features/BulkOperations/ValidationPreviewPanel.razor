@@ -1,0 +1,71 @@
+@using Entegrasyon.Entity.Dtos.BulkOperations
+
+@if (Preview is not null)
+{
+    <MudPaper Class="pa-4 mt-3" Elevation="1">
+        <MudText Typo="Typo.subtitle1" Class="mb-3">Dogrulama Sonucu</MudText>
+
+        <MudGrid>
+            <MudItem xs="4">
+                <MudText Typo="Typo.body2" Color="Color.Default">Toplam Satir</MudText>
+                <MudText Typo="Typo.h6">@Preview.TotalRows</MudText>
+            </MudItem>
+            <MudItem xs="4">
+                <MudText Typo="Typo.body2" Color="Color.Success">Gecerli</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Success">@Preview.ValidRows</MudText>
+            </MudItem>
+            <MudItem xs="4">
+                <MudText Typo="Typo.body2" Color="Color.Error">Hatali</MudText>
+                <MudText Typo="Typo.h6" Color="Color.Error">@Preview.InvalidRows</MudText>
+            </MudItem>
+        </MudGrid>
+
+        @if (Preview.Errors.Count > 0)
+        {
+            <MudDivider Class="my-3" />
+            <MudText Typo="Typo.subtitle2" Class="mb-2">Hatalar</MudText>
+            <MudSimpleTable Dense="true" Hover="true" Style="max-height: 300px; overflow-y: auto;">
+                <thead>
+                    <tr>
+                        <th>Satir</th>
+                        <th>Barkod</th>
+                        <th>Hata</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var error in Preview.Errors.Take(MaxDisplayErrors))
+                    {
+                        <tr>
+                            <td>@error.RowNumber</td>
+                            <td>@(error.Barcode ?? "-")</td>
+                            <td>@error.ErrorMessage</td>
+                        </tr>
+                    }
+                    @if (Preview.Errors.Count > MaxDisplayErrors)
+                    {
+                        <tr>
+                            <td colspan="3">
+                                <MudText Typo="Typo.body2" Color="Color.Warning">
+                                    ... ve @(Preview.Errors.Count - MaxDisplayErrors) hata daha
+                                </MudText>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        @if (Preview.ValidRows > 0)
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-3">
+                @Preview.ValidRows gecerli satir ice aktarilmaya hazir.
+            </MudAlert>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-3">
+                Gecerli satir bulunamadi. Lutfen dosyayi duzeltip tekrar deneyin.
+            </MudAlert>
+        }
+    </MudPaper>
+}
