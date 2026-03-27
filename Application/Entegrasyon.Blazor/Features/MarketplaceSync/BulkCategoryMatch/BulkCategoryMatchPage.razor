@@ -1,5 +1,6 @@
 @page "/marketplace/sync/categories/bulk"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 @using Entegrasyon.Entity.Dtos.Category
 @using Entegrasyon.Entity.Dtos.Marketplace
 

@@ -1,5 +1,6 @@
 @page "/marketplace/sync"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 
 <PageTitle>Pazaryeri Senkronizasyonu</PageTitle>
 

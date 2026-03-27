@@ -1,5 +1,6 @@
 @page "/settings/storefront"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Magaza Ayarlari</PageTitle>

@@ -1,5 +1,6 @@
 @page "/marketplace/sync/brands"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 @using Entegrasyon.Entity.Dtos.Brand
 
 <PageTitle>Marka Eşleştirme - Entegrasyon</PageTitle>

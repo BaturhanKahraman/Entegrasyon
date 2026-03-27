@@ -1,5 +1,6 @@
 @page "/marketplace/sync/categories"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 @using Entegrasyon.Entity.Categories
 
 <PageTitle>Kategori Senkronizasyonu - Entegrasyon</PageTitle>

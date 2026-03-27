@@ -1,5 +1,6 @@
 @page "/storefront/size-guides"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Beden Rehberleri</PageTitle>

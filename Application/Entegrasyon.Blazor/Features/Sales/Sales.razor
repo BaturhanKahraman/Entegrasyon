@@ -1,5 +1,6 @@
 @page "/sales"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Sales.View)]
 @using Entegrasyon.Business.Concrete
 @using Entegrasyon.Entity.Products
 @using Entegrasyon.Entity.Dtos.Product

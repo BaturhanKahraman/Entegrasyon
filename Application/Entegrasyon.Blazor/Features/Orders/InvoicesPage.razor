@@ -1,5 +1,6 @@
 @page "/invoices"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Orders.View)]
 
 <PageTitle>Faturalar</PageTitle>
 

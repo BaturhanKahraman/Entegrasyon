@@ -1,5 +1,6 @@
 @page "/bulk-operations"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Products.Edit)]
 @using Entegrasyon.Entity.BulkOperations
 
 <PageTitle>Toplu İşlemler</PageTitle>

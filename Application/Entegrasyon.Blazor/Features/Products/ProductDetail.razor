@@ -1,5 +1,6 @@
 @page "/products/{Id:guid}"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Products.View)]
 @using Entegrasyon.Entity.Dtos.Product
 @using Entegrasyon.Entity.Dtos.Product.ProductVariant
 @using Entegrasyon.Blazor.Features.Printing
