@@ -15,25 +15,36 @@ namespace Entegrasyon.Business.Concrete.BulkOperations;
 public sealed class BulkOperationManager(
     IDbContextFactory<IntegrationDbContext> dbContextFactory,
     ExcelParser excelParser,
+    CsvParser csvParser,
     ProductImportValidator importValidator,
     IApplicationLogManager applicationLogManager,
     ILogger<BulkOperationManager> logger) : IBulkOperationManager
 {
-    public async Task<IDataResult<BulkImportResultDto>> ImportProductsAsync(Stream excelStream, string fileName, Guid userId)
+    public async Task<IDataResult<BulkImportResultDto>> ImportProductsAsync(Stream excelStream, string fileName, Guid userId, CancellationToken cancellationToken = default, IProgress<BulkOperationProgressDto>? progress = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // 1. Parse
-        var parseResult = excelParser.ParseProductImport(excelStream);
+        var isCsv = fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
+        progress?.Report(new BulkOperationProgressDto("Parse", 0, 1, isCsv ? "CSV dosyası okunuyor..." : "Excel dosyası okunuyor..."));
+        var parseResult = isCsv
+            ? csvParser.ParseProductImport(excelStream)
+            : excelParser.ParseProductImport(excelStream);
         if (!parseResult.Success)
             return new ErrorDataResult<BulkImportResultDto>(null!, parseResult.Message!);
 
         var rows = parseResult.Data;
         if (rows.Count == 0)
-            return new ErrorDataResult<BulkImportResultDto>(null!, "Excel dosyası boş veya veri satırı bulunamadı.");
+            return new ErrorDataResult<BulkImportResultDto>(null!, isCsv ? "CSV dosyası boş veya veri satırı bulunamadı." : "Excel dosyası boş veya veri satırı bulunamadı.");
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // 2. Validate
+        progress?.Report(new BulkOperationProgressDto("Validate", 0, rows.Count, "Satırlar doğrulanıyor..."));
         var validationErrors = importValidator.ValidateProductRows(rows);
         var invalidBarcodes = validationErrors.Select(e => e.Barcode).ToHashSet();
         var validRows = rows.Where(r => !invalidBarcodes.Contains(r.Barcode)).ToList();
+        progress?.Report(new BulkOperationProgressDto("Validate", rows.Count, rows.Count, $"{validRows.Count} geçerli satır bulundu."));
 
         // 3. Check duplicates within file
         var duplicateErrors = new List<BulkImportRowErrorDto>();
@@ -53,8 +64,11 @@ public sealed class BulkOperationManager(
         var allErrors = validationErrors.Concat(duplicateErrors).OrderBy(e => e.RowNumber).ToList();
         validRows = deduplicatedRows;
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         // 4. Execute
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        progress?.Report(new BulkOperationProgressDto("Execute", 0, validRows.Count, "Veritabanına yazılıyor..."));
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
         var log = new BulkOperationLog
         {
@@ -67,14 +81,14 @@ public sealed class BulkOperationManager(
         };
 
         dbContext.BulkOperationLogs.Add(log);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         try
         {
             if (validRows.Count > 0)
             {
                 var conn = (NpgsqlConnection)dbContext.Database.GetDbConnection();
-                await conn.OpenAsync();
+                await conn.OpenAsync(cancellationToken);
 
                 var tempTable = $"tmp_product_import_{Guid.NewGuid():N}";
 
@@ -90,27 +104,31 @@ public sealed class BulkOperationManager(
                         vat_rate numeric NOT NULL
                     )
                     """;
-                await cmd.ExecuteNonQueryAsync();
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
 
                 await using var writer = await conn.BeginBinaryImportAsync(
-                    $"COPY \"{tempTable}\" (barcode, title, stock_code, list_price, sale_price, cost_price, vat_rate) FROM STDIN (FORMAT BINARY)");
+                    $"COPY \"{tempTable}\" (barcode, title, stock_code, list_price, sale_price, cost_price, vat_rate) FROM STDIN (FORMAT BINARY)", cancellationToken);
 
+                var writeCount = 0;
                 foreach (var row in validRows)
                 {
-                    await writer.StartRowAsync();
-                    await writer.WriteAsync(row.Barcode, NpgsqlTypes.NpgsqlDbType.Text);
-                    await writer.WriteAsync(row.Title, NpgsqlTypes.NpgsqlDbType.Text);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (++writeCount % 100 == 0)
+                        progress?.Report(new BulkOperationProgressDto("Execute", writeCount, validRows.Count, $"{writeCount}/{validRows.Count} satır yazılıyor..."));
+                    await writer.StartRowAsync(cancellationToken);
+                    await writer.WriteAsync(row.Barcode, NpgsqlTypes.NpgsqlDbType.Text, cancellationToken);
+                    await writer.WriteAsync(row.Title, NpgsqlTypes.NpgsqlDbType.Text, cancellationToken);
                     if (row.StockCode is not null)
-                        await writer.WriteAsync(row.StockCode, NpgsqlTypes.NpgsqlDbType.Text);
+                        await writer.WriteAsync(row.StockCode, NpgsqlTypes.NpgsqlDbType.Text, cancellationToken);
                     else
-                        await writer.WriteNullAsync();
-                    await writer.WriteAsync(row.ListPrice, NpgsqlTypes.NpgsqlDbType.Numeric);
-                    await writer.WriteAsync(row.SalePrice, NpgsqlTypes.NpgsqlDbType.Numeric);
-                    await writer.WriteAsync(row.CostPrice, NpgsqlTypes.NpgsqlDbType.Numeric);
-                    await writer.WriteAsync(row.VatRate, NpgsqlTypes.NpgsqlDbType.Numeric);
+                        await writer.WriteNullAsync(cancellationToken);
+                    await writer.WriteAsync(row.ListPrice, NpgsqlTypes.NpgsqlDbType.Numeric, cancellationToken);
+                    await writer.WriteAsync(row.SalePrice, NpgsqlTypes.NpgsqlDbType.Numeric, cancellationToken);
+                    await writer.WriteAsync(row.CostPrice, NpgsqlTypes.NpgsqlDbType.Numeric, cancellationToken);
+                    await writer.WriteAsync(row.VatRate, NpgsqlTypes.NpgsqlDbType.Numeric, cancellationToken);
                 }
 
-                await writer.CompleteAsync();
+                await writer.CompleteAsync(cancellationToken);
 
                 // Upsert: update existing variants by barcode, skip inserts (products need parent Product)
                 await using var upsertCmd = conn.CreateCommand();
@@ -127,7 +145,7 @@ public sealed class BulkOperationManager(
 
                     DROP TABLE IF EXISTS "{tempTable}";
                     """;
-                await upsertCmd.ExecuteNonQueryAsync();
+                await upsertCmd.ExecuteNonQueryAsync(cancellationToken);
             }
 
             log.SuccessCount = validRows.Count;
@@ -137,7 +155,7 @@ public sealed class BulkOperationManager(
             log.ErrorDetails = allErrors.Count > 0 ? JsonSerializer.Serialize(allErrors) : null;
 
             dbContext.BulkOperationLogs.Update(log);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             await applicationLogManager.AddLog(
                 $"Toplu ürün içe aktarma tamamlandı: {validRows.Count} başarılı, {allErrors.Count} hata ({fileName})",
@@ -146,8 +164,20 @@ public sealed class BulkOperationManager(
             logger.LogInformation("Bulk product import completed: {SuccessCount} success, {ErrorCount} errors for file {FileName}",
                 validRows.Count, allErrors.Count, fileName);
 
+            progress?.Report(new BulkOperationProgressDto("Complete", validRows.Count, validRows.Count, $"Tamamlandı: {validRows.Count} başarılı, {allErrors.Count} hata."));
+
             return new SuccessDataResult<BulkImportResultDto>(
                 new BulkImportResultDto(log.Id, rows.Count, validRows.Count, allErrors.Count, allErrors));
+        }
+        catch (OperationCanceledException)
+        {
+            log.Status = BulkOperationStatus.Cancelled;
+            log.CompletedAt = DateTimeOffset.UtcNow;
+            dbContext.BulkOperationLogs.Update(log);
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Bulk product import cancelled for file {FileName}", fileName);
+            throw;
         }
         catch (Exception ex)
         {
@@ -167,21 +197,32 @@ public sealed class BulkOperationManager(
         }
     }
 
-    public async Task<IDataResult<BulkImportResultDto>> ImportPricesAsync(Stream excelStream, string fileName, Guid userId)
+    public async Task<IDataResult<BulkImportResultDto>> ImportPricesAsync(Stream excelStream, string fileName, Guid userId, CancellationToken cancellationToken = default, IProgress<BulkOperationProgressDto>? progress = null)
     {
-        var parseResult = excelParser.ParsePriceImport(excelStream);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var isCsv = fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
+        progress?.Report(new BulkOperationProgressDto("Parse", 0, 1, isCsv ? "CSV dosyası okunuyor..." : "Excel dosyası okunuyor..."));
+        var parseResult = isCsv
+            ? csvParser.ParsePriceImport(excelStream)
+            : excelParser.ParsePriceImport(excelStream);
         if (!parseResult.Success)
             return new ErrorDataResult<BulkImportResultDto>(null!, parseResult.Message!);
 
         var rows = parseResult.Data;
         if (rows.Count == 0)
-            return new ErrorDataResult<BulkImportResultDto>(null!, "Excel dosyası boş veya veri satırı bulunamadı.");
+            return new ErrorDataResult<BulkImportResultDto>(null!, isCsv ? "CSV dosyası boş veya veri satırı bulunamadı." : "Excel dosyası boş veya veri satırı bulunamadı.");
 
+        cancellationToken.ThrowIfCancellationRequested();
+
+        progress?.Report(new BulkOperationProgressDto("Validate", 0, rows.Count, "Satırlar doğrulanıyor..."));
         var validationErrors = importValidator.ValidatePriceRows(rows);
         var invalidBarcodes = validationErrors.Select(e => e.Barcode).ToHashSet();
         var validRows = rows.Where(r => !invalidBarcodes.Contains(r.Barcode)).ToList();
+        progress?.Report(new BulkOperationProgressDto("Validate", rows.Count, rows.Count, $"{validRows.Count} geçerli satır bulundu."));
 
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        progress?.Report(new BulkOperationProgressDto("Execute", 0, validRows.Count, "Veritabanına yazılıyor..."));
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
         var log = new BulkOperationLog
         {
@@ -194,14 +235,16 @@ public sealed class BulkOperationManager(
         };
 
         dbContext.BulkOperationLogs.Add(log);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         try
         {
             var barcodes = validRows.Select(r => r.Barcode).ToList();
             var existingVariants = await dbContext.ProductVariants
                 .Where(pv => barcodes.Contains(pv.Barcode!))
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var existingBarcodeSet = existingVariants.Select(v => v.Barcode).ToHashSet();
             var notFoundErrors = validRows
@@ -212,18 +255,22 @@ public sealed class BulkOperationManager(
             var allErrors = validationErrors.Concat(notFoundErrors).OrderBy(e => e.RowNumber).ToList();
 
             var barcodeToRow = validRows.ToDictionary(r => r.Barcode);
+            var updateCount = 0;
             foreach (var variant in existingVariants)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (barcodeToRow.TryGetValue(variant.Barcode!, out var row))
                 {
                     variant.ListPrice = row.ListPrice;
                     variant.SalePrice = row.SalePrice;
                     variant.CostPrice = row.CostPrice;
+                    if (++updateCount % 100 == 0)
+                        progress?.Report(new BulkOperationProgressDto("Execute", updateCount, existingVariants.Count, $"{updateCount}/{existingVariants.Count} fiyat güncelleniyor..."));
                 }
             }
 
             dbContext.ProductVariants.UpdateRange(existingVariants);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             var successCount = existingVariants.Count;
             log.SuccessCount = successCount;
@@ -233,7 +280,7 @@ public sealed class BulkOperationManager(
             log.ErrorDetails = allErrors.Count > 0 ? JsonSerializer.Serialize(allErrors) : null;
 
             dbContext.BulkOperationLogs.Update(log);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             await applicationLogManager.AddLog(
                 $"Toplu fiyat güncelleme tamamlandı: {successCount} başarılı, {allErrors.Count} hata ({fileName})",
@@ -242,8 +289,20 @@ public sealed class BulkOperationManager(
             logger.LogInformation("Bulk price import completed: {SuccessCount} success, {ErrorCount} errors for file {FileName}",
                 successCount, allErrors.Count, fileName);
 
+            progress?.Report(new BulkOperationProgressDto("Complete", successCount, successCount, $"Tamamlandı: {successCount} başarılı, {allErrors.Count} hata."));
+
             return new SuccessDataResult<BulkImportResultDto>(
                 new BulkImportResultDto(log.Id, rows.Count, successCount, allErrors.Count, allErrors));
+        }
+        catch (OperationCanceledException)
+        {
+            log.Status = BulkOperationStatus.Cancelled;
+            log.CompletedAt = DateTimeOffset.UtcNow;
+            dbContext.BulkOperationLogs.Update(log);
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Bulk price import cancelled for file {FileName}", fileName);
+            throw;
         }
         catch (Exception ex)
         {
@@ -258,21 +317,32 @@ public sealed class BulkOperationManager(
         }
     }
 
-    public async Task<IDataResult<BulkImportResultDto>> ImportStockAsync(Stream excelStream, string fileName, Guid userId)
+    public async Task<IDataResult<BulkImportResultDto>> ImportStockAsync(Stream excelStream, string fileName, Guid userId, CancellationToken cancellationToken = default, IProgress<BulkOperationProgressDto>? progress = null)
     {
-        var parseResult = excelParser.ParseStockImport(excelStream);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var isCsv = fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase);
+        progress?.Report(new BulkOperationProgressDto("Parse", 0, 1, isCsv ? "CSV dosyası okunuyor..." : "Excel dosyası okunuyor..."));
+        var parseResult = isCsv
+            ? csvParser.ParseStockImport(excelStream)
+            : excelParser.ParseStockImport(excelStream);
         if (!parseResult.Success)
             return new ErrorDataResult<BulkImportResultDto>(null!, parseResult.Message!);
 
         var rows = parseResult.Data;
         if (rows.Count == 0)
-            return new ErrorDataResult<BulkImportResultDto>(null!, "Excel dosyası boş veya veri satırı bulunamadı.");
+            return new ErrorDataResult<BulkImportResultDto>(null!, isCsv ? "CSV dosyası boş veya veri satırı bulunamadı." : "Excel dosyası boş veya veri satırı bulunamadı.");
 
+        cancellationToken.ThrowIfCancellationRequested();
+
+        progress?.Report(new BulkOperationProgressDto("Validate", 0, rows.Count, "Satırlar doğrulanıyor..."));
         var validationErrors = importValidator.ValidateStockRows(rows);
         var invalidBarcodes = validationErrors.Select(e => e.Barcode).ToHashSet();
         var validRows = rows.Where(r => !invalidBarcodes.Contains(r.Barcode)).ToList();
+        progress?.Report(new BulkOperationProgressDto("Validate", rows.Count, rows.Count, $"{validRows.Count} geçerli satır bulundu."));
 
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        progress?.Report(new BulkOperationProgressDto("Execute", 0, validRows.Count, "Veritabanına yazılıyor..."));
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
         var log = new BulkOperationLog
         {
@@ -285,7 +355,7 @@ public sealed class BulkOperationManager(
         };
 
         dbContext.BulkOperationLogs.Add(log);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         try
         {
@@ -293,7 +363,9 @@ public sealed class BulkOperationManager(
             var variants = await dbContext.ProductVariants
                 .Where(pv => barcodes.Contains(pv.Barcode!))
                 .Select(pv => new { pv.Id, pv.Barcode })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var barcodeToVariantId = variants.ToDictionary(v => v.Barcode!, v => v.Id);
             var notFoundErrors = validRows
@@ -310,15 +382,19 @@ public sealed class BulkOperationManager(
 
             var allStocks = await dbContext.BranchOfficeStocks
                 .Where(s => s.ProductVariantId.HasValue && matchedVariantIds.Contains(s.ProductVariantId.Value))
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var stockLookup = allStocks
                 .Where(s => s.ProductVariantId.HasValue)
                 .ToDictionary(s => (s.ProductVariantId!.Value, s.BranchOfficeId));
 
             var successCount = 0;
+            var processedCount = 0;
             foreach (var row in validRows.Where(r => barcodeToVariantId.ContainsKey(r.Barcode)))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (++processedCount % 100 == 0)
+                    progress?.Report(new BulkOperationProgressDto("Execute", processedCount, validRows.Count, $"{processedCount}/{validRows.Count} stok güncelleniyor..."));
                 var variantId = barcodeToVariantId[row.Barcode];
                 if (stockLookup.TryGetValue((variantId, row.BranchOfficeId), out var stock))
                 {
@@ -334,7 +410,7 @@ public sealed class BulkOperationManager(
 
             dbContext.BranchOfficeStocks.UpdateRange(allStocks.Where(s => dbContext.Entry(s).State == EntityState.Modified));
 
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             var allErrors = validationErrors.Concat(notFoundErrors).OrderBy(e => e.RowNumber).ToList();
 
@@ -345,7 +421,7 @@ public sealed class BulkOperationManager(
             log.ErrorDetails = allErrors.Count > 0 ? JsonSerializer.Serialize(allErrors) : null;
 
             dbContext.BulkOperationLogs.Update(log);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             await applicationLogManager.AddLog(
                 $"Toplu stok güncelleme tamamlandı: {successCount} başarılı, {allErrors.Count} hata ({fileName})",
@@ -354,8 +430,20 @@ public sealed class BulkOperationManager(
             logger.LogInformation("Bulk stock import completed: {SuccessCount} success, {ErrorCount} errors for file {FileName}",
                 successCount, allErrors.Count, fileName);
 
+            progress?.Report(new BulkOperationProgressDto("Complete", successCount, successCount, $"Tamamlandı: {successCount} başarılı, {allErrors.Count} hata."));
+
             return new SuccessDataResult<BulkImportResultDto>(
                 new BulkImportResultDto(log.Id, rows.Count, successCount, allErrors.Count, allErrors));
+        }
+        catch (OperationCanceledException)
+        {
+            log.Status = BulkOperationStatus.Cancelled;
+            log.CompletedAt = DateTimeOffset.UtcNow;
+            dbContext.BulkOperationLogs.Update(log);
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Bulk stock import cancelled for file {FileName}", fileName);
+            throw;
         }
         catch (Exception ex)
         {
@@ -370,11 +458,12 @@ public sealed class BulkOperationManager(
         }
     }
 
-    public async Task<IDataResult<byte[]>> ExportProductsAsync(ExportFilterDto filter)
+    public async Task<IDataResult<byte[]>> ExportProductsAsync(ExportFilterDto filter, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             var query = dbContext.ProductVariants
                 .Include(pv => pv.Product)
@@ -412,28 +501,47 @@ public sealed class BulkOperationManager(
                     CategoryName = pv.Product.Category.Name,
                     BrandName = pv.Product.Brand != null ? pv.Product.Brand.Name : ""
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var columns = FilterColumns(ProductExportColumns, filter.SelectedColumns);
+            var headers = columns.Select(c => c.DisplayName).ToArray();
+            var keys = columns.Select(c => c.Key).ToHashSet();
+
+            // Convert to string arrays for both CSV and Excel
+            var rowData = data.Select(row =>
+            {
+                var all = new Dictionary<string, string>
+                {
+                    ["Barcode"] = row.Barcode ?? "",
+                    ["Title"] = row.Title,
+                    ["StockCode"] = row.StockCode ?? "",
+                    ["ListPrice"] = row.ListPrice.ToString(),
+                    ["SalePrice"] = row.SalePrice.ToString(),
+                    ["CostPrice"] = row.CostPrice.ToString(),
+                    ["VatRate"] = row.VatRate.ToString(),
+                    ["CategoryName"] = row.CategoryName,
+                    ["BrandName"] = row.BrandName
+                };
+                return columns.Select(c => all[c.Key]).ToArray();
+            }).ToList();
+
+            if (filter.Format == ExportFormat.Csv)
+                return new SuccessDataResult<byte[]>(CsvWriter.WriteCsv(headers, rowData));
 
             using var workbook = new XLWorkbook();
-            var headers = new[] { "Barkod", "Ürün Adı", "Stok Kodu", "Liste Fiyatı", "Satış Fiyatı", "Maliyet Fiyatı", "KDV Oranı", "Kategori", "Marka" };
-
-            WriteToExcelSheets(workbook, "Ürünler", headers, data, (ws, rowNum, row) =>
+            WriteToExcelSheets(workbook, "Ürünler", headers, rowData, (ws, rowNum, row) =>
             {
-                ws.Cell(rowNum, 1).Value = row.Barcode ?? "";
-                ws.Cell(rowNum, 2).Value = row.Title;
-                ws.Cell(rowNum, 3).Value = row.StockCode ?? "";
-                ws.Cell(rowNum, 4).Value = row.ListPrice;
-                ws.Cell(rowNum, 5).Value = row.SalePrice;
-                ws.Cell(rowNum, 6).Value = row.CostPrice;
-                ws.Cell(rowNum, 7).Value = row.VatRate;
-                ws.Cell(rowNum, 8).Value = row.CategoryName;
-                ws.Cell(rowNum, 9).Value = row.BrandName;
+                for (var i = 0; i < row.Length; i++)
+                    ws.Cell(rowNum, i + 1).Value = row[i];
             });
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
             return new SuccessDataResult<byte[]>(ms.ToArray());
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             logger.LogError(ex, "Product export failed");
@@ -441,11 +549,12 @@ public sealed class BulkOperationManager(
         }
     }
 
-    public async Task<IDataResult<byte[]>> ExportPricesAsync(ExportFilterDto filter)
+    public async Task<IDataResult<byte[]>> ExportPricesAsync(ExportFilterDto filter, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             var query = dbContext.ProductVariants
                 .Include(pv => pv.Product)
@@ -469,23 +578,40 @@ public sealed class BulkOperationManager(
             var data = await query
                 .OrderBy(pv => pv.Barcode)
                 .Select(pv => new { pv.Barcode, pv.ListPrice, pv.SalePrice, pv.CostPrice })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var columns = FilterColumns(PriceExportColumns, filter.SelectedColumns);
+            var headers = columns.Select(c => c.DisplayName).ToArray();
+
+            var rowData = data.Select(row =>
+            {
+                var all = new Dictionary<string, string>
+                {
+                    ["Barcode"] = row.Barcode ?? "",
+                    ["ListPrice"] = row.ListPrice.ToString(),
+                    ["SalePrice"] = row.SalePrice.ToString(),
+                    ["CostPrice"] = row.CostPrice.ToString()
+                };
+                return columns.Select(c => all[c.Key]).ToArray();
+            }).ToList();
+
+            if (filter.Format == ExportFormat.Csv)
+                return new SuccessDataResult<byte[]>(CsvWriter.WriteCsv(headers, rowData));
 
             using var workbook = new XLWorkbook();
-            var headers = new[] { "Barkod", "Liste Fiyatı", "Satış Fiyatı", "Maliyet Fiyatı" };
-
-            WriteToExcelSheets(workbook, "Fiyatlar", headers, data, (ws, rowNum, row) =>
+            WriteToExcelSheets(workbook, "Fiyatlar", headers, rowData, (ws, rowNum, row) =>
             {
-                ws.Cell(rowNum, 1).Value = row.Barcode ?? "";
-                ws.Cell(rowNum, 2).Value = row.ListPrice;
-                ws.Cell(rowNum, 3).Value = row.SalePrice;
-                ws.Cell(rowNum, 4).Value = row.CostPrice;
+                for (var i = 0; i < row.Length; i++)
+                    ws.Cell(rowNum, i + 1).Value = row[i];
             });
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
             return new SuccessDataResult<byte[]>(ms.ToArray());
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             logger.LogError(ex, "Price export failed");
@@ -493,11 +619,12 @@ public sealed class BulkOperationManager(
         }
     }
 
-    public async Task<IDataResult<byte[]>> ExportStockAsync(ExportFilterDto filter)
+    public async Task<IDataResult<byte[]>> ExportStockAsync(ExportFilterDto filter, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             var query = dbContext.BranchOfficeStocks
                 .Include(s => s.ProductVariant!)
@@ -530,29 +657,90 @@ public sealed class BulkOperationManager(
                     s.FirstTotalStock,
                     s.CurrentStock
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var columns = FilterColumns(StockExportColumns, filter.SelectedColumns);
+            var headers = columns.Select(c => c.DisplayName).ToArray();
+
+            var rowData = data.Select(row =>
+            {
+                var all = new Dictionary<string, string>
+                {
+                    ["Barcode"] = row.Barcode ?? "",
+                    ["BranchOfficeId"] = row.BranchOfficeId.ToString(),
+                    ["BranchOfficeName"] = row.BranchOfficeName ?? "",
+                    ["FirstTotalStock"] = row.FirstTotalStock.ToString(),
+                    ["CurrentStock"] = row.CurrentStock.ToString()
+                };
+                return columns.Select(c => all[c.Key]).ToArray();
+            }).ToList();
+
+            if (filter.Format == ExportFormat.Csv)
+                return new SuccessDataResult<byte[]>(CsvWriter.WriteCsv(headers, rowData));
 
             using var workbook = new XLWorkbook();
-            var headers = new[] { "Barkod", "Şube ID", "Şube Adı", "Toplam Stok", "Güncel Stok" };
-
-            WriteToExcelSheets(workbook, "Stok", headers, data, (ws, rowNum, row) =>
+            WriteToExcelSheets(workbook, "Stok", headers, rowData, (ws, rowNum, row) =>
             {
-                ws.Cell(rowNum, 1).Value = row.Barcode ?? "";
-                ws.Cell(rowNum, 2).Value = row.BranchOfficeId;
-                ws.Cell(rowNum, 3).Value = row.BranchOfficeName;
-                ws.Cell(rowNum, 4).Value = row.FirstTotalStock;
-                ws.Cell(rowNum, 5).Value = row.CurrentStock;
+                for (var i = 0; i < row.Length; i++)
+                    ws.Cell(rowNum, i + 1).Value = row[i];
             });
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
             return new SuccessDataResult<byte[]>(ms.ToArray());
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
             logger.LogError(ex, "Stock export failed");
             return new ErrorDataResult<byte[]>([], $"Stok dışa aktarma sırasında hata oluştu: {ex.Message}");
         }
+    }
+
+    private static readonly List<ExportColumnDto> ProductExportColumns =
+    [
+        new("Barcode", "Barkod"),
+        new("Title", "Ürün Adı"),
+        new("StockCode", "Stok Kodu"),
+        new("ListPrice", "Liste Fiyatı"),
+        new("SalePrice", "Satış Fiyatı"),
+        new("CostPrice", "Maliyet Fiyatı"),
+        new("VatRate", "KDV Oranı"),
+        new("CategoryName", "Kategori"),
+        new("BrandName", "Marka")
+    ];
+
+    private static readonly List<ExportColumnDto> PriceExportColumns =
+    [
+        new("Barcode", "Barkod"),
+        new("ListPrice", "Liste Fiyatı"),
+        new("SalePrice", "Satış Fiyatı"),
+        new("CostPrice", "Maliyet Fiyatı")
+    ];
+
+    private static readonly List<ExportColumnDto> StockExportColumns =
+    [
+        new("Barcode", "Barkod"),
+        new("BranchOfficeId", "Şube ID"),
+        new("BranchOfficeName", "Şube Adı"),
+        new("FirstTotalStock", "Toplam Stok"),
+        new("CurrentStock", "Güncel Stok")
+    ];
+
+    public Task<IDataResult<List<ExportColumnDto>>> GetAvailableColumnsAsync(BulkOperationType type)
+    {
+        var columns = type switch
+        {
+            BulkOperationType.ProductExport => ProductExportColumns,
+            BulkOperationType.PriceExport => PriceExportColumns,
+            BulkOperationType.StockExport => StockExportColumns,
+            _ => new List<ExportColumnDto>()
+        };
+
+        return Task.FromResult<IDataResult<List<ExportColumnDto>>>(
+            new SuccessDataResult<List<ExportColumnDto>>(columns));
     }
 
     public Task<IDataResult<byte[]>> GetImportTemplateAsync(BulkOperationType type)
@@ -594,6 +782,15 @@ public sealed class BulkOperationManager(
             return Task.FromResult<IDataResult<byte[]>>(
                 new ErrorDataResult<byte[]>([], $"Şablon oluşturulurken hata oluştu: {ex.Message}"));
         }
+    }
+
+    private static List<ExportColumnDto> FilterColumns(List<ExportColumnDto> allColumns, List<string>? selectedKeys)
+    {
+        if (selectedKeys is null or { Count: 0 })
+            return allColumns;
+
+        var keySet = selectedKeys.ToHashSet();
+        return allColumns.Where(c => keySet.Contains(c.Key)).ToList();
     }
 
     private static void WriteToExcelSheets<T>(

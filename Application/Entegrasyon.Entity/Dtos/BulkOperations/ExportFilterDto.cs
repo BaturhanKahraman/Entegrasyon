@@ -1,3 +1,5 @@
+using Entegrasyon.Entity.BulkOperations;
+
 namespace Entegrasyon.Entity.Dtos.BulkOperations;
 
 public record ExportFilterDto(
@@ -6,4 +8,6 @@ public record ExportFilterDto(
     int? BranchOfficeId = null,
     bool IncludeDeleted = false,
     DateTimeOffset? DateFrom = null,
-    DateTimeOffset? DateTo = null);
+    DateTimeOffset? DateTo = null,
+    ExportFormat Format = ExportFormat.Excel,
+    List<string>? SelectedColumns = null);

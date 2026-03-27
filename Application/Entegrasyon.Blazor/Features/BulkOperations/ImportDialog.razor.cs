@@ -20,6 +20,8 @@ public partial class ImportDialog : ComponentBase
     private string? _errorMessage;
     private ImportValidationPreviewDto? _validationPreview;
     private byte[]? _cachedFileBytes;
+    private CancellationTokenSource? _importCts;
+    private BulkOperationProgressDto? _currentProgress;
 
     private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
 
@@ -76,18 +78,26 @@ public partial class ImportDialog : ComponentBase
 
         _isImporting = true;
         _errorMessage = null;
+        _currentProgress = null;
+        _importCts = new CancellationTokenSource();
         StateHasChanged();
 
         try
         {
             using var ms = new MemoryStream(_cachedFileBytes);
             var userId = Guid.Empty;
+            var ct = _importCts.Token;
+            var progress = new Progress<BulkOperationProgressDto>(p =>
+            {
+                _currentProgress = p;
+                InvokeAsync(StateHasChanged);
+            });
 
             var result = OperationType switch
             {
-                BulkOperationType.ProductImport => await BulkOperationManager.ImportProductsAsync(ms, _selectedFile!.Name, userId),
-                BulkOperationType.PriceImport => await BulkOperationManager.ImportPricesAsync(ms, _selectedFile!.Name, userId),
-                BulkOperationType.StockImport => await BulkOperationManager.ImportStockAsync(ms, _selectedFile!.Name, userId),
+                BulkOperationType.ProductImport => await BulkOperationManager.ImportProductsAsync(ms, _selectedFile!.Name, userId, ct, progress),
+                BulkOperationType.PriceImport => await BulkOperationManager.ImportPricesAsync(ms, _selectedFile!.Name, userId, ct, progress),
+                BulkOperationType.StockImport => await BulkOperationManager.ImportStockAsync(ms, _selectedFile!.Name, userId, ct, progress),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -100,6 +110,10 @@ public partial class ImportDialog : ComponentBase
                 _errorMessage = result.Message;
             }
         }
+        catch (OperationCanceledException)
+        {
+            _errorMessage = "Ice aktarma iptal edildi.";
+        }
         catch (Exception ex)
         {
             _errorMessage = $"Ice aktarma sirasinda hata olustu: {ex.Message}";
@@ -107,8 +121,15 @@ public partial class ImportDialog : ComponentBase
         finally
         {
             _isImporting = false;
+            _importCts?.Dispose();
+            _importCts = null;
             StateHasChanged();
         }
+    }
+
+    private void CancelImport()
+    {
+        _importCts?.Cancel();
     }
 
     private void ResetValidation()
