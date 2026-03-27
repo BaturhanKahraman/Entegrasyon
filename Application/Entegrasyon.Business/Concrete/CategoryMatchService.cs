@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
@@ -11,7 +12,8 @@ namespace Entegrasyon.Business.Concrete;
 
 public class CategoryMatchService(
     IDbContextFactory<IntegrationDbContext> contextFactory,
-    IApplicationLogManager applicationLogManager) : ICategoryMatchService
+    IApplicationLogManager applicationLogManager,
+    IFluentValidator fluentValidator) : ICategoryMatchService
 {
     public async Task<CategoryMatchSummaryDto> GetCategoryMatchSummaryAsync()
     {
@@ -105,6 +107,87 @@ public class CategoryMatchService(
 
         await applicationLogManager.AddLog("Kategori mapping başarıyla oluşturuldu", LogType.Category, LogAction.Add, dto);
         return new SuccessResult("Kategori mapping başarıyla oluşturuldu.");
+    }
+
+    public async Task<IDataResult<BulkCategoryMatchResultDto>> BulkCreateCategoryMappingsAsync(BulkCategoryMatchDto dto)
+    {
+        // 1. Validation
+        var validationResult = await fluentValidator.Validate(dto);
+        if (!validationResult.IsValid)
+        {
+            var errorMessages = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+            return new ErrorDataResult<BulkCategoryMatchResultDto>(new BulkCategoryMatchResultDto(), errorMessages);
+        }
+
+        using var dbContext = contextFactory.CreateDbContext();
+
+        await applicationLogManager.AddLog(
+            $"Toplu kategori eşleştirme isteği ({dto.Items.Count} öğe, MarketPlaceId: {dto.MarketPlaceId})",
+            LogType.Category, LogAction.Add, dto);
+
+        // 2. Business Rules: Load categories and existing mappings
+        var requestedCategoryIds = dto.Items.Select(i => i.ApplicationCategoryId).Distinct().ToList();
+
+        var existingCategories = await dbContext.Categories
+            .Where(c => requestedCategoryIds.Contains(c.Id) && !c.IsDeleted)
+            .ToDictionaryAsync(c => c.Id, c => c.Name);
+
+        var existingMappings = await dbContext.CategoryMarketplaces
+            .Where(cm => cm.MarketPlaceId == dto.MarketPlaceId && cm.IsActive &&
+                         requestedCategoryIds.Contains(cm.CategoryId))
+            .Select(cm => cm.CategoryId)
+            .ToListAsync();
+        var existingMappingSet = existingMappings.ToHashSet();
+
+        // 3. Execution
+        var result = new BulkCategoryMatchResultDto { TotalRequested = dto.Items.Count };
+        var newMappings = new List<CategoryMarketplace>();
+
+        foreach (var item in dto.Items)
+        {
+            // Category not found or deleted
+            if (!existingCategories.TryGetValue(item.ApplicationCategoryId, out var categoryName))
+            {
+                result.FailedCount++;
+                result.Errors.Add(new BulkCategoryMatchErrorDto
+                {
+                    ApplicationCategoryId = item.ApplicationCategoryId,
+                    CategoryName = item.MarketPlaceCategoryName ?? "Bilinmiyor",
+                    ErrorMessage = "Kategori bulunamadı veya silinmiş durumda."
+                });
+                continue;
+            }
+
+            // Already mapped
+            if (existingMappingSet.Contains(item.ApplicationCategoryId))
+            {
+                result.SkippedCount++;
+                continue;
+            }
+
+            newMappings.Add(new CategoryMarketplace
+            {
+                CategoryId = item.ApplicationCategoryId,
+                MarketPlaceId = dto.MarketPlaceId,
+                MarketPlaceCategoryId = item.MarketPlaceCategoryId,
+                ExternalCategoryId = item.ExternalCategoryId,
+                MarketPlaceCategoryName = item.MarketPlaceCategoryName,
+                IsActive = true
+            });
+            result.SuccessCount++;
+        }
+
+        if (newMappings.Count > 0)
+        {
+            dbContext.CategoryMarketplaces.AddRange(newMappings);
+            await dbContext.SaveChangesAsync();
+        }
+
+        await applicationLogManager.AddLog(
+            $"Toplu kategori eşleştirme tamamlandı: {result.SuccessCount} başarılı, {result.SkippedCount} atlandı, {result.FailedCount} hata",
+            LogType.Category, LogAction.Add, result);
+
+        return new SuccessDataResult<BulkCategoryMatchResultDto>(result, "Toplu eşleştirme tamamlandı.");
     }
 
     public async Task<IResult> RemoveCategoryMappingAsync(int categoryId, int marketPlaceId)

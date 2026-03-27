@@ -7,12 +7,20 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
         <MudText Typo="Typo.h5">Kategori Eşleştirme</MudText>
-        <MudButton Variant="Variant.Outlined"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Download"
-                   Href="/categories/import">
-            Trendyol'dan İçe Aktar
-        </MudButton>
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.PlaylistAddCheck"
+                       Href="/marketplace/sync/categories/bulk">
+                Toplu Eşleştirme
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       Href="/categories/import">
+                Trendyol'dan İçe Aktar
+            </MudButton>
+        </MudStack>
     </MudStack>
 
     <MudGrid Spacing="2" Class="mb-6">
@@ -97,6 +105,38 @@
                                             @link.MarketPlaceCategoryName (ID: @link.ExternalCategoryId)
                                         </MudText>
                                     </MudStack>
+                                }
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Doğrulama">
+                        <CellTemplate>
+                            @if (context.Item.MarketplaceLinks?.Any() == true)
+                            {
+                                @if (GetValidationStatus(context.Item.Id) is { } status)
+                                {
+                                    @if (status.IsValid)
+                                    {
+                                        <MudTooltip Text="Tüm eşleştirmeler tamam">
+                                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                    else if (status.Errors.Count > 0)
+                                    {
+                                        <MudTooltip Text="@string.Join(", ", status.Errors)">
+                                            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                    else if (status.Warnings.Count > 0)
+                                    {
+                                        <MudTooltip Text="@string.Join(", ", status.Warnings)">
+                                            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                }
+                                else
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
                                 }
                             }
                         </CellTemplate>

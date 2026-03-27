@@ -1,0 +1,48 @@
+@using Entegrasyon.Entity.Categories
+@using Entegrasyon.Entity.Dtos.Marketplace
+
+<MudPaper Elevation="1" Class="pa-4">
+    <MudText Typo="Typo.h6" Class="mb-3">Marketplace Eşleştirmeleri</MudText>
+
+    @if (SelectedCategories.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Dense="true">
+            Eşleştirmek istediğiniz kategorileri sol panelden seçin.
+        </MudAlert>
+    }
+    else
+    {
+        <div style="height: 500px; overflow-y: auto;">
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Uygulama Kategorisi</th>
+                        <th>Marketplace Kategorisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in SelectedCategories.OrderBy(c => c.Name))
+                    {
+                        <tr @key="category.Id">
+                            <td style="width: 40%;">
+                                <MudText Typo="Typo.body2">@category.Name</MudText>
+                            </td>
+                            <td>
+                                <MudAutocomplete T="MarketplaceCategorySearchResult"
+                                                 Value="@GetAssignment(category.Id)"
+                                                 ValueChanged="@(val => OnAssignmentChanged(category.Id, val))"
+                                                 SearchFunc="@((query, ct) => SearchCategories(query, ct))"
+                                                 Placeholder="Marketplace kategorisi ara..."
+                                                 Variant="Variant.Outlined"
+                                                 Dense="true"
+                                                 ToStringFunc="@(x => x?.FullPath ?? x?.Name ?? "")"
+                                                 DebounceInterval="300"
+                                                 MinCharacters="0" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </div>
+    }
+</MudPaper>

@@ -60,6 +60,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<POSTransactionDto>, POSTransactionValidator>();
         services.AddScoped<IValidator<AddCashMovementDto>, AddCashMovementValidator>();
         services.AddScoped<IValidator<CreateEInvoiceDto>, CreateEInvoiceValidator>();
+        services.AddScoped<IValidator<BulkCategoryMatchDto>, BulkCategoryMatchDtoValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;

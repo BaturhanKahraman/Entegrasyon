@@ -1,0 +1,82 @@
+@page "/marketplace/sync/categories/bulk"
+@rendermode InteractiveServer
+@using Entegrasyon.Entity.Dtos.Category
+@using Entegrasyon.Entity.Dtos.Marketplace
+
+<PageTitle>Toplu Kategori Eşleştirme - Entegrasyon</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-8">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudText Typo="Typo.h5">Toplu Kategori Eşleştirme</MudText>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Href="/marketplace/sync/categories">
+            Geri Dön
+        </MudButton>
+    </MudStack>
+
+    @if (_isLoadingMarketplaces)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else
+    {
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudSelect T="MarketplaceOption"
+                       Value="_selectedMarketplace"
+                       Label="Platform Seçin"
+                       Variant="Variant.Outlined"
+                       ToStringFunc="@(x => x?.Name ?? "")"
+                       ValueChanged="OnMarketplaceChanged">
+                @foreach (var mp in _marketplaces)
+                {
+                    <MudSelectItem @key="mp.Id" T="MarketplaceOption" Value="mp">@mp.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudPaper>
+
+        @if (_selectedMarketplace is not null)
+        {
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="5">
+                    <BulkMatchCategorySelector
+                        Categories="_unmappedCategories"
+                        IsLoading="_isLoadingCategories"
+                        SelectedCategories="_selectedCategories"
+                        OnSelectionChanged="OnSelectionChanged" />
+                </MudItem>
+                <MudItem xs="12" md="7">
+                    <BulkMatchMarketplaceMapper
+                        SelectedCategories="_selectedCategories"
+                        MarketPlaceId="_selectedMarketplace.Id"
+                        MappingAssignments="_mappingAssignments"
+                        OnMappingChanged="OnMappingChanged" />
+                </MudItem>
+            </MudGrid>
+
+            <MudPaper Elevation="1" Class="pa-4 mt-4">
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+                    <MudText Typo="Typo.body1" Class="align-self-center">
+                        @(_mappingAssignments.Count(m => m.Value is not null)) / @_selectedCategories.Count eşleştirme hazır
+                    </MudText>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.SaveAlt"
+                               Disabled="@(!HasValidMappings || _isSubmitting)"
+                               OnClick="SubmitBulkMapping">
+                        @if (_isSubmitting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Kaydediliyor...</span>
+                        }
+                        else
+                        {
+                            <span>Toplu Eşleştir (@ReadyCount)</span>
+                        }
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        }
+    }
+</MudContainer>
