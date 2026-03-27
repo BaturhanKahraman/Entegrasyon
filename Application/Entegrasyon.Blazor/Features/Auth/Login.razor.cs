@@ -57,7 +57,7 @@ public partial class Login
                         UserName = user.Username,
                         Email = $"{user.Name} {user.Surname}",
                         Token = Guid.NewGuid().ToString(),
-                        TenantId = TenantContext.TenantId,
+                        TenantId = TenantContext.IsInitialized ? TenantContext.TenantId : 1,
                         Roles = user.Roles?.Select(r => r.Name).ToList() ?? [],
                         Permissions = permissions.Distinct().ToList()
                     };
@@ -65,7 +65,7 @@ public partial class Login
                     var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
                     await customAuthStateProvider.UpdateAuthenticationState(session);
 
-                    NavigationManager.NavigateTo("/", true);
+                    NavigationManager.NavigateTo("/");
                 }
                 else if (result is SuccessDataResult<LoginNewPasswordDto> newPasswordResult)
                 {

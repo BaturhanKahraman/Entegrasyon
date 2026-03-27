@@ -15,7 +15,7 @@ public class AmazonTokenManagerTests : Entegrasyon.UnitTest.BaseTest
     private readonly Mock<ILogger<AmazonTokenManager>> _loggerMock = new();
 
     private AmazonTokenManager CreateSut() => new(
-        mockContextFactory.Object,
+        mockScopeFactory.Object,
         _httpClientFactoryMock.Object,
         _loggerMock.Object);
 

@@ -9,11 +9,14 @@ namespace Entegrasyon.Blazor.Utility;
 /// <summary>
 /// Blazor circuit reconnect'te ITenantContext'i yeniden initialize eder.
 /// Claims'teki TenantId kullanilarak ITenantRegistry'den tenant bilgisi cekilir.
+/// Development modda fallback tenant kullanilir.
 /// </summary>
 public sealed class TenantCircuitHandler(
     ITenantContext tenantContext,
     ITenantRegistry tenantRegistry,
-    AuthenticationStateProvider authStateProvider) : CircuitHandler
+    AuthenticationStateProvider authStateProvider,
+    IConfiguration configuration,
+    IWebHostEnvironment environment) : CircuitHandler
 {
     public override async Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken ct)
     {
@@ -31,6 +34,25 @@ public sealed class TenantCircuitHandler(
                 if (tenant is not null && tenant.IsActive)
                 {
                     tenantContext.Initialize(tenant);
+                    return;
+                }
+            }
+
+            // Development fallback: claims'te tenant yoksa (henüz login olmamış)
+            if (environment.IsDevelopment() && !tenantContext.IsInitialized)
+            {
+                var fallbackCs = configuration.GetConnectionString("Main")
+                    ?? configuration.GetConnectionString("DefaultConnection");
+
+                if (!string.IsNullOrEmpty(fallbackCs))
+                {
+                    tenantContext.Initialize(new TenantRegistryEntry(
+                        TenantId: 1,
+                        Subdomain: "dev",
+                        CompanyName: "Development",
+                        ConnectionString: fallbackCs,
+                        IsActive: true,
+                        LicenseType: "Enterprise"));
                 }
             }
         }

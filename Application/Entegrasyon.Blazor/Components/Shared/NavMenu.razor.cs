@@ -45,10 +45,14 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
     /// Handler for location change events. Updates menu state when user navigates.
     /// Only triggers re-render if the active section actually changed.
     /// </summary>
-    private async void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        if (UpdateMenuStateByLocation())
-            await InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(() =>
+        {
+            if (UpdateMenuStateByLocation())
+                StateHasChanged();
+            return Task.CompletedTask;
+        });
     }
 
     /// <summary>

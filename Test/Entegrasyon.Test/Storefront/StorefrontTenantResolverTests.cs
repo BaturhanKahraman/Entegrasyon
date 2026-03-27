@@ -4,6 +4,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Entegrasyon.UnitTest.Storefront;
 
@@ -24,7 +25,16 @@ public class StorefrontTenantResolverTests
             .ReturnsAsync(_mockDbContext.Object);
         _cache = new MemoryCache(new MemoryCacheOptions());
 
-        _sut = new StorefrontTenantResolver(_mockContextFactory.Object, _cache);
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        mockServiceProvider
+            .Setup(sp => sp.GetService(typeof(IDbContextFactory<IntegrationDbContext>)))
+            .Returns(_mockContextFactory.Object);
+        var mockScope = new Mock<IServiceScope>();
+        mockScope.Setup(s => s.ServiceProvider).Returns(mockServiceProvider.Object);
+        var mockScopeFactory = new Mock<IServiceScopeFactory>();
+        mockScopeFactory.Setup(f => f.CreateScope()).Returns(mockScope.Object);
+
+        _sut = new StorefrontTenantResolver(mockScopeFactory.Object, _cache);
     }
 
     [Fact]

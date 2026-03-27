@@ -8,6 +8,7 @@ namespace Entegrasyon.Blazor.Middleware;
 /// <summary>
 /// Blazor Server icin subdomain-based tenant resolution middleware.
 /// Storefront TenantResolutionMiddleware pattern'ini takip eder.
+/// Development modda tenant registry'de kayit yoksa fallback connection string kullanir.
 /// </summary>
 public class BlazorTenantResolutionMiddleware(RequestDelegate next)
 {
@@ -26,14 +27,16 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
             return;
         }
 
+        var env = context.RequestServices.GetService<IWebHostEnvironment>();
+        var isDevelopment = env?.IsDevelopment() == true;
+
         var host = context.Request.Host.Host;
         var subdomain = ExtractSubdomain(host);
 
         // Development fallback: localhost without subdomain uses "dev" tenant
         if (string.IsNullOrEmpty(subdomain))
         {
-            var env = context.RequestServices.GetService<IWebHostEnvironment>();
-            if (env?.IsDevelopment() == true)
+            if (isDevelopment)
             {
                 subdomain = "dev";
             }
@@ -47,11 +50,38 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
 
         var tenant = await tenantRegistry.GetBySubdomainAsync(subdomain);
 
+        // Development fallback: registry'de tenant yoksa fallback connection string ile devam et
         if (tenant is null || !tenant.IsActive)
         {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync("Tenant bulunamadi veya pasif.");
-            return;
+            if (isDevelopment)
+            {
+                var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+                var fallbackCs = configuration.GetConnectionString("Main")
+                    ?? configuration.GetConnectionString("DefaultConnection");
+
+                if (!string.IsNullOrEmpty(fallbackCs))
+                {
+                    tenant = new TenantRegistryEntry(
+                        TenantId: 1,
+                        Subdomain: "dev",
+                        CompanyName: "Development",
+                        ConnectionString: fallbackCs,
+                        IsActive: true,
+                        LicenseType: "Enterprise");
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await context.Response.WriteAsync("Development: ConnectionStrings:Main yapilandirilmamis.");
+                    return;
+                }
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("Tenant bulunamadi veya pasif.");
+                return;
+            }
         }
 
         tenantContext.Initialize(tenant);

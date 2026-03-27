@@ -5,6 +5,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.Concrete.Amazon;
@@ -17,7 +18,7 @@ namespace Entegrasyon.Business.Concrete.Amazon;
 /// </summary>
 public sealed class AmazonTokenManager : IAmazonTokenManager, IDisposable
 {
-    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AmazonTokenManager> _logger;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -33,11 +34,11 @@ public sealed class AmazonTokenManager : IAmazonTokenManager, IDisposable
     private const string DefaultTokenUrl = "https://api.amazon.com/auth/o2/token";
 
     public AmazonTokenManager(
-        IDbContextFactory<IntegrationDbContext> contextFactory,
+        IServiceScopeFactory scopeFactory,
         IHttpClientFactory httpClientFactory,
         ILogger<AmazonTokenManager> logger)
     {
-        _contextFactory = contextFactory;
+        _scopeFactory = scopeFactory;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
@@ -88,7 +89,9 @@ public sealed class AmazonTokenManager : IAmazonTokenManager, IDisposable
 
     private async Task<string> RefreshTokenInternalAsync(int marketPlaceId, CancellationToken ct)
     {
-        await using var dbContext = await _contextFactory.CreateDbContextAsync(ct);
+        using var scope = _scopeFactory.CreateScope();
+        var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
 
         var marketplace = await dbContext.MarketPlaces
             .AsNoTracking()

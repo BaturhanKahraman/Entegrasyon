@@ -8,21 +8,23 @@ using Entegrasyon.Blazor.Utility;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services;
+using Entegrasyon.Blazor.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
 using Entegrasyon.Blazor.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Blazor Server services
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor(options =>
-{
-    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
-    options.DisconnectedCircuitMaxRetained = 100;
-});
+// Add Blazor Web App services (.NET 8 unified pattern)
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(2);
+        options.DisconnectedCircuitMaxRetained = 500;
+    });
 
 // Add MudBlazor services
 builder.Services.AddMudServices(config =>
@@ -40,6 +42,12 @@ builder.Host.UseDefaultServiceProvider((host, options) =>
     options.ValidateOnBuild = host.HostingEnvironment.IsDevelopment();
     options.ValidateScopes = host.HostingEnvironment.IsDevelopment();
 });
+
+// Background service hataları uygulamayı durdurmasın (özellikle dev ortamında DB yoksa)
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddClients();
 builder.Services.AddBackgroundServices();
@@ -49,6 +57,13 @@ builder.Services.AddStorefrontServices();
 
 builder.Services.AddStorageServices(builder.Configuration);
 
+builder.Services.AddAuthentication(options =>
+{
+    // Blazor Server custom AuthenticationStateProvider kullanır.
+    // Bu scheme sadece middleware pipeline'ın çalışması için gerekli.
+    // LoginPath yok — auth redirect Blazor'ın AuthorizeRouteView + RedirectToLogin ile yapılır.
+    options.DefaultScheme = "BlazorServer";
+}).AddCookie("BlazorServer");
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddAuthorization(options =>
@@ -73,7 +88,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext(builder.Configuration);
 builder.Services.AddScoped<CircuitHandler, TenantCircuitHandler>();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
-builder.Services.AddResponseCaching();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/octet-stream" });
+});
+builder.Services.AddAntiforgery();
 builder.Services.AddSingleton<IMenuService, MenuService>();
 
 // SignalR configuration
@@ -116,18 +137,26 @@ else
     app.UseDeveloperExceptionPage();
 }
 
-app.UseResponseCaching();
-app.UseStaticFiles();
+app.UseResponseCompression();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=604800";
+    }
+});
 
 app.UseMiddleware<BlazorTenantResolutionMiddleware>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapHub<NotificationHub>("/NotificationHub");
 app.MapTrendyolWebhooks();
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
 
 app.Run();
 
