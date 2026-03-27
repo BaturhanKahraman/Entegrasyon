@@ -1,5 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.AspNetCore.Components;
@@ -11,7 +10,7 @@ public partial class BrandMappingDetailPanel : ComponentBase
 {
     [Parameter] public BrandDto? Brand { get; set; }
     [Parameter] public List<BrandMarketPlaceMatchDto> BrandMappings { get; set; } = [];
-    [Parameter] public List<MarketPlace> Marketplaces { get; set; } = [];
+    [Parameter] public List<MarketplaceOption> Marketplaces { get; set; } = [];
     [Parameter] public EventCallback OnMappingChanged { get; set; }
 
     [Inject] private IMarketplaceSearchService SearchService { get; set; } = null!;

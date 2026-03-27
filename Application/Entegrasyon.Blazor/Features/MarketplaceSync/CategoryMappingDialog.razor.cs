@@ -107,5 +107,3 @@ public partial class CategoryMappingDialog : ComponentBase
 
     private void Cancel() => MudDialog.Cancel();
 }
-
-public record MarketplaceOption(int Id, string Name);

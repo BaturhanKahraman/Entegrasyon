@@ -1,5 +1,5 @@
-using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.AspNetCore.Components;
 
 namespace Entegrasyon.Blazor.Features.MarketplaceSync;
@@ -8,7 +8,7 @@ public partial class BrandMappingListPanel : ComponentBase
 {
     [Parameter] public List<BrandDto> Brands { get; set; } = [];
     [Parameter] public List<BrandMarketPlaceMatchDto> AllMappings { get; set; } = [];
-    [Parameter] public List<MarketPlace> Marketplaces { get; set; } = [];
+    [Parameter] public List<MarketplaceOption> Marketplaces { get; set; } = [];
     [Parameter] public BrandDto? SelectedBrand { get; set; }
     [Parameter] public EventCallback<BrandDto> SelectedBrandChanged { get; set; }
 
