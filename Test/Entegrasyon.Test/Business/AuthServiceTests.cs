@@ -212,6 +212,34 @@ namespace Entegrasyon.UnitTest.Business
             mockIntegrationDbContext.Verify(ctx => ctx.SaveChangesAsync(default), Times.Never);
         }
 
+        [Fact]
+        public async Task LoginAsync_WithValidCredentials_ReturnsRolesWithRoleClaims()
+        {
+            // Arrange
+            string userName = "test", password = "testpassword";
+            var roleClaims = new List<RolesClaims>
+            {
+                new() { RoleId = 1, Permission = "Products.Read" },
+                new() { RoleId = 1, Permission = "Products.Write" }
+            };
+            var role = new Role { Id = 1, Name = "Admin", RoleClaims = roleClaims };
+            ApplicationUser user = CreateUser(userName, password);
+            user.Roles = new List<Role> { role };
+            IList<ApplicationUser> users = [user];
+            mockIntegrationDbContext.Setup(c => c.Users).ReturnsDbSet(users);
+
+            // Act
+            var result = await authService.LoginAsync(userName, password);
+
+            // Assert
+            result.Should().BeOfType<SuccessDataResult<UserLoginSuccessDto>>();
+            var dto = result.As<SuccessDataResult<UserLoginSuccessDto>>().Data;
+            dto.Roles.Should().HaveCount(1);
+            dto.Roles.First().RoleClaims.Should().HaveCount(2);
+            dto.Roles.First().RoleClaims.Should().Contain(rc => rc.Permission == "Products.Read");
+            dto.Roles.First().RoleClaims.Should().Contain(rc => rc.Permission == "Products.Write");
+        }
+
         private ApplicationUser CreateUser(string userName,string password,string tempPassword="",bool needsToTakePassword=false,bool isActive = true)
         {
             HashingHelper.CreatePasswordHash(password,out var passwordHash,out var passwordSalt);

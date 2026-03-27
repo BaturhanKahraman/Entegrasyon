@@ -21,6 +21,7 @@ public class AuthService(
         string normalizedUsername = userName.ToUpperInvariant();
         var user = await context.Users
             .Include(u => u.Roles)
+                .ThenInclude(r => r.RoleClaims)
             .FirstOrDefaultAsync(u => string.Equals(u.NormalizedUserName,normalizedUsername));
         if(user is null)
             return new ErrorResult(Messages.LoginFailedWrongPassword);

@@ -55,7 +55,7 @@ public partial class Users
             { "Roles", _roles }
         };
 
-        var dialog = await DialogService.ShowAsync<UserDialog>("Yeni Kullanıcı", parameters);
+        var dialog = await DialogService.ShowAsync<UserDialog>("Yeni Kullanici", parameters);
         var result = await dialog.Result;
 
         if (!result!.Canceled && result.Data is UserDialog.UserDialogResult dialogResult)
@@ -91,10 +91,10 @@ public partial class Users
     private async Task DeleteUser(UserDetailListDto user)
     {
         var result = await DialogService.ShowMessageBox(
-            "Kullanıcı Sil",
-            $"{user.Name} kullanıcısını silmek istediğinizden emin misiniz?",
+            "Kullanici Sil",
+            $"{user.Name} kullanicisini silmek istediginizden emin misiniz?",
             yesText: "Sil",
-            cancelText: "İptal");
+            cancelText: "Iptal");
 
         if (result == true)
         {
@@ -114,9 +114,9 @@ public partial class Users
     private async Task ResetPassword(UserDetailListDto user)
     {
         var confirm = await DialogService.ShowMessageBox(
-            "Şifre Sıfırla",
-            $"{user.Name} {user.Surname} kullanıcısının şifresini sıfırlamak istediğinize emin misiniz? Geçici bir şifre atanacak.",
-            yesText: "Sıfırla", cancelText: "İptal");
+            "Sifre Sifirla",
+            $"{user.Name} {user.Surname} kullanicisinin sifresini sifirlamak istediginize emin misiniz? Gecici bir sifre atanacak.",
+            yesText: "Sifirla", cancelText: "Iptal");
 
         if (confirm != true) return;
 
@@ -125,9 +125,31 @@ public partial class Users
         if (result.Success)
         {
             await DialogService.ShowMessageBox(
-                "Geçici Şifre",
-                $"Geçici şifre: {tempPassword}\n\nKullanıcı bir sonraki girişte yeni şifre oluşturmak zorunda kalacak.",
+                "Gecici Sifre",
+                $"Gecici sifre: {tempPassword}\n\nKullanici bir sonraki girisinde yeni sifre olusturmak zorunda kalacak.",
                 yesText: "Tamam");
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? "", Severity.Error);
+        }
+    }
+
+    private async Task ToggleUserActive(UserDetailListDto user)
+    {
+        var statusText = user.IsActive ? "pasif" : "aktif";
+        var confirm = await DialogService.ShowMessageBox(
+            "Durum Degistir",
+            $"{user.Name} {user.Surname} kullanicisini {statusText} yapmak istediginize emin misiniz?",
+            yesText: "Evet", cancelText: "Iptal");
+
+        if (confirm != true) return;
+
+        var result = await UserManager.ToggleActive(user.Id);
+        if (result.Success)
+        {
+            Snackbar.Add(result.Message ?? "", Severity.Success);
+            await LoadUsers();
         }
         else
         {
@@ -144,6 +166,8 @@ public partial class Users
         if (user.Surname?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             return true;
         if (user.UserName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (user.RoleNames?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
             return true;
         return false;
     }
