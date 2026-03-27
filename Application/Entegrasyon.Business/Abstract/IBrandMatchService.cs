@@ -31,6 +31,11 @@ public interface IBrandMatchService
     Task<IResult> CreateBrandMappingAsync(CreateBrandMarketPlaceMatchDto dto);
 
     /// <summary>
+    /// Belirli bir brand'in tum marketplace mapping'lerini getirir.
+    /// </summary>
+    Task<IDataResult<List<BrandMarketPlaceMatchDto>>> GetBrandMappingsByBrandIdAsync(int brandId);
+
+    /// <summary>
     /// Brand mapping'ini siler.
     /// </summary>
     Task<IResult> RemoveBrandMappingAsync(int brandId, int marketPlaceId);
