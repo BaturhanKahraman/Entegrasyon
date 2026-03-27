@@ -139,6 +139,10 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<TemplateCargoCompanyData> TemplateCargoCompanyData { get; set; }
     public virtual DbSet<TemplateCargoCompanyMarketplaceMapping> TemplateCargoCompanyMarketplaceMappings { get; set; }
 
+    // Category Match Templates
+    public virtual DbSet<CategoryMatchTemplate> CategoryMatchTemplates { get; set; }
+    public virtual DbSet<CategoryMatchTemplateItem> CategoryMatchTemplateItems { get; set; }
+
     // Commission
     public virtual DbSet<MarketplaceCommissionRate> MarketplaceCommissionRates { get; set; }
 
