@@ -4,6 +4,8 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 
@@ -19,8 +21,16 @@ public class AddProductTests : BunitBaseTest
             .ReturnsAsync(new SuccessDataResult<List<BrandListDetailDto>>([]));
 
         MockCategoryService
-            .Setup(c => c.GetAllCategoriesWithoutAttributesAsync())
+            .Setup(c => c.GetLeafCategoriesAsync())
             .ReturnsAsync([]);
+
+        MockBranchOfficeManager
+            .Setup(b => b.GetBranchList(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SuccessDataResult<List<BranchOffice>>([]));
+
+        MockMarketplaceOverrideManager
+            .Setup(m => m.GetOverridesAsync(It.IsAny<Guid>(), It.IsAny<int>()))
+            .ReturnsAsync(new ErrorDataResult<MarketplaceOverrideDetailDto>(null!, "No overrides"));
     }
 
     [Fact]
@@ -37,9 +47,9 @@ public class AddProductTests : BunitBaseTest
         // Act
         var cut = RenderComponent<AddProduct>();
 
-        // Assert — "İleri" butonu görünür, "Kaydet ve Yayınla" görünmez
+        // Assert — "İleri" butonu görünür, "Kaydet" görünmez
         cut.Markup.Should().Contain("İleri");
-        cut.Markup.Should().NotContain("Kaydet ve Yayınla");
+        cut.Markup.Should().NotContain("Kaydet");
     }
 
     [Fact]
@@ -48,11 +58,11 @@ public class AddProductTests : BunitBaseTest
         // Arrange — step=3'e geç ama title/brandId/categoryId boş bırak
         var cut = RenderComponent<AddProduct>();
         await SetPrivateFieldAsync(cut, "stepIndex", 3);
-        cut.Render(); // re-render ile "Kaydet ve Yayınla" butonunu göster
+        cut.Render(); // re-render ile "Kaydet" butonunu göster
 
         // Act
         var submitButton = cut.FindAll("button")
-            .First(b => b.TextContent.Contains("Kaydet ve Yayınla"));
+            .First(b => b.TextContent.Contains("Kaydet"));
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
@@ -79,7 +89,7 @@ public class AddProductTests : BunitBaseTest
 
         // Act
         var submitButton = cut.FindAll("button")
-            .First(b => b.TextContent.Contains("Kaydet ve Yayınla"));
+            .First(b => b.TextContent.Contains("Kaydet"));
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
@@ -89,7 +99,7 @@ public class AddProductTests : BunitBaseTest
     }
 
     [Fact]
-    public async Task Submit_WhenSucceeds_ShouldNavigateToProductsPage()
+    public async Task Submit_WhenSucceeds_ShouldAdvanceToMarketplaceStep()
     {
         // Arrange
         var savedProduct = new Product { Id = Guid.NewGuid(), ProductVariants = [] };
@@ -107,16 +117,15 @@ public class AddProductTests : BunitBaseTest
         await SetPrivateFieldAsync(cut, "stepIndex", 3);
         cut.Render();
 
-        var navManager = Services.GetRequiredService<FakeNavigationManager>();
-
         // Act
         var submitButton = cut.FindAll("button")
-            .First(b => b.TextContent.Contains("Kaydet ve Yayınla"));
+            .First(b => b.TextContent.Contains("Kaydet"));
         await cut.InvokeAsync(() => submitButton.Click());
 
-        // Assert
+        // Assert — submit sonrası step 4'e (Pazaryerine Gönder) geçmeli
         MockProductService.Verify(p => p.AddProduct(It.IsAny<AddProductDto>()), Times.Once);
-        navManager.Uri.Should().EndWith("/products");
+        var stepIndex = GetPrivateField<AddProduct, int>(cut, "stepIndex");
+        stepIndex.Should().Be(4);
     }
 
     [Fact]
@@ -142,7 +151,7 @@ public class AddProductTests : BunitBaseTest
 
         // Act
         var submitButton = cut.FindAll("button")
-            .First(b => b.TextContent.Contains("Kaydet ve Yayınla"));
+            .First(b => b.TextContent.Contains("Kaydet"));
         await cut.InvokeAsync(() => submitButton.Click());
 
         // Assert
@@ -153,7 +162,7 @@ public class AddProductTests : BunitBaseTest
     }
 
     [Fact]
-    public async Task GenerateBarcodeButton_ShouldCallBarcodeService()
+    public async Task GenerateAllBarcodesButton_ShouldCallBarcodeService()
     {
         // Arrange
         MockBarcodeService
@@ -170,14 +179,15 @@ public class AddProductTests : BunitBaseTest
             variantsList.Add(new AddProductVariantDto { Barcode = string.Empty, BranchOfficeStocks = [] });
         });
 
-        // Step 2'ye geç (Varyant Detayları)
+        // Step 2'ye geç (Varyantlar & Görseller)
         await SetPrivateFieldAsync(cut, "stepIndex", 2);
         cut.Render();
 
-        // Act — "Barkod Oluştur" adornment butonunu tıkla
-        var barcodeAdornment = cut.FindAll("button[aria-label='Barkod Oluştur']");
-        barcodeAdornment.Should().NotBeEmpty("Barkod üret butonu render edilmeli");
-        await cut.InvokeAsync(() => barcodeAdornment.First().Click());
+        // Act — "Tüm Barkodları Oluştur" butonunu tıkla
+        var barcodeButton = cut.FindAll("button")
+            .FirstOrDefault(b => b.TextContent.Contains("Barkodları Oluştur"));
+        barcodeButton.Should().NotBeNull("Barkod oluştur butonu render edilmeli");
+        await cut.InvokeAsync(() => barcodeButton!.Click());
 
         // Assert
         MockBarcodeService.Verify(b => b.GenerateAsync(), Times.Once);

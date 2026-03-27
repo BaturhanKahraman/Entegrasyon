@@ -36,6 +36,8 @@ dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-projec
 dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor
 ```
 
+**Test kullanıcısı (dev):** admin / 123456789
+
 **Infrastructure (docker-compose):** PostgreSQL (5432)
 
 **Integration Testleri:** Testcontainers ile geçici PostgreSQL container'ı otomatik oluşturulur — Docker daemon çalışıyor olmalı. Respawn ile her test sonrası DB temizlenir (seed tablolar korunur). `WebApplicationFactory` üzerinden gerçek DI + EF Core + migration testi yapılır.
@@ -150,3 +152,35 @@ EventChannel<CategoryUpdatedEvent> // publisher → subscriber
   - **DB query'leri:** Tüm sorgularda tenant filtresi uygulanabilir olmalı.
   - **Configuration:** Tenant-specific config'ler DB'den okunmalı, appsettings.json'a hardcode edilmemeli.
   - **Tek tenant için çalışıyor ≠ multi-tenant'ta çalışacak.** Tasarımda her zaman "bu N tenant ile çalışır mı?" sorusunu sor.
+
+## Local Ollama API (Sub-Agent)
+
+Makinede Ollama çalışıyor (`http://localhost:11434`). GPU: RTX 4080 Laptop 12 GB VRAM.
+
+**Kullanılabilir model:** `entegrasyon-coder` — proje-özel system prompt gömülü, `qwen2.5-coder:14b` tabanlı. MCP tool olarak `mcp__ollama__ollama_chat` ile erişilebilir.
+
+**Uygun görevler:** Bulk pattern-based fix, boilerplate üretimi, basit kod analizi, çok sayıda dosyada aynı değişiklik.
+
+**Uygun OLMAYAN görevler:** Mimari kararlar, karmaşık reasoning, büyük context gerektiren işler, production-critical kod.
+
+**Strateji — Üret + Kontrol Et:**
+1. Ollama'ya mekanik görevi ver (örn: "bu dosyadaki null'ları null! yap")
+2. Çıktıyı kabataslak kontrol et (build, grep, basit doğrulama)
+3. Sorun varsa düzelt, yoksa uygula
+
+Bu sayede Claude token'ı tekrarlı işlere harcanmaz, sadece karar verme ve doğrulamaya gider.
+
+**Team agent / sub-agent olarak kullanım:** Ollama, iş yükünü hafifletmek için team agent veya sub-agent olarak kullanılabilir. Özellikle paralel görevlerde mekanik kısımları Ollama'ya offload edip Claude sadece doğrulama ve karar verme rolünde kalabilir.
+
+**Token Tasarrufu Politikası (Strict Rule):** Eğer bir görev tekrarlı/mekanik ise ve Ollama ile çözülebilecekse, Claude token'ı harcamak yerine Ollama'ya offload et. Örnekler:
+- 3+ dosyada aynı pattern'i uygulama (null!, default!, ?? "" gibi)
+- Boilerplate kod üretimi (yeni manager, yeni test sınıfı iskeleti)
+- Basit kod dönüşümleri (rename, type change, import ekleme)
+- Dosya içeriğini analiz edip fix önerisi çıkarma
+
+Claude sadece karar verme, doğrulama ve karmaşık reasoning için kullanılmalı.
+
+```bash
+# Kullanım
+curl -s http://localhost:11434/api/generate -d '{"model":"entegrasyon-coder","prompt":"...","stream":false}'
+```

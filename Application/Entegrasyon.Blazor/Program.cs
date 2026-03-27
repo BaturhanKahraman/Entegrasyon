@@ -62,7 +62,10 @@ builder.Services.AddAuthentication(options =>
     // Bu scheme sadece middleware pipeline'ın çalışması için gerekli.
     // LoginPath yok — auth redirect Blazor'ın AuthorizeRouteView + RedirectToLogin ile yapılır.
     options.DefaultScheme = "BlazorServer";
-}).AddCookie("BlazorServer");
+}).AddCookie("BlazorServer", options =>
+{
+    options.LoginPath = "/auth/login";
+});
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddAuthorization(options =>

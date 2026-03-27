@@ -18,6 +18,13 @@ public class BlazorTenantResolutionMiddlewareTests
         var context = new DefaultHttpContext();
         context.Request.Host = new HostString(host);
         context.Request.Path = path;
+
+        var mockEnv = new Mock<IWebHostEnvironment>();
+        mockEnv.Setup(e => e.EnvironmentName).Returns(Environments.Production);
+        var services = new ServiceCollection();
+        services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
+        context.RequestServices = services.BuildServiceProvider();
+
         return context;
     }
 
