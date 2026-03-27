@@ -211,12 +211,15 @@ public sealed class BulkOperationManager(
 
             var allErrors = validationErrors.Concat(notFoundErrors).OrderBy(e => e.RowNumber).ToList();
 
+            var barcodeToRow = validRows.ToDictionary(r => r.Barcode);
             foreach (var variant in existingVariants)
             {
-                var row = validRows.First(r => r.Barcode == variant.Barcode);
-                variant.ListPrice = row.ListPrice;
-                variant.SalePrice = row.SalePrice;
-                variant.CostPrice = row.CostPrice;
+                if (barcodeToRow.TryGetValue(variant.Barcode!, out var row))
+                {
+                    variant.ListPrice = row.ListPrice;
+                    variant.SalePrice = row.SalePrice;
+                    variant.CostPrice = row.CostPrice;
+                }
             }
 
             dbContext.ProductVariants.UpdateRange(existingVariants);
@@ -298,17 +301,28 @@ public sealed class BulkOperationManager(
                 .Select(r => new BulkImportRowErrorDto(r.RowNumber, r.Barcode, "Barkod sistemde bulunamadı."))
                 .ToList();
 
+            // Batch-load all relevant stocks in one query instead of N+1
+            var matchedVariantIds = validRows
+                .Where(r => barcodeToVariantId.ContainsKey(r.Barcode))
+                .Select(r => barcodeToVariantId[r.Barcode])
+                .Distinct()
+                .ToList();
+
+            var allStocks = await dbContext.BranchOfficeStocks
+                .Where(s => s.ProductVariantId.HasValue && matchedVariantIds.Contains(s.ProductVariantId.Value))
+                .ToListAsync();
+
+            var stockLookup = allStocks
+                .Where(s => s.ProductVariantId.HasValue)
+                .ToDictionary(s => (s.ProductVariantId!.Value, s.BranchOfficeId));
+
             var successCount = 0;
             foreach (var row in validRows.Where(r => barcodeToVariantId.ContainsKey(r.Barcode)))
             {
                 var variantId = barcodeToVariantId[row.Barcode];
-                var stock = await dbContext.BranchOfficeStocks
-                    .FirstOrDefaultAsync(s => s.ProductVariantId == variantId && s.BranchOfficeId == row.BranchOfficeId);
-
-                if (stock is not null)
+                if (stockLookup.TryGetValue((variantId, row.BranchOfficeId), out var stock))
                 {
                     stock.FirstTotalStock = row.Quantity;
-                    dbContext.BranchOfficeStocks.Update(stock);
                     successCount++;
                 }
                 else
@@ -317,6 +331,8 @@ public sealed class BulkOperationManager(
                         $"Şube {row.BranchOfficeId} için stok kaydı bulunamadı."));
                 }
             }
+
+            dbContext.BranchOfficeStocks.UpdateRange(allStocks.Where(s => dbContext.Entry(s).State == EntityState.Modified));
 
             await dbContext.SaveChangesAsync();
 
@@ -393,30 +409,20 @@ public sealed class BulkOperationManager(
                 .ToListAsync();
 
             using var workbook = new XLWorkbook();
-            var ws = workbook.AddWorksheet("Ürünler");
-
-            // Headers
             var headers = new[] { "Barkod", "Ürün Adı", "Stok Kodu", "Liste Fiyatı", "Satış Fiyatı", "Maliyet Fiyatı", "KDV Oranı", "Kategori", "Marka" };
-            for (var i = 0; i < headers.Length; i++)
-                ws.Cell(1, i + 1).Value = headers[i];
 
-            ws.Row(1).Style.Font.Bold = true;
-
-            for (var i = 0; i < data.Count; i++)
+            WriteToExcelSheets(workbook, "Ürünler", headers, data, (ws, rowNum, row) =>
             {
-                var row = data[i];
-                ws.Cell(i + 2, 1).Value = row.Barcode ?? "";
-                ws.Cell(i + 2, 2).Value = row.Title;
-                ws.Cell(i + 2, 3).Value = row.StockCode ?? "";
-                ws.Cell(i + 2, 4).Value = row.ListPrice;
-                ws.Cell(i + 2, 5).Value = row.SalePrice;
-                ws.Cell(i + 2, 6).Value = row.CostPrice;
-                ws.Cell(i + 2, 7).Value = row.VatRate;
-                ws.Cell(i + 2, 8).Value = row.CategoryName;
-                ws.Cell(i + 2, 9).Value = row.BrandName;
-            }
-
-            ws.Columns().AdjustToContents();
+                ws.Cell(rowNum, 1).Value = row.Barcode ?? "";
+                ws.Cell(rowNum, 2).Value = row.Title;
+                ws.Cell(rowNum, 3).Value = row.StockCode ?? "";
+                ws.Cell(rowNum, 4).Value = row.ListPrice;
+                ws.Cell(rowNum, 5).Value = row.SalePrice;
+                ws.Cell(rowNum, 6).Value = row.CostPrice;
+                ws.Cell(rowNum, 7).Value = row.VatRate;
+                ws.Cell(rowNum, 8).Value = row.CategoryName;
+                ws.Cell(rowNum, 9).Value = row.BrandName;
+            });
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
@@ -454,23 +460,15 @@ public sealed class BulkOperationManager(
                 .ToListAsync();
 
             using var workbook = new XLWorkbook();
-            var ws = workbook.AddWorksheet("Fiyatlar");
-
             var headers = new[] { "Barkod", "Liste Fiyatı", "Satış Fiyatı", "Maliyet Fiyatı" };
-            for (var i = 0; i < headers.Length; i++)
-                ws.Cell(1, i + 1).Value = headers[i];
 
-            ws.Row(1).Style.Font.Bold = true;
-
-            for (var i = 0; i < data.Count; i++)
+            WriteToExcelSheets(workbook, "Fiyatlar", headers, data, (ws, rowNum, row) =>
             {
-                ws.Cell(i + 2, 1).Value = data[i].Barcode ?? "";
-                ws.Cell(i + 2, 2).Value = data[i].ListPrice;
-                ws.Cell(i + 2, 3).Value = data[i].SalePrice;
-                ws.Cell(i + 2, 4).Value = data[i].CostPrice;
-            }
-
-            ws.Columns().AdjustToContents();
+                ws.Cell(rowNum, 1).Value = row.Barcode ?? "";
+                ws.Cell(rowNum, 2).Value = row.ListPrice;
+                ws.Cell(rowNum, 3).Value = row.SalePrice;
+                ws.Cell(rowNum, 4).Value = row.CostPrice;
+            });
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
@@ -517,24 +515,16 @@ public sealed class BulkOperationManager(
                 .ToListAsync();
 
             using var workbook = new XLWorkbook();
-            var ws = workbook.AddWorksheet("Stok");
-
             var headers = new[] { "Barkod", "Şube ID", "Şube Adı", "Toplam Stok", "Güncel Stok" };
-            for (var i = 0; i < headers.Length; i++)
-                ws.Cell(1, i + 1).Value = headers[i];
 
-            ws.Row(1).Style.Font.Bold = true;
-
-            for (var i = 0; i < data.Count; i++)
+            WriteToExcelSheets(workbook, "Stok", headers, data, (ws, rowNum, row) =>
             {
-                ws.Cell(i + 2, 1).Value = data[i].Barcode ?? "";
-                ws.Cell(i + 2, 2).Value = data[i].BranchOfficeId;
-                ws.Cell(i + 2, 3).Value = data[i].BranchOfficeName;
-                ws.Cell(i + 2, 4).Value = data[i].FirstTotalStock;
-                ws.Cell(i + 2, 5).Value = data[i].CurrentStock;
-            }
-
-            ws.Columns().AdjustToContents();
+                ws.Cell(rowNum, 1).Value = row.Barcode ?? "";
+                ws.Cell(rowNum, 2).Value = row.BranchOfficeId;
+                ws.Cell(rowNum, 3).Value = row.BranchOfficeName;
+                ws.Cell(rowNum, 4).Value = row.FirstTotalStock;
+                ws.Cell(rowNum, 5).Value = row.CurrentStock;
+            });
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
@@ -585,6 +575,35 @@ public sealed class BulkOperationManager(
             logger.LogError(ex, "Template generation failed for type {Type}", type);
             return Task.FromResult<IDataResult<byte[]>>(
                 new ErrorDataResult<byte[]>([], $"Şablon oluşturulurken hata oluştu: {ex.Message}"));
+        }
+    }
+
+    private static void WriteToExcelSheets<T>(
+        XLWorkbook workbook, string sheetName, string[] headers,
+        List<T> data, Action<IXLWorksheet, int, T> writeRow)
+    {
+        const int maxRowsPerSheet = 1_048_575; // Excel limit minus header row
+
+        var totalSheets = (int)Math.Ceiling((double)data.Count / maxRowsPerSheet);
+        if (totalSheets == 0) totalSheets = 1;
+
+        for (var sheetIdx = 0; sheetIdx < totalSheets; sheetIdx++)
+        {
+            var name = sheetIdx == 0 ? sheetName : $"{sheetName} ({sheetIdx + 1})";
+            var ws = workbook.AddWorksheet(name);
+
+            for (var h = 0; h < headers.Length; h++)
+                ws.Cell(1, h + 1).Value = headers[h];
+            ws.Row(1).Style.Font.Bold = true;
+
+            var start = sheetIdx * maxRowsPerSheet;
+            var count = Math.Min(maxRowsPerSheet, data.Count - start);
+
+            for (var i = 0; i < count; i++)
+                writeRow(ws, i + 2, data[start + i]);
+
+            if (data.Count <= 50_000)
+                ws.Columns().AdjustToContents();
         }
     }
 
