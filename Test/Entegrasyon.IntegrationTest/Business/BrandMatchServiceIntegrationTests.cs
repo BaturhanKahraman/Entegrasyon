@@ -175,6 +175,74 @@ public class BrandMatchServiceIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task GetBrandMappingsByBrandId_ShouldReturnAllMappingsForBrand()
+    {
+        // Arrange — brand1'e iki farkli marketplace'te mapping olustur
+        using var dbContext = CreateDbContext();
+
+        // Ikinci marketplace ekle
+        dbContext.MarketPlaces.Add(new MarketPlace
+        {
+            Id = 2,
+            Name = "Hepsiburada",
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        dbContext.BrandMarketPlaceMatches.AddRange(
+            new BrandMarketPlaceMatch { ApplicationBrandId = _brand1Id, MarketPlaceId = 1, MarketPlaceBrandId = 6001 },
+            new BrandMarketPlaceMatch { ApplicationBrandId = _brand1Id, MarketPlaceId = 2, MarketPlaceBrandId = 6002 }
+        );
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var (service, scope) = GetScopedService<IBrandMatchService>();
+        using var _ = scope;
+        var result = await service.GetBrandMappingsByBrandIdAsync(_brand1Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(2);
+        result.Data.Should().OnlyContain(m => m.ApplicationBrandId == _brand1Id);
+    }
+
+    [Fact]
+    public async Task GetBrandMappingsByBrandId_ShouldReturnEmpty_WhenNoMappingsExist()
+    {
+        // Arrange — brand3 icin hicbir mapping yok
+
+        // Act
+        var (service, scope) = GetScopedService<IBrandMatchService>();
+        using var _ = scope;
+        var result = await service.GetBrandMappingsByBrandIdAsync(_brand3Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetBrandMappingsByBrandId_ShouldNotReturnOtherBrandMappings()
+    {
+        // Arrange — brand1 ve brand2'ye mapping olustur, sadece brand1'inkiler donmeli
+        using var dbContext = CreateDbContext();
+        dbContext.BrandMarketPlaceMatches.AddRange(
+            new BrandMarketPlaceMatch { ApplicationBrandId = _brand1Id, MarketPlaceId = 1, MarketPlaceBrandId = 5001 },
+            new BrandMarketPlaceMatch { ApplicationBrandId = _brand2Id, MarketPlaceId = 1, MarketPlaceBrandId = 5002 }
+        );
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var (service, scope) = GetScopedService<IBrandMatchService>();
+        using var _ = scope;
+        var result = await service.GetBrandMappingsByBrandIdAsync(_brand1Id);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(1);
+        result.Data.First().ApplicationBrandId.Should().Be(_brand1Id);
+    }
+
+    [Fact]
     public async Task GetBrandMappingsSummary_ShouldReturnCorrectCounts()
     {
         // Arrange — brand1 ve brand2'ye mapping olustur (summary yalnizca Trendyol=1 icin)

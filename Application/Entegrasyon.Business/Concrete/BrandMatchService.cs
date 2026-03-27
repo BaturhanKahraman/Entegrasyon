@@ -74,6 +74,19 @@ public class BrandMatchService(
         return mapper.Map<List<BrandMarketPlaceMatch>, List<BrandMarketPlaceMatchDto>>(mappings);
     }
 
+    public async Task<IDataResult<List<BrandMarketPlaceMatchDto>>> GetBrandMappingsByBrandIdAsync(int brandId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var mappings = await dbContext.BrandMarketPlaceMatches
+            .Include(m => m.MarketPlace)
+            .Include(m => m.ApplicationBrand)
+            .Where(m => m.ApplicationBrandId == brandId)
+            .ToListAsync();
+
+        var dtos = mapper.Map<List<BrandMarketPlaceMatch>, List<BrandMarketPlaceMatchDto>>(mappings);
+        return new SuccessDataResult<List<BrandMarketPlaceMatchDto>>(dtos);
+    }
+
     public async Task<List<BrandDto>> GetUnmappedBrandsAsync(int marketPlaceId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
