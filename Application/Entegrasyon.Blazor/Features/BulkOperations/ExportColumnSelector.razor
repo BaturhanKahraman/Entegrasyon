@@ -1,0 +1,21 @@
+@using Entegrasyon.Entity.Dtos.BulkOperations
+
+@if (AvailableColumns is not null && AvailableColumns.Count > 0)
+{
+    <MudText Typo="Typo.subtitle2" Class="mb-2">Kolonlar</MudText>
+    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1">
+        @foreach (var col in AvailableColumns)
+        {
+            <MudChip T="string"
+                     Color="@(IsSelected(col.Key) ? Color.Primary : Color.Default)"
+                     Variant="@(IsSelected(col.Key) ? Variant.Filled : Variant.Outlined)"
+                     OnClick="@(() => ToggleColumn(col.Key))">
+                @col.DisplayName
+            </MudChip>
+        }
+    </MudStack>
+    <MudStack Row="true" Spacing="2" Class="mt-2">
+        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="SelectAll">Tumunu Sec</MudButton>
+        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="DeselectAll">Tumunu Kaldir</MudButton>
+    </MudStack>
+}

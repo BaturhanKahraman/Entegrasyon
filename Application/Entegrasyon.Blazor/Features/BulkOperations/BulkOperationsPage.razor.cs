@@ -18,10 +18,31 @@ public partial class BulkOperationsPage : ComponentBase
     private bool _isExporting;
     private BulkOperationType _currentExportType;
     private DateRange? _exportDateRange;
+    private CancellationTokenSource? _exportCts;
+    private ExportFormat _exportFormat = ExportFormat.Excel;
+    private List<ExportColumnDto>? _availableProductColumns;
+    private List<ExportColumnDto>? _availablePriceColumns;
+    private List<ExportColumnDto>? _availableStockColumns;
+    private List<string>? _selectedProductColumns;
+    private List<string>? _selectedPriceColumns;
+    private List<string>? _selectedStockColumns;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadRecentOperationsAsync();
+        await LoadAvailableColumnsAsync();
+    }
+
+    private async Task LoadAvailableColumnsAsync()
+    {
+        var productResult = await BulkOperationManager.GetAvailableColumnsAsync(BulkOperationType.ProductExport);
+        if (productResult.Success) _availableProductColumns = productResult.Data;
+
+        var priceResult = await BulkOperationManager.GetAvailableColumnsAsync(BulkOperationType.PriceExport);
+        if (priceResult.Success) _availablePriceColumns = priceResult.Data;
+
+        var stockResult = await BulkOperationManager.GetAvailableColumnsAsync(BulkOperationType.StockExport);
+        if (stockResult.Success) _availableStockColumns = stockResult.Data;
     }
 
     private async Task LoadRecentOperationsAsync()
@@ -97,22 +118,34 @@ public partial class BulkOperationsPage : ComponentBase
     {
         _isExporting = true;
         _currentExportType = type;
+        _exportCts = new CancellationTokenSource();
         StateHasChanged();
 
         try
         {
+            var selectedColumns = type switch
+            {
+                BulkOperationType.ProductExport => _selectedProductColumns,
+                BulkOperationType.PriceExport => _selectedPriceColumns,
+                BulkOperationType.StockExport => _selectedStockColumns,
+                _ => null
+            };
+
             var filter = new ExportFilterDto(
                 DateFrom: _exportDateRange?.Start.HasValue == true
                     ? new DateTimeOffset(_exportDateRange.Start.Value, TimeSpan.Zero)
                     : null,
                 DateTo: _exportDateRange?.End.HasValue == true
                     ? new DateTimeOffset(_exportDateRange.End.Value.AddDays(1).AddTicks(-1), TimeSpan.Zero)
-                    : null);
+                    : null,
+                Format: _exportFormat,
+                SelectedColumns: selectedColumns);
+            var ct = _exportCts.Token;
             var result = type switch
             {
-                BulkOperationType.ProductExport => await BulkOperationManager.ExportProductsAsync(filter),
-                BulkOperationType.PriceExport => await BulkOperationManager.ExportPricesAsync(filter),
-                BulkOperationType.StockExport => await BulkOperationManager.ExportStockAsync(filter),
+                BulkOperationType.ProductExport => await BulkOperationManager.ExportProductsAsync(filter, ct),
+                BulkOperationType.PriceExport => await BulkOperationManager.ExportPricesAsync(filter, ct),
+                BulkOperationType.StockExport => await BulkOperationManager.ExportStockAsync(filter, ct),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
 
@@ -122,22 +155,34 @@ public partial class BulkOperationsPage : ComponentBase
                 return;
             }
 
+            var ext = _exportFormat == ExportFormat.Csv ? "csv" : "xlsx";
             var fileName = type switch
             {
-                BulkOperationType.ProductExport => $"urunler-{DateTime.Now:yyyyMMdd-HHmm}.xlsx",
-                BulkOperationType.PriceExport => $"fiyatlar-{DateTime.Now:yyyyMMdd-HHmm}.xlsx",
-                BulkOperationType.StockExport => $"stoklar-{DateTime.Now:yyyyMMdd-HHmm}.xlsx",
-                _ => "export.xlsx"
+                BulkOperationType.ProductExport => $"urunler-{DateTime.Now:yyyyMMdd-HHmm}.{ext}",
+                BulkOperationType.PriceExport => $"fiyatlar-{DateTime.Now:yyyyMMdd-HHmm}.{ext}",
+                BulkOperationType.StockExport => $"stoklar-{DateTime.Now:yyyyMMdd-HHmm}.{ext}",
+                _ => $"export.{ext}"
             };
 
             await DownloadFileAsync(result.Data, fileName);
             Snackbar.Add("Dışa aktarma tamamlandı.", Severity.Success);
         }
+        catch (OperationCanceledException)
+        {
+            Snackbar.Add("Dışa aktarma iptal edildi.", Severity.Info);
+        }
         finally
         {
             _isExporting = false;
+            _exportCts?.Dispose();
+            _exportCts = null;
             StateHasChanged();
         }
+    }
+
+    private void CancelExport()
+    {
+        _exportCts?.Cancel();
     }
 
     private async Task DownloadFileAsync(byte[] fileBytes, string fileName)
@@ -161,6 +206,7 @@ public partial class BulkOperationsPage : ComponentBase
         BulkOperationStatus.Completed => Color.Success,
         BulkOperationStatus.CompletedWithErrors => Color.Warning,
         BulkOperationStatus.Failed => Color.Error,
+        BulkOperationStatus.Cancelled => Color.Warning,
         _ => Color.Default
     };
 
@@ -171,6 +217,7 @@ public partial class BulkOperationsPage : ComponentBase
         BulkOperationStatus.Completed => "Tamamlandı",
         BulkOperationStatus.CompletedWithErrors => "Kısmi Başarılı",
         BulkOperationStatus.Failed => "Başarısız",
+        BulkOperationStatus.Cancelled => "İptal Edildi",
         _ => "Bilinmiyor"
     };
 }

@@ -100,6 +100,7 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // Toplu İşlem servisleri
             services.AddScoped<ExcelParser>();
+            services.AddScoped<CsvParser>();
             services.AddScoped<ProductImportValidator>();
             services.AddScoped<IBulkOperationManager, BulkOperationManager>();
 
