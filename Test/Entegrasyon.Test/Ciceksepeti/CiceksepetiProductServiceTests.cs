@@ -39,8 +39,7 @@ public class CiceksepetiProductServiceTests : Entegrasyon.UnitTest.BaseTest
         _mockValidator.Object,
         _mockActivityLogger.Object,
         mockApplicationLogger.Object,
-        _mockLogger.Object,
-        mockContextFactory.Object);
+        _mockLogger.Object);
 
     private static HttpResponseMessage CreateJsonResponse<T>(T data, HttpStatusCode status = HttpStatusCode.OK)
     {

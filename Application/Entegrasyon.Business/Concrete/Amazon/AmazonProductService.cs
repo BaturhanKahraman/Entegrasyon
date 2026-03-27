@@ -28,12 +28,12 @@ public sealed class AmazonProductService(
         // 1. Validation
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Amazon mapping doğrulaması başarılı" : validationResult.Message,
+            validationResult.Success ? "Amazon mapping doğrulaması başarılı" : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: "Amazon");
 
         if (!validationResult.Success)
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
 
         // 2. Mapping
         await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
@@ -53,7 +53,7 @@ public sealed class AmazonProductService(
 
         var mapResult = await productMapper.MapProductAsync(productId, productType, ct);
         if (!mapResult.Success)
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
 
         // 3. Publish
         try
@@ -64,7 +64,7 @@ public sealed class AmazonProductService(
             var result = await listingService.PutListingItemAsync(sellerId, sku, mapResult.Data!, marketplaceIds, ct);
 
             if (!result.Success || result.Data == null)
-                return new ErrorDataResult<string>(null, result.Message);
+                return new ErrorDataResult<string>(null!, result.Message!);
 
             if (result.Data.Status == "INVALID")
             {
@@ -73,7 +73,7 @@ public sealed class AmazonProductService(
                     : "Bilinmeyen validasyon hatası";
                 if (pm != null) { pm.Status = MarketplaceProductStatus.Failed; pm.StatusMessage = issues; }
                 await dbContext.SaveChangesAsync(ct);
-                return new ErrorDataResult<string>(null, $"Amazon INVALID: {issues}");
+                return new ErrorDataResult<string>(null!, $"Amazon INVALID: {issues}");
             }
 
             // ACCEPTED
@@ -94,7 +94,7 @@ public sealed class AmazonProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon publish exception: {ProductId}", productId);
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -111,7 +111,7 @@ public sealed class AmazonProductService(
     {
         // PutListingItem ile full update (aynı publish flow)
         var result = await PublishProductAsync(productId, ct);
-        return result.Success ? new SuccessResult("Ürün güncellendi.") : new ErrorResult(result.Message);
+        return result.Success ? new SuccessResult("Ürün güncellendi.") : new ErrorResult(result.Message!);
     }
 
     public async Task<IResult> DeleteProductAsync(Guid productId, CancellationToken ct = default)

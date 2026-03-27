@@ -33,10 +33,10 @@ public sealed class HepsiburadaProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product == null)
-            return new ErrorDataResult<List<HepsiburadaProductItem>>(null, "Ürün bulunamadı.");
+            return new ErrorDataResult<List<HepsiburadaProductItem>>(null!, "Ürün bulunamadı.");
 
         if (!product.ProductVariants.Any())
-            return new ErrorDataResult<List<HepsiburadaProductItem>>(null, "Ürünün varyantı yok.");
+            return new ErrorDataResult<List<HepsiburadaProductItem>>(null!, "Ürünün varyantı yok.");
 
         // Marketplace bilgileri
         var marketplace = await dbContext.MarketPlaces
@@ -44,7 +44,7 @@ public sealed class HepsiburadaProductMapper(
             .FirstOrDefaultAsync(m => m.Id == HbMarketPlaceId);
 
         if (marketplace == null)
-            return new ErrorDataResult<List<HepsiburadaProductItem>>(null, "Hepsiburada marketplace kaydı bulunamadı.");
+            return new ErrorDataResult<List<HepsiburadaProductItem>>(null!, "Hepsiburada marketplace kaydı bulunamadı.");
 
         var merchantId = marketplace.SellerId ?? "";
 
@@ -53,7 +53,7 @@ public sealed class HepsiburadaProductMapper(
             .FirstOrDefaultAsync(cm => cm.CategoryId == product.CategoryId && cm.MarketPlaceId == HbMarketPlaceId);
 
         if (categoryMatch == null)
-            return new ErrorDataResult<List<HepsiburadaProductItem>>(null, "Kategori Hepsiburada'ya eşleştirilmemiş.");
+            return new ErrorDataResult<List<HepsiburadaProductItem>>(null!, "Kategori Hepsiburada'ya eşleştirilmemiş.");
 
         // Marketplace override'ları
         var productMarketplace = await dbContext.ProductMarketplaces
@@ -131,7 +131,7 @@ public sealed class HepsiburadaProductMapper(
             var imageIndex = 1;
             foreach (var image in variant.Images.Take(5))
             {
-                var publicUrl = fileStorage.GetPublicUrl(image.StorageKey);
+                var publicUrl = fileStorage.GetPublicUrl(image.StorageKey!);
                 attributes[$"Image{imageIndex}"] = publicUrl;
                 imageIndex++;
             }

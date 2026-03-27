@@ -23,7 +23,7 @@ public sealed class AmazonOrderService(
 
             var response = await apiClient.GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<List<AmazonOrderDto>>(null, $"Orders API error: {response.StatusCode}");
+                return new ErrorDataResult<List<AmazonOrderDto>>(null!,$"Orders API error: {response.StatusCode}");
 
             var data = await response.Content.ReadFromJsonAsync<AmazonOrderListResponse>(cancellationToken: ct);
             return new SuccessDataResult<List<AmazonOrderDto>>(data?.Payload?.Orders ?? []);
@@ -31,7 +31,7 @@ public sealed class AmazonOrderService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon get orders failed");
-            return new ErrorDataResult<List<AmazonOrderDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<AmazonOrderDto>>(null!,$"Hata: {ex.Message}");
         }
     }
 
@@ -41,14 +41,14 @@ public sealed class AmazonOrderService(
         {
             var response = await apiClient.GetAsync($"/orders/v0/orders/{orderId}", ct);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<AmazonOrderDto>(null, $"Order not found: {response.StatusCode}");
+                return new ErrorDataResult<AmazonOrderDto>(null!, $"Order not found: {response.StatusCode}");
             var data = await response.Content.ReadFromJsonAsync<AmazonOrderDto>(cancellationToken: ct);
-            return new SuccessDataResult<AmazonOrderDto>(data);
+            return new SuccessDataResult<AmazonOrderDto>(data!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon get order failed: {OrderId}", orderId);
-            return new ErrorDataResult<AmazonOrderDto>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<AmazonOrderDto>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -58,14 +58,14 @@ public sealed class AmazonOrderService(
         {
             var response = await apiClient.GetAsync($"/orders/v0/orders/{orderId}/orderItems", ct);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<List<AmazonOrderItemDto>>(null, $"Order items error: {response.StatusCode}");
+                return new ErrorDataResult<List<AmazonOrderItemDto>>(null!,$"Order items error: {response.StatusCode}");
             var data = await response.Content.ReadFromJsonAsync<AmazonOrderItemListResponse>(cancellationToken: ct);
             return new SuccessDataResult<List<AmazonOrderItemDto>>(data?.Payload?.OrderItems ?? []);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon get order items failed: {OrderId}", orderId);
-            return new ErrorDataResult<List<AmazonOrderItemDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<AmazonOrderItemDto>>(null!,$"Hata: {ex.Message}");
         }
     }
 

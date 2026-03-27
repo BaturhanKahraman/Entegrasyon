@@ -12,7 +12,6 @@
         <MudFileUpload T="IReadOnlyList<IBrowserFile>"
                        FilesChanged="OnFilesUploaded"
                        Accept=".jpg,.jpeg,.png,.webp"
-                       Multiple="true"
                        MaximumFileCount="50">
             <ActivatorContent>
                 <MudPaper Class="pa-6 d-flex flex-column align-center justify-center mud-border-primary"
@@ -84,7 +83,7 @@
                                                                Color="@(IsCover(vIdx, imgId) ? Color.Warning : Color.Default)"
                                                                Size="Size.Small"
                                                                OnClick="@(() => SetCover(vIdx, imgId))"
-                                                               Title="Kapak görseli yap" />
+                                                               title="Kapak görseli yap" />
                                             }
                                         </MudStack>
                                     </td>

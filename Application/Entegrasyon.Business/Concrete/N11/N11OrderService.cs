@@ -80,7 +80,7 @@ public sealed class N11OrderService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 DetailedOrderList başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11OrderDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11OrderDto>>(null!, statusCheck.Message!);
         }
 
         var orders = response
@@ -120,7 +120,7 @@ public sealed class N11OrderService(
         {
             logger.LogError("N11 OrderDetail başarısız — OrderId={OrderId}, Message={Message}",
                 orderId, statusCheck.Message);
-            return new ErrorDataResult<N11OrderDto>(null!, statusCheck.Message);
+            return new ErrorDataResult<N11OrderDto>(null!, statusCheck.Message!);
         }
 
         var orderElement = response.Element("orderDetail")?.Element("order")

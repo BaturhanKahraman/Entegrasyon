@@ -23,7 +23,7 @@ public class ProductVariantManager : IProductVariantManager
     public async Task<ProductVariant> GetById(Guid id)
     {
         using var dbContext = _contextFactory.CreateDbContext();
-        return await dbContext.ProductVariants.FirstOrDefaultAsync(x => x.Id == id);
+        return (await dbContext.ProductVariants.FirstOrDefaultAsync(x => x.Id == id))!;
     }
 
     public async Task<string> GetLastProductVariantBarcode()
@@ -31,13 +31,13 @@ public class ProductVariantManager : IProductVariantManager
         using var dbContext = _contextFactory.CreateDbContext();
         return (await dbContext.ProductVariants.AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
-            .FirstOrDefaultAsync(x => x.Barcode != null))?.Barcode;
+            .FirstOrDefaultAsync(x => x.Barcode != null))?.Barcode ?? "";
     }
 
     public async Task<List<string>> GetAllVariantsBarcodes()
     {
         using var dbContext = _contextFactory.CreateDbContext();
-        return await dbContext.ProductVariants.Select(x => x.Barcode).ToListAsync();
+        return await dbContext.ProductVariants.Select(x => x.Barcode!).ToListAsync();
     }
 
     public async Task<IDataResult<ProductVariantSaleSearchDto>> GetProductVariantByBarcode(string barcode)
@@ -47,13 +47,13 @@ public class ProductVariantManager : IProductVariantManager
             .Where(x => x.Barcode == barcode)
             .Select(x => new ProductVariantSaleSearchDto(
                 x.Id, x.Product.Title,
-                x.Images.FirstOrDefault(img => img.IsMain).Src ?? x.Images.FirstOrDefault().Src,
+                x.Images.FirstOrDefault(img => img.IsMain)!.Src ?? x.Images.FirstOrDefault()!.Src ?? "",
                 x.VatRate, x.ListPrice, x.SalePrice, x.CostPrice,
                 x.BranchOfficeStocks.Sum(z => z.CurrentStock),
                 x.Product.Category.Name))
             .FirstOrDefaultAsync();
         if (result == null)
-            return new ErrorDataResult<ProductVariantSaleSearchDto>(null, Messages.ProductVariantNotFound);
+            return new ErrorDataResult<ProductVariantSaleSearchDto>(null!, Messages.ProductVariantNotFound);
         return new SuccessDataResult<ProductVariantSaleSearchDto>(result, Messages.ProductVariantGettingSuccessful);
     }
 
@@ -67,7 +67,7 @@ public class ProductVariantManager : IProductVariantManager
             .OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.UpdatedAt)
             .Select(x => new ProductVariantSaleSearchDto(
                 x.Id, x.Product.Title,
-                x.Images.FirstOrDefault(img => img.IsMain).Src ?? x.Images.FirstOrDefault().Src,
+                x.Images.FirstOrDefault(img => img.IsMain)!.Src ?? x.Images.FirstOrDefault()!.Src ?? "",
                 x.VatRate, x.ListPrice, x.SalePrice, x.CostPrice,
                 x.BranchOfficeStocks.Sum(z => z.CurrentStock),
                 x.Product.Category.Name))

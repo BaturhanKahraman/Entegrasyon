@@ -33,7 +33,7 @@ public sealed class PazaramaFinanceService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetPaymentAgreement başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PazaramaFinanceData>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PazaramaFinanceData>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<PazaramaFinanceData>>();
@@ -42,7 +42,7 @@ public sealed class PazaramaFinanceService(
             {
                 var msg = parsed?.Message ?? "Finans verisi alınamadı";
                 logger.LogWarning("Pazarama GetPaymentAgreement yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<PazaramaFinanceData>(null, msg);
+                return new ErrorDataResult<PazaramaFinanceData>(null!, msg);
             }
 
             var data = parsed.Data ?? new PazaramaFinanceData(
@@ -56,7 +56,7 @@ public sealed class PazaramaFinanceService(
         {
             logger.LogError(ex, "Pazarama GetPaymentAgreement exception. StartDate: {Start}, EndDate: {End}",
                 startDate, endDate);
-            return new ErrorDataResult<PazaramaFinanceData>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PazaramaFinanceData>(null!, $"Hata: {ex.Message}");
         }
     }
 }

@@ -35,7 +35,7 @@ public class AccountController(
         var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
         if (!authResult.Success) return RedirectToAction("Index");
         var auth = authResult.Data;
-        ViewBag.Profile = new StorefrontProfileDto(auth.Customer.Name, auth.Customer.Surname, auth.Customer.PhoneNumber);
+        ViewBag.Profile = new StorefrontProfileDto(auth.Customer.Name!, auth.Customer.Surname!, auth.Customer.PhoneNumber);
         ViewBag.Email = auth.Email;
         return View();
     }

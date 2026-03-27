@@ -55,7 +55,7 @@ public class ProductManager(
             officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
         );
         if (check != null)
-            return new ErrorDataResult<Product>(null!, check.Message);
+            return new ErrorDataResult<Product>(null!, check.Message!);
 
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = await barcodeService.GenerateAsync();
@@ -122,9 +122,9 @@ public class ProductManager(
                 )).ToList(),
                 p.AttributeKeyValues.Select(akv => new AttributeKeyValueDto(
                     akv.CategoryAttributeId,
-                    akv.CategoryAttribute.CategoryAttributeKey,
+                    akv.CategoryAttribute.CategoryAttributeKey!,
                     akv.AttributeValueId,
-                    akv.AttributeValue != null ? akv.AttributeValue.Name : string.Empty,
+                    akv.AttributeValue != null ? akv.AttributeValue.Name! : string.Empty,
                     akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId) == null ? false : akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId)!.IsRequired,
                     akv.CustomValue ?? string.Empty)
                 ).ToList()))
@@ -178,7 +178,7 @@ public class ProductManager(
             ? new ErrorResult("Bu stok kodu başka bir ürün tarafından kullanılıyor.")
             : new SuccessResult();
         var check = LogicRunner.Run(stockCodeResult);
-        if (check != null) return new ErrorResult(check.Message);
+        if (check != null) return new ErrorResult(check.Message!);
 
         var product = await dbContext.MainProducts
             .AsTracking()
@@ -261,20 +261,20 @@ public class ProductManager(
         var result = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new ProductDetailDto(
-                p.Id, p.Title, p.Description, p.StockCode, p.Season, p.Year, p.BrandId, p.Brand.Name, p.CategoryId, p.Category.Name,
+                p.Id, p.Title, p.Description ?? "", p.StockCode ?? "", p.Season ?? "", p.Year ?? "", p.BrandId, p.Brand!.Name!, p.CategoryId, p.Category!.Name!,
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 p.ProductVariants.Select(pv => new ProductVariantDetailDto(
-                    pv.Id, pv.Barcode, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
+                    pv.Id, pv.Barcode!, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
                     pv.Images.OrderBy(img => img.DisplayOrder)
-                        .Select(img => img.StorageKey != null ? img.StorageKey + "_original.webp" : img.Src)
+                        .Select(img => img.StorageKey != null ? img.StorageKey + "_original.webp" : img.Src ?? "")
                         .ToArray(),
-                    pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
+                    pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name!, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
                 )),
                 p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
-                    kv.CategoryAttribute.CategoryAttributeKey,
-                    kv.CategoryAttribute.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey,
-                    kv.AttributeValueId.HasValue ? kv.AttributeValue.Name : kv.CustomValue)),
+                    kv.CategoryAttribute.CategoryAttributeKey!,
+                    kv.CategoryAttribute!.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey ?? "",
+                    kv.AttributeValueId.HasValue ? kv.AttributeValue!.Name! : kv.CustomValue ?? "")),
                 p.UpdatedAt
             ))
             .FirstOrDefaultAsync();
@@ -292,7 +292,7 @@ public class ProductManager(
             }
         }
 
-        return new SuccessDataResult<ProductDetailDto>(result);
+        return new SuccessDataResult<ProductDetailDto>(result!);
     }
 
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)
@@ -303,7 +303,7 @@ public class ProductManager(
         if (!string.IsNullOrEmpty(dto.FullTextSearchKey))
             query = query.Where(x =>
                 x.SearchVector.Matches(dto.FullTextSearchKey.ToFullTextSearchQuery()) ||
-                x.ProductVariants.Any(pv => pv.Barcode.Contains(dto.FullTextSearchKey)));
+                x.ProductVariants.Any(pv => pv.Barcode!.Contains(dto.FullTextSearchKey)));
 
         int total = await query.CountAsync();
         var items = await query
@@ -311,7 +311,7 @@ public class ProductManager(
             .Skip(dto.PageIndex * dto.PageSize)
             .Take(dto.PageSize)
             .Select(x => new ProductsDetailDto(
-                x.Id, x.Title, x.Description, x.StockCode, x.Brand.Name, x.Category.Name,
+                x.Id, x.Title, x.Description ?? "", x.StockCode ?? "", x.Brand!.Name!, x.Category!.Name!,
                 x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
                 x.ProductVariants.Count()))
@@ -442,7 +442,7 @@ public class ProductManager(
     {
         var result = await GetStorefrontProductsAsync(new StorefrontCatalogQuery(PageSize: count));
         if (!result.Success)
-            return new ErrorDataResult<List<StorefrontProductCardDto>>(new List<StorefrontProductCardDto>(), result.Message);
+            return new ErrorDataResult<List<StorefrontProductCardDto>>(new List<StorefrontProductCardDto>(), result.Message!);
         return new SuccessDataResult<List<StorefrontProductCardDto>>(result.Data.Items.ToList());
     }
 
@@ -450,7 +450,7 @@ public class ProductManager(
     {
         var result = await GetStorefrontProductsAsync(new StorefrontCatalogQuery(SortBy: "bestseller", PageSize: count));
         if (!result.Success)
-            return new ErrorDataResult<List<StorefrontProductCardDto>>(new List<StorefrontProductCardDto>(), result.Message);
+            return new ErrorDataResult<List<StorefrontProductCardDto>>(new List<StorefrontProductCardDto>(), result.Message!);
         return new SuccessDataResult<List<StorefrontProductCardDto>>(result.Data.Items.ToList());
     }
 
@@ -505,7 +505,7 @@ public class ProductManager(
     {
         var productResult = await GetProductBySeoSlugAsync(seoSlug);
         if (!productResult.Success || productResult.Data is null)
-            return new ErrorDataResult<StorefrontProductDetailDto>(null!, productResult.Message);
+            return new ErrorDataResult<StorefrontProductDetailDto>(null!, productResult.Message!);
 
         var p = productResult.Data;
 

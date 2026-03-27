@@ -211,7 +211,7 @@ public partial class ProductEdit
     {
         var result = await SyncManager.SyncProductAsync(Id, marketPlaceId: 1);
         Snackbar.Add(
-            result.Success ? "Ürün marketplace gönderim kuyruğuna eklendi." : result.Message,
+            result.Success ? "Ürün marketplace gönderim kuyruğuna eklendi." : result.Message ?? "",
             result.Success ? Severity.Success : Severity.Error);
     }
 

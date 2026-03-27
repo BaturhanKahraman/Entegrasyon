@@ -36,7 +36,7 @@ public sealed class SaleManager(
                 StockMovementType.Sale, "Sale");
 
             if (!stockResult.Success)
-                return new ErrorResult(stockResult.Message);
+                return new ErrorResult(stockResult.Message!);
         }
 
         dbContext.Sales.Add(sale);
@@ -69,7 +69,7 @@ public sealed class SaleManager(
                 x.DiscountVoucherId.HasValue || x.GeneralDiscount > 0 || x.SaleItems.Any(s => s.DiscountPercent > 0),
                 x.GeneralDiscount,
                 x.SalePerson.Name + ' ' + x.SalePerson.Surname,
-                x.Customer.FullName,
+                x.Customer!.FullName!,
                 x.SaleItems.Count(),
                 x.SaleItems.Sum(si => si.Quantity),
                 x.SaleItems.Sum(si => si.UnitPrice - si.UnitPrice * ((decimal)si.DiscountPercent / 100))))

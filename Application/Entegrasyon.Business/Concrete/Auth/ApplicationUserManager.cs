@@ -35,8 +35,8 @@ public class ApplicationUserManager(
         await using var context = await contextFactory.CreateDbContextAsync();
         var user = mapper.Map<AddUserDto, ApplicationUser>(dto);
         user.NeedsTakeNewPassword = true;
-        user.NormalizedUserName = user.UserName.ToUpperInvariant();
-        user.NormalizedEmail = user.Email.ToUpperInvariant();
+        user.NormalizedUserName = user.UserName!.ToUpperInvariant();
+        user.NormalizedEmail = user.Email!.ToUpperInvariant();
         user.CreatedAt = DateTimeOffset.UtcNow;
 
         var logicResult = LogicRunner.Run(await CheckSameUserName(context, user.NormalizedUserName));
@@ -129,14 +129,14 @@ public class ApplicationUserManager(
             nameof(ApplicationUser.NormalizedEmail))
             .Select(u=>
                 new UserDetailListDto(u.Id,
-                    u.Name,
-                    u.Surname,
-                    u.UserName,
+                    u.Name!,
+                    u.Surname!,
+                    u.UserName!,
                     u.IsActive,
                     u.IsTwoFactorAuthActive,
                     u.NeedsTakeNewPassword,
                     u.CreatedAt,
-                    u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name : ""
+                    u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name! : ""
                     ))
             .ToPageableAsync(request);
 
@@ -149,19 +149,19 @@ public class ApplicationUserManager(
         var result = await context.Users.AsNoTracking()
             .Where(u => u.Id == id)
             .Select(u => new UserDetailDto(
-                u.Id, u.Name, u.Surname, u.UserName,
+                u.Id, u.Name!, u.Surname!, u.UserName!,
                 u.IsActive, u.IsTwoFactorAuthActive, u.NeedsTakeNewPassword, u.CreatedAt,
-                u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name : "",
+                u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name! : "",
                 u.Roles.Select(r => r.Name).FirstOrDefault() ?? ""))
             .FirstOrDefaultAsync();
-        return new SuccessDataResult<UserDetailDto>(result);
+        return new SuccessDataResult<UserDetailDto>(result!);
     }
 
     public async Task<IDataResult<UserDetailDto>> GetUserDetails(string id)
     {
         var convertable = Guid.TryParse(id, out var guidId);
         if (!convertable)
-            return new ErrorDataResult<UserDetailDto>(null, Messages.ProcessFailed);
+            return new ErrorDataResult<UserDetailDto>(null!, Messages.ProcessFailed);
         return await GetUserDetails(guidId);
     }
 
@@ -171,16 +171,16 @@ public class ApplicationUserManager(
         var result = await context.Users.AsNoTracking()
             .Where(u => u.Id == id)
             .Select(u => new UserEditDetailDto(
-                u.Id, u.Name, u.Surname, u.UserName, u.Email,
+                u.Id, u.Name!, u.Surname!, u.UserName!, u.Email!,
                 u.IsActive, u.IsTwoFactorAuthActive, u.NeedsTakeNewPassword,
                 u.DefaultBranchOfficeId,
-                u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name : "",
+                u.DefaultBranchOffice != null ? u.DefaultBranchOffice.Name! : "",
                 u.Roles.Select(r => r.Id).ToList(),
                 u.Roles.Select(r => r.Name).FirstOrDefault() ?? "",
                 u.CreatedAt))
             .FirstOrDefaultAsync();
         if (result is null)
-            return new ErrorDataResult<UserEditDetailDto>(null, Messages.UserNotFound);
+            return new ErrorDataResult<UserEditDetailDto>(null!, Messages.UserNotFound);
         return new SuccessDataResult<UserEditDetailDto>(result);
     }
     public string GetActiveUserId() =>
@@ -194,7 +194,7 @@ public class ApplicationUserManager(
     public async ValueTask<ApplicationUser> GetUserById(Guid id)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
-        return await context.Users.FindAsync(id);
+        return (await context.Users.FindAsync(id))!;
     }
 
     public async Task<IResult> SetPassive(Guid userId, CancellationToken token = default)
@@ -221,7 +221,7 @@ public class ApplicationUserManager(
     public async Task<IResult> SoftDelete(Guid userId, CancellationToken token = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
-        var user = await context.Users.FindAsync(userId);
+        var user = (await context.Users.FindAsync(userId))!;
         user.IsDeleted = true;
         user.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync(token);

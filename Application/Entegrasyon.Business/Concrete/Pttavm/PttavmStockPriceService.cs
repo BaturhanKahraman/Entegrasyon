@@ -29,14 +29,14 @@ public sealed class PttavmStockPriceService(
         {
             const string msg = "Güncellenecek ürün listesi boş olamaz.";
             logger.LogWarning("PttavmStockPriceService: {Message}", msg);
-            return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+            return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
         }
 
         if (items.Count > MaxBatchSize)
         {
             var msg = $"Maksimum {MaxBatchSize} ürün/istek gönderilebilir. Gönderilen: {items.Count}";
             logger.LogWarning("PttavmStockPriceService: {Message}", msg);
-            return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+            return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
         }
 
         // ── Business Rules ──────────────────────────────────────────────────
@@ -49,7 +49,7 @@ public sealed class PttavmStockPriceService(
         {
             var msg = $"Stok değeri 0-{MaxStock} aralığında olmalıdır. Geçersiz barkodlar: {string.Join(", ", invalidStockItems)}";
             logger.LogWarning("PttavmStockPriceService: {Message}", msg);
-            return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+            return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
         }
 
         var invalidDiscountItems = items
@@ -61,7 +61,7 @@ public sealed class PttavmStockPriceService(
         {
             var msg = $"İndirim değeri 0-{MaxDiscount} aralığında olmalıdır. Geçersiz barkodlar: {string.Join(", ", invalidDiscountItems)}";
             logger.LogWarning("PttavmStockPriceService: {Message}", msg);
-            return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+            return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
         }
 
         // ── Execution ───────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ public sealed class PttavmStockPriceService(
                 await applicationLogManager.AddLog(
                     $"PttAVM stok/fiyat güncellemesi başarısız: {response.StatusCode}",
                     LogType.StockSync, LogAction.Update, null, ct);
-                return new ErrorDataResult<PttavmUpsertResult>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmUpsertResult>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmUpsertResult>(cancellationToken: ct);
@@ -84,7 +84,7 @@ public sealed class PttavmStockPriceService(
             {
                 const string msg = "PttAVM'den stok/fiyat yanıtı alınamadı.";
                 logger.LogWarning(msg);
-                return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+                return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
             }
 
             logger.LogInformation("PttAVM stock-prices update success: {Count} items, trackingId={TrackingId}",
@@ -98,7 +98,7 @@ public sealed class PttavmStockPriceService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM stock-prices update exception");
-            return new ErrorDataResult<PttavmUpsertResult>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmUpsertResult>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -127,12 +127,12 @@ public sealed class PttavmStockPriceService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM product search failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PttavmProductInfo>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PttavmProductInfo>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<List<PttavmProductInfo>>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<List<PttavmProductInfo>>(null, "Ürün arama sonucu alınamadı.");
+                return new ErrorDataResult<List<PttavmProductInfo>>(null!, "Ürün arama sonucu alınamadı.");
 
             logger.LogInformation("PttAVM product search: {Count} products found", result.Count);
             return new SuccessDataResult<List<PttavmProductInfo>>(result);
@@ -140,7 +140,7 @@ public sealed class PttavmStockPriceService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM product search exception");
-            return new ErrorDataResult<List<PttavmProductInfo>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PttavmProductInfo>>(null!, $"Hata: {ex.Message}");
         }
     }
 }

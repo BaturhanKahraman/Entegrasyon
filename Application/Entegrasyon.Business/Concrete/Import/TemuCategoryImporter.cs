@@ -58,7 +58,7 @@ public class TemuCategoryImporter : BaseCategoryImporterService
         catch (Exception ex)
         {
             Logger.LogError(ex, "Temu kategorileri çekilirken hata oluştu");
-            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

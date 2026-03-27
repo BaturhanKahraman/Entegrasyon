@@ -68,7 +68,7 @@ public class HepsiburadaCategoryImporter : BaseCategoryImporterService
                     Logger.LogError("Hepsiburada kategori API'si başarısız yanıt döndü: {Code} {Message}",
                         apiResponse?.Code, apiResponse?.Message);
                     return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(
-                        null, $"Hepsiburada API hatası: {apiResponse?.Message}");
+                        null!, $"Hepsiburada API hatası: {apiResponse?.Message}");
                 }
 
                 allCategories.AddRange(apiResponse.Data.Content);
@@ -83,7 +83,7 @@ public class HepsiburadaCategoryImporter : BaseCategoryImporterService
         catch (Exception ex)
         {
             Logger.LogError(ex, "Hepsiburada kategorileri çekilirken hata oluştu");
-            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

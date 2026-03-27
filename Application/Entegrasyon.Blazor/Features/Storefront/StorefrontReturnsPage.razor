@@ -41,9 +41,9 @@
                 @if (context.Item.Status == ReturnStatus.Pending)
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
-                        OnClick="@(() => OpenApproveDialog(context.Item))" Title="Onayla" />
+                        OnClick="@(() => OpenApproveDialog(context.Item))" title="Onayla" />
                     <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
-                        OnClick="@(() => OpenRejectDialog(context.Item))" Title="Reddet" />
+                        OnClick="@(() => OpenRejectDialog(context.Item))" title="Reddet" />
                 }
             </CellTemplate>
         </TemplateColumn>

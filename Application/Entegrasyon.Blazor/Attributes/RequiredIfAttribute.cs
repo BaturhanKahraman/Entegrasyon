@@ -17,7 +17,7 @@ public class RequiredIfAttribute : ValidationAttribute
         _comparisonType = comparisonType;
     }
 
-    protected override ValidationResult IsValid(object value,ValidationContext validationContext)
+    protected override ValidationResult? IsValid(object? value,ValidationContext validationContext)
     {
         var property = validationContext.ObjectType.GetProperty(_otherProperty);
 
@@ -27,7 +27,7 @@ public class RequiredIfAttribute : ValidationAttribute
         }
 
         var targetValue = property.GetValue(validationContext.ObjectInstance);
-        var comparisonResult = CompareValues(targetValue,_targetValue,_comparisonType);
+        var comparisonResult = CompareValues(targetValue!,_targetValue,_comparisonType);
 
         if(comparisonResult)
         {
@@ -37,7 +37,7 @@ public class RequiredIfAttribute : ValidationAttribute
             }
         }
 
-        return ValidationResult.Success;
+        return ValidationResult.Success!;
     }
 
     private bool CompareValues(object value1,object value2,ComparisonType comparisonType)

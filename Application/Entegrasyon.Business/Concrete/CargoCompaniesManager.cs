@@ -41,9 +41,9 @@ public class CargoCompaniesManager(
         if (string.IsNullOrWhiteSpace(cargoCompanySearchParam))
             return allResult;
 
-        var filtered = allResult.Data
-            .Where(x => x.Name.Contains(cargoCompanySearchParam, StringComparison.OrdinalIgnoreCase) ||
-                        x.Code.Contains(cargoCompanySearchParam, StringComparison.OrdinalIgnoreCase))
+        var filtered = allResult.Data!
+            .Where(x => x.Name!.Contains(cargoCompanySearchParam, StringComparison.OrdinalIgnoreCase) ||
+                        x.Code!.Contains(cargoCompanySearchParam, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         return new SuccessDataResult<List<CargoCompany>>(filtered);
@@ -58,7 +58,7 @@ public class CargoCompaniesManager(
         if (result != null)
         {
             await applicationLogManager.AddLog($"Kargo şirketi eklenemedi. {result.Message}", LogType.Brand, LogAction.Add, cargoCompanyDto);
-            return new ErrorResult(result.Message);
+            return new ErrorResult(result.Message!);
         }
         await validator.ValidateAndThrowAsync(cargo);
         dbContext.CargoCompanies.Add(cargo);
@@ -76,7 +76,7 @@ public class CargoCompaniesManager(
         if (result != null)
         {
             await applicationLogManager.AddLog($"Kargo şirketi güncellenemedi. {result.Message}", LogType.Brand, LogAction.Add, cargoCompany);
-            return new ErrorResult(result.Message);
+            return new ErrorResult(result.Message!);
         }
         await validator.ValidateAndThrowAsync(cargoCompany);
         dbContext.CargoCompanies.Update(cargoCompany);

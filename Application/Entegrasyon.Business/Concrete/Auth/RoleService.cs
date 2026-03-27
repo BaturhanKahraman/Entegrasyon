@@ -106,9 +106,9 @@ namespace Entegrasyon.Business.Concrete.Auth
 
         public async ValueTask<IEnumerable<Role>> GetRolesSelectList(CancellationToken token = default)
         {
-            bool isCached = cache.TryGetValue(SelectListCache, out IEnumerable<Role> roles);
+            bool isCached = cache.TryGetValue(SelectListCache, out IEnumerable<Role>? roles);
             if (isCached)
-                return roles;
+                return roles!;
             await using var context = await contextFactory.CreateDbContextAsync();
             roles = await context.Roles.Select(r => new Role() { Id = r.Id, Name = r.Name }).ToListAsync(token);
             cache.Set(SelectListCache, roles, TimeSpan.FromMinutes(30));

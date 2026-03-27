@@ -43,17 +43,17 @@ public sealed class CiceksepetiProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId, ct);
 
         if (product is null)
-            return new ErrorDataResult<CiceksepetiCreateProductsRequest>(null, "Ürün bulunamadı.");
+            return new ErrorDataResult<CiceksepetiCreateProductsRequest>(null!, "Ürün bulunamadı.");
 
         if (!product.ProductVariants.Any())
-            return new ErrorDataResult<CiceksepetiCreateProductsRequest>(null, "Ürünün varyantı yok.");
+            return new ErrorDataResult<CiceksepetiCreateProductsRequest>(null!, "Ürünün varyantı yok.");
 
         // Kategori eşleştirmesi
         var categoryMatch = await dbContext.CategoryMarketplaces
             .FirstOrDefaultAsync(cm => cm.CategoryId == product.CategoryId && cm.MarketPlaceId == CiceksepetiMarketPlaceId, ct);
 
         if (categoryMatch is null)
-            return new ErrorDataResult<CiceksepetiCreateProductsRequest>(null, "Kategori Çiçeksepeti'ye eşleştirilmemiş.");
+            return new ErrorDataResult<CiceksepetiCreateProductsRequest>(null!, "Kategori Çiçeksepeti'ye eşleştirilmemiş.");
 
         // Özellik eşleştirmeleri
         var attrMatches = await dbContext.CategoryAttributeMarketPlaceMatches

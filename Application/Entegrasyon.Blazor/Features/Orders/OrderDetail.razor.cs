@@ -24,7 +24,7 @@ public partial class OrderDetail : ComponentBase
         if (result.Success)
             _order = result.Data;
         else
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         _loading = false;
     }
 
@@ -47,7 +47,7 @@ public partial class OrderDetail : ComponentBase
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
     }
 

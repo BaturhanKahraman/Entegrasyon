@@ -67,18 +67,18 @@ else
                                 <MudStack Row="true" Spacing="1">
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
                                                    OnClick="@(() => EditTemplate(template))"
-                                                   Title="Düzenle" />
+                                                   title="Düzenle" />
                                     @if (!template.IsDefault)
                                     {
                                         <MudIconButton Icon="@Icons.Material.Filled.Star" Size="Size.Small"
                                                        Color="Color.Warning"
                                                        OnClick="@(() => SetDefault(template.Id))"
-                                                       Title="Varsayılan Yap" />
+                                                       title="Varsayılan Yap" />
                                     }
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
                                                    Color="Color.Error"
                                                    OnClick="@(() => DeleteTemplate(template.Id))"
-                                                   Title="Sil" />
+                                                   title="Sil" />
                                 </MudStack>
                             </td>
                         </tr>

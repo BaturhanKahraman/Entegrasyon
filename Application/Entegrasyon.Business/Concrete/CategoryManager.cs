@@ -55,7 +55,7 @@ namespace Entegrasyon.Business.Concrete
                 .Where(x => x.Id == category.Id)
                 .Select(x => new CategoryDetailDto(x.Id, x.Products.Count(), x.Name, x.SubCategories.Count(), x.IsFavorite, x.CategoryAttributes.Count(), x.SuperCategory!.Name))
                 .FirstOrDefaultAsync();
-            return new SuccessDataResult<CategoryDetailDto>(detail);
+            return new SuccessDataResult<CategoryDetailDto>(detail!);
         }
 
         public async Task<IResult> UpdateCategory(EditCategoryDto dto)
@@ -124,7 +124,7 @@ namespace Entegrasyon.Business.Concrete
                 .ThenByDescending(x => x.CategoryId)
                 .Select(x => new CategoryDetailDto(
                     x.CategoryId, x.TotalStock, x.Name,
-                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName!))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -143,7 +143,7 @@ namespace Entegrasyon.Business.Concrete
                 .Take(itemCount)
                 .Select(x => new CategoryDetailDto(
                     x.CategoryId, x.ProductCount, x.Name,
-                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName!))
                 .ToListAsync();
 
             return new SuccessDataResult<Pageable<CategoryDetailDto>>(new Pageable<CategoryDetailDto>(items, pageIndex, itemCount, total));
@@ -179,7 +179,7 @@ namespace Entegrasyon.Business.Concrete
                 .OrderByDescending(x => x.CategoryId)
                 .Select(x => new CategoryDetailDto(
                     x.CategoryId, x.ProductCount, x.Name,
-                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName!))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -192,7 +192,7 @@ namespace Entegrasyon.Business.Concrete
                 .OrderByDescending(x => x.IsFavorite).ThenBy(x => x.Name)
                 .Select(x => new CategoryDetailDto(
                     x.CategoryId, x.ProductCount, x.Name,
-                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName!))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -205,7 +205,7 @@ namespace Entegrasyon.Business.Concrete
                 .OrderByDescending(x => x.IsFavorite).ThenBy(x => x.Name)
                 .Select(x => new CategoryDetailDto(
                     x.CategoryId, x.ProductCount, x.Name,
-                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName))
+                    x.SubCategoryCount, x.IsFavorite, x.AttributeCount, x.SuperCategoryName!))
                 .ToListAsync();
             return new SuccessDataResult<List<CategoryDetailDto>>(result);
         }
@@ -214,7 +214,7 @@ namespace Entegrasyon.Business.Concrete
         {
             using var dbContext = contextFactory.CreateDbContext();
             var result = await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == id);
-            return new SuccessDataResult<Category>(result);
+            return new SuccessDataResult<Category>(result!);
         }
 
         public async Task<bool> Exits(int id)
@@ -384,8 +384,8 @@ namespace Entegrasyon.Business.Concrete
                         x.Categories.First(z => z.CategoryId == categoryId).IsVarianter,
                         x.Categories.First(z => z.CategoryId == categoryId).IsSlicer,
                         x.CreatedAt,
-                        x.CategoryAttributeKey,
-                        x.CategoryAttributeHumanized,
+                        x.CategoryAttributeKey!,
+                        x.CategoryAttributeHumanized!,
                         x.CategoryAttributeValues.ToList()))
                     .ToListAsync()
                 : [];

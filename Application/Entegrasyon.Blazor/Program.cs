@@ -1,7 +1,6 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
-using Entegrasyon.Business.Channels;
 using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Middleware;
 using Entegrasyon.Blazor.Utility;

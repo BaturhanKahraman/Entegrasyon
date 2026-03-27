@@ -282,7 +282,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
         object? mpId = filter.MarketPlaceId.HasValue ? filter.MarketPlaceId.Value : null;
 
         var json = await dbContext.Database
-            .SqlQueryRaw<string>(ProfitLossQuery, startDate, endDate, mpId)
+            .SqlQueryRaw<string>(ProfitLossQuery, startDate, endDate, mpId!)
             .FirstOrDefaultAsync();
 
         if (string.IsNullOrEmpty(json))

@@ -57,8 +57,8 @@ public sealed class MarketplaceOverrideManager(
                 return new VariantPriceOverrideDetailDto
                 {
                     ProductVariantId = v.Id,
-                    VariantLabel = label,
-                    Barcode = v.Barcode,
+                    VariantLabel = label!,
+                    Barcode = v.Barcode!,
                     OriginalListPrice = v.ListPrice,
                     OriginalSalePrice = v.SalePrice,
                     ListPriceOverride = vo?.ListPriceOverride,

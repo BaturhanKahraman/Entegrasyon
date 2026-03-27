@@ -80,7 +80,7 @@ public partial class IntegrationSettings : ComponentBase
         var result = await MarketPlaceManager.UpdateCredentialsAsync(
             TrendyolMarketPlaceId, _apiKey, _apiSecret, _sellerId, _baseUrl);
 
-        Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+        Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
         _connectionTested = null; // Reset test status
         _saving = false;
     }
@@ -93,7 +93,7 @@ public partial class IntegrationSettings : ComponentBase
         var result = await MarketPlaceManager.TestConnectionAsync(TrendyolMarketPlaceId);
         _connectionTested = result.Data;
 
-        Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+        Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
         _testing = false;
     }
 
@@ -103,7 +103,7 @@ public partial class IntegrationSettings : ComponentBase
         var result = await MarketPlaceManager.SetWarehousesAsync(
             TrendyolMarketPlaceId, _selectedBranchIds.ToList());
 
-        Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+        Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
         _savingWarehouses = false;
     }
 

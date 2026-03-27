@@ -31,7 +31,7 @@ else if (_user is null)
 }
 else
 {
-    <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="@(() => NavigationManager.NavigateTo("/users"))" />
         <MudText Typo="Typo.h4">@_user.Name @_user.Surname</MudText>
         @if (_user.IsActive)

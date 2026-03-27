@@ -26,7 +26,7 @@ public sealed class TrendyolProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
                 $"Eslestirme dogrulamasi basarisiz: {validationResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "Trendyol");
-            return new ErrorDataResult<string>(null!, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
@@ -38,7 +38,7 @@ public sealed class TrendyolProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
                 $"Urun mapping hatasi: {mapResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "Trendyol");
-            return new ErrorDataResult<string>(null!, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
         }
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
@@ -118,7 +118,7 @@ public sealed class TrendyolProductService(
     {
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorResult(mapResult.Message);
+            return new ErrorResult(mapResult.Message!);
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
@@ -159,7 +159,7 @@ public sealed class TrendyolProductService(
 
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorResult(mapResult.Message);
+            return new ErrorResult(mapResult.Message!);
 
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);

@@ -73,13 +73,13 @@ public partial class StorefrontSizeGuidesPage
         var result = await SizeGuideManager.CreateOrUpdateAsync(_editingGuide);
         if (result.Success)
         {
-            Snackbar.Add(result.Message, Severity.Success);
+            Snackbar.Add(result.Message ?? "", Severity.Success);
             _dialogVisible = false;
             await LoadGuides();
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
     }
 
@@ -88,12 +88,12 @@ public partial class StorefrontSizeGuidesPage
         var result = await SizeGuideManager.DeleteAsync(id);
         if (result.Success)
         {
-            Snackbar.Add(result.Message, Severity.Success);
+            Snackbar.Add(result.Message ?? "", Severity.Success);
             await LoadGuides();
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
     }
 }

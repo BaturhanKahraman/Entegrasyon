@@ -37,7 +37,7 @@ public class LabelTemplateManager(
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
         if (template is null)
-            return new ErrorDataResult<LabelTemplateDto>(null, "Şablon bulunamadı");
+            return new ErrorDataResult<LabelTemplateDto>(null!, "Şablon bulunamadı");
 
         return new SuccessDataResult<LabelTemplateDto>(MapToDto(template));
     }
@@ -49,7 +49,7 @@ public class LabelTemplateManager(
             .FirstOrDefaultAsync(t => t.Type == type && t.IsDefault && !t.IsDeleted);
 
         if (template is null)
-            return new ErrorDataResult<LabelTemplateDto>(null, "Varsayılan şablon bulunamadı");
+            return new ErrorDataResult<LabelTemplateDto>(null!, "Varsayılan şablon bulunamadı");
 
         return new SuccessDataResult<LabelTemplateDto>(MapToDto(template));
     }
@@ -62,7 +62,7 @@ public class LabelTemplateManager(
         if (!validationResult.IsValid)
         {
             var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
-            return new ErrorDataResult<LabelTemplateDto>(null, errors);
+            return new ErrorDataResult<LabelTemplateDto>(null!, errors);
         }
 
         // 2. Business Rules — aynı isimde şablon var mı
@@ -70,7 +70,7 @@ public class LabelTemplateManager(
             .AnyAsync(t => t.Name == dto.Name && t.Id != dto.Id && !t.IsDeleted);
 
         if (duplicateExists)
-            return new ErrorDataResult<LabelTemplateDto>(null, $"'{dto.Name}' adında bir şablon zaten mevcut");
+            return new ErrorDataResult<LabelTemplateDto>(null!, $"'{dto.Name}' adında bir şablon zaten mevcut");
 
         // 3. Execution
         var layoutJson = JsonSerializer.Serialize(dto.Elements);
@@ -80,11 +80,11 @@ public class LabelTemplateManager(
         if (dto.Id.HasValue && dto.Id.Value != Guid.Empty)
         {
             // Update
-            template = await dbContext.LabelTemplates
-                .FirstOrDefaultAsync(t => t.Id == dto.Id.Value && !t.IsDeleted);
+            template = (await dbContext.LabelTemplates
+                .FirstOrDefaultAsync(t => t.Id == dto.Id.Value && !t.IsDeleted))!;
 
             if (template is null)
-                return new ErrorDataResult<LabelTemplateDto>(null, "Güncellenecek şablon bulunamadı");
+                return new ErrorDataResult<LabelTemplateDto>(null!, "Güncellenecek şablon bulunamadı");
 
             dbContext.Entry(template).State = EntityState.Modified;
             template.Name = dto.Name;

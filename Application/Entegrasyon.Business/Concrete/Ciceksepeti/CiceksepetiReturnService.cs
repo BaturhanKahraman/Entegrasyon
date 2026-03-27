@@ -38,7 +38,7 @@ public sealed class CiceksepetiReturnService(
                 logger.LogError("CiceksepetiReturnService: {Message}", errorMsg);
                 await applicationLogManager.AddLog(
                     errorMsg, LogType.Order, LogAction.List, new { request }, ct);
-                return new ErrorDataResult<CiceksepetiReturnListResponse>(null, errorMsg);
+                return new ErrorDataResult<CiceksepetiReturnListResponse>(null!, errorMsg);
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<CiceksepetiReturnListResponse>(
@@ -48,7 +48,7 @@ public sealed class CiceksepetiReturnService(
             {
                 const string parseError = "API yanıtı iade listesi içermiyor.";
                 logger.LogError("CiceksepetiReturnService: {Message}", parseError);
-                return new ErrorDataResult<CiceksepetiReturnListResponse>(null, parseError);
+                return new ErrorDataResult<CiceksepetiReturnListResponse>(null!, parseError);
             }
 
             logger.LogInformation(
@@ -64,7 +64,7 @@ public sealed class CiceksepetiReturnService(
             await applicationLogManager.AddLog(
                 $"Çiçeksepeti iade listesi başarısız: {ex.Message}",
                 LogType.Order, LogAction.List, new { request }, ct);
-            return new ErrorDataResult<CiceksepetiReturnListResponse>(null, ex.Message);
+            return new ErrorDataResult<CiceksepetiReturnListResponse>(null!, ex.Message);
         }
     }
 

@@ -96,7 +96,7 @@
                                             <MudTextField @bind-Value="attr.Name"
                                                           Label="Yeni Özellik Adı"
                                                           Variant="Variant.Outlined"
-                                                          Dense="true"
+                                                          Margin="Margin.Dense"
                                                           Required="true"
                                                           RequiredError="Özellik adı gerekli" />
                                         </MudItem>
@@ -156,7 +156,7 @@
                                             <MudTextField @bind-Value="attr.NewValueName"
                                                           Label="Yeni değer ekle"
                                                           Variant="Variant.Outlined"
-                                                          Dense="true"
+                                                          Margin="Margin.Dense"
                                                           Immediate="true"
                                                           OnKeyDown="@(async (e) => { if (e.Key == "Enter") await AddValue(attr); })" />
                                         </MudItem>

@@ -29,14 +29,14 @@ public sealed class PttavmProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId, ct);
 
         if (product is null)
-            return new ErrorDataResult<List<PttavmProductRequest>>(null, "Ürün bulunamadı.");
+            return new ErrorDataResult<List<PttavmProductRequest>>(null!, "Ürün bulunamadı.");
 
         // Kategori eslestirmesi
         var categoryMatch = await dbContext.CategoryMarketplaces
             .FirstOrDefaultAsync(cm => cm.CategoryId == product.CategoryId && cm.MarketPlaceId == PttavmMarketPlaceId, ct);
 
         if (categoryMatch is null)
-            return new ErrorDataResult<List<PttavmProductRequest>>(null, "Kategori PttAVM'ye eşleştirilmemiş.");
+            return new ErrorDataResult<List<PttavmProductRequest>>(null!, "Kategori PttAVM'ye eşleştirilmemiş.");
 
         var requests = new List<PttavmProductRequest>();
 
@@ -72,7 +72,7 @@ public sealed class PttavmProductMapper(
         }
 
         if (requests.Count == 0)
-            return new ErrorDataResult<List<PttavmProductRequest>>(null, "Ürünün varyantı yok.");
+            return new ErrorDataResult<List<PttavmProductRequest>>(null!, "Ürünün varyantı yok.");
 
         logger.LogInformation("PttAVM product mapped: {ProductId}, {Count} variants", productId, requests.Count);
         return new SuccessDataResult<List<PttavmProductRequest>>(requests);

@@ -67,7 +67,7 @@ public partial class ProductSyncPage
         try
         {
             var result = await SyncManager.SyncAllPendingAsync(TrendyolMarketPlaceId);
-            Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+            Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
             await LoadData();
         }
         catch (Exception ex)
@@ -87,7 +87,7 @@ public partial class ProductSyncPage
         try
         {
             var result = await SyncManager.RetryAllFailedAsync(TrendyolMarketPlaceId);
-            Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+            Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
             await LoadData();
         }
         catch (Exception ex)

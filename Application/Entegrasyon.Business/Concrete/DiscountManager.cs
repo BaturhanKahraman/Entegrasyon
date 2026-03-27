@@ -63,7 +63,7 @@ public class DiscountManager(
                 : 0;
 
             return new VariantDiscountInfoDto(
-                v.Id, v.Barcode, label,
+                v.Id, v.Barcode!, label!,
                 v.CostPrice, v.ListPrice, v.SalePrice, v.ECommercePrice, v.VatRate,
                 profitMargin, Math.Round(profitMarginPercent, 2));
         }).ToList();
@@ -76,7 +76,7 @@ public class DiscountManager(
             {
                 marketplacePrices.Add(new MarketplacePriceInfoDto(
                     mp.MarketPlaceId, mp.Name,
-                    v.Id, v.Barcode,
+                    v.Id, v.Barcode!,
                     v.ListPrice,
                     Math.Round(v.SalePrice * 1.05m, 2)));
             }

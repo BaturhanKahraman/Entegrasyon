@@ -32,7 +32,7 @@ public class AddRoleDtoValidatorTests
     public async Task Validate_WhenPermissionNamesIsNull_ShouldHaveErrorMessage()
     {
         // Arrange
-        var dto = new AddRoleDto(default!, default!) { Name = "Admin", PermissionNames = null };
+        var dto = new AddRoleDto(default!, default!) { Name = "Admin", PermissionNames = null! };
 
         // Act
         var result = await validator.TestValidateAsync(dto);

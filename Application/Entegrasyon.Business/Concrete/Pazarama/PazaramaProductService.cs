@@ -30,17 +30,17 @@ public sealed class PazaramaProductService(
             ProductActivityType.MappingValidated,
             validationResult.Success
                 ? "Pazarama mapping doğrulaması başarılı"
-                : validationResult.Message,
+                : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: "Pazarama");
 
         if (!validationResult.Success)
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
 
         // 2. Mapping
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
 
         // 3. API call
         try
@@ -58,7 +58,7 @@ public sealed class PazaramaProductService(
                     ProductActivityStatus.Error,
                     errorBody,
                     "Pazarama");
-                return new ErrorDataResult<string>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<string>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content
@@ -73,7 +73,7 @@ public sealed class PazaramaProductService(
                     $"Pazarama yanıt hatası: {msg}",
                     ProductActivityStatus.Error,
                     marketplaceName: "Pazarama");
-                return new ErrorDataResult<string>(null, msg);
+                return new ErrorDataResult<string>(null!, msg);
             }
 
             var batchRequestId = parsed.Data.BatchRequestId;
@@ -99,7 +99,7 @@ public sealed class PazaramaProductService(
                 ProductActivityStatus.Error,
                 ex.ToString(),
                 "Pazarama");
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 

@@ -42,7 +42,7 @@ public sealed class CiceksepetiOrderService(
                 logger.LogError("CiceksepetiOrderService: {Message}", errorMsg);
                 await applicationLogManager.AddLog(
                     errorMsg, LogType.Order, LogAction.List, new { request }, ct);
-                return new ErrorDataResult<CiceksepetiOrderListResponse>(null, errorMsg);
+                return new ErrorDataResult<CiceksepetiOrderListResponse>(null!, errorMsg);
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<CiceksepetiOrderListResponse>(
@@ -52,7 +52,7 @@ public sealed class CiceksepetiOrderService(
             {
                 const string parseError = "API yanıtı sipariş listesi içermiyor.";
                 logger.LogError("CiceksepetiOrderService: {Message}", parseError);
-                return new ErrorDataResult<CiceksepetiOrderListResponse>(null, parseError);
+                return new ErrorDataResult<CiceksepetiOrderListResponse>(null!, parseError);
             }
 
             logger.LogInformation(
@@ -68,7 +68,7 @@ public sealed class CiceksepetiOrderService(
             await applicationLogManager.AddLog(
                 $"Çiçeksepeti sipariş listesi başarısız: {ex.Message}",
                 LogType.Order, LogAction.List, new { request }, ct);
-            return new ErrorDataResult<CiceksepetiOrderListResponse>(null, ex.Message);
+            return new ErrorDataResult<CiceksepetiOrderListResponse>(null!, ex.Message);
         }
     }
 

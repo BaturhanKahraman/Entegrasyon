@@ -49,9 +49,9 @@
                 @if (context.Item.Status == PayoutStatus.Pending)
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
-                        OnClick="@(() => ProcessAsync(context.Item, true))" Title="Onayla" />
+                        OnClick="@(() => ProcessAsync(context.Item, true))" title="Onayla" />
                     <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
-                        OnClick="@(() => ProcessAsync(context.Item, false))" Title="Reddet" />
+                        OnClick="@(() => ProcessAsync(context.Item, false))" title="Reddet" />
                 }
             </CellTemplate>
         </TemplateColumn>

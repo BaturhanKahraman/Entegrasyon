@@ -26,7 +26,7 @@ public sealed class MockTrendyolProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
                 $"Eslestirme dogrulamasi basarisiz: {validationResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "Trendyol");
-            return new ErrorDataResult<string>(null!, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
@@ -39,7 +39,7 @@ public sealed class MockTrendyolProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
                 $"Urun mapping hatasi: {mapResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "Trendyol");
-            return new ErrorDataResult<string>(null!, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
         }
 
         logger.LogInformation("Mock: Trendyol request body:\n{RequestBody}",
@@ -95,7 +95,7 @@ public sealed class MockTrendyolProductService(
     {
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorResult(mapResult.Message);
+            return new ErrorResult(mapResult.Message!);
 
         await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
             $"Onaysiz urun guncellendi -- {mapResult.Data.Items.Count} varyant (mock)",
@@ -116,7 +116,7 @@ public sealed class MockTrendyolProductService(
 
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorResult(mapResult.Message);
+            return new ErrorResult(mapResult.Message!);
 
         await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
             $"Onayli urun icerigi guncellendi (contentId={pm.ContentId}) (mock)",

@@ -35,7 +35,7 @@ public partial class ProductSyncDetailPage
         try
         {
             var result = await SyncManager.SyncProductAsync(Id, marketPlaceId);
-            Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+            Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
             if (result.Success) await LoadDetail();
         }
         catch (Exception ex)
@@ -49,7 +49,7 @@ public partial class ProductSyncDetailPage
         try
         {
             var result = await SyncManager.RetryFailedAsync(Id, marketPlaceId);
-            Snackbar.Add(result.Message, result.Success ? Severity.Success : Severity.Error);
+            Snackbar.Add(result.Message ?? "", result.Success ? Severity.Success : Severity.Error);
             if (result.Success) await LoadDetail();
         }
         catch (Exception ex)

@@ -74,12 +74,12 @@ public partial class RoleManagement
             var serviceResult = await RoleService.AddRole(roleDto);
             if (serviceResult.Success)
             {
-                Snackbar.Add(serviceResult.Message, Severity.Success);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Success);
                 await LoadData();
             }
             else
             {
-                Snackbar.Add(serviceResult.Message, Severity.Error);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Error);
             }
         }
     }
@@ -109,12 +109,12 @@ public partial class RoleManagement
             var serviceResult = await RoleService.UpdateRole(editDto);
             if (serviceResult.Success)
             {
-                Snackbar.Add(serviceResult.Message, Severity.Success);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Success);
                 await LoadData();
             }
             else
             {
-                Snackbar.Add(serviceResult.Message, Severity.Error);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Error);
             }
         }
     }
@@ -132,12 +132,12 @@ public partial class RoleManagement
             var serviceResult = await RoleService.DeleteRole(role.Id);
             if (serviceResult.Success)
             {
-                Snackbar.Add(serviceResult.Message, Severity.Success);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Success);
                 await LoadData();
             }
             else
             {
-                Snackbar.Add(serviceResult.Message, Severity.Error);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Error);
             }
         }
     }

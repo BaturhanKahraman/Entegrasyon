@@ -42,15 +42,15 @@ public sealed class HepsiburadaListingService(
                 $"/listings/merchantid/{merchantId}?offset={offset}&limit={limit}");
 
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<HepsiburadaListingResponse>(null, $"Listing API hatası: {response.StatusCode}");
+                return new ErrorDataResult<HepsiburadaListingResponse>(null!, $"Listing API hatası: {response.StatusCode}");
 
             var data = await response.Content.ReadFromJsonAsync<HepsiburadaListingResponse>();
-            return new SuccessDataResult<HepsiburadaListingResponse>(data);
+            return new SuccessDataResult<HepsiburadaListingResponse>(data!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "HB listing query failed");
-            return new ErrorDataResult<HepsiburadaListingResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<HepsiburadaListingResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 

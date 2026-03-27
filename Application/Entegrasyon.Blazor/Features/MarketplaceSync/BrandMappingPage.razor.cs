@@ -103,7 +103,7 @@ public partial class BrandMappingPage : ComponentBase
             }
             else
             {
-                Snackbar.Add(result.Message, Severity.Warning);
+                Snackbar.Add(result.Message ?? "", Severity.Warning);
             }
         }
         catch (Exception ex)

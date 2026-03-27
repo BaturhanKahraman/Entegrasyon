@@ -26,7 +26,7 @@
     <MudItem xs="12">
         <MudText Typo="Typo.subtitle1" Class="mt-2">Yeni Görsel Ekle</MudText>
         <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="OnFilesChanged"
-                       Accept=".jpg,.jpeg,.png,.webp" Multiple="true">
+                       Accept=".jpg,.jpeg,.png,.webp" MaximumFileCount="50">
             <ActivatorContent>
                 <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Upload">
                     Görsel Seç

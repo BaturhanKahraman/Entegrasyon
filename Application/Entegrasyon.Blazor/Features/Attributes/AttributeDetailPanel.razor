@@ -51,7 +51,7 @@ else if (_isEditing)
                     <MudTextField @bind-Value="_newValueName"
                                   Label="Yeni değer"
                                   Variant="Variant.Outlined"
-                                  Dense="true"
+                                  Margin="Margin.Dense"
                                   Style="max-width:220px" />
                     <MudIconButton Icon="@Icons.Material.Filled.Add"
                                    Color="Color.Primary"
@@ -80,7 +80,7 @@ else
                     @(SelectedAttribute.AllowCustom ? "Özel değere izin var" : "Yalnızca liste değerleri")
                 </MudChip>
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
-                               OnClick="StartEdit" Disabled="@(_saving || _deleting)" Title="Düzenle" />
+                               OnClick="StartEdit" Disabled="@(_saving || _deleting)" title="Düzenle" />
                 @if (_deleting)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Error" Class="ml-1" />
@@ -88,7 +88,7 @@ else
                 else
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                   OnClick="DeleteAttribute" Disabled="@_saving" Title="Sil" />
+                                   OnClick="DeleteAttribute" Disabled="@_saving" title="Sil" />
                 }
             </MudStack>
         </MudStack>

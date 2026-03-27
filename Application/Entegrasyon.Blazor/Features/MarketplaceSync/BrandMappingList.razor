@@ -15,7 +15,7 @@ else
                 <MudTh>Brand Adı</MudTh>
                 <MudTh>Trendyol Brand ID</MudTh>
                 <MudTh>Trendyol Brand Adı</MudTh>
-                <MudTh Align="Align.Right">İşlemler</MudTh>
+                <MudTh Style="text-align:right">İşlemler</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Brand Adı">@context.ApplicationBrandName</MudTd>
@@ -25,7 +25,7 @@ else
                         @(string.IsNullOrEmpty(context.MarketPlaceBrandName) ? "--" : context.MarketPlaceBrandName)
                     </MudText>
                 </MudTd>
-                <MudTd DataLabel="İşlemler" Align="Align.Right">
+                <MudTd DataLabel="İşlemler" Style="text-align:right">
                     <MudButton
                         Variant="Variant.Text"
                         Color="Color.Error"

@@ -30,7 +30,7 @@ public sealed class CiceksepetiCategoryService(
             if (data is null)
             {
                 logger.LogWarning("Çiçeksepeti kategori API'si boş yanıt döndü");
-                return new ErrorDataResult<CiceksepetiCategoryResponse>(null, "API boş yanıt döndü");
+                return new ErrorDataResult<CiceksepetiCategoryResponse>(null!, "API boş yanıt döndü");
             }
 
             logger.LogInformation("Çiçeksepeti'nden {Count} kök kategori alındı", data.Categories.Count);
@@ -39,7 +39,7 @@ public sealed class CiceksepetiCategoryService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Çiçeksepeti kategorileri çekilirken hata oluştu");
-            return new ErrorDataResult<CiceksepetiCategoryResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<CiceksepetiCategoryResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -59,7 +59,7 @@ public sealed class CiceksepetiCategoryService(
             if (data is null)
             {
                 logger.LogWarning("Çiçeksepeti kategori özellikleri API'si boş yanıt döndü: {CategoryId}", categoryId);
-                return new ErrorDataResult<CiceksepetiCategoryAttributeResponse>(null, "API boş yanıt döndü");
+                return new ErrorDataResult<CiceksepetiCategoryAttributeResponse>(null!, "API boş yanıt döndü");
             }
 
             logger.LogInformation(
@@ -71,7 +71,7 @@ public sealed class CiceksepetiCategoryService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Çiçeksepeti kategori özellikleri çekilirken hata: {CategoryId}", categoryId);
-            return new ErrorDataResult<CiceksepetiCategoryAttributeResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<CiceksepetiCategoryAttributeResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 }

@@ -18,7 +18,7 @@ public sealed class MockAmazonOrderService(ILogger<MockAmazonOrderService> logge
     public Task<IDataResult<AmazonOrderDto>> GetOrderAsync(string orderId, CancellationToken ct = default)
     {
         logger.LogInformation("[MOCK] Amazon get order: {OrderId}", orderId);
-        return Task.FromResult<IDataResult<AmazonOrderDto>>(new ErrorDataResult<AmazonOrderDto>(null, "Mock: order not found."));
+        return Task.FromResult<IDataResult<AmazonOrderDto>>(new ErrorDataResult<AmazonOrderDto>(null!, "Mock: order not found."));
     }
 
     public Task<IDataResult<List<AmazonOrderItemDto>>> GetOrderItemsAsync(string orderId, CancellationToken ct = default)

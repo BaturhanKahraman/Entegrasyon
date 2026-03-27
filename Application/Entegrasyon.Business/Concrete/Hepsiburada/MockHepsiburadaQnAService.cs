@@ -23,7 +23,7 @@ public sealed class MockHepsiburadaQnAService(
     {
         logger.LogInformation("[MOCK] HB get question: {QuestionNumber}", questionNumber);
         return Task.FromResult<IDataResult<HepsiburadaQuestionDto>>(
-            new ErrorDataResult<HepsiburadaQuestionDto>(null, "Mock: soru bulunamadı."));
+            new ErrorDataResult<HepsiburadaQuestionDto>(null!, "Mock: soru bulunamadı."));
     }
 
     public Task<IResult> AnswerQuestionAsync(string questionNumber, string answer)

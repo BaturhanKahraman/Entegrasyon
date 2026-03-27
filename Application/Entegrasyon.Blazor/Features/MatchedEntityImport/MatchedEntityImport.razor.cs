@@ -69,7 +69,7 @@ public partial class MatchedEntityImport
         var conflictsResult = await ImportManager.DetectConflictsAsync(package.Id);
         if (!conflictsResult.Success)
         {
-            Snackbar.Add(conflictsResult.Message, Severity.Error);
+            Snackbar.Add(conflictsResult.Message ?? "", Severity.Error);
             return;
         }
 
@@ -113,7 +113,7 @@ public partial class MatchedEntityImport
             }
             else
             {
-                Snackbar.Add(result.Message, Severity.Error);
+                Snackbar.Add(result.Message ?? "", Severity.Error);
             }
         }
     }

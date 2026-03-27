@@ -22,7 +22,7 @@ public class LabelManager(
         using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         if (variantId == Guid.Empty)
-            return new ErrorDataResult<PrintJobDto>(null, "Geçersiz varyant ID");
+            return new ErrorDataResult<PrintJobDto>(null!, "Geçersiz varyant ID");
 
         // 2. Business Rules
         var variant = await dbContext.ProductVariants
@@ -31,10 +31,10 @@ public class LabelManager(
             .FirstOrDefaultAsync(v => v.Id == variantId && !v.IsDeleted);
 
         if (variant is null)
-            return new ErrorDataResult<PrintJobDto>(null, "Varyant bulunamadı veya silinmiş");
+            return new ErrorDataResult<PrintJobDto>(null!, "Varyant bulunamadı veya silinmiş");
 
         if (string.IsNullOrWhiteSpace(variant.Barcode))
-            return new ErrorDataResult<PrintJobDto>(null, "Varyantın barkodu tanımlı değil");
+            return new ErrorDataResult<PrintJobDto>(null!, "Varyantın barkodu tanımlı değil");
 
         // 3. Execution
         var variantInfo = BuildVariantInfo(variant.ProductVariantAttributes);
@@ -78,7 +78,7 @@ public class LabelManager(
             variantId, variant.Barcode);
 
         return new SuccessDataResult<PrintJobDto>(
-            new PrintJobDto(zpl, null, "ZPL", $"Barkod: {variant.Barcode}"));
+            new PrintJobDto(zpl, null!, "ZPL", $"Barkod: {variant.Barcode}"));
     }
 
     public async Task<IDataResult<List<PrintJobDto>>> GenerateBulkLabels(List<Guid> variantIds)
@@ -86,7 +86,7 @@ public class LabelManager(
         using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         if (variantIds is null || variantIds.Count == 0)
-            return new ErrorDataResult<List<PrintJobDto>>(null, "En az bir varyant ID gerekli");
+            return new ErrorDataResult<List<PrintJobDto>>(null!, "En az bir varyant ID gerekli");
 
         // 2. Business Rules - toplu sorgula
         var variants = await dbContext.ProductVariants
@@ -96,7 +96,7 @@ public class LabelManager(
             .ToListAsync();
 
         if (variants.Count == 0)
-            return new ErrorDataResult<List<PrintJobDto>>(null, "Hiçbir varyant bulunamadı");
+            return new ErrorDataResult<List<PrintJobDto>>(null!, "Hiçbir varyant bulunamadı");
 
         // 3. Execution
         var template = await dbContext.LabelTemplates
@@ -151,7 +151,7 @@ public class LabelManager(
                 zpl = labelGenerator.GenerateProductBarcode(labelData);
             }
 
-            jobs.Add(new PrintJobDto(zpl, null, "ZPL", $"Barkod: {variant.Barcode}"));
+            jobs.Add(new PrintJobDto(zpl, null!, "ZPL", $"Barkod: {variant.Barcode}"));
         }
 
         logger.LogInformation("Toplu etiket üretildi: {Count}/{Total} varyant",
@@ -166,7 +166,7 @@ public class LabelManager(
         using var dbContext = contextFactory.CreateDbContext();
         // 1. Validation
         if (saleId == Guid.Empty)
-            return new ErrorDataResult<PrintJobDto>(null, "Geçersiz satış ID");
+            return new ErrorDataResult<PrintJobDto>(null!, "Geçersiz satış ID");
 
         // 2. Business Rules
         var sale = await dbContext.Sales
@@ -179,7 +179,7 @@ public class LabelManager(
             .FirstOrDefaultAsync(s => s.Id == saleId && !s.IsDeleted);
 
         if (sale is null)
-            return new ErrorDataResult<PrintJobDto>(null, "Satış bulunamadı");
+            return new ErrorDataResult<PrintJobDto>(null!, "Satış bulunamadı");
 
         // 3. Execution
         var items = sale.SaleItems.Select(si => new ReceiptLineItem(
@@ -212,7 +212,7 @@ public class LabelManager(
             saleId, items.Count);
 
         return new SuccessDataResult<PrintJobDto>(
-            new PrintJobDto(null, receiptBytes, "ESCPOS", $"Fiş: {saleId:N}"));
+            new PrintJobDto(null!, receiptBytes, "ESCPOS", $"Fiş: {saleId:N}"));
     }
 
     private static string BuildVariantInfo(IEnumerable<Entity.Products.ProductVariantAttribute> attributes)

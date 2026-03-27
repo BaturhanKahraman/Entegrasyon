@@ -107,8 +107,8 @@
                         {
                             @* Agent bağlı değil — Kurulum Sihirbazı *@
                             <MudCardContent>
-                                <MudStepper @bind-ActiveIndex="_wizardStep" Linear="false"
-                                            Color="Color.Primary" Variant="Variant.Filled">
+                                <MudStepper @bind-ActiveIndex="_wizardStep" NonLinear="true"
+                                            CurrentStepColor="Color.Primary">
                                     <MudStep Title="İndir">
                                         <MudStack Spacing="3" Class="pa-4">
                                             <MudText Typo="Typo.body1">
