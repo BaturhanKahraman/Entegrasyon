@@ -17,7 +17,7 @@
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.AttachFile"
                            FullWidth="true">
-                    Dosya Seç (.xlsx)
+                    Dosya Sec (.xlsx)
                 </MudButton>
             </ActivatorContent>
         </MudFileUpload>
@@ -26,29 +26,56 @@
         {
             <MudAlert Severity="Severity.Info" Class="mt-3">
                 <MudText Typo="Typo.body2">
-                    <strong>Seçilen dosya:</strong> @_selectedFile.Name (@FormatFileSize(_selectedFile.Size))
+                    <strong>Secilen dosya:</strong> @_selectedFile.Name (@FormatFileSize(_selectedFile.Size))
                 </MudText>
             </MudAlert>
+        }
+
+        @if (_isValidating)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Info" Class="mt-3" />
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Dogrulanıyor...</MudText>
         }
 
         @if (_isImporting)
         {
             <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mt-3" />
-            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">İçe aktarılıyor...</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">Ice aktarilıyor...</MudText>
         }
 
         @if (_errorMessage is not null)
         {
             <MudAlert Severity="Severity.Error" Class="mt-3">@_errorMessage</MudAlert>
         }
+
+        <ValidationPreviewPanel Preview="_validationPreview" />
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Disabled="_isImporting">İptal</MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   OnClick="ImportAsync"
-                   Disabled="@(_selectedFile is null || _isImporting)">
-            İçe Aktar
-        </MudButton>
+        <MudButton OnClick="Cancel" Disabled="@(_isValidating || _isImporting)">Iptal</MudButton>
+
+        @if (_validationPreview is null)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Info"
+                       OnClick="ValidateAsync"
+                       Disabled="@(_selectedFile is null || _isValidating)">
+                Dogrula
+            </MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="ResetValidation"
+                       Disabled="_isImporting">
+                Yeni Dosya
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="ImportAsync"
+                       Disabled="@(_validationPreview.ValidRows == 0 || _isImporting)">
+                Ice Aktar (@_validationPreview.ValidRows satir)
+            </MudButton>
+        }
     </DialogActions>
 </MudDialog>

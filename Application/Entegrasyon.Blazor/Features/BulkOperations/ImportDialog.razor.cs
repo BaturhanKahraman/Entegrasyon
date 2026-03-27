@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.BulkOperations;
+using Entegrasyon.Entity.Dtos.BulkOperations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
@@ -14,8 +15,11 @@ public partial class ImportDialog : ComponentBase
     [Parameter] public BulkOperationType OperationType { get; set; }
 
     private IBrowserFile? _selectedFile;
+    private bool _isValidating;
     private bool _isImporting;
     private string? _errorMessage;
+    private ImportValidationPreviewDto? _validationPreview;
+    private byte[]? _cachedFileBytes;
 
     private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
 
@@ -23,14 +27,17 @@ public partial class ImportDialog : ComponentBase
     {
         _selectedFile = file;
         _errorMessage = null;
+        _validationPreview = null;
+        _cachedFileBytes = null;
     }
 
-    private async Task ImportAsync()
+    private async Task ValidateAsync()
     {
         if (_selectedFile is null) return;
 
-        _isImporting = true;
+        _isValidating = true;
         _errorMessage = null;
+        _validationPreview = null;
         StateHasChanged();
 
         try
@@ -38,16 +45,49 @@ public partial class ImportDialog : ComponentBase
             await using var stream = _selectedFile.OpenReadStream(MaxFileSize);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
-            ms.Position = 0;
+            _cachedFileBytes = ms.ToArray();
 
-            // Use a placeholder userId; in production this comes from auth
+            ms.Position = 0;
+            var result = await BulkOperationManager.ValidateImportAsync(ms, OperationType);
+
+            if (result.Success)
+            {
+                _validationPreview = result.Data;
+            }
+            else
+            {
+                _errorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Dosya okunurken hata olustu: {ex.Message}";
+        }
+        finally
+        {
+            _isValidating = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ImportAsync()
+    {
+        if (_cachedFileBytes is null) return;
+
+        _isImporting = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            using var ms = new MemoryStream(_cachedFileBytes);
             var userId = Guid.Empty;
 
             var result = OperationType switch
             {
-                BulkOperationType.ProductImport => await BulkOperationManager.ImportProductsAsync(ms, _selectedFile.Name, userId),
-                BulkOperationType.PriceImport => await BulkOperationManager.ImportPricesAsync(ms, _selectedFile.Name, userId),
-                BulkOperationType.StockImport => await BulkOperationManager.ImportStockAsync(ms, _selectedFile.Name, userId),
+                BulkOperationType.ProductImport => await BulkOperationManager.ImportProductsAsync(ms, _selectedFile!.Name, userId),
+                BulkOperationType.PriceImport => await BulkOperationManager.ImportPricesAsync(ms, _selectedFile!.Name, userId),
+                BulkOperationType.StockImport => await BulkOperationManager.ImportStockAsync(ms, _selectedFile!.Name, userId),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -62,7 +102,7 @@ public partial class ImportDialog : ComponentBase
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Dosya okunurken hata oluştu: {ex.Message}";
+            _errorMessage = $"Ice aktarma sirasinda hata olustu: {ex.Message}";
         }
         finally
         {
@@ -71,14 +111,23 @@ public partial class ImportDialog : ComponentBase
         }
     }
 
+    private void ResetValidation()
+    {
+        _selectedFile = null;
+        _validationPreview = null;
+        _cachedFileBytes = null;
+        _errorMessage = null;
+        StateHasChanged();
+    }
+
     private void Cancel() => MudDialog.Cancel();
 
     private string GetTitle() => OperationType switch
     {
-        BulkOperationType.ProductImport => "Ürün İçe Aktarma",
-        BulkOperationType.PriceImport => "Fiyat İçe Aktarma",
-        BulkOperationType.StockImport => "Stok İçe Aktarma",
-        _ => "İçe Aktarma"
+        BulkOperationType.ProductImport => "Urun Ice Aktarma",
+        BulkOperationType.PriceImport => "Fiyat Ice Aktarma",
+        BulkOperationType.StockImport => "Stok Ice Aktarma",
+        _ => "Ice Aktarma"
     };
 
     private static string FormatFileSize(long bytes) => bytes switch
