@@ -36,12 +36,12 @@ public partial class PasswordReset
                 var result = await AuthService.CreatePassword(_password, guidId);
                 if (result.Success)
                 {
-                    Snackbar.Add(result.Message, Severity.Success);
+                    Snackbar.Add(result.Message ?? "", Severity.Success);
                     NavigationManager.NavigateTo("/auth/login");
                 }
                 else
                 {
-                    Snackbar.Add(result.Message, Severity.Error);
+                    Snackbar.Add(result.Message ?? "", Severity.Error);
                 }
             }
             catch (Exception ex)

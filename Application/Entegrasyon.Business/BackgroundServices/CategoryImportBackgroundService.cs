@@ -1,7 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Categories;
-using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Tenants;
@@ -16,7 +15,6 @@ namespace Entegrasyon.Business.BackgroundServices;
 public class CategoryImportBackgroundService(
     EventChannel<CategoryImportRequestedEvent> importRequestedChannel,
     EventChannel<CategoryImportCompletedEvent> importCompletedChannel,
-    EventChannel<NotificationEvent> notificationChannel,
     IServiceScopeFactory scopeFactory,
     ILogger<CategoryImportBackgroundService> logger) : BackgroundService
 {

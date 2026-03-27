@@ -1,6 +1,5 @@
 ﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
-using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
@@ -15,7 +14,6 @@ namespace Entegrasyon.Business.Concrete;
 
 public class BranchOfficeManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
-    IFluentValidator validator,
     IApplicationLogManager applicationLogManager,
     IMapper mapper)
     : IBranchOfficeManager
@@ -33,7 +31,7 @@ public class BranchOfficeManager(
         await applicationLogManager.AddLog("Ofis ekleme işlemi yapılmakta.",LogType.Branch,LogAction.Add);
         var result = LogicRunner.Run(await CheckIfTheSameNameExists(dbContext, officeDto.Name, 0));
         if (result!=null)
-            return new ErrorDataResult<BranchOffice>(null, result.Message);
+            return new ErrorDataResult<BranchOffice>(null!, result.Message!);
         var office = mapper.Map<BranchOffice>(officeDto);
         await dbContext.BranchOffices.AddAsync(office);
         await dbContext.SaveChangesAsync();
@@ -45,9 +43,9 @@ public class BranchOfficeManager(
     {
         using var dbContext = contextFactory.CreateDbContext();
         var data = await dbContext.BranchOffices.Select(b =>
-            new BranchDetailDto(b.Id, b.Name, b.Users.Count(), b.CreatedAt))
+            new BranchDetailDto(b.Id, b.Name!, b.Users.Count(), b.CreatedAt))
             .FirstOrDefaultAsync(b=>b.Id==branchId);
-        return new SuccessDataResult<BranchDetailDto>(data);
+        return new SuccessDataResult<BranchDetailDto>(data!);
     }
 
     public async Task<IDataResult<BranchOffice>> Update(BranchOfficeEditDto dto)
@@ -58,8 +56,8 @@ public class BranchOfficeManager(
         await applicationLogManager.AddLog("Ofis düzenleme işlemi yapılmakta.",LogType.Branch,LogAction.Update,dto);
         var result = LogicRunner.Run(await CheckIfTheSameNameExists(dbContext, dto.Name, dto.Id));
         if (result != null)
-            return new ErrorDataResult<BranchOffice>(null, result.Message);
-        var dbOffice = await dbContext.BranchOffices.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id);
+            return new ErrorDataResult<BranchOffice>(null!, result.Message!);
+        var dbOffice = (await dbContext.BranchOffices.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id))!;
         dbOffice.Name = dto.Name;
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Ofis düzenleme işlemi başarıyla tamamlandı. ",LogType.Branch,LogAction.Update);
@@ -101,7 +99,7 @@ public class BranchOfficeManager(
             .OrderByDescending(b => b.CreatedAt)
             .Skip(pageIndex * pageSize)
             .Take(pageSize)
-            .Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name, b.Users.Count()))
+            .Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name!, b.Users.Count()))
             .ToListAsync();
         return new SuccessDataResult<Pageable<BranchListDetailDto>>(new Pageable<BranchListDetailDto>(items, pageIndex, pageSize, total));
     }
@@ -114,7 +112,7 @@ public class BranchOfficeManager(
             .OrderByDescending(b => b.CreatedAt)
             .Skip(request.PageIndex * request.PageSize)
             .Take(request.PageSize)
-            .Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name, b.Users.Count()))
+            .Select(b => new BranchListDetailDto(b.CreatedAt, b.Id, b.Name!, b.Users.Count()))
             .ToListAsync();
         return new SuccessDataResult<Pageable<BranchListDetailDto>>(new Pageable<BranchListDetailDto>(items, request.PageIndex, request.PageSize, total));
     }
@@ -122,6 +120,6 @@ public class BranchOfficeManager(
     public async Task<BranchOffice> GetBranchById(int id)
     {
         using var dbContext = contextFactory.CreateDbContext();
-        return await dbContext.BranchOffices.FirstOrDefaultAsync(x => x.Id == id);
+        return (await dbContext.BranchOffices.FirstOrDefaultAsync(x => x.Id == id))!;
     }
 }

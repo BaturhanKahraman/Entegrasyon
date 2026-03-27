@@ -59,7 +59,7 @@ public partial class CategoryDialog
                     AllowCustom = a.CategoryAttribute?.AllowCustom ?? true,
                     IsExisting = true,
                     Values = a.CategoryAttribute?.CategoryAttributeValues?
-                        .Select(v => new ValueModel { Id = v.Id, Name = v.Name })
+                        .Select(v => new ValueModel { Id = v.Id, Name = v.Name ?? "" })
                         .ToList() ?? []
                 }).ToList() ?? []
             };
@@ -99,10 +99,10 @@ public partial class CategoryDialog
         if (attr is null) return;
         model.SelectedAttribute = attr;
         model.ExistingAttributeId = attr.Id;
-        model.Name = attr.CategoryAttributeHumanized;
+        model.Name = attr.CategoryAttributeHumanized ?? "";
         model.AllowCustom = attr.AllowCustom;
         model.Values = attr.CategoryAttributeValues?
-            .Select(v => new ValueModel { Id = v.Id, Name = v.Name })
+            .Select(v => new ValueModel { Id = v.Id, Name = v.Name ?? "" })
             .ToList() ?? [];
     }
 
@@ -172,7 +172,7 @@ public partial class CategoryDialog
 
         return Task.FromResult(_allAttributes
             .Where(a => !usedIds.Contains(a.Id) &&
-                        a.CategoryAttributeHumanized.Contains(value, StringComparison.OrdinalIgnoreCase)));
+                        (a.CategoryAttributeHumanized ?? "").Contains(value, StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task Submit()

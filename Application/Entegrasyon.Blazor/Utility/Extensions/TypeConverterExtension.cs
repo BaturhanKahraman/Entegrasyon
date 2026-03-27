@@ -28,7 +28,7 @@ public static class TypeConverterExtension
         return new TrendyolSelectedCategory
         {
             Id = Convert.ToInt32(model.Id),
-            Name = model.Text,
+            Name = model.Text ?? "",
             ParentId =string.IsNullOrWhiteSpace(model.Parent) ? null : Convert.ToInt32(model.Parent),
             SubCategories = model.Children.Select(c => c.ToTrendyolSelectedCategory()).ToList()
         };

@@ -42,7 +42,7 @@ public partial class Users
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
         _loading = false;
     }
@@ -73,12 +73,12 @@ public partial class Users
             var serviceResult = await UserManager.AddUser(addUserDto);
             if (serviceResult.Success)
             {
-                Snackbar.Add(serviceResult.Message, Severity.Success);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Success);
                 await LoadUsers();
             }
             else
             {
-                Snackbar.Add(serviceResult.Message, Severity.Error);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Error);
             }
         }
     }
@@ -101,12 +101,12 @@ public partial class Users
             var serviceResult = await UserManager.SoftDelete(user.Id);
             if (serviceResult.Success)
             {
-                Snackbar.Add(serviceResult.Message, Severity.Success);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Success);
                 await LoadUsers();
             }
             else
             {
-                Snackbar.Add(serviceResult.Message, Severity.Error);
+                Snackbar.Add(serviceResult.Message ?? "", Severity.Error);
             }
         }
     }
@@ -131,7 +131,7 @@ public partial class Users
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
     }
 

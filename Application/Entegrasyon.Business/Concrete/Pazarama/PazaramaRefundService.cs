@@ -35,7 +35,7 @@ public sealed class PazaramaRefundService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetRefunds başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PazaramaRefundListResponse>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PazaramaRefundListResponse>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<PazaramaRefundListResponse>>();
@@ -44,7 +44,7 @@ public sealed class PazaramaRefundService(
             {
                 var msg = parsed?.Message ?? "İadeler alınamadı";
                 logger.LogWarning("Pazarama GetRefunds yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<PazaramaRefundListResponse>(null, msg);
+                return new ErrorDataResult<PazaramaRefundListResponse>(null!, msg);
             }
 
             logger.LogInformation("Pazarama GetRefunds başarılı. İade sayısı: {Count}",
@@ -54,7 +54,7 @@ public sealed class PazaramaRefundService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama GetRefunds exception. StartDate: {Start}, EndDate: {End}", startDate, endDate);
-            return new ErrorDataResult<PazaramaRefundListResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PazaramaRefundListResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -115,7 +115,7 @@ public sealed class PazaramaRefundService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetCancellations başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PazaramaRefundListResponse>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PazaramaRefundListResponse>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<PazaramaRefundListResponse>>();
@@ -124,7 +124,7 @@ public sealed class PazaramaRefundService(
             {
                 var msg = parsed?.Message ?? "İptaller alınamadı";
                 logger.LogWarning("Pazarama GetCancellations yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<PazaramaRefundListResponse>(null, msg);
+                return new ErrorDataResult<PazaramaRefundListResponse>(null!, msg);
             }
 
             logger.LogInformation("Pazarama GetCancellations başarılı. İptal sayısı: {Count}",
@@ -134,7 +134,7 @@ public sealed class PazaramaRefundService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama GetCancellations exception. StartDate: {Start}, EndDate: {End}", startDate, endDate);
-            return new ErrorDataResult<PazaramaRefundListResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PazaramaRefundListResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 

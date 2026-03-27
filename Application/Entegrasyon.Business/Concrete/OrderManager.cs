@@ -156,7 +156,7 @@ public class OrderManager(
             .ToList();
 
         var existingOrderNumbers = (await dbContext.Orders
-            .Where(o => o.MarketPlaceId == PazaramaMarketPlaceId && allOrderNumbers.Contains(o.OrderNumber))
+            .Where(o => o.MarketPlaceId == PazaramaMarketPlaceId && allOrderNumbers.Contains(o.OrderNumber!))
             .Select(o => o.OrderNumber)
             .ToListAsync()).ToHashSet();
 
@@ -172,7 +172,7 @@ public class OrderManager(
         var barcodeMap = await dbContext.ProductVariants
             .AsNoTracking()
             .Where(v => allBarcodes.Contains(v.Barcode))
-            .ToDictionaryAsync(v => v.Barcode, v => v.Id);
+            .ToDictionaryAsync(v => v.Barcode!, v => v.Id);
 
         foreach (var dto in orders)
         {
@@ -288,7 +288,7 @@ public class OrderManager(
             .ToList();
 
         var existingOrderNumbers = (await dbContext.Orders
-            .Where(o => o.MarketPlaceId == N11MarketPlaceId && allOrderNumbers.Contains(o.OrderNumber))
+            .Where(o => o.MarketPlaceId == N11MarketPlaceId && allOrderNumbers.Contains(o.OrderNumber!))
             .Select(o => o.OrderNumber)
             .ToListAsync()).ToHashSet();
 
@@ -304,7 +304,7 @@ public class OrderManager(
         var barcodeMap = await dbContext.ProductVariants
             .AsNoTracking()
             .Where(v => allBarcodes.Contains(v.Barcode))
-            .ToDictionaryAsync(v => v.Barcode, v => v.Id);
+            .ToDictionaryAsync(v => v.Barcode!, v => v.Id);
 
         foreach (var dto in orders)
         {
@@ -415,7 +415,7 @@ public class OrderManager(
         // Batch barcode lookup: Tüm barkodları tek sorguda çöz
         var allBarcodes = packages
             .Where(p => p.Lines is not null)
-            .SelectMany(p => p.Lines)
+            .SelectMany(p => p.Lines!)
             .Select(l => l.Barcode)
             .Where(b => !string.IsNullOrEmpty(b))
             .Distinct()
@@ -424,7 +424,7 @@ public class OrderManager(
         var barcodeMap = await dbContext.ProductVariants
             .AsNoTracking()
             .Where(v => allBarcodes.Contains(v.Barcode))
-            .ToDictionaryAsync(v => v.Barcode, v => v.Id);
+            .ToDictionaryAsync(v => v.Barcode!, v => v.Id);
 
         foreach (var pkg in packages)
         {

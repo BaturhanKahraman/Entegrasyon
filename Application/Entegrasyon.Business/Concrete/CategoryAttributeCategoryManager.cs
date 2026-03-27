@@ -118,7 +118,7 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
             if (catAttr.Id != 0)
             {
                 var existingCatAttr = existingCatAttrs.GetValueOrDefault(catAttr.Id);
-                existingCatAttr.CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized;
+                existingCatAttr!.CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized;
                 existingCatAttr.CategoryAttributeKey = catAttr.CategoryAttributeKey;
                 existingCatAttr.AllowCustom = catAttr.AllowCustom;
                 catAttrcat.CategoryAttribute = existingCatAttr;

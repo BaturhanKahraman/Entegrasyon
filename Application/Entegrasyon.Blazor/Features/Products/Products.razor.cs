@@ -14,7 +14,7 @@ public partial class Products : IDisposable
     [Inject]
     private NavigationManager? NavigationManager { get; set; }
     [Inject]
-    private IDialogService DialogService { get; set; }
+    private IDialogService DialogService { get; set; } = default!;
     [Inject]
     private IProductService ProductManager { get; set; } = null!;
 

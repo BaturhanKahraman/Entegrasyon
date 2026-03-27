@@ -102,7 +102,7 @@ public class TrendyolStockPriceSyncService(
 
         var items = new List<TrendyolPriceInventoryItem>
         {
-            new(variant.Barcode, quantity, salePrice, variant.ListPrice)
+            new(variant.Barcode!, quantity, salePrice, variant.ListPrice)
         };
 
         var result = await stockPriceService.UpdatePriceAndInventoryAsync(items);
@@ -160,12 +160,12 @@ public class TrendyolStockPriceSyncService(
 
         var stockItems = new List<PazaramaStockUpdateItem>
         {
-            new(variant.Barcode, quantity)
+            new(variant.Barcode!, quantity)
         };
 
         var priceItems = new List<PazaramaPriceUpdateItem>
         {
-            new(variant.Barcode, variant.ListPrice, salePrice)
+            new(variant.Barcode!, variant.ListPrice, salePrice)
         };
 
         var stockResult = await stockPriceService.UpdateStockAsync(stockItems);

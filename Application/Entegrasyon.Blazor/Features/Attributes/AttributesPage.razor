@@ -8,7 +8,7 @@
 <MudGrid>
     <MudItem xs="12" md="5">
         <MudPaper Elevation="1" Class="pa-2">
-            <MudToolBar Dense="true" DisableGutters="true" Class="mb-2">
+            <MudToolBar Dense="true" Gutters="false" Class="mb-2">
                 <MudTextField T="string"
                               Placeholder="Özellik ara..."
                               Adornment="Adornment.Start"
@@ -26,7 +26,7 @@
                          Dense="true"
                          SelectedItem="@_selectedAttribute"
                          SelectedItemChanged="@OnAttributeSelected"
-                         SelectionMode="DataGridSelectionMode.SingleSelection">
+                         MultiSelection="false">
                 <Columns>
                     <PropertyColumn Property="x => x.CategoryAttributeHumanized" Title="Ad" />
                     <PropertyColumn Property="x => x.CategoryAttributeKey" Title="Anahtar" />

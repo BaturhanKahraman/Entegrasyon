@@ -99,7 +99,7 @@ public sealed class N11StockPriceService(
             await activityLogger.LogAsync(productId, ProductActivityType.PriceUpdated,
                 $"N11 fiyat güncelleme hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorResult(statusCheck.Message);
+            return new ErrorResult(statusCheck.Message!);
         }
 
         // Adım 6: Aktivite logu
@@ -177,7 +177,7 @@ public sealed class N11StockPriceService(
             await activityLogger.LogAsync(productId, ProductActivityType.StockUpdated,
                 $"N11 stok güncelleme hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorResult(statusCheck.Message);
+            return new ErrorResult(statusCheck.Message!);
         }
 
         // Adım 8: Aktivite logu

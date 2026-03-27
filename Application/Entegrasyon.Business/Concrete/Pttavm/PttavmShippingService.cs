@@ -29,12 +29,12 @@ public sealed class PttavmShippingService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM get warehouses failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PttavmWarehouse>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PttavmWarehouse>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<List<PttavmWarehouse>>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<List<PttavmWarehouse>>(null, "Depo listesi alınamadı.");
+                return new ErrorDataResult<List<PttavmWarehouse>>(null!, "Depo listesi alınamadı.");
 
             logger.LogInformation("PttAVM warehouses: {Count} warehouses found", result.Count);
             return new SuccessDataResult<List<PttavmWarehouse>>(result);
@@ -42,7 +42,7 @@ public sealed class PttavmShippingService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM get warehouses exception");
-            return new ErrorDataResult<List<PttavmWarehouse>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PttavmWarehouse>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -55,7 +55,7 @@ public sealed class PttavmShippingService(
         {
             const string msg = "Sipariş listesi boş olamaz.";
             logger.LogWarning("PttavmShippingService: {Message}", msg);
-            return new ErrorDataResult<PttavmBarcodeCreateResult>(null, msg);
+            return new ErrorDataResult<PttavmBarcodeCreateResult>(null!, msg);
         }
 
         try
@@ -70,12 +70,12 @@ public sealed class PttavmShippingService(
                 await applicationLogManager.AddLog(
                     $"PttAVM barkod oluşturma başarısız: {response.StatusCode}",
                     LogType.Order, LogAction.Update, null, ct);
-                return new ErrorDataResult<PttavmBarcodeCreateResult>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmBarcodeCreateResult>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmBarcodeCreateResult>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<PttavmBarcodeCreateResult>(null, "Barkod oluşturma yanıtı alınamadı.");
+                return new ErrorDataResult<PttavmBarcodeCreateResult>(null!, "Barkod oluşturma yanıtı alınamadı.");
 
             logger.LogInformation("PttAVM create barcodes: trackingId={TrackingId}, count={Count}",
                 result.TrackingId, result.Count);
@@ -84,7 +84,7 @@ public sealed class PttavmShippingService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM create barcodes exception");
-            return new ErrorDataResult<PttavmBarcodeCreateResult>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmBarcodeCreateResult>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -97,7 +97,7 @@ public sealed class PttavmShippingService(
         {
             const string msg = "TrackingId boş olamaz.";
             logger.LogWarning("PttavmShippingService: {Message}", msg);
-            return new ErrorDataResult<PttavmBarcodeStatusResult>(null, msg);
+            return new ErrorDataResult<PttavmBarcodeStatusResult>(null!, msg);
         }
 
         try
@@ -109,12 +109,12 @@ public sealed class PttavmShippingService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM barcode status failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PttavmBarcodeStatusResult>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmBarcodeStatusResult>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmBarcodeStatusResult>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<PttavmBarcodeStatusResult>(null, "Barkod durumu alınamadı.");
+                return new ErrorDataResult<PttavmBarcodeStatusResult>(null!, "Barkod durumu alınamadı.");
 
             logger.LogInformation("PttAVM barcode status: trackingId={TrackingId}, status={Status}",
                 trackingId, result.Status);
@@ -123,7 +123,7 @@ public sealed class PttavmShippingService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM barcode status exception for {TrackingId}", trackingId);
-            return new ErrorDataResult<PttavmBarcodeStatusResult>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmBarcodeStatusResult>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -136,14 +136,14 @@ public sealed class PttavmShippingService(
         {
             const string msg = "Barkod boş olamaz.";
             logger.LogWarning("PttavmShippingService: {Message}", msg);
-            return new ErrorDataResult<string>(null, msg);
+            return new ErrorDataResult<string>(null!, msg);
         }
 
         if (string.IsNullOrWhiteSpace(orderId))
         {
             const string msg = "Sipariş numarası boş olamaz.";
             logger.LogWarning("PttavmShippingService: {Message}", msg);
-            return new ErrorDataResult<string>(null, msg);
+            return new ErrorDataResult<string>(null!, msg);
         }
 
         try
@@ -155,7 +155,7 @@ public sealed class PttavmShippingService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM barcode tag failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<string>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<string>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var tagContent = await response.Content.ReadAsStringAsync(ct);
@@ -164,7 +164,7 @@ public sealed class PttavmShippingService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM barcode tag exception for {Barcode}", barcode);
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 

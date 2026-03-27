@@ -50,7 +50,7 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
             if (!result.Success || result.Data is null)
             {
                 Logger.LogError("Çiçeksepeti kategori listesi alınamadı: {Message}", result.Message);
-                return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null,
+                return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!,
                     result.Message ?? "Kategori listesi alınamadı");
             }
 
@@ -67,7 +67,7 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
         catch (Exception ex)
         {
             Logger.LogError(ex, "Çiçeksepeti kategorileri çekilirken hata oluştu");
-            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

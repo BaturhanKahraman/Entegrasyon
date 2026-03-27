@@ -4,7 +4,6 @@ using Entegrasyon.Business.Concrete.Auth;
 using Moq;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Auth;
-using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Business.Utility.Constants;
 
 namespace Entegrasyon.UnitTest.Business
@@ -171,7 +170,7 @@ namespace Entegrasyon.UnitTest.Business
         public async Task CreatePassword_WithValidPassword_ReturnsSuccessResult()
         {
             //Arrange
-            string userName="test",password="password", newPassword = "newPassword";
+            string userName="test",password="password";
             ApplicationUser user = CreateUser(userName,password);
             mockIntegrationDbContext.Setup(db => db.Users.FindAsync(new object[] { user.Id}, default)).ReturnsAsync(user);
             //act
@@ -206,7 +205,7 @@ namespace Entegrasyon.UnitTest.Business
         public async Task CreatePassword_WithInvalidPassword_ReturnsErrorResult(string? password)
         {
             //act
-            var result = await authService.CreatePassword(password, default, default);
+            var result = await authService.CreatePassword(password!, default, default);
             //assert
             result.Should().BeOfType<ErrorResult>();
             result.Message.Should().Be(Messages.ProcessFailed);

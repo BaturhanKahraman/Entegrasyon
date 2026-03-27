@@ -53,7 +53,7 @@ public partial class ImportConflictDialog
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
     }
 

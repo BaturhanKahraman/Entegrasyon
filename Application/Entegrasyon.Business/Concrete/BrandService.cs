@@ -23,8 +23,8 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
 
     public async Task<IDataResult<List<BrandListDetailDto>>> GetBrandListDetails()
     {
-        if (cache.TryGetValue(brandListCacheKey, out List<BrandListDetailDto> cached))
-            return new SuccessDataResult<List<BrandListDetailDto>>(cached);
+        if (cache.TryGetValue(brandListCacheKey, out List<BrandListDetailDto>? cached))
+            return new SuccessDataResult<List<BrandListDetailDto>>(cached!);
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var result = await dbContext.Brands
@@ -47,7 +47,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         if (result != null)
         {
             await applicationLogManager.AddLog($"Marka eklenemedi. {result.Message}", LogType.Brand, LogAction.Add, brandDto);
-            return new ErrorResult(result.Message);
+            return new ErrorResult(result.Message!);
         }
         dbContext.Brands.Add(brand);
         await dbContext.SaveChangesAsync();
@@ -65,7 +65,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         if (result != null)
         {
             await applicationLogManager.AddLog($"Marka guncellenemedi. {result.Message}", LogType.Brand, LogAction.Add, brand);
-            return new ErrorResult(result.Message);
+            return new ErrorResult(result.Message!);
         }
         await validator.ValidateAndThrowAsync(brand);
         dbContext.Brands.Update(brand);
@@ -76,7 +76,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
             .Where(x => x.Id == brand.Id)
             .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
             .FirstOrDefaultAsync();
-        return new SuccessDataResult<BrandListDetailDto>(detail, Messages.BrandUpdatedSuccessfuly);
+        return new SuccessDataResult<BrandListDetailDto>(detail!, Messages.BrandUpdatedSuccessfuly);
     }
 
     public async Task<IResult> DeleteBrand(int id)
@@ -114,7 +114,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
     public async Task<IDataResult<Brand>> GetBrandById(int id)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        return new SuccessDataResult<Brand>(await dbContext.Brands.FindAsync(id));
+        return new SuccessDataResult<Brand>((await dbContext.Brands.FindAsync(id))!);
     }
 
     public async Task<IDataResult<BrandDetailDto>> GetBrandDetail(int id)
@@ -123,7 +123,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         var entity = await dbContext.Brands
             .Select(x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
             .FirstOrDefaultAsync(x => x.Id == id);
-        return new SuccessDataResult<BrandDetailDto>(entity);
+        return new SuccessDataResult<BrandDetailDto>(entity!);
     }
 
     public async Task<IDataResult<Brand>> GetBrandBySeoSlugAsync(string slug)

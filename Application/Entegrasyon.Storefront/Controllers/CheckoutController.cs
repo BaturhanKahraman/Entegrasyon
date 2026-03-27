@@ -66,10 +66,10 @@ public class CheckoutController(
             var callbackUrl = $"{Request.Scheme}://{Request.Host}/odeme/callback";
 
             var paymentItems = order.OrderItems.Select(oi => new PaymentItemDto(
-                Name: oi.Barcode ?? oi.ProductId.ToString(),
+                Name: oi.Barcode ?? oi.ProductId.ToString()!,
                 Category: "Genel",
                 Price: oi.UnitPrice * oi.Quantity,
-                Id: oi.ProductId.ToString()
+                Id: oi.ProductId.ToString()!
             )).ToList();
 
             var paymentRequest = new PaymentRequest(

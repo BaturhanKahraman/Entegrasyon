@@ -57,9 +57,9 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
                 .Select(x => new ApplicationLogDetailDto
                 {
                     Id = x.Id,
-                    Content = x.Content,
+                    Content = x.Content!,
                     CreatedAt = x.CreatedAt.UtcDateTime,
-                    IpAddress = x.IpAddress,
+                    IpAddress = x.IpAddress!,
                     LogAction = x.LogAction,
                     LogType = x.LogType,
                     UserInfos = x.ApplicationUser != null ? x.ApplicationUser.UserName + ' ' + x.ApplicationUser.Name + ' ' + x.ApplicationUser.Surname : ""

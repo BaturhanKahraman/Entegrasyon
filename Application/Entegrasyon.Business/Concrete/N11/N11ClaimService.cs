@@ -66,7 +66,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 ClaimCancelList başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ClaimCancelDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ClaimCancelDto>>(null!, statusCheck.Message!);
         }
 
         var claims = response
@@ -171,7 +171,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 GetCancelDenyReasonsAsync başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message!);
         }
 
         var reasons = response
@@ -212,7 +212,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 ClaimReturnList başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ClaimReturnDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ClaimReturnDto>>(null!, statusCheck.Message!);
         }
 
         var claims = response
@@ -355,7 +355,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 GetReturnDenyReasonsAsync başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message!);
         }
 
         var reasons = response
@@ -392,7 +392,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 GetReturnPendingReasonsAsync başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message!);
         }
 
         var reasons = response
@@ -433,7 +433,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 ClaimExchangeList başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ClaimExchangeDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ClaimExchangeDto>>(null!, statusCheck.Message!);
         }
 
         var claims = response
@@ -609,7 +609,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 GetExchangeDenyReasonsAsync başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message!);
         }
 
         var reasons = response
@@ -646,7 +646,7 @@ public sealed class N11ClaimService(
         if (!statusCheck.Success)
         {
             logger.LogError("N11 GetExchangePendingReasonsAsync başarısız — Message={Message}", statusCheck.Message);
-            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message);
+            return new ErrorDataResult<List<N11ReasonTypeDto>>(null!, statusCheck.Message!);
         }
 
         var reasons = response

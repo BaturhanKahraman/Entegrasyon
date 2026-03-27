@@ -33,11 +33,11 @@ public sealed class AmazonProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId, ct);
 
         if (product == null)
-            return new ErrorDataResult<AmazonListingItem>(null, "Ürün bulunamadı.");
+            return new ErrorDataResult<AmazonListingItem>(null!, "Ürün bulunamadı.");
 
         var variant = product.ProductVariants.FirstOrDefault();
         if (variant == null)
-            return new ErrorDataResult<AmazonListingItem>(null, "Ürünün varyantı yok.");
+            return new ErrorDataResult<AmazonListingItem>(null!, "Ürünün varyantı yok.");
 
         var productMarketplace = await dbContext.ProductMarketplaces
             .FirstOrDefaultAsync(pm => pm.ProductId == productId && pm.MarketPlaceId == AmazonMpId, ct);
@@ -64,7 +64,7 @@ public sealed class AmazonProductMapper(
             attributes["externally_assigned_product_identifier"] = new[] { new { type = "ean", value = variant.Barcode } };
 
         // Görseller
-        var imageUrls = variant.Images.Take(9).Select(img => fileStorage.GetPublicUrl(img.StorageKey)).ToList();
+        var imageUrls = variant.Images.Take(9).Select(img => fileStorage.GetPublicUrl(img.StorageKey!)).ToList();
         if (imageUrls.Any())
             attributes["main_product_image_locator"] = new[] { new { media_location = imageUrls[0] } };
         for (var i = 1; i < imageUrls.Count; i++)

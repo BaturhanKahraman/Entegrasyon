@@ -54,7 +54,7 @@ public partial class DiscountDialog
             }
             else
             {
-                Snackbar.Add(result.Message, Severity.Error);
+                Snackbar.Add(result.Message ?? "", Severity.Error);
             }
         }
         catch (FluentValidation.ValidationException ex)

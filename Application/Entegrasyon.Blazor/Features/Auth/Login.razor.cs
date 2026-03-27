@@ -73,12 +73,12 @@ public partial class Login
                 }
                 else
                 {
-                    Snackbar.Add(result.Message, Severity.Error);
+                    Snackbar.Add(result.Message ?? "", Severity.Error);
                 }
             }
             else
             {
-                Snackbar.Add(result.Message, Severity.Error);
+                Snackbar.Add(result.Message ?? "", Severity.Error);
             }
         }
         catch (Exception ex)

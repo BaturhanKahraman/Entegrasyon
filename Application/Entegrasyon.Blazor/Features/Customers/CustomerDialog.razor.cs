@@ -10,15 +10,15 @@ namespace Entegrasyon.Blazor.Features.Customers;
 
 public partial class CustomerDialog
 {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
-    [Inject] ICustomerManager CustomerManager { get; set; }
-    [Inject] ISnackbar Snackbar { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Inject] ICustomerManager CustomerManager { get; set; } = default!;
+    [Inject] ISnackbar Snackbar { get; set; } = default!;
 
     [Parameter] public Customer? Customer { get; set; }
     [Parameter] public bool IsEdit { get; set; }
 
     private CustomerViewModel Model { get; set; } = new();
-    private MudForm form;
+    private MudForm form = default!;
     private bool success;
     private bool _saving;
     private string[] errors = [];
@@ -31,21 +31,21 @@ public partial class CustomerDialog
             {
                 Id = Customer.Id,
                 CustomerType = Customer.CustomerType,
-                PhoneNumber = Customer.PhoneNumber,
-                FullAddress = Customer.Address?.FullAddress,
-                Name = Customer.Name,
-                Surname = Customer.Surname
+                PhoneNumber = Customer.PhoneNumber ?? "",
+                FullAddress = Customer.Address?.FullAddress ?? "",
+                Name = Customer.Name ?? "",
+                Surname = Customer.Surname ?? ""
             };
 
             if (Customer is RetailCustomer retail)
             {
-                Model.NationalIdentity = retail.NationalIdentity;
+                Model.NationalIdentity = retail.NationalIdentity ?? "";
                 Model.CustomerType = "Retail";
             }
             else if (Customer is CorporateCustomer corporate)
             {
-                Model.TaxNumber = corporate.TaxNumber;
-                Model.CorporateName = corporate.CorporateName;
+                Model.TaxNumber = corporate.TaxNumber ?? "";
+                Model.CorporateName = corporate.CorporateName ?? "";
                 Model.CustomerType = "Corporate";
             }
         }
@@ -59,20 +59,20 @@ public partial class CustomerDialog
     {
         public int Id { get; set; }
         public string CustomerType { get; set; } = "Retail"; // "Retail" | "Corporate"
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string NationalIdentity { get; set; }
-        public string CorporateName { get; set; }
-        public string TaxNumber { get; set; }
-        public string PhoneNumber { get; set; }
-        public string FullAddress { get; set; }
+        public string Name { get; set; } = "";
+        public string Surname { get; set; } = "";
+        public string NationalIdentity { get; set; } = "";
+        public string CorporateName { get; set; } = "";
+        public string TaxNumber { get; set; } = "";
+        public string PhoneNumber { get; set; } = "";
+        public string FullAddress { get; set; } = "";
     }
 
     private void Cancel() => MudDialog.Cancel();
 
     private async Task Submit()
     {
-        form.Validate();
+        await form.Validate();
         if (!success) return;
 
         _saving = true;
@@ -99,7 +99,7 @@ public partial class CustomerDialog
                 }
                 else
                 {
-                    Snackbar.Add(result.Message, Severity.Error);
+                    Snackbar.Add(result.Message ?? "", Severity.Error);
                 }
             }
             else
@@ -123,7 +123,7 @@ public partial class CustomerDialog
                 }
                 else
                 {
-                    Snackbar.Add(result.Message, Severity.Error);
+                    Snackbar.Add(result.Message ?? "", Severity.Error);
                 }
             }
         }

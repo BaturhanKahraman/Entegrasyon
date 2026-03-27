@@ -18,6 +18,7 @@ public class ShipmentStatusUpdateService(
     ILogger<ShipmentStatusUpdateService> logger)
     : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private static readonly ShipmentStatus[] TerminalStatuses =
     {
         ShipmentStatus.Delivered,
@@ -54,7 +55,7 @@ public class ShipmentStatusUpdateService(
                 try
                 {
                     // Her refresh icin yeni scope olustur
-                    await using var refreshScope = scopeFactory.CreateAsyncScope();
+                    await using var refreshScope = _scopeFactory.CreateAsyncScope();
 
                     // Tenant context'i yeni scope icin de initialize et
                     var tenantContext = refreshScope.ServiceProvider.GetRequiredService<ITenantContext>();

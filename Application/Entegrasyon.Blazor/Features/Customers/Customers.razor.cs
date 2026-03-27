@@ -15,8 +15,8 @@ public partial class Customers
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
-    private MudDataGrid<CustomerDetailDto> dataGrid;
-    private string searchString;
+    private MudDataGrid<CustomerDetailDto> dataGrid = default!;
+    private string searchString = "";
 
     private async Task<GridData<CustomerDetailDto>> ServerData(GridState<CustomerDetailDto> state)
     {
@@ -60,7 +60,7 @@ public partial class Customers
             }
             else
             {
-                Snackbar.Add(detailResult.Message, Severity.Error);
+                Snackbar.Add(detailResult.Message ?? "", Severity.Error);
                 return;
             }
         }
@@ -77,7 +77,7 @@ public partial class Customers
 
         var result = await dialog.Result;
 
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
             await dataGrid.ReloadServerData();
         }

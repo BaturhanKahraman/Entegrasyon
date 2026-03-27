@@ -8,8 +8,7 @@ namespace Entegrasyon.Storefront.Controllers;
 [Authorize]
 public class WishlistController(
     IStorefrontTenantContext tenant,
-    IStorefrontWishlistManager wishlistManager,
-    IProductService productService) : Controller
+    IStorefrontWishlistManager wishlistManager) : Controller
 {
     private int GetCustomerId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 

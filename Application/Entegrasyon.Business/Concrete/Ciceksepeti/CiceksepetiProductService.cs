@@ -19,8 +19,7 @@ public sealed class CiceksepetiProductService(
     CiceksepetiMappingValidator mappingValidator,
     IProductActivityLogger activityLogger,
     IApplicationLogManager applicationLogManager,
-    ILogger<CiceksepetiProductService> logger,
-    IDbContextFactory<IntegrationDbContext> contextFactory) : ICiceksepetiProductService
+    ILogger<CiceksepetiProductService> logger) : ICiceksepetiProductService
 {
     private const string MarketplaceName = "Çiçeksepeti";
     private const string ProductsEndpoint = "Products";
@@ -33,7 +32,7 @@ public sealed class CiceksepetiProductService(
         // 1. Mapping validation
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Çiçeksepeti mapping doğrulaması başarılı" : validationResult.Message,
+            validationResult.Success ? "Çiçeksepeti mapping doğrulaması başarılı" : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: MarketplaceName);
 
@@ -41,7 +40,7 @@ public sealed class CiceksepetiProductService(
         {
             logger.LogWarning("Çiçeksepeti mapping validation failed for {ProductId}: {Message}",
                 productId, validationResult.Message);
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
         }
 
         // 2. Mapping
@@ -50,7 +49,7 @@ public sealed class CiceksepetiProductService(
         {
             logger.LogWarning("Çiçeksepeti product mapping failed for {ProductId}: {Message}",
                 productId, mapResult.Message);
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
         }
 
         // 3. Publish
@@ -71,7 +70,7 @@ public sealed class CiceksepetiProductService(
                     $"Çiçeksepeti ürün gönderimi başarısız: {response.StatusCode}",
                     Entity.Logs.LogType.Product, Entity.Logs.LogAction.None, null, ct);
 
-                return new ErrorDataResult<string>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<string>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var batchResponse = await response.Content
@@ -82,7 +81,7 @@ public sealed class CiceksepetiProductService(
             {
                 const string msg = "Çiçeksepeti'den batchId alınamadı.";
                 logger.LogWarning(msg + " ProductId={ProductId}", productId);
-                return new ErrorDataResult<string>(null, msg);
+                return new ErrorDataResult<string>(null!, msg);
             }
 
             await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
@@ -102,7 +101,7 @@ public sealed class CiceksepetiProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.BatchFailed,
                 $"Çiçeksepeti publish hatası: {ex.Message}",
                 ProductActivityStatus.Error, ex.ToString(), MarketplaceName);
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -114,7 +113,7 @@ public sealed class CiceksepetiProductService(
         // 1. Mapping validation
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Çiçeksepeti mapping doğrulaması başarılı" : validationResult.Message,
+            validationResult.Success ? "Çiçeksepeti mapping doğrulaması başarılı" : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: MarketplaceName);
 
@@ -122,7 +121,7 @@ public sealed class CiceksepetiProductService(
         {
             logger.LogWarning("Çiçeksepeti mapping validation failed for {ProductId}: {Message}",
                 productId, validationResult.Message);
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
         }
 
         // 2. Mapping (update = isActive=true)
@@ -131,7 +130,7 @@ public sealed class CiceksepetiProductService(
         {
             logger.LogWarning("Çiçeksepeti product mapping (update) failed for {ProductId}: {Message}",
                 productId, mapResult.Message);
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
         }
 
         // 3. Update (PUT)
@@ -152,7 +151,7 @@ public sealed class CiceksepetiProductService(
                     $"Çiçeksepeti ürün güncellemesi başarısız: {response.StatusCode}",
                     Entity.Logs.LogType.Product, Entity.Logs.LogAction.None, null, ct);
 
-                return new ErrorDataResult<string>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<string>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var batchResponse = await response.Content
@@ -163,7 +162,7 @@ public sealed class CiceksepetiProductService(
             {
                 const string msg = "Çiçeksepeti güncellemeden batchId alınamadı.";
                 logger.LogWarning(msg + " ProductId={ProductId}", productId);
-                return new ErrorDataResult<string>(null, msg);
+                return new ErrorDataResult<string>(null!, msg);
             }
 
             await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
@@ -183,7 +182,7 @@ public sealed class CiceksepetiProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.BatchFailed,
                 $"Çiçeksepeti güncelleme hatası: {ex.Message}",
                 ProductActivityStatus.Error, ex.ToString(), MarketplaceName);
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -200,14 +199,14 @@ public sealed class CiceksepetiProductService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("Çiçeksepeti batch status failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<CiceksepetiBatchStatusResponse>(null, $"Status API hatası: {response.StatusCode}");
+                return new ErrorDataResult<CiceksepetiBatchStatusResponse>(null!, $"Status API hatası: {response.StatusCode}");
             }
 
             var statusResponse = await response.Content
                 .ReadFromJsonAsync<CiceksepetiBatchStatusResponse>(cancellationToken: ct);
 
             if (statusResponse is null)
-                return new ErrorDataResult<CiceksepetiBatchStatusResponse>(null, "Batch status bilgisi alınamadı.");
+                return new ErrorDataResult<CiceksepetiBatchStatusResponse>(null!, "Batch status bilgisi alınamadı.");
 
             logger.LogInformation("Çiçeksepeti batch status: {BatchId}, {ItemCount} items", batchId, statusResponse.ItemCount);
             return new SuccessDataResult<CiceksepetiBatchStatusResponse>(statusResponse);
@@ -215,7 +214,7 @@ public sealed class CiceksepetiProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Çiçeksepeti batch status exception for {BatchId}", batchId);
-            return new ErrorDataResult<CiceksepetiBatchStatusResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<CiceksepetiBatchStatusResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -237,14 +236,14 @@ public sealed class CiceksepetiProductService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("Çiçeksepeti GetProducts failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<CiceksepetiProductListResponse>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<CiceksepetiProductListResponse>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var listResponse = await response.Content
                 .ReadFromJsonAsync<CiceksepetiProductListResponse>(cancellationToken: ct);
 
             if (listResponse is null)
-                return new ErrorDataResult<CiceksepetiProductListResponse>(null, "Ürün listesi alınamadı.");
+                return new ErrorDataResult<CiceksepetiProductListResponse>(null!, "Ürün listesi alınamadı.");
 
             logger.LogInformation("Çiçeksepeti GetProducts: page={Page}, total={Total}", page, listResponse.TotalCount);
             return new SuccessDataResult<CiceksepetiProductListResponse>(listResponse);
@@ -252,7 +251,7 @@ public sealed class CiceksepetiProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Çiçeksepeti GetProducts exception");
-            return new ErrorDataResult<CiceksepetiProductListResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<CiceksepetiProductListResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 }

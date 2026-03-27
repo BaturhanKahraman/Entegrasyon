@@ -260,7 +260,7 @@ public partial class Sales : IDisposable
         var generator = new Business.Labels.EscPosReceiptGenerator();
         var receiptBytes = generator.GenerateSaleReceipt(receiptData);
 
-        var printJob = new PrintJobDto(null, receiptBytes, "ESCPOS", "Satış Fişi");
+        var printJob = new PrintJobDto("", receiptBytes, "ESCPOS", "Satış Fişi");
 
         var parameters = new DialogParameters<PrintDialog>
         {

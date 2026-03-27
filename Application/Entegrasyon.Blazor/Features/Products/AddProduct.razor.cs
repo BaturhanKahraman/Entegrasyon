@@ -335,9 +335,9 @@ public partial class AddProduct
             // 1. Save product to DB
             var dto = new AddProductDto
             {
-                Title = title,
-                Description = description,
-                StockCode = stockCode,
+                Title = title ?? "",
+                Description = description ?? "",
+                StockCode = stockCode ?? "",
                 Season = season,
                 Year = year,
                 BrandId = brandId,
@@ -635,7 +635,7 @@ public partial class AddProduct
         if (_regularAttrValueIds.TryGetValue(attr.Id, out var vid) && vid.HasValue)
         {
             var val = attr.CategoryAttributeValues.FirstOrDefault(v => v.Id == vid.Value);
-            if (val is not null) return val.Name;
+            if (val is not null) return val.Name ?? "—";
         }
         if (_regularAttrCustomValues.TryGetValue(attr.Id, out var cv) && !string.IsNullOrWhiteSpace(cv))
             return cv;

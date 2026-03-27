@@ -31,17 +31,17 @@ public sealed class HepsiburadaProductService(
         // 1. Validation
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Hepsiburada mapping doğrulaması başarılı" : validationResult.Message,
+            validationResult.Success ? "Hepsiburada mapping doğrulaması başarılı" : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: "Hepsiburada");
 
         if (!validationResult.Success)
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
 
         // 2. Mapping
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
 
         // 3. Publish (multipart JSON upload)
         try
@@ -56,7 +56,7 @@ public sealed class HepsiburadaProductService(
                 await activityLogger.LogAsync(productId, ProductActivityType.BatchFailed,
                     $"Hepsiburada API hatası: {response.StatusCode}",
                     ProductActivityStatus.Error, errorBody, "Hepsiburada");
-                return new ErrorDataResult<string>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<string>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var trackingResponse = await response.Content
@@ -65,7 +65,7 @@ public sealed class HepsiburadaProductService(
             if (trackingResponse?.Success != true || trackingResponse.Data?.TrackingId == null)
             {
                 var msg = trackingResponse?.Message ?? "trackingId alınamadı";
-                return new ErrorDataResult<string>(null, msg);
+                return new ErrorDataResult<string>(null!, msg);
             }
 
             var trackingId = trackingResponse.Data.TrackingId;
@@ -94,7 +94,7 @@ public sealed class HepsiburadaProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.BatchFailed,
                 $"Hepsiburada publish hatası: {ex.Message}",
                 ProductActivityStatus.Error, ex.ToString(), "Hepsiburada");
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -107,7 +107,7 @@ public sealed class HepsiburadaProductService(
             if (!response.IsSuccessStatusCode)
             {
                 return new ErrorDataResult<List<HepsiburadaProductStatusItem>>(
-                    null, $"Status API hatası: {response.StatusCode}");
+                    null!, $"Status API hatası: {response.StatusCode}");
             }
 
             var statusResponse = await response.Content
@@ -116,7 +116,7 @@ public sealed class HepsiburadaProductService(
             if (statusResponse?.Success != true || statusResponse.Data?.Content == null)
             {
                 return new ErrorDataResult<List<HepsiburadaProductStatusItem>>(
-                    null, statusResponse?.Message ?? "Status bilgisi alınamadı");
+                    null!, statusResponse?.Message ?? "Status bilgisi alınamadı");
             }
 
             return new SuccessDataResult<List<HepsiburadaProductStatusItem>>(statusResponse.Data.Content);
@@ -124,7 +124,7 @@ public sealed class HepsiburadaProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "HB status check failed for trackingId {TrackingId}", trackingId);
-            return new ErrorDataResult<List<HepsiburadaProductStatusItem>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<HepsiburadaProductStatusItem>>(null!, $"Hata: {ex.Message}");
         }
     }
 

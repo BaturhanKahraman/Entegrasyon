@@ -36,12 +36,12 @@ public class AuthService(
             return new ErrorResult(Messages.LoginFailedWrongPassword);
         }
 
-        bool isTruePass = HashingHelper.VerifyPasswordHash(password,user.PasswordHash,user.PasswordSalt);
+        bool isTruePass = HashingHelper.VerifyPasswordHash(password,user.PasswordHash!,user.PasswordSalt!);
 
         if(!isTruePass)
             return new ErrorResult(Messages.LoginFailedWrongPassword);
 
-        return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id,user.Name,user.Surname,user.UserName,user.Roles));
+        return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id,user.Name!,user.Surname!,user.UserName!,user.Roles));
     }
     public async Task<IResult> AssignTempPassword(string password,string userId,CancellationToken token = default)
     {
@@ -70,7 +70,7 @@ public class AuthService(
         if (user is null)
             return new ErrorResult(Messages.UserNotFound);
 
-        bool isCurrentPasswordValid = HashingHelper.VerifyPasswordHash(dto.CurrentPassword, user.PasswordHash, user.PasswordSalt);
+        bool isCurrentPasswordValid = HashingHelper.VerifyPasswordHash(dto.CurrentPassword, user.PasswordHash!, user.PasswordSalt!);
         if (!isCurrentPasswordValid)
             return new ErrorResult(Messages.CurrentPasswordWrong);
 

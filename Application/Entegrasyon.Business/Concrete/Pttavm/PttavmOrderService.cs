@@ -28,14 +28,14 @@ public sealed class PttavmOrderService(
         {
             const string msg = "Bitiş tarihi başlangıç tarihinden önce olamaz.";
             logger.LogWarning("PttavmOrderService: {Message}", msg);
-            return new ErrorDataResult<List<PttavmOrder>>(null, msg);
+            return new ErrorDataResult<List<PttavmOrder>>(null!, msg);
         }
 
         if ((endDate - startDate).TotalDays > MaxDateRangeDays)
         {
             var msg = $"Tarih aralığı maksimum {MaxDateRangeDays} gün olabilir.";
             logger.LogWarning("PttavmOrderService: {Message}", msg);
-            return new ErrorDataResult<List<PttavmOrder>>(null, msg);
+            return new ErrorDataResult<List<PttavmOrder>>(null!, msg);
         }
 
         // Execution
@@ -51,12 +51,12 @@ public sealed class PttavmOrderService(
                 await applicationLogManager.AddLog(
                     $"PttAVM sipariş arama başarısız: {response.StatusCode}",
                     LogType.Order, LogAction.List, null, ct);
-                return new ErrorDataResult<List<PttavmOrder>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PttavmOrder>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<List<PttavmOrder>>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<List<PttavmOrder>>(null, "Sipariş listesi alınamadı.");
+                return new ErrorDataResult<List<PttavmOrder>>(null!, "Sipariş listesi alınamadı.");
 
             logger.LogInformation("PttAVM order search: {Count} orders found", result.Count);
             return new SuccessDataResult<List<PttavmOrder>>(result);
@@ -64,7 +64,7 @@ public sealed class PttavmOrderService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM order search exception");
-            return new ErrorDataResult<List<PttavmOrder>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PttavmOrder>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -77,7 +77,7 @@ public sealed class PttavmOrderService(
         {
             const string msg = "Sipariş numarası boş olamaz.";
             logger.LogWarning("PttavmOrderService: {Message}", msg);
-            return new ErrorDataResult<PttavmOrderDetail>(null, msg);
+            return new ErrorDataResult<PttavmOrderDetail>(null!, msg);
         }
 
         try
@@ -88,19 +88,19 @@ public sealed class PttavmOrderService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM order detail failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PttavmOrderDetail>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmOrderDetail>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmOrderDetail>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<PttavmOrderDetail>(null, "Sipariş detayı alınamadı.");
+                return new ErrorDataResult<PttavmOrderDetail>(null!, "Sipariş detayı alınamadı.");
 
             return new SuccessDataResult<PttavmOrderDetail>(result);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM order detail exception for {OrderId}", orderId);
-            return new ErrorDataResult<PttavmOrderDetail>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmOrderDetail>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -113,7 +113,7 @@ public sealed class PttavmOrderService(
         {
             const string msg = "Sipariş numarası boş olamaz.";
             logger.LogWarning("PttavmOrderService: {Message}", msg);
-            return new ErrorDataResult<List<PttavmCargoInfo>>(null, msg);
+            return new ErrorDataResult<List<PttavmCargoInfo>>(null!, msg);
         }
 
         try
@@ -124,19 +124,19 @@ public sealed class PttavmOrderService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM cargo infos failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PttavmCargoInfo>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PttavmCargoInfo>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<List<PttavmCargoInfo>>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<List<PttavmCargoInfo>>(null, "Kargo bilgileri alınamadı.");
+                return new ErrorDataResult<List<PttavmCargoInfo>>(null!, "Kargo bilgileri alınamadı.");
 
             return new SuccessDataResult<List<PttavmCargoInfo>>(result);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM cargo infos exception for {OrderId}", orderId);
-            return new ErrorDataResult<List<PttavmCargoInfo>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PttavmCargoInfo>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -153,12 +153,12 @@ public sealed class PttavmOrderService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM cargo profiles failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PttavmCargoProfile>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PttavmCargoProfile>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmCargoProfileResponse>(cancellationToken: ct);
             if (result?.CargoProfiles is null)
-                return new ErrorDataResult<List<PttavmCargoProfile>>(null, "Kargo profilleri alınamadı.");
+                return new ErrorDataResult<List<PttavmCargoProfile>>(null!, "Kargo profilleri alınamadı.");
 
             logger.LogInformation("PttAVM cargo profiles: {Count} profiles found", result.CargoProfiles.Count);
             return new SuccessDataResult<List<PttavmCargoProfile>>(result.CargoProfiles);
@@ -166,7 +166,7 @@ public sealed class PttavmOrderService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM cargo profiles exception");
-            return new ErrorDataResult<List<PttavmCargoProfile>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PttavmCargoProfile>>(null!, $"Hata: {ex.Message}");
         }
     }
 }

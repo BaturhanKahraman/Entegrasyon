@@ -24,7 +24,7 @@ public sealed class MockHepsiburadaOrderService(
     {
         logger.LogInformation("[MOCK] HB get order: {OrderNumber}", orderNumber);
         return Task.FromResult<IDataResult<HepsiburadaOrderDto>>(
-            new ErrorDataResult<HepsiburadaOrderDto>(null, "Mock: sipariş bulunamadı."));
+            new ErrorDataResult<HepsiburadaOrderDto>(null!, "Mock: sipariş bulunamadı."));
     }
 
     public Task<IDataResult<HepsiburadaPackageResponse>> CreatePackageAsync(HepsiburadaPackageRequest request)

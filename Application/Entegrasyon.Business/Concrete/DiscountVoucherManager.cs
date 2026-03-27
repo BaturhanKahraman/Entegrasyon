@@ -81,12 +81,12 @@ public class DiscountVoucherManager : IDiscountVoucherManager
         return new SuccessResult("Tüm indirim kuponları aktif hale getirildi.");
     }
 
-    public async Task<IDataResult<Pageable<DiscountVoucherDto>>> GetDiscountVouchers(int pageIndex, int pagesize, string searchParam = null)
+    public async Task<IDataResult<Pageable<DiscountVoucherDto>>> GetDiscountVouchers(int pageIndex, int pagesize, string? searchParam = null)
     {
         using var dbContext = _contextFactory.CreateDbContext();
         var query = dbContext.DiscountVouchers.AsQueryable();
         if (!string.IsNullOrEmpty(searchParam))
-            query = query.Where(x => x.Code == searchParam || x.Customer.FullName.Contains(searchParam));
+            query = query.Where(x => x.Code == searchParam || x.Customer!.FullName!.Contains(searchParam));
 
         int total = await query.CountAsync();
         var items = await query
@@ -94,10 +94,10 @@ public class DiscountVoucherManager : IDiscountVoucherManager
             .Skip(pageIndex * pagesize)
             .Take(pagesize)
             .Select(d => new DiscountVoucherDto(
-                d.Id, d.Code, d.Percentage, d.Amount, d.ExpiringDate.Value, d.Customer.FullName,
-                d.Customer.PhoneNumber, d.Customer.CustomerType,
-                (d.Customer as RetailCustomer).NationalIdentity,
-                (d.Customer as CorporateCustomer).TaxNumber))
+                d.Id, d.Code!, d.Percentage, d.Amount, d.ExpiringDate!.Value, d.Customer!.FullName!,
+                d.Customer.PhoneNumber!, d.Customer.CustomerType!,
+                (d.Customer as RetailCustomer)!.NationalIdentity!,
+                (d.Customer as CorporateCustomer)!.TaxNumber!))
             .ToListAsync();
 
         return new SuccessDataResult<Pageable<DiscountVoucherDto>>(new Pageable<DiscountVoucherDto>(items, pageIndex, pagesize, total));

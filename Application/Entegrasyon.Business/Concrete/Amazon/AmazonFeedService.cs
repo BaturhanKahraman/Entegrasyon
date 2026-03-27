@@ -26,17 +26,17 @@ public sealed class AmazonFeedService(
             if (!docResponse.IsSuccessStatusCode)
             {
                 var error = await docResponse.Content.ReadAsStringAsync(ct);
-                return new ErrorDataResult<string>(null, $"Feed document creation failed: {docResponse.StatusCode} — {error}");
+                return new ErrorDataResult<string>(null!, $"Feed document creation failed: {docResponse.StatusCode} — {error}");
             }
             var doc = await docResponse.Content.ReadFromJsonAsync<AmazonFeedDocumentResponse>(cancellationToken: ct);
             if (doc == null)
-                return new ErrorDataResult<string>(null, "Feed document response parse edilemedi.");
+                return new ErrorDataResult<string>(null!, "Feed document response parse edilemedi.");
 
             // 2. Upload content to presigned URL
             var uploadResponse = await apiClient.UploadAsync(doc.Url, content, contentType, ct);
             if (!uploadResponse.IsSuccessStatusCode)
             {
-                return new ErrorDataResult<string>(null, $"Feed content upload failed: {uploadResponse.StatusCode}");
+                return new ErrorDataResult<string>(null!, $"Feed content upload failed: {uploadResponse.StatusCode}");
             }
 
             // 3. Create feed
@@ -45,7 +45,7 @@ public sealed class AmazonFeedService(
             if (!feedResponse.IsSuccessStatusCode)
             {
                 var error = await feedResponse.Content.ReadAsStringAsync(ct);
-                return new ErrorDataResult<string>(null, $"Feed creation failed: {feedResponse.StatusCode} — {error}");
+                return new ErrorDataResult<string>(null!, $"Feed creation failed: {feedResponse.StatusCode} — {error}");
             }
             var feed = await feedResponse.Content.ReadFromJsonAsync<AmazonCreateFeedResponse>(cancellationToken: ct);
 
@@ -55,7 +55,7 @@ public sealed class AmazonFeedService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon feed submission failed");
-            return new ErrorDataResult<string>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -66,14 +66,14 @@ public sealed class AmazonFeedService(
         {
             var response = await apiClient.GetAsync($"/feeds/2021-06-30/feeds/{feedId}", ct);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<AmazonFeedStatusResponse>(null, $"Feed status error: {response.StatusCode}");
+                return new ErrorDataResult<AmazonFeedStatusResponse>(null!, $"Feed status error: {response.StatusCode}");
             var data = await response.Content.ReadFromJsonAsync<AmazonFeedStatusResponse>(cancellationToken: ct);
-            return new SuccessDataResult<AmazonFeedStatusResponse>(data);
+            return new SuccessDataResult<AmazonFeedStatusResponse>(data!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon get feed status failed: {FeedId}", feedId);
-            return new ErrorDataResult<AmazonFeedStatusResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<AmazonFeedStatusResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 }

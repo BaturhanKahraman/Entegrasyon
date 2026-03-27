@@ -46,7 +46,7 @@ public sealed class HepsiburadaOrderService(
 
             var response = await apiClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<List<HepsiburadaOrderDto>>(null, $"Sipariş API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<HepsiburadaOrderDto>>(null!, $"Sipariş API hatası: {response.StatusCode}");
 
             var data = await response.Content.ReadFromJsonAsync<HepsiburadaOrderListResponse>();
             return new SuccessDataResult<List<HepsiburadaOrderDto>>(data?.Content ?? []);
@@ -54,7 +54,7 @@ public sealed class HepsiburadaOrderService(
         catch (Exception ex)
         {
             logger.LogError(ex, "HB order list failed");
-            return new ErrorDataResult<List<HepsiburadaOrderDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<HepsiburadaOrderDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -66,15 +66,15 @@ public sealed class HepsiburadaOrderService(
             var response = await apiClient.GetAsync($"/orders/merchantid/{merchantId}/ordernumber/{orderNumber}");
 
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<HepsiburadaOrderDto>(null, $"Sipariş bulunamadı: {response.StatusCode}");
+                return new ErrorDataResult<HepsiburadaOrderDto>(null!, $"Sipariş bulunamadı: {response.StatusCode}");
 
             var order = await response.Content.ReadFromJsonAsync<HepsiburadaOrderDto>();
-            return new SuccessDataResult<HepsiburadaOrderDto>(order);
+            return new SuccessDataResult<HepsiburadaOrderDto>(order!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "HB get order failed: {OrderNumber}", orderNumber);
-            return new ErrorDataResult<HepsiburadaOrderDto>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<HepsiburadaOrderDto>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -89,17 +89,17 @@ public sealed class HepsiburadaOrderService(
             {
                 var error = await response.Content.ReadAsStringAsync();
                 logger.LogError("HB package creation failed: {Status} {Error}", response.StatusCode, error);
-                return new ErrorDataResult<HepsiburadaPackageResponse>(null, $"Paketleme hatası: {response.StatusCode}");
+                return new ErrorDataResult<HepsiburadaPackageResponse>(null!, $"Paketleme hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<HepsiburadaPackageResponse>();
             logger.LogInformation("HB package created: {PackageNumber}", result?.PackageNumber);
-            return new SuccessDataResult<HepsiburadaPackageResponse>(result);
+            return new SuccessDataResult<HepsiburadaPackageResponse>(result!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "HB package creation exception");
-            return new ErrorDataResult<HepsiburadaPackageResponse>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<HepsiburadaPackageResponse>(null!, $"Hata: {ex.Message}");
         }
     }
 

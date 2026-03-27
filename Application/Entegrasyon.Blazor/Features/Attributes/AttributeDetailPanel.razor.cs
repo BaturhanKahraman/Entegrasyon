@@ -35,8 +35,8 @@ public partial class AttributeDetailPanel
             return;
         }
         var attr = result.Data;
-        _editHumanized = attr.CategoryAttributeHumanized;
-        _editKey = attr.CategoryAttributeKey;
+        _editHumanized = attr.CategoryAttributeHumanized ?? "";
+        _editKey = attr.CategoryAttributeKey ?? "";
         _editAllowCustom = attr.AllowCustom;
         _editValues = attr.CategoryAttributeValues.ToList();
         _newValueName = string.Empty;

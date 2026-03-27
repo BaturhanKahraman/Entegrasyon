@@ -34,7 +34,7 @@ public sealed class PazaramaOrderService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama FetchOrders başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PazaramaOrderDto>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PazaramaOrderDto>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<List<PazaramaOrderDto>>>();
@@ -43,7 +43,7 @@ public sealed class PazaramaOrderService(
             {
                 var msg = parsed?.Message ?? "Siparişler alınamadı";
                 logger.LogWarning("Pazarama FetchOrders yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<List<PazaramaOrderDto>>(null, msg);
+                return new ErrorDataResult<List<PazaramaOrderDto>>(null!, msg);
             }
 
             var orders = parsed.Data ?? new List<PazaramaOrderDto>();
@@ -53,7 +53,7 @@ public sealed class PazaramaOrderService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama FetchOrders exception. StartDate: {Start}, EndDate: {End}", startDate, endDate);
-            return new ErrorDataResult<List<PazaramaOrderDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PazaramaOrderDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

@@ -387,7 +387,7 @@ public class N11ProductMapperTests : Entegrasyon.UnitTest.BaseTest
         attributes!.Should().NotBeEmpty();
 
         // İlk özellik: Renk = Kırmızı
-        var colorAttr = attributes.FirstOrDefault(a => a.Element("name")?.Value == "Renk");
+        var colorAttr = attributes!.FirstOrDefault(a => a.Element("name")?.Value == "Renk");
         colorAttr.Should().NotBeNull();
         colorAttr!.Element("value")!.Value.Should().Be("Kırmızı");
     }

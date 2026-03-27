@@ -92,7 +92,7 @@ public partial class ProductDetail
 
         var result = await SyncManager.SyncProductAsync(Id, marketPlaceId: 1);
         Snackbar.Add(
-            result.Success ? "Ürün marketplace gönderim kuyruğuna eklendi." : result.Message,
+            result.Success ? "Ürün marketplace gönderim kuyruğuna eklendi." : result.Message ?? "",
             result.Success ? Severity.Success : Severity.Error);
 
         if (result.Success)
@@ -184,7 +184,7 @@ public partial class ProductDetail
 
         var result = await ProductManager.SoftDeleteProduct(Id);
         Snackbar.Add(
-            result.Success ? "Ürün silindi." : result.Message,
+            result.Success ? "Ürün silindi." : result.Message ?? "",
             result.Success ? Severity.Success : Severity.Error);
 
         if (result.Success)

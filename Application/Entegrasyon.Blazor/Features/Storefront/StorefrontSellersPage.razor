@@ -51,14 +51,14 @@
                 @if (context.Item.Status == SellerStatus.Pending)
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
-                        OnClick="@(() => ApproveAsync(context.Item))" Title="Onayla" />
+                        OnClick="@(() => ApproveAsync(context.Item))" title="Onayla" />
                     <MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error"
-                        OnClick="@(() => OpenRejectDialog(context.Item))" Title="Reddet" />
+                        OnClick="@(() => OpenRejectDialog(context.Item))" title="Reddet" />
                 }
                 @if (context.Item.Status == SellerStatus.Approved)
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.Block" Color="Color.Warning"
-                        OnClick="@(() => OpenSuspendDialog(context.Item))" Title="Askiya Al" />
+                        OnClick="@(() => OpenSuspendDialog(context.Item))" title="Askiya Al" />
                 }
             </CellTemplate>
         </TemplateColumn>

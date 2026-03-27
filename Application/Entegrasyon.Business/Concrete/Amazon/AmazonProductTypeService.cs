@@ -18,14 +18,14 @@ public sealed class AmazonProductTypeService(
             var url = $"/definitions/2020-09-01/productTypes?keywords={Uri.EscapeDataString(keywords)}&marketplaceIds={marketplaceId}";
             var response = await apiClient.GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<List<AmazonProductTypeSearchResult>>(null, $"Product type search failed: {response.StatusCode}");
+                return new ErrorDataResult<List<AmazonProductTypeSearchResult>>(null!,$"Product type search failed: {response.StatusCode}");
             var data = await response.Content.ReadFromJsonAsync<AmazonProductTypeSearchResponse>(cancellationToken: ct);
             return new SuccessDataResult<List<AmazonProductTypeSearchResult>>(data?.ProductTypes ?? []);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon product type search failed");
-            return new ErrorDataResult<List<AmazonProductTypeSearchResult>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<AmazonProductTypeSearchResult>>(null!,$"Hata: {ex.Message}");
         }
     }
 
@@ -37,14 +37,14 @@ public sealed class AmazonProductTypeService(
             var url = $"/definitions/2020-09-01/productTypes/{productType}?marketplaceIds={marketplaceId}&requirements={requirements}";
             var response = await apiClient.GetAsync(url, ct);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<AmazonProductTypeDefinition>(null, $"Product type definition not found: {response.StatusCode}");
+                return new ErrorDataResult<AmazonProductTypeDefinition>(null!, $"Product type definition not found: {response.StatusCode}");
             var data = await response.Content.ReadFromJsonAsync<AmazonProductTypeDefinition>(cancellationToken: ct);
-            return new SuccessDataResult<AmazonProductTypeDefinition>(data);
+            return new SuccessDataResult<AmazonProductTypeDefinition>(data!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Amazon get product type definition failed: {ProductType}", productType);
-            return new ErrorDataResult<AmazonProductTypeDefinition>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<AmazonProductTypeDefinition>(null!, $"Hata: {ex.Message}");
         }
     }
 }

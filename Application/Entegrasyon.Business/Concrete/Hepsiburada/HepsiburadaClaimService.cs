@@ -40,7 +40,7 @@ public sealed class HepsiburadaClaimService(
 
             var response = await apiClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<List<HepsiburadaClaimDto>>(null, $"Claim API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<HepsiburadaClaimDto>>(null!, $"Claim API hatası: {response.StatusCode}");
 
             var claims = await response.Content.ReadFromJsonAsync<List<HepsiburadaClaimDto>>();
             return new SuccessDataResult<List<HepsiburadaClaimDto>>(claims ?? []);
@@ -48,7 +48,7 @@ public sealed class HepsiburadaClaimService(
         catch (Exception ex)
         {
             logger.LogError(ex, "HB claims list failed");
-            return new ErrorDataResult<List<HepsiburadaClaimDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<HepsiburadaClaimDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

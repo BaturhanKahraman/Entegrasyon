@@ -63,7 +63,7 @@ public sealed class ProductSyncManager(
             var search = searchKey.ToLower();
             query = query.Where(x =>
                 x.Product.Title.ToLower().Contains(search) ||
-                x.Product.StockCode.ToLower().Contains(search));
+                x.Product.StockCode!.ToLower().Contains(search));
         }
 
         // Durum filtresi
@@ -118,7 +118,7 @@ public sealed class ProductSyncManager(
             .ToListAsync();
 
         var dtoItems = items.Select(x => new ProductSyncListItemDto(
-            x.Id, x.Title, x.StockCode, x.BrandName, x.CategoryName, x.VariantCount,
+            x.Id, x.Title, x.StockCode!, x.BrandName, x.CategoryName, x.VariantCount,
             MapSyncState(x.Marketplace, x.UpdatedAt),
             x.Marketplace?.LastSyncedAt,
             x.Marketplace?.StatusMessage)).ToList();
@@ -160,7 +160,7 @@ public sealed class ProductSyncManager(
         }).ToList();
 
         var dto = new ProductSyncDetailDto(
-            product.Id, product.Title, product.StockCode,
+            product.Id, product.Title, product.StockCode!,
             product.BrandName, product.CategoryName, product.VariantCount,
             marketplaceItems);
 

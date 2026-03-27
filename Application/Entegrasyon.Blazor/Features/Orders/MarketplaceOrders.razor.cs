@@ -33,7 +33,7 @@ public partial class MarketplaceOrders : ComponentBase
         }
         else
         {
-            Snackbar.Add(result.Message, Severity.Error);
+            Snackbar.Add(result.Message ?? "", Severity.Error);
         }
         _loading = false;
     }

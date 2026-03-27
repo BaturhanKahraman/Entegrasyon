@@ -84,7 +84,7 @@ public class HepsiburadaProductServiceTests : Entegrasyon.UnitTest.BaseTest
 
         _mockMapper
             .Setup(x => x.MapProductAsync(productId))
-            .ReturnsAsync(new ErrorDataResult<List<HepsiburadaProductItem>>(null, "Varyant yok"));
+            .ReturnsAsync(new ErrorDataResult<List<HepsiburadaProductItem>>(null!, "Varyant yok"));
 
         var sut = CreateSut();
         var result = await sut.PublishProductAsync(productId);
@@ -305,7 +305,7 @@ public class HepsiburadaProductServiceTests : Entegrasyon.UnitTest.BaseTest
 
         _mockMapper
             .Setup(x => x.MapProductAsync(productId))
-            .ReturnsAsync(new ErrorDataResult<List<HepsiburadaProductItem>>(null, "Mapping hatasi"));
+            .ReturnsAsync(new ErrorDataResult<List<HepsiburadaProductItem>>(null!, "Mapping hatasi"));
 
         var sut = CreateSut();
         await sut.PublishProductAsync(productId);

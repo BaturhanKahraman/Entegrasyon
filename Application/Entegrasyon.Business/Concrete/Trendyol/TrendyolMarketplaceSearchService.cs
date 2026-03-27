@@ -24,7 +24,7 @@ public sealed class TrendyolMarketplaceSearchService(
         {
             var categoriesResult = await categoryImportService.GetTrendyolCategories();
             if (!categoriesResult.Success || categoriesResult.Data is null)
-                return new ErrorDataResult<List<MarketplaceCategorySearchResult>>([], categoriesResult.Message);
+                return new ErrorDataResult<List<MarketplaceCategorySearchResult>>([], categoriesResult.Message!);
 
             var flat = new List<MarketplaceCategorySearchResult>();
             FlattenCategories(categoriesResult.Data, null, flat);
@@ -64,10 +64,10 @@ public sealed class TrendyolMarketplaceSearchService(
 
             var attrs = await dbContext.CategoryAttributes
                 .Where(a => string.IsNullOrWhiteSpace(query) ||
-                            a.CategoryAttributeHumanized.Contains(query) ||
-                            a.CategoryAttributeKey.Contains(query))
+                            a.CategoryAttributeHumanized!.Contains(query) ||
+                            a.CategoryAttributeKey!.Contains(query))
                 .Take(20)
-                .Select(a => new MarketplaceAttributeSearchResult(a.Id, a.CategoryAttributeHumanized))
+                .Select(a => new MarketplaceAttributeSearchResult(a.Id, a.CategoryAttributeHumanized!))
                 .ToListAsync(ct);
 
             return new SuccessDataResult<List<MarketplaceAttributeSearchResult>>(attrs);

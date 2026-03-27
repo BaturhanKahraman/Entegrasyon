@@ -28,7 +28,7 @@ public sealed class POSSessionManager(
         // 2. Business Rules
         var logicResult = LogicRunner.Run(await CheckNoOpenSessionExists(dbContext, dto.BranchOfficeId, dto.TerminalId));
         if (logicResult != null)
-            return new ErrorDataResult<POSSession>(null!, logicResult.Message);
+            return new ErrorDataResult<POSSession>(null!, logicResult.Message!);
 
         // 3. Execution
         var session = new POSSession
@@ -70,7 +70,7 @@ public sealed class POSSessionManager(
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
-            return new ErrorResult(logicResult.Message);
+            return new ErrorResult(logicResult.Message!);
 
         // 3. Execution
         var transactions = await dbContext.POSTransactions
@@ -145,12 +145,12 @@ public sealed class POSSessionManager(
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
-            return new ErrorDataResult<POSTransaction>(null!, logicResult.Message);
+            return new ErrorDataResult<POSTransaction>(null!, logicResult.Message!);
 
         // 3. Execution - Call ISaleManager.MakeSale which triggers stock sync to all marketplaces
         var saleResult = await saleManager.MakeSale(dto.Sale);
         if (!saleResult.Success)
-            return new ErrorDataResult<POSTransaction>(null!, saleResult.Message);
+            return new ErrorDataResult<POSTransaction>(null!, saleResult.Message!);
 
         // Calculate total from sale items
         var saleTotal = dto.Sale.SaleItems.Sum(si => si.UnitPrice * si.Quantity);
@@ -197,7 +197,7 @@ public sealed class POSSessionManager(
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
-            return new ErrorResult(logicResult.Message);
+            return new ErrorResult(logicResult.Message!);
 
         // 3. Execution
         var movement = new CashMovement

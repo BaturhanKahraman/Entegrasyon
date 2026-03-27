@@ -59,7 +59,7 @@ public sealed class CiceksepetiQnAService(
                 logger.LogError("CiceksepetiQnAService: {Message}", errorMsg);
                 await applicationLogManager.AddLog(
                     errorMsg, LogType.Marketplace, LogAction.List, new { page, productCode }, ct);
-                return new ErrorDataResult<CiceksepetiQuestionListResponse>(null, errorMsg);
+                return new ErrorDataResult<CiceksepetiQuestionListResponse>(null!, errorMsg);
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<CiceksepetiQuestionListResponse>(
@@ -69,7 +69,7 @@ public sealed class CiceksepetiQnAService(
             {
                 const string parseError = "API yanıtı soru listesi içermiyor.";
                 logger.LogError("CiceksepetiQnAService: {Message}", parseError);
-                return new ErrorDataResult<CiceksepetiQuestionListResponse>(null, parseError);
+                return new ErrorDataResult<CiceksepetiQuestionListResponse>(null!, parseError);
             }
 
             logger.LogInformation(
@@ -85,7 +85,7 @@ public sealed class CiceksepetiQnAService(
             await applicationLogManager.AddLog(
                 $"Çiçeksepeti soru listesi başarısız: {ex.Message}",
                 LogType.Marketplace, LogAction.List, new { page, productCode }, ct);
-            return new ErrorDataResult<CiceksepetiQuestionListResponse>(null, ex.Message);
+            return new ErrorDataResult<CiceksepetiQuestionListResponse>(null!, ex.Message);
         }
     }
 
@@ -143,7 +143,7 @@ public sealed class CiceksepetiQnAService(
                 logger.LogError("CiceksepetiQnAService: {Message}", errorMsg);
                 await applicationLogManager.AddLog(
                     errorMsg, LogType.Marketplace, LogAction.List, new { }, ct);
-                return new ErrorDataResult<CiceksepetiActionListResponse>(null, errorMsg);
+                return new ErrorDataResult<CiceksepetiActionListResponse>(null!, errorMsg);
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<CiceksepetiActionListResponse>(
@@ -153,7 +153,7 @@ public sealed class CiceksepetiQnAService(
             {
                 const string parseError = "API yanıtı aksiyon listesi içermiyor.";
                 logger.LogError("CiceksepetiQnAService: {Message}", parseError);
-                return new ErrorDataResult<CiceksepetiActionListResponse>(null, parseError);
+                return new ErrorDataResult<CiceksepetiActionListResponse>(null!, parseError);
             }
 
             logger.LogInformation(
@@ -169,7 +169,7 @@ public sealed class CiceksepetiQnAService(
             await applicationLogManager.AddLog(
                 $"Çiçeksepeti aksiyon listesi başarısız: {ex.Message}",
                 LogType.Marketplace, LogAction.List, new { }, ct);
-            return new ErrorDataResult<CiceksepetiActionListResponse>(null, ex.Message);
+            return new ErrorDataResult<CiceksepetiActionListResponse>(null!, ex.Message);
         }
     }
 }

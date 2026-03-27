@@ -103,7 +103,7 @@ public partial class CategoryEdit
         if (attr is null) return;
         model.SelectedAttribute = attr;
         model.ExistingAttributeId = attr.Id;
-        model.Name = attr.CategoryAttributeHumanized;
+        model.Name = attr.CategoryAttributeHumanized ?? "";
         model.AllowCustom = attr.AllowCustom;
         model.Values = attr.CategoryAttributeValues?.ToList() ?? [];
     }
@@ -158,7 +158,7 @@ public partial class CategoryEdit
 
         return Task.FromResult(_allAttributes
             .Where(a => !usedIds.Contains(a.Id) &&
-                        a.CategoryAttributeHumanized.Contains(value, StringComparison.OrdinalIgnoreCase)));
+                        (a.CategoryAttributeHumanized ?? "").Contains(value, StringComparison.OrdinalIgnoreCase)));
     }
 
     private async Task AddValue(AttributeModel attr)

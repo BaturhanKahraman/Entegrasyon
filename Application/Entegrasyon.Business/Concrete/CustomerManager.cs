@@ -35,7 +35,7 @@ public class CustomerManager : ICustomerManager
     {
         using var dbContext = _contextFactory.CreateDbContext();
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.", LogType.Customer, LogAction.Update);
-        Customer applicationCustomer = await dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == customerDto.Id);
+        Customer applicationCustomer = (await dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == customerDto.Id))!;
         if (customerDto.CustomerType == "Retail")
         {
             if (applicationCustomer is CorporateCustomer corpCustomer)
@@ -64,7 +64,7 @@ public class CustomerManager : ICustomerManager
         }
         await dbContext.SaveChangesAsync();
         await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.", LogType.Customer, LogAction.Update);
-        return new SuccessDataResult<Customer>(applicationCustomer);
+        return new SuccessDataResult<Customer>(applicationCustomer!);
     }
 
     public async Task<IResult> AddCustomer(CustomerAddDto dto)
@@ -92,9 +92,9 @@ public class CustomerManager : ICustomerManager
         var query = dbContext.Customers.AsQueryable();
         if (!string.IsNullOrEmpty(customerInfo))
             query = query.Where(x =>
-                (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ToFullTextSearchQuery()))
-                || (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ToFullTextSearchQuery()))
-                || x.FullName.Contains(customerInfo));
+                (x as RetailCustomer)!.RetailSearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ToFullTextSearchQuery()))
+                || (x as CorporateCustomer)!.CorporateSearchVector.Matches(EF.Functions.ToTsQuery(customerInfo.ToFullTextSearchQuery()))
+                || x.FullName!.Contains(customerInfo));
 
         int total = await query.CountAsync();
         var items = await query
@@ -122,8 +122,8 @@ public class CustomerManager : ICustomerManager
 
         var result = await dbContext.Customers
             .Where(x =>
-                (x as RetailCustomer).RetailSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()))
-                || (x as CorporateCustomer).CorporateSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery())))
+                (x as RetailCustomer)!.RetailSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery()))
+                || (x as CorporateCustomer)!.CorporateSearchVector.Matches(EF.Functions.ToTsQuery(searchText.ToFullTextSearchQuery())))
             .OrderBy(x => x.FullName)
             .Select(FuncMappings.CustomerToDetailDto().ToExpression())
             .ToListAsync();
@@ -133,7 +133,7 @@ public class CustomerManager : ICustomerManager
     public async Task<IDataResult<Customer>> GetCustomerById(int id)
     {
         using var dbContext = _contextFactory.CreateDbContext();
-        return new SuccessDataResult<Customer>(await dbContext.Customers.FirstOrDefaultAsync(x => x.Id == id));
+        return new SuccessDataResult<Customer>((await dbContext.Customers.FirstOrDefaultAsync(x => x.Id == id))!);
     }
 
     public async Task<IDataResult<CustomerDetailDto>> GetCustomerDetailById(int id)
@@ -143,7 +143,7 @@ public class CustomerManager : ICustomerManager
             .Where(c => c.Id == id)
             .Select(FuncMappings.CustomerToDetailDto().ToExpression())
             .FirstOrDefaultAsync();
-        return new SuccessDataResult<CustomerDetailDto>(cust);
+        return new SuccessDataResult<CustomerDetailDto>(cust!);
     }
 
     public async Task<IResult> SoftDelete(int id)

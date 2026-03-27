@@ -28,17 +28,17 @@ public sealed class MockHepsiburadaProductService(
         // 1. Validation (gerçek)
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Hepsiburada mapping doğrulaması başarılı (MOCK)" : validationResult.Message,
+            validationResult.Success ? "Hepsiburada mapping doğrulaması başarılı (MOCK)" : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: "Hepsiburada");
 
         if (!validationResult.Success)
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
 
         // 2. Mapping (gerçek)
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
 
         // 3. Mock publish
         var mockTrackingId = $"mock-tracking-{Guid.NewGuid():N}";

@@ -60,7 +60,7 @@ public class PazaramaCategoryImporter : BaseCategoryImporterService
         catch (Exception ex)
         {
             Logger.LogError(ex, "Pazarama kategorileri çekilirken hata oluştu");
-            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

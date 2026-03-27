@@ -42,12 +42,12 @@
                 @if (!context.Item.IsApproved)
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success"
-                        OnClick="@(() => ApproveAsync(context.Item))" Title="Onayla" />
+                        OnClick="@(() => ApproveAsync(context.Item))" title="Onayla" />
                 }
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                    OnClick="@(() => RejectAsync(context.Item))" Title="Reddet" />
+                    OnClick="@(() => RejectAsync(context.Item))" title="Reddet" />
                 <MudIconButton Icon="@Icons.Material.Filled.Reply" Color="Color.Primary"
-                    OnClick="@(() => OpenReplyDialog(context.Item))" Title="Yanitla" />
+                    OnClick="@(() => OpenReplyDialog(context.Item))" title="Yanitla" />
             </CellTemplate>
         </TemplateColumn>
     </Columns>

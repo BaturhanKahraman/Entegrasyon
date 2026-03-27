@@ -30,7 +30,7 @@ public sealed class PazaramaQnAService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetQuestionStatuses başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PazaramaQuestionStatusDto>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PazaramaQuestionStatusDto>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<List<PazaramaQuestionStatusDto>>>();
@@ -39,7 +39,7 @@ public sealed class PazaramaQnAService(
             {
                 var msg = parsed?.Message ?? "Soru statüleri alınamadı";
                 logger.LogWarning("Pazarama GetQuestionStatuses yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<List<PazaramaQuestionStatusDto>>(null, msg);
+                return new ErrorDataResult<List<PazaramaQuestionStatusDto>>(null!, msg);
             }
 
             var statuses = parsed.Data ?? new List<PazaramaQuestionStatusDto>();
@@ -49,7 +49,7 @@ public sealed class PazaramaQnAService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama GetQuestionStatuses exception.");
-            return new ErrorDataResult<List<PazaramaQuestionStatusDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PazaramaQuestionStatusDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -65,7 +65,7 @@ public sealed class PazaramaQnAService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetQuestionTopics başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PazaramaQuestionTopicDto>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PazaramaQuestionTopicDto>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<List<PazaramaQuestionTopicDto>>>();
@@ -74,7 +74,7 @@ public sealed class PazaramaQnAService(
             {
                 var msg = parsed?.Message ?? "Soru konuları alınamadı";
                 logger.LogWarning("Pazarama GetQuestionTopics yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<List<PazaramaQuestionTopicDto>>(null, msg);
+                return new ErrorDataResult<List<PazaramaQuestionTopicDto>>(null!, msg);
             }
 
             var topics = parsed.Data ?? new List<PazaramaQuestionTopicDto>();
@@ -84,7 +84,7 @@ public sealed class PazaramaQnAService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama GetQuestionTopics exception.");
-            return new ErrorDataResult<List<PazaramaQuestionTopicDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PazaramaQuestionTopicDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -100,7 +100,7 @@ public sealed class PazaramaQnAService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetQuestions başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PazaramaQuestionListData>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PazaramaQuestionListData>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<PazaramaQuestionListData>>();
@@ -109,7 +109,7 @@ public sealed class PazaramaQnAService(
             {
                 var msg = parsed?.Message ?? "Sorular alınamadı";
                 logger.LogWarning("Pazarama GetQuestions yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<PazaramaQuestionListData>(null, msg);
+                return new ErrorDataResult<PazaramaQuestionListData>(null!, msg);
             }
 
             var data = parsed.Data ?? new PazaramaQuestionListData(null, null, 0, null);
@@ -120,7 +120,7 @@ public sealed class PazaramaQnAService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama GetQuestions exception.");
-            return new ErrorDataResult<PazaramaQuestionListData>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PazaramaQuestionListData>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -136,7 +136,7 @@ public sealed class PazaramaQnAService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama GetQuestionById başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PazaramaQuestionDetailDto>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PazaramaQuestionDetailDto>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<PazaramaQuestionDetailDto>>();
@@ -145,16 +145,16 @@ public sealed class PazaramaQnAService(
             {
                 var msg = parsed?.Message ?? "Soru detayı alınamadı";
                 logger.LogWarning("Pazarama GetQuestionById yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<PazaramaQuestionDetailDto>(null, msg);
+                return new ErrorDataResult<PazaramaQuestionDetailDto>(null!, msg);
             }
 
             logger.LogInformation("Pazarama GetQuestionById başarılı. QuestionId: {QuestionId}", questionId);
-            return new SuccessDataResult<PazaramaQuestionDetailDto>(parsed.Data);
+            return new SuccessDataResult<PazaramaQuestionDetailDto>(parsed.Data!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama GetQuestionById exception. QuestionId: {QuestionId}", questionId);
-            return new ErrorDataResult<PazaramaQuestionDetailDto>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PazaramaQuestionDetailDto>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -206,7 +206,7 @@ public sealed class PazaramaQnAService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("Pazarama SearchQuestions başarısız: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PazaramaQuestionSearchData>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PazaramaQuestionSearchData>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var parsed = await response.Content.ReadFromJsonAsync<PazaramaResponse<PazaramaQuestionSearchData>>();
@@ -215,7 +215,7 @@ public sealed class PazaramaQnAService(
             {
                 var msg = parsed?.Message ?? "Soru araması başarısız";
                 logger.LogWarning("Pazarama SearchQuestions yanıt başarısız: {Message}", msg);
-                return new ErrorDataResult<PazaramaQuestionSearchData>(null, msg);
+                return new ErrorDataResult<PazaramaQuestionSearchData>(null!, msg);
             }
 
             var data = parsed.Data ?? new PazaramaQuestionSearchData(null, null, null);
@@ -226,7 +226,7 @@ public sealed class PazaramaQnAService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Pazarama SearchQuestions exception.");
-            return new ErrorDataResult<PazaramaQuestionSearchData>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PazaramaQuestionSearchData>(null!, $"Hata: {ex.Message}");
         }
     }
 }

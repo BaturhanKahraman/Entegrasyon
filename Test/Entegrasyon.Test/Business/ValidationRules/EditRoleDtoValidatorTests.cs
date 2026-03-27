@@ -18,7 +18,7 @@ public class EditRoleDtoValidatorTests
     public async Task Should_have_error_when_Id_is_empty()
     {
         // Arrange
-        var dto = new EditRoleDto(default, default, default)
+        var dto = new EditRoleDto(default, default!, default!)
         {
             Id = 0,
             Name = "Rol Adı",
@@ -37,7 +37,7 @@ public class EditRoleDtoValidatorTests
     public async Task Should_have_error_when_Name_is_empty()
     {
         // Arrange
-        var dto = new EditRoleDto(default, default, default)
+        var dto = new EditRoleDto(default, default!, default!)
         {
             Id = 1,
             Name = "",
@@ -56,7 +56,7 @@ public class EditRoleDtoValidatorTests
     public async Task Should_have_error_when_PermissionNames_is_empty()
     {
         // Arrange
-        var dto = new EditRoleDto(default, default, default)
+        var dto = new EditRoleDto(default, default!, default!)
         {
             Id = 1,
             Name = "Rol Adı",
@@ -75,7 +75,7 @@ public class EditRoleDtoValidatorTests
     public async Task Should_not_have_error_when_dto_is_valid()
     {
         // Arrange
-        var dto = new EditRoleDto(default, default, default)
+        var dto = new EditRoleDto(default, default!, default!)
         {
             Id = 1,
             Name = "Rol Adı",

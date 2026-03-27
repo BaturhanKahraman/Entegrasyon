@@ -27,14 +27,14 @@ public sealed class PttavmProductService(
         {
             const string msg = "Gönderilecek ürün listesi boş olamaz.";
             logger.LogWarning("PttavmProductService: {Message}", msg);
-            return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+            return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
         }
 
         if (products.Count > MaxBatchSize)
         {
             var msg = $"Maksimum {MaxBatchSize} ürün/istek gönderilebilir. Gönderilen: {products.Count}";
             logger.LogWarning("PttavmProductService: {Message}", msg);
-            return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+            return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
         }
 
         // Execution
@@ -49,7 +49,7 @@ public sealed class PttavmProductService(
                 await applicationLogManager.AddLog(
                     $"PttAVM ürün gönderimi başarısız: {response.StatusCode}",
                     LogType.Product, LogAction.None, null, ct);
-                return new ErrorDataResult<PttavmUpsertResult>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmUpsertResult>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmUpsertResult>(cancellationToken: ct);
@@ -57,7 +57,7 @@ public sealed class PttavmProductService(
             {
                 const string msg = "PttAVM'den upsert yanıtı alınamadı.";
                 logger.LogWarning(msg);
-                return new ErrorDataResult<PttavmUpsertResult>(null, msg);
+                return new ErrorDataResult<PttavmUpsertResult>(null!, msg);
             }
 
             logger.LogInformation("PttAVM upsert success: {Count} products, trackingId={TrackingId}",
@@ -71,7 +71,7 @@ public sealed class PttavmProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM upsert exception");
-            return new ErrorDataResult<PttavmUpsertResult>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmUpsertResult>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -84,7 +84,7 @@ public sealed class PttavmProductService(
         {
             const string msg = "TrackingId boş olamaz.";
             logger.LogWarning("PttavmProductService: {Message}", msg);
-            return new ErrorDataResult<PttavmTrackingResult>(null, msg);
+            return new ErrorDataResult<PttavmTrackingResult>(null!, msg);
         }
 
         try
@@ -95,12 +95,12 @@ public sealed class PttavmProductService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM tracking check failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PttavmTrackingResult>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmTrackingResult>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmTrackingResult>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<PttavmTrackingResult>(null, "Tracking bilgisi alınamadı.");
+                return new ErrorDataResult<PttavmTrackingResult>(null!, "Tracking bilgisi alınamadı.");
 
             logger.LogInformation("PttAVM tracking: {TrackingId}, status={Status}", trackingId, result.Status);
             return new SuccessDataResult<PttavmTrackingResult>(result);
@@ -108,7 +108,7 @@ public sealed class PttavmProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM tracking exception for {TrackingId}", trackingId);
-            return new ErrorDataResult<PttavmTrackingResult>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmTrackingResult>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -121,7 +121,7 @@ public sealed class PttavmProductService(
         {
             const string msg = "Barkod boş olamaz.";
             logger.LogWarning("PttavmProductService: {Message}", msg);
-            return new ErrorDataResult<PttavmProductInfo>(null, msg);
+            return new ErrorDataResult<PttavmProductInfo>(null!, msg);
         }
 
         try
@@ -132,19 +132,19 @@ public sealed class PttavmProductService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM get product failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PttavmProductInfo>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmProductInfo>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmProductInfo>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<PttavmProductInfo>(null, "Ürün bilgisi alınamadı.");
+                return new ErrorDataResult<PttavmProductInfo>(null!, "Ürün bilgisi alınamadı.");
 
             return new SuccessDataResult<PttavmProductInfo>(result);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM get product exception for barcode {Barcode}", barcode);
-            return new ErrorDataResult<PttavmProductInfo>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmProductInfo>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -157,7 +157,7 @@ public sealed class PttavmProductService(
         {
             const string msg = "Barkod listesi boş olamaz.";
             logger.LogWarning("PttavmProductService: {Message}", msg);
-            return new ErrorDataResult<List<PttavmProductInfo>>(null, msg);
+            return new ErrorDataResult<List<PttavmProductInfo>>(null!, msg);
         }
 
         try
@@ -169,12 +169,12 @@ public sealed class PttavmProductService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM get products by barcodes failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<List<PttavmProductInfo>>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<PttavmProductInfo>>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<List<PttavmProductInfo>>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<List<PttavmProductInfo>>(null, "Ürün listesi alınamadı.");
+                return new ErrorDataResult<List<PttavmProductInfo>>(null!, "Ürün listesi alınamadı.");
 
             logger.LogInformation("PttAVM get products by barcodes: {Count} products returned", result.Count);
             return new SuccessDataResult<List<PttavmProductInfo>>(result);
@@ -182,7 +182,7 @@ public sealed class PttavmProductService(
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM get products by barcodes exception");
-            return new ErrorDataResult<List<PttavmProductInfo>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<PttavmProductInfo>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -230,19 +230,19 @@ public sealed class PttavmProductService(
             {
                 var errorBody = await response.Content.ReadAsStringAsync(ct);
                 logger.LogWarning("PttAVM faulty images failed: {Status} {Body}", response.StatusCode, errorBody);
-                return new ErrorDataResult<PttavmFaultyImagesResult>(null, $"API hatası: {response.StatusCode}");
+                return new ErrorDataResult<PttavmFaultyImagesResult>(null!, $"API hatası: {response.StatusCode}");
             }
 
             var result = await response.Content.ReadFromJsonAsync<PttavmFaultyImagesResult>(cancellationToken: ct);
             if (result is null)
-                return new ErrorDataResult<PttavmFaultyImagesResult>(null, "Hatalı görsel bilgisi alınamadı.");
+                return new ErrorDataResult<PttavmFaultyImagesResult>(null!, "Hatalı görsel bilgisi alınamadı.");
 
             return new SuccessDataResult<PttavmFaultyImagesResult>(result);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "PttAVM faulty images exception");
-            return new ErrorDataResult<PttavmFaultyImagesResult>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<PttavmFaultyImagesResult>(null!, $"Hata: {ex.Message}");
         }
     }
 }

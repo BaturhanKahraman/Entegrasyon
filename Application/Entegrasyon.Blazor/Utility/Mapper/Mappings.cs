@@ -34,7 +34,7 @@ public static class Mappings
             dto.AttributeCount
         );
     public static Func<CategoryUpsertViewModel,AddCategoryDto> ToAddCategoryDto =>
-        vm => new AddCategoryDto(vm.Name,Enumerable.Empty<AddCategoryAttributeDto>(),vm.SuperCategoryId,vm.IsFavorite);
+        vm => new AddCategoryDto(vm.Name ?? "",Enumerable.Empty<AddCategoryAttributeDto>(),vm.SuperCategoryId,vm.IsFavorite);
     public static Func<Category,CategoryUpsertViewModel> ToCategoryUpsertViewModel =>
         category => new CategoryUpsertViewModel
         {
@@ -45,6 +45,6 @@ public static class Mappings
             SuperCategories = new List<SelectListItem>(),
         };
     public static Func<CategoryUpsertViewModel,EditCategoryDto> ToEditCategoryDto =>
-        vm => new EditCategoryDto(vm.Id,vm.Name,vm.SuperCategoryId,vm.IsFavorite,vm.IsImported);
+        vm => new EditCategoryDto(vm.Id,vm.Name ?? "",vm.SuperCategoryId,vm.IsFavorite,vm.IsImported);
 
 }

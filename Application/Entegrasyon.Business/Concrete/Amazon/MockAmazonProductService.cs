@@ -20,16 +20,16 @@ public sealed class MockAmazonProductService(
     {
         var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Amazon mapping doğrulaması başarılı (MOCK)" : validationResult.Message,
+            validationResult.Success ? "Amazon mapping doğrulaması başarılı (MOCK)" : validationResult.Message!,
             validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
             marketplaceName: "Amazon");
 
         if (!validationResult.Success)
-            return new ErrorDataResult<string>(null, validationResult.Message);
+            return new ErrorDataResult<string>(null!, validationResult.Message!);
 
         var mapResult = await productMapper.MapProductAsync(productId, "PRODUCT", ct);
         if (!mapResult.Success)
-            return new ErrorDataResult<string>(null, mapResult.Message);
+            return new ErrorDataResult<string>(null!, mapResult.Message!);
 
         var mockSku = $"MOCK-SKU-{productId.ToString("N")[..8]}";
         logger.LogInformation("[MOCK] Amazon publish: {ProductId} → {Sku}", productId, mockSku);

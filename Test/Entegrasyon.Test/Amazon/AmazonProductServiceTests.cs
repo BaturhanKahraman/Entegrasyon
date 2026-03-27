@@ -110,7 +110,7 @@ public class AmazonProductServiceTests : Entegrasyon.UnitTest.BaseTest
 
         _mockMapper
             .Setup(x => x.MapProductAsync(productId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ErrorDataResult<AmazonListingItem>(null, "Varyant yok."));
+            .ReturnsAsync(new ErrorDataResult<AmazonListingItem>(null!, "Varyant yok."));
 
         var sut = CreateSut();
 

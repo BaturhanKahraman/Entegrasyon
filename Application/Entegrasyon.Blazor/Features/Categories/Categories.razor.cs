@@ -98,7 +98,7 @@ public partial class Categories
                 var result = await CategoryManager.SoftDelete(_selectedCategory.Id);
                 if (result.Success)
                 {
-                    Snackbar.Add(result.Message, Severity.Success);
+                    Snackbar.Add(result.Message ?? "", Severity.Success);
                     await CategoryEventChannel.PublishAsync(new CategoryUpdatedEvent(_selectedCategory.Id, "Deleted")
                     {
                         TenantId = TenantContext.TenantId
@@ -108,7 +108,7 @@ public partial class Categories
                 }
                 else
                 {
-                    Snackbar.Add(result.Message, Severity.Error);
+                    Snackbar.Add(result.Message ?? "", Severity.Error);
                 }
             }
             catch (Exception ex)

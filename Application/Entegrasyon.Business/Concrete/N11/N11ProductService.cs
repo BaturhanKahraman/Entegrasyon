@@ -62,7 +62,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
                 $"Eslestirme dogrulamasi basarisiz: {validationResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorDataResult<long>(0, validationResult.Message);
+            return new ErrorDataResult<long>(0, validationResult.Message!);
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
@@ -75,7 +75,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
                 $"Urun mapping hatasi: {mapResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorDataResult<long>(0, mapResult.Message);
+            return new ErrorDataResult<long>(0, mapResult.Message!);
         }
 
         // Adım 3: SOAP isteği
@@ -91,7 +91,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
                 $"N11 kayıt hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorDataResult<long>(0, statusCheck.Message);
+            return new ErrorDataResult<long>(0, statusCheck.Message!);
         }
 
         // Adım 4: N11 ürün ID'sini parse et
@@ -169,7 +169,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.Deleted,
                 $"N11 silme hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorResult(statusCheck.Message);
+            return new ErrorResult(statusCheck.Message!);
         }
 
         pm.Status = MarketplaceProductStatus.Pending;
@@ -250,7 +250,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.ContentUpdated,
                 $"N11 güncelleme hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorResult(statusCheck.Message);
+            return new ErrorResult(statusCheck.Message!);
         }
 
         pm.LastSyncedAt = DateTimeOffset.UtcNow;
@@ -298,7 +298,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
                 $"N11 satış başlatma hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorResult(statusCheck.Message);
+            return new ErrorResult(statusCheck.Message!);
         }
 
         pm.Status = MarketplaceProductStatus.Published;
@@ -346,7 +346,7 @@ public sealed class N11ProductService(
             await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
                 $"N11 satış durdurma hatası: {statusCheck.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorResult(statusCheck.Message);
+            return new ErrorResult(statusCheck.Message!);
         }
 
         pm.Status = MarketplaceProductStatus.Pending;

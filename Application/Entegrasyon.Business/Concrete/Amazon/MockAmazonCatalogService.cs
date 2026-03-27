@@ -20,7 +20,7 @@ public sealed class MockAmazonCatalogService(ILogger<MockAmazonCatalogService> l
     {
         logger.LogInformation("[MOCK] Amazon get catalog item: {Asin}", asin);
         return Task.FromResult<IDataResult<AmazonCatalogItem>>(
-            new ErrorDataResult<AmazonCatalogItem>(null, "Mock: ASIN bulunamadı."));
+            new ErrorDataResult<AmazonCatalogItem>(null!, "Mock: ASIN bulunamadı."));
     }
 
     public Task<IDataResult<AmazonCatalogSearchResponse>> SearchByIdentifierAsync(

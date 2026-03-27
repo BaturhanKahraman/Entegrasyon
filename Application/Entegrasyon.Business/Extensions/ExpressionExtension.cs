@@ -13,7 +13,7 @@ public static class ExpressionExtension
     public static Expression<Func<T,bool>> AndIf<T>(this Expression<Func<T,bool>>? expr1,bool condition,Expression<Func<T,bool>> expr2)
     {
         if (!condition)
-            return expr1;
+            return expr1!;
         return expr1.And(expr2);
     }
     public static Expression<Func<T,bool>> And<T>(this Expression<Func<T,bool>>? expr1,Expression<Func<T,bool>> expr2)

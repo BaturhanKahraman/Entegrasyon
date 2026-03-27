@@ -49,7 +49,7 @@ public class N11CategoryImporter : BaseCategoryImporterService
             if (categoriesEl == null)
             {
                 Logger.LogCritical("N11 üst seviye kategoriler boş döndü");
-                return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, "N11 kategori API yanıtı boş döndü.");
+                return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, "N11 kategori API yanıtı boş döndü.");
             }
 
             var categories = categoriesEl
@@ -69,7 +69,7 @@ public class N11CategoryImporter : BaseCategoryImporterService
         catch (Exception ex)
         {
             Logger.LogError(ex, "N11 üst seviye kategoriler çekilirken hata oluştu");
-            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

@@ -189,7 +189,7 @@ public sealed class TrendyolProductMapper(
             }
 
             var item = new TrendyolProductItem(
-                Barcode: variant.Barcode,
+                Barcode: variant.Barcode!,
                 Title: effectiveTitle.Length > 100 ? effectiveTitle[..100] : effectiveTitle,
                 ProductMainId: productMainId,
                 BrandId: brandMatch.MarketPlaceBrandId,
@@ -197,9 +197,9 @@ public sealed class TrendyolProductMapper(
                 ListPrice: effectiveListPrice,
                 SalePrice: salePrice,
                 VatRate: vatRate,
-                StockCode: variant.Barcode,
+                StockCode: variant.Barcode!,
                 DimensionalWeight: variant.DimensionalWeight,
-                Description: effectiveDescription.Length > 30000 ? effectiveDescription[..30000] : effectiveDescription,
+                Description: effectiveDescription!.Length > 30000 ? effectiveDescription[..30000] : effectiveDescription,
                 Quantity: quantity,
                 Images: images,
                 Attributes: attributes);

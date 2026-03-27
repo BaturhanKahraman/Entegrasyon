@@ -46,7 +46,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
             if (result?.Categories == null)
             {
                 Logger.LogCritical("Trendyol kategorileri bos dondu");
-                return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, Messages.TrendyolCategoryApiError);
+                return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, Messages.TrendyolCategoryApiError);
             }
 
             var categories = result.Categories.Select(MapToExternalCategory).ToList();
@@ -55,7 +55,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
         catch (Exception ex)
         {
             Logger.LogError(ex, "Trendyol kategorileri cekilirken hata olustu");
-            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 

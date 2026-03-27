@@ -23,7 +23,7 @@ public sealed class HepsiburadaQnAService(
 
             var response = await apiClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<List<HepsiburadaQuestionDto>>(null, $"Q&A API hatası: {response.StatusCode}");
+                return new ErrorDataResult<List<HepsiburadaQuestionDto>>(null!, $"Q&A API hatası: {response.StatusCode}");
 
             var questions = await response.Content.ReadFromJsonAsync<List<HepsiburadaQuestionDto>>();
             return new SuccessDataResult<List<HepsiburadaQuestionDto>>(questions ?? []);
@@ -31,7 +31,7 @@ public sealed class HepsiburadaQnAService(
         catch (Exception ex)
         {
             logger.LogError(ex, "HB Q&A list failed");
-            return new ErrorDataResult<List<HepsiburadaQuestionDto>>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<List<HepsiburadaQuestionDto>>(null!, $"Hata: {ex.Message}");
         }
     }
 
@@ -41,15 +41,15 @@ public sealed class HepsiburadaQnAService(
         {
             var response = await apiClient.GetAsync($"/api/v1.0/issues/{questionNumber}");
             if (!response.IsSuccessStatusCode)
-                return new ErrorDataResult<HepsiburadaQuestionDto>(null, $"Soru bulunamadı: {response.StatusCode}");
+                return new ErrorDataResult<HepsiburadaQuestionDto>(null!, $"Soru bulunamadı: {response.StatusCode}");
 
             var question = await response.Content.ReadFromJsonAsync<HepsiburadaQuestionDto>();
-            return new SuccessDataResult<HepsiburadaQuestionDto>(question);
+            return new SuccessDataResult<HepsiburadaQuestionDto>(question!);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "HB Q&A get failed: {Number}", questionNumber);
-            return new ErrorDataResult<HepsiburadaQuestionDto>(null, $"Hata: {ex.Message}");
+            return new ErrorDataResult<HepsiburadaQuestionDto>(null!, $"Hata: {ex.Message}");
         }
     }
 

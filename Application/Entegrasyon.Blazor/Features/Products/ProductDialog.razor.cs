@@ -35,8 +35,8 @@ public partial class ProductDialog
             _model = new ProductFormModel
             {
                 Id = Product.Id,
-                StockCode = Product.StockCode,
-                Title = Product.Title,
+                StockCode = Product.StockCode ?? "",
+                Title = Product.Title ?? "",
                 Description = Product.Description,
                 BrandId = Product.BrandId ?? 0,
                 CategoryId = Product.CategoryId,
@@ -100,7 +100,7 @@ public partial class ProductDialog
                 {
                     StockCode = _model.StockCode,
                     Title = _model.Title,
-                    Description = _model.Description,
+                    Description = _model.Description ?? "",
                     BrandId = _model.BrandId,
                     CategoryId = _model.CategoryId
                 };
@@ -109,12 +109,12 @@ public partial class ProductDialog
                 // var result = await ProductManager.AddProduct(dto);
                 // if (result.Success)
                 // {
-                //     Snackbar.Add(result.Message, Severity.Success);
+                //     Snackbar.Add(result.Message ?? "", Severity.Success);
                 //     MudDialog.Close(DialogResult.Ok(true));
                 // }
                 // else
                 // {
-                //     Snackbar.Add(result.Message, Severity.Error);
+                //     Snackbar.Add(result.Message ?? "", Severity.Error);
                 // }
 
                 Snackbar?.Add("Ürün eklendi (Mock)", Severity.Info);

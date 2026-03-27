@@ -45,8 +45,8 @@ public partial class AttributeSync
             return new AttributeSyncRow
             {
                 Id = attr.Id,
-                Humanized = attr.CategoryAttributeHumanized,
-                Key = attr.CategoryAttributeKey,
+                Humanized = attr.CategoryAttributeHumanized ?? "",
+                Key = attr.CategoryAttributeKey ?? "",
                 ValueCount = attr.CategoryAttributeValues?.Count ?? 0,
                 HasMatch = match is not null,
                 MarketplaceName = match?.MarketplaceName,

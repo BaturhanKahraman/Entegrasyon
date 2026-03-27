@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Entegrasyon.Storefront.Controllers;
 
 public class TrackingController(
-    IStorefrontTenantContext tenant,
     IOrderManager orderManager) : Controller
 {
     [HttpGet]

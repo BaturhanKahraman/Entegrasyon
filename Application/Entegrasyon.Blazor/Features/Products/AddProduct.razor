@@ -7,7 +7,7 @@
 <PageTitle>Yeni Ürün Ekle</PageTitle>
 
 <MudPaper Class="pa-3 mb-3" Outlined="true">
-    <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="2">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
         <MudIcon Icon="@Icons.Material.Filled.AddBox" Size="Size.Large" Color="Color.Primary" />
         <MudStack Spacing="0">
             <MudText Typo="Typo.h5">Yeni Ürün Ekle</MudText>
@@ -17,7 +17,7 @@
 </MudPaper>
 
 <MudPaper Class="pa-4">
-    <MudStepper @bind-ActiveIndex="stepIndex" Elevation="0" Linear="true">
+    <MudStepper @bind-ActiveIndex="stepIndex" NonLinear="false">
 
         <ActionContent>
             @* Intentionally empty — custom Geri/İleri buttons are rendered below the stepper *@
@@ -26,8 +26,8 @@
         <ChildContent>
 
         @* ── Step 0: Genel Bilgiler ── *@
-        <MudStep Label="Genel">
-            <StepContent>
+        <MudStep Title="Genel">
+            <ChildContent>
                 <MudForm @ref="formStep1">
                     <MudGrid>
                         <MudItem xs="12" md="6">
@@ -116,12 +116,12 @@
                         }
                     </MudGrid>
                 </MudCollapse>
-            </StepContent>
+            </ChildContent>
         </MudStep>
 
         @* ── Step 1: Varyant Seçimi ── *@
-        <MudStep Label="Varyant Seçimi">
-            <StepContent>
+        <MudStep Title="Varyant Seçimi">
+            <ChildContent>
                 @if (!varianterAttributes.Any())
                 {
                     @* Case A — no varianter attributes: single default variant already added *@
@@ -209,12 +209,12 @@
                         }
                     </MudStack>
                 }
-            </StepContent>
+            </ChildContent>
         </MudStep>
 
         @* ── Step 2: Varyant Detayları & Görseller ── *@
-        <MudStep Label="Varyantlar & Görseller">
-            <StepContent>
+        <MudStep Title="Varyantlar & Görseller">
+            <ChildContent>
                 <div class="variants-section">
                     @if (_isProcessingImages)
                     {
@@ -333,12 +333,12 @@
                         </MudPaper>
                     }
                 </div>
-            </StepContent>
+            </ChildContent>
         </MudStep>
 
         @* ── Step 3: Kontrol & Özet ── *@
-        <MudStep Label="Kontrol & Özet">
-            <StepContent>
+        <MudStep Title="Kontrol & Özet">
+            <ChildContent>
                 <MudText Typo="Typo.h6" Class="mb-3">Özet</MudText>
 
                 @* Genel Bilgiler *@
@@ -489,12 +489,12 @@
                         }
                     </MudCardContent>
                 </MudCard>
-            </StepContent>
+            </ChildContent>
         </MudStep>
 
         @* ── Step 4: Pazaryerine Gönder (Opsiyonel) ── *@
-        <MudStep Label="Pazaryerine Gönder">
-            <StepContent>
+        <MudStep Title="Pazaryerine Gönder">
+            <ChildContent>
                 @if (_savedProductId.HasValue)
                 {
                     <MarketplacePublishStep ProductId="_savedProductId.Value"
@@ -505,7 +505,7 @@
                 {
                     <MudAlert Severity="Severity.Warning">Ürün henüz kaydedilmedi.</MudAlert>
                 }
-            </StepContent>
+            </ChildContent>
         </MudStep>
 
         </ChildContent>

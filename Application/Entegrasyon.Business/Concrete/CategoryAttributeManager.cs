@@ -13,7 +13,7 @@ using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, IMapper mapper, ICategoryService categoryService, IDbContextFactory<IntegrationDbContext> contextFactory) : ICategoryAttributeManager
+public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, IMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory) : ICategoryAttributeManager
 {
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {
@@ -62,8 +62,8 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
         {
             var search = dto.FullTextSearchKey.ToLower();
             query = query.Where(x =>
-                EF.Functions.ILike(x.CategoryAttributeHumanized, $"%{search}%") ||
-                EF.Functions.ILike(x.CategoryAttributeKey, $"%{search}%"));
+                EF.Functions.ILike(x.CategoryAttributeHumanized!, $"%{search}%") ||
+                EF.Functions.ILike(x.CategoryAttributeKey!, $"%{search}%"));
         }
 
         var total = await query.CountAsync();
@@ -85,13 +85,13 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
             .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
             .Select(x => new CategoryAttributeDto(
                 x.Id,
-                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsRequired,
+                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id)!.IsRequired,
                 x.AllowCustom,
-                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsVarianter,
-                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id).IsSlicer,
+                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id)!.IsVarianter,
+                x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id)!.IsSlicer,
                 x.CreatedAt,
-                x.CategoryAttributeKey,
-                x.CategoryAttributeHumanized,
+                x.CategoryAttributeKey!,
+                x.CategoryAttributeHumanized!,
                 x.CategoryAttributeValues.ToList()))
             .ToListAsync();
         return new SuccessDataResult<List<CategoryAttributeDto>>(result);
