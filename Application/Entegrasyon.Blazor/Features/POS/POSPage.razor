@@ -1,5 +1,6 @@
 @page "/pos"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Sales.Create)]
 
 <PageTitle>POS Terminal</PageTitle>
 

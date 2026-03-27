@@ -1,5 +1,6 @@
 @page "/categories/import"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Categories.Edit)]
 <PageTitle>Kategori İçe Aktar</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Kategori İçe Aktar</MudText>

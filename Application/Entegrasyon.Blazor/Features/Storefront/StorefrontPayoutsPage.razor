@@ -1,5 +1,6 @@
 @page "/storefront/payouts"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Odeme Talepleri</PageTitle>

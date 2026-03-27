@@ -1,5 +1,6 @@
 @page "/storefront/returns"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Iade Talepleri</PageTitle>

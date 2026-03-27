@@ -1,5 +1,6 @@
 @page "/brands"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Brands.View)]
 @using Entegrasyon.Entity.Dtos.Brand
 
 <MudText Typo="Typo.h5" Class="mb-4">Markalar</MudText>

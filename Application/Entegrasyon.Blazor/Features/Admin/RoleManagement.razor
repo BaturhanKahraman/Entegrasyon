@@ -1,6 +1,5 @@
 @page "/roles"
 @rendermode InteractiveServer
-@using Entegrasyon.ApplicationBootstrap.Security
 @attribute [Authorize(Policy = AppPermissions.Roles.View)]
 @using Entegrasyon.Entity.User
 @using Entegrasyon.Blazor.Features.Admin

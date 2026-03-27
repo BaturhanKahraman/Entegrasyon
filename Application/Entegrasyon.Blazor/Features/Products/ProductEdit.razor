@@ -1,5 +1,6 @@
 @page "/products/edit/{Id:guid}"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Products.Edit)]
 @using Entegrasyon.Entity.Dtos.Product
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">

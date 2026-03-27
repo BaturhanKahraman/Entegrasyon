@@ -1,5 +1,6 @@
 @page "/settings/storefront/payment"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Settings.View)]
 @using Entegrasyon.Entity.Storefront
 
 <PageTitle>Odeme Ayarlari</PageTitle>

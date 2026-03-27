@@ -1,5 +1,6 @@
 @page "/marketplace/orders/{OrderId:guid}"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Orders.View)]
 @using Entegrasyon.Entity.Orders
 
 <PageTitle>Sipariş Detay — @(_order?.OrderNumber ?? "Yükleniyor...")</PageTitle>

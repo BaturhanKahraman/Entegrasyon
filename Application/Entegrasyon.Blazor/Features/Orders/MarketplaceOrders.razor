@@ -1,6 +1,7 @@
 @page "/marketplace/orders"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@attribute [Authorize(Policy = AppPermissions.Orders.View)]
 @using Entegrasyon.Entity.Orders
 
 <PageTitle>Pazaryeri Siparişleri</PageTitle>

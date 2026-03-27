@@ -1,6 +1,7 @@
 @page "/reports/inventory"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@attribute [Authorize(Policy = AppPermissions.Reports.View)]
 @using Entegrasyon.Entity.Dtos.Reports
 
 <PageTitle>Stok Raporları</PageTitle>
