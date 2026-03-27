@@ -9,7 +9,8 @@ public static class SerilogExtensions
 {
     public static IHostBuilder AddSerilogWithLoggerProvider(this WebApplicationBuilder @this,IConfiguration configuration) =>
         @this.Host.UseSerilog((hostingCtx, services, loggerConfiguration) => {
-            loggerConfiguration.ReadFrom.Configuration(configuration);
-            //loggerConfiguration.WriteTo.File(path:"logs.txt",rollingInterval:RollingInterval.Day);
+            loggerConfiguration
+                .ReadFrom.Configuration(configuration)
+                .Enrich.FromLogContext();
         }, writeToProviders: true);
 }

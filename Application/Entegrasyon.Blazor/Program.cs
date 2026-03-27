@@ -3,10 +3,13 @@ using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.ApplicationBootstrap;
+using Entegrasyon.Blazor.Middleware;
+using Entegrasyon.Blazor.Utility;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
 using Entegrasyon.Blazor.Endpoints;
@@ -49,11 +52,12 @@ builder.Services.AddAuthorization(options =>
     foreach (var permission in Entegrasyon.ApplicationBootstrap.Security.AppPermissions.GetAllPermissions())
     {
         options.AddPolicy(permission, policy =>
-            policy.RequireAssertion(ctx =>
-                ctx.User.IsInRole("Admin") || ctx.User.HasClaim("Permission", permission))
-        );
+            policy.Requirements.Add(
+                new Entegrasyon.ApplicationBootstrap.Security.PermissionRequirement(permission)));
     }
 });
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler,
+    Entegrasyon.ApplicationBootstrap.Security.TenantFeatureAuthorizationHandler>();
 builder.Services.AddStackExchangeRedisCache(opt =>
 {
     opt.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
@@ -63,6 +67,7 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomDbContext(builder.Configuration);
+builder.Services.AddScoped<CircuitHandler, TenantCircuitHandler>();
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 builder.Services.AddResponseCaching();
 builder.Services.AddSingleton<IMenuService, MenuService>();
@@ -110,6 +115,7 @@ else
 app.UseResponseCaching();
 app.UseStaticFiles();
 
+app.UseMiddleware<BlazorTenantResolutionMiddleware>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,9 +1,8 @@
-using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -11,49 +10,33 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// <summary>
 /// Her 60 saniyede Çiçeksepeti sipariş API'sini poll eder,
 /// son 2 saatlik sipariş penceresi kullanılır.
-/// Multi-tenant hazır: ConcurrentDictionary ile tenant başına son poll zamanı takip edilir.
+/// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class CiceksepetiOrderPollingService(
     IServiceScopeFactory scopeFactory,
-    ILogger<CiceksepetiOrderPollingService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<CiceksepetiOrderPollingService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int CiceksepetiMarketPlaceId = MarketPlaceConstants.CiceksepetiMarketPlaceId;
-    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan OrderLookbackWindow = TimeSpan.FromHours(2);
 
-    // Multi-tenant: tenant başına son poll zamanı (key = tenantId)
-    private readonly ConcurrentDictionary<int, DateTimeOffset> _lastPollTimes = new();
+    protected override TimeSpan PollInterval => TimeSpan.FromSeconds(60);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+        var orderService = services.GetRequiredService<ICiceksepetiOrderService>();
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollOrdersAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Çiçeksepeti sipariş polling hatası");
-            }
-
-            await Task.Delay(PollInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollOrdersAsync(CancellationToken ct)
-    {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var orderService = scope.ServiceProvider.GetRequiredService<ICiceksepetiOrderService>();
-
-        var tenantId = 0; // TODO: multi-tenant'ta tüm aktif tenant'lar iterate edilecek
-        var lastPoll = _lastPollTimes.GetOrAdd(tenantId, _ => DateTimeOffset.UtcNow - OrderLookbackWindow);
+        var effectiveLastPoll = lastPoll < DateTimeOffset.UtcNow - OrderLookbackWindow
+            ? DateTimeOffset.UtcNow - OrderLookbackWindow
+            : lastPoll;
         var endDate = DateTimeOffset.UtcNow;
 
         var request = new CiceksepetiGetOrdersRequest(
-            StartDate: lastPoll.ToString("o"),
+            StartDate: effectiveLastPoll.ToString("o"),
             EndDate: endDate.ToString("o"),
             PageSize: 100,
             Page: 1,
@@ -65,7 +48,8 @@ public class CiceksepetiOrderPollingService(
 
         if (!result.Success)
         {
-            logger.LogWarning("Çiçeksepeti sipariş fetch başarısız: {Message}", result.Message);
+            logger.LogWarning("Çiçeksepeti sipariş fetch başarısız for tenant {TenantId}: {Message}",
+                tenantId, result.Message);
             return;
         }
 
@@ -73,13 +57,12 @@ public class CiceksepetiOrderPollingService(
         if (orders.Count > 0)
         {
             // TODO: orderManager.ImportCiceksepetiOrdersAsync(orders) eklendiğinde buraya ekle
-            logger.LogInformation("Çiçeksepeti: {Count} sipariş alındı", orders.Count);
+            logger.LogInformation("Tenant {TenantId}: Çiçeksepeti: {Count} sipariş alındı",
+                tenantId, orders.Count);
         }
         else
         {
-            logger.LogDebug("Çiçeksepeti: yeni sipariş yok");
+            logger.LogDebug("Tenant {TenantId}: Çiçeksepeti: yeni sipariş yok", tenantId);
         }
-
-        _lastPollTimes[tenantId] = endDate;
     }
 }

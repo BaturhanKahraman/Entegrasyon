@@ -1,0 +1,8 @@
+@if (_isEnabled)
+{
+    @ChildContent
+}
+else if (FallbackContent is not null)
+{
+    @FallbackContent
+}
