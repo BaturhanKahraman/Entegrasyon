@@ -203,6 +203,8 @@ public class BrandMatchServiceIntegrationTests : IntegrationTestBase
         result.Success.Should().BeTrue();
         result.Data.Should().HaveCount(2);
         result.Data.Should().OnlyContain(m => m.ApplicationBrandId == _brand1Id);
+        result.Data.Should().Contain(m => m.MarketPlaceBrandId == 6001);
+        result.Data.Should().Contain(m => m.MarketPlaceBrandId == 6002);
     }
 
     [Fact]

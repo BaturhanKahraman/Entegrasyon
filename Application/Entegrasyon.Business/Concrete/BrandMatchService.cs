@@ -78,7 +78,6 @@ public class BrandMatchService(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var mappings = await dbContext.BrandMarketPlaceMatches
-            .Include(m => m.MarketPlace)
             .Include(m => m.ApplicationBrand)
             .Where(m => m.ApplicationBrandId == brandId)
             .ToListAsync();
