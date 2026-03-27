@@ -18,6 +18,13 @@ public sealed class TenantDbContextFactory(
     {
         var connectionString = connectionStringProvider();
 
+        // Enforce connection pool limit per tenant to prevent pool exhaustion
+        if (!connectionString.Contains("Maximum Pool Size", StringComparison.OrdinalIgnoreCase) &&
+            !connectionString.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase))
+        {
+            connectionString = connectionString.TrimEnd(';') + ";Maximum Pool Size=10;";
+        }
+
         var optionsBuilder = new DbContextOptionsBuilder<IntegrationDbContext>();
         optionsBuilder.UseNpgsql(connectionString, npgsql =>
         {
