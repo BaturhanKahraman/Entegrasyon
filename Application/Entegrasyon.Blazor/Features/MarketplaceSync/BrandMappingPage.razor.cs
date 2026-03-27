@@ -1,6 +1,6 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -15,7 +15,7 @@ public partial class BrandMappingPage
 
     private List<BrandDto> _brands = [];
     private List<BrandMarketPlaceMatchDto> _allMappings = [];
-    private List<MarketPlace> _marketplaces = [];
+    private List<MarketplaceOption> _marketplaces = [];
     private BrandMappingSummaryDto _summary = new();
     private BrandDto? _selectedBrand;
     private List<BrandMarketPlaceMatchDto> _selectedBrandMappings = [];
@@ -36,7 +36,7 @@ public partial class BrandMappingPage
 
         var mpResult = await MarketPlaceManager.GetAllAsync();
         if (mpResult.Success && mpResult.Data is not null)
-            _marketplaces = mpResult.Data;
+            _marketplaces = mpResult.Data.Select(mp => new MarketplaceOption(mp.Id, mp.Name)).ToList();
 
         _summary = await BrandMatchService.GetBrandMappingsSummaryAsync();
 
