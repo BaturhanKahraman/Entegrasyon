@@ -36,6 +36,7 @@ public class BulkOperationManagerTests : BaseTest
         _manager = new BulkOperationManager(
             mockContextFactory.Object,
             _excelParser,
+            new CsvParser(),
             _importValidator,
             mockApplicationLogger.Object,
             _mockLogger.Object);
@@ -330,6 +331,295 @@ public class BulkOperationManagerTests : BaseTest
         // Assert
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void BulkOperationStatus_HasCancelledValue()
+    {
+        // Assert — Cancelled enum value exists and equals 6
+        BulkOperationStatus.Cancelled.Should().Be((BulkOperationStatus)6);
+    }
+
+    [Fact]
+    public async Task ImportPrices_CancellationRequested_ThrowsOrReturnsCancelled()
+    {
+        // Arrange
+        var rows = new List<object[]>
+        {
+            new object[] { "8680000000001", 120m, 110m, 60m }
+        };
+        using var stream = CreatePriceExcel(rows);
+        var cts = new CancellationTokenSource();
+        cts.Cancel(); // Pre-cancel
+
+        // Act & Assert — cancellation should be respected
+        var act = () => _manager.ImportPricesAsync(stream, "prices.xlsx", Guid.NewGuid(), cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task ImportStock_CancellationRequested_ThrowsOrReturnsCancelled()
+    {
+        // Arrange
+        var rows = new List<object[]>
+        {
+            new object[] { "8680000000001", 1, 50 }
+        };
+        using var stream = CreateStockExcel(rows);
+        var cts = new CancellationTokenSource();
+        cts.Cancel(); // Pre-cancel
+
+        // Act & Assert
+        var act = () => _manager.ImportStockAsync(stream, "stock.xlsx", Guid.NewGuid(), cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task ExportProducts_CancellationRequested_ThrowsOrReturnsCancelled()
+    {
+        // Arrange
+        var filter = new ExportFilterDto();
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        var act = () => _manager.ExportProductsAsync(filter, cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task ExportPrices_CancellationRequested_ThrowsOrReturnsCancelled()
+    {
+        // Arrange
+        var filter = new ExportFilterDto();
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        var act = () => _manager.ExportPricesAsync(filter, cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task ExportStock_CancellationRequested_ThrowsOrReturnsCancelled()
+    {
+        // Arrange
+        var filter = new ExportFilterDto();
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        var act = () => _manager.ExportStockAsync(filter, cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task ImportPrices_WithProgress_ReportsProgress()
+    {
+        // Arrange
+        var rows = new List<object[]>
+        {
+            new object[] { "8680000000001", 120m, 110m, 60m }
+        };
+        using var stream = CreatePriceExcel(rows);
+        var progressReports = new List<BulkOperationProgressDto>();
+        var progress = new Progress<BulkOperationProgressDto>(p => progressReports.Add(p));
+
+        // Act
+        await _manager.ImportPricesAsync(stream, "prices.xlsx", Guid.NewGuid(), progress: progress);
+
+        // Assert — at least Parse and Execute phases should be reported
+        // Allow small delay for async progress callback
+        await Task.Delay(50);
+        progressReports.Should().NotBeEmpty();
+        progressReports.Should().Contain(p => p.Phase == "Parse");
+    }
+
+    [Fact]
+    public async Task ImportStock_WithProgress_ReportsProgress()
+    {
+        // Arrange
+        var rows = new List<object[]>
+        {
+            new object[] { "8680000000001", 1, 50 }
+        };
+        using var stream = CreateStockExcel(rows);
+        var progressReports = new List<BulkOperationProgressDto>();
+        var progress = new Progress<BulkOperationProgressDto>(p => progressReports.Add(p));
+
+        // Act
+        await _manager.ImportStockAsync(stream, "stock.xlsx", Guid.NewGuid(), progress: progress);
+
+        // Assert
+        await Task.Delay(50);
+        progressReports.Should().NotBeEmpty();
+        progressReports.Should().Contain(p => p.Phase == "Parse");
+    }
+
+    [Fact]
+    public async Task ImportProducts_WithProgress_ReportsProgress()
+    {
+        // Arrange — invalid rows so no DB COPY needed
+        var rows = new List<object[]>
+        {
+            new object[] { "", "No Barcode", "TST-001", 100m, 90m, 50m, 20m, "Giyim", "Nike" }
+        };
+        using var stream = CreateProductExcel(rows);
+        var progressReports = new List<BulkOperationProgressDto>();
+        var progress = new Progress<BulkOperationProgressDto>(p => progressReports.Add(p));
+
+        // Act
+        await _manager.ImportProductsAsync(stream, "test.xlsx", Guid.NewGuid(), progress: progress);
+
+        // Assert
+        await Task.Delay(50);
+        progressReports.Should().NotBeEmpty();
+        progressReports.Should().Contain(p => p.Phase == "Parse");
+    }
+
+    [Fact]
+    public async Task ImportPrices_WithNullProgress_DoesNotThrow()
+    {
+        // Arrange — ensure null progress is handled gracefully (backward compat)
+        var rows = new List<object[]>
+        {
+            new object[] { "8680000000001", 120m, 110m, 60m }
+        };
+        using var stream = CreatePriceExcel(rows);
+
+        // Act — should not throw
+        var result = await _manager.ImportPricesAsync(stream, "prices.xlsx", Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExportProducts_CsvFormat_ReturnsCsvBytes()
+    {
+        // Arrange
+        var filter = new ExportFilterDto(Format: ExportFormat.Csv);
+
+        // Act
+        var result = await _manager.ExportProductsAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data.Length.Should().BeGreaterThan(0);
+        // CSV should start with UTF-8 BOM
+        result.Data[0].Should().Be(0xEF);
+    }
+
+    [Fact]
+    public async Task ExportPrices_CsvFormat_ReturnsCsvBytes()
+    {
+        // Arrange
+        var filter = new ExportFilterDto(Format: ExportFormat.Csv);
+
+        // Act
+        var result = await _manager.ExportPricesAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data.Length.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ImportProducts_CsvFile_ParsesCorrectly()
+    {
+        // Arrange — CSV with invalid barcode to avoid DB COPY
+        var csv = "Barkod;Ürün Adı;Stok Kodu;Liste Fiyatı;Satış Fiyatı;Maliyet Fiyatı;KDV Oranı;Kategori;Marka\n"
+                + ";No Barcode;TST-001;100;90;50;20;Giyim;Nike\n";
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(csv));
+
+        // Act
+        var result = await _manager.ImportProductsAsync(stream, "test.csv", Guid.NewGuid());
+
+        // Assert — should parse CSV and report validation error for empty barcode
+        result.Should().NotBeNull();
+        result.Data.ErrorCount.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task GetAvailableColumns_ProductExport_ReturnsExpectedColumns()
+    {
+        // Act
+        var result = await _manager.GetAvailableColumnsAsync(BulkOperationType.ProductExport);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeEmpty();
+        result.Data.Should().Contain(c => c.Key == "Barcode");
+        result.Data.Should().Contain(c => c.Key == "Title");
+        result.Data.Should().Contain(c => c.Key == "ListPrice");
+    }
+
+    [Fact]
+    public async Task GetAvailableColumns_PriceExport_ReturnsExpectedColumns()
+    {
+        // Act
+        var result = await _manager.GetAvailableColumnsAsync(BulkOperationType.PriceExport);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeEmpty();
+        result.Data.Should().Contain(c => c.Key == "Barcode");
+        result.Data.Should().Contain(c => c.Key == "ListPrice");
+    }
+
+    [Fact]
+    public async Task GetAvailableColumns_StockExport_ReturnsExpectedColumns()
+    {
+        // Act
+        var result = await _manager.GetAvailableColumnsAsync(BulkOperationType.StockExport);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeEmpty();
+        result.Data.Should().Contain(c => c.Key == "Barcode");
+        result.Data.Should().Contain(c => c.Key == "BranchOfficeId");
+    }
+
+    [Fact]
+    public async Task ExportProducts_WithSelectedColumns_ReturnsOnlySelectedColumns()
+    {
+        // Arrange — select only Barcode and ListPrice
+        var filter = new ExportFilterDto(SelectedColumns: new List<string> { "Barcode", "ListPrice" });
+
+        // Act
+        var result = await _manager.ExportProductsAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+
+        // Verify Excel has only 2 columns
+        using var ms = new MemoryStream(result.Data);
+        using var wb = new XLWorkbook(ms);
+        var ws = wb.Worksheets.First();
+        ws.Cell(1, 1).GetString().Should().Be("Barkod");
+        ws.Cell(1, 2).GetString().Should().Be("Liste Fiyatı");
+        ws.Cell(1, 3).GetString().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ExportProducts_WithNullSelectedColumns_ReturnsAllColumns()
+    {
+        // Arrange — null SelectedColumns means all columns (backward compat)
+        var filter = new ExportFilterDto();
+
+        // Act
+        var result = await _manager.ExportProductsAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        using var ms = new MemoryStream(result.Data);
+        using var wb = new XLWorkbook(ms);
+        var ws = wb.Worksheets.First();
+        // Should have all 9 product columns
+        ws.Cell(1, 9).GetString().Should().Be("Marka");
     }
 
     [Fact]

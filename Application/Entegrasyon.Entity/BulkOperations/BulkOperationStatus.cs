@@ -6,5 +6,6 @@ public enum BulkOperationStatus
     Processing = 2,
     Completed = 3,
     CompletedWithErrors = 4,
-    Failed = 5
+    Failed = 5,
+    Cancelled = 6
 }
