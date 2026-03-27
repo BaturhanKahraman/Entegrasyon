@@ -2,11 +2,12 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Entegrasyon.Business.Concrete.Storefront;
 
 public class StorefrontTenantResolver(
-    IDbContextFactory<IntegrationDbContext> contextFactory,
+    IServiceScopeFactory scopeFactory,
     IMemoryCache cache) : IStorefrontTenantResolver
 {
     private static string CacheKey(string hostname) => $"storefront:tenant:{hostname}";
@@ -18,6 +19,8 @@ public class StorefrontTenantResolver(
         if (cache.TryGetValue(key, out StorefrontTenantInfo? cached))
             return cached;
 
+        using var scope = scopeFactory.CreateScope();
+        var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var domain = await dbContext.StorefrontDomainMappings

@@ -35,20 +35,20 @@ public partial class Products : IDisposable
         }
     }
 
-    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        var uri = new Uri(e.Location);
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        var barcode = query["barcode"];
-        if (!string.IsNullOrWhiteSpace(barcode))
+        _ = InvokeAsync(async () =>
         {
-            await InvokeAsync(async () =>
+            var uri = new Uri(e.Location);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var barcode = query["barcode"];
+            if (!string.IsNullOrWhiteSpace(barcode))
             {
                 searchString = barcode;
                 await _dataGrid.ReloadServerData();
                 StateHasChanged();
-            });
-        }
+            }
+        });
     }
 
     public void Dispose()

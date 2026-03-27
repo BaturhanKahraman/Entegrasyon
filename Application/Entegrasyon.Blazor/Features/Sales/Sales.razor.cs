@@ -57,19 +57,19 @@ public partial class Sales : IDisposable
         await ProcessBarcodeFromQuery();
     }
 
-    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        var uri = new Uri(e.Location);
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        var barcode = query["barcode"];
-        if (!string.IsNullOrWhiteSpace(barcode))
+        _ = InvokeAsync(async () =>
         {
-            await InvokeAsync(async () =>
+            var uri = new Uri(e.Location);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var barcode = query["barcode"];
+            if (!string.IsNullOrWhiteSpace(barcode))
             {
                 await SearchAndAddProduct(barcode);
                 StateHasChanged();
-            });
-        }
+            }
+        });
     }
 
     private async Task ProcessBarcodeFromQuery()
