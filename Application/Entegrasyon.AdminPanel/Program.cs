@@ -30,7 +30,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AdminPanelDbContext>();
     db.Database.Migrate();
-    SeedData.Initialize(db);
+    var mainConnStr = builder.Configuration.GetConnectionString("TemplateDb");
+    SeedData.Initialize(db, mainConnStr);
 }
 
 if (!app.Environment.IsDevelopment())

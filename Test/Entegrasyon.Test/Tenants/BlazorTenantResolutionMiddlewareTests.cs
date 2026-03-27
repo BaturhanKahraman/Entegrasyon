@@ -3,7 +3,10 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Tenants;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
 
 namespace Entegrasyon.UnitTest.Tenants;
@@ -78,6 +81,62 @@ public class BlazorTenantResolutionMiddlewareTests
 
         var middleware = new BlazorTenantResolutionMiddleware(next);
         var httpContext = CreateHttpContext("acme.app.entegrasyon.com");
+
+        await middleware.InvokeAsync(httpContext, mockRegistry.Object, tenantContext);
+
+        httpContext.Response.StatusCode.Should().Be(404);
+        nextCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InvokeAsync_Localhost_InDevelopment_FallsBackToDevTenant()
+    {
+        var devTenantEntry = new TenantRegistryEntry(
+            1, "dev", "Development Tenant", "Host=localhost;Database=dev", true, "Pro");
+
+        var mockRegistry = new Mock<ITenantRegistry>();
+        mockRegistry.Setup(x => x.GetBySubdomainAsync("dev"))
+            .ReturnsAsync(devTenantEntry);
+
+        var tenantContext = new HttpTenantContext();
+        var nextCalled = false;
+        RequestDelegate next = _ => { nextCalled = true; return Task.CompletedTask; };
+
+        var middleware = new BlazorTenantResolutionMiddleware(next);
+        var httpContext = CreateHttpContext("localhost");
+
+        // Set up IWebHostEnvironment as Development
+        var mockEnv = new Mock<IWebHostEnvironment>();
+        mockEnv.Setup(e => e.EnvironmentName).Returns(Environments.Development);
+        var services = new ServiceCollection();
+        services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
+        httpContext.RequestServices = services.BuildServiceProvider();
+
+        await middleware.InvokeAsync(httpContext, mockRegistry.Object, tenantContext);
+
+        tenantContext.IsInitialized.Should().BeTrue();
+        tenantContext.TenantId.Should().Be(1);
+        nextCalled.Should().BeTrue();
+        mockRegistry.Verify(x => x.GetBySubdomainAsync("dev"), Times.Once);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_Localhost_InProduction_Returns404()
+    {
+        var mockRegistry = new Mock<ITenantRegistry>();
+        var tenantContext = new HttpTenantContext();
+        var nextCalled = false;
+        RequestDelegate next = _ => { nextCalled = true; return Task.CompletedTask; };
+
+        var middleware = new BlazorTenantResolutionMiddleware(next);
+        var httpContext = CreateHttpContext("localhost");
+
+        // Set up IWebHostEnvironment as Production
+        var mockEnv = new Mock<IWebHostEnvironment>();
+        mockEnv.Setup(e => e.EnvironmentName).Returns(Environments.Production);
+        var services = new ServiceCollection();
+        services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
+        httpContext.RequestServices = services.BuildServiceProvider();
 
         await middleware.InvokeAsync(httpContext, mockRegistry.Object, tenantContext);
 
