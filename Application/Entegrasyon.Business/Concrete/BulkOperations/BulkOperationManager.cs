@@ -392,6 +392,12 @@ public sealed class BulkOperationManager(
             if (!filter.IncludeDeleted)
                 query = query.Where(pv => !pv.IsDeleted);
 
+            if (filter.DateFrom.HasValue)
+                query = query.Where(pv => pv.Product.CreatedAt >= filter.DateFrom.Value);
+
+            if (filter.DateTo.HasValue)
+                query = query.Where(pv => pv.Product.CreatedAt <= filter.DateTo.Value);
+
             var data = await query
                 .OrderBy(pv => pv.Barcode)
                 .Select(pv => new
@@ -454,6 +460,12 @@ public sealed class BulkOperationManager(
             if (!filter.IncludeDeleted)
                 query = query.Where(pv => !pv.IsDeleted);
 
+            if (filter.DateFrom.HasValue)
+                query = query.Where(pv => pv.Product.CreatedAt >= filter.DateFrom.Value);
+
+            if (filter.DateTo.HasValue)
+                query = query.Where(pv => pv.Product.CreatedAt <= filter.DateTo.Value);
+
             var data = await query
                 .OrderBy(pv => pv.Barcode)
                 .Select(pv => new { pv.Barcode, pv.ListPrice, pv.SalePrice, pv.CostPrice })
@@ -501,6 +513,12 @@ public sealed class BulkOperationManager(
 
             if (filter.BrandId.HasValue)
                 query = query.Where(s => s.ProductVariant!.Product.BrandId == filter.BrandId.Value);
+
+            if (filter.DateFrom.HasValue)
+                query = query.Where(s => s.ProductVariant!.Product.CreatedAt >= filter.DateFrom.Value);
+
+            if (filter.DateTo.HasValue)
+                query = query.Where(s => s.ProductVariant!.Product.CreatedAt <= filter.DateTo.Value);
 
             var data = await query
                 .OrderBy(s => s.ProductVariant!.Barcode)
@@ -605,6 +623,113 @@ public sealed class BulkOperationManager(
             if (data.Count <= 50_000)
                 ws.Columns().AdjustToContents();
         }
+    }
+
+    public Task<IDataResult<ImportValidationPreviewDto>> ValidateImportAsync(Stream excelStream, BulkOperationType operationType)
+    {
+        return operationType switch
+        {
+            BulkOperationType.ProductImport => ValidateProductImportAsync(excelStream),
+            BulkOperationType.PriceImport => ValidatePriceImportAsync(excelStream),
+            BulkOperationType.StockImport => ValidateStockImportAsync(excelStream),
+            _ => Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, "Geçersiz işlem tipi."))
+        };
+    }
+
+    private Task<IDataResult<ImportValidationPreviewDto>> ValidateProductImportAsync(Stream excelStream)
+    {
+        var parseResult = excelParser.ParseProductImport(excelStream);
+        if (!parseResult.Success)
+            return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, parseResult.Message!));
+
+        var rows = parseResult.Data;
+        if (rows.Count == 0)
+            return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, "Excel dosyası boş veya veri satırı bulunamadı."));
+
+        var validationErrors = importValidator.ValidateProductRows(rows);
+        var invalidBarcodes = validationErrors.Select(e => e.Barcode).ToHashSet();
+        var validRows = rows.Where(r => !invalidBarcodes.Contains(r.Barcode)).ToList();
+
+        // Check duplicates
+        var seenBarcodes = new HashSet<string>();
+        var duplicateErrors = new List<BulkImportRowErrorDto>();
+        var deduplicatedCount = 0;
+
+        foreach (var row in validRows)
+        {
+            if (!seenBarcodes.Add(row.Barcode))
+            {
+                duplicateErrors.Add(new BulkImportRowErrorDto(row.RowNumber, row.Barcode, "Dosya içinde tekrarlayan barkod."));
+                continue;
+            }
+            deduplicatedCount++;
+        }
+
+        var allErrors = validationErrors.Concat(duplicateErrors).OrderBy(e => e.RowNumber).ToList();
+
+        var preview = new ImportValidationPreviewDto(
+            TotalRows: rows.Count,
+            ValidRows: deduplicatedCount,
+            InvalidRows: rows.Count - deduplicatedCount,
+            Errors: allErrors);
+
+        return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+            new SuccessDataResult<ImportValidationPreviewDto>(preview));
+    }
+
+    private Task<IDataResult<ImportValidationPreviewDto>> ValidatePriceImportAsync(Stream excelStream)
+    {
+        var parseResult = excelParser.ParsePriceImport(excelStream);
+        if (!parseResult.Success)
+            return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, parseResult.Message!));
+
+        var rows = parseResult.Data;
+        if (rows.Count == 0)
+            return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, "Excel dosyası boş veya veri satırı bulunamadı."));
+
+        var validationErrors = importValidator.ValidatePriceRows(rows);
+        var invalidBarcodes = validationErrors.Select(e => e.Barcode).ToHashSet();
+        var validCount = rows.Count(r => !invalidBarcodes.Contains(r.Barcode));
+
+        var preview = new ImportValidationPreviewDto(
+            TotalRows: rows.Count,
+            ValidRows: validCount,
+            InvalidRows: rows.Count - validCount,
+            Errors: validationErrors);
+
+        return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+            new SuccessDataResult<ImportValidationPreviewDto>(preview));
+    }
+
+    private Task<IDataResult<ImportValidationPreviewDto>> ValidateStockImportAsync(Stream excelStream)
+    {
+        var parseResult = excelParser.ParseStockImport(excelStream);
+        if (!parseResult.Success)
+            return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, parseResult.Message!));
+
+        var rows = parseResult.Data;
+        if (rows.Count == 0)
+            return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+                new ErrorDataResult<ImportValidationPreviewDto>(null!, "Excel dosyası boş veya veri satırı bulunamadı."));
+
+        var validationErrors = importValidator.ValidateStockRows(rows);
+        var invalidBarcodes = validationErrors.Select(e => e.Barcode).ToHashSet();
+        var validCount = rows.Count(r => !invalidBarcodes.Contains(r.Barcode));
+
+        var preview = new ImportValidationPreviewDto(
+            TotalRows: rows.Count,
+            ValidRows: validCount,
+            InvalidRows: rows.Count - validCount,
+            Errors: validationErrors);
+
+        return Task.FromResult<IDataResult<ImportValidationPreviewDto>>(
+            new SuccessDataResult<ImportValidationPreviewDto>(preview));
     }
 
     public async Task<IDataResult<BulkOperationLog>> GetOperationLogAsync(long id)

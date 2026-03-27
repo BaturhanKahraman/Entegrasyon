@@ -17,6 +17,7 @@ public partial class BulkOperationsPage : ComponentBase
     private List<BulkOperationLog>? _recentOperations;
     private bool _isExporting;
     private BulkOperationType _currentExportType;
+    private DateRange? _exportDateRange;
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,7 +101,13 @@ public partial class BulkOperationsPage : ComponentBase
 
         try
         {
-            var filter = new ExportFilterDto();
+            var filter = new ExportFilterDto(
+                DateFrom: _exportDateRange?.Start.HasValue == true
+                    ? new DateTimeOffset(_exportDateRange.Start.Value, TimeSpan.Zero)
+                    : null,
+                DateTo: _exportDateRange?.End.HasValue == true
+                    ? new DateTimeOffset(_exportDateRange.End.Value.AddDays(1).AddTicks(-1), TimeSpan.Zero)
+                    : null);
             var result = type switch
             {
                 BulkOperationType.ProductExport => await BulkOperationManager.ExportProductsAsync(filter),

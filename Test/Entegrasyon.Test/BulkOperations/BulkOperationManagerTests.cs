@@ -254,6 +254,85 @@ public class BulkOperationManagerTests : BaseTest
     }
 
     [Fact]
+    public async Task ExportProducts_WithDateRange_ReturnsFilteredExcelBytes()
+    {
+        // Arrange — DateFrom and DateTo should be accepted as filter parameters
+        var filter = new ExportFilterDto(
+            DateFrom: DateTimeOffset.UtcNow.AddDays(-30),
+            DateTo: DateTimeOffset.UtcNow);
+
+        // Act
+        var result = await _manager.ExportProductsAsync(filter);
+
+        // Assert — should return valid Excel (empty data is OK, filter was applied)
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data.Length.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ExportPrices_WithDateRange_ReturnsFilteredExcelBytes()
+    {
+        // Arrange
+        var filter = new ExportFilterDto(
+            DateFrom: DateTimeOffset.UtcNow.AddDays(-7),
+            DateTo: DateTimeOffset.UtcNow);
+
+        // Act
+        var result = await _manager.ExportPricesAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data.Length.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ExportStock_WithDateRange_ReturnsFilteredExcelBytes()
+    {
+        // Arrange
+        var filter = new ExportFilterDto(
+            DateFrom: DateTimeOffset.UtcNow.AddDays(-14),
+            DateTo: DateTimeOffset.UtcNow);
+
+        // Act
+        var result = await _manager.ExportStockAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+        result.Data.Length.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ExportProducts_WithOnlyDateFrom_ReturnsExcelBytes()
+    {
+        // Arrange — only DateFrom, no DateTo (should filter from date onwards)
+        var filter = new ExportFilterDto(DateFrom: DateTimeOffset.UtcNow.AddDays(-30));
+
+        // Act
+        var result = await _manager.ExportProductsAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExportProducts_WithOnlyDateTo_ReturnsExcelBytes()
+    {
+        // Arrange — only DateTo, no DateFrom (should filter up to date)
+        var filter = new ExportFilterDto(DateTo: DateTimeOffset.UtcNow);
+
+        // Act
+        var result = await _manager.ExportProductsAsync(filter);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task GetOperationLog_ValidId_ReturnsLog()
     {
         // Arrange
