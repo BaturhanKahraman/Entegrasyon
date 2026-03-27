@@ -11,11 +11,13 @@ public partial class CategorySync
 {
     [Inject] private ICategoryService CategoryService { get; set; } = null!;
     [Inject] private ICategoryMatchService CategoryMatchService { get; set; } = null!;
+    [Inject] private ICategoryMatchValidationService ValidationService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
     private List<Category> _categories = [];
     private CategoryMatchSummaryDto _summary = new();
+    private Dictionary<int, CategoryMatchValidationResultDto> _validationResults = new();
     private bool _isLoading = true;
     private bool _showUnmappedOnly;
     private bool _showLeafOnly;
@@ -48,6 +50,25 @@ public partial class CategorySync
         _categories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
         _summary = await CategoryMatchService.GetCategoryMatchSummaryAsync();
         _isLoading = false;
+
+        // Load validation results in background (non-blocking)
+        _ = LoadValidationResults();
+    }
+
+    private async Task LoadValidationResults()
+    {
+        var result = await ValidationService.ValidateAllMatchesAsync(TrendyolMarketPlaceId);
+        if (result.Success)
+        {
+            _validationResults = result.Data.ToDictionary(v => v.CategoryId);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private CategoryMatchValidationResultDto? GetValidationStatus(int categoryId)
+    {
+        _validationResults.TryGetValue(categoryId, out var status);
+        return status;
     }
 
     private async Task OpenRowMappingDialog(Category category)
