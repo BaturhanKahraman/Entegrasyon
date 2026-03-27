@@ -17,6 +17,9 @@ public abstract class BunitBaseTest : TestContext
     protected Mock<IBrandService> MockBrandService { get; } = new();
     protected Mock<IBarcodeService> MockBarcodeService { get; } = new();
     protected Mock<IImageManager> MockImageManager { get; } = new();
+    protected Mock<ICategoryAttributeManager> MockCategoryAttributeManager { get; } = new();
+    protected Mock<IBranchOfficeManager> MockBranchOfficeManager { get; } = new();
+    protected Mock<IMarketplaceOverrideManager> MockMarketplaceOverrideManager { get; } = new();
     protected Mock<ISnackbar> MockSnackbar { get; } = new();
 
     protected BunitBaseTest()
@@ -33,6 +36,9 @@ public abstract class BunitBaseTest : TestContext
         Services.AddSingleton(MockBrandService.Object);
         Services.AddSingleton(MockBarcodeService.Object);
         Services.AddSingleton(MockImageManager.Object);
+        Services.AddSingleton(MockCategoryAttributeManager.Object);
+        Services.AddSingleton(MockBranchOfficeManager.Object);
+        Services.AddSingleton(MockMarketplaceOverrideManager.Object);
         Services.AddSingleton(new EventChannel<ProductCreatedForMarketplaceEvent>());
 
         // MudBlazor'un JS çağrılarını (focus, scroll vb.) sessizce tolere et
