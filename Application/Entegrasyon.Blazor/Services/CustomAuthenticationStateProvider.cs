@@ -36,6 +36,12 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             _cachedPrincipal = BuildClaimsPrincipal(userSession);
             return new AuthenticationState(_cachedPrincipal);
         }
+        catch (InvalidOperationException)
+        {
+            // Prerender sirasinda JS interop kullanilamaz — ProtectedLocalStorage calismaz.
+            // _hasReadFromStorage = false birakarak circuit aktif oldugunda tekrar okuma yapilmasini sagla.
+            return new AuthenticationState(_anonymous);
+        }
         catch
         {
             _hasReadFromStorage = true;
