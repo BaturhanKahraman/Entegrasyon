@@ -15,6 +15,7 @@ public partial class Login
     [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private ITenantContext TenantContext { get; set; } = null!;
 
     private string _username = string.Empty;
     private string _password = string.Empty;
@@ -56,6 +57,7 @@ public partial class Login
                         UserName = user.Username,
                         Email = $"{user.Name} {user.Surname}",
                         Token = Guid.NewGuid().ToString(),
+                        TenantId = TenantContext.TenantId,
                         Roles = user.Roles?.Select(r => r.Name).ToList() ?? [],
                         Permissions = permissions.Distinct().ToList()
                     };
