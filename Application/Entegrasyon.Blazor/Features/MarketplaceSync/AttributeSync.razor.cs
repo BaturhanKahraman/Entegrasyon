@@ -12,16 +12,27 @@ public partial class AttributeSync
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
 
+    [SupplyParameterFromQuery(Name = "categoryId")]
+    public int? FilterCategoryId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "marketPlaceId")]
+    public int? FilterMarketPlaceId { get; set; }
+
     private List<AttributeSyncRow> _attributes = [];
     private bool _isLoading = true;
     private bool _showUnmappedOnly;
     private int _matchedCount;
+    private string? _filterCategoryName;
 
     private IEnumerable<AttributeSyncRow> FilteredRows =>
         _showUnmappedOnly ? _attributes.Where(a => !a.HasMatch) : _attributes;
 
     protected override async Task OnInitializedAsync()
     {
+        // When redirected from category mapping, auto-show unmapped only
+        if (FilterCategoryId.HasValue)
+            _showUnmappedOnly = true;
+
         await LoadAttributes();
     }
 
@@ -32,29 +43,43 @@ public partial class AttributeSync
         var attrsResult = await AttributeManager.GetCategoryAttributes();
         if (!attrsResult.Success || attrsResult.Data is null)
         {
-            Snackbar.Add("Özellikler yüklenemedi.", Severity.Error);
+            Snackbar.Add("Ozellikler yuklenemedi.", Severity.Error);
             _isLoading = false;
             return;
         }
 
         var matchDict = await AttributeManager.GetAttributeMarketPlaceMatchesAsync();
 
-        _attributes = attrsResult.Data.Select(attr =>
+        // If filtering by category, get the category's attribute IDs
+        HashSet<int>? categoryAttributeIds = null;
+        if (FilterCategoryId.HasValue)
         {
-            matchDict.TryGetValue(attr.Id, out var match);
-            return new AttributeSyncRow
+            var categoryAttrsResult = await AttributeManager.GetCategoryAttributesByCategory(FilterCategoryId.Value);
+            if (categoryAttrsResult.Success && categoryAttrsResult.Data is not null)
             {
-                Id = attr.Id,
-                Humanized = attr.CategoryAttributeHumanized ?? "",
-                Key = attr.CategoryAttributeKey ?? "",
-                ValueCount = attr.CategoryAttributeValues?.Count ?? 0,
-                HasMatch = match is not null,
-                MarketplaceName = match?.MarketplaceName,
-                MarketplaceAttributeId = match?.MarketplaceAttributeId
-            };
-        })
-        .OrderBy(a => a.Humanized)
-        .ToList();
+                categoryAttributeIds = categoryAttrsResult.Data.Select(a => a.Id).ToHashSet();
+                _filterCategoryName = $"Kategori #{FilterCategoryId.Value}";
+            }
+        }
+
+        _attributes = attrsResult.Data
+            .Where(attr => categoryAttributeIds is null || categoryAttributeIds.Contains(attr.Id))
+            .Select(attr =>
+            {
+                matchDict.TryGetValue(attr.Id, out var match);
+                return new AttributeSyncRow
+                {
+                    Id = attr.Id,
+                    Humanized = attr.CategoryAttributeHumanized ?? "",
+                    Key = attr.CategoryAttributeKey ?? "",
+                    ValueCount = attr.CategoryAttributeValues?.Count ?? 0,
+                    HasMatch = match is not null,
+                    MarketplaceName = match?.MarketplaceName,
+                    MarketplaceAttributeId = match?.MarketplaceAttributeId
+                };
+            })
+            .OrderBy(a => a.Humanized)
+            .ToList();
 
         _matchedCount = _attributes.Count(a => a.HasMatch);
         _isLoading = false;
@@ -95,6 +120,15 @@ public partial class AttributeSync
                 Snackbar.Add($"Hata: {result.Message}", Severity.Error);
             }
         }
+    }
+
+    private async Task ClearCategoryFilter()
+    {
+        FilterCategoryId = null;
+        FilterMarketPlaceId = null;
+        _filterCategoryName = null;
+        _showUnmappedOnly = false;
+        await LoadAttributes();
     }
 
     public class AttributeSyncRow

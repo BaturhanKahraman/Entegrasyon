@@ -18,6 +18,8 @@ public partial class CategoryMappingDialog : ComponentBase
     [Inject] private IMarketplaceSearchService SearchService { get; set; } = null!;
     [Inject] private IMarketPlaceManager MarketPlaceManager { get; set; } = null!;
     [Inject] private ICategoryMatchService CategoryMatchService { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
     private List<MarketplaceOption> _marketplaces = [];
@@ -67,8 +69,11 @@ public partial class CategoryMappingDialog : ComponentBase
             var result = await CategoryMatchService.CreateCategoryMappingAsync(dto);
             if (result.Success)
             {
-                Snackbar.Add("Kategori eşleştirme başarıyla oluşturuldu.", Severity.Success);
+                Snackbar.Add("Kategori eslestirme basariyla olusturuldu.", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(dto));
+
+                // Ask if user wants to go to attribute mapping
+                await AskForAttributeRedirect(_selectedMarketplace.Id);
             }
             else
             {
@@ -77,11 +82,26 @@ public partial class CategoryMappingDialog : ComponentBase
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Kayıt sırasında hata oluştu: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Kayit sirasinda hata olustu: {ex.Message}", Severity.Error);
         }
         finally
         {
             _isSubmitting = false;
+        }
+    }
+
+    private async Task AskForAttributeRedirect(int marketPlaceId)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Attribute Eslestirme",
+            "Kategori eslestirmesi tamamlandi. Simdi attribute eslestirmeye gecmek ister misiniz?",
+            yesText: "Attribute Eslestirmeye Git",
+            cancelText: "Kapat");
+
+        if (confirmed is true)
+        {
+            NavigationManager.NavigateTo(
+                $"/marketplace/sync/attributes?categoryId={ApplicationCategory.Id}&marketPlaceId={marketPlaceId}");
         }
     }
 
