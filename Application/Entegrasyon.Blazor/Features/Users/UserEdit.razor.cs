@@ -28,7 +28,7 @@ public partial class UserEdit
     private string _editEmail = string.Empty;
     private string _editName = string.Empty;
     private string _editSurname = string.Empty;
-    private int _selectedRoleId;
+    private IEnumerable<int> _selectedRoleIds = new HashSet<int>();
     private int? _selectedBranchOfficeId;
     private bool _editIsActive;
     private MudForm? _editForm;
@@ -69,7 +69,7 @@ public partial class UserEdit
             _editEmail = _user.Email ?? string.Empty;
             _editName = _user.Name ?? string.Empty;
             _editSurname = _user.Surname ?? string.Empty;
-            _selectedRoleId = _user.RoleIds.FirstOrDefault();
+            _selectedRoleIds = new HashSet<int>(_user.RoleIds);
             _selectedBranchOfficeId = _user.DefaultBranchOfficeId;
             _editIsActive = _user.IsActive;
         }
@@ -94,7 +94,7 @@ public partial class UserEdit
                 Name = _editName.Trim(),
                 Surname = _editSurname.Trim(),
                 BranchOfficeId = _selectedBranchOfficeId,
-                RoleIds = _selectedRoleId > 0 ? [_selectedRoleId] : [],
+                RoleIds = _selectedRoleIds.ToList(),
                 IsActive = _editIsActive
             };
 

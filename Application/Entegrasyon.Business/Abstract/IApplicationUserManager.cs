@@ -17,6 +17,7 @@ public interface IApplicationUserManager
     Guid GetActiveUserGuidId();
     ValueTask<ApplicationUser> GetUserById(Guid id);
     Task<IResult> SetPassive(Guid userId, CancellationToken token = default);
+    Task<IResult> ToggleActive(Guid userId, CancellationToken token = default);
     Task<IResult> SoftDelete(Guid userId, CancellationToken token = default);
     Task<IResult> UpdateOwnProfile(Guid userId, UpdateProfileDto dto, CancellationToken token = default);
 }
