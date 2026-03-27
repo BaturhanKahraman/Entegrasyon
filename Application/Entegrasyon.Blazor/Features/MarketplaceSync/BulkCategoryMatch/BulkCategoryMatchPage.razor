@@ -38,6 +38,11 @@
 
         @if (_selectedMarketplace is not null)
         {
+            <AutoMatchSuggestionPanel
+                SelectedCategories="_selectedCategories"
+                MarketPlaceId="_selectedMarketplace.Id"
+                OnSuggestionApplied="OnSuggestionApplied" />
+
             <MudGrid Spacing="3">
                 <MudItem xs="12" md="5">
                     <BulkMatchCategorySelector

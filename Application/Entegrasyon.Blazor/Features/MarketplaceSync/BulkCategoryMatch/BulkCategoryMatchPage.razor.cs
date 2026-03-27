@@ -89,6 +89,12 @@ public partial class BulkCategoryMatchPage
         _mappingAssignments[mapping.CategoryId] = mapping.Result;
     }
 
+    private void OnSuggestionApplied((int CategoryId, MarketplaceCategorySearchResult Result) suggestion)
+    {
+        _mappingAssignments[suggestion.CategoryId] = suggestion.Result;
+        StateHasChanged();
+    }
+
     private async Task SubmitBulkMapping()
     {
         if (_selectedMarketplace is null) return;
