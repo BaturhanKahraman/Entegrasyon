@@ -1,0 +1,33 @@
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Routing
+
+@if (_featureEnabled)
+{
+    <AuthorizeView Policy="@Permission">
+        <Authorized>
+            <MudNavLink Href="@Href" Match="@Match" Icon="@Icon">
+                @Title
+            </MudNavLink>
+        </Authorized>
+        <NotAuthorized>
+            @if (ShowWhenDisabled)
+            {
+                <div @onclick="OnDisabledClick" style="cursor:pointer">
+                    <MudNavLink Icon="@Icon" Disabled="true">
+                        @Title
+                    </MudNavLink>
+                </div>
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+}
+else if (ShowWhenDisabled)
+{
+    <div @onclick="OnDisabledClick" style="cursor:pointer">
+        <MudNavLink Icon="@Icon" Disabled="true">
+            @Title
+        </MudNavLink>
+    </div>
+}

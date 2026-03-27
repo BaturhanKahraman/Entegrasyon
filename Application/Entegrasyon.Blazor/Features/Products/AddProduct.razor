@@ -1,5 +1,6 @@
 @page "/products/add"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Products.Create)]
 @using Entegrasyon.Entity.Dtos.Product
 @using Entegrasyon.Entity.Dtos.Product.ProductVariant
 

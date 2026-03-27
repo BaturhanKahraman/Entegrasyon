@@ -1,6 +1,7 @@
 @page "/reports/profit-loss"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@attribute [Authorize(Policy = AppPermissions.Reports.View)]
 @using Entegrasyon.Entity.Dtos.Reports
 
 <PageTitle>Kar/Zarar Raporu</PageTitle>

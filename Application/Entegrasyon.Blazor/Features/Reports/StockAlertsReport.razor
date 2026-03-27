@@ -1,6 +1,7 @@
 @page "/reports/stock-alerts"
 @rendermode InteractiveServer
 @attribute [StreamRendering]
+@attribute [Authorize(Policy = AppPermissions.Reports.View)]
 @using Entegrasyon.Entity.Dtos.Reports
 
 <PageTitle>Stok Uyarilari</PageTitle>

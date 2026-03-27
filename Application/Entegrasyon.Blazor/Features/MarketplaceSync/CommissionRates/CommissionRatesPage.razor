@@ -1,5 +1,6 @@
 @page "/marketplace/commission-rates"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 
 <PageTitle>Komisyon Oranları</PageTitle>
 

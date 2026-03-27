@@ -1,5 +1,6 @@
 @page "/marketplace/matching/{Id:guid}"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 @using Entegrasyon.Entity.Dtos.Product
 
 <PageTitle>Ürün Pazaryeri Eşleştirme</PageTitle>

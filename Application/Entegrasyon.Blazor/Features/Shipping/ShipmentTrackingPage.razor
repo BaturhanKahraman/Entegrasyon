@@ -1,5 +1,6 @@
 @page "/shipping"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Cargo.View)]
 @using Entegrasyon.Entity.Shipping
 
 <PageTitle>Kargo Takip</PageTitle>

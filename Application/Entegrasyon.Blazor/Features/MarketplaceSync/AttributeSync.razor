@@ -1,5 +1,6 @@
 @page "/marketplace/sync/attributes"
 @rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 @using Entegrasyon.Entity.Categories
 @using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute
 

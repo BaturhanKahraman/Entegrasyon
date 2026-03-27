@@ -1,6 +1,5 @@
 @page "/users"
 @rendermode InteractiveServer
-@using Entegrasyon.ApplicationBootstrap.Security
 @attribute [Authorize(Policy = AppPermissions.Users.View)]
 @using Entegrasyon.Entity.Dtos.Users
 @using Entegrasyon.Blazor.Features.Users
