@@ -10,6 +10,11 @@ namespace Entegrasyon.Blazor.Utility.Notifications;
 /// In-process notification delivery: Blazor component'ları subscribe olur,
 /// NotificationEventPublisher her event'i bu servis üzerinden iletir.
 /// EventChannel'dan doğrudan okuma yapılmaz — tüm consumer'lar bu servisi kullanır.
+///
+/// Tenant isolation: database-per-tenant mimarisi kullanıldığı için her tenant'ın
+/// kendi user tablosu vardır ve user GUID'leri tenant'lar arasında çakışmaz.
+/// Eğer single-DB multi-tenant'a geçilirse, subscriber key'i (int TenantId, Guid UserId)
+/// tuple'ına dönüştürülmelidir.
 /// </summary>
 public sealed class InProcessNotificationDeliveryService(
     ILogger<InProcessNotificationDeliveryService> logger) : INotificationDeliveryService, INotificationChannel
