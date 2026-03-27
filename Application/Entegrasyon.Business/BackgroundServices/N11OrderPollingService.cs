@@ -1,8 +1,7 @@
-using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -14,63 +13,42 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// </summary>
 public class N11OrderPollingService(
     IServiceScopeFactory scopeFactory,
+    ITenantRegistry tenantRegistry,
     ILogger<N11OrderPollingService> logger,
-    IConfiguration configuration) : BackgroundService
+    IConfiguration configuration)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(2);
-    // TODO Multi-tenant: Her tenant/marketplace için ayrı poll zamanı takip edilir.
-    // Key = MarketPlaceId (şu an yalnızca 2 = N11)
-    private readonly ConcurrentDictionary<int, DateTimeOffset> _lastPollTimes = new();
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(2);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        // Mock modda polling yapma
         if (configuration.GetValue<bool>("N11:UseMock"))
         {
-            logger.LogInformation("N11OrderPollingService: UseMock=true, polling devre dışı");
+            logger.LogInformation("N11OrderPollingService: UseMock=true, polling devre dışı for tenant {TenantId}",
+                tenantId);
             return;
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollOrdersAsync(stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "N11 siparis polling hatasi");
-            }
-
-            await Task.Delay(PollInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollOrdersAsync(CancellationToken ct)
-    {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var orderService = scope.ServiceProvider.GetRequiredService<IN11OrderService>();
-        var orderManager = scope.ServiceProvider.GetRequiredService<IOrderManager>();
-
-        var marketPlaceId = 2; // TODO: iterate over all active N11 marketplaces when multi-tenant
-        var lastPoll = _lastPollTimes.GetOrAdd(marketPlaceId, _ => DateTimeOffset.UtcNow.AddDays(-1));
+        var orderService = services.GetRequiredService<IN11OrderService>();
+        var orderManager = services.GetRequiredService<IOrderManager>();
 
         var result = await orderService.FetchOrdersAsync(startDate: lastPoll);
 
         if (!result.Success)
         {
-            logger.LogWarning("N11 siparis fetch basarisiz: {Message}", result.Message);
+            logger.LogWarning("N11 siparis fetch basarisiz for tenant {TenantId}: {Message}",
+                tenantId, result.Message);
             return;
         }
 
         if (result.Data.Count > 0)
         {
             await orderManager.ImportN11OrdersAsync(result.Data);
-            logger.LogInformation("N11: {Count} siparis import edildi", result.Data.Count);
+            logger.LogInformation("Tenant {TenantId}: N11: {Count} siparis import edildi",
+                tenantId, result.Data.Count);
         }
-
-        _lastPollTimes[marketPlaceId] = DateTimeOffset.UtcNow;
     }
 }

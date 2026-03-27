@@ -1,8 +1,7 @@
-using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -10,56 +9,41 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// <summary>
 /// Her 60 saniyede Hepsiburada sipariş API'sini poll eder,
 /// son 2 saatlik sipariş penceresi kullanılır.
-/// Multi-tenant hazır: ConcurrentDictionary ile tenant başına son poll zamanı takip edilir.
+/// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class HepsiburadaOrderPollingService(
     IServiceScopeFactory scopeFactory,
-    ILogger<HepsiburadaOrderPollingService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<HepsiburadaOrderPollingService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int HbMarketPlaceId = MarketPlaceConstants.HepsiburadaMarketPlaceId;
-    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan OrderLookbackWindow = TimeSpan.FromHours(2);
 
-    // Multi-tenant: tenant başına son poll zamanı (key = tenantId)
-    private readonly ConcurrentDictionary<int, DateTimeOffset> _lastPollTimes = new();
+    protected override TimeSpan PollInterval => TimeSpan.FromSeconds(60);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(25), stoppingToken);
+        var orderService = services.GetRequiredService<IHepsiburadaOrderService>();
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollOrdersAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Hepsiburada sipariş polling hatası");
-            }
-
-            await Task.Delay(PollInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollOrdersAsync(CancellationToken ct)
-    {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var orderService = scope.ServiceProvider.GetRequiredService<IHepsiburadaOrderService>();
-
-        var tenantId = 0; // TODO: multi-tenant'ta tüm aktif tenant'lar iterate edilecek
-        var lastPoll = _lastPollTimes.GetOrAdd(tenantId, _ => DateTimeOffset.UtcNow - OrderLookbackWindow);
+        var effectiveLastPoll = lastPoll < DateTimeOffset.UtcNow - OrderLookbackWindow
+            ? DateTimeOffset.UtcNow - OrderLookbackWindow
+            : lastPoll;
         var endDate = DateTimeOffset.UtcNow;
 
         var result = await orderService.GetOrdersAsync(
-            beginDate: lastPoll,
+            beginDate: effectiveLastPoll,
             endDate: endDate,
             offset: 0,
             limit: 50);
 
         if (!result.Success)
         {
-            logger.LogWarning("Hepsiburada sipariş fetch başarısız: {Message}", result.Message);
+            logger.LogWarning("Hepsiburada sipariş fetch başarısız for tenant {TenantId}: {Message}",
+                tenantId, result.Message);
             return;
         }
 
@@ -67,13 +51,12 @@ public class HepsiburadaOrderPollingService(
         if (orders.Count > 0)
         {
             // TODO: orderManager.ImportHepsiburadaOrdersAsync(orders) eklendiğinde buraya ekle
-            logger.LogInformation("Hepsiburada: {Count} sipariş alındı", orders.Count);
+            logger.LogInformation("Tenant {TenantId}: Hepsiburada: {Count} sipariş alındı",
+                tenantId, orders.Count);
         }
         else
         {
-            logger.LogDebug("Hepsiburada: yeni sipariş yok");
+            logger.LogDebug("Tenant {TenantId}: Hepsiburada: yeni sipariş yok", tenantId);
         }
-
-        _lastPollTimes[tenantId] = endDate;
     }
 }

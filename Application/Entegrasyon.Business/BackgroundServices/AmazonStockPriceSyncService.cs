@@ -1,10 +1,10 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -15,35 +15,20 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// </summary>
 public class AmazonStockPriceSyncService(
     IServiceScopeFactory scopeFactory,
-    ILogger<AmazonStockPriceSyncService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<AmazonStockPriceSyncService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int AmazonMpId = MarketPlaceConstants.AmazonMarketPlaceId;
-    private static readonly TimeSpan SyncInterval = TimeSpan.FromMinutes(15);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(15);
+
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(45), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await SyncAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Amazon stock/price sync cycle failed");
-            }
-
-            await Task.Delay(SyncInterval, stoppingToken);
-        }
-    }
-
-    private async Task SyncAsync(CancellationToken ct)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var feedService = scope.ServiceProvider.GetRequiredService<IAmazonFeedService>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var feedService = services.GetRequiredService<IAmazonFeedService>();
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -58,7 +43,7 @@ public class AmazonStockPriceSyncService(
 
         if (!publishedProducts.Any())
         {
-            logger.LogDebug("Amazon stock/price sync: yayında ürün yok");
+            logger.LogDebug("Amazon stock/price sync: yayında ürün yok, tenant {TenantId}", tenantId);
             return;
         }
 
@@ -66,6 +51,7 @@ public class AmazonStockPriceSyncService(
         // var feedContent = BuildStockPriceFeed(publishedProducts);
         // await feedService.SubmitFeedAsync("JSON_LISTINGS_FEED", "application/json", feedContent, marketplaceIds, ct);
 
-        logger.LogInformation("Amazon stock/price sync: {Count} ürün kontrol edildi", publishedProducts.Count);
+        logger.LogInformation("Amazon stock/price sync: {Count} ürün kontrol edildi, tenant {TenantId}",
+            publishedProducts.Count, tenantId);
     }
 }

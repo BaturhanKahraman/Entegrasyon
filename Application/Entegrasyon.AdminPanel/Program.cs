@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Entegrasyon.AdminPanel.Infrastructure;
 using Entegrasyon.AdminPanel.Infrastructure.Auth;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 
@@ -12,6 +13,8 @@ builder.Services.AddDbContext<AdminPanelDbContext>(options =>
 
 builder.Services.AddDbContext<TemplateDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TemplateDb")));
+
+builder.Services.AddScoped<TenantProvisioningService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -27,7 +30,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AdminPanelDbContext>();
     db.Database.Migrate();
-    SeedData.Initialize(db);
+    var mainConnStr = builder.Configuration.GetConnectionString("TemplateDb");
+    SeedData.Initialize(db, mainConnStr);
 }
 
 if (!app.Environment.IsDevelopment())

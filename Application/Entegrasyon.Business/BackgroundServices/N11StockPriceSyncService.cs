@@ -1,54 +1,34 @@
-using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 15 dakikada N11'deki yayında ürünlerin stok ve fiyat bilgilerini senkronize eder.
-/// Multi-tenant hazır: ConcurrentDictionary ile tenant başına son sync zamanı takip edilir.
 /// N11 SOAP API ile ürün bazlı UpdatePrice + UpdateStock çağrıları yapar.
 /// </summary>
 public class N11StockPriceSyncService(
     IServiceScopeFactory scopeFactory,
-    ILogger<N11StockPriceSyncService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<N11StockPriceSyncService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int N11MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId;
-    private static readonly TimeSpan SyncInterval = TimeSpan.FromMinutes(15);
 
-    // Multi-tenant: tenant başına son sync zamanı (key = tenantId)
-    private readonly ConcurrentDictionary<int, DateTime> _lastSyncTime = new();
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(15);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await SyncAllPublishedProductsAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "N11 stock/price sync cycle failed");
-            }
-
-            await Task.Delay(SyncInterval, stoppingToken);
-        }
-    }
-
-    private async Task SyncAllPublishedProductsAsync(CancellationToken ct)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var stockPriceService = scope.ServiceProvider.GetRequiredService<IN11StockPriceService>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var stockPriceService = services.GetRequiredService<IN11StockPriceService>();
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -63,11 +43,12 @@ public class N11StockPriceSyncService(
 
         if (!publishedProducts.Any())
         {
-            logger.LogDebug("N11 stock/price sync: yayında ürün yok");
+            logger.LogDebug("N11 stock/price sync: yayında ürün yok, tenant {TenantId}", tenantId);
             return;
         }
 
-        logger.LogInformation("N11 stock/price sync: {Count} ürün kontrol ediliyor", publishedProducts.Count);
+        logger.LogInformation("N11 stock/price sync: {Count} ürün kontrol ediliyor, tenant {TenantId}",
+            publishedProducts.Count, tenantId);
 
         var successCount = 0;
         var errorCount = 0;
@@ -95,17 +76,15 @@ public class N11StockPriceSyncService(
             {
                 errorCount++;
                 if (!priceResult.Success)
-                    logger.LogWarning("N11 price sync başarısız: ProductId={ProductId}, {Message}",
-                        product.Id, priceResult.Message);
+                    logger.LogWarning("N11 price sync başarısız: ProductId={ProductId}, {Message}, tenant {TenantId}",
+                        product.Id, priceResult.Message, tenantId);
                 if (!stockResult.Success)
-                    logger.LogWarning("N11 stock sync başarısız: ProductId={ProductId}, {Message}",
-                        product.Id, stockResult.Message);
+                    logger.LogWarning("N11 stock sync başarısız: ProductId={ProductId}, {Message}, tenant {TenantId}",
+                        product.Id, stockResult.Message, tenantId);
             }
         }
 
-        logger.LogInformation("N11 stock/price sync tamamlandı: {Success} başarılı, {Error} başarısız",
-            successCount, errorCount);
-
-        _lastSyncTime[0] = DateTime.UtcNow; // tenantId=0 şimdilik tek tenant
+        logger.LogInformation("N11 stock/price sync tamamlandı, tenant {TenantId}: {Success} başarılı, {Error} başarısız",
+            tenantId, successCount, errorCount);
     }
 }

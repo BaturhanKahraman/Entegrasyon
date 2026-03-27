@@ -4,6 +4,7 @@ using Entegrasyon.Business.Channels.Events.Categories;
 using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Notifications;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.User;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,38 +13,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
-public class CategoryImportBackgroundService : BackgroundService
+public class CategoryImportBackgroundService(
+    EventChannel<CategoryImportRequestedEvent> importRequestedChannel,
+    EventChannel<CategoryImportCompletedEvent> importCompletedChannel,
+    EventChannel<NotificationEvent> notificationChannel,
+    IServiceScopeFactory scopeFactory,
+    ILogger<CategoryImportBackgroundService> logger) : BackgroundService
 {
-    private readonly EventChannel<CategoryImportRequestedEvent> _importRequestedChannel;
-    private readonly EventChannel<CategoryImportCompletedEvent> _importCompletedChannel;
-    private readonly EventChannel<NotificationEvent> _notificationChannel;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<CategoryImportBackgroundService> _logger;
-
-    public CategoryImportBackgroundService(
-        EventChannel<CategoryImportRequestedEvent> importRequestedChannel,
-        EventChannel<CategoryImportCompletedEvent> importCompletedChannel,
-        EventChannel<NotificationEvent> notificationChannel,
-        IServiceScopeFactory scopeFactory,
-        ILogger<CategoryImportBackgroundService> logger)
-    {
-        _importRequestedChannel = importRequestedChannel;
-        _importCompletedChannel = importCompletedChannel;
-        _notificationChannel = notificationChannel;
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var importEvent in _importRequestedChannel.Reader.ReadAllAsync(stoppingToken))
+        await foreach (var importEvent in importRequestedChannel.Reader.ReadAllAsync(stoppingToken))
         {
             try
             {
-                _logger.LogInformation("Starting category import for user {UserId}, {Count} categories",
-                    importEvent.UserId, importEvent.Categories.Count());
+                logger.LogInformation("Starting category import for user {UserId}, {Count} categories, TenantId={TenantId}",
+                    importEvent.UserId, importEvent.Categories.Count(), importEvent.TenantId);
 
-                using var scope = _scopeFactory.CreateScope();
+                using var scope = scopeFactory.CreateScope();
+
+                // Tenant context initialize
+                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+                var tenantRegistry = scope.ServiceProvider.GetRequiredService<ITenantRegistry>();
+                var tenant = await tenantRegistry.GetByIdAsync(importEvent.TenantId);
+                if (tenant is null || !tenant.IsActive)
+                {
+                    logger.LogWarning("{Service}: Tenant {TenantId} not found or inactive, skipping event",
+                        nameof(CategoryImportBackgroundService), importEvent.TenantId);
+                    continue;
+                }
+                tenantContext.Initialize(tenant);
 
                 // Route by MarketplaceName
                 BaseCategoryImporterService importer = importEvent.MarketplaceName switch
@@ -70,12 +68,12 @@ public class CategoryImportBackgroundService : BackgroundService
                 }
                 catch (Exception notifEx)
                 {
-                    _logger.LogError(notifEx, "Failed to send start notification");
+                    logger.LogError(notifEx, "Failed to send start notification");
                 }
 
                 var result = await importer.ImportCategoriesAsync(importEvent.Categories, stoppingToken);
 
-                await _importCompletedChannel.PublishAsync(new CategoryImportCompletedEvent(
+                await importCompletedChannel.PublishAsync(new CategoryImportCompletedEvent(
                     importEvent.MarketplaceName,
                     importEvent.Categories.Count(),
                     result.Success,
@@ -101,16 +99,32 @@ public class CategoryImportBackgroundService : BackgroundService
                 }
                 catch (Exception notifEx)
                 {
-                    _logger.LogError(notifEx, "Failed to send result notification");
+                    logger.LogError(notifEx, "Failed to send result notification");
                 }
 
-                _logger.LogInformation("Category import completed for user {UserId}: {Success}",
+                logger.LogInformation("Category import completed for user {UserId}: {Success}",
                     importEvent.UserId, result.Success);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Category import failed for user {UserId}", importEvent.UserId);
-                using var scope = _scopeFactory.CreateScope();
+                logger.LogError(ex, "Category import failed for user {UserId}, TenantId={TenantId}",
+                    importEvent.UserId, importEvent.TenantId);
+                using var scope = scopeFactory.CreateScope();
+
+                // Tenant context initialize for error notification scope
+                try
+                {
+                    var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+                    var tenantRegistry = scope.ServiceProvider.GetRequiredService<ITenantRegistry>();
+                    var tenant = await tenantRegistry.GetByIdAsync(importEvent.TenantId);
+                    if (tenant is not null && tenant.IsActive)
+                        tenantContext.Initialize(tenant);
+                }
+                catch (Exception tenantEx)
+                {
+                    logger.LogError(tenantEx, "Failed to initialize tenant context for error notification");
+                }
+
                 var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
                 try
                 {
@@ -123,7 +137,7 @@ public class CategoryImportBackgroundService : BackgroundService
                 }
                 catch (Exception notifEx)
                 {
-                    _logger.LogError(notifEx, "Failed to send error notification");
+                    logger.LogError(notifEx, "Failed to send error notification");
                 }
             }
         }

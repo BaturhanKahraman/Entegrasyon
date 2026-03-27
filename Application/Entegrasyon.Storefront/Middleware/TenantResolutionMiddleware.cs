@@ -1,5 +1,7 @@
 using System.Net;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
+using Serilog.Context;
 
 namespace Entegrasyon.Storefront.Middleware;
 
@@ -10,7 +12,9 @@ public class TenantResolutionMiddleware(RequestDelegate next)
     public async Task InvokeAsync(
         HttpContext context,
         IStorefrontTenantResolver tenantResolver,
-        IStorefrontTenantContext tenantContext)
+        IStorefrontTenantContext storefrontTenantContext,
+        ITenantContext tenantContext,
+        ITenantRegistry tenantRegistry)
     {
         var path = context.Request.Path.Value ?? "";
         if (StaticPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
@@ -116,7 +120,19 @@ public class TenantResolutionMiddleware(RequestDelegate next)
             return;
         }
 
-        tenantContext.Initialize(tenantInfo);
-        await next(context);
+        storefrontTenantContext.Initialize(tenantInfo);
+
+        // Initialize general tenant context for DbContextFactory and managers
+        var tenantEntry = await tenantRegistry.GetByIdAsync(tenantInfo.TenantId);
+        if (tenantEntry is not null)
+        {
+            tenantContext.Initialize(tenantEntry);
+        }
+
+        using (LogContext.PushProperty("TenantId", tenantInfo.TenantId))
+        using (LogContext.PushProperty("TenantDomain", tenantInfo.Domain.DomainName))
+        {
+            await next(context);
+        }
     }
 }

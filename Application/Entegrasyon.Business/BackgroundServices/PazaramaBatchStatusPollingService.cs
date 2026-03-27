@@ -1,12 +1,12 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -15,45 +15,31 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// Pazarama ürün batch durumu periyodik polling servisi.
 /// Pending + BatchRequestId olan ProductMarketplace kayıtlarını izler.
 /// Status: 1=InProgress (bekle), 2=Done (Published/Failed), 3=Error (Failed).
+/// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class PazaramaBatchStatusPollingService(
     IServiceScopeFactory scopeFactory,
-    ILogger<PazaramaBatchStatusPollingService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<PazaramaBatchStatusPollingService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int PazaramaMarketPlaceId = MarketPlaceConstants.PazaramaMarketPlaceId;
     private const int StatusInProgress = 1;
     private const int StatusDone = 2;
     private const int StatusError = 3;
 
-    private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan BatchTimeout = TimeSpan.FromHours(24);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override TimeSpan PollInterval => TimeSpan.FromSeconds(60);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
+
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        // İlk başlatmada kısa bir bekleme — uygulama tam açılsın
-        await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollPendingBatchesAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Pazarama batch status polling failed");
-            }
-
-            await Task.Delay(PollingInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollPendingBatchesAsync(CancellationToken ct)
-    {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
-        var pazaramaService = scope.ServiceProvider.GetRequiredService<IPazaramaProductService>();
-        var activityLogger = scope.ServiceProvider.GetRequiredService<IProductActivityLogger>();
+        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var pazaramaService = services.GetRequiredService<IPazaramaProductService>();
+        var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
         var pendingRecords = await dbContext.ProductMarketplaces
             .Where(pm => pm.MarketPlaceId == PazaramaMarketPlaceId &&
@@ -63,7 +49,8 @@ public class PazaramaBatchStatusPollingService(
 
         if (pendingRecords.Count == 0) return;
 
-        logger.LogInformation("Pazarama polling: {Count} pending batch requests", pendingRecords.Count);
+        logger.LogInformation("Tenant {TenantId}: Pazarama polling: {Count} pending batch requests",
+            tenantId, pendingRecords.Count);
 
         foreach (var record in pendingRecords)
         {
@@ -74,8 +61,8 @@ public class PazaramaBatchStatusPollingService(
                 {
                     record.Status = MarketplaceProductStatus.Failed;
                     record.StatusMessage = "Pazarama batch işlemi 24 saat içinde tamamlanmadı — zaman aşımı.";
-                    logger.LogWarning("Pazarama batch {BatchId} timed out for ProductId={ProductId}",
-                        record.BatchRequestId, record.ProductId);
+                    logger.LogWarning("Tenant {TenantId}: Pazarama batch {BatchId} timed out for ProductId={ProductId}",
+                        tenantId, record.BatchRequestId, record.ProductId);
                     await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchFailed,
                         "Pazarama batch zaman aşımına uğradı (24 saat)", ProductActivityStatus.Error,
                         marketplaceName: "Pazarama", referenceId: record.BatchRequestId);
@@ -86,16 +73,17 @@ public class PazaramaBatchStatusPollingService(
                 if (!result.Success || result.Data is null)
                 {
                     logger.LogWarning(
-                        "Pazarama batch status check failed for {BatchId}, ProductId={ProductId}. Will retry next cycle.",
-                        record.BatchRequestId, record.ProductId);
+                        "Tenant {TenantId}: Pazarama batch status check failed for {BatchId}, ProductId={ProductId}. Will retry next cycle.",
+                        tenantId, record.BatchRequestId, record.ProductId);
                     continue;
                 }
 
-                await ProcessBatchResultAsync(record, result.Data, activityLogger);
+                await ProcessBatchResultAsync(tenantId, record, result.Data, activityLogger);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to check Pazarama batch status for {BatchId}", record.BatchRequestId);
+                logger.LogError(ex, "Tenant {TenantId}: Failed to check Pazarama batch status for {BatchId}",
+                    tenantId, record.BatchRequestId);
             }
         }
 
@@ -103,6 +91,7 @@ public class PazaramaBatchStatusPollingService(
     }
 
     private async Task ProcessBatchResultAsync(
+        int tenantId,
         ProductMarketplace record,
         PazaramaBatchStatusResponse batchStatus,
         IProductActivityLogger activityLogger)
@@ -111,8 +100,8 @@ public class PazaramaBatchStatusPollingService(
         {
             case StatusInProgress:
                 // Henüz işleniyor — sonraki döngüde tekrar kontrol
-                logger.LogDebug("Pazarama batch {BatchId} still in progress, will retry",
-                    record.BatchRequestId);
+                logger.LogDebug("Tenant {TenantId}: Pazarama batch {BatchId} still in progress, will retry",
+                    tenantId, record.BatchRequestId);
                 break;
 
             case StatusDone:
@@ -121,8 +110,8 @@ public class PazaramaBatchStatusPollingService(
                     record.Status = MarketplaceProductStatus.Published;
                     record.LastSyncedAt = DateTimeOffset.UtcNow;
                     record.StatusMessage = null;
-                    logger.LogInformation("Pazarama batch {BatchId} completed — ProductId={ProductId} published",
-                        record.BatchRequestId, record.ProductId);
+                    logger.LogInformation("Tenant {TenantId}: Pazarama batch {BatchId} completed — ProductId={ProductId} published",
+                        tenantId, record.BatchRequestId, record.ProductId);
 
                     await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchCompleted,
                         "Pazarama batch tamamlandı — ürün yayında",
@@ -137,8 +126,8 @@ public class PazaramaBatchStatusPollingService(
 
                     record.Status = MarketplaceProductStatus.Failed;
                     record.StatusMessage = errorMessages;
-                    logger.LogWarning("Pazarama batch {BatchId} has failures — ProductId={ProductId}: {Message}",
-                        record.BatchRequestId, record.ProductId, errorMessages);
+                    logger.LogWarning("Tenant {TenantId}: Pazarama batch {BatchId} has failures — ProductId={ProductId}: {Message}",
+                        tenantId, record.BatchRequestId, record.ProductId, errorMessages);
 
                     await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchFailed,
                         $"Pazarama batch başarısız: {errorMessages}",
@@ -150,8 +139,8 @@ public class PazaramaBatchStatusPollingService(
             case StatusError:
                 record.Status = MarketplaceProductStatus.Failed;
                 record.StatusMessage = "Pazarama batch işlemi hata ile sonuçlandı.";
-                logger.LogWarning("Pazarama batch {BatchId} errored — ProductId={ProductId}",
-                    record.BatchRequestId, record.ProductId);
+                logger.LogWarning("Tenant {TenantId}: Pazarama batch {BatchId} errored — ProductId={ProductId}",
+                    tenantId, record.BatchRequestId, record.ProductId);
 
                 await activityLogger.LogAsync(record.ProductId, ProductActivityType.BatchFailed,
                     "Pazarama batch hata ile sonuçlandı",
@@ -160,8 +149,8 @@ public class PazaramaBatchStatusPollingService(
                 break;
 
             default:
-                logger.LogWarning("Pazarama batch {BatchId} has unknown status: {Status}",
-                    record.BatchRequestId, batchStatus.Status);
+                logger.LogWarning("Tenant {TenantId}: Pazarama batch {BatchId} has unknown status: {Status}",
+                    tenantId, record.BatchRequestId, batchStatus.Status);
                 break;
         }
     }

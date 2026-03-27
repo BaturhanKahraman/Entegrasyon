@@ -1,9 +1,9 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Invoices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
@@ -15,39 +15,24 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// 1. "Shipped" durumunda + faturasi olmayan siparisler icin fatura olustur
 /// 2. Processing/Created/Sent durumundaki fatura kayitlarinin durumunu sorgula
 /// 3. Onaylanmis + marketplace'e gonderilmemis faturalarin PDF URL'ini al ve marketplace'e gonder
+/// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class TrendyolEFaturaStatusPollingService(
     IServiceScopeFactory scopeFactory,
-    ILogger<TrendyolEFaturaStatusPollingService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<TrendyolEFaturaStatusPollingService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(5);
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(5);
+    protected override string? RequiredFeature => "Permissions.Integrations.View";
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        // Baslangicta biraz bekle — diger servisler ayaga kalksin
-        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await PollAndProcessAsync(stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error during e-Fatura status polling");
-            }
-
-            await Task.Delay(PollInterval, stoppingToken);
-        }
-    }
-
-    private async Task PollAndProcessAsync(CancellationToken ct)
-    {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var eFaturaService = scope.ServiceProvider.GetRequiredService<ITrendyolEFaturaService>();
-        var invoiceService = scope.ServiceProvider.GetRequiredService<ITrendyolInvoiceService>();
+        var contextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var eFaturaService = services.GetRequiredService<ITrendyolEFaturaService>();
+        var invoiceService = services.GetRequiredService<ITrendyolInvoiceService>();
 
         await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
 
@@ -67,7 +52,8 @@ public class TrendyolEFaturaStatusPollingService(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to check invoice status for {RecordId}", record.Id);
+                logger.LogWarning(ex, "Tenant {TenantId}: Failed to check invoice status for {RecordId}",
+                    tenantId, record.Id);
             }
         }
 
@@ -88,7 +74,8 @@ public class TrendyolEFaturaStatusPollingService(
                 var pdfResult = await eFaturaService.GetInvoicePdfUrlAsync(record.Id, ct);
                 if (!pdfResult.Success || string.IsNullOrEmpty(pdfResult.Data))
                 {
-                    logger.LogWarning("PDF URL alinamadi: {RecordId}", record.Id);
+                    logger.LogWarning("Tenant {TenantId}: PDF URL alinamadi: {RecordId}",
+                        tenantId, record.Id);
                     continue;
                 }
 
@@ -113,26 +100,28 @@ public class TrendyolEFaturaStatusPollingService(
                         }
 
                         logger.LogInformation(
-                            "Invoice link sent to Trendyol marketplace. RecordId={RecordId}, PackageId={PackageId}",
-                            record.Id, record.Order.ShipmentPackageId);
+                            "Tenant {TenantId}: Invoice link sent to Trendyol marketplace. RecordId={RecordId}, PackageId={PackageId}",
+                            tenantId, record.Id, record.Order.ShipmentPackageId);
                     }
                     else
                     {
-                        logger.LogWarning("Invoice link send failed: {Message}", sendResult.Message);
+                        logger.LogWarning("Tenant {TenantId}: Invoice link send failed: {Message}",
+                            tenantId, sendResult.Message);
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to process approved invoice {RecordId}", record.Id);
+                logger.LogWarning(ex, "Tenant {TenantId}: Failed to process approved invoice {RecordId}",
+                    tenantId, record.Id);
             }
         }
 
         if (pendingRecords.Count > 0 || approvedRecords.Count > 0)
         {
             logger.LogInformation(
-                "e-Fatura poll completed. StatusChecked={Pending}, LinksSent={Approved}",
-                pendingRecords.Count, approvedRecords.Count(r => r.InvoiceLinkSentToMarketplace));
+                "Tenant {TenantId}: e-Fatura poll completed. StatusChecked={Pending}, LinksSent={Approved}",
+                tenantId, pendingRecords.Count, approvedRecords.Count(r => r.InvoiceLinkSentToMarketplace));
         }
     }
 }

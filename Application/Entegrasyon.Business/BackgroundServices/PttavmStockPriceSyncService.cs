@@ -1,56 +1,35 @@
-using System.Collections.Concurrent;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Pttavm;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 15 dakikada PttAVM'deki yayinda urunlerin stok ve fiyat bilgilerini senkronize eder.
-/// Multi-tenant hazir: ConcurrentDictionary ile tenant basina son sync zamani takip edilir.
-/// Duplicate guard: ayni istek 5dk icinde tekrar gonderilmez.
 /// </summary>
 public class PttavmStockPriceSyncService(
     IServiceScopeFactory scopeFactory,
-    ILogger<PttavmStockPriceSyncService> logger) : BackgroundService
+    ITenantRegistry tenantRegistry,
+    ILogger<PttavmStockPriceSyncService> logger)
+    : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int PttavmMarketPlaceId = MarketPlaceConstants.PttavmMarketPlaceId;
     private const int MaxBatchSize = 1000;
-    private static readonly TimeSpan SyncInterval = TimeSpan.FromMinutes(15);
 
-    // Multi-tenant: tenant basina son sync zamani (key = tenantId)
-    private readonly ConcurrentDictionary<int, DateTime> _lastSyncTime = new();
+    protected override TimeSpan PollInterval => TimeSpan.FromMinutes(15);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task PollForTenantAsync(
+        IServiceProvider services, int tenantId,
+        DateTimeOffset lastPoll, CancellationToken ct)
     {
-        await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await SyncAllPublishedProductsAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                logger.LogError(ex, "PttAVM stock/price sync cycle failed");
-            }
-
-            await Task.Delay(SyncInterval, stoppingToken);
-        }
-    }
-
-    private async Task SyncAllPublishedProductsAsync(CancellationToken ct)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        var stockPriceService = scope.ServiceProvider.GetRequiredService<IPttavmStockPriceService>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        var stockPriceService = services.GetRequiredService<IPttavmStockPriceService>();
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -65,11 +44,12 @@ public class PttavmStockPriceSyncService(
 
         if (!publishedProducts.Any())
         {
-            logger.LogDebug("PttAVM stock/price sync: yayında ürün yok");
+            logger.LogDebug("PttAVM stock/price sync: yayında ürün yok, tenant {TenantId}", tenantId);
             return;
         }
 
-        logger.LogInformation("PttAVM stock/price sync: {Count} ürün kontrol ediliyor", publishedProducts.Count);
+        logger.LogInformation("PttAVM stock/price sync: {Count} ürün kontrol ediliyor, tenant {TenantId}",
+            publishedProducts.Count, tenantId);
 
         var items = publishedProducts
             .SelectMany(pm => pm.Product.ProductVariants
@@ -87,7 +67,7 @@ public class PttavmStockPriceSyncService(
 
         if (items.Count == 0)
         {
-            logger.LogDebug("PttAVM stock/price sync: güncellenecek item yok");
+            logger.LogDebug("PttAVM stock/price sync: güncellenecek item yok, tenant {TenantId}", tenantId);
             return;
         }
 
@@ -98,15 +78,14 @@ public class PttavmStockPriceSyncService(
             var result = await stockPriceService.UpdateStockPricesAsync(batch, ct);
             if (result.Success)
             {
-                logger.LogInformation("PttAVM stock/price sync batch tamamlandı: {Count} item, trackingId={TrackingId}",
-                    batch.Count, result.Data?.TrackingId);
+                logger.LogInformation("PttAVM stock/price sync batch tamamlandı, tenant {TenantId}: {Count} item, trackingId={TrackingId}",
+                    tenantId, batch.Count, result.Data?.TrackingId);
             }
             else
             {
-                logger.LogWarning("PttAVM stock/price sync batch başarısız: {Message}", result.Message);
+                logger.LogWarning("PttAVM stock/price sync batch başarısız, tenant {TenantId}: {Message}",
+                    tenantId, result.Message);
             }
         }
-
-        _lastSyncTime[0] = DateTime.UtcNow; // tenantId=0 simdilik tek tenant
     }
 }

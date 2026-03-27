@@ -32,9 +32,13 @@ using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
+using Entegrasyon.ApplicationBootstrap.Tenants;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Labels;
+using Entegrasyon.Business.Tenants;
+using Entegrasyon.DataAccess;
+using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.ApplicationBootstrap
 {
@@ -42,7 +46,12 @@ namespace Entegrasyon.ApplicationBootstrap
     {
         public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<ITenantContext, DefaultTenantContext>();
+            services.AddScoped<ITenantContext, HttpTenantContext>();
+            services.AddScoped<TenantMemoryCache>();
+            services.AddSingleton<ITenantRegistryDataSource, AdminPanelTenantDataSource>();
+            services.AddSingleton<ITenantRegistry, TenantRegistryService>();
+            services.AddSingleton<IFeatureDataSource, AdminPanelFeatureDataSource>();
+            services.AddScoped<IFeatureService, FeatureService>();
 
             services.AddScoped<ApplicationLifetimeManager>();
             //services.AddScoped<DbContext,IntegrationDbContext>();
@@ -383,23 +392,24 @@ namespace Entegrasyon.ApplicationBootstrap
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("Main")
-                ?? configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("ConnectionString 'Main' is not configured. Check appsettings.json or environment variables.");
+            // Fallback connection string — development/single-tenant modu icin
+            var fallbackConnectionString = configuration.GetConnectionString("Main")
+                ?? configuration.GetConnectionString("DefaultConnection");
 
-            services.AddDbContextFactory<IntegrationDbContext>(x =>
+            services.AddScoped<IDbContextFactory<IntegrationDbContext>>(sp =>
             {
-                x.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                });
-                x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-#if DEBUG
-                x.EnableSensitiveDataLogging();
-                x.EnableDetailedErrors();
-                x.LogTo(z => Debug.WriteLine(z));
-#endif
+                var tenantContext = sp.GetRequiredService<ITenantContext>();
+                var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+
+                Func<string> connectionStringProvider = tenantContext.IsInitialized
+                    ? () => tenantContext.ConnectionString
+                    : () => fallbackConnectionString
+                        ?? throw new InvalidOperationException(
+                            "Tenant context is not initialized and no fallback ConnectionString configured.");
+
+                return new TenantDbContextFactory(connectionStringProvider, loggerFactory);
             });
+
             return services;
         }
 

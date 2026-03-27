@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Entegrasyon.AdminPanel.Infrastructure;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 
 namespace Entegrasyon.AdminPanel.Features.Tenants;
 
 [Authorize]
-public class TenantsController(AdminPanelDbContext dbContext) : Controller
+public class TenantsController(
+    AdminPanelDbContext dbContext,
+    TenantProvisioningService provisioningService) : Controller
 {
     private const string ViewBase = "~/Features/Tenants/Views";
 
@@ -115,6 +118,15 @@ public class TenantsController(AdminPanelDbContext dbContext) : Controller
         dbContext.Tenants.Add(tenant);
         await dbContext.SaveChangesAsync();
 
+        var provisionResult = await provisioningService.ProvisionAsync(tenant.ConnectionString);
+        if (!provisionResult.Success)
+        {
+            ModelState.AddModelError("", $"Veritabani olusturulamadi: {provisionResult.ErrorMessage}");
+            dbContext.Tenants.Remove(tenant);
+            await dbContext.SaveChangesAsync();
+            return View($"{ViewBase}/Create.cshtml", model);
+        }
+
         TempData["Success"] = "Firma başarıyla eklendi.";
         return RedirectToAction(nameof(Index));
     }
@@ -207,6 +219,43 @@ public class TenantsController(AdminPanelDbContext dbContext) : Controller
 
         var status = tenant.IsActive ? "aktif" : "pasif";
         TempData["Success"] = $"\"{tenant.CompanyName}\" {status} duruma alındı.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MigrateAll()
+    {
+        var tenants = await dbContext.Tenants
+            .Where(t => t.IsActive)
+            .ToListAsync();
+
+        var results = new List<(string Subdomain, bool Success, string? Error)>();
+
+        foreach (var tenant in tenants)
+        {
+            try
+            {
+                var result = await provisioningService.ProvisionAsync(tenant.ConnectionString);
+                results.Add((tenant.Subdomain, result.Success, result.ErrorMessage));
+            }
+            catch (Exception ex)
+            {
+                results.Add((tenant.Subdomain, false, ex.Message));
+            }
+        }
+
+        var failed = results.Where(r => !r.Success).ToList();
+        if (failed.Count == 0)
+        {
+            TempData["Success"] = $"Tüm {results.Count} tenant veritabanı güncellendi.";
+        }
+        else
+        {
+            TempData["Error"] = $"{failed.Count}/{results.Count} tenant başarısız: " +
+                                string.Join(", ", failed.Select(f => $"{f.Subdomain}: {f.Error}"));
+        }
+
         return RedirectToAction(nameof(Index));
     }
 }

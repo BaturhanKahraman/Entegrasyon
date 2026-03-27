@@ -151,6 +151,59 @@ namespace Entegrasyon.AdminPanel.Migrations
                     b.ToTable("ApplicationLogs");
                 });
 
+            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.FeaturePackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("MonthlyPrice")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("FeaturePackages");
+                });
+
+            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.FeaturePackagePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FeaturePackageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PermissionKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeaturePackageId");
+
+                    b.ToTable("FeaturePackagePermissions");
+                });
+
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.Tenant", b =>
                 {
                     b.Property<int>("Id")
@@ -242,6 +295,42 @@ namespace Entegrasyon.AdminPanel.Migrations
                     b.ToTable("TenantLicenses");
                 });
 
+            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.TenantSubscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FeaturePackageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeaturePackageId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("TenantSubscriptions");
+                });
+
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.AiCreditAccount", b =>
                 {
                     b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.Tenant", "Tenant")
@@ -275,6 +364,17 @@ namespace Entegrasyon.AdminPanel.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.FeaturePackagePermission", b =>
+                {
+                    b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.FeaturePackage", "Package")
+                        .WithMany("Permissions")
+                        .HasForeignKey("FeaturePackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+                });
+
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.TenantLicense", b =>
                 {
                     b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.Tenant", "Tenant")
@@ -286,9 +386,35 @@ namespace Entegrasyon.AdminPanel.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.TenantSubscription", b =>
+                {
+                    b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.FeaturePackage", "Package")
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("FeaturePackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.AiCreditAccount", b =>
                 {
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.FeaturePackage", b =>
+                {
+                    b.Navigation("Permissions");
+
+                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.Tenant", b =>

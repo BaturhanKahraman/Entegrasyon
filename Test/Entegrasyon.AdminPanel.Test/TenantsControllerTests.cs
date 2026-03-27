@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Entegrasyon.AdminPanel.Features.Tenants;
+using Entegrasyon.AdminPanel.Infrastructure;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 
 namespace Entegrasyon.AdminPanel.Test;
@@ -9,7 +12,13 @@ public class TenantsControllerTests : TestBase
 {
     private TenantsController CreateController()
     {
-        var controller = new TenantsController(DbContext);
+        var mockProvisioningService = new Mock<TenantProvisioningService>(
+            Mock.Of<ILogger<TenantProvisioningService>>());
+        mockProvisioningService
+            .Setup(s => s.ProvisionAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProvisionResult(true));
+
+        var controller = new TenantsController(DbContext, mockProvisioningService.Object);
         SetupControllerContext(controller);
         return controller;
     }
