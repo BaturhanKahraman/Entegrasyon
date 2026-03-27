@@ -22,6 +22,9 @@ public sealed class HttpTenantContext : ITenantContext
     public void Initialize(TenantRegistryEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        if (_entry is not null)
+            throw new InvalidOperationException(
+                $"Tenant context already initialized with TenantId={_entry.TenantId}. Cannot re-initialize with TenantId={entry.TenantId}.");
         _entry = entry;
     }
 

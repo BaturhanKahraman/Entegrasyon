@@ -401,9 +401,9 @@ namespace Entegrasyon.ApplicationBootstrap
                 var tenantContext = sp.GetRequiredService<ITenantContext>();
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-                Func<string> connectionStringProvider = tenantContext.IsInitialized
-                    ? () => tenantContext.ConnectionString
-                    : () => fallbackConnectionString
+                Func<string> connectionStringProvider = () => tenantContext.IsInitialized
+                    ? tenantContext.ConnectionString
+                    : fallbackConnectionString
                         ?? throw new InvalidOperationException(
                             "Tenant context is not initialized and no fallback ConnectionString configured.");
 
