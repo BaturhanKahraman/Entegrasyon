@@ -3,13 +3,13 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Dashboard;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Entegrasyon.Business.Tenants;
 
 namespace Entegrasyon.Business.Concrete;
 
 public class DashboardManager(
     IDbContextFactory<IntegrationDbContext> dbContextFactory,
-    IMemoryCache cache) : IDashboardManager
+    TenantMemoryCache cache) : IDashboardManager
 {
     private const string StatsQuery = """
         SELECT json_build_object(

@@ -9,14 +9,14 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, IMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, IMemoryCache cache)
+public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, IMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache)
     : IBrandService
 {
     private const string brandListCacheKey = "brands:list";

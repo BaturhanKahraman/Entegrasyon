@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
@@ -16,7 +16,7 @@ namespace Entegrasyon.Business.Concrete.Trendyol;
 public sealed class TrendyolSupplierAddressCache(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     ITrendyolApiClient apiClient,
-    IMemoryCache memoryCache,
+    TenantMemoryCache memoryCache,
     ILogger<TrendyolSupplierAddressCache> logger)
 {
     private const string CacheKey = "TrendyolSupplierAddresses";

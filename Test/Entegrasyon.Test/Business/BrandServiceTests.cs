@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
@@ -12,10 +13,12 @@ public class BrandServiceTests : BaseTest
 {
     private readonly BrandService _sut;
     private readonly Mock<IMapper> _mockMapper = new();
-    private readonly Mock<IMemoryCache> _mockCache = new();
+    private readonly TenantMemoryCache _tenantCache;
 
     public BrandServiceTests()
     {
+        _tenantCache = new TenantMemoryCache(new MemoryCache(new MemoryCacheOptions()), mockTenantContext.Object);
+
         MockValidator = new Mock<IFluentValidator>();
         MockValidator
             .Setup(v => v.ValidateAndThrowAsync(It.IsAny<AddBrandDto>()))
@@ -24,15 +27,6 @@ public class BrandServiceTests : BaseTest
         _mockMapper
             .Setup(m => m.Map<AddBrandDto, Brand>(It.IsAny<AddBrandDto>()))
             .Returns((AddBrandDto dto) => new Brand { Name = dto.Name });
-
-        // Cache always misses
-        object? cacheValue = null;
-        _mockCache
-            .Setup(c => c.TryGetValue(It.IsAny<object>(), out cacheValue))
-            .Returns(false);
-        _mockCache
-            .Setup(c => c.CreateEntry(It.IsAny<object>()))
-            .Returns(Mock.Of<ICacheEntry>());
 
         mockIntegrationDbContext
             .Setup(x => x.Brands)
@@ -46,7 +40,7 @@ public class BrandServiceTests : BaseTest
             mockApplicationLogger.Object,
             _mockMapper.Object,
             mockContextFactory.Object,
-            _mockCache.Object);
+            _tenantCache);
     }
 
     [Fact]

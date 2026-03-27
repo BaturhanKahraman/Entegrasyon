@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Trendyol;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Entity;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -18,12 +19,17 @@ public class TrendyolSupplierAddressCacheTests : Entegrasyon.UnitTest.BaseTest
 {
     private readonly Mock<ITrendyolApiClient> _apiClientMock = new();
     private readonly Mock<ILogger<TrendyolSupplierAddressCache>> _loggerMock = new();
-    private readonly MemoryCache _realCache = new(new MemoryCacheOptions());
+    private readonly TenantMemoryCache _tenantCache;
+
+    public TrendyolSupplierAddressCacheTests()
+    {
+        _tenantCache = new TenantMemoryCache(new MemoryCache(new MemoryCacheOptions()), mockTenantContext.Object);
+    }
 
     private TrendyolSupplierAddressCache CreateSut() => new(
         mockContextFactory.Object,
         _apiClientMock.Object,
-        _realCache,
+        _tenantCache,
         _loggerMock.Object);
 
     private void SetupMarketPlace(string? sellerId = "12345")

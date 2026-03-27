@@ -7,15 +7,15 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.User;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Entegrasyon.Business.Utilities;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Entity.Results;
 namespace Entegrasyon.Business.Concrete.Auth
 {
     public class RoleService(
         IApplicationLogManager applicationLogManager,
         IDbContextFactory<IntegrationDbContext> contextFactory,
-        IMemoryCache cache,
+        TenantMemoryCache cache,
         IValidator<AddRoleDto> addRoleDtoValidator,
         IValidator<EditRoleDto> editRoleDtoValidator) : IRoleService
     {
@@ -111,7 +111,7 @@ namespace Entegrasyon.Business.Concrete.Auth
                 return roles;
             await using var context = await contextFactory.CreateDbContextAsync();
             roles = await context.Roles.Select(r => new Role() { Id = r.Id, Name = r.Name }).ToListAsync(token);
-            cache.Set(SelectListCache, roles);
+            cache.Set(SelectListCache, roles, TimeSpan.FromMinutes(30));
             return roles;
         }
     }

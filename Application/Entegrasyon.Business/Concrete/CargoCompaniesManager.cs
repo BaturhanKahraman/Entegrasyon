@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
-using Microsoft.Extensions.Caching.Memory;
+using Entegrasyon.Business.Tenants;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -18,7 +18,7 @@ public class CargoCompaniesManager(
     IFluentValidator validator,
     IApplicationLogManager applicationLogManager,
     IMapper mapper,
-    IMemoryCache memoryCache) : ICargoCompaniesManager
+    TenantMemoryCache memoryCache) : ICargoCompaniesManager
 {
     private const string CacheKey = "CargoCompanies_All";
 
@@ -29,7 +29,7 @@ public class CargoCompaniesManager(
 
         using var dbContext = contextFactory.CreateDbContext();
         var result = await dbContext.CargoCompanies.AsNoTracking().ToListAsync();
-        memoryCache.Set(CacheKey, result);
+        memoryCache.Set(CacheKey, result, TimeSpan.FromMinutes(30));
         return new SuccessDataResult<List<CargoCompany>>(result);
     }
 

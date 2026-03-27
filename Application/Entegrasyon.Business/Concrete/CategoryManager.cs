@@ -5,8 +5,8 @@ using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Entegrasyon.Entity.Results;
+using Entegrasyon.Business.Tenants;
 using System.Linq.Expressions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -17,7 +17,7 @@ using System.Linq.Dynamic.Core;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, IProductService productService, IMemoryCache cache) : ICategoryService
+    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, IProductService productService, TenantMemoryCache cache) : ICategoryService
     {
         private const string CategoryListCacheKey = "categories:list";
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
