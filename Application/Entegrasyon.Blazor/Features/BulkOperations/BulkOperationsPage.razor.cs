@@ -187,8 +187,9 @@ public partial class BulkOperationsPage : ComponentBase
 
     private async Task DownloadFileAsync(byte[] fileBytes, string fileName)
     {
-        var base64 = Convert.ToBase64String(fileBytes);
-        await JsRuntime.InvokeVoidAsync("downloadFile", fileName, base64);
+        using var stream = new MemoryStream(fileBytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 
     private static string GetImportTitle(BulkOperationType type) => type switch
