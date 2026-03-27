@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Tenants;
 using Microsoft.AspNetCore.Hosting;
+using Serilog.Context;
 
 namespace Entegrasyon.Blazor.Middleware;
 
@@ -54,7 +55,11 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
         }
 
         tenantContext.Initialize(tenant);
-        await next(context);
+        using (LogContext.PushProperty("TenantId", tenant.TenantId))
+        using (LogContext.PushProperty("TenantSubdomain", tenant.Subdomain))
+        {
+            await next(context);
+        }
     }
 
     /// <summary>
