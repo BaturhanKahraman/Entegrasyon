@@ -58,6 +58,20 @@ public class HttpTenantContextTests
     }
 
     [Fact]
+    public void Initialize_WhenAlreadyInitialized_ThrowsInvalidOperationException()
+    {
+        var context = new HttpTenantContext();
+        var entry1 = new TenantRegistryEntry(1, "t1", "T1", "c1", true, null);
+        var entry2 = new TenantRegistryEntry(2, "t2", "T2", "c2", true, null);
+
+        context.Initialize(entry1);
+        var act = () => context.Initialize(entry2);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*already initialized*");
+    }
+
+    [Fact]
     public void GetMarketPlaceId_ThrowsInvalidOperationException()
     {
         var context = new HttpTenantContext();

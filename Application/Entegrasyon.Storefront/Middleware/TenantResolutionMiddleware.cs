@@ -124,10 +124,13 @@ public class TenantResolutionMiddleware(RequestDelegate next)
 
         // Initialize general tenant context for DbContextFactory and managers
         var tenantEntry = await tenantRegistry.GetByIdAsync(tenantInfo.TenantId);
-        if (tenantEntry is not null)
+        if (tenantEntry is null)
         {
-            tenantContext.Initialize(tenantEntry);
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            await context.Response.WriteAsync("Magaza gecici olarak kullanilamiyor.");
+            return;
         }
+        tenantContext.Initialize(tenantEntry);
 
         using (LogContext.PushProperty("TenantId", tenantInfo.TenantId))
         using (LogContext.PushProperty("TenantDomain", tenantInfo.Domain.DomainName))
