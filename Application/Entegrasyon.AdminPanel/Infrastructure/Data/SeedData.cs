@@ -4,10 +4,11 @@ namespace Entegrasyon.AdminPanel.Infrastructure.Data;
 
 public static class SeedData
 {
-    public static void Initialize(AdminPanelDbContext context)
+    public static void Initialize(AdminPanelDbContext context, string? mainConnectionString = null)
     {
         SeedAdminUser(context);
         SeedFeaturePackages(context);
+        SeedDevelopmentTenant(context, mainConnectionString);
     }
 
     private static void SeedAdminUser(AdminPanelDbContext context)
@@ -82,5 +83,39 @@ public static class SeedData
 
         context.FeaturePackages.AddRange(starter, pro, enterprise);
         context.SaveChanges();
+    }
+
+    private static void SeedDevelopmentTenant(AdminPanelDbContext context, string? mainConnectionString)
+    {
+        if (context.Tenants.Any(t => t.Subdomain == "dev")) return;
+
+        var devTenant = new Tenant
+        {
+            CompanyName = "Development Tenant",
+            Subdomain = "dev",
+            ContactEmail = "dev@entegrasyon.local",
+            ConnectionString = mainConnectionString
+                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=postgres;Password=postgres",
+            DatabaseType = "PostgreSQL",
+            IsActive = true,
+            UserCount = 1,
+            Notes = "Auto-created development tenant"
+        };
+        context.Tenants.Add(devTenant);
+        context.SaveChanges();
+
+        var proPackage = context.FeaturePackages.FirstOrDefault(p => p.Name == "Pro");
+        if (proPackage is not null)
+        {
+            context.TenantSubscriptions.Add(new TenantSubscription
+            {
+                TenantId = devTenant.Id,
+                FeaturePackageId = proPackage.Id,
+                StartDate = DateTime.UtcNow,
+                EndDate = null,
+                IsActive = true
+            });
+            context.SaveChanges();
+        }
     }
 }

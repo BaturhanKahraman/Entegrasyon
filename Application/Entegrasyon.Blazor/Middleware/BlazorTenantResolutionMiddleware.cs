@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Tenants;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Entegrasyon.Blazor.Middleware;
 
@@ -27,11 +28,20 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
         var host = context.Request.Host.Host;
         var subdomain = ExtractSubdomain(host);
 
+        // Development fallback: localhost without subdomain uses "dev" tenant
         if (string.IsNullOrEmpty(subdomain))
         {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync("Tenant bulunamadi.");
-            return;
+            var env = context.RequestServices.GetService<IWebHostEnvironment>();
+            if (env?.IsDevelopment() == true)
+            {
+                subdomain = "dev";
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync("Tenant bulunamadi.");
+                return;
+            }
         }
 
         var tenant = await tenantRegistry.GetBySubdomainAsync(subdomain);
