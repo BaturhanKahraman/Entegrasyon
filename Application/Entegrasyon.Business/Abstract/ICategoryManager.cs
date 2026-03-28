@@ -36,6 +36,7 @@ public interface ICategoryService
     Task<IDataResult<CategoryEditPageDto>> GetCategoryEditPageData(int categoryId);
     Task RefreshCategorySummaryAsync();
     Task<List<Category>> GetLeafCategoriesAsync();
+    Task<bool> IsLeafCategoryAsync(int categoryId);
 
     // Storefront
     Task<IDataResult<Category>> GetCategoryBySeoSlugAsync(string slug);

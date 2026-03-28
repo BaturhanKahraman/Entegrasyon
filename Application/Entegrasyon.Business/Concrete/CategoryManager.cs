@@ -285,12 +285,19 @@ namespace Entegrasyon.Business.Concrete
             return result;
         }
 
+        public async Task<bool> IsLeafCategoryAsync(int categoryId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return !await dbContext.Categories.AnyAsync(c => c.SuperCategoryId == categoryId && !c.IsDeleted);
+        }
+
         public async Task<List<Category>> GetValidParentCandidatesAsync()
         {
             using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories
                 .AsNoTracking()
                 .Where(c => !c.CategoryAttributes.Any())
+                .Where(c => !c.MarketplaceLinks.Any(m => m.IsActive))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -309,6 +316,7 @@ namespace Entegrasyon.Business.Concrete
                 .AsNoTracking()
                 .Where(c => !descendantIds.Contains(c.Id))
                 .Where(c => !c.CategoryAttributes.Any())
+                .Where(c => !c.MarketplaceLinks.Any(m => m.IsActive))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
