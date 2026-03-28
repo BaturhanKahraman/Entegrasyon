@@ -288,7 +288,7 @@ namespace Entegrasyon.Business.Concrete
         public async Task<bool> IsLeafCategoryAsync(int categoryId)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            return !await dbContext.Categories.AnyAsync(c => c.SuperCategoryId == categoryId && !c.IsDeleted);
+            return !await dbContext.Categories.AsNoTracking().AnyAsync(c => c.SuperCategoryId == categoryId && !c.IsDeleted);
         }
 
         public async Task<List<Category>> GetValidParentCandidatesAsync()
@@ -360,7 +360,7 @@ namespace Entegrasyon.Business.Concrete
                 return new ErrorDataResult<CategoryEditPageDto>(null!, Messages.CategoryNotFound);
 
             var isLeaf = !await dbContext.Categories
-                .AnyAsync(c => c.SuperCategoryId == categoryId);
+                .AnyAsync(c => c.SuperCategoryId == categoryId && !c.IsDeleted);
 
             var descendantIds = await GetDescendantIdsAsync(dbContext, categoryId);
             descendantIds.Add(categoryId);
