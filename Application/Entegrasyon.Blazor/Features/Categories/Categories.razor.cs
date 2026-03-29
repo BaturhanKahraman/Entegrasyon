@@ -45,27 +45,10 @@ public partial class Categories
         await OnCategorySelected(category);
     }
 
-    private async Task OpenAddCategoryDialog()
+    private Task OpenAddCategoryDialog()
     {
-        var parameters = new DialogParameters<CategoryDialog>
-        {
-            { x => x.IsEditMode, false }
-        };
-
-        var options = new DialogOptions
-        {
-            MaxWidth = MaxWidth.Medium,
-            FullWidth = true,
-            CloseButton = true
-        };
-
-        var dialog = await DialogService.ShowAsync<CategoryDialog>("Yeni Kategori Ekle", parameters, options);
-        var result = await dialog.Result;
-
-        if (!result!.Canceled)
-        {
-            await LoadCategories();
-        }
+        NavigationManager.NavigateTo("/categories/add");
+        return Task.CompletedTask;
     }
 
     private Task EditSelectedCategory()
