@@ -20,6 +20,8 @@ public partial class BulkCategoryMatchPage
     private List<Category> _unmappedCategories = [];
     private HashSet<Category> _selectedCategories = [];
     private Dictionary<int, MarketplaceCategorySearchResult?> _mappingAssignments = new();
+    private Dictionary<int, int> _matchedCountPerMarketplace = new();
+    private int _totalLeafCount;
     private bool _isLoadingMarketplaces = true;
     private bool _isLoadingCategories;
     private bool _isSubmitting;
@@ -38,7 +40,25 @@ public partial class BulkCategoryMatchPage
         var result = await MarketPlaceManager.GetAllAsync();
         if (result.Success && result.Data is not null)
             _marketplaces = result.Data.Select(mp => new MarketplaceOption(mp.Id, mp.Name)).ToList();
+
+        await LoadMatchCounts();
         _isLoadingMarketplaces = false;
+    }
+
+    private async Task LoadMatchCounts()
+    {
+        var allCategories = await CategoryService.GetAllCategoriesWithHierarchyAsync();
+        var parentIds = allCategories
+            .Where(c => c.SuperCategoryId.HasValue)
+            .Select(c => c.SuperCategoryId!.Value)
+            .ToHashSet();
+        _totalLeafCount = allCategories.Count(c => !parentIds.Contains(c.Id));
+
+        foreach (var mp in _marketplaces)
+        {
+            var mappings = await CategoryMatchService.GetAllCategoryMappingsAsync(mp.Id);
+            _matchedCountPerMarketplace[mp.Id] = mappings.Count;
+        }
     }
 
     private async Task OnMarketplaceChanged(MarketplaceOption? marketplace)
@@ -59,8 +79,18 @@ public partial class BulkCategoryMatchPage
         var existingMappings = await CategoryMatchService.GetAllCategoryMappingsAsync(marketPlaceId);
         var mappedCategoryIds = existingMappings.Select(m => m.ApplicationCategoryId).ToHashSet();
 
-        _unmappedCategories = allCategories
+        var unmappedList = allCategories
             .Where(c => !mappedCategoryIds.Contains(c.Id))
+            .ToList();
+
+        // Filter to leaf categories only (exclude parents that have children)
+        var parentIds = allCategories
+            .Where(c => c.SuperCategoryId.HasValue)
+            .Select(c => c.SuperCategoryId!.Value)
+            .ToHashSet();
+
+        _unmappedCategories = unmappedList
+            .Where(c => !parentIds.Contains(c.Id))
             .OrderBy(c => c.Name)
             .ToList();
 

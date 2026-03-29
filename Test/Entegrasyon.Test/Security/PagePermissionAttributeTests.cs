@@ -96,7 +96,7 @@ public class PagePermissionAttributeTests
         // Marketplace Sync
         { "Entegrasyon.Blazor.Features.MarketplaceSync.SyncOverview", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MarketplaceSync.CategorySync", AppPermissions.Marketplace.View },
-        { "Entegrasyon.Blazor.Features.MarketplaceSync.AttributeSync", AppPermissions.Marketplace.View },
+        { "Entegrasyon.Blazor.Features.MarketplaceSync.AttributeSync.AttributeSyncPage", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MarketplaceSync.BrandMappingPage", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MarketplaceSync.BulkCategoryMatch.BulkCategoryMatchPage", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MarketplaceSync.CommissionRates.CommissionRatesPage", AppPermissions.Marketplace.View },

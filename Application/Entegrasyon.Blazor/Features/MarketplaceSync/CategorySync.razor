@@ -187,19 +187,29 @@
                     <TemplateColumn Title="İşlemler">
                         <CellTemplate>
                             <MudStack Row="true" Spacing="1">
-                                <MudButton Variant="Variant.Text"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           StartIcon="@Icons.Material.Filled.Link"
-                                           OnClick="@(() => OpenRowMappingDialog(context.Item))">
-                                    Eşleştir
-                                </MudButton>
-                                @if (context.Item.MarketplaceLinks?.Any() == true)
+                                @if (context.Item.MarketplaceLinks?.Any(l => l.IsActive) == true)
                                 {
+                                    <MudButton Variant="Variant.Text"
+                                               Color="Color.Secondary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Tune"
+                                               OnClick="@(() => NavigateToAttributeMatch(context.Item.Id, context.Item.MarketplaceLinks.First(l => l.IsActive).MarketPlaceId))">
+                                        Attribute Eşleştir
+                                    </MudButton>
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                    Color="Color.Error"
                                                    Size="Size.Small"
                                                    OnClick="@(() => DeleteMapping(context.Item))" />
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Text"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Link"
+                                               OnClick="@(() => OpenRowMappingDialog(context.Item))">
+                                        Eşleştir
+                                    </MudButton>
                                 }
                             </MudStack>
                         </CellTemplate>

@@ -32,7 +32,9 @@
                        ValueChanged="OnMarketplaceChanged">
                 @foreach (var mp in _marketplaces)
                 {
-                    <MudSelectItem @key="mp.Id" T="MarketplaceOption" Value="mp">@mp.Name</MudSelectItem>
+                    <MudSelectItem @key="mp.Id" T="MarketplaceOption" Value="mp">
+                        @mp.Name (@(_matchedCountPerMarketplace.TryGetValue(mp.Id, out var cnt) ? cnt : 0)/@_totalLeafCount)
+                    </MudSelectItem>
                 }
             </MudSelect>
         </MudPaper>
