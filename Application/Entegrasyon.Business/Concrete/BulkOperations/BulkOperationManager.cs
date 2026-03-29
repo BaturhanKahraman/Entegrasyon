@@ -14,9 +14,9 @@ namespace Entegrasyon.Business.Concrete.BulkOperations;
 
 public sealed class BulkOperationManager(
     IDbContextFactory<IntegrationDbContext> dbContextFactory,
-    ExcelParser excelParser,
-    CsvParser csvParser,
-    ProductImportValidator importValidator,
+    IExcelParser excelParser,
+    ICsvParser csvParser,
+    IProductImportValidator importValidator,
     IApplicationLogManager applicationLogManager,
     ILogger<BulkOperationManager> logger) : IBulkOperationManager
 {

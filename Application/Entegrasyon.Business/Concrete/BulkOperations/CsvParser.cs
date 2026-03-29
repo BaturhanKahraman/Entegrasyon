@@ -1,9 +1,10 @@
 using System.Text;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete.BulkOperations;
 
-public class CsvParser
+public class CsvParser : ICsvParser
 {
     private const char Separator = ';';
 

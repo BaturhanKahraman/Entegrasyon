@@ -1,8 +1,9 @@
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.BulkOperations;
 
 namespace Entegrasyon.Business.Concrete.BulkOperations;
 
-public class ProductImportValidator
+public class ProductImportValidator : IProductImportValidator
 {
     private static readonly HashSet<decimal> ValidVatRates = [0, 1, 2, 4, 8, 10, 18, 20];
 

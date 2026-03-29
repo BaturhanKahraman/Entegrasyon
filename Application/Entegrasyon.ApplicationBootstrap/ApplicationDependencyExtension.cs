@@ -105,9 +105,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IPOSSessionManager, POSSessionManager>();
 
             // Toplu İşlem servisleri
-            services.AddScoped<ExcelParser>();
-            services.AddScoped<CsvParser>();
-            services.AddScoped<ProductImportValidator>();
+            services.AddScoped<IExcelParser, ExcelParser>();
+            services.AddScoped<ICsvParser, CsvParser>();
+            services.AddScoped<IProductImportValidator, ProductImportValidator>();
             services.AddScoped<IBulkOperationManager, BulkOperationManager>();
 
             // Etiket & Fiş servisleri
