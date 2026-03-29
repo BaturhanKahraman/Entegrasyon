@@ -7,13 +7,13 @@ using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
-using MapsterMapper;
+using Entegrasyon.Business.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, IMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory) : ICategoryAttributeManager
+public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, CategoryAttributeMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory) : ICategoryAttributeManager
 {
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {
@@ -183,7 +183,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
     {
         using var dbContext = contextFactory.CreateDbContext();
         await fluentValidator.ValidateAndThrowAsync(dto);
-        var categoryAttr = mapper.Map<CategoryAttribute>(dto);
+        var categoryAttr = mapper.MapToEntity(dto);
         dbContext.CategoryAttributes.Add(categoryAttr);
         await dbContext.SaveChangesAsync();
         return new SuccessResult();
