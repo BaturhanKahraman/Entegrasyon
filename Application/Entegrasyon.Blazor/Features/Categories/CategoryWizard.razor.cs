@@ -12,7 +12,6 @@ public partial class CategoryWizard
 
     [Inject] private ICategoryService CategoryService { get; set; } = null!;
     [Inject] private ICategoryAttributeCategoryManager CategoryAttributeManager { get; set; } = null!;
-    [Inject] private ICategoryMatchService CategoryMatchService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
@@ -35,9 +34,6 @@ public partial class CategoryWizard
 
     // Attributes step state
     private List<AttributeModel> _attributes = [];
-
-    // Marketplace step state
-    private int? _selectedMarketplaceId;
 
     // Saved category ID (set after save so marketplace step can use it)
     private int? _savedCategoryId;
@@ -198,22 +194,10 @@ public partial class CategoryWizard
                 }
             }
 
-            // Save marketplace mapping if selected
-            var mappingDto = _marketplaceStep?.GetMappingDto();
-            if (mappingDto is not null)
-            {
-                mappingDto = mappingDto with { ApplicationCategoryId = categoryId };
-                var mappingResult = await CategoryMatchService.CreateCategoryMappingAsync(mappingDto);
-                if (!mappingResult.Success)
-                {
-                    Snackbar.Add(mappingResult.Message ?? "Pazar yeri eşleştirmesi kaydedilemedi.", Severity.Warning);
-                }
-            }
-
             _isDirty = false;
             Snackbar.Add(IsEditMode ? "Kategori güncellendi." : "Kategori eklendi.", Severity.Success);
 
-            await NavigateAfterSave(categoryId);
+            NavigateAfterSave(categoryId);
         }
         finally
         {
@@ -238,25 +222,15 @@ public partial class CategoryWizard
         }).ToList();
     }
 
-    private async Task NavigateAfterSave(int categoryId)
+    private void NavigateAfterSave(int categoryId)
     {
-        if (_selectedMarketplaceId.HasValue && _marketplaceStep?.HasMapping == true)
+        if (_marketplaceStep?.RedirectToMatching == true)
         {
-            var confirmed = await DialogService.ShowMessageBox(
-                "Özellik Eşleştirme",
-                "Özellik eşleştirmesine geçmek ister misiniz?",
-                yesText: "Evet",
-                noText: "Hayır");
-
-            if (confirmed == true)
-            {
-                NavigationManager.NavigateTo(
-                    $"/attributes?categoryId={categoryId}&marketplaceId={_selectedMarketplaceId.Value}");
-                return;
-            }
+            NavigationManager.NavigateTo($"/marketplace-sync/categories?categoryId={categoryId}", replace: true);
+            return;
         }
 
-        NavigationManager.NavigateTo("/categories");
+        NavigationManager.NavigateTo("/categories", replace: true);
     }
 
     private async Task Cancel()
