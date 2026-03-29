@@ -15,13 +15,14 @@ public partial class CategorySync
     [Inject] private ICategoryMatchValidationService ValidationService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
 
     private List<Category> _categories = [];
     private CategoryMatchSummaryDto _summary = new();
     private Dictionary<int, CategoryMatchValidationResultDto> _validationResults = new();
     private bool _isLoading = true;
     private bool _showUnmappedOnly;
-    private bool _showLeafOnly;
+    private bool _showLeafOnly = true;
 
     private IEnumerable<Category> FilteredCategories
     {
@@ -122,6 +123,11 @@ public partial class CategorySync
     private bool IsLeaf(Category category)
     {
         return !_categories.Any(c => c.SuperCategoryId == category.Id);
+    }
+
+    private void NavigateToAttributeMatch(int categoryId, int marketPlaceId)
+    {
+        NavigationManager.NavigateTo($"/marketplace/sync/attributes?marketplaceId={marketPlaceId}&categoryId={categoryId}");
     }
 
     private async Task OpenSaveTemplateDialog()
