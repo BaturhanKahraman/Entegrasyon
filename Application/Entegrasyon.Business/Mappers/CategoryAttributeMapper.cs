@@ -4,7 +4,7 @@ using Riok.Mapperly.Abstractions;
 
 namespace Entegrasyon.Business.Mappers;
 
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
 public partial class CategoryAttributeMapper
 {
     [MapperIgnoreTarget(nameof(CategoryAttribute.Categories))]

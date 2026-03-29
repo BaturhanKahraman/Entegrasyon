@@ -25,8 +25,15 @@
                     @foreach (var notification in _recentNotifications)
                     {
                         <MudListItem @key="notification.Id" T="Notification" Class="@(notification.IsRead ? "" : "mud-background-gray")">
-                            <NotificationItem Notification="@notification"
-                                              OnMarkAsRead="MarkAsRead" />
+                            <div class="d-flex align-center">
+                                <div class="flex-grow-1">
+                                    <NotificationItem Notification="@notification"
+                                                      OnMarkAsRead="MarkAsRead" />
+                                </div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                                               Color="Color.Default" aria-label="Gizle"
+                                               OnClick="@(() => DismissFromBell(notification))" />
+                            </div>
                         </MudListItem>
                         <MudDivider />
                     }

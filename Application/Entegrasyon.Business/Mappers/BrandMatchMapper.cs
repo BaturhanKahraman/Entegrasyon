@@ -1,6 +1,24 @@
+using Entegrasyon.Entity.Brands;
+using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Matches;
 using Riok.Mapperly.Abstractions;
 
 namespace Entegrasyon.Business.Mappers;
 
-[Mapper]
-public partial class BrandMatchMapper { }
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
+public partial class BrandMatchMapper
+{
+    [MapProperty("ApplicationBrand.Name", nameof(BrandMarketPlaceMatchDto.ApplicationBrandName))]
+    [MapperIgnoreTarget(nameof(BrandMarketPlaceMatchDto.MarketPlaceBrandName))]
+    public partial BrandMarketPlaceMatchDto MapToDto(BrandMarketPlaceMatch src);
+
+    public partial BrandMarketPlaceMatch MapToEntity(CreateBrandMarketPlaceMatchDto dto);
+
+    public List<BrandMarketPlaceMatchDto> MapToDtoList(List<BrandMarketPlaceMatch> src)
+        => src.Select(x =>
+        {
+            var dto = MapToDto(x);
+            dto.MarketPlaceBrandName = string.Empty; // TODO: resolve from external API
+            return dto;
+        }).ToList();
+}
