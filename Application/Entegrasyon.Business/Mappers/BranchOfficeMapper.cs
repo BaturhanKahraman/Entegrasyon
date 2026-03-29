@@ -4,7 +4,7 @@ using Riok.Mapperly.Abstractions;
 
 namespace Entegrasyon.Business.Mappers;
 
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
 public partial class BranchOfficeMapper
 {
     public partial BranchOffice MapToEntity(BranchOfficeAddDto dto);

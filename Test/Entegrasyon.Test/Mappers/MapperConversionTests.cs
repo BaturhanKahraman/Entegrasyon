@@ -12,6 +12,7 @@ using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity.Matches;
 using Entegrasyon.Entity.Products;
+using ProductMapper = Entegrasyon.Business.Mappers.ProductMapper;
 using Entegrasyon.Entity.Sales;
 using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Dtos.Settings;
@@ -169,5 +170,48 @@ public class MapperConversionTests
         var dto = new CustomerAddDto("1234567890", "", "Acme", "", "Acme Ltd", "555", "Istanbul", "Corporate");
         var entity = mapper.MapToCorporate(dto);
         entity.TaxNumber.Should().Be("1234567890");
+    }
+
+    // ── Task 7: ProductMapper ────────────────────────────────────────────────
+    [Fact]
+    public void ProductMapper_VatRateNull_DefaultsToZero()
+    {
+        var mapper = new ProductMapper();
+        var dto = new AddProductVariantDto { VatRate = null, CurrencyType = "TRY", Barcode = "123" };
+        var variant = mapper.MapToEntity(dto);
+        variant.VatRate.Should().Be(0m);
+    }
+
+    [Fact]
+    public void ProductMapper_VatRateSet_PreservesValue()
+    {
+        var mapper = new ProductMapper();
+        var dto = new AddProductVariantDto { VatRate = 18m, CurrencyType = "TRY", Barcode = "123" };
+        var variant = mapper.MapToEntity(dto);
+        variant.VatRate.Should().Be(18m);
+    }
+
+    // ── Task 8: UserMapper ───────────────────────────────────────────────────
+    [Fact]
+    public void UserMapper_AddUserDto_MapsBranchOfficeIdToDefaultBranchOfficeId()
+    {
+        var mapper = new UserMapper();
+        var dto = new AddUserDto { BranchOfficeId = 42, UserName = "test", Email = "t@t.com" };
+        var user = mapper.MapToEntity(dto);
+        user.DefaultBranchOfficeId.Should().Be(42);
+    }
+
+    // ── Task 10: BrandMatchMapper ────────────────────────────────────────────
+    [Fact]
+    public void BrandMatchMapper_MapToDto_ReadsApplicationBrandName()
+    {
+        var mapper = new BrandMatchMapper();
+        var entity = new BrandMarketPlaceMatch
+        {
+            ApplicationBrand = new Brand { Name = "Nike" }
+        };
+        var dto = mapper.MapToDto(entity);
+        dto.ApplicationBrandName.Should().Be("Nike");
+        dto.MarketPlaceBrandName.Should().BeNull(); // MapperIgnoreTarget leaves it null; MapToDtoList sets it to string.Empty
     }
 }

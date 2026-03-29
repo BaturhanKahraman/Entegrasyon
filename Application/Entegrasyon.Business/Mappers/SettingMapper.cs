@@ -4,7 +4,7 @@ using Riok.Mapperly.Abstractions;
 
 namespace Entegrasyon.Business.Mappers;
 
-[Mapper]
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
 public static partial class SettingMapper
 {
     public static partial ApplicationSettingDto MapToDto(ApplicationSetting setting);

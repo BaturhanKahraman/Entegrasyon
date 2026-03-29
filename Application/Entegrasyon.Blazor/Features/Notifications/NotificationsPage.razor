@@ -39,6 +39,11 @@
                    OnClick="MarkAllAsRead">
             Tümünü Okundu İşaretle
         </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Warning"
+                   StartIcon="@Icons.Material.Filled.CleaningServices"
+                   OnClick="DismissAllRead">
+            Okunanları Temizle
+        </MudButton>
     </div>
 </MudPaper>
 
@@ -64,6 +69,13 @@
                 {
                     <MudChip T="string" Size="Size.Small" Color="Color.Primary">Yeni</MudChip>
                 }
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title="İşlem" StickyRight>
+            <CellTemplate>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small"
+                               Color="Color.Default" aria-label="Bildirimi gizle"
+                               OnClick="@(() => DismissNotification(context.Item))" />
             </CellTemplate>
         </TemplateColumn>
     </Columns>
