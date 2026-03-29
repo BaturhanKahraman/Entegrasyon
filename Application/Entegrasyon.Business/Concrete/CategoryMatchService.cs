@@ -101,6 +101,16 @@ public class CategoryMatchService(
             return new ErrorResult(error);
         }
 
+        // Leaf guard — only leaf categories can have marketplace mappings
+        var hasChildren = await dbContext.Categories
+            .AnyAsync(c => c.SuperCategoryId == dto.ApplicationCategoryId && !c.IsDeleted);
+        if (hasChildren)
+        {
+            var error = "Bu kategorinin alt kategorileri olduğu için pazar yeri eşleştirmesi yapılamaz.";
+            await applicationLogManager.AddLog(error, LogType.Category, LogAction.Add, dto);
+            return new ErrorResult(error);
+        }
+
         var existingMapping = await dbContext.CategoryMarketplaces
             .FirstOrDefaultAsync(x =>
                 x.CategoryId == dto.ApplicationCategoryId &&
@@ -162,6 +172,14 @@ public class CategoryMatchService(
             .ToListAsync();
         var existingMappingSet = existingMappings.ToHashSet();
 
+        // Leaf guard — pre-load non-leaf category IDs
+        var nonLeafCategoryIds = await dbContext.Categories
+            .Where(c => !c.IsDeleted && requestedCategoryIds.Contains(c.SuperCategoryId ?? 0))
+            .Select(c => c.SuperCategoryId!.Value)
+            .Distinct()
+            .ToListAsync();
+        var nonLeafSet = nonLeafCategoryIds.ToHashSet();
+
         // 3. Execution
         var result = new BulkCategoryMatchResultDto { TotalRequested = dto.Items.Count };
         var newMappings = new List<CategoryMarketplace>();
@@ -177,6 +195,19 @@ public class CategoryMatchService(
                     ApplicationCategoryId = item.ApplicationCategoryId,
                     CategoryName = item.MarketPlaceCategoryName ?? "Bilinmiyor",
                     ErrorMessage = "Kategori bulunamadı veya silinmiş durumda."
+                });
+                continue;
+            }
+
+            // Non-leaf guard
+            if (nonLeafSet.Contains(item.ApplicationCategoryId))
+            {
+                result.FailedCount++;
+                result.Errors.Add(new BulkCategoryMatchErrorDto
+                {
+                    ApplicationCategoryId = item.ApplicationCategoryId,
+                    CategoryName = categoryName,
+                    ErrorMessage = "Bu kategorinin alt kategorileri olduğu için pazar yeri eşleştirmesi yapılamaz."
                 });
                 continue;
             }
