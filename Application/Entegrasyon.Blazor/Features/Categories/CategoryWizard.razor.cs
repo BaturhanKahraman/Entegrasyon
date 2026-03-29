@@ -233,21 +233,10 @@ public partial class CategoryWizard
         NavigationManager.NavigateTo("/categories", replace: true);
     }
 
-    private async Task Cancel()
+    private void Cancel()
     {
-        if (_isDirty)
-        {
-            var confirmed = await DialogService.ShowMessageBox(
-                "Kaydedilmemiş Değişiklikler",
-                "Kaydedilmemiş değişiklikleriniz var. Sayfadan ayrılmak istediğinize emin misiniz?",
-                yesText: "Evet, Ayrıl",
-                noText: "Hayır");
-
-            if (confirmed != true)
-                return;
-        }
-
-        _isDirty = false;
+        // Guard (UnsavedChangesGuard) dirty ise otomatik dialog gosterir.
+        // Cancel butonunun ayrica dialog gostermesine gerek yok.
         NavigationManager.NavigateTo("/categories");
     }
 
