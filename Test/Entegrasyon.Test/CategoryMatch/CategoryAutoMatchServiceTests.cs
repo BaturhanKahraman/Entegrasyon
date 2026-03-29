@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Microsoft.Extensions.Logging;
@@ -32,9 +33,13 @@ public class CategoryAutoMatchServiceTests : BaseTest
             .Setup(f => f.CreateClient("Ollama"))
             .Returns(httpClient);
 
+        // Default: no categories in DB → leaf guard passes everything through
+        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(new List<Category>());
+
         _sut = new CategoryAutoMatchService(
             _mockHttpClientFactory.Object,
             _mockSearchService.Object,
+            mockContextFactory.Object,
             _mockLogger.Object);
     }
 
@@ -260,6 +265,32 @@ public class CategoryAutoMatchServiceTests : BaseTest
         // Assert
         result.Data[0].Confidence.Should().BeGreaterOrEqualTo(0.8);
         result.Data[0].Reason.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task GetAutoMatchSuggestionsAsync_Should_Filter_NonLeaf_Categories()
+    {
+        // Arrange — parent category (has child) should be filtered out
+        var parent = new Category { Id = 1, Name = "Parent", IsDeleted = false };
+        var child = new Category { Id = 2, Name = "Child", SuperCategoryId = 1, IsDeleted = false };
+        var categories = new List<Category> { parent, child };
+        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
+
+        var request = new CategoryAutoMatchRequestDto
+        {
+            MarketPlaceId = 1,
+            Categories = new List<CategoryAutoMatchItemDto>
+            {
+                new() { CategoryId = 1, CategoryName = "Parent", ParentCategoryName = null }
+            }
+        };
+
+        // Act
+        var result = await _sut.GetAutoMatchSuggestionsAsync(request);
+
+        // Assert — empty because the only category was non-leaf
+        result.Success.Should().BeTrue();
+        result.Data.Should().BeEmpty();
     }
 
     /// <summary>
