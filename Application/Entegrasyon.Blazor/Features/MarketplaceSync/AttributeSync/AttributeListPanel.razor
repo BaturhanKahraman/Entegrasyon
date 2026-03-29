@@ -1,0 +1,96 @@
+@using Entegrasyon.Entity.Dtos.Marketplace
+@using Entegrasyon.Entity.Matches
+
+<MudPaper Elevation="2" Class="pa-0" Style="height: 100%;">
+    <MudStack Spacing="0">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="pa-3 pb-2">
+            <MudText Typo="Typo.subtitle1">
+                <b>Özellikler</b>
+                <MudChip T="string" Size="Size.Small" Color="Color.Default" Class="ml-2">
+                    @Attributes.Count
+                </MudChip>
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Success">
+                @Attributes.Count(a => a.IsMatched) / @Attributes.Count eşleştirildi
+            </MudText>
+        </MudStack>
+        <MudDivider />
+        @if (Attributes.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-4">Özellik bulunamadı.</MudText>
+        }
+        else
+        {
+            <MudList T="CategoryAttributeWithMatchInfo" Dense="true" Style="max-height: 650px; overflow-y: auto;">
+                @foreach (var attr in Attributes)
+                {
+                    var isSelected = SelectedAttributeId == attr.AttributeId;
+                    <MudListItem T="CategoryAttributeWithMatchInfo"
+                                 Value="attr"
+                                 Dense="true"
+                                 Class="@($"border-b {(isSelected ? "mud-theme-primary" : "")}")"
+                                 OnClick="@(() => SelectAttribute(attr.AttributeId))">
+                        <MudStack Spacing="1">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.body2"><b>@attr.AttributeName</b></MudText>
+                                @if (attr.IsRequired)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Text">Zorunlu</MudChip>
+                                }
+                                @if (attr.IsVarianter)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">Varyant</MudChip>
+                                }
+                                @if (attr.IsSlicer)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Text">Dilimleyici</MudChip>
+                                }
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                @if (attr.IsMatched)
+                                {
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="Color.Success"
+                                             Variant="Variant.Filled"
+                                             Icon="@Icons.Material.Filled.CheckCircle">
+                                        Eşleştirildi: @(attr.MatchedMarketplaceName ?? "?")
+                                    </MudChip>
+                                    <MudTooltip Text="Eşleştirmeyi Kaldır">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => RemoveMatch(attr.AttributeId))" />
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Color="Color.Warning"
+                                             Variant="Variant.Filled"
+                                             Icon="@Icons.Material.Filled.Warning">
+                                        Eşleştirilmedi
+                                    </MudChip>
+                                }
+                            </MudStack>
+                        </MudStack>
+                    </MudListItem>
+
+                    @if (attr.IsMatched && attr.Values.Count > 0)
+                    {
+                        <div class="pl-4 pr-2 pb-2">
+                            <ValueMatchSection
+                                ApplicationAttributeId="attr.AttributeId"
+                                AppValues="attr.Values"
+                                MarketplaceValues="GetMarketplaceValuesForAttr(attr)"
+                                ExistingValueMatches="ExistingValueMatches"
+                                MarketPlaceId="MarketPlaceId"
+                                OnValueMatchChanged="OnValueMatchChanged" />
+                        </div>
+                    }
+                }
+            </MudList>
+        }
+    </MudStack>
+</MudPaper>

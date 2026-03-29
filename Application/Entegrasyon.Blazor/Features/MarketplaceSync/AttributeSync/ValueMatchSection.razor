@@ -1,0 +1,97 @@
+@using Entegrasyon.Entity.Dtos.Marketplace
+@using Entegrasyon.Entity.Matches
+
+<MudExpansionPanel>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.caption">
+                Değer Eşleştirme
+            </MudText>
+            <MudChip T="string" Size="Size.Small"
+                     Color="@(MatchedCount == AppValues.Count ? Color.Success : Color.Warning)">
+                @MatchedCount / @AppValues.Count
+            </MudChip>
+            @if (AppValues.Count > 0)
+            {
+                <MudButton Size="Size.Small"
+                           Variant="Variant.Text"
+                           Color="Color.Primary"
+                           OnClick="AutoMatchAll"
+                           Disabled="_isProcessing">
+                    Tümünü Otomatik Eşleştir
+                </MudButton>
+            }
+        </MudStack>
+    </TitleContent>
+    <ChildContent>
+        @if (AppValues.Count == 0)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Bu özelliğin değeri yok.</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Hover="true" Style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Uygulama Değeri</th>
+                        <th>Pazar Yeri Değeri</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appValue in AppValues)
+                    {
+                        ExistingValueMatches.TryGetValue(appValue.ValueId, out var existingMatch);
+                        <tr>
+                            <td>
+                                <MudText Typo="Typo.body2">@appValue.ValueName</MudText>
+                            </td>
+                            <td>
+                                @if (existingMatch is not null)
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Success">
+                                        @(appValue.MatchedMarketplaceValueName ?? "?")
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    <MudSelect T="int?"
+                                               Value="_pendingSelections.GetValueOrDefault(appValue.ValueId)"
+                                               ValueChanged="@((v) => SetPendingSelection(appValue.ValueId, v))"
+                                               Variant="Variant.Text"
+                                               Dense="true"
+                                               Margin="Margin.Dense"
+                                               Placeholder="Seçiniz">
+                                        <MudSelectItem T="int?" Value="null">-- Seçiniz --</MudSelectItem>
+                                        @foreach (var mpVal in GetAvailableMarketplaceValues(appValue.ValueId))
+                                        {
+                                            <MudSelectItem T="int?" Value="mpVal.Id">@mpVal.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                            </td>
+                            <td>
+                                @if (existingMatch is not null)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   Disabled="_isProcessing"
+                                                   OnClick="@(() => RemoveValueMatch(appValue.ValueId))" />
+                                }
+                                else
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.Link"
+                                                   Size="Size.Small"
+                                                   Color="Color.Primary"
+                                                   Disabled="@(_isProcessing || !_pendingSelections.ContainsKey(appValue.ValueId) || _pendingSelections[appValue.ValueId] is null)"
+                                                   OnClick="@(() => SaveValueMatch(appValue.ValueId))" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    </ChildContent>
+</MudExpansionPanel>
