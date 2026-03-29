@@ -2,9 +2,11 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Results;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.Concrete;
@@ -12,6 +14,7 @@ namespace Entegrasyon.Business.Concrete;
 public class CategoryAutoMatchService(
     IHttpClientFactory httpClientFactory,
     IMarketplaceSearchService searchService,
+    IDbContextFactory<IntegrationDbContext> contextFactory,
     ILogger<CategoryAutoMatchService> logger) : ICategoryAutoMatchService
 {
     private const int BatchSize = 50;
@@ -23,6 +26,25 @@ public class CategoryAutoMatchService(
     {
         if (request.Categories.Count == 0)
             return new SuccessDataResult<List<CategoryAutoMatchSuggestionDto>>([], "Kategori listesi bos.");
+
+        // Leaf guard — only suggest matches for leaf categories
+        using var dbContext = contextFactory.CreateDbContext();
+        var requestedIds = request.Categories.Select(c => c.CategoryId).ToList();
+        var nonLeafIdsList = await dbContext.Categories
+            .Where(c => !c.IsDeleted && requestedIds.Contains(c.SuperCategoryId ?? 0))
+            .Select(c => c.SuperCategoryId!.Value)
+            .Distinct()
+            .ToListAsync(ct);
+        var nonLeafIds = nonLeafIdsList.ToHashSet();
+
+        var filteredCategories = request.Categories
+            .Where(c => !nonLeafIds.Contains(c.CategoryId))
+            .ToList();
+
+        if (filteredCategories.Count == 0)
+            return new SuccessDataResult<List<CategoryAutoMatchSuggestionDto>>([], "Eşleştirilebilecek yaprak kategori bulunamadı.");
+
+        request = request with { Categories = filteredCategories };
 
         var allSuggestions = new List<CategoryAutoMatchSuggestionDto>();
 
