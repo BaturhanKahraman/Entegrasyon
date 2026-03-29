@@ -1,4 +1,3 @@
-using Entegrasyon.Blazor.Components.Shared;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
@@ -264,20 +263,13 @@ public partial class CategoryWizard
     {
         if (_isDirty)
         {
-            var parameters = new DialogParameters<ConfirmDialog<bool>>
-            {
-                { x => x.Message, "Kaydedilmemiş değişiklikleriniz var. Sayfadan ayrılmak istediğinize emin misiniz?" },
-                { x => x.ConfirmText, "Evet, Ayrıl" },
-                { x => x.ConfirmColor, Color.Warning },
-                { x => x.Icon, Icons.Material.Filled.Warning },
-                { x => x.IconColor, Color.Warning }
-            };
+            var confirmed = await DialogService.ShowMessageBox(
+                "Kaydedilmemiş Değişiklikler",
+                "Kaydedilmemiş değişiklikleriniz var. Sayfadan ayrılmak istediğinize emin misiniz?",
+                yesText: "Evet, Ayrıl",
+                noText: "Hayır");
 
-            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog<bool>>("Kaydedilmemiş Değişiklikler", parameters, options);
-            var result = await dialog.Result;
-
-            if (result is null || result.Canceled)
+            if (confirmed != true)
                 return;
         }
 

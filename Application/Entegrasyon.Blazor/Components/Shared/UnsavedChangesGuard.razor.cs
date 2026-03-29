@@ -33,20 +33,13 @@ public partial class UnsavedChangesGuard : ComponentBase, IAsyncDisposable
     {
         if (!IsDirty) return;
 
-        var parameters = new DialogParameters<ConfirmDialog<bool>>
-        {
-            { x => x.Message, Message },
-            { x => x.Icon, Icons.Material.Filled.Warning },
-            { x => x.IconColor, Color.Warning },
-            { x => x.ConfirmText, "Evet, Ayrıl" },
-            { x => x.ConfirmColor, Color.Warning }
-        };
+        var confirmed = await DialogService.ShowMessageBox(
+            "Kaydedilmemiş Değişiklikler",
+            Message,
+            yesText: "Evet, Ayrıl",
+            noText: "Hayır");
 
-        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
-        var dialog = await DialogService.ShowAsync<ConfirmDialog<bool>>("Kaydedilmemiş Değişiklikler", parameters, options);
-        var result = await dialog.Result;
-
-        if (result is null || result.Canceled)
+        if (confirmed != true)
         {
             context.PreventNavigation();
         }
