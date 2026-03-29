@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
