@@ -1,9 +1,10 @@
 using ClosedXML.Excel;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete.BulkOperations;
 
-public class ExcelParser
+public class ExcelParser : IExcelParser
 {
     private static readonly string[] ProductHeaders = ["Barkod", "Ürün Adı", "Stok Kodu", "Liste Fiyatı", "Satış Fiyatı", "Maliyet Fiyatı", "KDV Oranı", "Kategori", "Marka"];
     private static readonly string[] PriceHeaders = ["Barkod", "Liste Fiyatı", "Satış Fiyatı", "Maliyet Fiyatı"];
