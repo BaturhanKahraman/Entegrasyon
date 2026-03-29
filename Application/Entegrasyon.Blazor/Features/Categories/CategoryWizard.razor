@@ -64,9 +64,7 @@ else
                     <ChildContent>
                         <CategoryWizardMarketplaceStep @ref="_marketplaceStep"
                                                        CategoryId="@(_savedCategoryId ?? 0)"
-                                                       CategoryName="@_name"
-                                                       @bind-SelectedMarketplaceId="_selectedMarketplaceId"
-                                                       OnFieldChanged="MarkDirty" />
+                                                       CategoryName="@_name" />
                     </ChildContent>
                 </MudStep>
 
