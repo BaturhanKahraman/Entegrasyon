@@ -3,7 +3,6 @@ using Entegrasyon.Business.BackgroundServices;
 using Entegrasyon.Business.Concrete.Trendyol.Import;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Abstract;
@@ -81,7 +80,6 @@ namespace Entegrasyon.ApplicationBootstrap
 
 
             services.AddValidators();
-            services.AddBusinessMapping();
             return services;
         }
         public static IServiceCollection AddClients(this IServiceCollection services)

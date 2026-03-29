@@ -19,7 +19,6 @@ using Entegrasyon.Business.Concrete.BulkOperations;
 using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Concrete.POS;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.MapperProfiles;
 using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -374,13 +373,13 @@ namespace Entegrasyon.ApplicationBootstrap
 
             services.AddSingleton<ProductMapper>();
             services.AddSingleton<UserMapper>();
+            services.AddSingleton<BrandMatchMapper>();
             services.AddSingleton<CategoryMapper>();
             services.AddSingleton<CategoryAttributeMapper>();
             services.AddSingleton<CustomerMapper>();
 
             services.AddEventChannels();
             services.AddValidators();
-            services.AddBusinessMapping();
             return services;
         }
         public static IServiceCollection AddClients(this IServiceCollection services)

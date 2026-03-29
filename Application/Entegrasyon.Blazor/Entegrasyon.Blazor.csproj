@@ -23,9 +23,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Mapster" Version="7.4.0" />
-		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
+<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.13.0" />
