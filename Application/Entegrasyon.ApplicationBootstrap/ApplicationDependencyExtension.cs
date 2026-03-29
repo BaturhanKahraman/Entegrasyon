@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Entegrasyon.Business.BackgroundServices;
+using Scrutor;
 using Entegrasyon.Business.Concrete.Amazon;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
 using Entegrasyon.Business.Concrete.Invoicing;
@@ -40,6 +41,7 @@ using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Labels;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.ApplicationBootstrap
@@ -48,6 +50,40 @@ namespace Entegrasyon.ApplicationBootstrap
     {
         public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
         {
+            // ── Scrutor convention scan ──────────────────────────────────────────────
+            // Automatically registers all standard IXxx → Xxx Scoped pairs from the
+            // Business assembly. Naming-exception and conditional (UseMock) services
+            // are registered explicitly below and override via last-wins.
+            services.Scan(scan => scan
+                .FromAssemblyOf<NotificationManager>()      // Entegrasyon.Business assembly
+                .AddClasses(classes => classes
+                    .InNamespaces(
+                        "Entegrasyon.Business.Concrete",
+                        "Entegrasyon.Business.Concrete.Auth",
+                        "Entegrasyon.Business.Concrete.BulkOperations",
+                        "Entegrasyon.Business.Concrete.Import",
+                        "Entegrasyon.Business.Concrete.Invoicing",
+                        "Entegrasyon.Business.Concrete.Kargo",
+                        "Entegrasyon.Business.Concrete.POS",
+                        "Entegrasyon.Business.Concrete.Shipping",
+                        "Entegrasyon.Business.Concrete.Storefront",
+                        "Entegrasyon.Business.Notifications"
+                    )
+                    .Where(t =>
+                        !t.Name.StartsWith("Mock")                   &&  // handled by UseMock blocks
+                        !t.Name.EndsWith("CategoryImporter")         &&  // concrete-only, no interface
+                        !t.Name.EndsWith("MappingValidator")         &&  // concrete-only, no interface
+                        !t.Name.EndsWith("Cache")                    &&  // may need explicit lifetime
+                        !t.Name.EndsWith("InvoiceBuilder")           &&  // concrete-only
+                        !t.Name.EndsWith("InvoiceClient")            &&  // brand-named, keep manual
+                        !typeof(IHostedService).IsAssignableFrom(t)      // never auto-register hosted
+                    )
+                )
+                .AsMatchingInterface()      // strips I-prefix: BranchOfficeManager → IBranchOfficeManager
+                .WithScopedLifetime()
+            );
+            // ─────────────────────────────────────────────────────────────────────────
+
             services.AddScoped<ITenantContext, HttpTenantContext>();
             services.AddScoped<TenantMemoryCache>();
             services.AddSingleton<ITenantRegistryDataSource, AdminPanelTenantDataSource>();
@@ -61,70 +97,27 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<IRandomGenerator, RandomGenerator>();
             //services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
 
-            services.AddScoped<IBranchOfficeManager,BranchOfficeManager>();
-            services.AddScoped<IBrandService, BrandService>();
+            // NAMING EXCEPTION: IXxxService → XxxManager (Scrutor cannot match)
             services.AddScoped<ICategoryService, CategoryManager>();
-            services.AddScoped<ICategoryAttributeManager, CategoryAttributeManager>();
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IApplicationLogManager, ApplicationLogManager>();
-            services.AddScoped<IApplicationUserManager, ApplicationUserManager>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<ICargoCompaniesManager,CargoCompaniesManager>();
-            services.AddScoped<ICustomerManager,CustomerManager>();
-            services.AddScoped<IProductService,ProductManager>();
-            services.AddScoped<IOfficeStockManager,OfficeStockManager>();
-            services.AddScoped<IProductVariantManager,ProductVariantManager>();
-            services.AddScoped<IImageManager, ImageManager>();
-            services.AddScoped<IDiscountVoucherManager,DiscountVoucherManager>();
-            services.AddScoped<IAttributeKeyValueManager,AttributeKeyValueManager>();
-            services.AddScoped<ISaleManager,SaleManager>();
+            services.AddScoped<IProductService, ProductManager>();
+            services.AddScoped<ILabelService, LabelManager>();
+            services.AddScoped<ILabelTemplateService, LabelTemplateManager>();
+            // NAMING EXCEPTION: "Import" vs "Importer" suffix
             services.AddScoped<ITrendyolCategoryImportService, TrendyolCategoryImporterService>();
-            services.AddScoped<ITrendyolBrandImporterService, TrendyolBrandImporterService>();
-            services.AddScoped<IBarcodeService, BarcodeService>();
-            services.AddScoped<IMatchedEntityImportManager, MatchedEntityImportManager>();
-            services.AddScoped<IBarcodeScannerService, BarcodeScannerService>();
-            services.AddScoped<ICommissionCalculator, CommissionCalculator>();
-            services.AddScoped<IBrandMatchService,BrandMatchService>();
-            services.AddScoped<ICategoryMatchService,CategoryMatchService>();
-            services.AddScoped<IAttributeMatchManager, AttributeMatchManager>();
-            services.AddScoped<ICategoryMatchValidationService,CategoryMatchValidationService>();
-            services.AddScoped<ICategoryAutoMatchService,CategoryAutoMatchService>();
-            services.AddScoped<IAttributeAutoMatchService, AttributeAutoMatchService>();
-            services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
-            services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
-            services.AddScoped<INotificationManager, NotificationManager>();
-            services.AddScoped<IChatManager, ChatManager>();
-            services.AddScoped<IProductSyncManager, ProductSyncManager>();
-            services.AddScoped<IDiscountManager, DiscountManager>();
-            services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
-            services.AddScoped<IProductActivityLogger, ProductActivityLogger>();
-            services.AddScoped<IMarketplaceOverrideManager, MarketplaceOverrideManager>();
-            services.AddScoped<INotificationSettingManager, NotificationSettingManager>();
-            services.AddScoped<IReportManager, ReportManager>();
-            services.AddScoped<IApplicationSettingManager, ApplicationSettingManager>();
-            services.AddScoped<IPOSSessionManager, POSSessionManager>();
 
-            // Toplu İşlem servisleri
+            // Toplu İşlem servisleri (interface-registered, BulkOperationManager injects by interface)
             services.AddScoped<IExcelParser, ExcelParser>();
             services.AddScoped<ICsvParser, CsvParser>();
             services.AddScoped<IProductImportValidator, ProductImportValidator>();
-            services.AddScoped<IBulkOperationManager, BulkOperationManager>();
 
             // Etiket & Fiş servisleri
             services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
             services.AddSingleton<IReceiptGenerator, EscPosReceiptGenerator>();
-            services.AddScoped<ILabelService, LabelManager>();
-            services.AddScoped<ILabelTemplateService, LabelTemplateManager>();
 
             // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();
             services.AddScoped<N11CategoryImporter>();
             services.AddScoped<TrendyolMappingValidator>();
-            services.AddScoped<ITrendyolApiClient, TrendyolApiClient>();
-            services.AddScoped<ITrendyolProductMapper, TrendyolProductMapper>();
-
-            services.AddScoped<IOrderManager, OrderManager>();
-            services.AddScoped<IDashboardManager, DashboardManager>();
 
             var useMock = configuration.GetValue<bool>("Trendyol:UseMock", true);
             services.AddScoped<TrendyolSupplierAddressCache>();
@@ -149,10 +142,8 @@ namespace Entegrasyon.ApplicationBootstrap
             }
 
             // Hepsiburada servisleri
-            services.AddScoped<IHepsiburadaApiClient, HepsiburadaApiClient>();
             services.AddScoped<HepsiburadaCategoryImporter>();
             services.AddScoped<HepsiburadaMappingValidator>();
-            services.AddScoped<IHepsiburadaProductMapper, HepsiburadaProductMapper>();
 
             var useHbMock = configuration.GetValue<bool>("Hepsiburada:UseMock", true);
             if (useHbMock)
@@ -173,10 +164,8 @@ namespace Entegrasyon.ApplicationBootstrap
             }
 
             // Amazon servisleri
-            services.AddSingleton<IAmazonTokenManager, AmazonTokenManager>();
-            services.AddScoped<IAmazonApiClient, AmazonApiClient>();
+            services.AddSingleton<IAmazonTokenManager, AmazonTokenManager>();   // MUST be Singleton (multi-tenant cache)
             services.AddScoped<AmazonMappingValidator>();
-            services.AddScoped<IAmazonProductMapper, AmazonProductMapper>();
 
             var useAmazonMock = configuration.GetValue<bool>("Amazon:UseMock", true);
             if (useAmazonMock)
@@ -199,9 +188,7 @@ namespace Entegrasyon.ApplicationBootstrap
             }
 
             // N11 servisleri
-            services.AddScoped<IN11SoapClient, N11SoapClient>();
             services.AddScoped<N11MappingValidator>();
-            services.AddScoped<IN11ProductMapper, N11ProductMapper>();
 
             var useN11Mock = configuration.GetValue<bool>("N11:UseMock", true);
             if (useN11Mock)
@@ -221,7 +208,6 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // Pazarama servisleri
             services.AddScoped<PazaramaMappingValidator>();
-            services.AddScoped<IPazaramaProductMapper, PazaramaProductMapper>();
 
             var usePazaramaMock = configuration.GetValue<bool>("Pazarama:UseMock", true);
             if (usePazaramaMock)
@@ -241,7 +227,6 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IPazaramaRefundService, PazaramaRefundService>();
             }
             services.AddScoped<PazaramaCategoryImporter>();
-            services.AddScoped<IPazaramaBrandService, PazaramaBrandService>();
 
             // PttAVM
             var usePttavmMock = configuration.GetValue<bool>("Pttavm:UseMock", true);
@@ -267,7 +252,6 @@ namespace Entegrasyon.ApplicationBootstrap
             }
 
             services.AddScoped<PttavmCategoryImporter>();
-            services.AddScoped<IPttavmProductMapper, PttavmProductMapper>();
             services.AddScoped<PttavmMappingValidator>();
 
             // Çiçeksepeti servisleri
@@ -364,14 +348,13 @@ namespace Entegrasyon.ApplicationBootstrap
             }
             services.AddScoped<TrendyolEFaturaInvoiceBuilder>();
 
-            // Shipping Tracking
+            // Shipping Tracking — multi-registration (ICargoTrackingAdapter), kept explicit
             services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.ArasTrackingAdapter>();
             services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.SuratTrackingAdapter>();
             services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.YurticiTrackingAdapter>();
-            services.AddScoped<IShipmentTrackingManager, Entegrasyon.Business.Concrete.Shipping.ShipmentTrackingManager>();
+            // IShipmentTrackingManager → ShipmentTrackingManager: covered by scan (Concrete.Shipping namespace)
 
-            // E-Fatura / E-Arsiv (genel amacli) servisleri
-            services.AddScoped<IEInvoiceManager, EInvoiceManager>();
+            // E-Fatura / E-Arsiv (genel amacli) servisleri — covered by scan (IEInvoiceManager → EInvoiceManager)
             var useEInvoiceMock = configuration.GetValue<bool>("EInvoice:UseMock", true);
             if (useEInvoiceMock)
             {
@@ -492,45 +475,21 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<INotificationSender, EmailSender>();
             services.AddScoped<INotificationSender, SmsSender>();
 
-            services.AddScoped<INotificationRecipientResolver, NotificationRecipientResolver>();
+            // INotificationRecipientResolver → NotificationRecipientResolver: covered by scan (Notifications namespace)
             return services;
         }
 
         public static IServiceCollection AddStorefrontServices(this IServiceCollection services)
         {
+            // Singleton — cannot be auto-scanned with Scoped lifetime
             services.AddSingleton<IStorefrontTenantResolver, StorefrontTenantResolver>();
-            services.AddScoped<IStorefrontTenantContext, StorefrontTenantContext>();
-            services.AddScoped<IStorefrontSettingsManager, StorefrontSettingsManager>();
-            services.AddScoped<IStorefrontPageManager, StorefrontPageManager>();
-            services.AddScoped<IStorefrontBannerManager, StorefrontBannerManager>();
-            services.AddScoped<IStorefrontAuthManager, StorefrontAuthManager>();
-            services.AddScoped<ICartManager, CartManager>();
-            services.AddScoped<IStorefrontCouponManager, StorefrontCouponManager>();
-            services.AddScoped<ICheckoutManager, CheckoutManager>();
-            services.AddScoped<IStorefrontEmailService, StorefrontEmailService>();
-            services.AddScoped<IPaymentGatewayService, IyzicoPaymentService>();
-            services.AddScoped<IStorefrontReviewManager, StorefrontReviewManager>();
-            services.AddScoped<IStorefrontWishlistManager, StorefrontWishlistManager>();
-            services.AddScoped<IStorefrontContactManager, StorefrontContactManager>();
-            services.AddScoped<IStorefrontNewsletterManager, StorefrontNewsletterManager>();
-            services.AddScoped<IStorefrontReturnManager, StorefrontReturnManager>();
-            services.AddScoped<IStorefrontSearchHistoryManager, StorefrontSearchHistoryManager>();
-            services.AddScoped<IStorefrontStockNotificationManager, StorefrontStockNotificationManager>();
-            services.AddScoped<IStorefrontSizeGuideManager, StorefrontSizeGuideManager>();
-            services.AddScoped<IStorefrontGiftCardManager, StorefrontGiftCardManager>();
-            services.AddScoped<IStorefrontLoyaltyManager, StorefrontLoyaltyManager>();
-            services.AddScoped<IStorefrontReferralManager, StorefrontReferralManager>();
-            services.AddScoped<IStorefrontPushManager, StorefrontPushManager>();
-            services.AddScoped<IStorefrontCampaignManager, StorefrontCampaignManager>();
-            services.AddScoped<ISellerManager, SellerManager>();
-            services.AddScoped<ISellerOrderManager, SellerOrderManager>();
-            services.AddScoped<ISellerCommissionManager, SellerCommissionManager>();
-            services.AddScoped<ISellerPayoutManager, SellerPayoutManager>();
 
-            // F5: Abandoned Cart, Q&A, Wallet
-            services.AddScoped<IStorefrontAbandonedCartManager, StorefrontAbandonedCartManager>();
-            services.AddScoped<IStorefrontQnAManager, StorefrontQnAManager>();
-            services.AddScoped<IStorefrontWalletManager, StorefrontWalletManager>();
+            // NAMING EXCEPTION: IPaymentGatewayService → IyzicoPaymentService (provider-branded impl)
+            services.AddScoped<IPaymentGatewayService, IyzicoPaymentService>();
+
+            // All other IXxxManager/IXxxService storefront services are covered by the Scrutor scan
+            // (Entegrasyon.Business.Concrete.Storefront namespace in AddApplicationDependencies)
+
             services.AddHostedService<AbandonedCartBackgroundService>();
             return services;
         }
