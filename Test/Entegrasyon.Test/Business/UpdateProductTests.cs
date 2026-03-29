@@ -8,14 +8,14 @@ using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using FluentValidation;
-using MapsterMapper;
+using ProductMapper = Entegrasyon.Business.Mappers.ProductMapper;
 
 namespace Entegrasyon.UnitTest.Business;
 
 public class UpdateProductTests : BaseTest
 {
     private readonly IProductService _productManager;
-    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly ProductMapper _productMapper = new();
     private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
@@ -40,7 +40,7 @@ public class UpdateProductTests : BaseTest
         _productManager = new ProductManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
-            _mockMapper.Object,
+            _productMapper,
             MockValidator.Object,
             _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,

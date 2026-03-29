@@ -8,14 +8,14 @@ using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Products;
-using MapsterMapper;
+using ProductMapper = Entegrasyon.Business.Mappers.ProductMapper;
 
 namespace Entegrasyon.UnitTest.Business;
 
 public class ProductManagerTests : BaseTest
 {
     private readonly IProductService _productManager;
-    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly ProductMapper _productMapper = new();
     private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
@@ -43,7 +43,7 @@ public class ProductManagerTests : BaseTest
         _productManager = new ProductManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
-            _mockMapper.Object,
+            _productMapper,
             MockValidator.Object,
             _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,
@@ -102,9 +102,6 @@ public class ProductManagerTests : BaseTest
         _mockOfficeStockManager
             .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
             .Returns(new SuccessResult());
-        _mockMapper
-            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
-            .Returns(mappedProduct);
 
         // Act
         var result = await _productManager.AddProduct(dto);
@@ -120,14 +117,10 @@ public class ProductManagerTests : BaseTest
     {
         // Arrange
         var dto = BuildValidDto(barcode: string.Empty);
-        var mappedProduct = new Product { AttributeKeyValues = [] };
 
         _mockOfficeStockManager
             .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
             .Returns(new SuccessResult());
-        _mockMapper
-            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
-            .Returns(mappedProduct);
         _mockBarcodeService
             .Setup(b => b.GenerateAsync())
             .ReturnsAsync("9780000000001");
@@ -144,14 +137,9 @@ public class ProductManagerTests : BaseTest
     {
         // Arrange
         var dto = BuildValidDto(barcode: "9780000000001");
-        var mappedProduct = new Product { AttributeKeyValues = [] };
-
         _mockOfficeStockManager
             .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
             .Returns(new SuccessResult());
-        _mockMapper
-            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
-            .Returns(mappedProduct);
 
         // Act
         await _productManager.AddProduct(dto);
@@ -165,14 +153,10 @@ public class ProductManagerTests : BaseTest
     {
         // Arrange
         var dto = BuildValidDto();
-        var mappedProduct = new Product { AttributeKeyValues = [] };
 
         _mockOfficeStockManager
             .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
             .Returns(new SuccessResult());
-        _mockMapper
-            .Setup(m => m.Map<Product>(It.IsAny<AddProductDto>()))
-            .Returns(mappedProduct);
 
         // Act
         await _productManager.AddProduct(dto);
