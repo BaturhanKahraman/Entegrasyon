@@ -2,9 +2,9 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Logs;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
@@ -17,7 +17,7 @@ public class CargoCompaniesManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     IApplicationLogManager applicationLogManager,
-    IMapper mapper,
+    CargoCompanyMapper mapper,
     TenantMemoryCache memoryCache) : ICargoCompaniesManager
 {
     private const string CacheKey = "CargoCompanies_All";
@@ -53,7 +53,7 @@ public class CargoCompaniesManager(
     {
         using var dbContext = contextFactory.CreateDbContext();
         await applicationLogManager.AddLog("Kargo şirketi ekleme isteği geldi.", LogType.Brand, LogAction.Add, cargoCompanyDto);
-        var cargo = mapper.Map<AddCargoCompanyDto, CargoCompany>(cargoCompanyDto);
+        var cargo = mapper.MapToEntity(cargoCompanyDto);
         var result = LogicRunner.Run(await CheckIfTheSameNameExits(cargo.Name));
         if (result != null)
         {

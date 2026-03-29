@@ -98,6 +98,12 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<IRandomGenerator, RandomGenerator>();
             //services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
 
+            // Mapperly mappers (singletons — stateless source-generated mappers)
+            services.AddSingleton<CargoCompanyMapper>();
+            services.AddSingleton<BranchOfficeMapper>();
+            services.AddSingleton<BrandMapper>();
+            services.AddSingleton<SaleMapper>();
+
             // NAMING EXCEPTION: IXxxService → XxxManager (Scrutor cannot match)
             services.AddScoped<ICategoryService, CategoryManager>();
             services.AddScoped<IProductService, ProductManager>();
@@ -367,6 +373,7 @@ namespace Entegrasyon.ApplicationBootstrap
             }
 
             services.AddSingleton<ProductMapper>();
+            services.AddSingleton<UserMapper>();
             services.AddSingleton<CategoryMapper>();
             services.AddSingleton<CategoryAttributeMapper>();
             services.AddSingleton<CustomerMapper>();
