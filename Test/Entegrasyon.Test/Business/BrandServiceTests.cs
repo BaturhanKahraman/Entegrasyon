@@ -1,10 +1,10 @@
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
 using FluentAssertions;
-using MapsterMapper;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Entegrasyon.UnitTest.Business;
@@ -12,7 +12,7 @@ namespace Entegrasyon.UnitTest.Business;
 public class BrandServiceTests : BaseTest
 {
     private readonly BrandService _sut;
-    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly BrandMapper _brandMapper = new();
     private readonly TenantMemoryCache _tenantCache;
 
     public BrandServiceTests()
@@ -24,10 +24,6 @@ public class BrandServiceTests : BaseTest
             .Setup(v => v.ValidateAndThrowAsync(It.IsAny<AddBrandDto>()))
             .Returns(Task.CompletedTask);
 
-        _mockMapper
-            .Setup(m => m.Map<AddBrandDto, Brand>(It.IsAny<AddBrandDto>()))
-            .Returns((AddBrandDto dto) => new Brand { Name = dto.Name });
-
         mockIntegrationDbContext
             .Setup(x => x.Brands)
             .ReturnsDbSet(new List<Brand>());
@@ -38,7 +34,7 @@ public class BrandServiceTests : BaseTest
         _sut = new BrandService(
             MockValidator.Object,
             mockApplicationLogger.Object,
-            _mockMapper.Object,
+            _brandMapper,
             mockContextFactory.Object,
             _tenantCache);
     }
