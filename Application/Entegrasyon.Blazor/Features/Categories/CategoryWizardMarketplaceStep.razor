@@ -1,8 +1,15 @@
 @using Entegrasyon.Entity.Dtos.Marketplace
 
 <MudStack Spacing="3">
+    @if (!string.IsNullOrEmpty(CategoryName))
+    {
+        <MudAlert Severity="Severity.Normal" Dense="true" Icon="@Icons.Material.Filled.Category">
+            Kategori: <strong>@CategoryName</strong>
+        </MudAlert>
+    }
+
     <MudAlert Severity="Severity.Info" Dense="true">
-        Bu adım opsiyoneldir. Pazar yeri eşleştirmesi yapmak istemiyorsanız bu adımı geçebilirsiniz.
+        Bu adım opsiyoneldir. Kategorinizi bir pazar yeri kategorisiyle eşleştirmek isterseniz aşağıdan seçim yapabilirsiniz.
     </MudAlert>
 
     @if (_existingMappings.Count > 0)
@@ -35,9 +42,11 @@
 
     @if (SelectedMarketplaceId.HasValue)
     {
+        <MudText Typo="Typo.subtitle2" Class="mb-1">Pazar yerindeki eşleşen kategoriyi arayın:</MudText>
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
             <MudTextField @bind-Value="_searchText"
-                          Label="Kategori Ara"
+                          Label="Pazar yeri kategorisi ara..."
+                          Placeholder="Örn: Telefon, Giyim, Elektronik"
                           Variant="Variant.Outlined"
                           Immediate="false"
                           Class="flex-grow-1"

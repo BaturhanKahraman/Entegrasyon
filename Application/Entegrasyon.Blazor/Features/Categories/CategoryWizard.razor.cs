@@ -266,8 +266,28 @@ public partial class CategoryWizard
         NavigationManager.NavigateTo("/categories");
     }
 
-    private void Cancel()
+    private async Task Cancel()
     {
+        if (_isDirty)
+        {
+            var parameters = new DialogParameters<ConfirmDialog<bool>>
+            {
+                { x => x.Message, "Kaydedilmemiş değişiklikleriniz var. Sayfadan ayrılmak istediğinize emin misiniz?" },
+                { x => x.ConfirmText, "Evet, Ayrıl" },
+                { x => x.ConfirmColor, Color.Warning },
+                { x => x.Icon, Icons.Material.Filled.Warning },
+                { x => x.IconColor, Color.Warning }
+            };
+
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
+            var dialog = await DialogService.ShowAsync<ConfirmDialog<bool>>("Kaydedilmemiş Değişiklikler", parameters, options);
+            var result = await dialog.Result;
+
+            if (result is null || result.Canceled)
+                return;
+        }
+
+        _isDirty = false;
         NavigationManager.NavigateTo("/categories");
     }
 
