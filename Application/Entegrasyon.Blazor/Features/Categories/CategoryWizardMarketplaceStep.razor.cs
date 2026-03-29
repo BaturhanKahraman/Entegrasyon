@@ -15,6 +15,7 @@ public partial class CategoryWizardMarketplaceStep
     /// 0 means "new category" (no existing mappings to load).
     /// </summary>
     [Parameter] public int CategoryId { get; set; }
+    [Parameter] public string? CategoryName { get; set; }
 
     [Parameter] public int? SelectedMarketplaceId { get; set; }
     [Parameter] public EventCallback<int?> SelectedMarketplaceIdChanged { get; set; }
