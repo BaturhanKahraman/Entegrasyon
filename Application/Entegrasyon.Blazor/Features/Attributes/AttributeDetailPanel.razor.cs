@@ -11,6 +11,7 @@ public partial class AttributeDetailPanel
 {
     [Parameter] public AppCategoryAttribute? SelectedAttribute { get; set; }
     [Parameter] public EventCallback OnAttributeChanged { get; set; }
+    [Parameter] public int? InitialMarketplaceId { get; set; }
 
     [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;

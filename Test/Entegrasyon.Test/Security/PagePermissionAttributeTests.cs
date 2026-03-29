@@ -37,6 +37,7 @@ public class PagePermissionAttributeTests
         "Entegrasyon.Blazor.Features.Dashboard.Index",
         "Entegrasyon.Blazor.Features.Profile.ProfilePage",
         "Entegrasyon.Blazor.Features.Notifications.NotificationsPage",
+        "Entegrasyon.Blazor.Features.Chat.ChatPage",
         "Entegrasyon.Blazor.Pages.Error",
     };
 
@@ -56,7 +57,7 @@ public class PagePermissionAttributeTests
 
         // Categories
         { "Entegrasyon.Blazor.Features.Categories.Categories", AppPermissions.Categories.View },
-        { "Entegrasyon.Blazor.Features.Categories.CategoryEdit", AppPermissions.Categories.View },
+        { "Entegrasyon.Blazor.Features.Categories.CategoryWizard", AppPermissions.Categories.View },
         { "Entegrasyon.Blazor.Features.CategoryImport.CategoryImport", AppPermissions.Categories.Edit },
 
         // Attributes
@@ -114,6 +115,9 @@ public class PagePermissionAttributeTests
         { "Entegrasyon.Blazor.Features.Settings.IntegrationSettings", AppPermissions.Integrations.View },
         { "Entegrasyon.Blazor.Features.Settings.PrinterSettings", AppPermissions.Settings.View },
         { "Entegrasyon.Blazor.Features.Settings.DesktopAppSettings", AppPermissions.Settings.View },
+
+        // Notifications Admin
+        { "Entegrasyon.Blazor.Features.Notifications.AdminNotifications", AppPermissions.Notifications.Manage },
 
         // Storefront
         { "Entegrasyon.Blazor.Features.Storefront.StorefrontSettingsPage", AppPermissions.Settings.View },
