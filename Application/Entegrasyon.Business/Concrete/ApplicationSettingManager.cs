@@ -1,7 +1,7 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Settings;
-using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
@@ -16,7 +16,7 @@ public sealed class ApplicationSettingManager(
             .OrderBy(s => s.Group)
             .ThenBy(s => s.Id)
             .ToListAsync();
-        return settings.Adapt<List<ApplicationSettingDto>>();
+        return SettingMapper.MapToDtoList(settings);
     }
 
     public async Task<List<ApplicationSettingDto>> GetSettingsByGroupAsync(string group)
@@ -26,7 +26,7 @@ public sealed class ApplicationSettingManager(
             .Where(s => s.Group == group)
             .OrderBy(s => s.Id)
             .ToListAsync();
-        return settings.Adapt<List<ApplicationSettingDto>>();
+        return SettingMapper.MapToDtoList(settings);
     }
 
     public async Task<ApplicationSettingDto?> GetSettingAsync(string key)
@@ -34,7 +34,7 @@ public sealed class ApplicationSettingManager(
         using var dbContext = contextFactory.CreateDbContext();
         var setting = await dbContext.ApplicationSettings
             .FirstOrDefaultAsync(s => s.Key == key);
-        return setting?.Adapt<ApplicationSettingDto>();
+        return setting is null ? null : SettingMapper.MapToDto(setting);
     }
 
     public async Task<bool> UpdateSettingsAsync(List<UpdateApplicationSettingDto> settings)
