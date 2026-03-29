@@ -86,8 +86,10 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICommissionCalculator, CommissionCalculator>();
             services.AddScoped<IBrandMatchService,BrandMatchService>();
             services.AddScoped<ICategoryMatchService,CategoryMatchService>();
+            services.AddScoped<IAttributeMatchManager, AttributeMatchManager>();
             services.AddScoped<ICategoryMatchValidationService,CategoryMatchValidationService>();
             services.AddScoped<ICategoryAutoMatchService,CategoryAutoMatchService>();
+            services.AddScoped<IAttributeAutoMatchService, AttributeAutoMatchService>();
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
@@ -134,6 +136,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITrendyolOrderService, MockTrendyolOrderService>();
                 services.AddScoped<ITrendyolInvoiceService, MockTrendyolInvoiceService>();
                 services.AddScoped<IMarketplaceSearchService, MockMarketplaceSearchService>();
+                services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
             }
             else
             {
