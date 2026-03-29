@@ -2,12 +2,12 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Entity.Results;
@@ -17,7 +17,7 @@ namespace Entegrasyon.Business.Concrete;
 public sealed class SaleManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager,
-    IMapper mapper,
+    SaleMapper mapper,
     IFluentValidator fluentValidator,
     IOfficeStockManager officeStockManager) : ISaleManager
 {
@@ -26,7 +26,7 @@ public sealed class SaleManager(
         using var dbContext = contextFactory.CreateDbContext();
         await applicationLogManager.AddLog("Satış yapma isteği geldi.", LogType.Sale, LogAction.Add, dto);
         await fluentValidator.ValidateAndThrowAsync(dto);
-        var sale = mapper.Map<Sale>(dto);
+        var sale = mapper.MapToEntity(dto);
 
         // Atomic stok düşme — her ürün için ayrı ayrı
         foreach (var item in dto.SaleItems)
