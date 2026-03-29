@@ -7,10 +7,15 @@ using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Customers;
+using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Dtos.Users;
+using Entegrasyon.Entity.Matches;
+using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Sales;
 using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Dtos.Settings;
+using Entegrasyon.Entity.User;
 using FluentAssertions;
 
 namespace Entegrasyon.UnitTest.Mappers;
