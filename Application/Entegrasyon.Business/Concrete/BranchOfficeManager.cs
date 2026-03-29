@@ -2,10 +2,10 @@
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
@@ -15,7 +15,7 @@ namespace Entegrasyon.Business.Concrete;
 public class BranchOfficeManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager,
-    IMapper mapper)
+    BranchOfficeMapper mapper)
     : IBranchOfficeManager
 {
     public async Task<IDataResult<List<BranchOffice>>> GetBranchList(CancellationToken token=default)
@@ -32,7 +32,7 @@ public class BranchOfficeManager(
         var result = LogicRunner.Run(await CheckIfTheSameNameExists(dbContext, officeDto.Name, 0));
         if (result!=null)
             return new ErrorDataResult<BranchOffice>(null!, result.Message!);
-        var office = mapper.Map<BranchOffice>(officeDto);
+        var office = mapper.MapToEntity(officeDto);
         await dbContext.BranchOffices.AddAsync(office);
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog($"Ofis ekleme işlemi başarıyla tamamlandı. {office.Name}",LogType.Branch,LogAction.Add);
