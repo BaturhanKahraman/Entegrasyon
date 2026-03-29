@@ -174,6 +174,84 @@ public class CategoryManagerTests : BaseTest
         result.Should().Contain(c => c.Id == 1);
     }
 
+    // AddCategory sync guard tests
+    [Fact]
+    public async Task AddCategory_Should_Return_Error_When_Parent_Has_Active_MarketplaceSync()
+    {
+        // Arrange
+        var dto = new AddCategoryDto("Child", [], 10, false);
+
+        IList<CategoryAttributeCategory> attrCategories = [];
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeCategories).ReturnsDbSet(attrCategories);
+
+        IList<CategoryMarketplace> marketplaceLinks =
+        [
+            new CategoryMarketplace { CategoryId = 10, MarketPlaceId = 1, IsActive = true }
+        ];
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(marketplaceLinks);
+
+        // Act
+        var result = await _categoryManager.AddCategory(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("pazar yeri eşleştirmesi");
+    }
+
+    [Fact]
+    public async Task AddCategory_Should_Succeed_When_Parent_Has_No_Active_MarketplaceSync()
+    {
+        // Arrange
+        var dto = new AddCategoryDto("Child", [], 10, false);
+
+        IList<CategoryAttributeCategory> attrCategories = [];
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeCategories).ReturnsDbSet(attrCategories);
+
+        IList<CategoryMarketplace> marketplaceLinks =
+        [
+            new CategoryMarketplace { CategoryId = 10, MarketPlaceId = 1, IsActive = false }
+        ];
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(marketplaceLinks);
+
+        IList<Category> categories = [new Category { Id = 10, Name = "Parent" }];
+        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
+        mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        _mockMapper.Setup(m => m.Map<Category>(dto)).Returns(new Category { Id = 99, Name = "Child", SuperCategoryId = 10 });
+
+        // Act
+        var result = await _categoryManager.AddCategory(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    // UpdateCategory sync guard tests
+    [Fact]
+    public async Task UpdateCategory_Should_Return_Error_When_Parent_Has_Active_MarketplaceSync()
+    {
+        // Arrange
+        var dto = new EditCategoryDto(5, "Child", 10, false, false);
+
+        IList<Category> categories = [new Category { Id = 5, Name = "Child" }];
+        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
+
+        IList<CategoryAttributeCategory> attrCategories = [];
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeCategories).ReturnsDbSet(attrCategories);
+
+        IList<CategoryMarketplace> marketplaceLinks =
+        [
+            new CategoryMarketplace { CategoryId = 10, MarketPlaceId = 1, IsActive = true }
+        ];
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(marketplaceLinks);
+
+        // Act
+        var result = await _categoryManager.UpdateCategory(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("pazar yeri eşleştirmesi");
+    }
+
     [Fact]
     public async Task SoftDelete_Should_Return_Error_If_Products_Exist()
     {
