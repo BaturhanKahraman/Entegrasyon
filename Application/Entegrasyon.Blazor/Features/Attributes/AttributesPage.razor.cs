@@ -11,9 +11,31 @@ public partial class AttributesPage
     [Inject] private ICategoryAttributeManager AttributeManager { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
+    [SupplyParameterFromQuery] public int? CategoryId { get; set; }
+    [SupplyParameterFromQuery] public int? MarketplaceId { get; set; }
+
     private MudDataGrid<AppCategoryAttribute> _dataGrid = null!;
     private AppCategoryAttribute? _selectedAttribute;
     private string _searchString = string.Empty;
+    private bool _deepLinkApplied = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_deepLinkApplied) return;
+
+        if (CategoryId.HasValue)
+        {
+            _deepLinkApplied = true;
+            var categoryAttrsResult = await AttributeManager.GetCategoryAttributesByCategory(CategoryId.Value);
+            if (categoryAttrsResult.Success && categoryAttrsResult.Data is { Count: > 0 })
+            {
+                var firstAttrId = categoryAttrsResult.Data[0].Id;
+                var attrResult = await AttributeManager.GetCategoryAttributeById(firstAttrId);
+                if (attrResult.Success && attrResult.Data is not null)
+                    _selectedAttribute = attrResult.Data;
+            }
+        }
+    }
 
     private async Task<GridData<AppCategoryAttribute>> ServerData(GridState<AppCategoryAttribute> state)
     {
