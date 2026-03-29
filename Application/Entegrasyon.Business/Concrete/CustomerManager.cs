@@ -9,7 +9,7 @@ using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Logs;
 using FluentValidation;
-using MapsterMapper;
+using Entegrasyon.Business.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Entity.Results;
@@ -20,10 +20,10 @@ public class CustomerManager : ICustomerManager
 {
     private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
     private readonly IFluentValidator _fluentValidator;
-    private readonly IMapper _mapper;
+    private readonly CustomerMapper _mapper;
     private readonly IApplicationLogManager _applicationLogManager;
 
-    public CustomerManager(IDbContextFactory<IntegrationDbContext> contextFactory, IFluentValidator fluentValidator, IMapper mapper, IApplicationLogManager applicationLogManager)
+    public CustomerManager(IDbContextFactory<IntegrationDbContext> contextFactory, IFluentValidator fluentValidator, CustomerMapper mapper, IApplicationLogManager applicationLogManager)
     {
         _contextFactory = contextFactory;
         _fluentValidator = fluentValidator;
@@ -73,16 +73,12 @@ public class CustomerManager : ICustomerManager
         await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.", LogType.Customer, LogAction.Add);
         await _fluentValidator.ValidateAndThrowAsync(dto);
         Customer customer = dto.CustomerType == "Retail"
-            ? _mapper.Map<RetailCustomer>(dto)
-            : _mapper.Map<CorporateCustomer>(dto);
+            ? _mapper.MapToRetail(dto)
+            : _mapper.MapToCorporate(dto);
         dbContext.Customers.Add(customer);
         await dbContext.SaveChangesAsync();
         await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add);
-        CustomerDetailDto result;
-        if (customer is RetailCustomer retailCustomer)
-            result = _mapper.Map<CustomerDetailDto>(retailCustomer);
-        else
-            result = _mapper.Map<CustomerDetailDto>(customer);
+        var result = FuncMappings.CustomerToDetailDto()(customer);
         return new SuccessDataResult<CustomerDetailDto>(result, "Müşteri başarıyla eklendi.");
     }
 

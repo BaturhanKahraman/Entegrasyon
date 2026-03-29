@@ -54,74 +54,9 @@ public static class MappingConfig
         config.NewConfig<AddCargoCompanyDto,CargoCompany>();
         config.NewConfig<CargoCompany,AddCargoCompanyDto>();
 
-        // Customer Add
-        config.NewConfig<CustomerAddDto,RetailCustomer>()
-              .Map(dest => dest.NationalIdentity,src => src.NationalIdentity);
-
-        config.NewConfig<CustomerAddDto,CorporateCustomer>()
-              .Map(dest => dest.TaxNumber,src => src.NationalIdentity);
-
-        // Customer Detail
-        config.NewConfig<Customer,CustomerDetailDto>()
-              .Map(dest => dest.SalesCount,src => src.Sales.Count());
-
-        config.NewConfig<RetailCustomer,CustomerDetailDto>()
-              .Map(dest => dest.NameSurname,src => src.FullName);
-
-        config.NewConfig<CorporateCustomer,CustomerDetailDto>()
-              .Map(dest => dest.NameSurname,src => src.FullName);
-
-        // Product
-        config.NewConfig<AddProductDto,Product>();
-        config.NewConfig<Product,AddProductDto>();
-        config.NewConfig<ProductEditDetailDto,Product>();
-
-        // Product Variant
-        config.NewConfig<AddProductVariantDto,ProductVariant>()
-              .Map(dest => dest.VatRate, src => src.VatRate ?? 0m);
-        config.NewConfig<ProductVariant,AddProductVariantDto>();
-        config.NewConfig<ProductVariantEditDetailDto,ProductVariant>();
-
-        // Branch Office Stock
-        config.NewConfig<AddBranchOfficeStockDto,BranchOfficeStock>();
-        config.NewConfig<BranchOfficeStock,AddBranchOfficeStockDto>();
-        config.NewConfig<EditBranchOfficeStockDto,BranchOfficeStock>();
-        config.NewConfig<BranchOfficeStock,EditBranchOfficeStockDto>();
-
         // Branch Office
         config.NewConfig<BranchOfficeAddDto,BranchOffice>();
         config.NewConfig<BranchOfficeEditDto,BranchOffice>();
-
-        // Category
-        config.NewConfig<AddCategoryDto,Category>()
-              .Ignore(dest => dest.CategoryAttributes)
-              .Map(dest => dest.SuperCategoryId,src => src.SuperCategoryId == 0 ? (int?)null : src.SuperCategoryId);
-
-        config.NewConfig<Category,AddCategoryDto>();
-
-        config.NewConfig<CategoryEditDetailDto,Category>();
-        config.NewConfig<Category,CategoryEditDetailDto>();
-
-        config.NewConfig<EditCategoryDto,Category>()
-              .Ignore(dest => dest.CategoryAttributes);
-
-        config.NewConfig<Category,EditCategoryDto>();
-
-        config.NewConfig<AddCategoryDtoStepOne,Category>();
-        config.NewConfig<Category,AddCategoryDtoStepOne>();
-
-        // Category Attribute
-        config.NewConfig<AddCategoryAttributeDto,CategoryAttribute>()
-             .Ignore(dest => dest.Categories);
-        config.NewConfig<AddCategoryAttributeDto,CategoryAttribute>();
-
-        config.NewConfig<EditCategoryAttributeDto,CategoryAttributeCategory>()
-              .Map(dest => dest.CategoryAttributeId,src => src.Id)
-              .Map(dest => dest.CategoryAttribute.Id,src => src.Id)
-              .Map(dest => dest.CategoryAttribute.CategoryAttributeHumanized,src => src.CategoryAttributeHumanized)
-              .Map(dest => dest.CategoryAttribute.CategoryAttributeValues,src => src.CategoryAttributeValues)
-              .Map(dest => dest.CategoryAttribute.AllowCustom,src => src.AllowCustom)
-              .Map(dest => dest.CategoryAttribute.CategoryAttributeKey,src => src.CategoryAttributeKey);
 
         // Trendyol
         config.NewConfig<TrendyolCategoryAttribute,CategoryAttribute>()

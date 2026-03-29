@@ -12,19 +12,19 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
 using Entegrasyon.Business.Abstract;
-using MapsterMapper;
+using Entegrasyon.Business.Mappers;
 using System.Linq.Dynamic.Core;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, IMapper mapper, IFluentValidator fluentValidator, IProductService productService, TenantMemoryCache cache) : ICategoryService
+    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, CategoryMapper mapper, IFluentValidator fluentValidator, IProductService productService, TenantMemoryCache cache) : ICategoryService
     {
         private const string CategoryListCacheKey = "categories:list";
         public async Task<IResult> AddCategoryStepOne(AddCategoryDtoStepOne dto)
         {
             using var dbContext = contextFactory.CreateDbContext();
             await fluentValidator.ValidateAndThrowAsync(dto);
-            var category = mapper.Map<Category>(dto);
+            var category = mapper.MapToEntity(dto);
             if (await dbContext.Categories.AnyAsync(x => x.Name.ToLower() == dto.Name.ToLower()))
                 return new ErrorResult(Messages.SameNameCategoryExits);
             dbContext.Categories.Add(category);
@@ -51,7 +51,7 @@ namespace Entegrasyon.Business.Concrete
                     return new ErrorDataResult<CategoryDetailDto>(null!, "Seçilen üst kategori pazar yeri eşleştirmesi içerdiğinden alt kategori eklenemez.");
             }
 
-            var category = mapper.Map<Category>(dto);
+            var category = mapper.MapToEntity(dto);
             dbContext.Categories.Add(category);
             await dbContext.SaveChangesAsync();
             cache.Remove(CategoryListCacheKey);

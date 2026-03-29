@@ -20,6 +20,7 @@ using Entegrasyon.Business.Concrete.Import;
 using Entegrasyon.Business.Concrete.POS;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.MapperProfiles;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -364,6 +365,11 @@ namespace Entegrasyon.ApplicationBootstrap
             {
                 services.AddScoped<IEInvoiceIntegratorClient, ParasutInvoiceClient>();
             }
+
+            services.AddSingleton<ProductMapper>();
+            services.AddSingleton<CategoryMapper>();
+            services.AddSingleton<CategoryAttributeMapper>();
+            services.AddSingleton<CustomerMapper>();
 
             services.AddEventChannels();
             services.AddValidators();

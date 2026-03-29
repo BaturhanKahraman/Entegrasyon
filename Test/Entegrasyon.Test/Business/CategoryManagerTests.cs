@@ -1,10 +1,10 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
-using MapsterMapper;
 using Moq;
 using Xunit;
 using FluentAssertions;
@@ -17,7 +17,7 @@ namespace Entegrasyon.UnitTest.Business;
 public class CategoryManagerTests : BaseTest
 {
     private readonly ICategoryService _categoryManager;
-    private readonly Mock<IMapper> _mockMapper = new();
+    private readonly CategoryMapper _categoryMapper = new();
     private readonly Mock<IProductService> _mockProductService = new();
 
     public CategoryManagerTests()
@@ -27,7 +27,7 @@ public class CategoryManagerTests : BaseTest
         _categoryManager = new CategoryManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
-            _mockMapper.Object,
+            _categoryMapper,
             MockValidator.Object,
             _mockProductService.Object,
             tenantCache
@@ -216,7 +216,6 @@ public class CategoryManagerTests : BaseTest
         IList<Category> categories = [new Category { Id = 10, Name = "Parent" }];
         mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
         mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-        _mockMapper.Setup(m => m.Map<Category>(dto)).Returns(new Category { Id = 99, Name = "Child", SuperCategoryId = 10 });
 
         // Act
         var result = await _categoryManager.AddCategory(dto);
