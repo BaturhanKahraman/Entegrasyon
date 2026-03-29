@@ -248,7 +248,6 @@ public partial class CategoryWizard
         }
 
         _isDirty = false;
-        StateHasChanged(); // NavigationLock'u kaldır — yoksa NavigateTo ikinci dialog tetikler
         NavigationManager.NavigateTo("/categories");
     }
 
