@@ -5,6 +5,7 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Attributes;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Brand;
@@ -13,7 +14,6 @@ using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
@@ -28,7 +28,7 @@ namespace Entegrasyon.Business.Concrete;
 public class ProductManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager,
-    IMapper mapper,
+    Entegrasyon.Business.Mappers.ProductMapper mapper,
     IFluentValidator validator,
     IOfficeStockManager officeStockManager,
     IAttributeKeyValueManager attributeKeyValueManager,
@@ -59,7 +59,7 @@ public class ProductManager(
 
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = await barcodeService.GenerateAsync();
-        var product = mapper.Map<Product>(dto);
+        var product = mapper.MapToEntity(dto);
 
         // Kategori default VatRate doldurma: variant VatRate == 0 ise kategoriden al
         if (dto.CategoryId > 0)
@@ -94,11 +94,18 @@ public class ProductManager(
 
         using var dbContext = contextFactory.CreateDbContext();
 
-        var product = await dbContext.MainProducts
-            .FirstOrDefaultAsync(x => x.ProductVariants.Any(pv => pv.Barcode == barcode));
-        if (product == null)
+        var dto = await dbContext.MainProducts
+            .Where(x => x.ProductVariants.Any(pv => pv.Barcode == barcode))
+            .Select(x => new ProductsDetailDto(
+                x.Id, x.Title, x.Description ?? "", x.StockCode ?? "",
+                x.Brand!.Name!, x.Category!.Name!,
+                x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
+                x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
+                x.ProductVariants.Count()))
+            .FirstOrDefaultAsync();
+        if (dto == null)
             return new ErrorResult("Barkoda ait ürün bulunamadı.");
-        return new SuccessDataResult<ProductsDetailDto>(mapper.Map<ProductsDetailDto>(product));
+        return new SuccessDataResult<ProductsDetailDto>(dto);
     }
 
     public async Task<IDataResult<ProductEditPageDto>> GetProductEditPageData(Guid id)
