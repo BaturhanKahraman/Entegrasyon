@@ -28,8 +28,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
+using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.Emails;
 using Entegrasyon.Business.Notifications.SignalR;
+using Entegrasyon.Business.Notifications.Sms;
 using Microsoft.AspNetCore.SignalR;
 using Entegrasyon.ApplicationBootstrap.FileStorage;
 using Entegrasyon.ApplicationBootstrap.Tenants;
@@ -89,6 +91,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICategoryAttributeCategoryManager,CategoryAttributeCategoryManager>();
             services.AddScoped<ICategoryAttributeValueManager,CategoryAttributeValueManager>();
             services.AddScoped<INotificationManager, NotificationManager>();
+            services.AddScoped<IChatManager, ChatManager>();
             services.AddScoped<IProductSyncManager, ProductSyncManager>();
             services.AddScoped<IDiscountManager, DiscountManager>();
             services.AddScoped<IMarketPlaceManager, MarketPlaceManager>();
@@ -139,6 +142,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<ITrendyolOrderService, TrendyolOrderService>();
                 services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
                 services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
+                services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
             }
 
             // Hepsiburada servisleri
@@ -478,6 +482,14 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             services.AddScoped<ISignalRNotificationSender, SignalRSender>();
             services.AddScoped<IEmailSender, EmailSender>();
+            services.AddScoped<ISmsSender, SmsSender>();
+
+            // NotificationManager IEnumerable<INotificationSender> olarak inject eder
+            services.AddScoped<INotificationSender, SignalRSender>();
+            services.AddScoped<INotificationSender, EmailSender>();
+            services.AddScoped<INotificationSender, SmsSender>();
+
+            services.AddScoped<INotificationRecipientResolver, NotificationRecipientResolver>();
             return services;
         }
 
