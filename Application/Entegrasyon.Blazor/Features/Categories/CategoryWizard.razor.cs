@@ -243,22 +243,16 @@ public partial class CategoryWizard
     {
         if (_selectedMarketplaceId.HasValue && _marketplaceStep?.HasMapping == true)
         {
-            var parameters = new DialogParameters<ConfirmDialog<bool>>
-            {
-                { x => x.Message, "Özellik eşleştirmesine geçmek ister misiniz?" },
-                { x => x.ConfirmText, "Evet" },
-                { x => x.ConfirmColor, Color.Primary },
-                { x => x.Icon, Icons.Material.Filled.CompareArrows },
-                { x => x.IconColor, Color.Info }
-            };
+            var confirmed = await DialogService.ShowMessageBox(
+                "Özellik Eşleştirme",
+                "Özellik eşleştirmesine geçmek ister misiniz?",
+                yesText: "Evet",
+                noText: "Hayır");
 
-            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall };
-            var dialog = await DialogService.ShowAsync<ConfirmDialog<bool>>("Özellik Eşleştirme", parameters, options);
-            var result = await dialog.Result;
-
-            if (result is not null && !result.Canceled)
+            if (confirmed == true)
             {
-                NavigationManager.NavigateTo($"/attributes?categoryId={categoryId}&marketplaceId={_selectedMarketplaceId.Value}");
+                NavigationManager.NavigateTo(
+                    $"/attributes?categoryId={categoryId}&marketplaceId={_selectedMarketplaceId.Value}");
                 return;
             }
         }
