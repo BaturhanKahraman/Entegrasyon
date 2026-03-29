@@ -4,10 +4,10 @@ using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Tenants;
@@ -16,7 +16,7 @@ using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, IMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache)
+public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache)
     : IBrandService
 {
     private const string brandListCacheKey = "brands:list";
@@ -42,7 +42,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         await validator.ValidateAndThrowAsync(brandDto);
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var brand = mapper.Map<AddBrandDto, Brand>(brandDto);
+        var brand = mapper.MapToEntity(brandDto);
         var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, brand.Name));
         if (result != null)
         {
