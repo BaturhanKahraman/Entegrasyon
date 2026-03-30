@@ -102,7 +102,7 @@ public static class SeedData
             Subdomain = "dev",
             ContactEmail = "dev@entegrasyon.local",
             ConnectionString = mainConnectionString
-                ?? "Host=localhost;Port=5432;Database=IntegrationDb;Username=postgres;Password=postgres",
+                ?? "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=baturhan;Password=DiHRrP6dY8nC*M;Pooling=true;Maximum Pool Size=30;Include Error Detail=true",
             DatabaseType = "PostgreSQL",
             IsActive = true,
             UserCount = 1,
