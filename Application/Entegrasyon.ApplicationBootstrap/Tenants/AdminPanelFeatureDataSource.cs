@@ -1,7 +1,7 @@
 using Entegrasyon.Business.Tenants;
-using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace Entegrasyon.ApplicationBootstrap.Tenants;
 
@@ -26,18 +26,18 @@ public sealed class AdminPanelFeatureDataSource(
 
         var permissions = new HashSet<string>();
 
-        await using var connection = new SqliteConnection(connectionString);
+        await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
 
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT fpp.PermissionKey
-            FROM TenantSubscriptions ts
-            INNER JOIN FeaturePackages fp ON fp.Id = ts.FeaturePackageId
-            INNER JOIN FeaturePackagePermissions fpp ON fpp.FeaturePackageId = fp.Id
-            WHERE ts.TenantId = @tenantId
-              AND ts.IsActive = 1
-              AND (ts.EndDate IS NULL OR datetime(ts.EndDate) >= datetime('now'))
+            SELECT fpp."PermissionKey"
+            FROM "TenantSubscriptions" ts
+            INNER JOIN "FeaturePackages" fp ON fp."Id" = ts."FeaturePackageId"
+            INNER JOIN "FeaturePackagePermissions" fpp ON fpp."FeaturePackageId" = fp."Id"
+            WHERE ts."TenantId" = @tenantId
+              AND ts."IsActive" = TRUE
+              AND (ts."EndDate" IS NULL OR ts."EndDate" >= NOW())
             """;
         command.Parameters.AddWithValue("@tenantId", tenantId);
 

@@ -1,6 +1,6 @@
 using Entegrasyon.Business.Tenants;
-using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace Entegrasyon.ApplicationBootstrap.Tenants;
 
@@ -27,17 +27,17 @@ public sealed class AdminPanelTenantDataSource(IConfiguration configuration) : I
 
         var tenants = new List<TenantRegistryEntry>();
 
-        await using var connection = new SqliteConnection(connectionString);
+        await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
 
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT t.Id, t.Subdomain, t.CompanyName, t.ConnectionString, t.IsActive,
-                   (SELECT l.Type FROM TenantLicenses l
-                    WHERE l.TenantId = t.Id
-                      AND datetime('now') BETWEEN datetime(l.StartDate) AND datetime(l.EndDate)
-                    ORDER BY l.Id DESC LIMIT 1) as LicenseType
-            FROM Tenants t
+            SELECT t."Id", t."Subdomain", t."CompanyName", t."ConnectionString", t."IsActive",
+                   (SELECT l."Type" FROM "TenantLicenses" l
+                    WHERE l."TenantId" = t."Id"
+                      AND NOW() BETWEEN l."StartDate" AND l."EndDate"
+                    ORDER BY l."Id" DESC LIMIT 1) as "LicenseType"
+            FROM "Tenants" t
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
