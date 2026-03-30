@@ -5,6 +5,10 @@ public record BranchOfficePageListDto(
     string Name,
     int UserCount,
     int TotalStock,
-    IEnumerable<string> MarketPlaceNames,
+    int MarketPlaceCount,
     DateTimeOffset CreatedAt,
-    bool IsDefaultMarketPlaceStock);
+    bool IsDefaultMarketPlaceStock)
+{
+    // Client-side populated after query
+    public List<string> MarketPlaceNames { get; init; } = [];
+}

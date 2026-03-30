@@ -151,46 +151,39 @@ public class BranchOfficeManager(
     {
         using var dbContext = contextFactory.CreateDbContext();
 
-        // Basit query — complex sub-query'ler EF Core 8'de translate edilemiyor
-        var branches = await dbContext.BranchOffices
+        // Ana query — scalar sub-query'ler EF Core translate edebilir
+        var items = await dbContext.BranchOffices
             .AsNoTracking()
             .Where(b => !b.IsDeleted)
             .OrderByDescending(b => b.CreatedAt)
+            .Select(b => new BranchOfficePageListDto(
+                b.Id,
+                b.Name ?? "",
+                dbContext.Users.Count(u => u.DefaultBranchOfficeId == b.Id),
+                (int)(dbContext.BranchOfficeStocks
+                    .Where(s => s.BranchOfficeId == b.Id)
+                    .Sum(s => (int?)(s.FirstTotalStock - s.SoldQuantity)) ?? 0),
+                dbContext.MarketPlaceWarehouses.Count(w => w.BranchOfficeId == b.Id && !w.IsDeleted),
+                b.CreatedAt,
+                b.IsDefaultMarketPlaceStock))
             .ToListAsync();
 
-        var branchIds = branches.Select(b => b.Id).ToList();
+        // Marketplace isimlerini ayrı çek (IEnumerable<string> EF projection'da translate edilemiyor)
+        if (items.Count > 0)
+        {
+            var branchIds = items.Select(i => i.Id).ToList();
+            var mpNames = await dbContext.MarketPlaceWarehouses
+                .Where(w => branchIds.Contains(w.BranchOfficeId) && !w.IsDeleted)
+                .Select(w => new { w.BranchOfficeId, Name = w.MarketPlace.Name ?? "" })
+                .ToListAsync();
 
-        // İlişkili verileri batch olarak çek
-        var userCounts = await dbContext.Users
-            .Where(u => u.DefaultBranchOfficeId.HasValue && branchIds.Contains(u.DefaultBranchOfficeId.Value))
-            .GroupBy(u => u.DefaultBranchOfficeId!.Value)
-            .Select(g => new { BranchId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.BranchId, x => x.Count);
+            var nameMap = mpNames.GroupBy(w => w.BranchOfficeId)
+                .ToDictionary(g => g.Key, g => g.Select(w => w.Name).ToList());
 
-        var stockTotals = await dbContext.BranchOfficeStocks
-            .Where(s => branchIds.Contains(s.BranchOfficeId))
-            .GroupBy(s => s.BranchOfficeId)
-            .Select(g => new { BranchId = g.Key, Total = g.Sum(s => s.FirstTotalStock - s.SoldQuantity) })
-            .ToDictionaryAsync(x => x.BranchId, x => x.Total);
-
-        var warehouseNames = await dbContext.MarketPlaceWarehouses
-            .Where(w => branchIds.Contains(w.BranchOfficeId) && !w.IsDeleted)
-            .Select(w => new { w.BranchOfficeId, MarketPlaceName = w.MarketPlace.Name ?? "" })
-            .ToListAsync();
-
-        var warehouseMap = warehouseNames
-            .GroupBy(w => w.BranchOfficeId)
-            .ToDictionary(g => g.Key, g => g.Select(w => w.MarketPlaceName).ToList() as IEnumerable<string>);
-
-        var items = branches.Select(b => new BranchOfficePageListDto(
-            b.Id,
-            b.Name ?? "",
-            userCounts.GetValueOrDefault(b.Id, 0),
-            stockTotals.GetValueOrDefault(b.Id, 0),
-            warehouseMap.GetValueOrDefault(b.Id, []),
-            b.CreatedAt,
-            b.IsDefaultMarketPlaceStock
-        )).ToList();
+            foreach (var item in items)
+                if (nameMap.TryGetValue(item.Id, out var names))
+                    item.MarketPlaceNames.AddRange(names);
+        }
 
         return new SuccessDataResult<List<BranchOfficePageListDto>>(items);
     }
