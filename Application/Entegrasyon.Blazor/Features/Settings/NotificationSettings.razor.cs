@@ -21,6 +21,7 @@ public partial class NotificationSettings : ComponentBase
     private bool _enableStockAlerts;
     private bool _enableMarketplaceSyncNotifications;
     private bool _enableEmailNotifications;
+    private bool _enableSmsNotifications;
     private bool _showSnackbar;
     private int _snackbarDurationSeconds;
 

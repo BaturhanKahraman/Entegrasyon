@@ -23,4 +23,16 @@ public interface IMasterCatalogImportService
 
     /// <summary>Belirtilen sektör paketine bağlı master kategori ID'lerini getirir.</summary>
     Task<IList<int>> GetSectorPackageCategoryIdsAsync(int sectorPackageId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Seçili master markaları tenant DB'sine kopyalar.
+    /// masterBrandIds boşsa tüm aktif markalar içe aktarılır.
+    /// </summary>
+    Task<ImportResultDto> ImportBrandsFromMasterAsync(
+        int tenantId,
+        IList<int>? masterBrandIds = null,
+        CancellationToken ct = default);
+
+    /// <summary>Tüm aktif master markaları getirir (UI'da seçim için).</summary>
+    Task<IList<MasterBrandDto>> GetMasterBrandsAsync(CancellationToken ct = default);
 }

@@ -45,6 +45,19 @@
                     @Result.MappingsImported eklendi
                 </MudText>
             </MudListItem>
+            @if (Result.BrandsImported > 0 || Result.BrandsSkipped > 0)
+            {
+                <MudListItem T="string" Icon="@Icons.Material.Filled.Sell">
+                    <MudText>
+                        <strong>Markalar:</strong>
+                        @Result.BrandsImported eklendi
+                        @if (Result.BrandsSkipped > 0)
+                        {
+                            <span class="mud-text-secondary">, @Result.BrandsSkipped atlandı (zaten mevcut)</span>
+                        }
+                    </MudText>
+                </MudListItem>
+            }
         </MudList>
 
         @if (Result.TotalSkipped > 0)

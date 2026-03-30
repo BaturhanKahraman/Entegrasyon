@@ -22,3 +22,12 @@ public class SectorPackageDto
     public int CategoryCount { get; set; }
     public List<int> MasterCategoryIds { get; set; } = [];
 }
+
+/// <summary>Master marka görüntüleme DTO'su.</summary>
+public class MasterBrandDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public int? TrendyolBrandId { get; set; }
+}

@@ -122,6 +122,8 @@ public static class AppPermissions
     public static class Notifications
     {
         public const string View = "Permissions.Notifications.View";
+        public const string Create = "Permissions.Notifications.Create";
+        public const string Manage = "Permissions.Notifications.Manage";
     }
 
     public static List<string> GetAllPermissions()
@@ -142,7 +144,7 @@ public static class AppPermissions
         permissions.AddRange([Logs.View]);
         permissions.AddRange([Settings.View, Settings.Edit]);
         permissions.AddRange([Marketplace.View, Marketplace.Create, Marketplace.Edit, Marketplace.Delete]);
-        permissions.AddRange([Notifications.View]);
+        permissions.AddRange([Notifications.View, Notifications.Create, Notifications.Manage]);
         return permissions;
     }
 }

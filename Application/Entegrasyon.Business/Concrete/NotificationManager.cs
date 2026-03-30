@@ -7,6 +7,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.User;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -15,7 +16,8 @@ public sealed class NotificationManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     EventChannel<NotificationEvent> eventChannel,
-    ITenantContext tenantContext) : INotificationManager
+    ITenantContext tenantContext,
+    ILogger<NotificationManager> logger) : INotificationManager
 {
     public async Task SendNotification(
         string header,
@@ -58,11 +60,18 @@ public sealed class NotificationManager(
         dbContext.Notifications.Add(notification);
         await dbContext.SaveChangesAsync();
 
-        // Tüm sender'ları tetikle (email, signalr — implemente edildiğinde)
-        if (existingUserIds.Count > 0)
+        // Tüm sender'ları tetikle — her biri izole, birinin hatası diğerini etkilemez
+        foreach (var sender in notificationSenders)
         {
-            await Task.WhenAll(notificationSenders.Select(s =>
-                s.SendNotification(notification, existingUserIds)));
+            try
+            {
+                await sender.SendNotification(notification, existingUserIds);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Bildirim gönderimi başarısız: {SenderType}, NotificationId: {NotificationId}",
+                    sender.Type, notification.Id);
+            }
         }
 
         // EventChannel'a yaz → NotificationEventPublisher → INotificationDeliveryService
@@ -78,7 +87,7 @@ public sealed class NotificationManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.Notifications
-            .Where(n => n.Users.Any(u => u.Id == userId));
+            .Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed));
 
         if (onlyUnread)
             query = query.Where(n => !n.IsRead);
@@ -109,9 +118,46 @@ public sealed class NotificationManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         await dbContext.Notifications
-            .Where(n => n.Users.Any(u => u.Id == userId) && !n.IsRead)
+            .Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed) && !n.IsRead)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(n => n.IsRead, true)
                 .SetProperty(n => n.ReadAt, DateTimeOffset.UtcNow));
+    }
+
+    public async Task DismissNotification(long notificationId, Guid userId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        await dbContext.Set<NotificationsUsers>()
+            .Where(nu => nu.NotificationId == notificationId && nu.ApplicationUserId == userId && !nu.IsDismissed)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(nu => nu.IsDismissed, true)
+                .SetProperty(nu => nu.DismissedAt, DateTimeOffset.UtcNow));
+    }
+
+    public async Task DismissAllRead(Guid userId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var readNotificationIds = await dbContext.Notifications
+            .Where(n => n.IsRead && n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed))
+            .Select(n => n.Id)
+            .ToListAsync();
+
+        if (readNotificationIds.Count == 0) return;
+
+        await dbContext.Set<NotificationsUsers>()
+            .Where(nu => readNotificationIds.Contains(nu.NotificationId) && nu.ApplicationUserId == userId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(nu => nu.IsDismissed, true)
+                .SetProperty(nu => nu.DismissedAt, DateTimeOffset.UtcNow));
+    }
+
+    public async Task<List<Notification>> GetAllNotificationsAsync(int take = 200)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        return await dbContext.Notifications
+            .Include(n => n.NotificationsUsers)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(take)
+            .ToListAsync();
     }
 }

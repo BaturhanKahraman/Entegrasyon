@@ -10,8 +10,10 @@ public record ImportResultDto(
     int MappingsImported,
     int CategoriesSkipped,
     int AttributesSkipped,
-    int ValuesSkipped)
+    int ValuesSkipped,
+    int BrandsImported = 0,
+    int BrandsSkipped = 0)
 {
-    public int TotalImported => CategoriesImported + AttributesImported + ValuesImported + MappingsImported;
-    public int TotalSkipped => CategoriesSkipped + AttributesSkipped + ValuesSkipped;
+    public int TotalImported => CategoriesImported + AttributesImported + ValuesImported + MappingsImported + BrandsImported;
+    public int TotalSkipped => CategoriesSkipped + AttributesSkipped + ValuesSkipped + BrandsSkipped;
 }

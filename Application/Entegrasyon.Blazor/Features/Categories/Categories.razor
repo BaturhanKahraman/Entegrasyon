@@ -30,6 +30,7 @@
     <MudItem xs="12" md="7">
         <CategoryDetailsPanel SelectedCategory="@_selectedCategory"
                              SubcategoryCount="@(_selectedCategory != null ? GetSubcategoryCount(_selectedCategory.Id) : 0)"
+                             ProductCount="@_productCount"
                              OnEditClicked="@EditSelectedCategory"
                              OnDeleteClicked="@DeleteSelectedCategory"
                              GetParentCategoryNameFunc="@GetParentCategoryName" />

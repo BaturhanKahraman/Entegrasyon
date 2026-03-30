@@ -1,5 +1,6 @@
-using Entegrasyon.Business.Tenants;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
 
@@ -7,8 +8,8 @@ namespace Entegrasyon.Blazor.Components.Shared;
 
 public partial class PermissionGuardedNavLink : ComponentBase
 {
-    [Inject] private IFeatureService FeatureService { get; set; } = null!;
     [Inject] private IDialogService DialogService { get; set; } = null!;
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = null!;
 
     [Parameter, EditorRequired] public string Permission { get; set; } = string.Empty;
     [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
@@ -17,14 +18,18 @@ public partial class PermissionGuardedNavLink : ComponentBase
     [Parameter] public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
     [Parameter] public bool ShowWhenDisabled { get; set; }
 
-    private bool _featureEnabled;
+    private bool _hasPermission;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        if (!string.IsNullOrEmpty(Permission))
-        {
-            _featureEnabled = await FeatureService.IsFeatureEnabledAsync(Permission);
-        }
+        if (AuthStateTask is null) return;
+
+        var authState = await AuthStateTask;
+        var user = authState.User;
+
+        // Admin her zaman gecer — authorization pipeline'a girmeye gerek yok
+        _hasPermission = user.IsInRole("Admin")
+            || user.HasClaim("Permission", Permission);
     }
 
     private async Task OnDisabledClick()

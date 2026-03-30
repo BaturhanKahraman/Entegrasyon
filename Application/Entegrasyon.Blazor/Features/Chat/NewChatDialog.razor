@@ -1,0 +1,38 @@
+@using Entegrasyon.Entity.User
+
+<MudDialog>
+    <DialogContent>
+        <MudAutocomplete T="ApplicationUser"
+                         Label="Kullanici Ara"
+                         @bind-Value="_selectedUser"
+                         SearchFunc="SearchUsers"
+                         ToStringFunc="@(u => u?.FullName ?? "")"
+                         Dense="true"
+                         Margin="Margin.Dense"
+                         Variant="Variant.Outlined"
+                         ShowProgressIndicator="true"
+                         Class="mt-2">
+            <ItemTemplate Context="user">
+                <div class="d-flex align-center gap-2">
+                    <MudAvatar Size="Size.Small" Color="Color.Primary">
+                        @GetInitials(user.FullName ?? "")
+                    </MudAvatar>
+                    <MudText>@user.FullName</MudText>
+                </div>
+            </ItemTemplate>
+        </MudAutocomplete>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Iptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@(_selectedUser is null || _processing)"
+                   OnClick="StartConversation">
+            @if (_processing)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-2" />
+            }
+            Sohbet Baslat
+        </MudButton>
+    </DialogActions>
+</MudDialog>

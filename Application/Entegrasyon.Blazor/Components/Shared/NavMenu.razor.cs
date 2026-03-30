@@ -18,8 +18,8 @@ public partial class NavMenu : ComponentBase, IAsyncDisposable
         { "marketplace", ["marketplace"] },
         { "customers", ["customers", "invoices", "invoicing"] },
         { "reports", ["reports"] },
-        { "users", ["users", "roles"] },
-        { "storefront", ["settings/storefront"] },
+        { "users", ["users", "roles", "admin/notifications"] },
+        { "storefront", ["settings/storefront", "storefront"] },
         { "settings", ["settings"] }
     };
 

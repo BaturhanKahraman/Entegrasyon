@@ -14,6 +14,7 @@ public partial class MasterCatalogImportDialog
     private bool _loading = true;
     private bool _importing;
     private int _activeTab;
+    private bool _importBrands;
 
     private List<SectorPackageDto> _sectorPackages = [];
     private int? _selectedPackageId;
@@ -59,26 +60,44 @@ public partial class MasterCatalogImportDialog
         _importing = true;
         try
         {
-            IList<int> categoryIds;
+            ImportResultDto? categoryResult = null;
+            ImportResultDto? brandResult = null;
 
-            if (_activeTab == 0 && _selectedPackageId.HasValue)
+            if (HasSelection)
             {
-                categoryIds = await ImportService.GetSectorPackageCategoryIdsAsync(_selectedPackageId.Value);
-            }
-            else
-            {
-                categoryIds = _selectedCategoryIds.ToList();
+                IList<int> categoryIds;
+
+                if (_activeTab == 0 && _selectedPackageId.HasValue)
+                    categoryIds = await ImportService.GetSectorPackageCategoryIdsAsync(_selectedPackageId.Value);
+                else
+                    categoryIds = _selectedCategoryIds.ToList();
+
+                if (categoryIds.Count > 0)
+                    categoryResult = await ImportService.ImportFromMasterAsync(0, categoryIds);
             }
 
-            if (categoryIds.Count == 0)
+            if (_importBrands)
+                brandResult = await ImportService.ImportBrandsFromMasterAsync(0);
+
+            if (categoryResult is null && brandResult is null)
             {
-                Snackbar.Add("Lütfen en az bir kategori seçin.", Severity.Warning);
+                Snackbar.Add("Lütfen en az bir kategori seçin veya marka içe aktarmayı etkinleştirin.", Severity.Warning);
                 return;
             }
 
-            // TenantId = 0 (mevcut tek tenant setup'ında kullanılmıyor)
-            var result = await ImportService.ImportFromMasterAsync(0, categoryIds);
-            MudDialog.Close(DialogResult.Ok(result));
+            // Sonuçları birleştir
+            var combined = new ImportResultDto(
+                CategoriesImported: categoryResult?.CategoriesImported ?? 0,
+                AttributesImported: categoryResult?.AttributesImported ?? 0,
+                ValuesImported: categoryResult?.ValuesImported ?? 0,
+                MappingsImported: categoryResult?.MappingsImported ?? 0,
+                CategoriesSkipped: categoryResult?.CategoriesSkipped ?? 0,
+                AttributesSkipped: categoryResult?.AttributesSkipped ?? 0,
+                ValuesSkipped: categoryResult?.ValuesSkipped ?? 0,
+                BrandsImported: brandResult?.BrandsImported ?? 0,
+                BrandsSkipped: brandResult?.BrandsSkipped ?? 0);
+
+            MudDialog.Close(DialogResult.Ok(combined));
         }
         catch (Exception ex)
         {

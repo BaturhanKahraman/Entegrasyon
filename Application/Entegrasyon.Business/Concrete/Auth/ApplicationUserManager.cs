@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Logs;
@@ -13,12 +14,11 @@ using Microsoft.Extensions.Logging;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Requests;
-using MapsterMapper;
 
 namespace Entegrasyon.Business.Concrete.Auth;
 
 public class ApplicationUserManager(
-    IMapper mapper,
+    UserMapper mapper,
     IApplicationLogManager applicationLogManager,
     Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
     IFluentValidator validator,
@@ -33,7 +33,7 @@ public class ApplicationUserManager(
             return validationResult.ToResult();
 
         await using var context = await contextFactory.CreateDbContextAsync();
-        var user = mapper.Map<AddUserDto, ApplicationUser>(dto);
+        var user = mapper.MapToEntity(dto);
         user.NeedsTakeNewPassword = true;
         user.NormalizedUserName = user.UserName!.ToUpperInvariant();
         user.NormalizedEmail = user.Email!.ToUpperInvariant();

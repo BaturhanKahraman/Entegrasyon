@@ -16,6 +16,13 @@ public class TenantFeatureAuthorizationHandler(IFeatureService featureService) :
         {
             if (requirement is PermissionRequirement permReq)
             {
+                // Admin bypass: Admin her zaman gecer, feature check bile yapilmaz
+                if (context.User.IsInRole("Admin"))
+                {
+                    context.Succeed(requirement);
+                    continue;
+                }
+
                 // Layer 1: Tenant feature check
                 var featureEnabled = await featureService.IsFeatureEnabledAsync(permReq.Permission);
                 if (!featureEnabled)
@@ -25,7 +32,7 @@ public class TenantFeatureAuthorizationHandler(IFeatureService featureService) :
                 }
 
                 // Layer 2: User permission check
-                if (context.User.IsInRole("Admin") || context.User.HasClaim("Permission", permReq.Permission))
+                if (context.User.HasClaim("Permission", permReq.Permission))
                 {
                     context.Succeed(requirement);
                 }

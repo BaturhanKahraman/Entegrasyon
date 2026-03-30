@@ -23,6 +23,8 @@ else
                        Label="Pazaryeri senkronizasyon bildirimleri" Color="Color.Primary" />
             <MudSwitch T="bool" @bind-Value="_enableEmailNotifications"
                        Label="E-posta bildirimleri" Color="Color.Primary" />
+            <MudSwitch T="bool" @bind-Value="_enableSmsNotifications"
+                       Label="SMS bildirimleri (yakında)" Color="Color.Primary" Disabled />
         </MudStack>
     </MudPaper>
 

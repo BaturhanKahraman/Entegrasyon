@@ -1,4 +1,6 @@
+using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +15,7 @@ public class MasterCatalogSeedService(
     ILogger<MasterCatalogSeedService> logger)
 {
     private const int TrendyolMarketplaceId = 1;
+    private const string TrendyolBrandApiUrl = "https://apigw.trendyol.com/integration/product/brands";
 
     public async Task SeedAsync(string? snapshotFilePath = null)
     {
@@ -210,6 +213,118 @@ public class MasterCatalogSeedService(
         cache[cacheKey] = masterAttr;
         return masterAttr;
     }
+
+    /// <summary>
+    /// Trendyol'dan tüm markaları sayfalı olarak çekip MasterBrand tablosuna yükler.
+    /// Zaten veri varsa atlanır.
+    /// </summary>
+    public async Task SeedBrandsAsync()
+    {
+        if (await dbContext.MasterBrands.AnyAsync())
+        {
+            logger.LogInformation("Master marka verisi zaten yüklü, seed atlanıyor.");
+            return;
+        }
+
+        logger.LogInformation("Trendyol marka verisi çekiliyor...");
+
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "Entegrasyon/1.0");
+
+        var allBrands = new List<TrendyolBrandDto>();
+        int page = 0;
+        const int pageSize = 500;
+
+        try
+        {
+            while (true)
+            {
+                var url = $"{TrendyolBrandApiUrl}?page={page}&size={pageSize}";
+                var response = await httpClient.GetFromJsonAsync<TrendyolBrandPageResponse>(url,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (response?.Brands is not { Count: > 0 })
+                    break;
+
+                allBrands.AddRange(response.Brands);
+                logger.LogInformation("Sayfa {Page}: {Count} marka alındı (toplam: {Total})", page, response.Brands.Count, allBrands.Count);
+
+                if (response.Brands.Count < pageSize)
+                    break;
+
+                page++;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Trendyol marka API'sinden veri çekilemedi, mock marka verisi kullanılıyor.");
+            allBrands = BuildMockBrands();
+        }
+
+        if (allBrands.Count == 0)
+        {
+            logger.LogWarning("Hiç marka verisi alınamadı.");
+            return;
+        }
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            // Duplicate isimleri normalize ederek tekil tut
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var brandsToInsert = new List<(TrendyolBrandDto Dto, MasterBrand Entity)>();
+
+            foreach (var brandDto in allBrands)
+            {
+                if (string.IsNullOrWhiteSpace(brandDto.Name))
+                    continue;
+
+                var normalizedName = brandDto.Name.Trim();
+                if (!seenNames.Add(normalizedName))
+                    continue;
+
+                var masterBrand = new MasterBrand
+                {
+                    Name = normalizedName,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                brandsToInsert.Add((brandDto, masterBrand));
+            }
+
+            await dbContext.MasterBrands.AddRangeAsync(brandsToInsert.Select(b => b.Entity));
+
+            // Mapping'leri SaveChanges sonrasına bırakmak yerine entity ref üzerinden ekle
+            var mappings = brandsToInsert.Select(b => new MasterBrandMarketplaceMapping
+            {
+                MasterBrand = b.Entity,
+                MarketplaceId = TrendyolMarketplaceId,
+                ExternalBrandId = b.Dto.Id,
+                ExternalBrandName = b.Dto.Name
+            }).ToList();
+
+            await dbContext.MasterBrandMarketplaceMappings.AddRangeAsync(mappings);
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            logger.LogInformation("Marka seed tamamlandı: {Count} marka eklendi.", brandsToInsert.Count);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    private static List<TrendyolBrandDto> BuildMockBrands() =>
+    [
+        new TrendyolBrandDto { Id = 1, Name = "Nike" },
+        new TrendyolBrandDto { Id = 2, Name = "Adidas" },
+        new TrendyolBrandDto { Id = 3, Name = "Samsung" },
+        new TrendyolBrandDto { Id = 4, Name = "Apple" },
+        new TrendyolBrandDto { Id = 5, Name = "Xiaomi" }
+    ];
 
     private async Task SeedSectorPackagesAsync()
     {
@@ -597,5 +712,22 @@ public class SnapshotAttribute
 public class SnapshotAttributeValue
 {
     public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+// ── Trendyol Brand API DTO'ları ────────────────────────────────────────────
+
+public class TrendyolBrandPageResponse
+{
+    [JsonPropertyName("brands")]
+    public List<TrendyolBrandDto> Brands { get; set; } = [];
+}
+
+public class TrendyolBrandDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 }

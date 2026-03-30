@@ -91,6 +91,17 @@ public partial class NotificationBell : ComponentBase, IDisposable
         }
     }
 
+    private async Task DismissFromBell(Notification notification)
+    {
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
+        await notificationManager.DismissNotification(notification.Id, _userId);
+        _recentNotifications.Remove(notification);
+        if (!notification.IsRead)
+            _unreadCount = Math.Max(0, _unreadCount - 1);
+        StateHasChanged();
+    }
+
     public void Dispose()
         => DeliveryService.Unsubscribe(_userId, HandleNotification);
 }
