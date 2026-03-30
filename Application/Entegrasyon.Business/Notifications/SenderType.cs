@@ -3,5 +3,6 @@
 public enum SenderType
 {
     SignalR,
-    Email
+    Email,
+    Sms
 }

@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Channels.Events.Categories;
+using Entegrasyon.Business.Channels.Events.Chat;
 using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Channels.Events.Products;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ public static class ChannelExtensions
         services.AddSingleton<EventChannel<NotificationEvent>>();
         services.AddSingleton<EventChannel<ProductUpdatedEvent>>();
         services.AddSingleton<EventChannel<StockPriceChangedEvent>>();
+        services.AddSingleton<EventChannel<ChatMessageEvent>>();
         return services;
     }
 }

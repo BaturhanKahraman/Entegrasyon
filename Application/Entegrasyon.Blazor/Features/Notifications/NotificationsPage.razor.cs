@@ -64,4 +64,18 @@ public partial class NotificationsPage : ComponentBase
         _onlyUnread = value;
         await LoadNotifications();
     }
+
+    private async Task DismissNotification(Notification notification)
+    {
+        await NotificationManager.DismissNotification(notification.Id, _userId);
+        _notifications.Remove(notification);
+        StateHasChanged();
+    }
+
+    private async Task DismissAllRead()
+    {
+        await NotificationManager.DismissAllRead(_userId);
+        _notifications.RemoveAll(n => n.IsRead);
+        StateHasChanged();
+    }
 }

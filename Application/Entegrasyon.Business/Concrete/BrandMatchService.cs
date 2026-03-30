@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -8,7 +9,6 @@ using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
 using Entegrasyon.Entity.Results;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
@@ -21,7 +21,7 @@ public class BrandMatchService(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
     IApplicationLogManager applicationLogManager,
-    IMapper mapper) : IBrandMatchService
+    BrandMatchMapper mapper) : IBrandMatchService
 {
     public async Task AddRange(List<BrandMarketPlaceMatch> entities)
     {
@@ -71,7 +71,7 @@ public class BrandMatchService(
             .Include(x => x.ApplicationBrand)
             .ToListAsync();
 
-        return mapper.Map<List<BrandMarketPlaceMatch>, List<BrandMarketPlaceMatchDto>>(mappings);
+        return mapper.MapToDtoList(mappings);
     }
 
     public async Task<IDataResult<List<BrandMarketPlaceMatchDto>>> GetBrandMappingsByBrandIdAsync(int brandId)
@@ -82,7 +82,7 @@ public class BrandMatchService(
             .Where(m => m.ApplicationBrandId == brandId)
             .ToListAsync();
 
-        var dtos = mapper.Map<List<BrandMarketPlaceMatch>, List<BrandMarketPlaceMatchDto>>(mappings);
+        var dtos = mapper.MapToDtoList(mappings);
         return new SuccessDataResult<List<BrandMarketPlaceMatchDto>>(dtos);
     }
 

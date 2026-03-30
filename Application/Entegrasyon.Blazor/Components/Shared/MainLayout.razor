@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Entegrasyon.Blazor.Services
 @using Entegrasyon.Blazor.Features.Notifications
+@using Entegrasyon.Blazor.Features.Chat
 
 <MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDarkMode" @ref="_mudThemeProvider"/>
 <MudPopoverProvider />
@@ -25,6 +26,9 @@
                            Color="Color.Inherit"
                            OnClick="ToggleThemeAsync" />
         </MudTooltip>
+
+        <!-- Chat -->
+        <ChatButton />
 
         <!-- Notifications -->
         <NotificationBell />

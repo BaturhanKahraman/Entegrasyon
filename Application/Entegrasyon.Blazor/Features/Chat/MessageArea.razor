@@ -1,0 +1,75 @@
+@using Entegrasyon.Entity.Dtos.Chat
+@using Entegrasyon.Entity.Chat
+
+<div class="d-flex flex-column" style="height:100%">
+    @* Header *@
+    <div class="pa-3 d-flex align-center" style="border-bottom:1px solid var(--mud-palette-divider)">
+        <MudText Typo="Typo.h6">@_conversationTitle</MudText>
+    </div>
+
+    @* Messages *@
+    <div @ref="_messageContainer" class="flex-grow-1 pa-3" style="overflow-y:auto;display:flex;flex-direction:column-reverse;">
+        @if (_loading)
+        {
+            <div class="d-flex justify-center pa-4">
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            </div>
+        }
+        else if (!_messages.Any())
+        {
+            <div class="d-flex justify-center align-center" style="height:100%">
+                <MudText Color="Color.Secondary" Typo="Typo.body2">Henuz mesaj yok. Bir mesaj gondererek baslayabilirsiniz.</MudText>
+            </div>
+        }
+        else
+        {
+            @foreach (var message in _messages)
+            {
+                var isMine = message.SenderId == CurrentUserId;
+                <div class="d-flex mb-2 @(isMine ? "justify-end" : "justify-start")">
+                    <MudPaper Class="pa-3" Style="@GetBubbleStyle(isMine)" Elevation="1">
+                        @if (!isMine && message.MessageType != ChatMessageType.System)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-bold mb-1">
+                                @message.SenderName
+                            </MudText>
+                        }
+                        @if (message.MessageType == ChatMessageType.System)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                                <em>@message.Content</em>
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1" Style="white-space:pre-wrap;word-break:break-word;">@message.Content</MudText>
+                        }
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="@(isMine ? Align.Right : Align.Left)" Class="mt-1">
+                            @message.CreatedAt.ToLocalTime().ToString("HH:mm")
+                        </MudText>
+                    </MudPaper>
+                </div>
+            }
+        }
+    </div>
+
+    @* Input Area *@
+    <div class="pa-3" style="border-top:1px solid var(--mud-palette-divider)">
+        <div class="d-flex align-center gap-2">
+            <MudTextField @bind-Value="_messageText"
+                          Placeholder="Mesaj yazin..."
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="flex-grow-1"
+                          Immediate="true"
+                          OnKeyDown="HandleKeyDown"
+                          Lines="1"
+                          AutoGrow="true"
+                          MaxLines="4" />
+            <MudIconButton Icon="@Icons.Material.Filled.Send"
+                           Color="Color.Primary"
+                           Disabled="@(string.IsNullOrWhiteSpace(_messageText) || _sending)"
+                           OnClick="SendMessage" />
+        </div>
+    </div>
+</div>

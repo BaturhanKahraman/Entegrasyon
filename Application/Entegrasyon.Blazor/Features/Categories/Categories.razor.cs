@@ -16,9 +16,11 @@ public partial class Categories
     [Inject] private IDialogService DialogService { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ITenantContext TenantContext { get; set; } = null!;
+    [Inject] private IProductService ProductService { get; set; } = null!;
 
     private List<Category> _categories = [];
     private Category? _selectedCategory;
+    private int _productCount;
     private bool _loading = true;
     private string _searchString = string.Empty;
 
@@ -39,6 +41,7 @@ public partial class Categories
         // Lazy-load: detay paneli için attributes dahil yükle
         var detail = await CategoryManager.GetCategoryDetailById(item.Id);
         _selectedCategory = detail ?? item;
+        _productCount = await ProductService.GetProductCountByCategoryId(item.Id);
     }
 
     private async Task SelectCategory(Category category)

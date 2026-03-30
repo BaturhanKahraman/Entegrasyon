@@ -81,6 +81,13 @@ using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
 
 **EF Core:** Default olarak no-tracking. `SaveChangesAsync()` otomatik UTC dönüşümü yapar. Tüm entity'ler `BaseEntity`'den türer (`IsDeleted`, `DeletedAt`, `CreatedAt`, `UpdatedAt`).
 
+**EF Core Migration (Strict Rule):** Entity veya DbContext'te değişiklik yapıldığında KESİNLİKLE migration oluşturulmalı ve dev DB'ye uygulanmalıdır. Adımlar:
+1. `dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor --context IntegrationDbContext`
+2. Oluşan migration dosyasını gözden geçir (gereksiz/duplicate değişiklik var mı?)
+3. `dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor --context IntegrationDbContext`
+4. `dotnet ef migrations has-pending-model-changes ...` ile model-snapshot senkronizasyonunu doğrula
+Migration olmadan entity değişikliği TAMAMLANMIŞ SAYILMAZ.
+
 **Mapster:** DTO mapping için kullanılır. Profiller `Business/MapperProfiles/MappingConfig.cs` içinde.
 
 **Event Channel pattern:** Background servisler arası iletişim için:

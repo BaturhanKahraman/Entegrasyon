@@ -2,6 +2,7 @@ using Entegrasyon.AdminPanel.Infrastructure.Data;
 using Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.MasterCatalog;
 using Entegrasyon.Entity.Matches;
@@ -287,6 +288,102 @@ public class MasterCatalogImportService(
         return await adminDb.SectorPackageCategories
             .Where(s => s.SectorPackageId == sectorPackageId)
             .Select(s => s.MasterCategoryId)
+            .ToListAsync(ct);
+    }
+
+    public async Task<ImportResultDto> ImportBrandsFromMasterAsync(
+        int tenantId,
+        IList<int>? masterBrandIds = null,
+        CancellationToken ct = default)
+    {
+        await using var adminDb = await adminDbFactory.CreateDbContextAsync(ct);
+        await using var integrationDb = await integrationDbFactory.CreateDbContextAsync(ct);
+
+        int brandsImported = 0, brandsSkipped = 0;
+
+        var query = adminDb.MasterBrands
+            .Include(b => b.MarketplaceMappings)
+            .Where(b => b.IsActive);
+
+        if (masterBrandIds is { Count: > 0 })
+            query = query.Where(b => masterBrandIds.Contains(b.Id));
+
+        var masterBrands = await query.OrderBy(b => b.Name).ToListAsync(ct);
+
+        var trendyolMarketPlace = await integrationDb.MarketPlaces
+            .AsTracking()
+            .FirstOrDefaultAsync(m => m.Id == 1, ct);
+
+        await using var transaction = await integrationDb.Database.BeginTransactionAsync(ct);
+        try
+        {
+            foreach (var masterBrand in masterBrands)
+            {
+                var existingBrand = await integrationDb.Brands
+                    .FirstOrDefaultAsync(b => b.Name == masterBrand.Name, ct);
+
+                if (existingBrand != null)
+                {
+                    brandsSkipped++;
+                    continue;
+                }
+
+                var newBrand = new Brand
+                {
+                    Name = masterBrand.Name
+                };
+                await integrationDb.Brands.AddAsync(newBrand, ct);
+                brandsImported++;
+
+                // Marketplace eşleştirmeleri
+                foreach (var mapping in masterBrand.MarketplaceMappings)
+                {
+                    if (trendyolMarketPlace != null && mapping.MarketplaceId == trendyolMarketPlace.Id)
+                    {
+                        await integrationDb.BrandMarketPlaceMatches.AddAsync(new BrandMarketPlaceMatch
+                        {
+                            ApplicationBrand = newBrand,
+                            MarketPlace = trendyolMarketPlace,
+                            MarketPlaceBrandId = mapping.ExternalBrandId
+                        }, ct);
+                    }
+                }
+            }
+
+            await integrationDb.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+
+            logger.LogInformation(
+                "Marka import tamamlandı (tenantId={TenantId}): {Imported} eklendi, {Skipped} atlandı.",
+                tenantId, brandsImported, brandsSkipped);
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(ct);
+            logger.LogError(ex, "Marka import hatası (tenantId={TenantId}).", tenantId);
+            throw;
+        }
+
+        return new ImportResultDto(0, 0, 0, 0, 0, 0, 0, brandsImported, brandsSkipped);
+    }
+
+    public async Task<IList<MasterBrandDto>> GetMasterBrandsAsync(CancellationToken ct = default)
+    {
+        await using var adminDb = await adminDbFactory.CreateDbContextAsync(ct);
+
+        return await adminDb.MasterBrands
+            .Where(b => b.IsActive)
+            .OrderBy(b => b.Name)
+            .Select(b => new MasterBrandDto
+            {
+                Id = b.Id,
+                Name = b.Name,
+                IsActive = b.IsActive,
+                TrendyolBrandId = b.MarketplaceMappings
+                    .Where(m => m.MarketplaceId == 1)
+                    .Select(m => (int?)m.ExternalBrandId)
+                    .FirstOrDefault()
+            })
             .ToListAsync(ct);
     }
 
