@@ -1,0 +1,286 @@
+[
+  {
+    "task": "Depo (BranchOffice) Yönetimi — Tam CRUD + Stok Devri + Marketplace Etkisi",
+    "description": "Depo yönetimi için kapsamlı bir sistem oluştur. Mevcut durumda BranchOffice entity'si var ama tam bir yönetim sayfası ve silme/güncelleme iş kuralları eksik.\n\n## Kapsam\n\n### 1. Depo CRUD UI (Features/BranchOffices/)\n- Depo listesi sayfası (MudDataGrid: ad, kullanıcı sayısı, stok özeti, bağlı marketplace'ler, oluşturma tarihi)\n- Depo ekleme dialog (ad, varsayılan marketplace deposu flag'i)\n- Depo düzenleme dialog (ad güncelleme, IsDefaultMarketPlaceStock değiştirme)\n- Depo detay sayfası veya panel (stok durumu, bağlı kullanıcılar, bağlı marketplace'ler, stok hareketleri özeti)\n\n### 2. Depo Silme İş Kuralları (Kritik)\nMevcut Delete() hard delete yapıyor — bu tamamen yanlış. Şu akış uygulanmalı:\n- **Soft delete kullan** (IsDeleted=true, zaten query filter var ama Delete metodu Remove() çağırıyor)\n- **Silme öncesi kontroller:**\n  a) Depoda aktif stok var mı? (BranchOfficeStock.CurrentStock > 0)\n  b) Depo bir marketplace'e bağlı mı? (MarketPlaceWarehouse tablosu)\n  c) Depoda bekleyen/işlenen siparişler var mı? (Sale/SaleItem)\n  d) Aktif POS oturumu var mı? (POSSession)\n- **Stok devri mekanizması:** Eğer depoda stok varsa, silme öncesi kullanıcıya seçenek sun:\n  a) Stokları başka bir depoya transfer et (StockMovementType.Transfer ile audit trail)\n  b) Stokları sıfırla (ManualAdjustment ile audit trail)\n  c) Silme işlemini iptal et\n- **Marketplace etkisi uyarısı:** Eğer depo bir marketplace'e bağlıysa, kullanıcıya 'Bu depo Trendyol/Hepsiburada/... marketplace stok hesaplamasında kullanılıyor. Silme sonrası bu marketplace'lerdeki stok miktarları değişecektir.' uyarısı göster. MarketPlaceWarehouse kaydı cascade ile silinecek — ama kullanıcı onay vermeden bu gerçekleşmemeli.\n- **Kullanıcı bağlantısı:** DefaultBranchOfficeId SET NULL olacak — ama kullanıcıya bilgi ver.\n\n### 3. Stok Transfer Sistemi\n- Depolar arası stok transferi (StockMovementType.Transfer zaten enum'da var ama UI/API yok)\n- Transfer dialog: kaynak depo, hedef depo, ürün/varyant seçimi, miktar\n- Atomik işlem: kaynak decrease + hedef increase tek transaction'da\n- StockMovement audit trail her iki taraf için\n- Transfer sonrası marketplace stok sync event'i tetikle (StockPriceChangedEvent)\n\n### 4. Marketplace Warehouse Mapping Geliştirmeleri\n- Mevcut IntegrationSettings'teki warehouse seçimi depo yönetim sayfasına da entegre edilsin\n- Bir deponun hangi marketplace'lere bağlı olduğu depo detayında görünsün\n- Marketplace bağlantısı eklendiğinde/kaldırıldığında stok sync tetiklensin\n\n### 5. Bug Fix: Hard Delete → Soft Delete\n- BranchOfficeManager.Delete() metodu Remove() yerine IsDeleted=true yapmalı\n- Tüm ilgili sorgularda query filter zaten var, ek değişiklik gerekmez\n- StockMovement ve Sale kayıtları korunacak (tarihsel veri)\n\n### 6. Validation & Business Rules\n- Son depo silinemez (en az 1 aktif depo olmalı)\n- IsDefaultMarketPlaceStock olan depo silinirken başka bir depo default yapılmalı\n- Depo adı unique olmalı (mevcut validasyon var)\n- Transfer miktarı mevcut stoktan fazla olamaz",
+    "status": "pending",
+    "notes": "Mevcut durum analizi: BranchOffice entity soft-delete filter'a sahip ama manager hard delete yapıyor (tutarsızlık). StockMovement FK = RESTRICT, MarketPlaceWarehouse FK = CASCADE. Depo yönetim UI'ı yok, sadece marketplace ayarlarında warehouse seçimi var. StockMovementType.Transfer enum'da var ama hiçbir yerde kullanılmıyor. OfficeStockManager atomik stok operasyonları için hazır (ExecuteUpdateAsync pattern).",
+    "priority": "high",
+    "plan": true,
+    "manual_test_steps": [
+      "Yeni depo ekle, listede göründüğünü doğrula",
+      "Depo adını güncelle, değişikliğin yansıdığını doğrula",
+      "Stoklu bir depoyu silmeye çalış — stok devri seçeneklerinin sunulduğunu doğrula",
+      "Stokları başka depoya transfer et, her iki depodaki stokların doğru güncellendiğini doğrula",
+      "StockMovement tablosunda transfer kayıtlarının oluştuğunu doğrula",
+      "Marketplace'e bağlı depoyu silmeye çalış — marketplace etkisi uyarısının gösterildiğini doğrula",
+      "Silme onayı sonrası MarketPlaceWarehouse kaydının temizlendiğini doğrula",
+      "Marketplace stok miktarlarının silme sonrası yeniden hesaplandığını doğrula (StockPriceChangedEvent)",
+      "Son aktif deponun silinemediğini doğrula",
+      "IsDefaultMarketPlaceStock olan depo silinirken yeni default seçimi istediğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Marketplace Adapter Pattern Migration",
+    "description": "Mevcut ~130 marketplace servisini (TrendyolProductService, TrendyolOrderService, HepsiburadaProductService vb.) tek bir IMarketplaceAdapter interface'i altında birleştir. Her marketplace tek bir adapter class implement edecek (TrendyolAdapter, HepsiburadaAdapter, N11Adapter vb.). Background polling servisleri de generic hale gelecek — 10 ayrı polling servisi yerine tek MarketplaceBatchPollingService. Strategy + Factory pattern kullanılacak. Yeni marketplace eklemek = tek bir class implement etmek olacak. Mevcut marketplace'leri kademeli olarak migrate et, yeni marketplace'ler direkt adapter pattern ile yazılsın.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Finbuckle MultiTenant Migration",
+    "description": "Mevcut custom ITenantContext + TenantRegistryService + TenantAwarePollingService altyapısını Finbuckle.MultiTenant kütüphanesiyle değiştir. Subdomain resolution, per-tenant connection string, EF Core integration hazır geliyor. Finbuckle'ın TenantInfo modeli, per-tenant store (EF Core veya config-based), ve middleware pipeline'ını entegre et. Mevcut TenantDbContextFactory ve HttpTenantContext custom kodlarını Finbuckle built-in mekanizmalarıyla değiştir. Background servisler için tenant iteration pattern'ını Finbuckle ile uyumlu hale getir.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": ".NET Aspire Orchestration Migration",
+    "description": "Mevcut 5 docker-compose dosyasını (docker-compose.yml, override, prod, stage, monitoring) .NET Aspire AppHost ile değiştir. PostgreSQL, Redis, MinIO, RabbitMQ (gelecekte) tüm altyapı C# ile tanımlanacak. Dev ortamında tek F5 ile her şey ayağa kalkacak. Service discovery otomatik olacak. Health check'ler built-in gelecek. Aspire Dashboard ile traces, metrics, logs tek yerde görünecek. docker-compose dosyaları production deployment için kalabilir ama dev deneyimi Aspire'a taşınacak.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Scrutor Auto-Scan DI Registration",
+    "description": "ApplicationDependencyExtension.cs'deki 450+ satırlık manual DI kaydını Scrutor convention-based assembly scanning ile değiştir. IXxxManager → XxxManager pattern'i otomatik taranacak. Marketplace servisleri, event channel'lar, validator'lar da convention ile kaydedilecek. Özel durumlar (conditional mock registration, singleton token cache'ler) için Scrutor decorator/filter mekanizması kullanılacak. Manual kayıt sadece istisnai durumlar için kalacak.",
+    "status": "done",
+    "notes": "76 manuel kayıt Scrutor scan ile değiştirildi, 26 DI safety-net test eklendi, IExcelParser/ICsvParser/IProductImportValidator interface'leri oluşturuldu",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "WireMock.Net Marketplace Contract Tests",
+    "description": "Her marketplace API'si için WireMock.Net ile contract test altyapısı kur. Trendyol, Hepsiburada, N11 (SOAP), Amazon, Pazarama, PttAVM, Ciceksepeti API response'larını stub'la. Mevcut Mock implementasyonları (MockTrendyolOrderService vb.) yerine WireMock HTTP-level mock kullan — bu sayede API client kodunun kendisi de test edilmiş olur. Her marketplace için happy path + error scenario + rate limit / timeout senaryoları. CI/CD pipeline'da external dependency olmadan marketplace testleri çalışabilecek.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Mapperly Migration (Mapster → Mapperly)",
+    "description": "Mapster reflection-based mapping'den Mapperly source-generator-based mapping'e geçiş yap. Mapperly compile-time'da mapping kodu üretir — zero runtime reflection, daha iyi performans, compile-time type safety. Business/MapperProfiles/MappingConfig.cs'deki Mapster profilleri Mapperly [Mapper] attribute'lu partial class'lara dönüştürülecek. Tüm .Adapt<T>() çağrıları Mapperly mapper method çağrılarına migrate edilecek. Kademeli geçiş yapılabilir — yeni mapping'ler Mapperly, eskiler zamanla migrate.",
+    "status": "done",
+    "notes": "12 Mapperly mapper, Mapster tamamen kaldırıldı, Mapperly 4.x, 1455 test pass",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "ASP.NET Identity Migration (HashingHelper → Identity)",
+    "description": "Mevcut custom HashingHelper (PBKDF2) + manual user/role/claim yönetimini ASP.NET Identity ile değiştir. UserManager<T>, RoleManager<T>, SignInManager<T> built-in gelecek. Password hashing (Argon2/PBKDF2 otomatik), account lockout, email confirmation, 2FA (mevcut TOTP entegrasyonu korunacak), password reset token'ları Identity ile yönetilecek. Mevcut ApplicationUser entity Identity'nin IdentityUser'ından türeyecek. Migration sırasında mevcut password hash'leri IPasswordHasher custom implementation ile backward-compatible tutulacak.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "OpenTelemetry + Aspire Dashboard Migration (Serilog/Loki → OTel)",
+    "description": "Mevcut Serilog → Grafana Loki logging stack'ini OpenTelemetry ile değiştir. Traces (marketplace API çağrıları, DB query'leri), Metrics (request latency, marketplace sync duration, queue depth), Logs (structured) tek OpenTelemetry SDK ile toplanacak. Aspire Dashboard dev ortamında traces+metrics+logs görüntüleyecek. Production'da OTLP exporter ile Grafana Tempo (traces) + Prometheus (metrics) + Loki (logs) kullanılabilir. Özellikle marketplace API call tracing kritik — her batch upload'un tam lifecycle'ı trace edilebilir olacak.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "All imports columns should be assignable by user",
+    "description": "In import section our user may come from other ERP or system. So the column names in the excel files may not match with our system's column names. We need to find a way to allow users to assign the columns in their excel files to the corresponding columns in our system. This will help ensure that the data is imported correctly and that users can easily map their data to our system without having to manually change their excel files. We should consider implementing a user-friendly interface that allows users to easily select and assign the columns from their excel files to the appropriate fields in our system. This could include features such as drag-and-drop functionality, dropdown menus, or a mapping wizard that guides users through the process step by step.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+     {
+    "task": "e2e category add full path",
+    "description": "We need to make sure that category adding process works correctly from end to end. This means that we need to test the entire process of adding a category, from the user interface to the database and back. We should create an e2e test that simulates a user adding a category through the UI, and then verifies that the category is correctly added to the database and displayed in the UI. This will help us ensure that the category adding process is working as expected and that there are no issues or bugs that could affect the user experience. also after that user should sync his category with any open marketplace. So we need to test the syncing process as well. This will help us ensure that the syncing process is working correctly and that categories are being properly synced with the marketplaces.",
+    "status": "pending",
+    "notes": "",
+    "priority": "High",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+   {
+    "task": "e2e product add full path",
+    "description": "We need to make sure that product adding process works correctly from end to end. This means that we need to test the entire process of adding a product, from the user interface to the database and back. We should create an e2e test that simulates a user adding a product through the UI, and then verifies that the product is correctly added to the database and displayed in the UI. This will help us ensure that the product adding process is working as expected and that there are no issues or bugs that could affect the user experience. also after that user should sync his product with any open marketplace. So we need to test the syncing process as well. This will help us ensure that the syncing process is working correctly and that products are being properly synced with the marketplaces.",
+    "status": "pending",
+    "notes": "",
+    "priority": "High",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Authentication Bug fix",
+    "description": "Everytime we refresh the page, the user gets logged out. We need to fix this issue to ensure a better user experience.",
+    "status": "completed",
+    "notes": "Root cause: @attribute [Authorize] in root _Imports.razor applied to App.razor, causing HTTP-level 302 redirect before Blazor starts. Fix: moved [Authorize] from root _Imports.razor to Features/_Imports.razor so only page components are protected, not the App shell. AuthorizeRouteView + RedirectToLogin still enforces auth at Blazor level.",
+    "priority": "critical",
+    "plan": false,
+    "manual_test_steps": [
+      "Log in to the application with valid credentials.",
+      "Refresh the page.",
+      "Observe whether the user remains logged in or gets logged out."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Prepare the project for local development and testing",
+    "description": "We have many external dependencies because of the nature of the project. We need to set up a local development environment that allows us to test the project without relying on external services. It seems for local developments it is safe for now howevery for these external marketplaces, they never trigger the webhooks or send a order in our system. So testing orders would be a problem. We need to find a way to simulate these interactions in our local environment.",
+    "status": "completed",
+    "notes": "Arastirma sonucu: Proje zaten kapsamli bir mock altyapisina sahip. Tum marketplace'ler icin UseMock konfigurasyonu mevcut (varsayilan true): Trendyol:UseMock, Hepsiburada:UseMock, N11:UseMock, Pazarama:UseMock, Amazon:UseMock, Ciceksepeti:UseMock, Pttavm:UseMock, Temu:UseMock, EInvoice:UseMock. Her marketplace icin MockXxxOrderService, MockXxxProductService gibi mock implementasyonlar var. DI'da ApplicationDependencyExtension.cs icinde configuration'a gore otomatik swap yapiliyor. Integration testleri Testcontainers+Respawn ile calisiyor. Trendyol webhook endpoint'i /api/trendyol/webhook'ta mevcut. Background servisler TenantAwarePollingService base class kullanarak multi-tenant polling yapiyor. Ek gelistirme: Webhook test endpointleri (diger marketplace'ler icin) ve mock order data zenginlestirme ileride yapilab ilir.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Import Export Functionality",
+    "description": "Now we have import and export functionality but it seems a little bit buggy. An excel file can not have any row more 1million rows, but we have some files that have more than 1 million rows. We need to find a way to handle these large files without causing performance issues or crashes. We can consider implementing a streaming approach to process the files in smaller chunks, or we can explore using a different file format that supports larger datasets. Additionally, we should also implement error handling to manage any issues that may arise during the import/export process. This will help us ensure that the functionality is robust and can handle a variety of scenarios without causing disruptions to the user experience. Also you need to add date range for the export queries. This will allow users to export data for specific time periods, which can help reduce the size of the exported files and improve performance. We should also consider adding a progress indicator for the import/export process, especially for larger files. This will provide users with feedback on the status of their import/export and help manage expectations regarding the time it may take to complete the process. User should also be able to cancel the import/export process if they realize they have selected the wrong file or if they need to make changes before proceeding. Implementing a cancellation feature will enhance the user experience and provide more control over the import/export process. User should select the columns they want to export. This will allow users to customize their exports and reduce the size of the exported files by only including relevant data. We should also consider implementing a validation step before the import process begins to ensure that the data being imported meets the required format and standards. This will help prevent errors and ensure that the imported data is accurate and usable.",
+    "status": "done",
+    "notes": "Excel row limit fix done (WriteToExcelSheets multi-sheet split). Import price O(N²)→O(N) fixed. Import stock N+1→batch fixed. Remaining: date range filter, CSV format, column selection, progress indicator, cancel, validation.",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Matching process optimization",
+    "description": "For the category section we have a sync process that works with the marketplaces. User now can normally match a category with marketplace's category. But after doing this category attributes are supposed to be done seperately. This is a problem because user needs to do this process for every category and it is time consuming. We need to find a way to optimize this process and make it more efficient for the user. One possible solution could be to implement a bulk matching feature that allows users to match multiple categories at once. This could be done by allowing users to select multiple categories and then providing a mapping interface where they can match the selected categories with the corresponding marketplace categories in one go. Additionally, we could also consider implementing an auto-matching feature that uses machine learning algorithms or a simple LLM to automatically suggest matches based on the category names and attributes. This would further reduce the time and effort required for the matching process and improve the overall user experience. After matching the categories we need to redirect the user for those categories' attributes. This will allow users to complete the matching process in a more streamlined manner and ensure that all necessary information is captured for the categories. We should also consider implementing a validation step to ensure that the matched categories and their attributes are accurate and consistent with the marketplace's requirements. This will help prevent errors and ensure that the data is properly aligned with the marketplace's structure. User can do it for each marketplace. This will allow users to manage their category mappings for different marketplaces in a more organized and efficient way. We should also consider implementing a feature that allows users to save their category mappings as templates, which can be reused for similar categories in the future. This will further streamline the matching process and save time for users who frequently work with similar categories across different marketplaces.",
+    "status": "done",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Bugfix: Review page closes the sidebar menu",
+    "description": "When a user presses the \"degerlendir\" button on the side bar, the menu in the side bar just closes. We need to fix this.",
+    "status": "completed",
+    "notes": "Root cause: NavMenu.razor.cs sectionRoutes dictionary storefront section sadece 'settings/storefront' route'unu iceriyordu ama /storefront/reviews gibi URL'ler 'settings/' prefix'i olmadan basliyordu. UpdateMenuStateByLocation() tum section'lari kapatip hicbirini tekrar acamiyordu. Fix: storefront section'a 'storefront' route eklendi. Ayni sorun /admin/notifications icin de users section'a 'admin/notifications' eklenerek duzeltildi.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Turkish chars",
+    "description": "Turkish chars are not used by developers while putting the new features of the project. They have written \"degerlendir\" instead of \"değerlendir\". We need to change this in the codebase and make sure that all the Turkish chars are used correctly. This will help improve the user experience for our Turkish users and ensure that the application is more accessible and user-friendly for them.",
+    "status": "done",
+    "notes": "",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "In category matching there is only one attribute matching",
+    "description": "In marketplacedetails column there is only one marketplace detail matching. But there are some categories that have more than one marketplace details. We need to find a way to allow users to match multiple marketplace details for a single category. This will help ensure that all relevant information is captured for each category and improve the overall accuracy and completeness of the category matching process.",
+    "status": "pending",
+    "notes": "",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Brand matching needs a UX",
+    "description": "Once the user presses the brand matching button, they are redirected to a page where they can match their brands with the marketplace's brands. However, there is no user experience design for this page, and it can be confusing for users to navigate and complete the matching process. We need to design a user-friendly interface for the brand matching page that guides users through the process and makes it easy for them to match their brands with the marketplace's brands. This could include clear instructions, visual cues, and an intuitive layout that allows users to easily select and match their brands. Additionally, we should consider implementing features such as search functionality and filters to help users quickly find the relevant brands and streamline the matching process. For one brand, there can be multiple marketplace brands. We need to find a way to allow users to match multiple marketplace brands for a single brand. This will help ensure that all relevant information is captured for each brand and improve the overall accuracy and completeness of the brand matching process.",
+    "status": "pending",
+    "notes": "",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "User management settings needs a UX",
+    "description": "We had a user management page. unfortunetly I can not see it now. It may be because of the admin user hasn't got any permissions or we have deleted it from sidebar menu. We need to find a way to make it accessible for the admin user and design a user-friendly interface for the user management page that allows admins to easily manage users, assign roles and permissions, and perform other user-related tasks. This could include features such as search functionality, filters, and an intuitive layout that makes it easy for admins to navigate and complete their tasks efficiently.",
+    "status": "completed",
+    "notes": "Root cause: AuthService.LoginAsync missing .ThenInclude(r => r.RoleClaims) — permissions were never loaded for non-Admin roles. Fixed login permission loading, RoleService AddRole/UpdateRole now saves permission claims. UX improvements: role column in user list, QuickFilter search, multi-role selection in UserEdit, active/passive toggle from list.",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Permission restrictions for everything in the system",
+    "description": "Users who do not have any permission for the page also they still can not see the menu item for that page. We need to implement permission restrictions for all pages and features in the system to ensure that users only have access to the functionalities that they are authorized to use. This will help improve security and prevent unauthorized access to sensitive information or critical features. We should also consider implementing a role-based access control system that allows us to easily manage permissions and assign them to different user roles based on their responsibilities and needs within the organization. But in the future we can sell them module by module maybe we might show them as passive options. This will allow users to see the available features and understand what they are missing out on, which could potentially encourage them to upgrade their permissions or purchase additional modules. However, we need to ensure that the passive options are clearly marked as unavailable and do not cause confusion for users who do not have access to those features. so in this case for specific roles we can show the menu items but they will be passive and when user clicks on them, we can show a pop-up that explains why they can not access that page and what they need to do to gain access. This will help improve the user experience and provide clear guidance for users who may be interested in accessing additional features or functionalities within the system. For other specific roles the menu items and the feature itself will not be visible. This will help ensure that users only see the options that are relevant to their role and prevent confusion or frustration for users who may be overwhelmed by too many options or features that they do not have access to.",
+    "status": "completed",
+    "notes": "PermissionGuardedNavLink component (hidden/disabled/upgrade-popup modes). All ~35 NavMenu items protected with permission-based AuthorizeView. 48 page files got [Authorize(Policy=...)] attributes. UpgradePromptDialog for tenant feature upsell. AccessDenied fallback page. 8 new tests (bUnit + security).",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [
+      "Log in to the application with a user account that has limited permissions.",
+      "Navigate through the application and observe which menu items and features are visible and accessible.",
+      "Attempt to access a page or feature that the user does not have permission for and observe the behavior (e.g., whether the menu item is hidden, disabled, or shows a pop-up message).",
+      "Log in with a user account that has full permissions and verify that all menu items and features are visible and accessible."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Investigation: Notification for the users",
+    "description": "Users can normally take notifications. We should consider implementing a notification management system that allows users to customize their notification preferences, such as choosing which types of notifications they want to receive and how they want to receive them (e.g., email, in-app, SMS). Additionally, we should ensure that the notification system is reliable and delivers notifications in a timely manner to keep users informed about important updates and events within the system. Notifications can be sent to a single user, a group of users, or all users in the system. This will allow us to effectively communicate important information and updates to the relevant users and ensure that they are aware of any changes or actions that may require their attention. We should also consider implementing a notification history feature that allows users to view their past notifications and manage them as needed. This will help users keep track of their notifications and ensure that they do not miss any important information or updates.",
+    "status": "completed",
+    "notes": "3 fazli plan implement edildi: Faz 1 — Sender hata izolasyonu (Task.WhenAll bug fix), EmailSender SMTP implementasyonu (StorefrontEmailService pattern), per-user bildirim dismiss (NotificationsUsers.IsDismissed), INotificationSender DI kayit duzeltmesi. Faz 2 — Admin bildirim yonetimi sayfasi (/admin/notifications), SendNotificationDialog (role/sube/tum kullanicilar hedefleme), NotificationRecipientResolver, AppPermissions.Notifications.Create/Manage. Faz 3 — SMS stub (SmsSender, throw etmez), NotificationSetting'e SMS alanlari, SenderType.Sms. 23 yeni unit test, 1361 toplam test gecti. Migration: AddNotificationDismissAndSmsFields.",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Realtime chat system for users for our blazor system.",
+    "description": "We should consider implementing a real-time chat system that allows users to communicate with each other within our Blazor system. This could be particularly useful for collaboration and support purposes, allowing users to easily ask questions, share information, and provide assistance to one another. The chat system should be designed to be user-friendly and intuitive, with features such as message notifications, typing indicators, and the ability to send attachments or links. Additionally, we should ensure that the chat system is secure and properly integrated with our existing blazor system. This will help enhance the overall user experience and foster a sense of community and collaboration among our users.",
+    "status": "completed",
+    "notes": "Tam kapsamli realtime chat sistemi implement edildi. Entity: ChatConversation (Direct/Group), ChatMessage (Text/System/Link + reply), ChatParticipant (LastReadAt okunmamis takibi), ChatMessageReadReceipt. Business: ChatManager (7 metot, 3-adim pipeline), SendChatMessageDtoValidator. Altyapi: Ayri ChatHub (/ChatHub, typing indicator SignalR group), EventChannel + ChatEventPublisher + InProcessChatDeliveryService, UserOnlineStatusTracker. UI: /chat sayfasi (iki panel), ChatButton (AppBar unread badge), NewChatDialog, mesaj balonlari, cursor-based pagination. Migration: 4 tablo + indexler DB'ye uygulandı.",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  }
+]
