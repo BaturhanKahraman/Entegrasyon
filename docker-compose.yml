@@ -39,6 +39,18 @@ services:
     networks:
       - entegrasyon-net
 
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: entegrasyon-aspire-dashboard
+    restart: unless-stopped
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    ports:
+      - "18888:18888"   # Dashboard UI
+      - "4317:18889"    # OTLP gRPC receiver
+    networks:
+      - entegrasyon-net
+
 volumes:
   pgdata:
   redis-data:
