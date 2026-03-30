@@ -2,11 +2,42 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
 @using Entegrasyon.Entity.Dtos.Brand
+@using Entegrasyon.Entity.Dtos.Marketplace
 
 <PageTitle>Marka Eşleştirme - Entegrasyon</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-4">
-    <MudText Typo="Typo.h5" Class="mb-4">Marka Eşleştirme</MudText>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <MudText Typo="Typo.h5">Marka Eşleştirme</MudText>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <MudSelect T="int?" Label="Marketplace" Value="_selectedMarketplaceId"
+                       ValueChanged="OnMarketplaceSelected"
+                       Variant="Variant.Outlined" Dense="true"
+                       Style="min-width: 160px;"
+                       Placeholder="Seçiniz...">
+                @foreach (var mp in _marketplaces)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)mp.Id)">@mp.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                       OnClick="RunAutoMatch"
+                       Disabled="@(_selectedMarketplaceId is null || _isAutoMatching)"
+                       Size="Size.Small">
+                @if (_isAutoMatching)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
+                    <span>Eşleştiriliyor...</span>
+                }
+                else
+                {
+                    <span>Tümünü Otomatik Eşleştir</span>
+                }
+            </MudButton>
+        </div>
+    </div>
 
     <!-- Summary Stats -->
     <MudGrid Spacing="2" Class="mb-4">
@@ -49,6 +80,7 @@
                 <BrandMappingDetailPanel Brand="_selectedBrand"
                                          BrandMappings="_selectedBrandMappings"
                                          Marketplaces="_marketplaces"
+                                         AllMappingsForMarketplace="@GetMappingsForSelectedMarketplace()"
                                          OnMappingChanged="OnMappingChanged" />
             </MudItem>
         </MudGrid>

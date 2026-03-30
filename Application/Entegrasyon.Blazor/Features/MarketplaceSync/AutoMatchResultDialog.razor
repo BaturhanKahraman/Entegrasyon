@@ -1,0 +1,76 @@
+@using Entegrasyon.Entity.Dtos.Brand
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Otomatik Eşleştirme Sonucu</MudText>
+    </TitleContent>
+    <DialogContent>
+        <!-- Summary chips -->
+        <MudStack Row="true" Spacing="2" Class="mb-4">
+            @if (Result.AutoMatchedCount > 0)
+            {
+                <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">
+                    @Result.AutoMatchedCount otomatik eşleştirildi
+                </MudChip>
+            }
+            @if (Result.SuggestionCount > 0)
+            {
+                <MudChip T="string" Color="Color.Warning" Icon="@Icons.Material.Filled.HelpOutline">
+                    @Result.SuggestionCount öneri (düşük güven)
+                </MudChip>
+            }
+            @if (Result.FailedCount > 0)
+            {
+                <MudChip T="string" Color="Color.Error" Icon="@Icons.Material.Filled.Cancel">
+                    @Result.FailedCount eşleştirilemedi
+                </MudChip>
+            }
+        </MudStack>
+
+        @if (Result.Suggestions.Count > 0)
+        {
+            <MudText Typo="Typo.subtitle2" Class="mb-2">
+                Öneriler — onaylamak istediklerinizi seçin:
+            </MudText>
+            <MudTable T="BrandAutoMatchSuggestionDto" Items="Result.Suggestions.AsEnumerable()"
+                      Dense="true" Hover="true" Elevation="0" Outlined="true"
+                      MultiSelection="true"
+                      @bind-SelectedItems="_selectedSuggestions">
+                <HeaderContent>
+                    <MudTh>Uygulama Markası</MudTh>
+                    <MudTh>Marketplace Markası</MudTh>
+                    <MudTh>Güven</MudTh>
+                    <MudTh>Neden</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.ApplicationBrandName</MudTd>
+                    <MudTd>@context.MarketPlaceBrandName</MudTd>
+                    <MudTd>
+                        <MudChip T="string" Size="Size.Small"
+                                 Color="@(context.Confidence >= 0.7 ? Color.Warning : Color.Default)">
+                            %@((context.Confidence * 100).ToString("F0"))
+                        </MudChip>
+                    </MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.caption">@context.Reason</MudText>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Kapat</MudButton>
+        @if (Result.Suggestions.Count > 0)
+        {
+            <MudButton OnClick="ApproveSelected"
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       Disabled="@(_selectedSuggestions.Count == 0)">
+                Seçilenleri Onayla (@_selectedSuggestions.Count)
+            </MudButton>
+            <MudButton OnClick="ApproveAll"
+                       Variant="Variant.Filled" Color="Color.Success">
+                Tümünü Onayla (@Result.Suggestions.Count)
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>

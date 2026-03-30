@@ -11,6 +11,7 @@ public partial class BrandMappingDetailPanel : ComponentBase
     [Parameter] public BrandDto? Brand { get; set; }
     [Parameter] public List<BrandMarketPlaceMatchDto> BrandMappings { get; set; } = [];
     [Parameter] public List<MarketplaceOption> Marketplaces { get; set; } = [];
+    [Parameter] public List<BrandMarketPlaceMatchDto> AllMappingsForMarketplace { get; set; } = [];
     [Parameter] public EventCallback OnMappingChanged { get; set; }
 
     [Inject] private IMarketplaceSearchService SearchService { get; set; } = null!;
@@ -25,6 +26,20 @@ public partial class BrandMappingDetailPanel : ComponentBase
 
     private BrandMarketPlaceMatchDto? GetMapping(int marketPlaceId) =>
         BrandMappings.FirstOrDefault(m => m.MarketPlaceId == marketPlaceId);
+
+    /// <summary>
+    /// Returns the app brand name that is already using this marketplace brand ID, or null if free.
+    /// Only checks OTHER brands (not the current Brand).
+    /// </summary>
+    private string? GetExistingOwner(int marketPlaceId, int marketPlaceBrandId)
+    {
+        var existing = AllMappingsForMarketplace.FirstOrDefault(m =>
+            m.MarketPlaceId == marketPlaceId &&
+            m.MarketPlaceBrandId == marketPlaceBrandId &&
+            m.ApplicationBrandId != (Brand?.Id ?? -1));
+
+        return existing is not null ? existing.ApplicationBrandName : null;
+    }
 
     private async Task<IEnumerable<MarketplaceBrandSearchResult>> SearchBrands(
         int marketPlaceId, string value, CancellationToken ct)
