@@ -51,4 +51,4 @@ app.MapControllerRoute(
 
 app.Run();
 
-public partial class Program { } // For integration tests
+internal partial class Program { } // internal — Blazor'daki public Program ile çakışmasın
