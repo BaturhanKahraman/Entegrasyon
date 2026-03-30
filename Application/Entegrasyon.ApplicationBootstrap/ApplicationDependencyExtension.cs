@@ -103,6 +103,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<BrandMapper>();
             services.AddSingleton<SaleMapper>();
 
+            // Brand auto-match (explicit — IBrandAutoMatchService naming exception vs Scrutor)
+            services.AddScoped<IBrandAutoMatchService, BrandAutoMatchService>();
+
             // NAMING EXCEPTION: IXxxService → XxxManager (Scrutor cannot match)
             services.AddScoped<ICategoryService, CategoryManager>();
             services.AddScoped<IProductService, ProductManager>();
@@ -122,7 +125,6 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // Trendyol servisleri
             services.AddScoped<TrendyolCategoryImporter>();
-            services.AddScoped<N11CategoryImporter>();
             services.AddScoped<TrendyolMappingValidator>();
 
             var useMock = configuration.GetValue<bool>("Trendyol:UseMock", true);
@@ -195,8 +197,15 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // N11 servisleri
             services.AddScoped<N11MappingValidator>();
+            // IN11SoapClient + N11CategoryImporter her zaman kayıtlı —
+            // REST servisleri delete/ship için SOAP'a fallback yapar.
+            services.AddScoped<IN11SoapClient, N11SoapClient>();
+            services.AddScoped<N11CategoryImporter>();
+            services.AddScoped<N11RestCategoryImporter>();
 
             var useN11Mock = configuration.GetValue<bool>("N11:UseMock", true);
+            var useN11Soap = configuration.GetValue<bool>("N11:UseSoap", false); // default: REST
+
             if (useN11Mock)
             {
                 services.AddScoped<IN11ProductService, MockN11ProductService>();
@@ -204,11 +213,22 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IN11OrderService, MockN11OrderService>();
                 services.AddScoped<IN11ClaimService, MockN11ClaimService>();
             }
-            else
+            else if (useN11Soap)
             {
+                // SOAP (legacy) — tam SOAP stack
+                services.AddScoped<IN11ProductMapper, N11ProductMapper>();
                 services.AddScoped<IN11ProductService, N11ProductService>();
                 services.AddScoped<IN11StockPriceService, N11StockPriceService>();
                 services.AddScoped<IN11OrderService, N11OrderService>();
+                services.AddScoped<IN11ClaimService, N11ClaimService>();
+            }
+            else
+            {
+                // REST (yeni varsayılan)
+                services.AddScoped<IN11RestClient, N11RestClient>();
+                services.AddScoped<IN11ProductService, N11RestProductService>();
+                services.AddScoped<IN11StockPriceService, N11RestStockPriceService>();
+                services.AddScoped<IN11OrderService, N11RestOrderService>();
                 services.AddScoped<IN11ClaimService, N11ClaimService>();
             }
 
@@ -393,6 +413,10 @@ namespace Entegrasyon.ApplicationBootstrap
             {
                 x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/");
             });
+            services.AddHttpClient("N11Rest", x =>
+            {
+                x.BaseAddress = new Uri("https://api.n11.com/");
+            });
             services.AddHttpClient("Ollama", x =>
             {
                 x.BaseAddress = new Uri("http://localhost:11434/");
@@ -432,6 +456,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
             services.AddHostedService<N11OrderPollingService>();
+            services.AddHostedService<N11TaskPollingService>();
             services.AddHostedService<DashboardRefreshService>();
             services.AddHostedService<HepsiburadaStatusPollingService>();
             services.AddHostedService<HepsiburadaStockPriceSyncService>();
