@@ -66,6 +66,10 @@ public class PagePermissionAttributeTests
         // Brands
         { "Entegrasyon.Blazor.Features.Brands.BrandsPage", AppPermissions.Brands.View },
 
+        // BranchOffices
+        { "Entegrasyon.Blazor.Features.BranchOffices.BranchOfficesPage", AppPermissions.BranchOffices.View },
+        { "Entegrasyon.Blazor.Features.BranchOffices.BranchOfficeDetail", AppPermissions.BranchOffices.View },
+
         // Sales & POS
         { "Entegrasyon.Blazor.Features.POS.POSPage", AppPermissions.Sales.Create },
         { "Entegrasyon.Blazor.Features.Sales.Sales", AppPermissions.Sales.View },

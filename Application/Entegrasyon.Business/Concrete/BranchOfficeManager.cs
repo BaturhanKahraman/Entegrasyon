@@ -6,6 +6,7 @@ using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
+using Entegrasyon.Entity.POS;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
@@ -66,15 +67,37 @@ public class BranchOfficeManager(
     public async Task<IResult> Delete(int id)
     {
         using var dbContext = contextFactory.CreateDbContext();
-        await applicationLogManager.AddLog("Ofis silme işlemi yapılmakta.",LogType.Branch,LogAction.Delete);
+        await applicationLogManager.AddLog("Ofis silme işlemi yapılmakta.", LogType.Branch, LogAction.Delete);
+
         if (id <= 0)
-        {
             return new ErrorResult("Ofis id si alırken sıkıntı yaşanmıştır.");
-        }
-        dbContext.BranchOffices.Remove(new BranchOffice(){Id=id});
+
+        // Kontrol 1: Son aktif depo mu?
+        var activeBranchCount = await dbContext.BranchOffices.CountAsync(b => !b.IsDeleted);
+        if (activeBranchCount <= 1)
+            return new ErrorResult("En az 1 aktif depo olmalidir.");
+
+        // Kontrol 2: Aktif POS oturumu var mi?
+        var hasPosSession = await dbContext.POSSessions
+            .AnyAsync(s => s.BranchOfficeId == id && s.Status == POSSessionStatus.Open);
+        if (hasPosSession)
+            return new ErrorResult("Bu depoda acik POS oturumu var. Lutfen once oturumu kapatin.");
+
+        // Kontrol 3: IsDefaultMarketPlaceStock mi?
+        var branch = await dbContext.BranchOffices.AsTracking().FirstOrDefaultAsync(b => b.Id == id);
+        if (branch is null)
+            return new ErrorResult("Depo bulunamadı.");
+
+        if (branch.IsDefaultMarketPlaceStock)
+            return new ErrorResult("Bu depo varsayilan marketplace deposudur. Once baska bir depoyu varsayilan yapin.");
+
+        // Soft delete
+        branch.IsDeleted = true;
+        branch.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync();
-        await applicationLogManager.AddLog("Ofis silme işlemi başarıyla tamamlandı. ",LogType.Branch,LogAction.Delete);
-        return new SuccessResult("Ofis silme işlemi başarıyla tamamlandı. ");
+
+        await applicationLogManager.AddLog("Ofis silme işlemi başarıyla tamamlandı.", LogType.Branch, LogAction.Delete);
+        return new SuccessResult("Depo başarıyla silindi.");
     }
 
     private async Task<IResult> CheckIfTheSameNameExists(IntegrationDbContext dbContext, string name,int id)
