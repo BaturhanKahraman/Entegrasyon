@@ -3,6 +3,7 @@ using System;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Entegrasyon.AdminPanel.Migrations
 {
     [DbContext(typeof(AdminPanelDbContext))]
-    partial class AdminPanelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330222647_AddMasterBrand")]
+    partial class AddMasterBrand
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -420,63 +423,6 @@ namespace Entegrasyon.AdminPanel.Migrations
                     b.ToTable("MasterBrandMarketplaceMappings");
                 });
 
-            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCargoCompany", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("MasterCargoCompanies");
-                });
-
-            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCargoCompanyMarketplaceMapping", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ExternalCargoCompanyId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ExternalCargoCompanyName")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MarketplaceId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MasterCargoCompanyId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MasterCargoCompanyId", "MarketplaceId")
-                        .IsUnique();
-
-                    b.ToTable("MasterCargoCompanyMarketplaceMappings");
-                });
-
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -878,17 +824,6 @@ namespace Entegrasyon.AdminPanel.Migrations
                     b.Navigation("MasterBrand");
                 });
 
-            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCargoCompanyMarketplaceMapping", b =>
-                {
-                    b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCargoCompany", "MasterCargoCompany")
-                        .WithMany("MarketplaceMappings")
-                        .HasForeignKey("MasterCargoCompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MasterCargoCompany");
-                });
-
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCategory", b =>
                 {
                     b.HasOne("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCategory", "Parent")
@@ -1016,11 +951,6 @@ namespace Entegrasyon.AdminPanel.Migrations
                 });
 
             modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterBrand", b =>
-                {
-                    b.Navigation("MarketplaceMappings");
-                });
-
-            modelBuilder.Entity("Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog.MasterCargoCompany", b =>
                 {
                     b.Navigation("MarketplaceMappings");
                 });
