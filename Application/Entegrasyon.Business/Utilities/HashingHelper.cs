@@ -25,4 +25,12 @@ public static class HashingHelper
 
         return true;
     }
+
+    /// <summary>Creates a bcrypt hash with work factor 12.</summary>
+    public static string CreateBcryptHash(string password)
+        => BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+
+    /// <summary>Verifies a password against a bcrypt hash.</summary>
+    public static bool VerifyBcryptHash(string password, string hash)
+        => BCrypt.Net.BCrypt.Verify(password, hash);
 }

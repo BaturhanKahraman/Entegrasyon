@@ -64,4 +64,24 @@ public class Messages
     public const string CurrentPasswordWrong = "Mevcut şifreniz hatalı.";
     public const string PasswordChanged = "Şifreniz başarıyla değiştirildi.";
     public const string ProfileUpdated = "Profil bilgileriniz başarıyla güncellendi.";
+
+    // Account Lockout
+    public const string AccountLocked = "Hesabınız çok fazla başarısız giriş denemesi nedeniyle kilitlendi.";
+
+    // Password Reset
+    public const string PasswordResetRequested = "Şifre sıfırlama talebi işleme alındı.";
+    public const string PasswordResetTokenExpired = "Şifre sıfırlama bağlantısının süresi dolmuş.";
+    public const string PasswordResetTokenInvalid = "Geçersiz şifre sıfırlama bağlantısı.";
+    public const string PasswordResetSuccess = "Şifreniz başarıyla sıfırlandı.";
+
+    // 2FA
+    public const string TwoFactorSetupSuccess = "İki faktörlü doğrulama kurulumu başlatıldı.";
+    public const string TwoFactorEnabled = "İki faktörlü doğrulama aktif edildi.";
+    public const string TwoFactorDisabled = "İki faktörlü doğrulama devre dışı bırakıldı.";
+    public const string TwoFactorInvalidCode = "Geçersiz doğrulama kodu.";
+    public const string TwoFactorNotConfigured = "İki faktörlü doğrulama yapılandırılmamış.";
+    public const string TwoFactorRequired = "İki faktörlü doğrulama gerekli.";
+    public const string RecoveryCodesGenerated = "Kurtarma kodları oluşturuldu.";
+    public const string RecoveryCodeUsed = "Kurtarma kodu ile giriş başarılı.";
+    public const string RecoveryCodeInvalid = "Geçersiz veya kullanılmış kurtarma kodu.";
 }
