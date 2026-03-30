@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Diagnostics;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Hepsiburada;
@@ -28,34 +30,71 @@ public sealed class HepsiburadaProductService(
 
     public async Task<IDataResult<string>> PublishProductAsync(Guid productId)
     {
-        // 1. Validation
-        var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
-        await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-            validationResult.Success ? "Hepsiburada mapping doğrulaması başarılı" : validationResult.Message!,
-            validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
-            marketplaceName: "Hepsiburada");
-
-        if (!validationResult.Success)
-            return new ErrorDataResult<string>(null!, validationResult.Message!);
-
-        // 2. Mapping
-        var mapResult = await productMapper.MapProductAsync(productId);
-        if (!mapResult.Success)
-            return new ErrorDataResult<string>(null!, mapResult.Message!);
-
-        // 3. Publish (multipart JSON upload)
+        var sw = Stopwatch.StartNew();
+        using var activity = EntegrasyonActivitySource.StartProductSync("Hepsiburada", productId);
         try
         {
-            var json = JsonSerializer.Serialize(mapResult.Data);
+            // 1. Validation
+            using (var validationSpan = EntegrasyonActivitySource.StartValidation("Hepsiburada"))
+            {
+                var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
+                validationSpan?.SetTag("validation.success", validationResult.Success);
+
+                await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
+                    validationResult.Success ? "Hepsiburada mapping doğrulaması başarılı" : validationResult.Message!,
+                    validationResult.Success ? ProductActivityStatus.Success : ProductActivityStatus.Error,
+                    marketplaceName: "Hepsiburada");
+
+                if (!validationResult.Success)
+                {
+                    validationSpan?.SetStatus(ActivityStatusCode.Error, validationResult.Message);
+                    activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
+                    EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                        new KeyValuePair<string, object?>("marketplace", "Hepsiburada"),
+                        new KeyValuePair<string, object?>("error_type", "validation"));
+                    return new ErrorDataResult<string>(null!, validationResult.Message!);
+                }
+            }
+
+            // 2. Mapping
+            string json;
+            using (var mappingSpan = EntegrasyonActivitySource.StartMapping("Hepsiburada"))
+            {
+                var mapResult = await productMapper.MapProductAsync(productId);
+                mappingSpan?.SetTag("mapping.success", mapResult.Success);
+
+                if (!mapResult.Success)
+                {
+                    mappingSpan?.SetStatus(ActivityStatusCode.Error, mapResult.Message);
+                    activity?.SetStatus(ActivityStatusCode.Error, "Mapping failed");
+                    EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                        new KeyValuePair<string, object?>("marketplace", "Hepsiburada"),
+                        new KeyValuePair<string, object?>("error_type", "mapping"));
+                    return new ErrorDataResult<string>(null!, mapResult.Message!);
+                }
+
+                json = JsonSerializer.Serialize(mapResult.Data);
+            }
+
+            // 3. Publish (multipart JSON upload)
+            var apiSw = Stopwatch.StartNew();
             var response = await apiClient.PostMultipartJsonFileAsync("/api/products/import", json, "products.json");
+            apiSw.Stop();
+            EntegrasyonMetrics.MarketplaceApiDuration.Record(apiSw.ElapsedMilliseconds,
+                new KeyValuePair<string, object?>("marketplace", "Hepsiburada"),
+                new KeyValuePair<string, object?>("operation", "publish"));
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 logger.LogError("HB publish failed: {Status} {Body}", response.StatusCode, errorBody);
+                activity?.SetStatus(ActivityStatusCode.Error, $"HTTP {response.StatusCode}");
                 await activityLogger.LogAsync(productId, ProductActivityType.BatchFailed,
                     $"Hepsiburada API hatası: {response.StatusCode}",
                     ProductActivityStatus.Error, errorBody, "Hepsiburada");
+                EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                    new KeyValuePair<string, object?>("marketplace", "Hepsiburada"),
+                    new KeyValuePair<string, object?>("error_type", "api_error"));
                 return new ErrorDataResult<string>(null!, $"API hatası: {response.StatusCode}");
             }
 
@@ -65,10 +104,12 @@ public sealed class HepsiburadaProductService(
             if (trackingResponse?.Success != true || trackingResponse.Data?.TrackingId == null)
             {
                 var msg = trackingResponse?.Message ?? "trackingId alınamadı";
+                activity?.SetStatus(ActivityStatusCode.Error, msg);
                 return new ErrorDataResult<string>(null!, msg);
             }
 
             var trackingId = trackingResponse.Data.TrackingId;
+            activity?.SetTag("hepsiburada.tracking_id", trackingId);
 
             // Update ProductMarketplace
             await using var dbContext = await contextFactory.CreateDbContextAsync();
@@ -86,14 +127,25 @@ public sealed class HepsiburadaProductService(
                 "Hepsiburada'ya ürün gönderildi",
                 ProductActivityStatus.Success, null, "Hepsiburada", trackingId);
 
+            sw.Stop();
+            EntegrasyonMetrics.ProductSyncTotal.Add(1,
+                new KeyValuePair<string, object?>("marketplace", "Hepsiburada"));
+            EntegrasyonMetrics.ProductSyncDuration.Record(sw.ElapsedMilliseconds,
+                new KeyValuePair<string, object?>("marketplace", "Hepsiburada"));
+
+            activity?.SetStatus(ActivityStatusCode.Ok);
             return new SuccessDataResult<string>(trackingId);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "HB publish exception for product {ProductId}", productId);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             await activityLogger.LogAsync(productId, ProductActivityType.BatchFailed,
                 $"Hepsiburada publish hatası: {ex.Message}",
                 ProductActivityStatus.Error, ex.ToString(), "Hepsiburada");
+            EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                new KeyValuePair<string, object?>("marketplace", "Hepsiburada"),
+                new KeyValuePair<string, object?>("error_type", "exception"));
             return new ErrorDataResult<string>(null!, $"Hata: {ex.Message}");
         }
     }

@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Diagnostics;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
@@ -169,10 +171,17 @@ public sealed class ProductSyncManager(
 
     public async Task<IResult> SyncProductAsync(Guid productId, int marketPlaceId)
     {
+        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+        using var activity = EntegrasyonActivitySource.StartMarketplaceOperation(marketplaceName, "QueueSync");
+        activity?.SetTag("product.id", productId.ToString());
+
         using var dbContext = contextFactory.CreateDbContext();
         var product = await dbContext.MainProducts.FindAsync(productId);
         if (product is null)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Ürün bulunamadı");
             return new ErrorResult("Ürün bulunamadı.");
+        }
 
         var marketplace = await dbContext.ProductMarketplaces
             .FirstOrDefaultAsync(pm => pm.ProductId == productId && pm.MarketPlaceId == marketPlaceId);
@@ -196,7 +205,6 @@ public sealed class ProductSyncManager(
 
         await dbContext.SaveChangesAsync();
 
-        var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
         await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
         {
             TenantId = tenantContext.TenantId
@@ -209,6 +217,7 @@ public sealed class ProductSyncManager(
             $"Ürün {marketplaceName} senkronizasyonuna gönderildi",
             LogType.Marketplace, LogAction.Sync, new { productId, marketplaceName });
 
+        activity?.SetStatus(ActivityStatusCode.Ok);
         return new SuccessResult("Ürün senkronizasyon kuyruğuna eklendi.");
     }
 
@@ -254,6 +263,10 @@ public sealed class ProductSyncManager(
         if (!lockAcquired)
             return new ErrorResult("Toplu senkronizasyon zaten devam ediyor.");
 
+        var marketplaceNameForBulk = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
+        using var bulkActivity = EntegrasyonActivitySource.StartBulkOperation("SyncAllPending", 0);
+        bulkActivity?.SetTag("marketplace.name", marketplaceNameForBulk);
+
         try
         {
             var unsyncedProductIds = await dbContext.MainProducts
@@ -285,6 +298,11 @@ public sealed class ProductSyncManager(
             await applicationLogManager.AddLog(
                 $"{unsyncedProductIds.Count} ürün {marketplaceName} senkronizasyonuna toplu gönderildi",
                 LogType.Marketplace, LogAction.Sync, new { count = unsyncedProductIds.Count, marketplaceName });
+
+            bulkActivity?.SetTag("bulk.item_count", unsyncedProductIds.Count);
+            bulkActivity?.SetStatus(ActivityStatusCode.Ok);
+            EntegrasyonMetrics.ProductSyncTotal.Add(unsyncedProductIds.Count,
+                new KeyValuePair<string, object?>("marketplace", marketplaceName));
 
             return new SuccessResult($"{unsyncedProductIds.Count} ürün senkronizasyon kuyruğuna eklendi.");
         }

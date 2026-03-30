@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Diagnostics;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.N11;
@@ -38,14 +40,28 @@ public sealed class N11RestProductService(
     /// </summary>
     public async Task<IDataResult<long>> SaveProductAsync(Guid productId)
     {
-        // Adım 1: Mapping doğrulaması
-        var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
-        if (!validationResult.Success)
+        var sw = Stopwatch.StartNew();
+        using var activity = EntegrasyonActivitySource.StartProductSync("N11", productId);
+        try
         {
-            await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-                $"Eşleştirme doğrulaması başarısız: {validationResult.Message}",
-                ProductActivityStatus.Error, marketplaceName: "N11");
-            return new ErrorDataResult<long>(0, validationResult.Message!);
+        // Adım 1: Mapping doğrulaması
+        using (var validationSpan = EntegrasyonActivitySource.StartValidation("N11"))
+        {
+            var validationResult = await mappingValidator.ValidateProductMappingsAsync(productId);
+            validationSpan?.SetTag("validation.success", validationResult.Success);
+
+            if (!validationResult.Success)
+            {
+                validationSpan?.SetStatus(ActivityStatusCode.Error, validationResult.Message);
+                activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
+                await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
+                    $"Eşleştirme doğrulaması başarısız: {validationResult.Message}",
+                    ProductActivityStatus.Error, marketplaceName: "N11");
+                EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                    new KeyValuePair<string, object?>("marketplace", "N11"),
+                    new KeyValuePair<string, object?>("error_type", "validation"));
+                return new ErrorDataResult<long>(0, validationResult.Message!);
+            }
         }
 
         await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
@@ -121,14 +137,23 @@ public sealed class N11RestProductService(
 
         // Adım 7: REST isteği gönder
         var request = new N11CreateProductRequest(new N11ProductPayload(Integrator, skus));
+        var apiSw = Stopwatch.StartNew();
         var taskResponse = await restClient.PostAsync<N11CreateProductRequest, N11TaskResponse>(
             "ms/product/tasks/product-create", request);
+        apiSw.Stop();
+        EntegrasyonMetrics.MarketplaceApiDuration.Record(apiSw.ElapsedMilliseconds,
+            new KeyValuePair<string, object?>("marketplace", "N11"),
+            new KeyValuePair<string, object?>("operation", "publish"));
 
         if (taskResponse is null)
         {
             logger.LogError("N11 REST SaveProduct yanıt boş döndü — ProductId={ProductId}", productId);
+            activity?.SetStatus(ActivityStatusCode.Error, "N11 REST API yanıt vermedi");
             await activityLogger.LogAsync(productId, ProductActivityType.PublishSent,
                 "N11 REST yanıt boş döndü", ProductActivityStatus.Error, marketplaceName: "N11");
+            EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                new KeyValuePair<string, object?>("marketplace", "N11"),
+                new KeyValuePair<string, object?>("error_type", "no_response"));
             return new ErrorDataResult<long>(0, "N11 REST API yanıt vermedi.");
         }
 
@@ -156,7 +181,24 @@ public sealed class N11RestProductService(
         logger.LogInformation("N11 REST SaveProduct başarılı — ProductId={ProductId}, TaskId={TaskId}",
             productId, taskResponse.Id);
 
+        activity?.SetTag("n11.task_id", taskResponse.Id);
+        sw.Stop();
+        EntegrasyonMetrics.ProductSyncTotal.Add(1,
+            new KeyValuePair<string, object?>("marketplace", "N11"));
+        EntegrasyonMetrics.ProductSyncDuration.Record(sw.ElapsedMilliseconds,
+            new KeyValuePair<string, object?>("marketplace", "N11"));
+
+        activity?.SetStatus(ActivityStatusCode.Ok);
         return new SuccessDataResult<long>(taskResponse.Id, "Ürün N11'e gönderildi. Task işleniyor...");
+        } // try
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            EntegrasyonMetrics.ProductSyncErrors.Add(1,
+                new KeyValuePair<string, object?>("marketplace", "N11"),
+                new KeyValuePair<string, object?>("error_type", "exception"));
+            throw;
+        }
     }
 
     // -----------------------------------------------------------------------
