@@ -226,7 +226,8 @@
   {
     "task": "Brand matching needs a UX",
     "description": "Once the user presses the brand matching button, they are redirected to a page where they can match their brands with the marketplace's brands. However, there is no user experience design for this page, and it can be confusing for users to navigate and complete the matching process. We need to design a user-friendly interface for the brand matching page that guides users through the process and makes it easy for them to match their brands with the marketplace's brands. This could include clear instructions, visual cues, and an intuitive layout that allows users to easily select and match their brands. Additionally, we should consider implementing features such as search functionality and filters to help users quickly find the relevant brands and streamline the matching process. For one brand, there can be multiple marketplace brands. We need to find a way to allow users to match multiple marketplace brands for a single brand. This will help ensure that all relevant information is captured for each brand and improve the overall accuracy and completeness of the brand matching process.",
-    "status": "pending",
+    "status": "done",
+    "notes": "SearchBrandsAsync (Trendyol API + DB fallback), BrandAutoMatchService (3-layer string match + Ollama), auto-match butonu + sonuç dialog, duplicate prevention chip'leri. 1467 test pass.",
     "notes": "",
     "priority": "medium",
     "plan": true,
