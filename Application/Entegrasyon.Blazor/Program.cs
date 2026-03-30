@@ -50,7 +50,8 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
         .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
             .AddService("Entegrasyon.Blazor"))
-        .AddSource("Entegrasyon.Blazor")  // custom ActivitySource for Blazor circuit errors
+        .AddSource("Entegrasyon.Blazor")     // custom ActivitySource for Blazor circuit errors
+        .AddSource("Entegrasyon.Business")   // marketplace custom traces (TrendyolProductService, HepsiburadaProductService, N11, ProductSyncManager)
         .AddAspNetCoreInstrumentation(opt =>
         {
             // Gürültüyü filtrele — static files, _blazor, _framework trace'den çıkar
@@ -76,6 +77,7 @@ builder.Services.AddOpenTelemetry()
             .AddService("Entegrasyon.Blazor"))
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
+        .AddMeter("Entegrasyon.Business")  // custom business metrics (product sync, API durations, orders)
         .AddOtlpExporter(opt => opt.Endpoint = new Uri(otelEndpoint)));
 
 // OpenTelemetry Logging — ILogger çağrıları dashboard'ın "Yapılandırılmış" sekmesinde görünür
