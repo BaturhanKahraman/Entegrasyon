@@ -23,6 +23,13 @@
             </div>
         </div>
 
+        @if (SubcategoryCount > 0)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-4" Dense="true">
+                Bu kategori alt kategorilere sahiptir. Özellikler ve pazar yeri eşleştirmeleri yalnızca yaprak kategorilere eklenebilir.
+            </MudAlert>
+        }
+
         <MudGrid>
             <MudItem xs="12">
                 <MudCard Elevation="0" Outlined="true">
@@ -109,7 +116,7 @@
                         <MudGrid>
                             <MudItem xs="6">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Toplam Ürün</MudText>
-                                <MudText Typo="Typo.h5">0</MudText>
+                                <MudText Typo="Typo.h5">@ProductCount</MudText>
                             </MudItem>
                             <MudItem xs="6">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Alt Kategoriler</MudText>
@@ -119,6 +126,83 @@
                     </MudCardContent>
                 </MudCard>
             </MudItem>
+
+            @* Ürünler *@
+            @if (ProductCount > 0)
+            {
+                <MudItem xs="12" Class="mt-4">
+                    <MudCard Elevation="0" Outlined="true">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Ürünler</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                                    @ProductCount ürün
+                                </MudChip>
+                                @if (!_showProducts)
+                                {
+                                    <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Visibility"
+                                               OnClick="LoadProducts">
+                                        Ürünleri Gör
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.VisibilityOff"
+                                               OnClick="() => _showProducts = false">
+                                        Gizle
+                                    </MudButton>
+                                }
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        @if (_showProducts)
+                        {
+                            <MudCardContent>
+                                @if (_loadingProducts)
+                                {
+                                    <MudProgressLinear Indeterminate="true" />
+                                }
+                                else if (_products.Count > 0)
+                                {
+                                    <MudSimpleTable Dense="true" Hover="true" Bordered="true" Style="max-height: 400px; overflow-y: auto;">
+                                        <thead>
+                                            <tr>
+                                                <th>Ürün Adı</th>
+                                                <th>Barkod</th>
+                                                <th>Fiyat</th>
+                                                <th>Stok</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var p in _products)
+                                            {
+                                                <tr style="cursor: pointer;" @onclick="() => NavigateToProduct(p.ProductId)">
+                                                    <td>@p.Title</td>
+                                                    <td><code>@p.Barcode</code></td>
+                                                    <td>@p.SalePrice.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))</td>
+                                                    <td>
+                                                        <MudChip T="string" Size="Size.Small"
+                                                                 Color="@(p.Stock > 0 ? Color.Success : Color.Error)">
+                                                            @p.Stock
+                                                        </MudChip>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </MudSimpleTable>
+                                }
+                                else
+                                {
+                                    <MudText Color="Color.Secondary" Align="Align.Center">Ürün bulunamadı</MudText>
+                                }
+                            </MudCardContent>
+                        }
+                    </MudCard>
+                </MudItem>
+            }
         </MudGrid>
     }
     else
