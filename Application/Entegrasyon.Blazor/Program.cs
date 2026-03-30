@@ -51,7 +51,24 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
         .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
             .AddService("Entegrasyon.Blazor"))
-        .AddAspNetCoreInstrumentation()
+        .AddSource("Entegrasyon.Blazor")  // custom ActivitySource for Blazor circuit errors
+        .AddAspNetCoreInstrumentation(opt =>
+        {
+            // Gürültüyü filtrele — static files, _blazor, _framework trace'den çıkar
+            opt.Filter = ctx =>
+            {
+                var path = ctx.Request.Path.Value ?? "";
+                if (path.StartsWith("/_blazor") || path.StartsWith("/_framework") ||
+                    path.StartsWith("/_content") || path.StartsWith("/css") ||
+                    path.StartsWith("/js") || path.StartsWith("/fonts") ||
+                    path.StartsWith("/favicon") || path.EndsWith(".js") ||
+                    path.EndsWith(".css") || path.EndsWith(".woff") ||
+                    path.EndsWith(".woff2") || path.EndsWith(".png") ||
+                    path.EndsWith(".jpg") || path.EndsWith(".svg"))
+                    return false;
+                return true;
+            };
+        })
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddOtlpExporter(opt => opt.Endpoint = new Uri(otelEndpoint)))

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,8 @@ namespace Entegrasyon.Blazor.Components.Shared;
 
 public class LoggingErrorBoundary : ErrorBoundary
 {
+    private static readonly ActivitySource BlazorActivitySource = new("Entegrasyon.Blazor");
+
     [Inject] private ILogger<LoggingErrorBoundary> Logger { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
@@ -22,6 +25,23 @@ public class LoggingErrorBoundary : ErrorBoundary
         };
 
         Logger.LogError(exception, "ErrorBoundary: {Message}", exception.Message);
+
+        // OpenTelemetry trace — Blazor circuit hatalarını dashboard'da göster
+        using var activity = BlazorActivitySource.StartActivity("Blazor.ErrorBoundary", ActivityKind.Internal);
+        if (activity is not null)
+        {
+            activity.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity.SetTag("error.type", exception.GetType().Name);
+            activity.SetTag("error.message", exception.Message);
+            activity.SetTag("error.user_message", message);
+            activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                ["exception.type"] = exception.GetType().FullName,
+                ["exception.message"] = exception.Message,
+                ["exception.stacktrace"] = exception.StackTrace ?? ""
+            }));
+        }
+
         Snackbar.Add(message, Severity.Error);
         return Task.CompletedTask;
     }
