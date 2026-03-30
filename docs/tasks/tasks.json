@@ -111,9 +111,9 @@
   },
   {
     "task": "All imports columns should be assignable by user",
-    "description": "In import section our user may come from other ERP or system. So the column names in the excel files may not match with our system's column names. We need to find a way to allow users to assign the columns in their excel files to the corresponding columns in our system. This will help ensure that the data is imported correctly and that users can easily map their data to our system without having to manually change their excel files. We should consider implementing a user-friendly interface that allows users to easily select and assign the columns from their excel files to the appropriate fields in our system. This could include features such as drag-and-drop functionality, dropdown menus, or a mapping wizard that guides users through the process step by step.",
-    "status": "pending",
-    "notes": "",
+    "description": "Import kolon eşleştirme wizard'ı — fuzzy auto-suggest, veri önizleme, profil kaydet/yükle.",
+    "status": "done",
+    "notes": "ImportColumnProfile entity, IImportColumnMappingService, ExcelParser/CsvParser mapping overload, ColumnMappingStep UI, fuzzy matching (exact→normalized→contains→alias). 1477 test pass.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
