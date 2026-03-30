@@ -88,7 +88,18 @@ using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
 4. `dotnet ef migrations has-pending-model-changes ...` ile model-snapshot senkronizasyonunu doğrula
 Migration olmadan entity değişikliği TAMAMLANMIŞ SAYILMAZ.
 
-**Mapster:** DTO mapping için kullanılır. Profiller `Business/MapperProfiles/MappingConfig.cs` içinde.
+**Mapperly:** DTO mapping için kullanılır (Mapster kaldırıldı). Source-generator tabanlı, compile-time. Mapper'lar `Business/Mappers/` altında `[Mapper]` partial class'lar.
+
+**Logging (İki Katmanlı — Strict Rule):**
+İki farklı log sistemi var, ASLA karıştırılmamalı:
+1. **`IApplicationLogManager.AddLog()`** → Kullanıcı-facing loglar. Admin dashboard'dan görünür. Türkçe, temiz mesajlar. Her business işleminde (CRUD, sync, matching vb.) başında ve sonunda çağrılmalı. `LogType` enum ile kategorize. `ProductActivityLog` ürün bazlı timeline. **ÖNEMLİ:** Bu loglar şu an senkron DB yazımı yapıyor — iş transaction'ı içinde. İleride async queue'ya geçirilecek (Channel<T> pattern).
+2. **`ILogger<T>`** → Developer-facing loglar. Serilog/console/OpenTelemetry. Exception detayları, stack trace, debug bilgileri. Kullanıcı GÖRMEZ.
+
+Business manager'larda HER İKİSİ DE kullanılmalı:
+```csharp
+await applicationLogManager.AddLog("Ürün ekleniyor.", LogType.Product, LogAction.Add);
+logger.LogInformation("Adding product {ProductId}", productId);
+```
 
 **Event Channel pattern:** Background servisler arası iletişim için:
 ```csharp
