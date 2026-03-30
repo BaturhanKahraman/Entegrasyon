@@ -215,8 +215,8 @@
   {
     "task": "In category matching there is only one attribute matching",
     "description": "In marketplacedetails column there is only one marketplace detail matching. But there are some categories that have more than one marketplace details. We need to find a way to allow users to match multiple marketplace details for a single category. This will help ensure that all relevant information is captured for each category and improve the overall accuracy and completeness of the category matching process.",
-    "status": "pending",
-    "notes": "",
+    "status": "done",
+    "notes": "CategorySync.razor zaten foreach ile tüm aktif marketplace link'lerini gösteriyor (chip + tooltip + sayaç). Multi-marketplace desteği mevcut.",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],
