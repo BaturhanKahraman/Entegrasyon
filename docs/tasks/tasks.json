@@ -45,9 +45,9 @@
   },
   {
     "task": ".NET Aspire Orchestration Migration",
-    "description": "Mevcut 5 docker-compose dosyasını (docker-compose.yml, override, prod, stage, monitoring) .NET Aspire AppHost ile değiştir. PostgreSQL, Redis, MinIO, RabbitMQ (gelecekte) tüm altyapı C# ile tanımlanacak. Dev ortamında tek F5 ile her şey ayağa kalkacak. Service discovery otomatik olacak. Health check'ler built-in gelecek. Aspire Dashboard ile traces, metrics, logs tek yerde görünecek. docker-compose dosyaları production deployment için kalabilir ama dev deneyimi Aspire'a taşınacak.",
-    "status": "pending",
-    "notes": "",
+    "description": "Mevcut docker-compose'u Aspire AppHost ile değiştir.",
+    "status": "deferred",
+    "notes": "Aspire Dashboard Faz 1'de docker-compose ile eklendi. Full Aspire AppHost (orchestration) Faz 4'te yapılacak — öncelik düşük, docker-compose zaten çalışıyor.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
@@ -99,10 +99,10 @@
     "addOrUpdateIntegrationTests": true
   },
   {
-    "task": "OpenTelemetry + Aspire Dashboard Migration (Serilog/Loki → OTel)",
-    "description": "Mevcut Serilog → Grafana Loki logging stack'ini OpenTelemetry ile değiştir. Traces (marketplace API çağrıları, DB query'leri), Metrics (request latency, marketplace sync duration, queue depth), Logs (structured) tek OpenTelemetry SDK ile toplanacak. Aspire Dashboard dev ortamında traces+metrics+logs görüntüleyecek. Production'da OTLP exporter ile Grafana Tempo (traces) + Prometheus (metrics) + Loki (logs) kullanılabilir. Özellikle marketplace API call tracing kritik — her batch upload'un tam lifecycle'ı trace edilebilir olacak.",
-    "status": "pending",
-    "notes": "",
+    "task": "OpenTelemetry + Aspire Dashboard (Faz 1 — Auto-instrumentation)",
+    "description": "OpenTelemetry auto-instrumentation (ASP.NET Core + HttpClient + EF Core) + Aspire Dashboard. Faz 2: custom traces, Faz 3: prod exporter, Faz 4: Aspire AppHost.",
+    "status": "done",
+    "notes": "Faz 1 tamamlandı: 5 NuGet, Program.cs'e ~15 satır, docker-compose'a aspire-dashboard container. OTLP endpoint configurable. Serilog korundu (yan yana çalışıyor). Sıfır business code değişikliği.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
