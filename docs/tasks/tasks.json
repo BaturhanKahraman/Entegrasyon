@@ -88,10 +88,10 @@
     "addOrUpdateIntegrationTests": true
   },
   {
-    "task": "ASP.NET Identity Migration (HashingHelper → Identity)",
-    "description": "Mevcut custom HashingHelper (PBKDF2) + manual user/role/claim yönetimini ASP.NET Identity ile değiştir. UserManager<T>, RoleManager<T>, SignInManager<T> built-in gelecek. Password hashing (Argon2/PBKDF2 otomatik), account lockout, email confirmation, 2FA (mevcut TOTP entegrasyonu korunacak), password reset token'ları Identity ile yönetilecek. Mevcut ApplicationUser entity Identity'nin IdentityUser'ından türeyecek. Migration sırasında mevcut password hash'leri IPasswordHasher custom implementation ile backward-compatible tutulacak.",
-    "status": "pending",
-    "notes": "",
+    "task": "Admin Auth Improvements (Lockout + bcrypt + 2FA + Reset Token)",
+    "description": "Identity migration yerine mevcut custom yapı iyileştirildi. Account lockout (5 fail → 15dk), HMACSHA512 → bcrypt auto-migration, TOTP 2FA (opsiyonel, QR + recovery codes), password reset token (1 saat).",
+    "status": "done",
+    "notes": "8 yeni field ApplicationUser'a, BCrypt.Net-Next paketi, 24 yeni test, 1496 toplam test pass. Storefront pattern'leri admin tarafa kopyalandı.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
