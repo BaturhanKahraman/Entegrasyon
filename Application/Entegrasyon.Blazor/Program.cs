@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Notifications.SignalR;
 using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Blazor.Middleware;
 using Entegrasyon.Blazor.Utility;
+using Entegrasyon.Blazor.Utility.Chat;
 using Entegrasyon.Blazor.Utility.Notifications;
 using Entegrasyon.Blazor.Utility.Services;
 using Entegrasyon.Blazor.Services;
@@ -14,6 +18,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
 using Entegrasyon.Blazor.Endpoints;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +42,27 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddLogging();
+
+// ── OpenTelemetry ──────────────────────────────────────────────────────
+// Auto-instrumentation: ASP.NET Core, HttpClient (marketplace API), EF Core (DB)
+// OTLP exporter → Aspire Dashboard (local veya server)
+var otelEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317";
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
+            .AddService("Entegrasyon.Blazor"))
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddOtlpExporter(opt => opt.Endpoint = new Uri(otelEndpoint)))
+    .WithMetrics(metrics => metrics
+        .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
+            .AddService("Entegrasyon.Blazor"))
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(opt => opt.Endpoint = new Uri(otelEndpoint)));
+// ────────────────────────────────────────────────────────────────────────
+
 builder.Services.AddConfigurations(builder.Configuration);
 builder.Host.UseDefaultServiceProvider((host, options) =>
 {
@@ -62,10 +90,11 @@ builder.Services.AddAuthentication(options =>
     // Bu scheme sadece middleware pipeline'ın çalışması için gerekli.
     // LoginPath yok — auth redirect Blazor'ın AuthorizeRouteView + RedirectToLogin ile yapılır.
     options.DefaultScheme = "BlazorServer";
-}).AddCookie("BlazorServer", options =>
-{
-    options.LoginPath = "/auth/login";
-});
+}).AddCookie("BlazorServer");
+// Blazor Server auth, ProtectedLocalStorage + AuthorizeRouteView ile calisir.
+// HTTP-level authorization middleware Blazor endpoint'lerini BLOKLAMAMALI —
+// AuthorizeRouteView circuit basladiktan sonra auth kontrolu yapar.
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, BlazorAuthorizationMiddlewareResultHandler>();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddAuthorization(options =>
@@ -118,6 +147,13 @@ builder.Services.AddSingleton<INotificationChannel>(
     sp => sp.GetRequiredService<InProcessNotificationDeliveryService>());
 builder.Services.AddHostedService<NotificationEventPublisher>();
 
+// Chat services
+builder.Services.AddSingleton<InProcessChatDeliveryService>();
+builder.Services.AddSingleton<IChatDeliveryService>(
+    sp => sp.GetRequiredService<InProcessChatDeliveryService>());
+builder.Services.AddSingleton<UserOnlineStatusTracker>();
+builder.Services.AddHostedService<ChatEventPublisher>();
+
 var app = builder.Build();
 
 app.Lifetime.ApplicationStarted.Register(async () =>
@@ -156,6 +192,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapHub<NotificationHub>("/NotificationHub");
+app.MapHub<ChatHub>("/ChatHub");
 app.MapTrendyolWebhooks();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
@@ -164,3 +201,22 @@ app.Run();
 
 // Required for WebApplicationFactory<Program> in integration tests
 public partial class Program { }
+
+/// <summary>
+/// Blazor Server'da HTTP-level authorization middleware'ini bypass eder.
+/// Auth kontrolu AuthorizeRouteView tarafindan Blazor circuit icerisinde yapilir.
+/// ProtectedLocalStorage (JS interop) HTTP pipeline'da okunamadigi icin
+/// HTTP-level auth her zaman basarisiz olur — bu handler bunu onler.
+/// </summary>
+public class BlazorAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareResultHandler
+{
+    public Task HandleAsync(
+        RequestDelegate next,
+        HttpContext context,
+        AuthorizationPolicy policy,
+        PolicyAuthorizationResult authorizeResult)
+    {
+        // Tum istekleri gecir — Blazor AuthorizeRouteView auth'u handle eder
+        return next(context);
+    }
+}
