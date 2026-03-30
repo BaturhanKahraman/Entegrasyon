@@ -25,6 +25,18 @@
             }
         },
         {
+            "label": "ensure-aspire-dashboard",
+            "type": "shell",
+            "command": "ssh baturhan@192.168.1.78 'docker ps --filter name=entegrasyon-aspire-dashboard --format \"{{.Names}}\" | grep -q entegrasyon-aspire-dashboard || docker run -d --name entegrasyon-aspire-dashboard --restart unless-stopped -e DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true -p 18888:18888 -p 4317:18889 mcr.microsoft.com/dotnet/aspire-dashboard:latest'",
+            "presentation": {
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "watch-blazor",
             "command": "dotnet",
             "type": "process",
@@ -38,8 +50,7 @@
                 "env": {
                     "ASPNETCORE_ENVIRONMENT": "Development",
                     "ASPNETCORE_URLS": "http://localhost:7070",
-                    "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true",
-                    "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471"
+                    "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true"
                 }
             },
             "problemMatcher": "$msCompile",
