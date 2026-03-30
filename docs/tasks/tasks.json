@@ -23,9 +23,9 @@
   },
   {
     "task": "Marketplace Adapter Pattern Migration",
-    "description": "Mevcut ~130 marketplace servisini (TrendyolProductService, TrendyolOrderService, HepsiburadaProductService vb.) tek bir IMarketplaceAdapter interface'i altında birleştir. Her marketplace tek bir adapter class implement edecek (TrendyolAdapter, HepsiburadaAdapter, N11Adapter vb.). Background polling servisleri de generic hale gelecek — 10 ayrı polling servisi yerine tek MarketplaceBatchPollingService. Strategy + Factory pattern kullanılacak. Yeni marketplace eklemek = tek bir class implement etmek olacak. Mevcut marketplace'leri kademeli olarak migrate et, yeni marketplace'ler direkt adapter pattern ile yazılsın.",
-    "status": "pending",
-    "notes": "",
+    "description": "Mevcut marketplace servislerini tek IMarketplaceAdapter altında birleştirme önerisi.",
+    "status": "wont_do",
+    "notes": "Her marketplace API'si fundamentally farklı (REST/SOAP/SP-API, batch/single, approval workflow farkları). Tek interface leaky abstraction olur — adapter içinde yine marketplace-specific logic yazılır ama bulmak zorlaşır. Mevcut yapı: her marketplace kendi interface'i, debugging kolay, Scrutor ile DI otomatik. 7-8 marketplace için mevcut yapı yeterli, 15+ olursa tekrar değerlendirilebilir.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
