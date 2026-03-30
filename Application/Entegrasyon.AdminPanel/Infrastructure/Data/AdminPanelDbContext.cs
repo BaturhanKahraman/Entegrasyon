@@ -1,3 +1,4 @@
+using Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.AdminPanel.Infrastructure.Data;
@@ -13,6 +14,18 @@ public class AdminPanelDbContext(DbContextOptions<AdminPanelDbContext> options) 
     public DbSet<FeaturePackage> FeaturePackages => Set<FeaturePackage>();
     public DbSet<FeaturePackagePermission> FeaturePackagePermissions => Set<FeaturePackagePermission>();
     public DbSet<TenantSubscription> TenantSubscriptions => Set<TenantSubscription>();
+
+    // Master Catalog
+    public DbSet<MasterCategory> MasterCategories => Set<MasterCategory>();
+    public DbSet<MasterAttribute> MasterAttributes => Set<MasterAttribute>();
+    public DbSet<MasterAttributeValue> MasterAttributeValues => Set<MasterAttributeValue>();
+    public DbSet<MasterCategoryAttribute> MasterCategoryAttributes => Set<MasterCategoryAttribute>();
+    public DbSet<MasterCategoryMarketplaceMapping> MasterCategoryMarketplaceMappings => Set<MasterCategoryMarketplaceMapping>();
+    public DbSet<MasterAttributeMarketplaceMapping> MasterAttributeMarketplaceMappings => Set<MasterAttributeMarketplaceMapping>();
+    public DbSet<MasterValueMarketplaceMapping> MasterValueMarketplaceMappings => Set<MasterValueMarketplaceMapping>();
+    public DbSet<MarketplaceReference> MarketplaceReferences => Set<MarketplaceReference>();
+    public DbSet<SectorPackage> SectorPackages => Set<SectorPackage>();
+    public DbSet<SectorPackageCategory> SectorPackageCategories => Set<SectorPackageCategory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +59,58 @@ public class AdminPanelDbContext(DbContextOptions<AdminPanelDbContext> options) 
         modelBuilder.Entity<TenantSubscription>(e =>
         {
             e.HasOne(s => s.Tenant).WithMany().HasForeignKey(s => s.TenantId);
+        });
+
+        // ── Master Catalog ──────────────────────────────────────────────────
+
+        modelBuilder.Entity<MasterCategory>(e =>
+        {
+            e.HasOne(c => c.Parent).WithMany(c => c.Children).HasForeignKey(c => c.ParentId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(c => c.CategoryAttributes).WithOne(ca => ca.MasterCategory).HasForeignKey(ca => ca.MasterCategoryId);
+            e.HasMany(c => c.MarketplaceMappings).WithOne(m => m.MasterCategory).HasForeignKey(m => m.MasterCategoryId);
+            e.HasMany(c => c.SectorPackageCategories).WithOne(s => s.MasterCategory).HasForeignKey(s => s.MasterCategoryId);
+        });
+
+        modelBuilder.Entity<MasterAttribute>(e =>
+        {
+            e.HasMany(a => a.Values).WithOne(v => v.MasterAttribute).HasForeignKey(v => v.MasterAttributeId);
+            e.HasMany(a => a.CategoryLinks).WithOne(ca => ca.MasterAttribute).HasForeignKey(ca => ca.MasterAttributeId);
+            e.HasMany(a => a.MarketplaceMappings).WithOne(m => m.MasterAttribute).HasForeignKey(m => m.MasterAttributeId);
+        });
+
+        modelBuilder.Entity<MasterAttributeValue>(e =>
+        {
+            e.HasMany(v => v.MarketplaceMappings).WithOne(m => m.MasterAttributeValue).HasForeignKey(m => m.MasterAttributeValueId);
+        });
+
+        modelBuilder.Entity<MasterCategoryAttribute>(e =>
+        {
+            e.HasIndex(ca => new { ca.MasterCategoryId, ca.MasterAttributeId }).IsUnique();
+        });
+
+        modelBuilder.Entity<MasterCategoryMarketplaceMapping>(e =>
+        {
+            e.HasIndex(m => new { m.MasterCategoryId, m.MarketplaceId }).IsUnique();
+        });
+
+        modelBuilder.Entity<MasterAttributeMarketplaceMapping>(e =>
+        {
+            e.HasIndex(m => new { m.MasterAttributeId, m.MarketplaceId }).IsUnique();
+        });
+
+        modelBuilder.Entity<MasterValueMarketplaceMapping>(e =>
+        {
+            e.HasIndex(m => new { m.MasterAttributeValueId, m.MarketplaceId }).IsUnique();
+        });
+
+        modelBuilder.Entity<MarketplaceReference>(e =>
+        {
+            e.HasIndex(r => new { r.MarketplaceId, r.EntityType, r.ExternalId }).IsUnique();
+        });
+
+        modelBuilder.Entity<SectorPackage>(e =>
+        {
+            e.HasMany(s => s.Categories).WithOne(c => c.SectorPackage).HasForeignKey(c => c.SectorPackageId);
         });
     }
 }

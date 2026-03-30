@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Entegrasyon.AdminPanel.Infrastructure.Data;
+using Entegrasyon.ApplicationBootstrap.MasterCatalog;
 using Entegrasyon.Business.BackgroundServices;
 using Scrutor;
 using Entegrasyon.Business.Concrete.Amazon;
@@ -400,6 +402,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<CategoryAttributeMapper>();
             services.AddSingleton<CustomerMapper>();
 
+            // Master Catalog Import
+            services.AddScoped<IMasterCatalogImportService, MasterCatalogImportService>();
+
             services.AddEventChannels();
             services.AddValidators();
             return services;
@@ -428,6 +433,12 @@ namespace Entegrasyon.ApplicationBootstrap
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
         {
+            // AdminPanelDbContext factory — master catalog import için
+            var adminPanelConnectionString = configuration.GetConnectionString("AdminPanel")
+                ?? "Host=192.168.1.78;Port=5432;Database=AdminPanelDb;Username=baturhan;Password=DiHRrP6dY8nC*M";
+            services.AddDbContextFactory<AdminPanelDbContext>(options =>
+                options.UseNpgsql(adminPanelConnectionString));
+
             // Fallback connection string — development/single-tenant modu icin
             var fallbackConnectionString = configuration.GetConnectionString("Main")
                 ?? configuration.GetConnectionString("DefaultConnection");

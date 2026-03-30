@@ -1,14 +1,21 @@
 using Entegrasyon.AdminPanel.Infrastructure.Auth;
+using Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Entegrasyon.AdminPanel.Infrastructure.Data;
 
 public static class SeedData
 {
-    public static void Initialize(AdminPanelDbContext context, string? mainConnectionString = null)
+    public static void Initialize(AdminPanelDbContext context, string? mainConnectionString = null,
+        string? catalogSnapshotPath = null)
     {
         SeedAdminUser(context);
         SeedFeaturePackages(context);
         SeedDevelopmentTenant(context, mainConnectionString);
+
+        // Master catalog seed (async — sync wrapper kullanıyoruz startup sırasında)
+        var catalogSeedService = new MasterCatalogSeedService(context, NullLogger<MasterCatalogSeedService>.Instance);
+        catalogSeedService.SeedAsync(catalogSnapshotPath).GetAwaiter().GetResult();
     }
 
     private static void SeedAdminUser(AdminPanelDbContext context)
