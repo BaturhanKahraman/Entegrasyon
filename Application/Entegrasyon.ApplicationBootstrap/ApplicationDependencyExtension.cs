@@ -76,6 +76,8 @@ namespace Entegrasyon.ApplicationBootstrap
                         !t.Name.EndsWith("Cache")                    &&  // may need explicit lifetime
                         !t.Name.EndsWith("InvoiceBuilder")           &&  // concrete-only
                         !t.Name.EndsWith("InvoiceClient")            &&  // brand-named, keep manual
+                        !t.Name.EndsWith("KargoClient")              &&  // concrete-only, conditional registration
+                        !t.Name.EndsWith("KargoService")             &&  // conditional mock/real, keep manual
                         !typeof(IHostedService).IsAssignableFrom(t)      // never auto-register hosted
                     )
                 )
