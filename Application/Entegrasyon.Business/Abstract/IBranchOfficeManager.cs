@@ -16,4 +16,10 @@ public interface IBranchOfficeManager
     Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(int pageIndex = 0, int pageSize = 50);
     Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(BranchPaginatedRequest request);
     Task<BranchOffice> GetBranchById(int id);
+    Task<IDataResult<List<BranchOfficePageListDto>>> GetPageBranchListAsync();
+    Task<IDataResult<List<BranchStockItemDto>>> GetBranchStocksAsync(int branchId);
+    Task<IDataResult<List<StockMovementViewDto>>> GetBranchStockMovementsAsync(int branchId, DateTimeOffset? from, DateTimeOffset? to);
+    Task<IDataResult<List<MarketPlaceWarehouse>>> GetBranchMarketPlacesAsync(int branchId);
+    Task<IResult> AddMarketPlaceWarehouseAsync(int branchId, int marketPlaceId);
+    Task<IResult> RemoveMarketPlaceWarehouseAsync(int warehouseId);
 }

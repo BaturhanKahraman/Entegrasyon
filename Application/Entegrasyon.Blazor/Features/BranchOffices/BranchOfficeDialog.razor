@@ -1,0 +1,38 @@
+@using Entegrasyon.Entity.Dtos.Branches
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Name"
+                                  Label="Depo Adı"
+                                  Required="true"
+                                  RequiredError="Depo adı gerekli"
+                                  MaxLength="100"
+                                  Counter="100" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Value="_model.IsDefaultMarketPlaceStock"
+                                 Label="Varsayılan Pazaryeri Deposu" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="@(async () => await Submit())"
+                   Disabled="@(!_isValid || _saving)">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                @(IsEditMode ? "Güncelle" : "Ekle")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
