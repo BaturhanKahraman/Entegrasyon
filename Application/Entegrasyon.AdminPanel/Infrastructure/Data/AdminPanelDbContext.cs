@@ -16,6 +16,10 @@ public class AdminPanelDbContext(DbContextOptions<AdminPanelDbContext> options) 
     public DbSet<TenantSubscription> TenantSubscriptions => Set<TenantSubscription>();
 
     // Master Catalog
+    public DbSet<MasterBrand> MasterBrands => Set<MasterBrand>();
+    public DbSet<MasterBrandMarketplaceMapping> MasterBrandMarketplaceMappings => Set<MasterBrandMarketplaceMapping>();
+    public DbSet<MasterCargoCompany> MasterCargoCompanies => Set<MasterCargoCompany>();
+    public DbSet<MasterCargoCompanyMarketplaceMapping> MasterCargoCompanyMarketplaceMappings => Set<MasterCargoCompanyMarketplaceMapping>();
     public DbSet<MasterCategory> MasterCategories => Set<MasterCategory>();
     public DbSet<MasterAttribute> MasterAttributes => Set<MasterAttribute>();
     public DbSet<MasterAttributeValue> MasterAttributeValues => Set<MasterAttributeValue>();
@@ -62,6 +66,28 @@ public class AdminPanelDbContext(DbContextOptions<AdminPanelDbContext> options) 
         });
 
         // ── Master Catalog ──────────────────────────────────────────────────
+
+        modelBuilder.Entity<MasterBrand>(e =>
+        {
+            e.HasIndex(b => b.Name).IsUnique();
+            e.HasMany(b => b.MarketplaceMappings).WithOne(m => m.MasterBrand).HasForeignKey(m => m.MasterBrandId);
+        });
+
+        modelBuilder.Entity<MasterBrandMarketplaceMapping>(e =>
+        {
+            e.HasIndex(m => new { m.MasterBrandId, m.MarketplaceId }).IsUnique();
+        });
+
+        modelBuilder.Entity<MasterCargoCompany>(e =>
+        {
+            e.HasIndex(c => c.Name).IsUnique();
+            e.HasMany(c => c.MarketplaceMappings).WithOne(m => m.MasterCargoCompany).HasForeignKey(m => m.MasterCargoCompanyId);
+        });
+
+        modelBuilder.Entity<MasterCargoCompanyMarketplaceMapping>(e =>
+        {
+            e.HasIndex(m => new { m.MasterCargoCompanyId, m.MarketplaceId }).IsUnique();
+        });
 
         modelBuilder.Entity<MasterCategory>(e =>
         {
