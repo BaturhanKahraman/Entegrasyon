@@ -12,6 +12,7 @@ using System.Reflection;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
+using Entegrasyon.Entity.Chat;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Invoices;
 using Entegrasyon.Entity.Invoicing;
@@ -152,6 +153,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
 
     // Bulk Operations
     public virtual DbSet<BulkOperationLog> BulkOperationLogs { get; set; } = null!;
+    public virtual DbSet<ImportColumnProfile> ImportColumnProfiles { get; set; } = null!;
 
     // POS
     public virtual DbSet<POSSession> POSSessions { get; set; }
@@ -199,6 +201,12 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<SellerBalance> SellerBalances { get; set; }
     public virtual DbSet<SellerTransaction> SellerTransactions { get; set; }
     public virtual DbSet<PayoutRequest> PayoutRequests { get; set; }
+
+    // Chat
+    public virtual DbSet<ChatConversation> ChatConversations { get; set; }
+    public virtual DbSet<ChatMessage> ChatMessages { get; set; }
+    public virtual DbSet<ChatParticipant> ChatParticipants { get; set; }
+    public virtual DbSet<ChatMessageReadReceipt> ChatMessageReadReceipts { get; set; }
 
     //public DbSet<UsersRoles> UsersRoles { get; set; }
     //public DbSet<UsersClaims> UsersClaims { get; set; }

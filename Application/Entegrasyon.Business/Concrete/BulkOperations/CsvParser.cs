@@ -208,4 +208,146 @@ public class CsvParser : ICsvParser
         var value = GetCell(cells, index);
         return int.TryParse(value, out var result) ? result : 0;
     }
+
+    // ── Column Mapping Overloads ──
+
+    public (List<string> Headers, List<List<string>> PreviewRows) ReadHeadersAndPreview(Stream stream, int previewRows = 5)
+    {
+        var lines = ReadLines(stream);
+        if (lines.Count == 0)
+            return ([], []);
+
+        var headers = ParseLine(lines[0]).ToList();
+        var preview = new List<List<string>>();
+
+        for (var i = 1; i < Math.Min(lines.Count, 1 + previewRows); i++)
+            preview.Add(ParseLine(lines[i]).ToList());
+
+        return (headers, preview);
+    }
+
+    public IDataResult<List<ProductImportRow>> ParseProductImport(Stream stream, Dictionary<string, string> columnMapping)
+    {
+        try
+        {
+            var lines = ReadLines(stream);
+            if (lines.Count == 0)
+                return new ErrorDataResult<List<ProductImportRow>>([], "CSV dosyası boş.");
+
+            var colIndex = BuildColumnIndex(ParseLine(lines[0]), columnMapping);
+            var rows = new List<ProductImportRow>();
+
+            for (var i = 1; i < lines.Count; i++)
+            {
+                var cells = ParseLine(lines[i]);
+                var barcode = GetMappedCell(cells, colIndex, "Barkod");
+                if (string.IsNullOrWhiteSpace(barcode)) continue;
+
+                var stockCode = GetMappedCell(cells, colIndex, "Stok Kodu");
+                var category = GetMappedCell(cells, colIndex, "Kategori");
+                var brand = GetMappedCell(cells, colIndex, "Marka");
+
+                rows.Add(new ProductImportRow(i + 1, barcode,
+                    GetMappedCell(cells, colIndex, "Ürün Adı"),
+                    string.IsNullOrWhiteSpace(stockCode) ? null : stockCode,
+                    GetMappedDecimal(cells, colIndex, "Liste Fiyatı"),
+                    GetMappedDecimal(cells, colIndex, "Satış Fiyatı"),
+                    GetMappedDecimal(cells, colIndex, "Maliyet Fiyatı"),
+                    GetMappedDecimal(cells, colIndex, "KDV Oranı"),
+                    string.IsNullOrWhiteSpace(category) ? null : category,
+                    string.IsNullOrWhiteSpace(brand) ? null : brand));
+            }
+
+            return new SuccessDataResult<List<ProductImportRow>>(rows);
+        }
+        catch (Exception ex)
+        {
+            return new ErrorDataResult<List<ProductImportRow>>([], $"CSV dosyası okunamadı: {ex.Message}");
+        }
+    }
+
+    public IDataResult<List<PriceImportRow>> ParsePriceImport(Stream stream, Dictionary<string, string> columnMapping)
+    {
+        try
+        {
+            var lines = ReadLines(stream);
+            if (lines.Count == 0)
+                return new ErrorDataResult<List<PriceImportRow>>([], "CSV dosyası boş.");
+
+            var colIndex = BuildColumnIndex(ParseLine(lines[0]), columnMapping);
+            var rows = new List<PriceImportRow>();
+
+            for (var i = 1; i < lines.Count; i++)
+            {
+                var cells = ParseLine(lines[i]);
+                var barcode = GetMappedCell(cells, colIndex, "Barkod");
+                if (string.IsNullOrWhiteSpace(barcode)) continue;
+
+                rows.Add(new PriceImportRow(i + 1, barcode,
+                    GetMappedDecimal(cells, colIndex, "Liste Fiyatı"),
+                    GetMappedDecimal(cells, colIndex, "Satış Fiyatı"),
+                    GetMappedDecimal(cells, colIndex, "Maliyet Fiyatı")));
+            }
+
+            return new SuccessDataResult<List<PriceImportRow>>(rows);
+        }
+        catch (Exception ex)
+        {
+            return new ErrorDataResult<List<PriceImportRow>>([], $"CSV dosyası okunamadı: {ex.Message}");
+        }
+    }
+
+    public IDataResult<List<StockImportRow>> ParseStockImport(Stream stream, Dictionary<string, string> columnMapping)
+    {
+        try
+        {
+            var lines = ReadLines(stream);
+            if (lines.Count == 0)
+                return new ErrorDataResult<List<StockImportRow>>([], "CSV dosyası boş.");
+
+            var colIndex = BuildColumnIndex(ParseLine(lines[0]), columnMapping);
+            var rows = new List<StockImportRow>();
+
+            for (var i = 1; i < lines.Count; i++)
+            {
+                var cells = ParseLine(lines[i]);
+                var barcode = GetMappedCell(cells, colIndex, "Barkod");
+                if (string.IsNullOrWhiteSpace(barcode)) continue;
+
+                rows.Add(new StockImportRow(i + 1, barcode,
+                    GetMappedInt(cells, colIndex, "Şube ID"),
+                    GetMappedInt(cells, colIndex, "Stok Miktarı")));
+            }
+
+            return new SuccessDataResult<List<StockImportRow>>(rows);
+        }
+        catch (Exception ex)
+        {
+            return new ErrorDataResult<List<StockImportRow>>([], $"CSV dosyası okunamadı: {ex.Message}");
+        }
+    }
+
+    private static Dictionary<string, int> BuildColumnIndex(string[] headers, Dictionary<string, string> columnMapping)
+    {
+        var headerIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < headers.Length; i++)
+            headerIndex[headers[i].Trim()] = i;
+
+        var result = new Dictionary<string, int>();
+        foreach (var (systemField, excelColumn) in columnMapping)
+        {
+            if (headerIndex.TryGetValue(excelColumn, out var idx))
+                result[systemField] = idx;
+        }
+        return result;
+    }
+
+    private static string GetMappedCell(string[] cells, Dictionary<string, int> colIndex, string field)
+        => colIndex.TryGetValue(field, out var idx) ? GetCell(cells, idx) : string.Empty;
+
+    private static decimal GetMappedDecimal(string[] cells, Dictionary<string, int> colIndex, string field)
+        => colIndex.TryGetValue(field, out var idx) ? ParseDecimal(cells, idx) : 0;
+
+    private static int GetMappedInt(string[] cells, Dictionary<string, int> colIndex, string field)
+        => colIndex.TryGetValue(field, out var idx) ? ParseInt(cells, idx) : 0;
 }

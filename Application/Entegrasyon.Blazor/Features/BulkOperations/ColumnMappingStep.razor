@@ -1,0 +1,102 @@
+<MudStack Spacing="3">
+    <MudText Typo="Typo.h6">Kolon Eşleştirme</MudText>
+
+    @* Profil yukleme *@
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+        <MudSelect T="int?" Value="_selectedProfileId" ValueChanged="LoadProfile"
+                   Label="Kayıtlı Profil Yükle" Variant="Variant.Outlined" Dense="true"
+                   Clearable="true" Class="flex-grow-1">
+            @foreach (var p in _profiles)
+            {
+                <MudSelectItem T="int?" Value="@((int?)p.Id)">@p.Name</MudSelectItem>
+            }
+        </MudSelect>
+        @if (_selectedProfileId.HasValue)
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                           Size="Size.Small" OnClick="DeleteProfile" />
+        }
+    </MudStack>
+
+    @* Veri onizleme *@
+    @if (PreviewRows.Count > 0)
+    {
+        <MudText Typo="Typo.subtitle2">Veri Önizleme (ilk @PreviewRows.Count satır)</MudText>
+        <div style="overflow-x: auto; max-height: 200px;">
+            <MudSimpleTable Dense="true" Hover="true" Bordered="true">
+                <thead>
+                    <tr>
+                        @foreach (var header in ExcelHeaders)
+                        {
+                            <th>@header</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in PreviewRows)
+                    {
+                        <tr>
+                            @foreach (var cell in row)
+                            {
+                                <td>@cell</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </div>
+    }
+
+    <MudDivider Class="my-2" />
+
+    @* Kolon eslestirme *@
+    <MudText Typo="Typo.subtitle2">Sistem Alanlarını Excel Kolonlarıyla Eşleştirin</MudText>
+
+    @foreach (var field in _systemFields)
+    {
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <MudText Style="min-width: 150px;">
+                <b>@field.DisplayName</b>
+                @if (field.IsRequired)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error" Class="d-inline"> *</MudText>
+                }
+            </MudText>
+
+            <MudSelect T="string" Value="@_mappings.GetValueOrDefault(field.Key)"
+                       ValueChanged="@(v => _mappings[field.Key] = v)"
+                       Label="Excel Kolonu" Variant="Variant.Outlined" Dense="true"
+                       Clearable="true" Class="flex-grow-1">
+                @foreach (var header in ExcelHeaders)
+                {
+                    <MudSelectItem T="string" Value="@header">@header</MudSelectItem>
+                }
+            </MudSelect>
+
+            @{
+                var preview = GetPreviewValue(_mappings.GetValueOrDefault(field.Key));
+            }
+            @if (preview is not null)
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Info">@preview</MudChip>
+            }
+        </MudStack>
+    }
+
+    <MudDivider Class="my-2" />
+
+    @* Profil kaydet *@
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+        <MudCheckBox @bind-Value="_saveAsProfile" T="bool" Label="Profil olarak kaydet" Dense="true" />
+        @if (_saveAsProfile)
+        {
+            <MudTextField @bind-Value="_profileName" Label="Profil Adı" Variant="Variant.Outlined"
+                          Margin="Margin.Dense" Class="flex-grow-1" />
+        }
+    </MudStack>
+
+    <MudButton OnClick="Confirm" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Check" Class="align-self-end">
+        Eşleştirmeyi Onayla
+    </MudButton>
+</MudStack>
