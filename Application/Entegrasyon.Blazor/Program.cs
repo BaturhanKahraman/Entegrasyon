@@ -21,6 +21,7 @@ using Entegrasyon.Blazor.Endpoints;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Logs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +41,6 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowTransitionDuration = 300;
     config.SnackbarConfiguration.HideTransitionDuration = 300;
 });
-
-builder.Services.AddLogging();
 
 // ── OpenTelemetry ──────────────────────────────────────────────────────
 // Auto-instrumentation: ASP.NET Core, HttpClient (marketplace API), EF Core (DB)
@@ -78,6 +77,16 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddOtlpExporter(opt => opt.Endpoint = new Uri(otelEndpoint)));
+
+// OpenTelemetry Logging — ILogger çağrıları dashboard'ın "Yapılandırılmış" sekmesinde görünür
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
+        .AddService("Entegrasyon.Blazor"));
+    logging.AddOtlpExporter(opt => opt.Endpoint = new Uri(otelEndpoint));
+});
 // ────────────────────────────────────────────────────────────────────────
 
 builder.Services.AddConfigurations(builder.Configuration);
