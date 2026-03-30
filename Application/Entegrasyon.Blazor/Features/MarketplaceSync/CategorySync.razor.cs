@@ -87,22 +87,22 @@ public partial class CategorySync
             await LoadData();
     }
 
-    private async Task DeleteMapping(Category category)
+    private async Task DeleteMappingForMarketplace(Category category, int marketPlaceId)
     {
-        var link = category.MarketplaceLinks?.FirstOrDefault();
-        if (link is null) return;
+        var mpName = category.MarketplaceLinks?
+            .FirstOrDefault(l => l.MarketPlaceId == marketPlaceId)?.MarketPlace?.Name ?? $"MP#{marketPlaceId}";
 
         var confirmed = await DialogService.ShowMessageBox(
             "Eşleştirmeyi Sil",
-            $"'{category.Name}' kategorisi için eşleştirmeyi silmek istediğinize emin misiniz?",
+            $"'{category.Name}' kategorisinin {mpName} eşleştirmesini silmek istediğinize emin misiniz?",
             yesText: "Evet", cancelText: "İptal");
 
         if (confirmed is true)
         {
-            var result = await CategoryMatchService.RemoveCategoryMappingAsync(category.Id, link.MarketPlaceId);
+            var result = await CategoryMatchService.RemoveCategoryMappingAsync(category.Id, marketPlaceId);
             if (result.Success)
             {
-                Snackbar.Add("Eşleştirme başarıyla silindi.", Severity.Success);
+                Snackbar.Add($"{mpName} eşleştirmesi silindi.", Severity.Success);
                 await LoadData();
             }
             else
