@@ -67,9 +67,9 @@
   },
   {
     "task": "WireMock.Net Marketplace Contract Tests",
-    "description": "Her marketplace API'si için WireMock.Net ile contract test altyapısı kur. Trendyol, Hepsiburada, N11 (SOAP), Amazon, Pazarama, PttAVM, Ciceksepeti API response'larını stub'la. Mevcut Mock implementasyonları (MockTrendyolOrderService vb.) yerine WireMock HTTP-level mock kullan — bu sayede API client kodunun kendisi de test edilmiş olur. Her marketplace için happy path + error scenario + rate limit / timeout senaryoları. CI/CD pipeline'da external dependency olmadan marketplace testleri çalışabilecek.",
-    "status": "pending",
-    "notes": "",
+    "description": "Her marketplace API'si için WireMock.Net ile contract test altyapısı.",
+    "status": "wont_do",
+    "notes": "7+ marketplace'in WireMock stub'larını güncel tutmak büyük bakım yükü. Mevcut MockXxxService yapısı (service-level mock, UseMock=true) yeterli. Stage API geldiğinde gerçek entegrasyon testi yapılabilir. API client'larda şu an kritik bug yok.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
