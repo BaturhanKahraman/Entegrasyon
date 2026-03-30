@@ -150,7 +150,6 @@ public class BranchOfficeManager(
     public async Task<IDataResult<List<BranchOfficePageListDto>>> GetPageBranchListAsync()
     {
         using var dbContext = contextFactory.CreateDbContext();
-
         // Ana query — scalar sub-query'ler EF Core translate edebilir
         var items = await dbContext.BranchOffices
             .AsNoTracking()
