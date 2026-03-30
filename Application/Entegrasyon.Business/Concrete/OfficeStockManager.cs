@@ -1,4 +1,5 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
@@ -210,6 +211,90 @@ public class OfficeStockManager(
         await CheckStockLevelsAsync(branchOfficeId, productVariantId, currentStock);
 
         return new SuccessDataResult<StockMovement>(movement, "Stok basariyla geri verildi.");
+    }
+
+    public async Task<IDataResult<StockTransferResultDto>> TransferStockAsync(
+        int sourceBranchId, int targetBranchId, List<TransferItemDto> items)
+    {
+        // Validation
+        if (sourceBranchId == targetBranchId)
+            return new ErrorDataResult<StockTransferResultDto>(null!, "Kaynak ve hedef depo ayni olamaz.");
+
+        if (items.Any(i => i.Quantity <= 0))
+            return new ErrorDataResult<StockTransferResultDto>(null!, "Transfer miktari 0'dan buyuk olmalidir.");
+
+        // Check target branch is active
+        using var dbContext = contextFactory.CreateDbContext();
+        var targetBranch = await dbContext.BranchOffices
+            .AsNoTracking()
+            .FirstOrDefaultAsync(b => b.Id == targetBranchId && !b.IsDeleted);
+
+        if (targetBranch is null)
+            return new ErrorDataResult<StockTransferResultDto>(null!, "Hedef depo aktif degil veya bulunamadi.");
+
+        // Pre-check: yeterli stok var mi? (ExecuteUpdateAsync'ten once kontrol — unit test dostu)
+        // CurrentStock computed column yerine FirstTotalStock - SoldQuantity kullanilir
+        foreach (var item in items)
+        {
+            var hasEnough = await dbContext.BranchOfficeStocks
+                .AsNoTracking()
+                .AnyAsync(s => s.BranchOfficeId == sourceBranchId
+                    && s.ProductVariantId == item.ProductVariantId
+                    && (s.FirstTotalStock - s.SoldQuantity) >= item.Quantity);
+            if (!hasEnough)
+                return new ErrorDataResult<StockTransferResultDto>(null!,
+                    $"Yetersiz stok: {item.ProductVariantId}");
+        }
+
+        var sourceMovements = new List<StockMovement>();
+        var targetMovements = new List<StockMovement>();
+
+        // Process each item — decrease source, increase target
+        foreach (var item in items)
+        {
+            // Decrease source atomically
+            var decreaseResult = await DecreaseStockAtomicAsync(
+                sourceBranchId, item.ProductVariantId, item.Quantity,
+                StockMovementType.Transfer,
+                referenceType: "Transfer",
+                referenceId: targetBranchId.ToString());
+
+            if (!decreaseResult.Success)
+                return new ErrorDataResult<StockTransferResultDto>(null!, decreaseResult.Message!);
+
+            sourceMovements.Add(decreaseResult.Data!);
+
+            // Increase target atomically
+            var increaseResult = await IncreaseStockAtomicAsync(
+                targetBranchId, item.ProductVariantId, item.Quantity,
+                StockMovementType.Transfer,
+                referenceType: "Transfer",
+                referenceId: sourceBranchId.ToString());
+
+            if (!increaseResult.Success)
+                return new ErrorDataResult<StockTransferResultDto>(null!, increaseResult.Message!);
+
+            targetMovements.Add(increaseResult.Data!);
+        }
+
+        // Publish stock changed events for both branches
+        foreach (var item in items)
+        {
+            using var ctx = contextFactory.CreateDbContext();
+            var productId = await ctx.ProductVariants.AsNoTracking()
+                .Where(v => v.Id == item.ProductVariantId)
+                .Select(v => v.ProductId)
+                .FirstOrDefaultAsync();
+
+            stockPriceChannel.TryPublish(new StockPriceChangedEvent(item.ProductVariantId, productId)
+            {
+                TenantId = tenantContext.TenantId
+            });
+        }
+
+        var transferResult = new StockTransferResultDto(items.Count, sourceMovements, targetMovements);
+        return new SuccessDataResult<StockTransferResultDto>(transferResult,
+            $"{items.Count} ürün başarıyla transfer edildi.");
     }
 
     private async Task CheckStockLevelsAsync(int branchOfficeId, Guid productVariantId, int currentStock)

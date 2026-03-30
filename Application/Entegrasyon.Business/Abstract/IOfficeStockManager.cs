@@ -1,3 +1,4 @@
+using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
@@ -37,4 +38,11 @@ public interface IOfficeStockManager
     Task<IDataResult<StockMovement>> IncreaseStockAtomicAsync(
         int branchOfficeId, Guid productVariantId, int quantity,
         StockMovementType type, string? referenceType = null, string? referenceId = null);
+
+    /// <summary>
+    /// Depolar arasi stok transfer. Tek transaction icinde kaynak azaltilir, hedef arttirilir.
+    /// StockMovement kayitlari her iki taraf icin olusturulur.
+    /// </summary>
+    Task<IDataResult<StockTransferResultDto>> TransferStockAsync(
+        int sourceBranchId, int targetBranchId, List<TransferItemDto> items);
 }
