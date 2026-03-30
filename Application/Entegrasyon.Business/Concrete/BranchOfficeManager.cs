@@ -5,6 +5,7 @@ using Entegrasyon.Entity;
 using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.POS;
 using Microsoft.EntityFrameworkCore;
@@ -144,5 +145,117 @@ public class BranchOfficeManager(
     {
         using var dbContext = contextFactory.CreateDbContext();
         return (await dbContext.BranchOffices.FirstOrDefaultAsync(x => x.Id == id))!;
+    }
+
+    public async Task<IDataResult<List<BranchOfficePageListDto>>> GetPageBranchListAsync()
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var items = await dbContext.BranchOffices
+            .AsNoTracking()
+            .Where(b => !b.IsDeleted)
+            .Select(b => new BranchOfficePageListDto(
+                b.Id,
+                b.Name!,
+                b.Users.Count(),
+                dbContext.BranchOfficeStocks
+                    .Where(s => s.BranchOfficeId == b.Id)
+                    .Sum(s => s.FirstTotalStock - s.SoldQuantity),
+                dbContext.MarketPlaceWarehouses
+                    .Where(w => w.BranchOfficeId == b.Id)
+                    .Select(w => w.MarketPlace.Name),
+                b.CreatedAt,
+                b.IsDefaultMarketPlaceStock))
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+        return new SuccessDataResult<List<BranchOfficePageListDto>>(items);
+    }
+
+    public async Task<IDataResult<List<BranchStockItemDto>>> GetBranchStocksAsync(int branchId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var stocks = await dbContext.BranchOfficeStocks
+            .AsNoTracking()
+            .Where(s => s.BranchOfficeId == branchId)
+            .Select(s => new BranchStockItemDto(
+                s.ProductVariantId!.Value,
+                s.ProductVariant!.Product.Title,
+                s.ProductVariant.Barcode ?? string.Empty,
+                s.FirstTotalStock,
+                s.SoldQuantity,
+                s.FirstTotalStock - s.SoldQuantity))
+            .ToListAsync();
+        return new SuccessDataResult<List<BranchStockItemDto>>(stocks);
+    }
+
+    public async Task<IDataResult<List<StockMovementViewDto>>> GetBranchStockMovementsAsync(
+        int branchId, DateTimeOffset? from, DateTimeOffset? to)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var query = dbContext.StockMovements
+            .AsNoTracking()
+            .Where(m => m.BranchOfficeId == branchId);
+
+        if (from.HasValue)
+            query = query.Where(m => m.CreatedAt >= from.Value);
+        if (to.HasValue)
+            query = query.Where(m => m.CreatedAt <= to.Value);
+
+        var movements = await query
+            .OrderByDescending(m => m.CreatedAt)
+            .Select(m => new StockMovementViewDto(
+                m.Id,
+                m.CreatedAt,
+                m.ProductVariant.Product.Title,
+                m.ProductVariant.Barcode ?? string.Empty,
+                m.Type,
+                m.Quantity,
+                m.StockBefore,
+                m.StockAfter,
+                m.ReferenceType,
+                m.ReferenceId))
+            .ToListAsync();
+        return new SuccessDataResult<List<StockMovementViewDto>>(movements);
+    }
+
+    public async Task<IDataResult<List<MarketPlaceWarehouse>>> GetBranchMarketPlacesAsync(int branchId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var warehouses = await dbContext.MarketPlaceWarehouses
+            .AsNoTracking()
+            .Where(w => w.BranchOfficeId == branchId)
+            .Include(w => w.MarketPlace)
+            .ToListAsync();
+        return new SuccessDataResult<List<MarketPlaceWarehouse>>(warehouses);
+    }
+
+    public async Task<IResult> AddMarketPlaceWarehouseAsync(int branchId, int marketPlaceId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var existing = await dbContext.MarketPlaceWarehouses
+            .AnyAsync(w => w.BranchOfficeId == branchId && w.MarketPlaceId == marketPlaceId);
+        if (existing)
+            return new ErrorResult("Bu depo zaten bu pazaryerine bağlı.");
+
+        var warehouse = new MarketPlaceWarehouse
+        {
+            BranchOfficeId = branchId,
+            MarketPlaceId = marketPlaceId
+        };
+        dbContext.MarketPlaceWarehouses.Add(warehouse);
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Pazaryeri bağlantısı eklendi.");
+    }
+
+    public async Task<IResult> RemoveMarketPlaceWarehouseAsync(int warehouseId)
+    {
+        using var dbContext = contextFactory.CreateDbContext();
+        var warehouse = await dbContext.MarketPlaceWarehouses.AsTracking()
+            .FirstOrDefaultAsync(w => w.Id == warehouseId);
+        if (warehouse is null)
+            return new ErrorResult("Bağlantı bulunamadı.");
+
+        dbContext.MarketPlaceWarehouses.Remove(warehouse);
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Pazaryeri bağlantısı kaldırıldı.");
     }
 }

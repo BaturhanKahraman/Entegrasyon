@@ -1,0 +1,54 @@
+@using Entegrasyon.Entity.Dtos.Branches
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudSelect T="int" @bind-Value="_targetBranchId" Label="Hedef Depo" Required="true">
+                    @foreach (var branch in _targetBranches)
+                    {
+                        <MudSelectItem Value="@branch.Id">@branch.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            @if (SelectedItems.Any())
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Class="mt-2 mb-2">Transfer Edilecek Ürünler</MudText>
+                    <MudTable T="TransferItemModel" Items="@_transferItems" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Ürün</MudTh>
+                            <MudTh>Mevcut Stok</MudTh>
+                            <MudTh>Transfer Miktarı</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.ProductName</MudTd>
+                            <MudTd>@context.CurrentStock</MudTd>
+                            <MudTd>
+                                <MudNumericField @bind-Value="context.Quantity"
+                                                 Min="1"
+                                                 Max="@context.CurrentStock"
+                                                 Variant="Variant.Outlined"
+                                                 Margin="Margin.Dense" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="@(async () => await TransferAsync())"
+                   Disabled="@(_targetBranchId <= 0 || _transferring)">
+            @if (_transferring)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-1" />
+            }
+            Transfer Et
+        </MudButton>
+    </DialogActions>
+</MudDialog>
