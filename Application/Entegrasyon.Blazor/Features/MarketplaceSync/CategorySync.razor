@@ -131,8 +131,9 @@
                                 <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                                     @foreach (var link in context.Item.MarketplaceLinks.Where(l => l.IsActive))
                                     {
-                                        <MudTooltip Text="@($"{link.MarketPlaceCategoryName} (ID: {link.ExternalCategoryId})")">
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">
+                                        <MudTooltip Text="@($"{link.MarketPlaceCategoryName} (ID: {link.ExternalCategoryId}) — Kaldırmak için X'e tıklayın")">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined"
+                                                     OnClose="@(() => DeleteMappingForMarketplace(context.Item, link.MarketPlaceId))">
                                                 <MarketplaceLogo Name="@(link.MarketPlace?.Name ?? "")" Size="Size.Small" Class="mr-1" />
                                                 @(link.MarketPlace?.Name ?? "MP#" + link.MarketPlaceId)
                                             </MudChip>
@@ -187,6 +188,15 @@
                     <TemplateColumn Title="İşlemler">
                         <CellTemplate>
                             <MudStack Row="true" Spacing="1">
+                                @* Yeni eşleştirme ekle — her zaman görünür *@
+                                <MudButton Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Add"
+                                           OnClick="@(() => OpenRowMappingDialog(context.Item))">
+                                    Eşleştir
+                                </MudButton>
+
                                 @if (context.Item.MarketplaceLinks?.Any(l => l.IsActive) == true)
                                 {
                                     <MudButton Variant="Variant.Text"
@@ -195,20 +205,6 @@
                                                StartIcon="@Icons.Material.Filled.Tune"
                                                OnClick="@(() => NavigateToAttributeMatch(context.Item.Id, context.Item.MarketplaceLinks.First(l => l.IsActive).MarketPlaceId))">
                                         Attribute Eşleştir
-                                    </MudButton>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="@(() => DeleteMapping(context.Item))" />
-                                }
-                                else
-                                {
-                                    <MudButton Variant="Variant.Text"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               StartIcon="@Icons.Material.Filled.Link"
-                                               OnClick="@(() => OpenRowMappingDialog(context.Item))">
-                                        Eşleştir
                                     </MudButton>
                                 }
                             </MudStack>
