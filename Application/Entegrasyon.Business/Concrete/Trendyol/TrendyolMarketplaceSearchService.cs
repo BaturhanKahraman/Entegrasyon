@@ -1,4 +1,7 @@
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Dtos.Marketplace;
@@ -10,13 +13,16 @@ namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
 /// Trendyol API üzerinden marketplace arama yapan servis.
-/// Şu an skeleton — asıl API entegrasyonu sonra yapılacak.
+/// Markalar için Trendyol API'ye istek atar; diğer marketplace'ler için DB fallback kullanır.
 /// </summary>
 public sealed class TrendyolMarketplaceSearchService(
     IDbContextFactory<IntegrationDbContext> dbContextFactory,
     ITrendyolCategoryImportService categoryImportService,
+    IHttpClientFactory httpClientFactory,
     ILogger<TrendyolMarketplaceSearchService> logger) : IMarketplaceSearchService
 {
+    private const int TrendyolMarketPlaceId = 1;
+
     public async Task<IDataResult<List<MarketplaceCategorySearchResult>>> SearchCategoriesAsync(
         int marketPlaceId, string query, CancellationToken ct = default)
     {
@@ -46,13 +52,13 @@ public sealed class TrendyolMarketplaceSearchService(
         }
     }
 
-    public Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsAsync(
+    public async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsAsync(
         int marketPlaceId, string query, CancellationToken ct = default)
     {
-        // TODO: Trendyol brands API entegrasyonu — GET brands/by-name?name={query}
-        logger.LogWarning("TrendyolMarketplaceSearchService.SearchBrandsAsync henüz implemente edilmedi, boş liste dönüyor");
-        return Task.FromResult<IDataResult<List<MarketplaceBrandSearchResult>>>(
-            new SuccessDataResult<List<MarketplaceBrandSearchResult>>([]));
+        if (marketPlaceId == TrendyolMarketPlaceId)
+            return await SearchBrandsTrendyolAsync(query, ct);
+
+        return await SearchBrandsFromDbAsync(marketPlaceId, query, ct);
     }
 
     public async Task<IDataResult<List<MarketplaceAttributeSearchResult>>> SearchAttributesAsync(
@@ -79,6 +85,59 @@ public sealed class TrendyolMarketplaceSearchService(
         }
     }
 
+    private async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsTrendyolAsync(
+        string query, CancellationToken ct)
+    {
+        try
+        {
+            var client = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
+            var url = $"product/brands/by-name?name={Uri.EscapeDataString(query)}&size=20";
+
+            var response = await client.GetFromJsonAsync<TrendyolBrandsResponse>(url, ct);
+            var brands = response?.Brands
+                .Select(b => new MarketplaceBrandSearchResult(b.Id, b.Name))
+                .ToList() ?? [];
+
+            return new SuccessDataResult<List<MarketplaceBrandSearchResult>>(brands);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Trendyol marka arama hatasi");
+            return new ErrorDataResult<List<MarketplaceBrandSearchResult>>([], "Marka arama sirasinda hata olustu.");
+        }
+    }
+
+    private async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsFromDbAsync(
+        int marketPlaceId, string query, CancellationToken ct)
+    {
+        try
+        {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
+
+            var q = dbContext.BrandMarketPlaceMatches
+                .Where(m => m.MarketPlaceId == marketPlaceId);
+
+            if (!string.IsNullOrWhiteSpace(query))
+                q = q.Where(m => m.MarketPlaceBrandExternalId != null &&
+                                  m.MarketPlaceBrandExternalId.Contains(query));
+
+            var brands = await q
+                .Select(m => new MarketplaceBrandSearchResult(
+                    m.MarketPlaceBrandId,
+                    m.MarketPlaceBrandExternalId ?? $"Brand #{m.MarketPlaceBrandId}"))
+                .Distinct()
+                .Take(20)
+                .ToListAsync(ct);
+
+            return new SuccessDataResult<List<MarketplaceBrandSearchResult>>(brands);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "DB marka arama hatasi, marketPlaceId={MarketPlaceId}", marketPlaceId);
+            return new ErrorDataResult<List<MarketplaceBrandSearchResult>>([], "Marka arama sirasinda hata olustu.");
+        }
+    }
+
     private static void FlattenCategories(
         IEnumerable<ImportedTrendyolCategory> categories, string? parentPath,
         List<MarketplaceCategorySearchResult> results)
@@ -91,5 +150,22 @@ public sealed class TrendyolMarketplaceSearchService(
             if (cat.SubCategories is { Count: > 0 })
                 FlattenCategories(cat.SubCategories, fullPath, results);
         }
+    }
+
+    // ─── Private response models ───────────────────────────────────────────
+
+    private record TrendyolBrandsResponse
+    {
+        [JsonPropertyName("brands")]
+        public List<TrendyolBrandItem> Brands { get; init; } = [];
+    }
+
+    private record TrendyolBrandItem
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; init; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; init; } = string.Empty;
     }
 }

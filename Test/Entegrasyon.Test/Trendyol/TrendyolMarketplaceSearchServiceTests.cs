@@ -1,7 +1,11 @@
+using System.Net;
+using System.Text.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Trendyol;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
+using Entegrasyon.Entity.Matches;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -9,16 +13,30 @@ namespace Entegrasyon.Test.Trendyol;
 
 /// <summary>
 /// TrendyolMarketplaceSearchService unit tests — verifies category search (with flattening),
-/// brand search (stub), and attribute search.
+/// brand search (Trendyol API + DB fallback), and attribute search.
 /// </summary>
 public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTest
 {
     private readonly Mock<ITrendyolCategoryImportService> _categoryImportMock = new();
     private readonly Mock<ILogger<TrendyolMarketplaceSearchService>> _loggerMock = new();
+    private readonly MockHttpMessageHandler _brandHttpHandler = new();
+    private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
+
+    public TrendyolMarketplaceSearchServiceTests()
+    {
+        var httpClient = new HttpClient(_brandHttpHandler)
+        {
+            BaseAddress = new Uri("https://apigw.trendyol.com/integration/")
+        };
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(StringConstants.TrendyolApi))
+            .Returns(httpClient);
+    }
 
     private TrendyolMarketplaceSearchService CreateSut() => new(
         mockContextFactory.Object,
         _categoryImportMock.Object,
+        _httpClientFactoryMock.Object,
         _loggerMock.Object);
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -169,13 +187,20 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SearchBrandsAsync
+    // SearchBrandsAsync — Trendyol API (real)
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
-    public async Task SearchBrandsAsync_ReturnsEmptyList_NotYetImplemented()
+    public async Task SearchBrandsAsync_Trendyol_ReturnsMatchingBrands()
     {
         // Arrange
+        var trendyolResponse = new
+        {
+            brands = new[] { new { id = 111, name = "Nike" } }
+        };
+        _brandHttpHandler.SetResponse(HttpStatusCode.OK,
+            JsonSerializer.Serialize(trendyolResponse));
+
         var sut = CreateSut();
 
         // Act
@@ -183,7 +208,51 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().BeEmpty();
+        result.Data.Should().HaveCount(1);
+        result.Data[0].Id.Should().Be(111);
+        result.Data[0].Name.Should().Be("Nike");
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_WhenApiThrows_ReturnsError()
+    {
+        // Arrange
+        _brandHttpHandler.SetResponse(HttpStatusCode.InternalServerError, "");
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchBrandsAsync(1, "Nike");
+
+        // Assert
+        result.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_NonTrendyol_FallsBackToDb()
+    {
+        // Arrange — marketPlaceId=2 (N11), no HTTP mock needed
+        var matches = new List<BrandMarketPlaceMatch>
+        {
+            new() { MarketPlaceId = 2, MarketPlaceBrandId = 50,
+                    MarketPlaceBrandExternalId = "Nike TR" },
+            new() { MarketPlaceId = 2, MarketPlaceBrandId = 51,
+                    MarketPlaceBrandExternalId = "Adidas" },
+            new() { MarketPlaceId = 3, MarketPlaceBrandId = 99,
+                    MarketPlaceBrandExternalId = "Nike" }, // different marketplace, excluded
+        };
+        mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches)
+            .ReturnsDbSet(matches);
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchBrandsAsync(2, "Nike");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(1);
+        result.Data[0].Name.Should().Be("Nike TR");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
