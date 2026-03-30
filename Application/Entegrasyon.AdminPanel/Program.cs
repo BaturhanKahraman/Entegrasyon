@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AdminPanelDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("AdminPanel") ?? "Data Source=adminpanel.db"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("AdminPanel")
+        ?? "Host=192.168.1.78;Port=5432;Database=AdminPanelDb;Username=baturhan;Password=DiHRrP6dY8nC*M"));
 
 builder.Services.AddDbContext<TemplateDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TemplateDb")));
