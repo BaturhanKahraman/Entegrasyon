@@ -155,14 +155,17 @@ public class BranchOfficeManager(
             .Where(b => !b.IsDeleted)
             .Select(b => new BranchOfficePageListDto(
                 b.Id,
-                b.Name!,
-                b.Users.Count(),
+                b.Name ?? "",
+                dbContext.Users.Count(u => u.DefaultBranchOfficeId == b.Id),
                 dbContext.BranchOfficeStocks
                     .Where(s => s.BranchOfficeId == b.Id)
-                    .Sum(s => s.FirstTotalStock - s.SoldQuantity),
+                    .Select(s => s.FirstTotalStock - s.SoldQuantity)
+                    .DefaultIfEmpty(0)
+                    .Sum(),
                 dbContext.MarketPlaceWarehouses
-                    .Where(w => w.BranchOfficeId == b.Id)
-                    .Select(w => w.MarketPlace.Name),
+                    .Where(w => w.BranchOfficeId == b.Id && !w.IsDeleted)
+                    .Select(w => w.MarketPlace.Name ?? "")
+                    .ToList(),
                 b.CreatedAt,
                 b.IsDefaultMarketPlaceStock))
             .OrderByDescending(b => b.CreatedAt)
