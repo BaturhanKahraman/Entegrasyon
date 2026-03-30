@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Entegrasyon.Business\Entegrasyon.Business.csproj" />
+    <ProjectReference Include="..\Entegrasyon.AdminPanel\Entegrasyon.AdminPanel.csproj" />
   </ItemGroup>
 
 </Project>

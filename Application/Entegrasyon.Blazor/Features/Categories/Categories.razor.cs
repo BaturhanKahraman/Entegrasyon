@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Categories;
 using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Dtos.MasterCatalog;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -138,5 +139,32 @@ public partial class Categories
             var parent = _categories.FirstOrDefault(c => c.Id == parentId.Value);
             parentId = parent?.SuperCategoryId;
         }
+    }
+
+    private async Task OpenMasterCatalogImportDialog()
+    {
+        var dialog = await DialogService.ShowAsync<MasterCatalogImportDialog>(
+            "Master Catalog'dan İçe Aktar",
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: ImportResultDto importResult })
+        {
+            await ShowImportResultDialog(importResult);
+            await LoadCategories();
+        }
+    }
+
+    private async Task ShowImportResultDialog(ImportResultDto result)
+    {
+        var parameters = new DialogParameters<ImportResultDialog>
+        {
+            { x => x.Result, result }
+        };
+
+        await DialogService.ShowAsync<ImportResultDialog>(
+            "İçe Aktarma Tamamlandı",
+            parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small });
     }
 }

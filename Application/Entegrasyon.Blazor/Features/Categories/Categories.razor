@@ -6,7 +6,15 @@
 
 <PageTitle>Kategoriler</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Kategori Yönetimi</MudText>
+<div class="d-flex justify-space-between align-center mb-2">
+    <MudText Typo="Typo.h3">Kategori Yönetimi</MudText>
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Secondary"
+               StartIcon="@Icons.Material.Filled.CloudDownload"
+               OnClick="@OpenMasterCatalogImportDialog">
+        Master Catalog'dan İçe Aktar
+    </MudButton>
+</div>
 
 <MudGrid>
     <MudItem xs="12" md="5">
