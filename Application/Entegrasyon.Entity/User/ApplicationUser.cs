@@ -35,6 +35,22 @@ public class ApplicationUser : BaseEntity
     public int? DefaultBranchOfficeId { get; set; }
     public BranchOffice? DefaultBranchOffice { get; set; }
 
+    // Account Lockout
+    public int FailedLoginCount { get; set; }
+    public DateTimeOffset? LockoutEnd { get; set; }
+
+    // Password Hash Version (0 = HMACSHA512 legacy, 1 = bcrypt)
+    public int PasswordHashVersion { get; set; }
+    public string? BcryptPasswordHash { get; set; }
+
+    // 2FA TOTP
+    public string? TwoFactorSecret { get; set; }
+    public string? TwoFactorRecoveryCodes { get; set; } // JSON array of SHA256-hashed codes
+
+    // Password Reset
+    public string? PasswordResetToken { get; set; }
+    public DateTimeOffset? PasswordResetTokenExpiresAt { get; set; }
+
     public byte[]? RowVersion { get; set; }
     public override string ToString()
     {
