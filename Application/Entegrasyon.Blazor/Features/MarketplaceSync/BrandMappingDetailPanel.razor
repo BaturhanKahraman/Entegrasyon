@@ -60,7 +60,23 @@ else
                                              ToStringFunc="@(x => x?.Name ?? "")"
                                              DebounceInterval="300"
                                              MinCharacters="0"
-                                             Class="flex-grow-1" />
+                                             Class="flex-grow-1">
+                                <ItemTemplate>
+                                    @{
+                                        var owner = GetExistingOwner(mp.Id, context.Id);
+                                    }
+                                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; @(owner is not null ? "opacity: 0.5;" : "")">
+                                        <MudText Typo="Typo.body2">@context.Name</MudText>
+                                        @if (owner is not null)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Default"
+                                                     Style="pointer-events: none; font-size: 10px;">
+                                                Kullanılıyor: @owner
+                                            </MudChip>
+                                        }
+                                    </div>
+                                </ItemTemplate>
+                            </MudAutocomplete>
                             <MudIconButton Icon="@Icons.Material.Filled.Save"
                                            Color="Color.Primary"
                                            Size="Size.Small"
