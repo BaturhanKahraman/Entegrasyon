@@ -34,9 +34,9 @@
   },
   {
     "task": "Finbuckle MultiTenant Migration",
-    "description": "Mevcut custom ITenantContext + TenantRegistryService + TenantAwarePollingService altyapısını Finbuckle.MultiTenant kütüphanesiyle değiştir. Subdomain resolution, per-tenant connection string, EF Core integration hazır geliyor. Finbuckle'ın TenantInfo modeli, per-tenant store (EF Core veya config-based), ve middleware pipeline'ını entegre et. Mevcut TenantDbContextFactory ve HttpTenantContext custom kodlarını Finbuckle built-in mekanizmalarıyla değiştir. Background servisler için tenant iteration pattern'ını Finbuckle ile uyumlu hale getir.",
-    "status": "pending",
-    "notes": "",
+    "description": "Mevcut custom ITenantContext + TenantRegistryService + TenantAwarePollingService altyapısını Finbuckle.MultiTenant kütüphanesiyle değiştir.",
+    "status": "wont_do",
+    "notes": "Mevcut custom multi-tenant yapı yeterli ve çalışıyor: DB-per-tenant (TenantDbContextFactory), tenant resolution (HttpTenantContext), background polling (TenantAwarePollingService), feature packages (IFeatureService). Finbuckle geçişi yüksek maliyet (IDbContextFactory pattern söküm, tüm manager'lar etkilenir) düşük fayda — Finbuckle'ın sunduğu per-tenant options/store/middleware mevcut yapıda zaten custom olarak var. TenantAwarePollingService ve IFeatureService Finbuckle'da karşılığı yok, custom kalacak. 3-4 hafta iş, sonuçta aynı şeyi yapıyor.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
