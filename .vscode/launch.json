@@ -2,14 +2,24 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Blazor (Debug + OTel)",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
+            "preLaunchTask": "ensure-aspire-dashboard",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:7070"
+            }
+        },
+        {
             "name": "Blazor (Debug)",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:7070",
-                "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471"
+                "ASPNETCORE_URLS": "http://localhost:7070"
             }
         },
         {
@@ -21,8 +31,7 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:7070",
-                "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true",
-                "ConnectionStrings__DefaultConnection": "Host=192.168.1.78;Port=5432;Database=IntegrationDb;Username=Baturhan;Password=649471"
+                "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true"
             }
         }
     ]
