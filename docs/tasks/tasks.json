@@ -283,5 +283,16 @@
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "N11 SOAP → REST API Migration",
+    "description": "N11 ürün yükleme/güncelleme, fiyat/stok, sipariş, kategori REST API'lerine geçiş. İade/iptal/silme SOAP'ta kaldı.",
+    "status": "done",
+    "notes": "N11RestClient, N11RestProductService, N11RestStockPriceService, N11RestOrderService, N11RestCategoryImporter, N11TaskPollingService. N11:UseSoap config flag (default false=REST). SOAP fallback: delete/ship/reject. 15 yeni test, 1511 toplam.",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
   }
 ]
