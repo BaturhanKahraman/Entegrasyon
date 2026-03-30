@@ -6,7 +6,7 @@
 
 ---
 
-## Task 1: Entity Changes + Migration [ ]
+## Task 1: Entity Changes + Migration [x]
 
 1. Add fields to `ApplicationUser`:
    - `FailedLoginCount`, `LockoutEnd`
@@ -21,7 +21,7 @@
 
 ---
 
-## Task 2: bcrypt Hash Migration (TDD) [ ]
+## Task 2: bcrypt Hash Migration (TDD) [x]
 
 1. Add `CreateBcryptHash` + `VerifyBcryptHash` to `HashingHelper`
 2. Update `AuthService.LoginAsync` — version-aware verify + auto-migrate
@@ -37,7 +37,7 @@
 
 ---
 
-## Task 3: Account Lockout (TDD) [ ]
+## Task 3: Account Lockout (TDD) [x]
 
 1. Update `AuthService.LoginAsync`:
    - Check `LockoutEnd` before verifying password
@@ -54,7 +54,7 @@
 
 ---
 
-## Task 4: 2FA TOTP (TDD) [ ]
+## Task 4: 2FA TOTP (TDD) [x]
 
 1. Add `TwoFactorSetupDto` to `Entegrasyon.Entity/Dtos/Auth/`
 2. Add `RequiresTwoFactorResult` to `Entegrasyon.Entity/Results/`
@@ -78,7 +78,7 @@
 
 ---
 
-## Task 5: Password Reset Token (TDD) [ ]
+## Task 5: Password Reset Token (TDD) [x]
 
 1. Add methods to `IAuthService`
 2. Implement in `AuthService`:
@@ -96,7 +96,7 @@
 
 ---
 
-## Task 6: Final Verification [ ]
+## Task 6: Final Verification [x]
 
 1. `dotnet build Entegrasyon.sln` — clean
 2. `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj` — all pass
