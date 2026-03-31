@@ -157,8 +157,16 @@ public sealed class ProductSyncManager(
             var record = product.MarketplaceRecords.FirstOrDefault(r => r.MarketPlaceId == mp.Id);
             var state = MapSyncState(record, product.UpdatedAt);
             return new MarketplaceSyncItemDto(
-                mp.Id, mp.Name, state,
-                record?.LastSyncedAt, record?.BatchRequestId, record?.StatusMessage);
+                MarketPlaceId: mp.Id,
+                MarketPlaceName: mp.Name,
+                SyncState: state,
+                LastSyncedAt: record?.LastSyncedAt,
+                BatchRequestId: record?.BatchRequestId,
+                StatusMessage: record?.StatusMessage,
+                ExternalProductId: record?.ExternalProductId,
+                ContentId: record?.ContentId,
+                IsApproved: record?.IsApproved,
+                IsArchived: record?.IsArchived);
         }).ToList();
 
         var dto = new ProductSyncDetailDto(

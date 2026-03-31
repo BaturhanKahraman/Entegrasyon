@@ -106,6 +106,8 @@ public class PagePermissionAttributeTests
         { "Entegrasyon.Blazor.Features.MarketplaceSync.CommissionRates.CommissionRatesPage", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MarketplaceSync.ProductSync.ProductSyncPage", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MarketplaceSync.ProductSync.ProductSyncDetailPage", AppPermissions.Marketplace.View },
+        { "Entegrasyon.Blazor.Features.MarketplaceSync.ProductSync.ProductSyncFullDetailPage", AppPermissions.Marketplace.View },
+        { "Entegrasyon.Blazor.Features.MarketplaceSync.ProductSync.BulkProductSyncPage", AppPermissions.Marketplace.View },
         { "Entegrasyon.Blazor.Features.MatchedEntityImport.MatchedEntityImport", AppPermissions.Marketplace.View },
 
         // Users & Roles

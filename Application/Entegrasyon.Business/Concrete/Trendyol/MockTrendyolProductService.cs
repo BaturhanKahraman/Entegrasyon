@@ -124,4 +124,14 @@ public sealed class MockTrendyolProductService(
 
         return new SuccessResult("Onayli urun icerigi guncellendi (mock).");
     }
+
+    public async Task<IResult> DeleteProductAsync(Guid productId)
+    {
+        await activityLogger.LogAsync(productId, ProductActivityType.Deleted,
+            "Urun Trendyol'dan silindi (mock)",
+            ProductActivityStatus.Success, marketplaceName: "Trendyol");
+
+        logger.LogInformation("Mock: Product {ProductId} deleted from Trendyol", productId);
+        return new SuccessResult("Urun Trendyol'dan silindi (mock).");
+    }
 }

@@ -1,0 +1,39 @@
+@using Entegrasyon.Entity.Dtos.Product.Marketplace
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">İçerik Güncelle</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudAlert Severity="Severity.Info" Dense="true">
+                Görsel yönetimi için ürün detayındaki görsel yükleme bölümünü kullanın.
+            </MudAlert>
+            <MudTextField @bind-Value="_titleOverride"
+                          Label="Başlık Düzenlemesi"
+                          HelperText="Boş bırakırsanız ürünün orijinal başlığı kullanılır (3-200 karakter)"
+                          MaxLength="200"
+                          Counter="200"
+                          Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_descriptionOverride"
+                          Label="Açıklama Düzenlemesi"
+                          HelperText="Boş bırakırsanız ürünün orijinal açıklaması kullanılır (20-2000 karakter)"
+                          MaxLength="2000"
+                          Lines="5"
+                          Counter="2000"
+                          Variant="Variant.Outlined" />
+            <MudCheckBox @bind-Value="_syncImmediately" Label="Kaydet ve Senkronize Et" Color="Color.Primary" />
+            @if (!string.IsNullOrEmpty(_validationError))
+            {
+                <MudAlert Severity="Severity.Error" Dense="true">@_validationError</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="@_isBusy">İptal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   OnClick="Submit" Disabled="@_isBusy">
+            @(_isBusy ? "Kaydediliyor..." : "Kaydet")
+        </MudButton>
+    </DialogActions>
+</MudDialog>

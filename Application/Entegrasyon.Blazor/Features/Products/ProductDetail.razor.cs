@@ -67,6 +67,7 @@ public partial class ProductDetail
     }
 
     private void GoBack() => NavigationManager.NavigateTo("/products");
+    private void GoToSyncPage() => NavigationManager.NavigateTo($"/products/{Id}/sync");
 
     private bool CanSync => _syncStatus?.State is MarketplaceSyncState.OutOfSync
         or MarketplaceSyncState.Failed or MarketplaceSyncState.Rejected;
