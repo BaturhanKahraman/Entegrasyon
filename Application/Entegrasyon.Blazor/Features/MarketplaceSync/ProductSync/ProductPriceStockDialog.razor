@@ -1,0 +1,61 @@
+@using Entegrasyon.Entity.Dtos.Product.Marketplace
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Fiyat / Stok Güncelle</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (_variantOverrides.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">Varyant bulunamadı.</MudAlert>
+            }
+            else
+            {
+                <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+                    <thead>
+                        <tr>
+                            <th>Varyant</th>
+                            <th>Orijinal Liste</th>
+                            <th>Orijinal Satış</th>
+                            <th>Override Liste</th>
+                            <th>Override Satış</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var vo in _variantOverrides)
+                        {
+                            <tr @key="vo.ProductVariantId">
+                                <td>@vo.Barcode</td>
+                                <td>@vo.OriginalListPrice.ToString("N2")</td>
+                                <td>@vo.OriginalSalePrice.ToString("N2")</td>
+                                <td>
+                                    <MudNumericField @bind-Value="vo.ListPriceOverride"
+                                                     Placeholder="@vo.OriginalListPrice.ToString("N2")"
+                                                     Min="0m" Format="N2"
+                                                     Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                     HideSpinButtons="true" />
+                                </td>
+                                <td>
+                                    <MudNumericField @bind-Value="vo.SalePriceOverride"
+                                                     Placeholder="@vo.OriginalSalePrice.ToString("N2")"
+                                                     Min="0m" Format="N2"
+                                                     Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                     HideSpinButtons="true" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                <MudCheckBox @bind-Value="_syncImmediately" Label="Kaydet ve Senkronize Et" Color="Color.Primary" />
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="@_isBusy">İptal</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   OnClick="Submit" Disabled="@(_isBusy || _variantOverrides.Count == 0)">
+            @(_isBusy ? "Kaydediliyor..." : "Kaydet")
+        </MudButton>
+    </DialogActions>
+</MudDialog>

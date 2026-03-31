@@ -5,6 +5,7 @@ using Entegrasyon.Business.Diagnostics;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -207,6 +208,62 @@ public sealed class TrendyolProductService(
             ProductActivityStatus.Success, marketplaceName: "Trendyol");
 
         return new SuccessResult("Onaysiz urun guncellendi.");
+    }
+
+    public async Task<IResult> DeleteProductAsync(Guid productId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var product = await dbContext.MainProducts
+            .AsNoTracking()
+            .Include(p => p.ProductVariants)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product is null)
+            return new ErrorResult("Ürün bulunamadı.");
+
+        var marketplace = await dbContext.MarketPlaces.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId);
+
+        if (marketplace?.SellerId is null)
+            return new ErrorResult("Trendyol SellerId ayarlanmamış.");
+
+        var barcodeItems = product.ProductVariants
+            .Select(v => new { barcode = v.Barcode })
+            .ToList();
+
+        var url = $"integration/product/sellers/{marketplace.SellerId}/products";
+        var deleteBody = new { items = barcodeItems };
+        var response = await apiClient.DeleteAsync(url);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync();
+            logger.LogError("Trendyol product delete failed. ProductId={ProductId}, Status={Status}, Body={Body}",
+                productId, response.StatusCode, errorBody);
+
+            await activityLogger.LogAsync(productId, ProductActivityType.Deleted,
+                $"Trendyol silme hatası: {response.StatusCode}",
+                ProductActivityStatus.Error, detail: errorBody, marketplaceName: "Trendyol");
+
+            return new ErrorResult($"Trendyol silme hatası: {response.StatusCode}");
+        }
+
+        // Marketplace kaydını Failed olarak işaretle (arşivlenmiş/silinmiş)
+        var pm = await dbContext.ProductMarketplaces
+            .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == TrendyolMarketPlaceId);
+        if (pm is not null)
+        {
+            pm.Status = MarketplaceProductStatus.Failed;
+            pm.StatusMessage = "Trendyol'dan silindi";
+            await dbContext.SaveChangesAsync();
+        }
+
+        await activityLogger.LogAsync(productId, ProductActivityType.Deleted,
+            "Ürün Trendyol'dan silindi",
+            ProductActivityStatus.Success, marketplaceName: "Trendyol");
+
+        return new SuccessResult("Ürün Trendyol'dan silindi.");
     }
 
     public async Task<IResult> UpdateApprovedContentAsync(Guid productId)

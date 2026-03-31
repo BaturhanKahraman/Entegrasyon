@@ -17,4 +17,10 @@ public interface ITrendyolProductService
     /// Onaylı ürün güncelleme — sadece title, description, images, attributes + contentId zorunlu (content-bulk-update).
     /// </summary>
     Task<IResult> UpdateApprovedContentAsync(Guid productId);
+
+    /// <summary>
+    /// Ürünü Trendyol'dan siler.
+    /// Silinebilir: onay bekleyenler + 1 günden fazla arşivlenmiş ürünler.
+    /// </summary>
+    Task<IResult> DeleteProductAsync(Guid productId);
 }

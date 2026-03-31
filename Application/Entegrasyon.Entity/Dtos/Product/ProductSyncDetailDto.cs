@@ -15,4 +15,8 @@ public sealed record MarketplaceSyncItemDto(
     MarketplaceSyncState SyncState,
     DateTimeOffset? LastSyncedAt,
     string? BatchRequestId,
-    string? StatusMessage);
+    string? StatusMessage,
+    string? ExternalProductId = null,
+    long? ContentId = null,
+    bool? IsApproved = null,
+    bool? IsArchived = null);

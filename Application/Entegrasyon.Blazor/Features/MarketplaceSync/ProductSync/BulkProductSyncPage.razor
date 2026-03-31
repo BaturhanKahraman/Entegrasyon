@@ -1,0 +1,150 @@
+@page "/marketplace/sync/products"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = AppPermissions.Marketplace.View)]
+@using Entegrasyon.Entity.Dtos.Product
+@using Entegrasyon.Entity
+
+<PageTitle>Toplu Ürün Yönetimi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Toplu Ürün Yönetimi</MudText>
+
+    @* Filtre Satırı *@
+    <MudPaper Class="pa-3 mb-3" Elevation="1">
+        <MudGrid>
+            <MudItem xs="12" sm="4" md="3">
+                <MudSelect T="int" Value="_selectedMarketPlaceId"
+                           Label="Pazaryeri" Variant="Variant.Outlined"
+                           ValueChanged="OnMarketplaceChanged">
+                    @foreach (var mp in _marketplaces)
+                    {
+                        <MudSelectItem Value="@mp.Id">@mp.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="4" md="3">
+                <MudSelect T="MarketplaceSyncState?" Value="_stateFilter"
+                           Label="Durum Filtresi" Variant="Variant.Outlined"
+                           ValueChanged="OnFilterChanged">
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(null)">Tümü</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.Waiting)">Beklemede</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.Processing)">İşleniyor</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.Synced)">Onaylı / Yayında</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.OutOfSync)">Güncelleme Gerekiyor</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.Failed)">Başarısız</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.Rejected)">Reddedildi</MudSelectItem>
+                    <MudSelectItem T="MarketplaceSyncState?" Value="@(MarketplaceSyncState.NeverSynced)">Senkronize Edilmedi</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="4" md="4">
+                <MudTextField @bind-Value="_searchKey"
+                              Label="Ürün adı veya barkod ara"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              DebounceInterval="400"
+                              OnDebounceIntervalElapsed="OnSearchChanged" />
+            </MudItem>
+            <MudItem xs="12" sm="12" md="2" Class="d-flex align-center">
+                <MudButton Variant="Variant.Outlined" OnClick="LoadGrid" StartIcon="@Icons.Material.Filled.Refresh">
+                    Yenile
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @* Toplu Aksiyon Araç Çubuğu *@
+    @if (_selectedItems.Count > 0)
+    {
+        <MudPaper Class="pa-3 mb-3" Elevation="2" Style="background-color: var(--mud-palette-info-lighten);">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+                <MudText Typo="Typo.body1"><strong>@_selectedItems.Count</strong> ürün seçildi</MudText>
+                <MudSpacer />
+                <AuthorizeView Policy="@AppPermissions.Marketplace.Edit">
+                    @if (_bulkProgress > 0)
+                    {
+                        <MudStack Style="min-width:200px">
+                            <MudProgressLinear Value="@_bulkProgress" Max="@_selectedItems.Count"
+                                               Color="Color.Primary" Rounded="true" Size="Size.Medium" />
+                            <MudText Typo="Typo.caption">@_bulkProgress / @_selectedItems.Count işlendi</MudText>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Sync"
+                                   OnClick="BulkSync" Disabled="@_bulkBusy">
+                            Toplu Sync
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.Update"
+                                   OnClick="BulkUpdate" Disabled="@_bulkBusy">
+                            Seçilenleri Güncelle
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="BulkDelete" Disabled="@_bulkBusy">
+                            Seçilenleri Sil
+                        </MudButton>
+                    }
+                </AuthorizeView>
+            </MudStack>
+        </MudPaper>
+    }
+
+    @* Veri Grid *@
+    <MudDataGrid T="ProductSyncListItemDto"
+                 Items="@_items.AsEnumerable()"
+                 MultiSelection="true"
+                 SelectedItemsChanged="@(items => _selectedItems = items.ToHashSet())"
+                 RowClick="@OnRowClick"
+                 Loading="@_loading"
+                 Hover="true"
+                 Dense="true"
+                 Elevation="1">
+        <Columns>
+            <SelectColumn T="ProductSyncListItemDto" />
+            <PropertyColumn Property="x => x.StockCode" Title="Stok Kodu" />
+            <PropertyColumn Property="x => x.Title" Title="Ürün Adı" />
+            <PropertyColumn Property="x => x.BrandName" Title="Marka" />
+            <PropertyColumn Property="x => x.CategoryName" Title="Kategori" />
+            <TemplateColumn T="ProductSyncListItemDto" Title="Varyant">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default">@context.Item.VariantCount</MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn T="ProductSyncListItemDto" Title="Durum">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@ProductSyncPage.GetSyncStateColor(context.Item.SyncState)">
+                        @ProductSyncPage.GetSyncStateLabel(context.Item.SyncState)
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn T="ProductSyncListItemDto" Title="Son Sync">
+                <CellTemplate>
+                    @(context.Item.LastSyncedAt?.LocalDateTime.ToString("dd.MM.yyyy HH:mm") ?? "—")
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn T="ProductSyncListItemDto" Title="Aksiyonlar">
+                <CellTemplate>
+                    <MudStack Row="true" Spacing="1">
+                        <MudTooltip Text="Detay">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small"
+                                           OnClick="@(() => NavigationManager.NavigateTo($"/products/{context.Item.ProductId}/sync"))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Sync">
+                            <MudIconButton Icon="@Icons.Material.Filled.Sync" Size="Size.Small"
+                                           OnClick="@(() => SingleSync(context.Item))"
+                                           Color="Color.Primary" />
+                        </MudTooltip>
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="ProductSyncListItemDto" />
+        </PagerContent>
+    </MudDataGrid>
+
+</MudContainer>
