@@ -376,3 +376,4 @@ appsettings.*.local.json
 # Git worktrees
 .worktrees/
 .mcp.json
+docs/trendyol/attributes-snapshot.json
