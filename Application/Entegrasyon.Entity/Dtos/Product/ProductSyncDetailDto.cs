@@ -19,4 +19,9 @@ public sealed record MarketplaceSyncItemDto(
     string? ExternalProductId = null,
     long? ContentId = null,
     bool? IsApproved = null,
-    bool? IsArchived = null);
+    bool? IsArchived = null,
+    /// <summary>
+    /// Indicates whether the marketplace has valid API credentials configured.
+    /// Used by the UI to enable/disable marketplace status cards.
+    /// </summary>
+    bool HasCredentials = false);
