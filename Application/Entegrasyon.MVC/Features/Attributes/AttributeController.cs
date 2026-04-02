@@ -23,4 +23,14 @@ public class AttributeController(ICategoryAttributeManager categoryAttributeMana
         ViewBag.Search = search;
         return View($"{ViewBase}/Index.cshtml", result.Data);
     }
+
+    [HttpGet("/attributes/{id:int}/detail")]
+    public async Task<IActionResult> Detail(int id)
+    {
+        var result = await categoryAttributeManager.GetCategoryAttributeById(id);
+        if (!result.Success)
+            return NotFound();
+
+        return PartialView($"{ViewBase}/Partials/_AttributeDetail.cshtml", result.Data);
+    }
 }

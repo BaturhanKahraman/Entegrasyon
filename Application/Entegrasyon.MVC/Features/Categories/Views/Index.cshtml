@@ -4,7 +4,7 @@
     ViewData.SetActiveNav("categories");
     ViewData.SetBreadcrumb(("Kategoriler", null));
 
-    var roots = Model.Where(c => c.SuperCategoryId == null).OrderBy(c => c.Name).ToList();
+    var hasCategories = Model.Any(c => c.SuperCategoryId == null);
 }
 
 <div class="page-header d-print-none">
@@ -39,10 +39,10 @@
                         <h3 class="card-title">Kategori Agaci</h3>
                     </div>
                     <div class="card-body p-0">
-                        @if (roots.Any())
+                        @if (hasCategories)
                         {
                             <div class="list-group list-group-flush">
-                                @await Html.PartialAsync("Partials/_CategoryTree", roots)
+                                @await Html.PartialAsync("Partials/_CategoryTree", Model)
                             </div>
                         }
                         else

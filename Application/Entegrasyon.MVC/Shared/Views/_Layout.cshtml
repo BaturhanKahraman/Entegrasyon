@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="~/lib/tabler/css/tabler.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body class="layout-fluid">
     <div class="page">
         <partial name="~/Shared/Views/_Sidebar.cshtml" />
         <div class="page-wrapper">
@@ -28,6 +28,7 @@
 
     <script src="~/lib/tabler/js/tabler.min.js" asp-append-version="true"></script>
     <script src="~/lib/htmx/htmx.min.js" asp-append-version="true"></script>
+    <script src="~/lib/apexcharts/apexcharts.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

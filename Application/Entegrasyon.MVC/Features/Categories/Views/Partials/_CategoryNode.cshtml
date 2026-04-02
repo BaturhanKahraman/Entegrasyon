@@ -1,43 +1,45 @@
 @model Entegrasyon.Entity.Categories.Category
 @{
+    var depth = (int)(ViewData["Depth"] ?? 0);
     var children = Model.SubCategories?.OrderBy(c => c.Name).ToList() ?? new List<Entegrasyon.Entity.Categories.Category>();
     var hasChildren = children.Any();
-    var collapseId = $"cat-{Model.Id}";
+    var nodeId = $"cat-children-{Model.Id}";
 }
 
-<div class="list-group-item list-group-item-action p-0 border-0">
-    <div class="d-flex align-items-center px-3 py-2 cursor-pointer category-node"
+<div class="category-node-wrapper" data-category-id="@Model.Id">
+    <div class="d-flex align-items-center py-2 category-node list-group-item list-group-item-action border-0"
+         style="padding-left: @(depth * 20 + 12)px; padding-right: 12px; cursor: pointer;"
          hx-get="/categories/@Model.Id/detail"
          hx-target="#detail-panel"
          hx-swap="innerHTML">
         @if (hasChildren)
         {
-            <a class="me-1 text-secondary"
-               data-bs-toggle="collapse"
-               href="#@collapseId"
-               role="button"
-               aria-expanded="false"
-               onclick="event.stopPropagation();">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="18" height="18"
-                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <span class="me-1 text-secondary toggle-children"
+                  data-target="#@nodeId"
+                  onclick="event.stopPropagation(); event.preventDefault(); toggleCategoryChildren(this);"
+                  style="cursor: pointer; display: inline-flex; transition: transform 0.15s;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="chevron-icon" width="16" height="16"
+                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                     <path d="M9 6l6 6l-6 6"/>
                 </svg>
-            </a>
+            </span>
         }
         else
         {
-            <span class="me-1" style="width:18px; display:inline-block;"></span>
+            <span class="me-1" style="width: 16px; display: inline-block;"></span>
         }
 
-        <span class="flex-fill">@Model.Name</span>
+        <span class="flex-fill text-truncate">@Model.Name</span>
 
         @if (Model.IsFavorite)
         {
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-star-filled text-warning ms-1" width="16" height="16"
-                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" class="text-warning ms-1" width="14" height="14"
+                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="currentColor"
+                 stroke-linecap="round" stroke-linejoin="round">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"/>
+                <path d="M8.243 7.34l-6.38 .925-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499-1.09 6.355-.013 .11a1 1 0 0 0 1.464 .944l5.706-3 5.693 3 .1 .046a1 1 0 0 0 1.352-1.1l-1.091-6.355 4.624-4.5 .078-.085a1 1 0 0 0-.633-1.62l-6.38-.926-2.852-5.78a1 1 0 0 0-1.794 0l-2.853 5.78z"/>
             </svg>
         }
 
@@ -49,13 +51,29 @@
 
     @if (hasChildren)
     {
-        <div class="collapse" id="@collapseId">
-            <div class="ms-3 border-start">
-                @foreach (var child in children)
-                {
-                    @await Html.PartialAsync("Partials/_CategoryNode", child)
-                }
-            </div>
+        <div id="@nodeId" class="category-children" style="display: none;">
+            @foreach (var child in children)
+            {
+                @await Html.PartialAsync("Partials/_CategoryNode", child, new ViewDataDictionary(ViewData) { ["Depth"] = depth + 1 })
+            }
         </div>
     }
 </div>
+
+@if (depth == 0)
+{
+    @* Only emit the script once at root level *@
+    <script>
+        if (!window._categoryTreeInit) {
+            window._categoryTreeInit = true;
+            window.toggleCategoryChildren = function(el) {
+                var targetSelector = el.getAttribute('data-target');
+                var target = document.querySelector(targetSelector);
+                if (!target) return;
+                var isHidden = target.style.display === 'none';
+                target.style.display = isHidden ? 'block' : 'none';
+                el.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+            };
+        }
+    </script>
+}

@@ -1,7 +1,6 @@
 @{
     ViewData.SetPageTitle("Dashboard");
     ViewData.SetActiveNav("dashboard");
-    ViewData.SetBreadcrumb(("Dashboard", null));
 }
 
 <div class="page-header d-print-none">
@@ -12,31 +11,34 @@
 </div>
 
 <!-- Stats Cards — HTMX lazy-load -->
-<div class="row row-deck row-cards mb-3"
+<div id="stats-container"
      hx-get="/dashboard/stats"
      hx-trigger="load"
-     hx-swap="outerHTML">
-    @for (var i = 0; i < 4; i++)
-    {
-        <div class="col-sm-6 col-lg-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="placeholder-glow">
-                        <div class="placeholder col-6 mb-2"></div>
-                        <div class="placeholder col-8" style="height:2rem"></div>
+     hx-swap="innerHTML">
+    <div class="row row-deck row-cards mb-3">
+        @for (var i = 0; i < 4; i++)
+        {
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="placeholder-glow">
+                            <div class="placeholder col-6 mb-2"></div>
+                            <div class="placeholder col-8" style="height:2rem"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 <div class="row row-deck row-cards">
-    <!-- Weekly Sales Chart — HTMX lazy-load -->
+    <!-- Weekly Sales Chart -->
     <div class="col-lg-8">
-        <div hx-get="/dashboard/weekly-sales"
+        <div id="chart-container"
+             hx-get="/dashboard/weekly-sales"
              hx-trigger="load"
-             hx-swap="outerHTML">
+             hx-swap="innerHTML">
             <div class="card">
                 <div class="card-body">
                     <div class="placeholder-glow">
@@ -48,11 +50,12 @@
         </div>
     </div>
 
-    <!-- Marketplace Status — HTMX lazy-load -->
+    <!-- Marketplace Status -->
     <div class="col-lg-4">
-        <div hx-get="/dashboard/marketplace-status"
+        <div id="marketplace-container"
+             hx-get="/dashboard/marketplace-status"
              hx-trigger="load"
-             hx-swap="outerHTML">
+             hx-swap="innerHTML">
             <div class="card">
                 <div class="card-body">
                     <div class="placeholder-glow">
@@ -67,12 +70,13 @@
     </div>
 </div>
 
-<!-- Recent Activity — HTMX lazy-load -->
+<!-- Recent Activity -->
 <div class="row mt-3">
     <div class="col-12">
-        <div hx-get="/dashboard/recent-activity"
+        <div id="activity-container"
+             hx-get="/dashboard/recent-activity"
              hx-trigger="load"
-             hx-swap="outerHTML">
+             hx-swap="innerHTML">
             <div class="card">
                 <div class="card-body">
                     <div class="placeholder-glow">

@@ -7,7 +7,7 @@ public class FeatureViewLocationExpander : IViewLocationExpander
     // Controller adı (tekil) → Feature klasör adı eşlemesi
     // MVC convention: ProductController → {1} = "Product"
     // Klasör yapımız: Features/Products/ (çoğul)
-    private static readonly Dictionary<string, string> ControllerToFolder = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, string> controllerToFolder = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Product"] = "Products",
         ["Category"] = "Categories",
@@ -38,7 +38,7 @@ public class FeatureViewLocationExpander : IViewLocationExpander
         IEnumerable<string> viewLocations)
     {
         var controllerName = context.Values.TryGetValue("controller", out var cn) ? cn ?? "" : "";
-        var folder = ControllerToFolder.TryGetValue(controllerName, out var f) ? f : controllerName;
+        var folder = controllerToFolder.TryGetValue(controllerName, out var f) ? f : controllerName;
 
         // {0} = view name, {1} = controller name (original)
         var locations = new List<string>

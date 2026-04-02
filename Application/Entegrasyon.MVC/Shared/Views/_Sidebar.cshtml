@@ -8,155 +8,157 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <h1 class="navbar-brand navbar-brand-autodark">
-            <a href="/">
-                <span class="nav-link-title">Entegrasyon</span>
-            </a>
+            <a href="/">Entegrasyon</a>
         </h1>
         <div class="collapse navbar-collapse" id="sidebar-menu">
             <ul class="navbar-nav pt-lg-3">
+
+                @* ── Ana Sayfa ── *@
                 <li class="nav-item">
                     <a class="nav-link @(activeNav == "dashboard" ? "active" : "")" href="/">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <polyline points="5 12 3 12 12 3 21 12 19 12" />
-                                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-                                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Dashboard</span>
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span>
+                        <span class="nav-link-title">Ana Sayfa</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "products" ? "active" : "")" href="/products">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3" />
-                                <line x1="12" y1="12" x2="20" y2="7.5" />
-                                <line x1="12" y1="12" x2="12" y2="21" />
-                                <line x1="12" y1="12" x2="4" y2="7.5" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Urunler</span>
+
+                <li class="nav-item my-1"><hr class="dropdown-divider" /></li>
+
+                @* ── Yonetim Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(new[]{"products","categories","attributes","brands","pos","sales","orders","shipping","bulk-operations","branch-offices"}.Contains(activeNav) ? "show" : "")"
+                       href="#navbar-yonetim" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/></svg></span>
+                        <span class="nav-link-title">Yonetim</span>
                     </a>
+                    <div class="dropdown-menu @(new[]{"products","categories","attributes","brands","pos","sales","orders","shipping","bulk-operations","branch-offices"}.Contains(activeNav) ? "show" : "")">
+                        <a class="dropdown-item @(activeNav == "products" ? "active" : "")" require-permission="Permissions.Products.View" href="/products">Urunler</a>
+                        <a class="dropdown-item @(activeNav == "categories" ? "active" : "")" require-permission="Permissions.Categories.View" href="/categories">Kategoriler</a>
+                        <a class="dropdown-item @(activeNav == "attributes" ? "active" : "")" require-permission="Permissions.Categories.View" href="/attributes">Ozellikler</a>
+                        <a class="dropdown-item @(activeNav == "brands" ? "active" : "")" require-permission="Permissions.Brands.View" href="/brands">Markalar</a>
+                        <a class="dropdown-item @(activeNav == "pos" ? "active" : "")" require-permission="Permissions.Sales.Create" href="/pos">POS Terminal</a>
+                        <a class="dropdown-item @(activeNav == "sales" ? "active" : "")" require-permission="Permissions.Sales.View" href="/sales">Satis Gecmisi</a>
+                        <a class="dropdown-item @(activeNav == "orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/orders">Satislar ve Siparisler</a>
+                        <a class="dropdown-item @(activeNav == "shipping" ? "active" : "")" require-permission="Permissions.Cargo.View" href="/shipping">Kargo Takip</a>
+                        <a class="dropdown-item @(activeNav == "bulk-operations" ? "active" : "")" require-permission="Permissions.Products.Edit" href="/bulk-operations">Toplu Islem</a>
+                        <a class="dropdown-item @(activeNav == "branch-offices" ? "active" : "")" require-permission="Permissions.BranchOffices.View" href="/branch-offices">Depolar</a>
+                    </div>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "categories" ? "active" : "")" href="/categories">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M4 4h6v6h-6z" />
-                                <path d="M14 4h6v6h-6z" />
-                                <path d="M4 14h6v6h-6z" />
-                                <path d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Kategoriler</span>
+
+                @* ── Pazaryeri Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(new[]{"marketplace-sync","marketplace-matching","marketplace-orders","commission-rates","matched-entities"}.Contains(activeNav) ? "show" : "")"
+                       href="#navbar-pazaryeri" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="3" y1="21" x2="21" y2="21"/><path d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4"/><line x1="5" y1="21" x2="5" y2="10.85"/><line x1="19" y1="21" x2="19" y2="10.85"/><path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4"/></svg></span>
+                        <span class="nav-link-title">Pazaryeri</span>
                     </a>
+                    <div class="dropdown-menu @(new[]{"marketplace-sync","marketplace-matching","marketplace-orders","commission-rates","matched-entities"}.Contains(activeNav) ? "show" : "")">
+                        <a class="dropdown-item @(activeNav == "matched-entities" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/matched-entities">Hazir Sablonlar</a>
+                        <div class="dropend">
+                            <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="false">Senkronizasyon</a>
+                            <div class="dropdown-menu @(activeNav == "marketplace-sync" ? "show" : "")">
+                                <a class="dropdown-item" require-permission="Permissions.Marketplace.View" href="/marketplace/sync">Genel Bakis</a>
+                                <a class="dropdown-item" require-permission="Permissions.Marketplace.View" href="/marketplace/sync/categories">Kategori Eslestirme</a>
+                                <a class="dropdown-item" require-permission="Permissions.Marketplace.View" href="/marketplace/sync/attributes">Ozellik Eslestirme</a>
+                                <a class="dropdown-item" require-permission="Permissions.Marketplace.View" href="/marketplace/sync/brands">Marka Eslestirme</a>
+                                <a class="dropdown-item" require-permission="Permissions.Marketplace.View" href="/marketplace/sync/products">Urun Senkronizasyon</a>
+                            </div>
+                        </div>
+                        <a class="dropdown-item @(activeNav == "commission-rates" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/commission-rates">Komisyon Oranlari</a>
+                        <a class="dropdown-item @(activeNav == "marketplace-matching" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/matching">Urun Eslestirme</a>
+                        <a class="dropdown-item @(activeNav == "marketplace-orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/marketplace/orders">Siparisler</a>
+                    </div>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "orders" ? "active" : "")" href="/orders">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <circle cx="6" cy="19" r="2" />
-                                <circle cx="17" cy="19" r="2" />
-                                <path d="M17 17h-11v-14h-2" />
-                                <path d="M6 5l14 1l-1 7h-13" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Siparisler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "marketplace-sync" ? "active" : "")" href="/marketplace/sync">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
-                                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Pazaryeri Senkron</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "brands" ? "active" : "")" href="/brands">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M11 3l9 9a1.5 1.5 0 0 1 0 2l-6 6a1.5 1.5 0 0 1 -2 0l-9 -9v-4a4 4 0 0 1 4 -4h4" />
-                                <circle cx="9" cy="9" r="2" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Markalar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "customers" ? "active" : "")" href="/customers">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <circle cx="9" cy="7" r="4" />
-                                <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
-                            </svg>
-                        </span>
+
+                @* ── Musteriler Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(new[]{"customers","invoicing"}.Contains(activeNav) ? "show" : "")"
+                       href="#navbar-musteri" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/></svg></span>
                         <span class="nav-link-title">Musteriler</span>
                     </a>
+                    <div class="dropdown-menu @(new[]{"customers","invoicing"}.Contains(activeNav) ? "show" : "")">
+                        <a class="dropdown-item @(activeNav == "customers" ? "active" : "")" require-permission="Permissions.Customers.View" href="/customers">Musteriler</a>
+                        <a class="dropdown-item @(activeNav == "invoicing" ? "active" : "")" require-permission="Permissions.Orders.View" href="/invoicing">E-Fatura</a>
+                    </div>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports" ? "active" : "")" href="/reports">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <rect x="3" y="12" width="6" height="8" rx="1" />
-                                <rect x="9" y="8" width="6" height="12" rx="1" />
-                                <rect x="15" y="4" width="6" height="16" rx="1" />
-                            </svg>
-                        </span>
+
+                @* ── Raporlar Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(activeNav == "reports" ? "show" : "")"
+                       href="#navbar-raporlar" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="3" y="12" width="6" height="8" rx="1"/><rect x="9" y="8" width="6" height="12" rx="1"/><rect x="15" y="4" width="6" height="16" rx="1"/></svg></span>
                         <span class="nav-link-title">Raporlar</span>
                     </a>
+                    <div class="dropdown-menu @(activeNav == "reports" ? "show" : "")">
+                        <a class="dropdown-item" require-permission="Permissions.Reports.View" href="/reports/sales">Satis Raporlari</a>
+                        <a class="dropdown-item" require-permission="Permissions.Reports.View" href="/reports/profit-loss">Kar/Zarar Raporu</a>
+                        <a class="dropdown-item" require-permission="Permissions.Reports.View" href="/reports/product-performance">Urun Performansi</a>
+                        <a class="dropdown-item" require-permission="Permissions.Reports.View" href="/reports/stock-alerts">Stok Uyarilari</a>
+                        <a class="dropdown-item" require-permission="Permissions.Reports.View" href="/reports/inventory">Stok Raporlari</a>
+                        <a class="dropdown-item" require-permission="Permissions.Reports.View" href="/reports/marketplace">Pazaryeri Raporlari</a>
+                    </div>
                 </li>
-                <li class="nav-item my-2">
-                    <hr class="dropdown-divider" />
-                </li>
+
+                <li class="nav-item my-1"><hr class="dropdown-divider" /></li>
+
+                @* ── Mesajlar ── *@
                 <li class="nav-item">
-                    <a class="nav-link @(activeNav == "users" ? "active" : "")" href="/users">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <circle cx="12" cy="7" r="4" />
-                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Kullanicilar</span>
+                    <a class="nav-link @(activeNav == "chat" ? "active" : "")" href="/chat">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/></svg></span>
+                        <span class="nav-link-title">Mesajlar</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings" ? "active" : "")" href="/settings/general">
-                        <span class="nav-link-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.066 2.573c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.573 1.066c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.066 -2.573c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                        </span>
+
+                @* ── Kullanici Yonetimi Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(new[]{"users","roles","admin-notifications"}.Contains(activeNav) ? "show" : "")"
+                       href="#navbar-users" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/></svg></span>
+                        <span class="nav-link-title">Kullanici Yonetimi</span>
+                    </a>
+                    <div class="dropdown-menu @(new[]{"users","roles","admin-notifications"}.Contains(activeNav) ? "show" : "")">
+                        <a class="dropdown-item @(activeNav == "users" ? "active" : "")" require-permission="Permissions.Users.View" href="/users">Kullanicilar</a>
+                        <a class="dropdown-item @(activeNav == "roles" ? "active" : "")" require-permission="Permissions.Roles.View" href="/roles">Roller</a>
+                        <a class="dropdown-item @(activeNav == "admin-notifications" ? "active" : "")" require-permission="Permissions.Notifications.Manage" href="/admin/notifications">Bildirim Yonetimi</a>
+                    </div>
+                </li>
+
+                @* ── Magaza Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(activeNav == "storefront" ? "show" : "")"
+                       href="#navbar-magaza" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="3" y1="21" x2="21" y2="21"/><path d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4"/><path d="M5 21v-10.15"/><path d="M19 21v-10.15"/><path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4"/></svg></span>
+                        <span class="nav-link-title">Magaza</span>
+                    </a>
+                    <div class="dropdown-menu @(activeNav == "storefront" ? "show" : "")">
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/storefront">Magaza Ayarlari</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/storefront/legal">Yasal Metinler</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/storefront/banners">Banner Yonetimi</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/storefront/payment">Odeme Ayarlari</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/storefront/reviews">Degerlendirmeler</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/storefront/returns">Iade Talepleri</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/storefront/campaigns">Otomatik Kampanyalar</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/storefront/sellers">Satici Yonetimi</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/storefront/payouts">Odeme Talepleri</a>
+                    </div>
+                </li>
+
+                @* ── Ayarlar Grubu ── *@
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle @(activeNav == "settings" ? "show" : "")"
+                       href="#navbar-ayarlar" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                        <span class="nav-link-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.066 2.573c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.573 1.066c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.066 -2.573c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><circle cx="12" cy="12" r="3"/></svg></span>
                         <span class="nav-link-title">Ayarlar</span>
                     </a>
+                    <div class="dropdown-menu @(activeNav == "settings" ? "show" : "")">
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/general">Genel Ayarlar</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/notifications">Bildirimler</a>
+                        <a class="dropdown-item" require-permission="Permissions.Integrations.View" href="/settings/integrations">Entegrasyonlar</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/printing">Yazici & Barkod</a>
+                        <a class="dropdown-item" require-permission="Permissions.Settings.View" href="/settings/desktop">Masaustu Uygulama</a>
+                    </div>
                 </li>
+
             </ul>
         </div>
     </div>
