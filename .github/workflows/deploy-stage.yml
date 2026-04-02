@@ -57,6 +57,7 @@ jobs:
 
       - name: Deploy staging
         run: |
+          docker compose -f docker-compose.stage.yml down --remove-orphans || true
           docker compose -f docker-compose.stage.yml pull
           docker compose -f docker-compose.stage.yml up -d --wait
           echo "Stage deploy completed at $(date)"
