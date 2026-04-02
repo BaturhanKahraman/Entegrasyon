@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Diagnostics;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
@@ -303,5 +305,82 @@ public sealed class TrendyolProductService(
             ProductActivityStatus.Success, marketplaceName: "Trendyol", referenceId: pm.ContentId.ToString());
 
         return new SuccessResult("Onayli urun icerigi guncellendi.");
+    }
+
+    public async Task<IDataResult<TrendyolSendPreviewDto>> GetSendPreviewAsync(
+        Guid productId,
+        MarketplaceOverrideDetailDto? overrides)
+    {
+        const int TrendyolMarketPlaceId = 1;
+        using var context = contextFactory.CreateDbContext();
+
+        var product = await context.MainProducts
+            .Include(p => p.Brand)
+            .Include(p => p.Category)
+            .Include(p => p.ProductVariants)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product is null)
+            return new ErrorDataResult<TrendyolSendPreviewDto>(null!, "Ürün bulunamadı.");
+
+        // 1. Kategori eşleştirmesini al
+        var categoryMatch = await context.CategoryMarketPlaceMatches
+            .FirstOrDefaultAsync(cm => cm.ApplicationCategoryId == product.CategoryId && cm.MarketPlaceId == TrendyolMarketPlaceId);
+
+        if (categoryMatch is null)
+            return new ErrorDataResult<TrendyolSendPreviewDto>(null!, "Kategori eşleştirmesi bulunamadı.");
+
+        // 2. Marka eşleştirmesini al
+        var brandMatch = await context.BrandMarketPlaceMatches
+            .FirstOrDefaultAsync(bm => bm.ApplicationBrandId == product.BrandId && bm.MarketPlaceId == TrendyolMarketPlaceId);
+
+        var trendyolBrandName = brandMatch?.MarketPlaceBrandId.ToString() ?? product.Brand?.Name ?? "Bilinmeyen Marka";
+
+        // 3. Özellikler hazırla (boş tuple dn minimum için)
+        var attributes = new List<TrendyolPreviewAttributeDto>();
+
+        // 4. Varyantlar hazırla
+        var variants = new List<TrendyolPreviewVariantDto>();
+        foreach (var variant in product.ProductVariants)
+        {
+            // Basit attribute string (variant ID bazlı)
+            var attrString = variant.ProductVariantAttributes.Count > 0
+                ? string.Join(" / ", variant.ProductVariantAttributes.Select(a => a.CustomValue ?? a.CategoryAttributeValue ?? "—"))
+                : "Varyant";
+
+            // Override fiyat varsa kullan, yoksa mevcut fiyatı kullan
+            var salePrice = overrides?.VariantOverrides
+                .FirstOrDefault(vo => vo.ProductVariantId == variant.Id)
+                ?.SalePriceOverride ?? variant.SalePrice;
+
+            // Stok basit olarak 0 (DB schema'da stock ayrı tablada)
+            var totalStock = 0;
+
+            variants.Add(new TrendyolPreviewVariantDto(
+                variant.Barcode ?? "—",
+                attrString,
+                variant.ListPrice,
+                salePrice,
+                totalStock
+            ));
+        }
+
+        // 5. Başlık ve açıklamayı al
+        var title = overrides?.TitleOverride ?? product.Title;
+        var description = overrides?.DescriptionOverride ?? product.Description;
+
+        var preview = new TrendyolSendPreviewDto(
+            Title: title,
+            BrandName: product.Brand?.Name ?? "Bilinmeyen Marka",
+            TrendyolBrandName: trendyolBrandName,
+            CategoryName: product.Category.Name,
+            TrendyolCategoryName: categoryMatch.MarketPlaceCategoryId.ToString(),
+            TrendyolCategoryId: categoryMatch.MarketPlaceCategoryId,
+            Description: description,
+            Attributes: attributes,
+            Variants: variants
+        );
+
+        return new SuccessDataResult<TrendyolSendPreviewDto>(preview);
     }
 }
