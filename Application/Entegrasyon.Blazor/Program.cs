@@ -226,13 +226,21 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
+// Health endpoint — tenant middleware'den önce, auth gerektirmez
+app.MapWhen(ctx => ctx.Request.Path.StartsWithSegments("/health"), healthApp =>
+{
+    healthApp.Run(async ctx =>
+    {
+        ctx.Response.ContentType = "text/plain";
+        await ctx.Response.WriteAsync("healthy");
+    });
+});
+
 app.UseMiddleware<BlazorTenantResolutionMiddleware>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
-
-app.MapGet("/health", () => Results.Ok("healthy"));
 app.MapHub<NotificationHub>("/NotificationHub");
 app.MapHub<ChatHub>("/ChatHub");
 app.MapTrendyolWebhooks();
