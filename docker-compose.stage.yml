@@ -18,6 +18,7 @@ services:
       - Minio__BucketName=products-stage
       - Minio__PublicBaseUrl=http://192.168.1.78:9000
       - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY:-StageSecurityKey_12345678!}
+      - Tenant__DefaultSubdomain=stage
       - Trendyol__UseMock=true
       - N11__UseMock=true
     networks:

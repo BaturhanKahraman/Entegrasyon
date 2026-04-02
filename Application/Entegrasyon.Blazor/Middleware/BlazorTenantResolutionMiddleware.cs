@@ -33,10 +33,17 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
         var host = context.Request.Host.Host;
         var subdomain = ExtractSubdomain(host);
 
-        // Development fallback: localhost without subdomain uses "dev" tenant
+        // Fallback: subdomain yoksa (IP/localhost) config'den default tenant kullan
         if (string.IsNullOrEmpty(subdomain))
         {
-            if (isDevelopment)
+            var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+            var defaultSubdomain = configuration["Tenant:DefaultSubdomain"];
+
+            if (!string.IsNullOrEmpty(defaultSubdomain))
+            {
+                subdomain = defaultSubdomain;
+            }
+            else if (isDevelopment)
             {
                 subdomain = "dev";
             }
