@@ -57,9 +57,9 @@ jobs:
 
       - name: Deploy staging
         run: |
-          docker compose -f docker-compose.stage.yml down --remove-orphans || true
-          docker compose -f docker-compose.stage.yml pull
-          docker compose -f docker-compose.stage.yml up -d --wait
+          docker compose -p stage -f docker-compose.stage.yml down --remove-orphans || true
+          docker compose -p stage -f docker-compose.stage.yml pull
+          docker compose -p stage -f docker-compose.stage.yml up -d --wait
           echo "Stage deploy completed at $(date)"
 
   e2e-tests:
@@ -71,9 +71,8 @@ jobs:
 
       - name: Start E2E environment
         run: |
-          docker compose -f docker-compose.e2e.yml down -v || true
-          docker compose -f docker-compose.e2e.yml build --no-cache blazor-e2e
-          docker compose -f docker-compose.e2e.yml up -d --wait
+          docker compose -p e2e -f docker-compose.e2e.yml down -v || true
+          docker compose -p e2e -f docker-compose.e2e.yml up -d --build --wait
         timeout-minutes: 10
 
       - name: Setup .NET
@@ -105,4 +104,4 @@ jobs:
 
       - name: Cleanup E2E environment
         if: always()
-        run: docker compose -f docker-compose.e2e.yml down -v
+        run: docker compose -p e2e -f docker-compose.e2e.yml down -v

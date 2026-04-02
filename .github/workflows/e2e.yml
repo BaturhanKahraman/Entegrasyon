@@ -34,7 +34,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start E2E environment
-        run: docker compose -f docker-compose.e2e.yml up -d --build --wait
+        run: |
+          docker compose -p e2e -f docker-compose.e2e.yml down -v || true
+          docker compose -p e2e -f docker-compose.e2e.yml up -d --build --wait
         timeout-minutes: 10
 
       - name: Wait for app healthy
@@ -77,4 +79,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker compose -f docker-compose.e2e.yml down -v
+        run: docker compose -p e2e -f docker-compose.e2e.yml down -v
