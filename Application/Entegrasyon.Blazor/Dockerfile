@@ -26,6 +26,6 @@ RUN dotnet publish "Entegrasyon.Blazor.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget -qO- http://localhost:8080/ || exit 1
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+  CMD wget -qO- http://localhost:8080/health || exit 1
 ENTRYPOINT ["dotnet", "Entegrasyon.Blazor.dll"]

@@ -9,14 +9,17 @@ services:
       - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__Main=${STAGE_DB_CONNECTION}
-      - ConnectionStrings__Redis=${REDIS_CONNECTION:-192.168.1.78:6379}
-      - Minio__Endpoint=${MINIO_ENDPOINT:-192.168.1.78:9000}
-      - Minio__AccessKey=${MINIO_ACCESS_KEY:-minioadmin}
-      - Minio__SecretKey=${MINIO_SECRET_KEY:-minioadmin}
+      - ConnectionStrings__Redis=192.168.1.78:6379
+      - ConnectionStrings__AdminPanel=Host=192.168.1.78;Port=5432;Database=AdminPanelDb;Username=baturhan;Password=DiHRrP6dY8nC*M
+      - Minio__Endpoint=192.168.1.78:9000
+      - Minio__AccessKey=baturhan
+      - Minio__SecretKey=sSQk4qtxIFWPB!
       - Minio__UseSSL=false
       - Minio__BucketName=products-stage
-      - Minio__PublicBaseUrl=${MINIO_PUBLIC_URL:-http://192.168.1.78:9000}
+      - Minio__PublicBaseUrl=http://192.168.1.78:9000
       - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY:-StageSecurityKey_12345678!}
+      - Trendyol__UseMock=true
+      - N11__UseMock=true
     networks:
       - app-net
 

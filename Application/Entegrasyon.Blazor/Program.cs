@@ -232,6 +232,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
+app.MapGet("/health", () => Results.Ok("healthy"));
 app.MapHub<NotificationHub>("/NotificationHub");
 app.MapHub<ChatHub>("/ChatHub");
 app.MapTrendyolWebhooks();
