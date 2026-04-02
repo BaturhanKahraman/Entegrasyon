@@ -1,0 +1,29 @@
+/* Entegrasyon MVC — Site-specific overrides */
+
+/* HTMX loading indicator */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+/* Cursor pointer for clickable table headers */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Toast container positioning */
+#toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+    width: 380px;
+}
+
+/* Modal container */
+#modal-container .modal {
+    display: block;
+}
