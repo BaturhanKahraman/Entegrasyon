@@ -1,0 +1,178 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.SyncOverviewVm
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="page-pretitle">Pazaryeri</div>
+        <h2 class="page-title">Pazaryeri Senkronizasyon</h2>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <!-- Global Summary Cards -->
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Toplam Kategori Eslesmesi</div>
+                        </div>
+                        <div class="h1 mb-0">
+                            @Model.CategorySummary.MappedCategories / @Model.CategorySummary.TotalCategories
+                        </div>
+                        <div class="mt-1">
+                            @if (Model.CategorySummary.TotalCategories > 0)
+                            {
+                                var catPct = (int)(100.0 * Model.CategorySummary.MappedCategories / Model.CategorySummary.TotalCategories);
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: @(catPct)%"></div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Toplam Marka Eslesmesi</div>
+                        </div>
+                        <div class="h1 mb-0">
+                            @Model.BrandSummary.MappedBrands / @Model.BrandSummary.TotalBrands
+                        </div>
+                        <div class="mt-1">
+                            @if (Model.BrandSummary.TotalBrands > 0)
+                            {
+                                var brandPct = (int)(100.0 * Model.BrandSummary.MappedBrands / Model.BrandSummary.TotalBrands);
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-green" style="width: @(brandPct)%"></div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Eslesmemis Kategoriler</div>
+                        </div>
+                        <div class="h1 mb-0 text-warning">@Model.CategorySummary.UnmappedCategories</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Eslesmemis Markalar</div>
+                        </div>
+                        <div class="h1 mb-0 text-warning">@Model.BrandSummary.UnmappedBrands</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketplace Cards -->
+        <div class="row row-deck row-cards">
+            @foreach (var card in Model.MarketplaceCards)
+            {
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">@card.Name</h3>
+                            <div class="card-actions">
+                                @if (card.IsActive)
+                                {
+                                    <span class="badge bg-green-lt">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-lt">Pasif</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Sync Stats -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-secondary">Toplam Urun</span>
+                                    <strong>@card.SyncSummary.TotalProducts</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-secondary">Senkronize</span>
+                                    <span class="badge bg-green-lt">@card.SyncSummary.SyncedCount</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-secondary">Bekleyen</span>
+                                    <span class="badge bg-warning-lt">@card.SyncSummary.PendingCount</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-secondary">Hatali</span>
+                                    <span class="badge bg-danger-lt">@card.SyncSummary.FailedCount</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-secondary">Hic Senkronize Edilmemis</span>
+                                    <span class="badge bg-secondary-lt">@card.SyncSummary.NeverSyncedCount</span>
+                                </div>
+                            </div>
+
+                            <!-- Sync Progress -->
+                            @if (card.SyncSummary.TotalProducts > 0)
+                            {
+                                var syncPct = (int)(100.0 * card.SyncSummary.SyncedCount / card.SyncSummary.TotalProducts);
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small class="text-secondary">Senkron Orani</small>
+                                        <small class="text-secondary">%@syncPct</small>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-green" style="width: @(syncPct)%"></div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Category Mapping -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-secondary">Kategori Eslesmesi</span>
+                                    <span>@card.MappedCategoryCount / @Model.CategorySummary.TotalCategories</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-list">
+                                <a href="/marketplace/matching?mp=@card.MarketPlaceId"
+                                   class="btn btn-primary btn-sm">
+                                    Urunleri Gor
+                                </a>
+                                <a href="/marketplace/sync/categories?mp=@card.MarketPlaceId"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Kategori Eslestir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (!Model.MarketplaceCards.Any())
+        {
+            <div class="card">
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Pazaryeri bulunamadi",
+                                 Subtitle = "Henuz aktif pazaryeri tanimlanmamis."
+                             }'/>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

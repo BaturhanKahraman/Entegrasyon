@@ -1,0 +1,98 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.BulkCategoryMatchVm
+@{
+    ViewData.SetPageTitle("Toplu Kategori Esleme");
+    ViewData.SetActiveNav("marketplace-sync");
+    ViewData.SetBreadcrumb(
+        ("Pazaryeri Senkronizasyonu", "/marketplace/sync"),
+        ("Kategori Eslemesi", "/marketplace/sync/categories"),
+        ("Toplu Esleme", null));
+
+    var total = Model.Summary.TotalCategories;
+    var unmappedCount = Model.UnmappedCategories.Count;
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Pazaryeri Senkronizasyonu / Kategori Eslemesi</div>
+                <h2 class="page-title">Toplu Kategori Esleme</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/marketplace/sync/categories?mp=@Model.SelectedMarketPlaceId" class="btn btn-outline-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M5 12l14 0"/>
+                        <path d="M5 12l6 6"/>
+                        <path d="M5 12l6 -6"/>
+                    </svg>
+                    Tekli Esleme
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Marketplace Tabs -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <ul class="nav nav-pills">
+                    @foreach (var mp in Model.MarketPlaces)
+                    {
+                        var isActive = mp.Id == Model.SelectedMarketPlaceId;
+                        <li class="nav-item">
+                            <a class="nav-link @(isActive ? "active" : "")"
+                               href="/marketplace/sync/categories/bulk?mp=@mp.Id"
+                               hx-get="/marketplace/sync/categories/bulk?mp=@mp.Id"
+                               hx-target="#unmapped-list-container"
+                               hx-push-url="true">
+                                @mp.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Summary Info -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="text-secondary">Eslenmemis Kategoriler:</span>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-orange-lt fs-5">@unmappedCount</span>
+                    </div>
+                    <div class="col-auto">
+                        <span class="text-secondary">Toplam:</span>
+                    </div>
+                    <div class="col-auto">
+                        <strong>@total</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unmapped Categories List -->
+        <div id="unmapped-list-container">
+            @await Html.PartialAsync("~/Features/MarketplaceSync/Views/BulkMatch/Partials/_UnmappedList.cshtml", Model)
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('refreshUnmapped', function () {
+        htmx.ajax('GET', '/marketplace/sync/categories/bulk?mp=@Model.SelectedMarketPlaceId', { target: '#unmapped-list-container' });
+    });
+
+    function toggleSelectAll(source) {
+        var checkboxes = document.querySelectorAll('.category-checkbox');
+        checkboxes.forEach(function (cb) {
+            cb.checked = source.checked;
+        });
+    }
+</script>

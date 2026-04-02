@@ -1,0 +1,112 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.ProductSyncTableVm
+
+<div id="sync-table">
+    @if (Model.Products.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Urun Adi</th>
+                        <th>Stok Kodu</th>
+                        <th>Marka</th>
+                        <th>Kategori</th>
+                        <th>Varyant</th>
+                        <th>Durum</th>
+                        <th>Son Senkron</th>
+                        <th class="w-1">Islem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Products.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/marketplace/matching/@item.ProductId"
+                                   class="text-reset">
+                                    @item.Title
+                                </a>
+                            </td>
+                            <td class="text-secondary">@item.StockCode</td>
+                            <td class="text-secondary">@item.BrandName</td>
+                            <td class="text-secondary">@item.CategoryName</td>
+                            <td class="text-secondary">@item.VariantCount</td>
+                            <td>
+                                @switch (item.SyncState)
+                                {
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Synced:
+                                        <span class="badge bg-green-lt">Senkronize</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Waiting:
+                                        <span class="badge bg-warning-lt">Bekleyen</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Processing:
+                                        <span class="badge bg-info-lt">Isleniyor</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.OutOfSync:
+                                        <span class="badge bg-orange-lt">Guncellenmemis</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Failed:
+                                        <span class="badge bg-danger-lt">Hatali</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Rejected:
+                                        <span class="badge bg-danger-lt">Reddedildi</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.NeverSynced:
+                                    default:
+                                        <span class="badge bg-secondary-lt">Hic Senkronize Edilmemis</span>
+                                        break;
+                                }
+                            </td>
+                            <td class="text-secondary">
+                                @if (item.LastSyncedAt.HasValue)
+                                {
+                                    @item.LastSyncedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"
+                                        hx-post="/marketplace/matching/@item.ProductId/sync?mp=@Model.SelectedMarketPlaceId"
+                                        hx-swap="none"
+                                        title="Senkronize Et">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+                                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.Products.CurrentPageIndex + 1,
+                     TotalPages = Model.Products.TotalPageCount,
+                     TotalCount = Model.Products.TotalItemCount,
+                     BaseUrl = $"/marketplace/matching?mp={Model.SelectedMarketPlaceId}&state={Model.StateFilter}&search={Model.SearchKey}",
+                     TargetId = "#sync-table"
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Urun bulunamadi",
+                         Subtitle = "Secili filtrelere uygun urun bulunmuyor."
+                     }'/>
+        </div>
+    }
+</div>

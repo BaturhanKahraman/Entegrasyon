@@ -1,0 +1,105 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CommissionRatesVm
+@{
+    ViewData.SetPageTitle("Komisyon Oranlari");
+    ViewData.SetActiveNav("marketplace-sync");
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Komisyon Oranlari", null));
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Pazaryeri Senkronizasyonu</div>
+                <h2 class="page-title">Komisyon Oranlari</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Marketplace Tabs -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <ul class="nav nav-pills">
+                    @foreach (var mp in Model.MarketPlaces)
+                    {
+                        var isActive = mp.Id == Model.SelectedMarketPlaceId;
+                        <li class="nav-item">
+                            <a class="nav-link @(isActive ? "active" : "")"
+                               href="/marketplace/commission-rates?mp=@mp.Id"
+                               hx-get="/marketplace/commission-rates?mp=@mp.Id"
+                               hx-target="#rates-table-container"
+                               hx-push-url="true">
+                                @mp.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Add New Rate Form -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Yeni Komisyon Orani Ekle</h3>
+            </div>
+            <div class="card-body">
+                <form hx-post="/marketplace/commission-rates/save"
+                      hx-swap="none"
+                      class="row g-3 align-items-end">
+                    <input type="hidden" name="MarketPlaceId" value="@Model.SelectedMarketPlaceId" />
+
+                    <div class="col-md-2">
+                        <label class="form-label">Kategori ID (opsiyonel)</label>
+                        <input type="number" class="form-control" name="CategoryId" placeholder="Bos = varsayilan" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Komisyon %</label>
+                        <input type="number" class="form-control" name="CommissionPercent" step="0.01" min="0" max="100" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Hizmet Bedeli %</label>
+                        <input type="number" class="form-control" name="ServiceFeePercent" step="0.01" min="0" max="100" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Islem Ucreti (TL)</label>
+                        <input type="number" class="form-control" name="TransactionFeeFixed" step="0.01" min="0" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Aciklama</label>
+                        <input type="text" class="form-control" name="Description" />
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" name="IsDefault" value="true" id="isDefaultCheck" />
+                            <label class="form-check-label" for="isDefaultCheck">Varsayilan</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 5l0 14"/>
+                                <path d="M5 12l14 0"/>
+                            </svg>
+                            Ekle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Rates Table -->
+        <div id="rates-table-container">
+            @await Html.PartialAsync("~/Features/MarketplaceSync/Views/CommissionRates/Partials/_RatesTable.cshtml", Model)
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('refreshRates', function () {
+        htmx.ajax('GET', '/marketplace/commission-rates?mp=@Model.SelectedMarketPlaceId', { target: '#rates-table-container' });
+    });
+</script>

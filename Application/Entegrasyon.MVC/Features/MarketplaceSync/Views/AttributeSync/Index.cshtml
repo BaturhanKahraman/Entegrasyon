@@ -1,0 +1,106 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.AttributeSyncVm
+@{
+    ViewData.SetPageTitle("Ozellik Eslemesi");
+    ViewData.SetActiveNav("marketplace-sync");
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Ozellik Eslemesi", null));
+
+    var mappedCount = Model.Attributes.Count(a => a.IsMapped);
+    var totalCount = Model.Attributes.Count;
+    var pct = totalCount > 0 ? (int)(mappedCount * 100.0 / totalCount) : 0;
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Pazaryeri Senkronizasyonu</div>
+                <h2 class="page-title">Ozellik Eslemesi</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Marketplace Tabs -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <ul class="nav nav-pills">
+                    @foreach (var mp in Model.MarketPlaces)
+                    {
+                        var isActive = mp.Id == Model.SelectedMarketPlaceId;
+                        <li class="nav-item">
+                            <a class="nav-link @(isActive ? "active" : "")"
+                               href="/marketplace/sync/attributes?mp=@mp.Id"
+                               hx-get="/marketplace/sync/attributes?mp=@mp.Id"
+                               hx-target="#attribute-list-container"
+                               hx-push-url="true">
+                                @mp.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Summary Bar -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="text-secondary">Esleme Durumu:</span>
+                    </div>
+                    <div class="col">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: @(pct)%"></div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <strong>@mappedCount / @totalCount</strong> ozellik eslendi
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="row">
+            <!-- Attribute List -->
+            <div class="col-lg-5">
+                <div id="attribute-list-container">
+                    @await Html.PartialAsync("~/Features/MarketplaceSync/Views/AttributeSync/Partials/_AttributeList.cshtml", Model)
+                </div>
+            </div>
+
+            <!-- Match Panel -->
+            <div class="col-lg-7">
+                <div id="attribute-detail-panel">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="empty py-5">
+                                <div class="empty-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrows-exchange"
+                                         width="40" height="40" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                         fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M7 10h14l-4 -4"/>
+                                        <path d="M17 14h-14l4 4"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Bir ozellik secin</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Soldaki listeden bir ozellik sectiginizde esleme detaylari burada goruntulenecektir.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('refreshList', function () {
+        htmx.ajax('GET', '/marketplace/sync/attributes?mp=@Model.SelectedMarketPlaceId', { target: '#attribute-list-container' });
+    });
+</script>
