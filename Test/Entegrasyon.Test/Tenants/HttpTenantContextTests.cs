@@ -78,7 +78,9 @@ public class HttpTenantContextTests
         var entry = new TenantRegistryEntry(1, "test", "Test", "conn", true, null);
         context.Initialize(entry);
 
+#pragma warning disable CS0618
         var act = () => context.GetMarketPlaceId("Trendyol");
+#pragma warning restore CS0618
         act.Should().Throw<InvalidOperationException>();
     }
 }

@@ -29,6 +29,7 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
 
         var env = context.RequestServices.GetService<IWebHostEnvironment>();
         var isDevelopment = env?.IsDevelopment() == true;
+        var isTesting = env?.EnvironmentName == "Testing";
 
         var host = context.Request.Host.Host;
         var subdomain = ExtractSubdomain(host);
@@ -43,7 +44,7 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
             {
                 subdomain = defaultSubdomain;
             }
-            else if (isDevelopment)
+            else if (isDevelopment || isTesting)
             {
                 subdomain = "dev";
             }
@@ -60,7 +61,7 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
         // Development fallback: registry'de tenant yoksa fallback connection string ile devam et
         if (tenant is null || !tenant.IsActive)
         {
-            if (isDevelopment)
+            if (isDevelopment || isTesting)
             {
                 var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
                 var fallbackCs = configuration.GetConnectionString("Main")

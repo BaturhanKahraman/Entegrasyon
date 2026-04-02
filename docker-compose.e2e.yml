@@ -47,13 +47,16 @@ services:
       - Minio__BucketName=products-e2e
       - Minio__PublicBaseUrl=http://localhost:9099
       - JwtTokenOptions__SecurityKey=E2ETestSecurityKey_12345678!
+      - ConnectionStrings__AdminPanel=Host=db-e2e;Port=5432;Database=IntegrationDb_E2E;Username=e2e_user;Password=e2e_password
+      - Tenant__DefaultSubdomain=dev
+      - OpenTelemetry__OtlpEndpoint=
       - Trendyol__UseMock=true
       - N11__UseMock=true
     depends_on:
       db-e2e:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 10
