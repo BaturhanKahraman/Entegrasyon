@@ -1,8 +1,6 @@
 services:
   blazor-stage:
-    build:
-      context: .
-      dockerfile: Application/Entegrasyon.Blazor/Dockerfile
+    image: 192.168.1.78:5252/entegrasyon-blazor:stage
     container_name: entegrasyon-stage
     restart: unless-stopped
     ports:

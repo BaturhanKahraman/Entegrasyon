@@ -5,7 +5,7 @@ on:
     branches: [ stage ]
 
 jobs:
-  build-and-test:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,30 +16,47 @@ jobs:
       - run: dotnet build Entegrasyon.sln --no-restore -c Release
       - run: dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj --no-build -c Release --verbosity minimal
 
-  deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
+  build-and-push:
+    needs: unit-tests
+    runs-on: [self-hosted, entegrasyon]
     steps:
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ${{ secrets.PROJECT_PATH }}
-            git fetch origin stage
-            git checkout stage
-            git pull origin stage
-            docker compose -f docker-compose.stage.yml up --build -d
-            echo "Stage deploy completed at $(date)"
+      - uses: actions/checkout@v4
 
-      - name: Health check
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sleep 15
-            curl -sf http://localhost:8081/ > /dev/null && echo "Stage is healthy" || echo "Stage health check failed"
+      - name: Build and push to local registry
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker build \
+            -t 192.168.1.78:5252/entegrasyon-blazor:stage-${SHORT_SHA} \
+            -t 192.168.1.78:5252/entegrasyon-blazor:stage \
+            -f Application/Entegrasyon.Blazor/Dockerfile .
+          docker push 192.168.1.78:5252/entegrasyon-blazor:stage-${SHORT_SHA}
+          docker push 192.168.1.78:5252/entegrasyon-blazor:stage
+          echo "Pushed image with tags: stage-${SHORT_SHA}, stage"
+
+  deploy:
+    needs: build-and-push
+    runs-on: [self-hosted, entegrasyon]
+    env:
+      STAGE_DB_CONNECTION: ${{ secrets.STAGE_DB_CONNECTION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Backup stage database
+        run: |
+          docker exec postgres_db pg_dump -U baturhan IntegrationDb_Stage \
+            | gzip > /tmp/stage-backup-$(date +%Y%m%d-%H%M%S).sql.gz
+          echo "Database backup completed"
+        continue-on-error: true
+
+      - name: Run EF Core migrations
+        run: |
+          docker run --rm --network host \
+            -e "ConnectionStrings__Main=${STAGE_DB_CONNECTION}" \
+            192.168.1.78:5252/entegrasyon-blazor:stage \
+            dotnet Entegrasyon.Blazor.dll --migrate
+
+      - name: Deploy staging
+        run: |
+          docker compose -f docker-compose.stage.yml pull
+          docker compose -f docker-compose.stage.yml up -d --wait
+          echo "Stage deploy completed at $(date)"

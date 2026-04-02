@@ -24,6 +24,21 @@ services:
     networks:
       - entegrasyon-net
 
+  tempo:
+    image: grafana/tempo:latest
+    container_name: entegrasyon-tempo
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo.yaml"]
+    ports:
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+      - "3200:3200"    # Tempo query API
+    volumes:
+      - ./monitoring/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    networks:
+      - entegrasyon-net
+
   uptime-kuma:
     image: louislam/uptime-kuma:1
     container_name: entegrasyon-uptime
@@ -38,6 +53,7 @@ services:
 volumes:
   grafana-data:
   loki-data:
+  tempo-data:
   uptime-data:
 
 networks:
