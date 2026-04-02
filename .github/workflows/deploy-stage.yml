@@ -89,8 +89,8 @@ jobs:
       - name: Run E2E tests
         run: dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj --no-build -c Release --verbosity normal
         env:
-          E2E_BASE_URL: http://localhost:5099
-          E2E_DB_CONNECTION: "Host=localhost;Port=5433;Database=IntegrationDb_E2E;Username=e2e_user;Password=e2e_password"
+          E2E_BASE_URL: http://192.168.1.78:5099
+          E2E_DB_CONNECTION: "Host=192.168.1.78;Port=5433;Database=IntegrationDb_E2E;Username=e2e_user;Password=e2e_password"
 
       - name: Upload test artifacts
         if: always()
