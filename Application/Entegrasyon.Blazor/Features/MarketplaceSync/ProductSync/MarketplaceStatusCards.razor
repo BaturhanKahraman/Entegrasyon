@@ -10,8 +10,10 @@ else if (Marketplaces is not null && Marketplaces.Count > 0)
         @foreach (var mp in Marketplaces)
         {
             <MudItem @key="mp.MarketPlaceId" xs="12" sm="6" md="4" lg="3">
-                <MudCard Elevation="2" Class="cursor-pointer" @onclick="@(() => OnMarketplaceSelected.InvokeAsync(mp.MarketPlaceId))">
-                    <MudCardHeader>
+                @if (mp.HasCredentials)
+                {
+                    <MudCard Elevation="2" Class="cursor-pointer" @onclick="@(() => HandleCardClick(mp.MarketPlaceId))">
+                        <MudCardHeader>
                         <CardHeaderContent>
                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                 <MarketplaceLogo Name="@mp.MarketPlaceName" Size="Size.Medium" />
@@ -42,7 +44,47 @@ else if (Marketplaces is not null && Marketplaces.Count > 0)
                             }
                         </MudStack>
                     </MudCardContent>
-                </MudCard>
+                    </MudCard>
+                }
+                else
+                {
+                    <MudCard Elevation="2" Style="opacity: 0.6; cursor: not-allowed; position: relative;">
+                        <MudTooltip Text="Bu pazaryeri için API bilgileri tanımlı değil. Yönetim > Pazaryerleri bölümünden API bilgilerinizi ekleyin.">
+                            <div Style="position: absolute; width: 100%; height: 100%; z-index: 10;"></div>
+                        </MudTooltip>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MarketplaceLogo Name="@mp.MarketPlaceName" Size="Size.Medium" />
+                                    <MudText Typo="Typo.subtitle1">@mp.MarketPlaceName</MudText>
+                                </MudStack>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@ProductSyncPage.GetSyncStateColor(mp.SyncState)">
+                                    @ProductSyncPage.GetSyncStateLabel(mp.SyncState)
+                                </MudChip>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent Class="pt-0">
+                            <MudStack Spacing="1">
+                                <MudText Typo="Typo.caption" Color="Color.Dark">
+                                    Son Sync: <strong>@(mp.LastSyncedAt?.LocalDateTime.ToString("dd.MM.yyyy HH:mm") ?? "—")</strong>
+                                </MudText>
+                                @if (!string.IsNullOrEmpty(mp.ExternalProductId))
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Ext ID: @mp.ExternalProductId
+                                    </MudText>
+                                }
+                                @if (!string.IsNullOrEmpty(mp.StatusMessage))
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Error">@mp.StatusMessage</MudText>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                }
             </MudItem>
         }
     </MudGrid>
