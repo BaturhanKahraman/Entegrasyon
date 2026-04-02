@@ -371,6 +371,17 @@ public sealed class ProductSyncManager(
         }
     }
 
+    public async Task<IDataResult<ProductSendPreflightDto>> GetSendPreflightAsync(Guid productId, int marketPlaceId)
+    {
+        // TODO: Task 6 - Implement preflight validation checks:
+        // 1. Category matched (exists in CategoryMarketPlaceMatch for marketPlaceId)
+        // 2. Brand matched (exists in BrandMarketPlaceMatch)
+        // 3. Required attributes matched (all required attributes have CategoryAttributeMarketPlaceMatch entries)
+        // 4. Has variants (Product.Variants.Count > 0)
+        // 5. All variants have barcodes (every variant has a non-null Barcode)
+        throw new NotImplementedException("Implementation in Task 6");
+    }
+
     private static MarketplaceSyncState MapSyncState(ProductMarketplace? marketplace, DateTimeOffset productUpdatedAt)
     {
         if (marketplace is null)

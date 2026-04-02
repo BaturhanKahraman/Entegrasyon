@@ -14,4 +14,5 @@ public interface IProductSyncManager
     Task<IResult> RetryFailedAsync(Guid productId, int marketPlaceId);
     Task<IResult> SyncAllPendingAsync(int marketPlaceId);
     Task<IResult> RetryAllFailedAsync(int marketPlaceId);
+    Task<IDataResult<ProductSendPreflightDto>> GetSendPreflightAsync(Guid productId, int marketPlaceId);
 }
