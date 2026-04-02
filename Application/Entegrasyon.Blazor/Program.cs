@@ -48,7 +48,8 @@ builder.Services.AddMudServices(config =>
 // ── OpenTelemetry ──────────────────────────────────────────────────────
 // Auto-instrumentation: ASP.NET Core, HttpClient (marketplace API), EF Core (DB)
 // OTLP exporter → Grafana Tempo (veya başka OTLP collector)
-var otelEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317";
+var otelEndpointRaw = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
+var otelEndpoint = string.IsNullOrWhiteSpace(otelEndpointRaw) ? "http://localhost:4317" : otelEndpointRaw;
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
         .SetResourceBuilder(OpenTelemetry.Resources.ResourceBuilder.CreateDefault()
