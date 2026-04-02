@@ -1,0 +1,171 @@
+@model Entegrasyon.Entity.Dtos.Product.ProductDetailDto
+
+@{
+    ViewData.SetBreadcrumb(("Urunler", "/products"), (Model.Title, null));
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Urun Detayi</div>
+                <h2 class="page-title">@Model.Title</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <div class="btn-list">
+                    <a href="/products/@Model.Id/edit" class="btn btn-primary">
+                        Duzenle
+                    </a>
+                    <button class="btn btn-outline-danger"
+                            hx-post="/products/@Model.Id/delete"
+                            hx-confirm="Bu urunu silmek istediginize emin misiniz?"
+                            hx-on::after-request="if(event.detail.successful) window.location='/products'">
+                        Sil
+                    </button>
+                    <a href="/products" class="btn btn-outline-secondary">
+                        Listeye Don
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- General Info -->
+        <div class="row row-cards">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Genel Bilgiler</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Stok Kodu</div>
+                                <div class="datagrid-content">@Model.StockCode</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Marka</div>
+                                <div class="datagrid-content">@Model.BrandName</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Kategori</div>
+                                <div class="datagrid-content">@Model.CategoryName</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Sezon</div>
+                                <div class="datagrid-content">@(string.IsNullOrEmpty(Model.Season) ? "-" : Model.Season)</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Yil</div>
+                                <div class="datagrid-content">@(string.IsNullOrEmpty(Model.Year) ? "-" : Model.Year)</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Son Guncelleme</div>
+                                <div class="datagrid-content">@Model.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <div class="mt-3">
+                                <h4>Aciklama</h4>
+                                <p class="text-secondary">@Model.Description</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stok Ozeti</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Toplam Stok</div>
+                                <div class="datagrid-content">@Model.TotalQuantity</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Satilan</div>
+                                <div class="datagrid-content">@Model.TotalSoldQuantity</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Mevcut Stok</div>
+                                <div class="datagrid-content">
+                                    @{
+                                        var currentStock = Model.TotalQuantity - Model.TotalSoldQuantity;
+                                    }
+                                    <span class="badge @(currentStock > 0 ? "bg-green-lt" : "bg-red-lt")">
+                                        @currentStock
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attributes -->
+        @if (Model.AttributeKeyValueDetails.Any())
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Ozellikler</h3>
+                </div>
+                <div class="card-body">
+                    <div class="datagrid">
+                        @foreach (var attr in Model.AttributeKeyValueDetails)
+                        {
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">@attr.AttributeHumanized</div>
+                                <div class="datagrid-content">@attr.AttributeValue</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Variants -->
+        @if (Model.ProductVariantsDetails.Any())
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Varyantlar</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Barkod</th>
+                                <th>Liste Fiyati</th>
+                                <th>Satis Fiyati</th>
+                                <th>Maliyet</th>
+                                <th>KDV (%)</th>
+                                <th>Desi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var variant in Model.ProductVariantsDetails)
+                            {
+                                <tr>
+                                    <td>@variant.Barcode</td>
+                                    <td>@variant.ListPrice.ToString("N2") @variant.CurrencyType</td>
+                                    <td>@variant.SalePrice.ToString("N2") @variant.CurrencyType</td>
+                                    <td>@variant.CostPrice.ToString("N2") @variant.CurrencyType</td>
+                                    <td>%@variant.VatRate</td>
+                                    <td>@variant.DeminsionalWeight</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,88 @@
+@model List<Entegrasyon.Entity.Categories.Category>
+@{
+    ViewData.SetPageTitle("Kategoriler");
+    ViewData.SetActiveNav("categories");
+    ViewData.SetBreadcrumb(("Kategoriler", null));
+
+    var roots = Model.Where(c => c.SuperCategoryId == null).OrderBy(c => c.Name).ToList();
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Kategoriler</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/categories/add" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14"/>
+                        <path d="M5 12l14 0"/>
+                    </svg>
+                    Yeni Kategori
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <!-- Tree Panel -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Kategori Agaci</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (roots.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @await Html.PartialAsync("Partials/_CategoryTree", roots)
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty py-4">
+                                <p class="empty-title">Henuz kategori yok</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Yeni bir kategori ekleyerek baslayabilirsiniz.
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Panel -->
+            <div class="col-lg-8">
+                <div id="detail-panel">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="empty py-5">
+                                <div class="empty-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-category" width="40" height="40"
+                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 4h6v6h-6z"/>
+                                        <path d="M14 4h6v6h-6z"/>
+                                        <path d="M4 14h6v6h-6z"/>
+                                        <path d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Bir kategori secin</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Soldaki agactan bir kategori sectiginizde detaylari burada goruntulenecektir.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+@model Entegrasyon.Entity.Categories.Category
+@{
+    var children = Model.SubCategories?.OrderBy(c => c.Name).ToList() ?? new List<Entegrasyon.Entity.Categories.Category>();
+    var hasChildren = children.Any();
+    var collapseId = $"cat-{Model.Id}";
+}
+
+<div class="list-group-item list-group-item-action p-0 border-0">
+    <div class="d-flex align-items-center px-3 py-2 cursor-pointer category-node"
+         hx-get="/categories/@Model.Id/detail"
+         hx-target="#detail-panel"
+         hx-swap="innerHTML">
+        @if (hasChildren)
+        {
+            <a class="me-1 text-secondary"
+               data-bs-toggle="collapse"
+               href="#@collapseId"
+               role="button"
+               aria-expanded="false"
+               onclick="event.stopPropagation();">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="18" height="18"
+                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M9 6l6 6l-6 6"/>
+                </svg>
+            </a>
+        }
+        else
+        {
+            <span class="me-1" style="width:18px; display:inline-block;"></span>
+        }
+
+        <span class="flex-fill">@Model.Name</span>
+
+        @if (Model.IsFavorite)
+        {
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-star-filled text-warning ms-1" width="16" height="16"
+                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"/>
+            </svg>
+        }
+
+        @if (hasChildren)
+        {
+            <span class="badge bg-secondary-lt ms-1">@children.Count</span>
+        }
+    </div>
+
+    @if (hasChildren)
+    {
+        <div class="collapse" id="@collapseId">
+            <div class="ms-3 border-start">
+                @foreach (var child in children)
+                {
+                    @await Html.PartialAsync("Partials/_CategoryNode", child)
+                }
+            </div>
+        </div>
+    }
+</div>

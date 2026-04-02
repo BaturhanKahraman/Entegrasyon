@@ -1,0 +1,9 @@
+@model List<Entegrasyon.Entity.Categories.Category>
+@{
+    var roots = Model.Where(c => c.SuperCategoryId == null).OrderBy(c => c.Name).ToList();
+}
+
+@foreach (var category in roots)
+{
+    @await Html.PartialAsync("Partials/_CategoryNode", category)
+}
