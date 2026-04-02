@@ -65,3 +65,45 @@ document.body.addEventListener('htmx:responseError', function (event) {
         window.location.href = '/auth/login';
     }
 });
+
+// ── Notification Bell (Real-time via SignalR) ─────────────────────────
+
+(function () {
+    if (typeof signalR === 'undefined') return;
+
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl('/NotificationHub')
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on('ReceiveNotification', function (notification) {
+        // Update bell badge count
+        var badge = document.getElementById('notification-badge');
+        if (badge) {
+            var count = parseInt(badge.textContent || '0') + 1;
+            badge.textContent = count;
+            badge.style.display = '';
+        } else {
+            var link = document.querySelector('#notification-bell a');
+            if (link) {
+                var newBadge = document.createElement('span');
+                newBadge.className = 'badge bg-red badge-notification';
+                newBadge.id = 'notification-badge';
+                newBadge.textContent = '1';
+                link.appendChild(newBadge);
+            }
+        }
+
+        // Show toast notification
+        document.body.dispatchEvent(new CustomEvent('showToast', {
+            detail: {
+                message: notification.header || 'Yeni bildirim',
+                type: 'info'
+            }
+        }));
+    });
+
+    connection.start().catch(function (err) {
+        console.warn('NotificationHub connection failed:', err);
+    });
+})();
