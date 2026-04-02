@@ -1,0 +1,110 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.BrandMappingVm
+@{
+    ViewData.SetPageTitle("Marka Eslemesi");
+    ViewData.SetActiveNav("marketplace-sync");
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Marka Eslemesi", null));
+
+    var mapped = Model.Summary.MappedBrands;
+    var total = Model.Summary.TotalBrands;
+    var pct = total > 0 ? (int)(mapped * 100.0 / total) : 0;
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Pazaryeri Senkronizasyonu</div>
+                <h2 class="page-title">Marka Eslemesi</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Marketplace Tabs -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <ul class="nav nav-pills">
+                    @foreach (var mp in Model.MarketPlaces)
+                    {
+                        var isActive = mp.Id == Model.SelectedMarketPlaceId;
+                        <li class="nav-item">
+                            <a class="nav-link @(isActive ? "active" : "")"
+                               href="/marketplace/sync/brands?mp=@mp.Id"
+                               hx-get="/marketplace/sync/brands?mp=@mp.Id"
+                               hx-target="#brand-list-container"
+                               hx-push-url="true">
+                                @mp.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Summary Bar -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="text-secondary">Esleme Durumu:</span>
+                    </div>
+                    <div class="col">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: @(pct)%"></div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <strong>@mapped / @total</strong> marka eslendi
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-success-lt">@mapped eslendi</span>
+                        <span class="badge bg-secondary-lt">@(Model.Summary.UnmappedBrands) eslenmedi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="row">
+            <!-- Brand List -->
+            <div class="col-lg-5">
+                <div id="brand-list-container">
+                    @await Html.PartialAsync("~/Features/MarketplaceSync/Views/BrandMapping/Partials/_BrandList.cshtml", Model)
+                </div>
+            </div>
+
+            <!-- Detail Panel -->
+            <div class="col-lg-7">
+                <div id="brand-detail-panel">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="empty py-5">
+                                <div class="empty-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-tag"
+                                         width="40" height="40" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                         fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <circle cx="8.5" cy="8.5" r="1" fill="currentColor"/>
+                                        <path d="M4 7v3.859c0 .537 .213 1.052 .593 1.432l8.116 8.116a2.025 2.025 0 0 0 2.864 0l4.834 -4.834a2.025 2.025 0 0 0 0 -2.864l-8.117 -8.116a2.025 2.025 0 0 0 -1.431 -.593h-3.859a3 3 0 0 0 -3 3z"/>
+                                    </svg>
+                                </div>
+                                <p class="empty-title">Bir marka secin</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Soldaki listeden bir marka sectiginizde esleme detaylari burada goruntulenecektir.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('refreshList', function () {
+        htmx.ajax('GET', '/marketplace/sync/brands?mp=@Model.SelectedMarketPlaceId', { target: '#brand-list-container' });
+    });
+</script>

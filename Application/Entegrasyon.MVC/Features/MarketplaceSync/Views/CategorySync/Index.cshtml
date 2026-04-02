@@ -1,0 +1,74 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CategorySyncVm
+@{
+    ViewData.SetPageTitle("Kategori Eslemesi");
+    ViewData.SetActiveNav("marketplace-sync");
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Kategori Eslemesi", null));
+
+    var mapped = Model.Summary.MappedCategories;
+    var total = Model.Summary.TotalCategories;
+    var pct = total > 0 ? (int)(mapped * 100.0 / total) : 0;
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Pazaryeri Senkronizasyonu</div>
+                <h2 class="page-title">Kategori Eslemesi</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Marketplace Tabs -->
+        <div class="card mb-3">
+            <div class="card-body p-2">
+                <ul class="nav nav-pills">
+                    @foreach (var mp in Model.MarketPlaces)
+                    {
+                        var isActive = mp.Id == Model.SelectedMarketPlaceId;
+                        <li class="nav-item">
+                            <a class="nav-link @(isActive ? "active" : "")"
+                               href="/marketplace/sync/categories?mp=@mp.Id"
+                               hx-get="/marketplace/sync/categories?mp=@mp.Id"
+                               hx-target="#mapping-content"
+                               hx-push-url="true">
+                                @mp.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Summary Bar -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="text-secondary">Esleme Durumu:</span>
+                    </div>
+                    <div class="col">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: @(pct)%"></div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <strong>@mapped / @total</strong> kategori eslendi
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-success-lt">@mapped eslendi</span>
+                        <span class="badge bg-secondary-lt">@(Model.Summary.UnmappedCategories) eslenmedi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mapping Table -->
+        <div id="mapping-content">
+            @await Html.PartialAsync("~/Features/MarketplaceSync/Views/CategorySync/Partials/_CategoryMappingTable.cshtml", Model)
+        </div>
+    </div>
+</div>
