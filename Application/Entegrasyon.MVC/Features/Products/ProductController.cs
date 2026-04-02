@@ -104,6 +104,25 @@ public class ProductController(IProductService productService) : Controller
         return View("~/Features/Products/Views/TrendyolSend.cshtml", result.Data);
     }
 
+    [HttpGet("/products/{id:guid}/variants")]
+    public async Task<IActionResult> Variants(Guid id)
+    {
+        var result = await productService.GetProductDetailById(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("Varyantlar");
+        ViewData.SetActiveNav("products");
+        ViewData.SetBreadcrumb(
+            ("Urunler", "/products"),
+            (result.Data!.Title, $"/products/{id}"),
+            ("Varyantlar", null));
+        return View(result.Data);
+    }
+
     [HttpPost("/products/{id:guid}/delete")]
     public async Task<IActionResult> Delete(Guid id)
     {

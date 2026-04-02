@@ -1,5 +1,9 @@
 // ── HTMX Global Configuration ─────────────────────────────────────────
 
+// HTMX 2.0: swap edilen HTML'deki script taglerini calistir
+// (Dashboard chart, ApexCharts init gibi inline script'ler icin gerekli)
+htmx.config.allowScriptTags = true;
+
 // Anti-forgery token: her HTMX isteğine otomatik ekle
 document.body.addEventListener('htmx:configRequest', function (event) {
     var token = document.querySelector('meta[name="csrf-token"]');

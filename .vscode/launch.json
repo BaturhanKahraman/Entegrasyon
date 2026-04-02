@@ -6,9 +6,11 @@
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/Application/Entegrasyon.MVC/Entegrasyon.MVC.csproj",
+            "hotReloadEnabled": true,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:5100"
+                "ASPNETCORE_URLS": "http://localhost:5100",
+                "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true"
             }
         },
         {

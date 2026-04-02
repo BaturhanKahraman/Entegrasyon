@@ -1,0 +1,102 @@
+@model Entegrasyon.Entity.Dtos.Product.ProductDetailDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">@Model.Title</div>
+                <h2 class="page-title">Varyantlar</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <div class="btn-list">
+                    <button class="btn btn-primary" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24"
+                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 5l0 14"/>
+                            <path d="M5 12l14 0"/>
+                        </svg>
+                        Yeni Varyant
+                    </button>
+                    <a href="/products/@Model.Id" class="btn btn-outline-secondary">
+                        Urune Don
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        @if (Model.ProductVariantsDetails.Any())
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Varyant Listesi</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-blue">@Model.ProductVariantsDetails.Count() varyant</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Barkod</th>
+                                <th>Stok Kodu</th>
+                                <th class="text-end">Liste Fiyati</th>
+                                <th class="text-end">Satis Fiyati</th>
+                                <th class="text-end">Maliyet</th>
+                                <th class="text-center">KDV</th>
+                                <th class="text-center">Desi</th>
+                                <th class="text-center">Stok</th>
+                                <th class="text-end">Islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var variant in Model.ProductVariantsDetails)
+                            {
+                                var totalStock = variant.StockDetails?.Sum(s => s.CurrentStock) ?? 0;
+                                <tr>
+                                    <td>
+                                        <code>@variant.Barcode</code>
+                                    </td>
+                                    <td>@Model.StockCode</td>
+                                    <td class="text-end">@variant.ListPrice.ToString("N2") @variant.CurrencyType</td>
+                                    <td class="text-end">@variant.SalePrice.ToString("N2") @variant.CurrencyType</td>
+                                    <td class="text-end">@variant.CostPrice.ToString("N2") @variant.CurrencyType</td>
+                                    <td class="text-center">%@variant.VatRate</td>
+                                    <td class="text-center">@variant.DeminsionalWeight</td>
+                                    <td class="text-center">
+                                        <span class="badge @(totalStock > 0 ? "bg-green-lt" : "bg-red-lt")">
+                                            @totalStock
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-list justify-content-end">
+                                            <button class="btn btn-sm btn-outline-primary" disabled>Duzenle</button>
+                                            <button class="btn btn-sm btn-outline-danger" disabled>Sil</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty py-5">
+                        <p class="empty-title">Varyant bulunamadi</p>
+                        <p class="empty-subtitle text-secondary">
+                            Bu urune henuz varyant eklenmemis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

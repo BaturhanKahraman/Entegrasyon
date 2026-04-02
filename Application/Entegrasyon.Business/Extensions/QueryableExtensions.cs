@@ -17,9 +17,12 @@ public static class QueryableExtensions
         if (string.IsNullOrWhiteSpace(searchTerm) || searchColumns == null || searchColumns.Length == 0)
             return query;
 
-        var searchExpression = string.Join(" || ", searchColumns.Select(col => $"{col}.Contains(@0)"));
+        // ToLower() ile case-insensitive arama — PostgreSQL CaseInsensitive collation
+        // ile uyumlu, System.Linq.Dynamic.Core'un collation'ı atladığı durumları kapsar
+        var lowerSearchTerm = searchTerm.ToLower();
+        var searchExpression = string.Join(" || ", searchColumns.Select(col => $"{col}.ToLower().Contains(@0)"));
 
-        return query.Where(searchExpression, searchTerm);
+        return query.Where(searchExpression, lowerSearchTerm);
     }
 
     public static async Task<Pageable<TResult>> ToPageableAsync<TResult>(

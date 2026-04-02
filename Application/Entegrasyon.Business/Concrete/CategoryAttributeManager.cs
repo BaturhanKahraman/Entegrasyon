@@ -102,6 +102,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
         using var dbContext = contextFactory.CreateDbContext();
         var attr = await dbContext.CategoryAttributes
             .Include(x => x.CategoryAttributeValues)
+            .Include(x => x.Categories).ThenInclude(c => c.Category)
             .FirstOrDefaultAsync(x => x.Id == id);
         if (attr is null)
             return new ErrorDataResult<CategoryAttribute>(null!, "Özellik bulunamadı.");
