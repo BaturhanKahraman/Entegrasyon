@@ -190,7 +190,8 @@ var app = builder.Build();
 if (args.Contains("--migrate"))
 {
     await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+    await using var db = await factory.CreateDbContextAsync();
     await db.Database.MigrateAsync();
     Console.WriteLine("Migrations applied successfully.");
     return;
