@@ -60,3 +60,45 @@ jobs:
           docker compose -f docker-compose.stage.yml pull
           docker compose -f docker-compose.stage.yml up -d --wait
           echo "Stage deploy completed at $(date)"
+
+  e2e-tests:
+    needs: deploy
+    runs-on: [self-hosted, entegrasyon]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start E2E environment
+        run: docker compose -f docker-compose.e2e.yml up -d --build --wait
+        timeout-minutes: 10
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build E2E tests
+        run: dotnet build Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj -c Release
+
+      - name: Install Playwright browsers
+        run: pwsh Test/Entegrasyon.E2E/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run E2E tests
+        run: dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj --no-build -c Release --verbosity normal
+        env:
+          E2E_BASE_URL: http://localhost:5099
+          E2E_DB_CONNECTION: "Host=localhost;Port=5433;Database=IntegrationDb_E2E;Username=e2e_user;Password=e2e_password"
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            Test/Entegrasyon.E2E/bin/Release/net8.0/playwright-artifacts/
+            Test/Entegrasyon.E2E/TestResults/
+          retention-days: 14
+
+      - name: Cleanup E2E environment
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v
