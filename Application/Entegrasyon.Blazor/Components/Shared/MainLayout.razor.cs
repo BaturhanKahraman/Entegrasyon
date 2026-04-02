@@ -18,7 +18,6 @@ public partial class MainLayout : IAsyncDisposable
     private LoggingErrorBoundary? _errorBoundary;
     private bool _drawerOpen = true;
     private bool _isDarkMode;
-    private bool _themeLoaded;
     private MudTheme _theme = new();
     private DotNetObjectReference<MainLayout>? _dotNetRef;
     private bool _scannerInitialized;
@@ -34,8 +33,6 @@ public partial class MainLayout : IAsyncDisposable
                 "light" => false,
                 _ => await JsRuntime.InvokeAsync<bool>("AppTheme.prefersDark")
             };
-            _themeLoaded = true;
-
             await InitializeBarcodeScannerAsync();
 
             StateHasChanged();

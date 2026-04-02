@@ -9,7 +9,6 @@ public partial class AuthLayout
     [Inject] private IJSRuntime JsRuntime { get; set; } = null!;
 
     private bool _isDarkMode;
-    private bool _themeLoaded;
 
     private readonly MudTheme _theme = new()
     {
@@ -45,7 +44,6 @@ public partial class AuthLayout
                 _ => await JsRuntime.InvokeAsync<bool>("eval",
                     "window.matchMedia('(prefers-color-scheme: dark)').matches")
             };
-            _themeLoaded = true;
             StateHasChanged();
         }
     }
