@@ -373,13 +373,68 @@ public sealed class ProductSyncManager(
 
     public async Task<IDataResult<ProductSendPreflightDto>> GetSendPreflightAsync(Guid productId, int marketPlaceId)
     {
-        // TODO: Task 6 - Implement preflight validation checks:
-        // 1. Category matched (exists in CategoryMarketPlaceMatch for marketPlaceId)
-        // 2. Brand matched (exists in BrandMarketPlaceMatch)
-        // 3. Required attributes matched (all required attributes have CategoryAttributeMarketPlaceMatch entries)
-        // 4. Has variants (Product.Variants.Count > 0)
-        // 5. All variants have barcodes (every variant has a non-null Barcode)
-        throw new NotImplementedException("Implementation in Task 6");
+        using var dbContext = contextFactory.CreateDbContext();
+
+        var product = await dbContext.MainProducts
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.ProductVariants)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product is null)
+            return new ErrorDataResult<ProductSendPreflightDto>(null!, "Ürün bulunamadı.");
+
+        // 1. Kategori eşleştirmesi kontrol et
+        var categoryMatch = await dbContext.CategoryMarketPlaceMatches
+            .FirstOrDefaultAsync(cm => cm.ApplicationCategoryId == product.CategoryId && cm.MarketPlaceId == marketPlaceId);
+
+        var categoryMatched = categoryMatch is not null;
+        var matchedCategoryName = categoryMatch?.MarketPlaceCategoryId.ToString();  // Store the marketplace category ID as name reference
+
+        // 2. Marka eşleştirmesi kontrol et
+        var brandMatch = await dbContext.BrandMarketPlaceMatches
+            .FirstOrDefaultAsync(bm => bm.ApplicationBrandId == product.BrandId && bm.MarketPlaceId == marketPlaceId);
+
+        var brandMatched = brandMatch is not null;
+        var matchedBrandName = brandMatch?.MarketPlaceBrandId.ToString();  // Store the marketplace brand ID as name reference
+
+        // 3. Zorunlu özellikler kontrol et
+        var requiredAttributes = await dbContext.CategoryAttributeCategories
+            .Where(cac => cac.CategoryId == product.CategoryId && cac.IsRequired)
+            .Include(cac => cac.CategoryAttribute)
+            .ToListAsync();
+
+        var missingAttributes = new List<string>();
+        foreach (var req in requiredAttributes)
+        {
+            var isMapped = await dbContext.CategoryAttributeMarketPlaceMatches
+                .AnyAsync(campm => campm.ApplicationCategoryAttributeId == req.CategoryAttributeId && campm.MarketPlaceId == marketPlaceId);
+
+            if (!isMapped)
+                missingAttributes.Add(req.CategoryAttribute.CategoryAttributeHumanized ?? req.CategoryAttribute.CategoryAttributeKey ?? "Bilinmeyen Özellik");
+        }
+
+        var requiredAttributesMatched = missingAttributes.Count == 0;
+
+        // 4. Varyant ve barcode kontrol et
+        var hasVariants = product.ProductVariants.Count > 0;
+        var allVariantsHaveBarcodes = hasVariants && product.ProductVariants.All(v => !string.IsNullOrEmpty(v.Barcode));
+
+        var allPassed = categoryMatched && brandMatched && requiredAttributesMatched && hasVariants && allVariantsHaveBarcodes;
+
+        var preflight = new ProductSendPreflightDto(
+            categoryMatched,
+            matchedCategoryName,
+            brandMatched,
+            matchedBrandName,
+            requiredAttributesMatched,
+            missingAttributes,
+            hasVariants,
+            allVariantsHaveBarcodes,
+            allPassed
+        );
+
+        return new SuccessDataResult<ProductSendPreflightDto>(preflight);
     }
 
     private static MarketplaceSyncState MapSyncState(ProductMarketplace? marketplace, DateTimeOffset productUpdatedAt)
