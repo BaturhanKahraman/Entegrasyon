@@ -5,6 +5,7 @@ using Entegrasyon.Business.Tenants;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -13,7 +14,7 @@ namespace Entegrasyon.UnitTest.Tenants;
 
 public class BlazorTenantResolutionMiddlewareTests
 {
-    private static DefaultHttpContext CreateHttpContext(string host, string path = "/")
+    private static DefaultHttpContext CreateHttpContext(string host, string path = "/", Dictionary<string, string?>? configValues = null)
     {
         var context = new DefaultHttpContext();
         context.Request.Host = new HostString(host);
@@ -21,8 +22,12 @@ public class BlazorTenantResolutionMiddlewareTests
 
         var mockEnv = new Mock<IWebHostEnvironment>();
         mockEnv.Setup(e => e.EnvironmentName).Returns(Environments.Production);
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues ?? new Dictionary<string, string?>())
+            .Build();
         var services = new ServiceCollection();
         services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
+        services.AddSingleton<IConfiguration>(config);
         context.RequestServices = services.BuildServiceProvider();
 
         return context;
@@ -115,8 +120,10 @@ public class BlazorTenantResolutionMiddlewareTests
         // Set up IWebHostEnvironment as Development
         var mockEnv = new Mock<IWebHostEnvironment>();
         mockEnv.Setup(e => e.EnvironmentName).Returns(Environments.Development);
+        var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
         var services = new ServiceCollection();
         services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
+        services.AddSingleton<IConfiguration>(config);
         httpContext.RequestServices = services.BuildServiceProvider();
 
         await middleware.InvokeAsync(httpContext, mockRegistry.Object, tenantContext);
@@ -138,17 +145,37 @@ public class BlazorTenantResolutionMiddlewareTests
         var middleware = new BlazorTenantResolutionMiddleware(next);
         var httpContext = CreateHttpContext("localhost");
 
-        // Set up IWebHostEnvironment as Production
-        var mockEnv = new Mock<IWebHostEnvironment>();
-        mockEnv.Setup(e => e.EnvironmentName).Returns(Environments.Production);
-        var services = new ServiceCollection();
-        services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
-        httpContext.RequestServices = services.BuildServiceProvider();
-
         await middleware.InvokeAsync(httpContext, mockRegistry.Object, tenantContext);
 
         httpContext.Response.StatusCode.Should().Be(404);
         nextCalled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WithDefaultSubdomainConfig_UsesConfiguredTenant()
+    {
+        var stageTenant = new TenantRegistryEntry(
+            2, "stage", "Stage Tenant", "Host=localhost;Database=stage", true, "Standard");
+
+        var mockRegistry = new Mock<ITenantRegistry>();
+        mockRegistry.Setup(x => x.GetBySubdomainAsync("stage"))
+            .ReturnsAsync(stageTenant);
+
+        var tenantContext = new HttpTenantContext();
+        var nextCalled = false;
+        RequestDelegate next = _ => { nextCalled = true; return Task.CompletedTask; };
+
+        var middleware = new BlazorTenantResolutionMiddleware(next);
+        var httpContext = CreateHttpContext("192.168.1.78", configValues: new()
+        {
+            ["Tenant:DefaultSubdomain"] = "stage"
+        });
+
+        await middleware.InvokeAsync(httpContext, mockRegistry.Object, tenantContext);
+
+        tenantContext.IsInitialized.Should().BeTrue();
+        tenantContext.TenantId.Should().Be(2);
+        nextCalled.Should().BeTrue();
     }
 
     [Theory]
