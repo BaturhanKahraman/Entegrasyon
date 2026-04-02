@@ -66,6 +66,44 @@ public class ProductController(IProductService productService) : Controller
         return View();
     }
 
+    [HttpGet("/products/{id:guid}/sync")]
+    public async Task<IActionResult> SyncDetail(Guid id)
+    {
+        var result = await productService.GetProductDetailById(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("Senkronizasyon Durumu");
+        ViewData.SetActiveNav("products");
+        ViewData.SetBreadcrumb(
+            ("Urunler", "/products"),
+            (result.Data!.Title, $"/products/{id}"),
+            ("Senkronizasyon", null));
+        return View("~/Features/Products/Views/SyncDetail.cshtml", result.Data);
+    }
+
+    [HttpGet("/products/{id:guid}/sync/trendyol/send")]
+    public async Task<IActionResult> TrendyolSend(Guid id)
+    {
+        var result = await productService.GetProductDetailById(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("Trendyol Gonderim");
+        ViewData.SetActiveNav("products");
+        ViewData.SetBreadcrumb(
+            ("Urunler", "/products"),
+            (result.Data!.Title, $"/products/{id}"),
+            ("Trendyol Gonderim", null));
+        return View("~/Features/Products/Views/TrendyolSend.cshtml", result.Data);
+    }
+
     [HttpPost("/products/{id:guid}/delete")]
     public async Task<IActionResult> Delete(Guid id)
     {

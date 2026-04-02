@@ -55,6 +55,14 @@ public class NotificationController(INotificationManager notificationManager) : 
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet("/admin/notifications")]
+    public IActionResult Admin()
+    {
+        ViewData.SetPageTitle("Bildirim Yonetimi");
+        ViewData.SetActiveNav("notifications");
+        return View("~/Features/Notifications/Views/Admin.cshtml");
+    }
+
     [HttpPost("/notifications/{id:long}/dismiss")]
     public async Task<IActionResult> Dismiss(long id)
     {

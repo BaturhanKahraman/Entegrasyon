@@ -177,6 +177,27 @@ public class ProductSyncController(
         return RedirectToAction(nameof(Index), new { mp });
     }
 
+    [HttpGet("/marketplace/sync/products")]
+    public async Task<IActionResult> BulkSync(int mp = 1)
+    {
+        ViewData.SetPageTitle("Toplu Urun Senkronizasyon");
+        ViewData.SetActiveNav("marketplace-sync");
+        ViewData.SetBreadcrumb(
+            ("Pazaryeri Senkronizasyon", "/marketplace/sync"),
+            ("Toplu Urun Senkronizasyon", null));
+
+        var marketPlacesResult = await marketPlaceManager.GetAllAsync();
+        var marketPlaces = marketPlacesResult.Success ? marketPlacesResult.Data : [];
+
+        var summary = await productSyncManager.GetSyncSummaryAsync(mp);
+
+        ViewBag.SelectedMarketPlaceId = mp;
+        ViewBag.MarketPlaces = marketPlaces;
+        ViewBag.Summary = summary;
+
+        return View($"{ViewBase}/BulkSync.cshtml");
+    }
+
     private static MarketplaceSyncState? ParseSyncState(string? state)
     {
         if (string.IsNullOrWhiteSpace(state))

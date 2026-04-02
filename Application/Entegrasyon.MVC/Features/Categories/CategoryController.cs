@@ -61,6 +61,16 @@ public class CategoryController(
         return View(result.Data);
     }
 
+    /// <summary>Category import page (multi-marketplace)</summary>
+    [HttpGet("/categories/import")]
+    public IActionResult Import()
+    {
+        ViewData.SetPageTitle("Kategori Aktarimi");
+        ViewData.SetActiveNav("categories");
+        ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Aktarim", null));
+        return View();
+    }
+
     /// <summary>HTMX: soft delete</summary>
     [HttpPost("/categories/{id:int}/delete")]
     public async Task<IActionResult> Delete(int id)
