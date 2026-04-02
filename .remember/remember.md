@@ -1,16 +1,15 @@
 # Handoff
 
 ## State
-All 8 phases (Faz 0-7) of Blazor→MVC migration completed on branch `feature/mvc-migration`. Project `Application/Entegrasyon.MVC/` — 149 source files, 5 commits, full solution builds 0 errors. 25 feature areas with 31 controllers covering all 65 Blazor pages. Not yet runtime-tested or pushed.
+Blazor→MVC migration COMPLETE on branch `feature/mvc-migration` (9 commits from `develop`). Project `Application/Entegrasyon.MVC/` — 166 source files, 33 controllers, all 65 Blazor routes have MVC equivalents. 10 integration tests pass. Dockerfile + docker-compose.stage.yml ready. CLAUDE.md updated. Runtime tested: health ✓, login ✓, auth redirect ✓, static assets ✓. Not pushed to remote.
 
 ## Next
-1. **Runtime test** — `dotnet run` on port 5100, verify login + dashboard + navigation works
-2. **CLAUDE.md update** — Add MVC project commands, update architecture table
-3. **Push branch** — `git push -u origin feature/mvc-migration` when ready for review
-4. **Polish** — Multi-step product wizard, POS terminal, Chat SignalR JS client (currently placeholders)
+1. **Browser test** — `cd Application/Entegrasyon.MVC && dotnet run`, login admin/123456789, navigate pages
+2. **Push** — `git push -u origin feature/mvc-migration` when ready
+3. **Polish placeholders** — Product wizard, POS terminal, Chat SignalR JS client
 
 ## Context
-- `InProcessNotificationDeliveryService` + `NotificationEventPublisher` Blazor-specific — TODO in Program.cs, deferred
+- Pre-existing unit test failure: `TrendyolProductSendPage` missing permission mapping (unrelated)
 - `IRoleService` lives in `Entegrasyon.Business.Concrete.Auth` namespace (not Abstract)
-- Plan: `/home/baturhan/.claude/plans/foamy-purring-lemur.md`, Skill: `~/.claude/skills/aspnet-mvc-htmx/`
-- Port 5100 (Blazor stays on 5099), Blazor kept until ALL features verified
+- `InProcessNotificationDeliveryService` Blazor-specific — TODO in Program.cs
+- MVC port: 5100 (dev), 8082 (stage). Blazor: 5099/8081
