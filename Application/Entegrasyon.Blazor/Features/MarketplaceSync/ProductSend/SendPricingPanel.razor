@@ -1,0 +1,14 @@
+@using Entegrasyon.Entity.Dtos.Product
+@using Entegrasyon.Entity.Dtos.Product.Marketplace
+
+<MudPaper Elevation="1" Class="pa-4">
+    <MudText Typo="Typo.h6" Class="mb-4">Fiyatlandırma Paneli</MudText>
+    <MudText Color="Color.Tertiary">Task 14: SendPricingPanel placeholder</MudText>
+</MudPaper>
+
+@code {
+    [Parameter] public Guid ProductId { get; set; }
+    [Parameter] public int MarketPlaceId { get; set; }
+    [Parameter] public List<VariantPricingRowDto>? Variants { get; set; }
+    [Parameter] public EventCallback<List<Entegrasyon.Entity.Dtos.Product.Marketplace.VariantPriceOverrideDto>> OnPriceOverridesChanged { get; set; }
+}

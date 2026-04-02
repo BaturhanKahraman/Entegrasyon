@@ -3,6 +3,7 @@ namespace Entegrasyon.Entity.Dtos.Product;
 public sealed record ProductSyncDetailDto(
     Guid ProductId,
     string Title,
+    string? Description,
     string StockCode,
     string BrandName,
     string CategoryName,
