@@ -1,31 +1,282 @@
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Satis</div>
-                <h2 class="page-title">POS Terminali</h2>
-            </div>
-        </div>
-    </div>
-</div>
+@model Entegrasyon.MVC.Features.POS.ViewModels.POSTerminalVm
 
-<div class="page-body">
-    <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg mb-3 text-secondary" width="48" height="48"
-                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/>
-                    <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/>
-                </svg>
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">
-                    POS terminali barkod okuyucu entegrasyonu, oturum yonetimi ve kasa islemleri ile birlikte
-                    detayli olarak gelistirilecektir.
-                </p>
+@if (!Model.HasActiveSession)
+{
+    <!-- Kasa Ac Dialogu -->
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="page-pretitle">Satis</div>
+                    <h2 class="page-title">POS Terminali</h2>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Kasa Ac</h3>
+                        </div>
+                        <form method="post" action="/pos/open-session">
+                            @Html.AntiForgeryToken()
+                            <div class="card-body">
+                                <p class="text-secondary mb-3">
+                                    Satis islemlerine baslamak icin kasayi acin. Baslangic tutarini girin.
+                                </p>
+                                <div class="mb-3">
+                                    <label class="form-label">Baslangic Kasasi (TL)</label>
+                                    <input type="number" name="openingCash" class="form-control"
+                                           step="0.01" min="0" value="0" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Terminal ID (Opsiyonel)</label>
+                                    <input type="text" name="terminalId" class="form-control"
+                                           placeholder="orn. KASA-01" />
+                                </div>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    Kasayi Ac
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Aktif POS Oturumu -->
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="page-pretitle">
+                        Satis &mdash; Oturum #@Model.SessionId
+                        @if (!string.IsNullOrEmpty(Model.TerminalId))
+                        {
+                            <span class="ms-2 badge bg-blue-lt">@Model.TerminalId</span>
+                        }
+                    </div>
+                    <h2 class="page-title">POS Terminali</h2>
+                </div>
+                <div class="col-auto ms-auto d-print-none">
+                    <span class="text-secondary me-3">
+                        @Model.CashierName
+                    </span>
+                    <span class="text-secondary me-3">
+                        @Model.OpenedAt.ToLocalTime().ToString("HH:mm")
+                    </span>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#closeSessionModal">
+                        Kasayi Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row g-3">
+                <!-- Sol Panel: Arama + Sepet -->
+                <div class="col-lg-8">
+                    <!-- Urun Arama -->
+                    <div class="card mb-3">
+                        <div class="card-body py-2">
+                            <div class="position-relative">
+                                <input type="text" class="form-control form-control-lg"
+                                       id="posSearchInput"
+                                       placeholder="Barkod okutun veya urun adi yazin..."
+                                       autocomplete="off"
+                                       hx-get="/pos/search"
+                                       hx-trigger="keyup changed delay:300ms"
+                                       hx-target="#search-results"
+                                       hx-swap="innerHTML"
+                                       name="q" />
+                                <div id="search-results"
+                                     class="position-absolute w-100 shadow-lg bg-white border rounded-bottom"
+                                     style="z-index:1050; top:100%; max-height:350px; overflow-y:auto;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sepet -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Sepet</h3>
+                            <div class="card-actions">
+                                <form method="post" action="/pos/clear-cart"
+                                      hx-post="/pos/clear-cart"
+                                      hx-target="#pos-cart"
+                                      hx-swap="innerHTML">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm">
+                                        Sepeti Temizle
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="pos-cart">
+                            <partial name="~/Features/POS/Views/Partials/_POSCart.cshtml"
+                                     model="@(new Entegrasyon.MVC.Features.POS.ViewModels.POSCartVm())" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sag Panel: Odeme -->
+                <div class="col-lg-4">
+                    <!-- Oturum Ozeti -->
+                    @if (Model.Summary is not null)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title">Oturum Ozeti</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="datagrid">
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Acilis Kasasi</div>
+                                        <div class="datagrid-content">@Model.Summary.OpeningCash.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Toplam Satis</div>
+                                        <div class="datagrid-content text-green">@Model.Summary.TotalSales.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Nakit</div>
+                                        <div class="datagrid-content">@Model.Summary.TotalCash.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Kart</div>
+                                        <div class="datagrid-content">@Model.Summary.TotalCard.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Islem Sayisi</div>
+                                        <div class="datagrid-content">@Model.Summary.TransactionCount</div>
+                                    </div>
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Beklenen Kasa</div>
+                                        <div class="datagrid-content fw-bold">@Model.Summary.ExpectedCash.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Odeme Formu -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Odeme</h3>
+                        </div>
+                        <form method="post" action="/pos/complete-sale" id="paymentForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sessionId" value="@Model.SessionId" />
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Odeme Yontemi</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="paymentMethod"
+                                               id="pmCash" value="1" checked />
+                                        <label class="btn btn-outline-primary" for="pmCash">Nakit</label>
+
+                                        <input type="radio" class="btn-check" name="paymentMethod"
+                                               id="pmCard" value="2" />
+                                        <label class="btn btn-outline-primary" for="pmCard">Kredi Karti</label>
+
+                                        <input type="radio" class="btn-check" name="paymentMethod"
+                                               id="pmDebit" value="3" />
+                                        <label class="btn btn-outline-primary" for="pmDebit">Banka Karti</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3" id="cashReceivedGroup">
+                                    <label class="form-label">Alinan Tutar (TL)</label>
+                                    <input type="number" name="cashReceived" id="cashReceived"
+                                           class="form-control form-control-lg" step="0.01" min="0" value="0" />
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-success w-100 btn-lg">
+                                    Satisi Tamamla
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kasa Kapat Modal -->
+    <div class="modal fade" id="closeSessionModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <form method="post" action="/pos/close-session">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="sessionId" value="@Model.SessionId" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">Kasayi Kapat</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-secondary">
+                            Kasadaki mevcut nakit tutari girin. Sistem beklenen tutar ile karsilastiracaktir.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label">Kapatilis Kasasi (TL)</label>
+                            <input type="number" name="closingCash" class="form-control"
+                                   step="0.01" min="0" required />
+                        </div>
+                        @if (Model.Summary is not null)
+                        {
+                            <div class="alert alert-info py-2 mb-0">
+                                Beklenen kasa: <strong>@Model.Summary.ExpectedCash.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</strong>
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                        <button type="submit" class="btn btn-danger">Kasayi Kapat</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            document.getElementById('posSearchInput')?.focus();
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('[data-add-product]');
+                if (!btn) return;
+                e.preventDefault();
+                var productId = btn.getAttribute('data-add-product');
+                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                htmx.ajax('POST', '/pos/add-item', {
+                    target: '#pos-cart',
+                    swap: 'innerHTML',
+                    values: { productId: productId, __RequestVerificationToken: token }
+                });
+                document.getElementById('search-results').replaceChildren();
+                document.getElementById('posSearchInput').value = '';
+                document.getElementById('posSearchInput').focus();
+            });
+
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var isCash = this.value === '1';
+                    document.getElementById('cashReceivedGroup').style.display = isCash ? 'block' : 'none';
+                });
+            });
+        </script>
+    }
+}

@@ -260,6 +260,15 @@ builder.Logging.AddOpenTelemetry(logging =>
 // ── Serilog ──────────────────────────────────────────────────────────────
 builder.AddSerilogWithLoggerProvider(builder.Configuration);
 
+// ── Session (POS cart state) ─────────────────────────────────────────────
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.Name = "Entegrasyon.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 // ── Misc ─────────────────────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
@@ -311,6 +320,7 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseOutputCache();
+app.UseSession();
 app.UseAntiforgery();
 
 // ── Endpoints ────────────────────────────────────────────────────────────
