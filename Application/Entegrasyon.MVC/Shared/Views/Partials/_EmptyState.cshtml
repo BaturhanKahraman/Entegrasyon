@@ -1,0 +1,15 @@
+@model Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+
+<div class="empty">
+    <p class="empty-title">@Model.Title</p>
+    @if (!string.IsNullOrEmpty(Model.Subtitle))
+    {
+        <p class="empty-subtitle text-secondary">@Model.Subtitle</p>
+    }
+    @if (!string.IsNullOrEmpty(Model.ActionUrl) && !string.IsNullOrEmpty(Model.ActionText))
+    {
+        <div class="empty-action">
+            <a href="@Model.ActionUrl" class="btn btn-primary">@Model.ActionText</a>
+        </div>
+    }
+</div>

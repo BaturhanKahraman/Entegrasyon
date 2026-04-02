@@ -1,0 +1,21 @@
+@{
+    Layout = "~/Shared/Views/_AuthLayout.cshtml";
+    var traceId = ViewData["TraceId"] as string;
+}
+
+<div class="empty">
+    <div class="empty-header">500</div>
+    <p class="empty-title">Sunucu Hatasi</p>
+    <p class="empty-subtitle text-secondary">
+        Bir hata olustu. Lutfen daha sonra tekrar deneyin.
+    </p>
+    @if (!string.IsNullOrEmpty(traceId))
+    {
+        <p class="text-secondary small">Trace ID: @traceId</p>
+    }
+    <div class="empty-action">
+        <a href="/" class="btn btn-primary">
+            Tekrar Deneyin
+        </a>
+    </div>
+</div>
