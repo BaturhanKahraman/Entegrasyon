@@ -22,6 +22,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Logs;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +46,7 @@ builder.Services.AddMudServices(config =>
 
 // ── OpenTelemetry ──────────────────────────────────────────────────────
 // Auto-instrumentation: ASP.NET Core, HttpClient (marketplace API), EF Core (DB)
-// OTLP exporter → Aspire Dashboard (local veya server)
+// OTLP exporter → Grafana Tempo (veya başka OTLP collector)
 var otelEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://localhost:4317";
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -183,6 +185,16 @@ builder.Services.AddSingleton<UserOnlineStatusTracker>();
 builder.Services.AddHostedService<ChatEventPublisher>();
 
 var app = builder.Build();
+
+// CLI: --migrate flag ile sadece EF Core migration çalıştırıp çıkar (deploy pipeline için)
+if (args.Contains("--migrate"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
+    await db.Database.MigrateAsync();
+    Console.WriteLine("Migrations applied successfully.");
+    return;
+}
 
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
