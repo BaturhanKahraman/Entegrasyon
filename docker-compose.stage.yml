@@ -9,18 +9,18 @@ services:
       - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__Main=${STAGE_DB_CONNECTION}
-      - ConnectionStrings__Redis=${REDIS_CONNECTION:-redis:6379}
-      - Minio__Endpoint=${MINIO_ENDPOINT}
-      - Minio__AccessKey=${MINIO_ACCESS_KEY}
-      - Minio__SecretKey=${MINIO_SECRET_KEY}
+      - ConnectionStrings__Redis=${REDIS_CONNECTION:-192.168.1.78:6379}
+      - Minio__Endpoint=${MINIO_ENDPOINT:-192.168.1.78:9000}
+      - Minio__AccessKey=${MINIO_ACCESS_KEY:-minioadmin}
+      - Minio__SecretKey=${MINIO_SECRET_KEY:-minioadmin}
       - Minio__UseSSL=false
       - Minio__BucketName=products-stage
-      - Minio__PublicBaseUrl=${MINIO_PUBLIC_URL}
-      - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY}
+      - Minio__PublicBaseUrl=${MINIO_PUBLIC_URL:-http://192.168.1.78:9000}
+      - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY:-StageSecurityKey_12345678!}
     networks:
-      - entegrasyon-net
+      - app-net
 
 networks:
-  entegrasyon-net:
+  app-net:
     external: true
-    name: entegrasyon_entegrasyon-net
+    name: integration_app_default
