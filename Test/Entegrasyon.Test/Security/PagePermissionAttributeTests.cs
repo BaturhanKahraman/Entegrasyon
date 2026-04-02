@@ -139,6 +139,9 @@ public class PagePermissionAttributeTests
         { "Entegrasyon.Blazor.Features.Storefront.StorefrontEmailCampaignsPage", AppPermissions.Settings.View },
         { "Entegrasyon.Blazor.Features.Storefront.StorefrontSellersPage", AppPermissions.Settings.View },
         { "Entegrasyon.Blazor.Features.Storefront.StorefrontPayoutsPage", AppPermissions.Settings.View },
+
+        // Marketplace Product Send
+        { "Entegrasyon.Blazor.Features.MarketplaceSync.ProductSend.TrendyolProductSendPage", AppPermissions.Marketplace.Edit },
     };
 
     [Fact]
