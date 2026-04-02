@@ -95,7 +95,7 @@ public partial class Sales : IDisposable
         }
     }
 
-    private async Task SearchAndAddProduct(string barcode)
+    private Task SearchAndAddProduct(string barcode)
     {
         try
         {
@@ -121,6 +121,8 @@ public partial class Sales : IDisposable
         {
             Snackbar?.Add($"Ürün arama hatası: {ex.Message}", Severity.Error);
         }
+
+        return Task.CompletedTask;
     }
 
     private void AddToCart(string productName, string size, decimal price, Guid variantId)
@@ -167,10 +169,11 @@ public partial class Sales : IDisposable
         Snackbar?.Add("Sepet temizlendi", Severity.Info);
     }
 
-    private async Task OpenCustomerSearch()
+    private Task OpenCustomerSearch()
     {
         // TODO: Implement customer search dialog
         Snackbar?.Add("Müşteri arama özelliği yakında gelecek", Severity.Info);
+        return Task.CompletedTask;
     }
 
     private void ClearCustomer()

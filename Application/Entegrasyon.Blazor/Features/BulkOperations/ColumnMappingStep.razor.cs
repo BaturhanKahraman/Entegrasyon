@@ -29,14 +29,14 @@ public partial class ColumnMappingStep
         _profiles = await MappingService.GetProfilesAsync(ImportType);
     }
 
-    private async Task LoadProfile(int? profileId)
+    private Task LoadProfile(int? profileId)
     {
-        if (profileId is null) return;
+        if (profileId is null) return Task.CompletedTask;
         var profile = _profiles.FirstOrDefault(p => p.Id == profileId);
-        if (profile is null) return;
+        if (profile is null) return Task.CompletedTask;
 
         var mappings = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(profile.MappingsJson);
-        if (mappings is null) return;
+        if (mappings is null) return Task.CompletedTask;
 
         foreach (var (key, value) in mappings)
         {
@@ -45,6 +45,7 @@ public partial class ColumnMappingStep
         }
 
         Snackbar.Add($"'{profile.Name}' profili yüklendi.", Severity.Success);
+        return Task.CompletedTask;
     }
 
     private async Task DeleteProfile()

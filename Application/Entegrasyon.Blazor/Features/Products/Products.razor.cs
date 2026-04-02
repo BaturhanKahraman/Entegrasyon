@@ -77,10 +77,11 @@ public partial class Products : IDisposable
         return _dataGrid.ReloadServerData();
     }
 
-    private async Task OpenAddProductDialog()
+    private Task OpenAddProductDialog()
     {
         // Navigate to the dedicated Add Product page
         NavigationManager?.NavigateTo("/products/add");
+        return Task.CompletedTask;
     }
 
     private void OnRowClick(DataGridRowClickEventArgs<ProductsDetailDto> args)
@@ -130,7 +131,7 @@ public partial class Products : IDisposable
         }
     }
 
-    private async Task ExportToExcel()
+    private Task ExportToExcel()
     {
         try
         {
@@ -143,5 +144,7 @@ public partial class Products : IDisposable
         {
             Snackbar?.Add($"Excel aktarma hatası: {ex.Message}", Severity.Error);
         }
+
+        return Task.CompletedTask;
     }
 }

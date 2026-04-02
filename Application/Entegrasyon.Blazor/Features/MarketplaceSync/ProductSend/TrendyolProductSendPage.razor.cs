@@ -86,11 +86,12 @@ public partial class TrendyolProductSendPage : ComponentBase
         _previewLoading = false;
     }
 
-    private async Task LoadPricingRows()
+    private Task LoadPricingRows()
     {
         // Varyantları yükle — SyncManager'dan proje bilgisini al
         // Not: ProductSyncDetailDto sadece VariantCount içerir, varyant detayları SendPricingPanel tarafından talep edilecek
         _pricingRows = [];
+        return Task.CompletedTask;
     }
 
     private async Task HandleSendAsync()

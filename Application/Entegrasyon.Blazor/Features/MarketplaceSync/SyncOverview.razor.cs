@@ -31,7 +31,7 @@ public partial class SyncOverview
         _ => Color.Info
     };
 
-    private async Task SyncMarketplace(string marketplace)
+    private Task SyncMarketplace(string marketplace)
     {
         _syncing = true;
         Snackbar.Add($"{marketplace} senkronizasyonu başlatıldı", Severity.Info);
@@ -49,6 +49,8 @@ public partial class SyncOverview
         {
             _syncing = false;
         }
+
+        return Task.CompletedTask;
     }
 
     private void ConfigureMarketplace(string marketplace)

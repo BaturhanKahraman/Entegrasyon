@@ -212,9 +212,10 @@ public partial class AttributeSyncPage
         }
     }
 
-    private async Task OnAttributeSelected(int? attributeId)
+    private Task OnAttributeSelected(int? attributeId)
     {
         _selectedAppAttributeId = attributeId;
+        return Task.CompletedTask;
     }
 
     private async Task OnMatchConfirmed((int appAttrId, int mpAttrId) args)

@@ -129,11 +129,12 @@ public partial class TrendyolCategoryTreeView
         treeItemCache[cacheKey] = treeItem;
         return treeItem;
     }
-    private async Task ToggleNode(CategoryTreeNode node)
+    private Task ToggleNode(CategoryTreeNode node)
     {
         node.IsExpanded = !node.IsExpanded;
         UpdateVisibleNodes();
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task SelectNode(CategoryTreeNode node)

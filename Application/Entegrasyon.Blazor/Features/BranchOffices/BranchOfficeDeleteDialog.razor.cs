@@ -69,21 +69,22 @@ public partial class BranchOfficeDeleteDialog
         _loadingImpact = false;
     }
 
-    private async Task HandleStepTwoAsync()
+    private Task HandleStepTwoAsync()
     {
         if (_stockOption == "cancel")
         {
             Cancel();
-            return;
+            return Task.CompletedTask;
         }
 
         if (_stockOption == "transfer" && _targetBranchId <= 0)
         {
             Snackbar.Add("Lütfen bir hedef depo seçin.", Severity.Warning);
-            return;
+            return Task.CompletedTask;
         }
 
         _step = 3;
+        return Task.CompletedTask;
     }
 
     private async Task ConfirmDeleteAsync()
