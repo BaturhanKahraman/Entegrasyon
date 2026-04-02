@@ -22,8 +22,13 @@ services:
       - Tenant__DefaultSubdomain=stage
       - Trendyol__UseMock=true
       - N11__UseMock=true
+    volumes:
+      - stage-dataprotection-keys:/app/keys
     networks:
       - app-net
+
+volumes:
+  stage-dataprotection-keys:
 
 networks:
   app-net:

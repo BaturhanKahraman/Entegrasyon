@@ -33,7 +33,8 @@ public class N11TaskPollingService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var restClient = services.GetRequiredService<IN11RestClient>();
         var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazor.Services;
 using Entegrasyon.ApplicationBootstrap.Logger;
 using Entegrasyon.Blazor.Endpoints;
+using Microsoft.AspNetCore.DataProtection;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -155,6 +156,9 @@ builder.Services.AddResponseCompression(options =>
     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
         new[] { "application/octet-stream" });
 });
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+    .SetApplicationName("Entegrasyon.Blazor");
 builder.Services.AddAntiforgery();
 builder.Services.AddSingleton<IMenuService, MenuService>();
 

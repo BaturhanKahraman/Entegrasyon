@@ -29,7 +29,8 @@ public class TrendyolProductStatusSyncService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var apiClient = services.GetRequiredService<ITrendyolApiClient>();
         var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 

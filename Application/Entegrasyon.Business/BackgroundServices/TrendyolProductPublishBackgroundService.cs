@@ -80,7 +80,8 @@ public class TrendyolProductPublishBackgroundService(
 
     private async Task HandleTrendyolAsync(IServiceProvider services, Guid productId, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var trendyolService = services.GetRequiredService<ITrendyolProductService>();
 
         var record = await dbContext.ProductMarketplaces
@@ -127,7 +128,8 @@ public class TrendyolProductPublishBackgroundService(
 
     private async Task HandleHepsiburadaAsync(IServiceProvider services, Guid productId, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var hbService = services.GetRequiredService<IHepsiburadaProductService>();
 
         var record = await dbContext.ProductMarketplaces
@@ -175,7 +177,8 @@ public class TrendyolProductPublishBackgroundService(
 
     private async Task HandlePazaramaAsync(IServiceProvider services, Guid productId, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var pazaramaService = services.GetRequiredService<IPazaramaProductService>();
 
         var record = await dbContext.ProductMarketplaces

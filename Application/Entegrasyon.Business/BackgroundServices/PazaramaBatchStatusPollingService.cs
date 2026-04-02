@@ -37,7 +37,8 @@ public class PazaramaBatchStatusPollingService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var pazaramaService = services.GetRequiredService<IPazaramaProductService>();
         var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 

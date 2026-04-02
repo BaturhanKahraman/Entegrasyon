@@ -31,7 +31,8 @@ public class PttavmProductTrackingPollingService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        var dbContext = services.GetRequiredService<IntegrationDbContext>();
+        var dbContextFactory = services.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var productService = services.GetRequiredService<IPttavmProductService>();
         var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
