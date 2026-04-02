@@ -78,8 +78,8 @@ public static class TestDataSeeder
     {
         // Ana kategori
         await using var cmd1 = new NpgsqlCommand(@"
-            INSERT INTO ""Categories"" (""Id"", ""Name"", ""SuperCategoryId"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
-            VALUES (9900, 'E2E Test Ana Kategori', null, @now, @now, @epoch, false)
+            INSERT INTO ""Categories"" (""Id"", ""Name"", ""SuperCategoryId"", ""IsFavorite"", ""IsImported"", ""ImportSource"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
+            VALUES (9900, 'E2E Test Ana Kategori', null, false, false, 0, @now, @now, @epoch, false)
             ON CONFLICT (""Id"") DO NOTHING", conn);
         cmd1.Parameters.AddWithValue("now", DateTimeOffset.UtcNow);
         cmd1.Parameters.AddWithValue("epoch", DateTimeOffset.MinValue);
@@ -87,8 +87,8 @@ public static class TestDataSeeder
 
         // Alt kategori
         await using var cmd2 = new NpgsqlCommand(@"
-            INSERT INTO ""Categories"" (""Id"", ""Name"", ""SuperCategoryId"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
-            VALUES (9901, 'E2E Test Alt Kategori', 9900, @now, @now, @epoch, false)
+            INSERT INTO ""Categories"" (""Id"", ""Name"", ""SuperCategoryId"", ""IsFavorite"", ""IsImported"", ""ImportSource"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
+            VALUES (9901, 'E2E Test Alt Kategori', 9900, false, false, 0, @now, @now, @epoch, false)
             ON CONFLICT (""Id"") DO NOTHING", conn);
         cmd2.Parameters.AddWithValue("now", DateTimeOffset.UtcNow);
         cmd2.Parameters.AddWithValue("epoch", DateTimeOffset.MinValue);
