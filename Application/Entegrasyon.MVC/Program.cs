@@ -103,7 +103,12 @@ builder.Services.Configure<HostOptions>(options =>
 
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddClients();
-builder.Services.AddBackgroundServices();
+
+// Background service'ler: Production/Staging'de etkin, Development'ta devre dışı
+// (Blazor ile aynı anda çalışırken çift polling önlenir)
+if (!builder.Environment.IsDevelopment())
+    builder.Services.AddBackgroundServices();
+
 builder.Services.AddStorefrontServices();
 builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddCustomDbContext(builder.Configuration);
