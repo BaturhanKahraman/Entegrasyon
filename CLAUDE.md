@@ -8,8 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build
 dotnet build Entegrasyon.sln
 
-# Run Blazor app
+# Run Blazor app (legacy — migration in progress)
 cd Application/Entegrasyon.Blazor && dotnet run
+
+# Run MVC app (new — port 5100)
+cd Application/Entegrasyon.MVC && dotnet run
 
 # Run tests
 dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj
@@ -46,7 +49,7 @@ dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess -
 
 ## Architecture
 
-Klasik katmanlı mimari — Entity → DataAccess → Business → Blazor:
+Klasik katmanlı mimari — Entity → DataAccess → Business → MVC/Blazor:
 
 | Proje | Görev |
 |---|---|
@@ -54,7 +57,25 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → Blazor:
 | `Entegrasyon.DataAccess` | EF Core context, migrations, entity configurations |
 | `Entegrasyon.Business` | Business managers (Abstract + Concrete) |
 | `Entegrasyon.ApplicationBootstrap` | DI container kurulumu |
-| `Entegrasyon.Blazor` | Blazor Server UI (MudBlazor) |
+| `Entegrasyon.MVC` | **YENİ** — ASP.NET Core MVC + HTMX + Tabler UI (port 5100) |
+| `Entegrasyon.Blazor` | Blazor Server UI — legacy, migration devam ediyor (port 5099) |
+
+### MVC Projesi Yapısı (Entegrasyon.MVC)
+
+**Tech Stack:** ASP.NET Core 8 MVC + HTMX + Tabler UI + Cookie Auth
+**Klasör yapısı:** Feature Folders (`Features/{FeatureName}/Controller + ViewModels + Views`)
+**Frontend:** Vanilla JS (~100 satır), npm/bundler/TypeScript yok
+
+MVC-specific pattern'ler için bkz: `~/.claude/skills/aspnet-mvc-htmx/` skill dosyaları.
+
+**Temel MVC pattern'leri:**
+- **PRG:** POST → TempData.SetSuccess → RedirectToAction → GET (geri tuşu güvenli)
+- **HTMX:** `Request.IsHtmx()` → PartialView, else → View (aynı endpoint, iki davranış)
+- **Filters:** TenantActionFilter (claims→tenant), AutoValidationFilter (ModelState otomatik)
+- **ViewData extensions:** `SetPageTitle()`, `SetActiveNav()`, `SetBreadcrumb()` (tip güvenli)
+- **TempData extensions:** `SetSuccess()`, `SetError()`, `GetToast()` (JSON serialize)
+- **Error handling:** IExceptionHandler zinciri (BusinessRule → HTMX → ProblemDetails)
+- **Tag Helpers:** `<form-group asp-for>`, `require-role="Admin"`, `nav-active="products"`
 
 ## Key Patterns
 
@@ -106,7 +127,9 @@ logger.LogInformation("Adding product {ProductId}", productId);
 EventChannel<CategoryUpdatedEvent> // publisher → subscriber
 ```
 
-## Blazor & UI Development Standards
+## Blazor & UI Development Standards (Legacy — Entegrasyon.Blazor)
+
+> **NOT:** Yeni özellikler `Entegrasyon.MVC` projesinde geliştirilmelidir. Blazor projesine yeni özellik eklenmez — sadece bug fix yapılabilir. Migration tamamlandığında Blazor kaldırılacak.
 
 **Maximize .NET 8 & Blazor Features:** Sürekli olarak .NET 8'in sunduğu en modern özellikleri kullan. Etkileşimli render modlarını (InteractiveServer, InteractiveWebAssembly, InteractiveAuto) ve SSR (Server-Side Rendering) özelliklerini senaryoya en uygun ve performanslı olacak şekilde seç.
 
