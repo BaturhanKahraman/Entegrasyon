@@ -1,0 +1,107 @@
+@model IEnumerable<Entegrasyon.Entity.Notifications.Notification>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Sistem</div>
+                <h2 class="page-title">Bildirimler</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <div class="btn-list">
+                    <a href="/notifications?onlyUnread=@(!((bool)ViewBag.OnlyUnread))"
+                       class="btn btn-outline-secondary btn-sm">
+                        @(((bool)ViewBag.OnlyUnread) ? "Tumunu Goster" : "Sadece Okunmamis")
+                    </a>
+                    <button class="btn btn-outline-primary btn-sm"
+                            hx-post="/notifications/read-all"
+                            hx-swap="none">
+                        Tumunu Okundu Isaretle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        @if (Model.Any())
+        {
+            <div class="card">
+                <div class="list-group list-group-flush">
+                    @foreach (var notification in Model)
+                    {
+                        <div class="list-group-item @(!notification.IsRead ? "list-group-item-action" : "")" id="notification-@notification.Id">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    @{
+                                        var severityClass = notification.Severity switch
+                                        {
+                                            Entegrasyon.Entity.Notifications.NotificationSeverity.Error => "bg-red",
+                                            Entegrasyon.Entity.Notifications.NotificationSeverity.Warning => "bg-yellow",
+                                            Entegrasyon.Entity.Notifications.NotificationSeverity.Success => "bg-green",
+                                            _ => "bg-blue"
+                                        };
+                                    }
+                                    <span class="avatar avatar-sm @severityClass text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
+                                            <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
+                                            <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="col">
+                                    <div class="d-flex justify-content-between">
+                                        <strong class="@(!notification.IsRead ? "" : "text-secondary")">
+                                            @notification.Header
+                                        </strong>
+                                        <small class="text-secondary">@notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                    </div>
+                                    <div class="text-secondary mt-1">@notification.Content</div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="btn-list flex-nowrap">
+                                        @if (!notification.IsRead)
+                                        {
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    hx-post="/notifications/@notification.Id/read"
+                                                    hx-target="#notification-@notification.Id"
+                                                    hx-swap="outerHTML">
+                                                Okundu
+                                            </button>
+                                        }
+                                        @if (!string.IsNullOrEmpty(notification.ActionUrl))
+                                        {
+                                            <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary">Git</a>
+                                        }
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                hx-post="/notifications/@notification.Id/dismiss"
+                                                hx-target="#notification-@notification.Id"
+                                                hx-swap="outerHTML swap:300ms">
+                                            Kaldir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Bildirim yok",
+                                 Subtitle = "Henuz bildiriminiz bulunmuyor."
+                             }'/>
+                </div>
+            </div>
+        }
+    </div>
+</div>

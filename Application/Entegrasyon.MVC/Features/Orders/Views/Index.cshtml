@@ -1,0 +1,69 @@
+@model List<Entegrasyon.Entity.Orders.Order>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Siparisler</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/marketplace/orders" class="btn btn-outline-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 21l18 0"/>
+                        <path d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4"/>
+                        <path d="M5 21l0 -10.15"/>
+                        <path d="M19 21l0 -10.15"/>
+                        <path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4"/>
+                    </svg>
+                    Pazaryeri Siparisleri
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="row w-100 g-2">
+                    <div class="col-auto">
+                        <input type="text"
+                               class="form-control"
+                               name="search"
+                               placeholder="Siparis no veya musteri ara..."
+                               value="@ViewBag.Search"
+                               hx-get="/orders"
+                               hx-trigger="keyup changed delay:300ms"
+                               hx-target="#order-table"
+                               hx-swap="outerHTML"
+                               hx-include="[name='status']"/>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select"
+                                name="status"
+                                hx-get="/orders"
+                                hx-trigger="change"
+                                hx-target="#order-table"
+                                hx-swap="outerHTML"
+                                hx-include="[name='search']">
+                            <option value="">Tum Durumlar</option>
+                            <option value="Created" selected="@(ViewBag.Status == "Created")">Olusturuldu</option>
+                            <option value="Picking" selected="@(ViewBag.Status == "Picking")">Hazirlaniyor</option>
+                            <option value="Invoiced" selected="@(ViewBag.Status == "Invoiced")">Fatura Kesildi</option>
+                            <option value="Shipped" selected="@(ViewBag.Status == "Shipped")">Kargoya Verildi</option>
+                            <option value="Delivered" selected="@(ViewBag.Status == "Delivered")">Teslim Edildi</option>
+                            <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Iptal</option>
+                            <option value="UnDelivered" selected="@(ViewBag.Status == "UnDelivered")">Teslim Edilemedi</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <partial name="~/Features/Orders/Views/Partials/_OrderTable.cshtml" model="Model"/>
+        </div>
+    </div>
+</div>

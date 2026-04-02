@@ -1,0 +1,34 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Musteriler</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="col-auto">
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           placeholder="Musteri ara..."
+                           value="@ViewBag.Search"
+                           hx-get="/customers"
+                           hx-trigger="keyup changed delay:300ms"
+                           hx-target="#customer-table"
+                           hx-swap="outerHTML"
+                           hx-include="this"/>
+                </div>
+            </div>
+            <partial name="Partials/_CustomerTable" model="Model"/>
+        </div>
+    </div>
+</div>
