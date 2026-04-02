@@ -1,0 +1,76 @@
+@{
+    ViewData.SetPageTitle("Yeni Kategori");
+    ViewData.SetActiveNav("categories");
+    ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Yeni Kategori", null));
+
+    var parents = ViewBag.Parents as List<Entegrasyon.Entity.Categories.Category>
+                  ?? new List<Entegrasyon.Entity.Categories.Category>();
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Kategoriler</div>
+                <h2 class="page-title">Yeni Kategori</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Genel Bilgiler</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="/categories/add">
+                            <div class="mb-3">
+                                <label class="form-label required">Kategori Adi</label>
+                                <input type="text" name="Name" class="form-control" required
+                                       placeholder="Kategori adini girin" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ust Kategori</label>
+                                <select name="SuperCategoryId" class="form-select">
+                                    <option value="">— Ust kategori yok (Kok kategori) —</option>
+                                    @foreach (var parent in parents.OrderBy(p => p.Name))
+                                    {
+                                        <option value="@parent.Id">@parent.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Varsayilan KDV Orani (%)</label>
+                                <input type="number" name="DefaultVatRate" class="form-control"
+                                       step="0.01" min="0" max="100"
+                                       placeholder="orn. 20" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="IsFavorite" value="true" />
+                                    <span class="form-check-label">Favori Kategori</span>
+                                </label>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <strong>Not:</strong> Ozellik ve pazaryeri eslestirmeleri kategori olusturulduktan sonra duzenlenebilir.
+                            </div>
+
+                            <div class="card-footer text-end">
+                                <a href="/categories" class="btn btn-link me-2">Iptal</a>
+                                <button type="submit" class="btn btn-primary">Kategori Olustur</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
