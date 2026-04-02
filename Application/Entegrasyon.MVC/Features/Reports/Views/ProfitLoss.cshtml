@@ -1,0 +1,124 @@
+@model Entegrasyon.Entity.Dtos.Reports.ProfitLossReportDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Raporlar</div>
+                <h2 class="page-title">Kar / Zarar Raporu</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Date Filter -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/profit-loss" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Baslangic</label>
+                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitis</label>
+                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Gelir</div>
+                        <div class="h1 mb-0 text-green">@Model.Revenue.ToString("C2")</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Net Kar</div>
+                        <div class="h1 mb-0 @(Model.NetProfit >= 0 ? "text-green" : "text-red")">
+                            @Model.NetProfit.ToString("C2")
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Kar Marji</div>
+                        <div class="h1 mb-0">%@Model.ProfitMargin.ToString("F1")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Breakdown -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Gider Dagilimi</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Urun Maliyeti</div>
+                        <div class="datagrid-content">@Model.CostOfGoods.ToString("C2")</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Pazaryeri Komisyonu</div>
+                        <div class="datagrid-content">@Model.MarketplaceCommission.ToString("C2")</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Kargo Gideri</div>
+                        <div class="datagrid-content">@Model.CargoExpense.ToString("C2")</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Vergi</div>
+                        <div class="datagrid-content">@Model.TaxAmount.ToString("C2")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- By Marketplace -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Pazaryeri Bazinda</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Pazaryeri</th>
+                            <th>Gelir</th>
+                            <th>Komisyon</th>
+                            <th>Net Kar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mp in Model.ByMarketplace)
+                        {
+                            <tr>
+                                <td>@mp.MarketPlaceName</td>
+                                <td>@mp.Revenue.ToString("C2")</td>
+                                <td>@mp.Commission.ToString("C2")</td>
+                                <td class="@(mp.NetProfit >= 0 ? "text-green" : "text-red")">
+                                    @mp.NetProfit.ToString("C2")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,105 @@
+@using Entegrasyon.Entity.Invoicing
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Invoicing.EInvoiceListDto>?
+
+@{
+    string StatusBadge(EInvoiceStatus status) => status switch
+    {
+        EInvoiceStatus.Draft => "bg-secondary-lt",
+        EInvoiceStatus.Sent => "bg-blue-lt",
+        EInvoiceStatus.Accepted => "bg-green-lt",
+        EInvoiceStatus.Rejected => "bg-red-lt",
+        EInvoiceStatus.Cancelled => "bg-orange-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string StatusText(EInvoiceStatus status) => status switch
+    {
+        EInvoiceStatus.Draft => "Taslak",
+        EInvoiceStatus.Sent => "Gonderildi",
+        EInvoiceStatus.Accepted => "Onaylandi",
+        EInvoiceStatus.Rejected => "Reddedildi",
+        EInvoiceStatus.Cancelled => "Iptal",
+        _ => status.ToString()
+    };
+
+    string TypeText(EInvoiceType type) => type switch
+    {
+        EInvoiceType.EFatura => "e-Fatura",
+        EInvoiceType.EArsiv => "e-Arsiv",
+        _ => type.ToString()
+    };
+}
+
+<div id="invoice-table">
+    @if (Model is not null && Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Fatura No</th>
+                        <th>Tip</th>
+                        <th>Musteri</th>
+                        <th>Tarih</th>
+                        <th>Tutar</th>
+                        <th>Durum</th>
+                        <th>Entegrator</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var invoice in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/invoicing/@invoice.Id" class="text-reset">
+                                    @invoice.InvoiceNumber
+                                </a>
+                            </td>
+                            <td class="text-secondary">@TypeText(invoice.InvoiceType)</td>
+                            <td class="text-secondary">@invoice.CustomerTitle</td>
+                            <td class="text-secondary">
+                                @invoice.IssueDate.ToLocalTime().ToString("dd.MM.yyyy")
+                            </td>
+                            <td>@invoice.GrandTotal.ToString("N2") TL</td>
+                            <td>
+                                <span class="badge @StatusBadge(invoice.Status)">
+                                    @StatusText(invoice.Status)
+                                </span>
+                            </td>
+                            <td class="text-secondary">@invoice.IntegratorProvider</td>
+                            <td>
+                                <a href="/invoicing/@invoice.Id" class="btn btn-sm btn-outline-primary">
+                                    Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/invoicing",
+                     TargetId = "#invoice-table"
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Fatura bulunamadi",
+                         Subtitle = "Henuz fatura bulunmuyor veya arama kriterinize uygun fatura yok.",
+                         ActionUrl = "/invoicing/create",
+                         ActionText = "Yeni Fatura Olustur"
+                     }'/>
+        </div>
+    }
+</div>

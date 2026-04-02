@@ -1,0 +1,83 @@
+@model List<Entegrasyon.Entity.Orders.Order>
+
+@{
+    var mpId = (int)(ViewBag.MarketPlaceId ?? 1);
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Pazaryeri</div>
+                <h2 class="page-title">Pazaryeri Siparisleri</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/orders" class="btn btn-outline-secondary">
+                    Tum Siparisler
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Marketplace Tabs -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link @(mpId == 1 ? "active" : "")"
+                   href="/marketplace/orders?mp=1"
+                   hx-get="/marketplace/orders?mp=1"
+                   hx-target="#order-table"
+                   hx-swap="outerHTML"
+                   hx-push-url="true">
+                    Trendyol
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(mpId == 2 ? "active" : "")"
+                   href="/marketplace/orders?mp=2"
+                   hx-get="/marketplace/orders?mp=2"
+                   hx-target="#order-table"
+                   hx-swap="outerHTML"
+                   hx-push-url="true">
+                    N11
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(mpId == 3 ? "active" : "")"
+                   href="/marketplace/orders?mp=3"
+                   hx-get="/marketplace/orders?mp=3"
+                   hx-target="#order-table"
+                   hx-swap="outerHTML"
+                   hx-push-url="true">
+                    Hepsiburada
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(mpId == 4 ? "active" : "")"
+                   href="/marketplace/orders?mp=4"
+                   hx-get="/marketplace/orders?mp=4"
+                   hx-target="#order-table"
+                   hx-swap="outerHTML"
+                   hx-push-url="true">
+                    Amazon
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(mpId == 5 ? "active" : "")"
+                   href="/marketplace/orders?mp=5"
+                   hx-get="/marketplace/orders?mp=5"
+                   hx-target="#order-table"
+                   hx-swap="outerHTML"
+                   hx-push-url="true">
+                    Pazarama
+                </a>
+            </li>
+        </ul>
+
+        <div class="card">
+            <partial name="~/Features/Orders/Views/Partials/_OrderTable.cshtml" model="Model"/>
+        </div>
+    </div>
+</div>

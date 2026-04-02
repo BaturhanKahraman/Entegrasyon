@@ -1,0 +1,85 @@
+@{
+    var allPermissions = (List<string>)(ViewBag.AllPermissions ?? new List<string>());
+    var permissionGroups = allPermissions
+        .GroupBy(p => p.Split('.')[1])
+        .OrderBy(g => g.Key)
+        .ToList();
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Roller</div>
+                <h2 class="page-title">Yeni Rol</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/roles" class="btn btn-outline-secondary">Listeye Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <form method="post" action="/roles/create">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Rol Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Rol Adi</label>
+                        <input type="text" class="form-control" name="name" required
+                               placeholder="Ornegin: Yonetici, Depocu, Satis Personeli"/>
+                    </div>
+
+                    <h3 class="mb-3">Yetkiler</h3>
+
+                    <div class="mb-2">
+                        <label class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll"/>
+                            <span class="form-check-label fw-bold">Tumunu Sec</span>
+                        </label>
+                    </div>
+
+                    <div class="row">
+                        @foreach (var group in permissionGroups)
+                        {
+                            <div class="col-md-4 col-lg-3 mb-3">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">@group.Key</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        @foreach (var permission in group)
+                                        {
+                                            var action = permission.Split('.').Last();
+                                            <label class="form-check">
+                                                <input class="form-check-input permission-check"
+                                                       type="checkbox"
+                                                       name="permissions"
+                                                       value="@permission"/>
+                                                <span class="form-check-label">@action</span>
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="/roles" class="btn btn-ghost-secondary me-2">Iptal</a>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('selectAll').addEventListener('change', function() {
+        document.querySelectorAll('.permission-check').forEach(cb => cb.checked = this.checked);
+    });
+</script>

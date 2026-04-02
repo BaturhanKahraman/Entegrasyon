@@ -1,0 +1,83 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
+
+<div id="customer-table">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad / Firma</th>
+                        <th>Tur</th>
+                        <th>Telefon</th>
+                        <th>TC / Vergi No</th>
+                        <th>Satis Sayisi</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/customers/@customer.Id" class="text-reset">
+                                    @(string.IsNullOrEmpty(customer.CorporateName)
+                                        ? customer.NameSurname
+                                        : customer.CorporateName)
+                                </a>
+                            </td>
+                            <td>
+                                @{
+                                    var isCorporate = customer.CustomerType == "Kurumsal";
+                                }
+                                <span class="badge @(isCorporate ? "bg-purple-lt" : "bg-blue-lt")">
+                                    @(isCorporate ? "Kurumsal" : "Bireysel")
+                                </span>
+                            </td>
+                            <td class="text-secondary">@customer.PhoneNumber</td>
+                            <td class="text-secondary">@customer.NationalIdentityOrTaxNumber</td>
+                            <td>
+                                <span class="badge bg-green-lt">@customer.SalesCount</span>
+                            </td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <a href="/customers/@customer.Id" class="btn btn-sm btn-outline-primary">
+                                        Detay
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            hx-post="/customers/@customer.Id/delete"
+                                            hx-target="closest tr"
+                                            hx-swap="outerHTML swap:300ms"
+                                            hx-confirm="Bu musteriyi silmek istediginize emin misiniz?">
+                                        Sil
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/customers",
+                     TargetId = "#customer-table"
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Musteri bulunamadi",
+                         Subtitle = "Henuz musteri eklenmemis veya arama kriterinize uygun musteri yok."
+                     }'/>
+        </div>
+    }
+</div>

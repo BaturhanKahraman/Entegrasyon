@@ -1,0 +1,94 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Users.UserDetailListDto>
+
+<div id="user-table">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th>Kullanici Adi</th>
+                        <th>Roller</th>
+                        <th>Sube</th>
+                        <th>Durum</th>
+                        <th>Kayit Tarihi</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Items)
+                    {
+                        <tr>
+                            <td>@user.Name @user.Surname</td>
+                            <td class="text-secondary">@user.UserName</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(user.RoleNames))
+                                {
+                                    @foreach (var role in user.RoleNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                    {
+                                        <span class="badge bg-blue-lt me-1">@role</span>
+                                    }
+                                }
+                            </td>
+                            <td class="text-secondary">@user.DefaultOfficeName</td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge bg-green-lt">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-red-lt">Pasif</span>
+                                }
+                            </td>
+                            <td class="text-secondary">@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <a href="/users/@user.Id/edit" class="btn btn-sm btn-outline-primary">
+                                        Duzenle
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-warning"
+                                            hx-post="/users/@user.Id/toggle-active"
+                                            hx-confirm="Kullanici durumunu degistirmek istediginize emin misiniz?">
+                                        @(user.IsActive ? "Pasif Yap" : "Aktif Yap")
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            hx-post="/users/@user.Id/delete"
+                                            hx-target="closest tr"
+                                            hx-swap="outerHTML swap:300ms"
+                                            hx-confirm="Bu kullaniciyi silmek istediginize emin misiniz?">
+                                        Sil
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/users",
+                     TargetId = "#user-table"
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Kullanici bulunamadi",
+                         Subtitle = "Henuz kullanici eklenmemis.",
+                         ActionUrl = "/users/create",
+                         ActionText = "Yeni Kullanici Ekle"
+                     }'/>
+        </div>
+    }
+</div>

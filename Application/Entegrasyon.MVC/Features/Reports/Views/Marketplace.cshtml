@@ -1,0 +1,93 @@
+@model List<Entegrasyon.Entity.Dtos.Reports.MarketplaceSummaryDto>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Raporlar</div>
+                <h2 class="page-title">Pazaryeri Karsilastirma</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Date Filter -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/marketplace" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Baslangic</label>
+                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitis</label>
+                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chart Placeholder -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Pazaryeri Performans Grafigi</h3>
+            </div>
+            <div class="card-body">
+                <div id="marketplace-chart" style="height:300px; display:flex; align-items:center; justify-content:center;">
+                    <span class="text-secondary">Grafik alani — chart kutuphanesi entegre edilecek</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Pazaryeri Ozeti</h3>
+            </div>
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Pazaryeri</th>
+                                <th>Siparis Sayisi</th>
+                                <th>Toplam Gelir</th>
+                                <th>Komisyon</th>
+                                <th>Ort. Siparis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mp in Model)
+                            {
+                                <tr>
+                                    <td><strong>@mp.MarketplaceName</strong></td>
+                                    <td>@mp.TotalOrders</td>
+                                    <td>@mp.TotalRevenue.ToString("C2")</td>
+                                    <td>@mp.CommissionPaid.ToString("C2")</td>
+                                    <td>@mp.AverageOrderValue.ToString("C2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Pazaryeri verisi yok",
+                                 Subtitle = "Secilen tarih araliginda pazaryeri verisi bulunmuyor."
+                             }'/>
+                </div>
+            }
+        </div>
+    </div>
+</div>

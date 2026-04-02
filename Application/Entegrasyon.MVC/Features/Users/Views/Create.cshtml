@@ -1,0 +1,82 @@
+@model Entegrasyon.Entity.Dtos.Users.AddUserDto
+@{
+    var roles = (IEnumerable<Entegrasyon.Entity.User.Role>)(ViewBag.Roles ?? Enumerable.Empty<Entegrasyon.Entity.User.Role>());
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Kullanicilar</div>
+                <h2 class="page-title">Yeni Kullanici</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/users" class="btn btn-outline-secondary">Listeye Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <form method="post" action="/users/create">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Kullanici Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Ad</label>
+                            <input type="text" class="form-control" name="Name" value="@Model?.Name"/>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Soyad</label>
+                            <input type="text" class="form-control" name="Surname" value="@Model?.Surname"/>
+                            <span asp-validation-for="Surname" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Kullanici Adi</label>
+                            <input type="text" class="form-control" name="UserName" value="@Model?.UserName"/>
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-posta</label>
+                            <input type="email" class="form-control" name="Email" value="@Model?.Email"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Gecici Sifre</label>
+                            <input type="password" class="form-control" name="TemporaryPassword"/>
+                            <span asp-validation-for="TemporaryPassword" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" name="RoleId">
+                                <option value="">Rol Secin</option>
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role.Id">@role.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="IsTwoFactorEnabled" value="true"/>
+                            <span class="form-check-label">Iki faktorlu dogrulama</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="/users" class="btn btn-ghost-secondary me-2">Iptal</a>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+@model List<Entegrasyon.Entity.Dtos.Reports.StockAlertDto>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Raporlar</div>
+                <h2 class="page-title">Stok Uyarilari</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Filter -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/stock-alerts" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Minimum Stok Esigi</label>
+                        <input type="number" class="form-control" name="threshold" value="@ViewBag.Threshold" min="1" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Dusuk Stoklu Urunler</h3>
+            </div>
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Urun</th>
+                                <th>Barkod</th>
+                                <th>Mevcut Stok</th>
+                                <th>Min. Stok</th>
+                                <th>Tukeniyor (Gun)</th>
+                                <th>Onerilen Siparis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ProductName</td>
+                                    <td class="text-secondary"><code>@(item.Barcode ?? "-")</code></td>
+                                    <td>
+                                        <span class="badge @(item.CurrentStock <= 0 ? "bg-red-lt" : item.CurrentStock <= item.MinimumStock ? "bg-yellow-lt" : "bg-green-lt")">
+                                            @item.CurrentStock
+                                        </span>
+                                    </td>
+                                    <td>@item.MinimumStock</td>
+                                    <td>
+                                        <span class="badge @(item.DaysUntilStockout <= 3 ? "bg-red" : item.DaysUntilStockout <= 7 ? "bg-yellow" : "bg-green-lt")">
+                                            @item.DaysUntilStockout gun
+                                        </span>
+                                    </td>
+                                    <td>@item.SuggestedOrderQuantity</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Stok uyarisi yok",
+                                 Subtitle = "Tum urunlerin stok seviyesi yeterli gorunuyor."
+                             }'/>
+                </div>
+            }
+        </div>
+    </div>
+</div>

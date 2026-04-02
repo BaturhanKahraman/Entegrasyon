@@ -1,0 +1,270 @@
+@model Entegrasyon.Entity.Orders.Order
+
+@{
+    var title = Model.OrderNumber ?? Model.Id.ToString()[..8];
+
+    string StatusBadge(string? status) => status switch
+    {
+        "Created" => "bg-blue-lt",
+        "Picking" => "bg-cyan-lt",
+        "Invoiced" => "bg-indigo-lt",
+        "Shipped" => "bg-yellow-lt",
+        "Delivered" => "bg-green-lt",
+        "Cancelled" => "bg-red-lt",
+        "UnDelivered" => "bg-orange-lt",
+        "ReturnAccepted" => "bg-purple-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string StatusText(string? status) => status switch
+    {
+        "Created" => "Olusturuldu",
+        "Picking" => "Hazirlaniyor",
+        "Invoiced" => "Fatura Kesildi",
+        "Shipped" => "Kargoya Verildi",
+        "Delivered" => "Teslim Edildi",
+        "Cancelled" => "Iptal",
+        "UnDelivered" => "Teslim Edilemedi",
+        "ReturnAccepted" => "Iade Onaylandi",
+        _ => status ?? "-"
+    };
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Siparis Detayi</div>
+                <h2 class="page-title">Siparis #@title</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <div class="btn-list">
+                    <a href="/orders" class="btn btn-outline-secondary">
+                        Listeye Don
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row row-cards">
+            <!-- Order Info -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Siparis Bilgileri</h3>
+                        <div class="card-actions">
+                            <span class="badge @StatusBadge(Model.MarketplaceOrderStatus) fs-6">
+                                @StatusText(Model.MarketplaceOrderStatus)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Siparis No</div>
+                                <div class="datagrid-content">@(Model.OrderNumber ?? "-")</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Siparis Tarihi</div>
+                                <div class="datagrid-content">
+                                    @(Model.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
+                                </div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Pazaryeri</div>
+                                <div class="datagrid-content">
+                                    @(Model.MarketPlace?.Name ?? (Model.MarketPlaceId.HasValue ? $"ID: {Model.MarketPlaceId}" : "Yerel"))
+                                </div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Tahmini Teslimat</div>
+                                <div class="datagrid-content">
+                                    @(Model.EstimatedDeliveryEndDate?.ToLocalTime().ToString("dd.MM.yyyy") ?? "-")
+                                </div>
+                            </div>
+                            @if (Model.IsFastDelivery)
+                            {
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Hizli Teslimat</div>
+                                    <div class="datagrid-content">
+                                        <span class="badge bg-green-lt">Evet</span>
+                                    </div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.OrderNote))
+                            {
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Siparis Notu</div>
+                                    <div class="datagrid-content">@Model.OrderNote</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Siparis Kalemleri</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Urun</th>
+                                    <th>Barkod</th>
+                                    <th>Renk / Beden</th>
+                                    <th>Adet</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@(item.MerchantSku ?? "-")</td>
+                                        <td class="text-secondary">@(item.Barcode ?? "-")</td>
+                                        <td class="text-secondary">
+                                            @(item.ProductColor ?? "-") / @(item.ProductSize ?? "-")
+                                        </td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.UnitPrice.ToString("N2") TL</td>
+                                        <td>@((item.UnitPrice * item.Quantity).ToString("N2")) TL</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer & Shipping Sidebar -->
+            <div class="col-lg-4">
+                <!-- Customer Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Musteri Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Ad Soyad</div>
+                                <div class="datagrid-content">
+                                    @Model.CustomerFirstName @Model.CustomerLastName
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(Model.CustomerEmail))
+                            {
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">E-posta</div>
+                                    <div class="datagrid-content">@Model.CustomerEmail</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cargo Info -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Kargo Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Kargo Firmasi</div>
+                                <div class="datagrid-content">@(Model.CargoProviderName ?? "-")</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Takip No</div>
+                                <div class="datagrid-content">
+                                    @if (!string.IsNullOrWhiteSpace(Model.CargoTrackingNumber))
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(Model.CargoTrackingLink))
+                                        {
+                                            <a href="@Model.CargoTrackingLink" target="_blank" rel="noopener">
+                                                @Model.CargoTrackingNumber
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            @Model.CargoTrackingNumber
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Summary -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Tutar Ozeti</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="datagrid">
+                            @if (Model.SubTotal.HasValue)
+                            {
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Ara Toplam</div>
+                                    <div class="datagrid-content">@Model.SubTotal.Value.ToString("N2") TL</div>
+                                </div>
+                            }
+                            @if (Model.ShippingCost.HasValue && Model.ShippingCost > 0)
+                            {
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Kargo Ucreti</div>
+                                    <div class="datagrid-content">@Model.ShippingCost.Value.ToString("N2") TL</div>
+                                </div>
+                            }
+                            @if (Model.DiscountAmount.HasValue && Model.DiscountAmount > 0)
+                            {
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Indirim</div>
+                                    <div class="datagrid-content text-red">-@Model.DiscountAmount.Value.ToString("N2") TL</div>
+                                </div>
+                            }
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Toplam</div>
+                                <div class="datagrid-content fw-bold">@Model.TotalPrice.ToString("N2") TL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Update -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Durum Guncelle</h3>
+                    </div>
+                    <div class="card-body">
+                        <form hx-post="/orders/@Model.Id/status"
+                              hx-swap="none">
+                            <div class="mb-3">
+                                <select class="form-select" name="newStatus">
+                                    <option value="Created">Olusturuldu</option>
+                                    <option value="Picking">Hazirlaniyor</option>
+                                    <option value="Invoiced">Fatura Kesildi</option>
+                                    <option value="Shipped">Kargoya Verildi</option>
+                                    <option value="Delivered">Teslim Edildi</option>
+                                    <option value="Cancelled">Iptal</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Durumu Guncelle</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
