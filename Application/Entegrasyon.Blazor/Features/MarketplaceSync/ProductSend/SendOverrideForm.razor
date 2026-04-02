@@ -1,0 +1,12 @@
+@using Entegrasyon.Entity.Dtos.Product.Marketplace
+
+<MudPaper Elevation="1" Class="pa-4">
+    <MudText Typo="Typo.h6" Class="mb-4">Geçersiz Kılmalar</MudText>
+    <MudText Color="Color.Tertiary">Task 13: SendOverrideForm placeholder</MudText>
+</MudPaper>
+
+@code {
+    [Parameter] public string? CurrentTitle { get; set; }
+    [Parameter] public string? CurrentDescription { get; set; }
+    [Parameter] public EventCallback<(string? Title, string? Description)> OnOverrideChanged { get; set; }
+}

@@ -1,0 +1,16 @@
+@using Entegrasyon.Entity.Dtos.Product
+
+<MudPaper Elevation="1" Class="pa-4">
+    <MudText Typo="Typo.h6" Class="mb-4">Gönderme Ön Kontrolleri</MudText>
+    <MudText Color="Color.Tertiary">Task 12: SendPreflightChecks placeholder</MudText>
+</MudPaper>
+
+@code {
+    [Parameter] public ProductSendPreflightDto Preflight { get; set; } = null!;
+    [Parameter] public EventCallback<bool> OnAllPassed { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OnAllPassed.InvokeAsync(Preflight?.AllPassed ?? false);
+    }
+}

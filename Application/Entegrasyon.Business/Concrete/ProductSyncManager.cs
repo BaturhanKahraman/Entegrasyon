@@ -138,6 +138,7 @@ public sealed class ProductSyncManager(
             {
                 p.Id,
                 p.Title,
+                p.Description,
                 p.StockCode,
                 BrandName = p.Brand != null ? p.Brand.Name : "",
                 CategoryName = p.Category != null ? p.Category.Name : "",
@@ -171,7 +172,7 @@ public sealed class ProductSyncManager(
         }).ToList();
 
         var dto = new ProductSyncDetailDto(
-            product.Id, product.Title, product.StockCode!,
+            product.Id, product.Title, product.Description, product.StockCode!,
             product.BrandName, product.CategoryName, product.VariantCount,
             marketplaceItems);
 

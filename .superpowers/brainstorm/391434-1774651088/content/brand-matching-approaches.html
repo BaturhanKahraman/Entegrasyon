@@ -1,0 +1,192 @@
+<h2>Marka Eşleştirme UX — Yaklaşım Seçimi</h2>
+<p class="subtitle">Mevcut modal tabanlı tek tek eşleştirme yerine, daha verimli bir UX tasarlıyoruz</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Master-Detail Sayfa (Önerilen)</h3>
+      <p>Sol tarafta marka listesi (arama + filtre + marketplace durum chip'leri), sağ tarafta seçili markanın detay paneli.</p>
+      <p>Detay panelinde her marketplace için bir satır: marketplace logosu + autocomplete arama + eşleştirme durumu.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-header">Master-Detail Layout</div>
+        <div class="mockup-body" style="display: flex; gap: 8px; min-height: 280px;">
+          <!-- Sol: Marka Listesi -->
+          <div style="flex: 0 0 35%; border-right: 1px solid #444; padding-right: 8px;">
+            <input class="mock-input" placeholder="🔍 Marka ara..." style="width: 100%; margin-bottom: 8px;">
+            <div style="display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap;">
+              <span style="background: #2196F3; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Tümü</span>
+              <span style="background: #333; color: #aaa; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Eksik</span>
+              <span style="background: #333; color: #aaa; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Tamamlanan</span>
+            </div>
+            <div style="border: 1px solid #555; border-radius: 4px; padding: 8px; margin-bottom: 4px; background: #1a3a5c;">
+              <div style="font-weight: bold; font-size: 13px;">Nike</div>
+              <div style="display: flex; gap: 4px; margin-top: 4px;">
+                <span style="background: #4CAF50; width: 8px; height: 8px; border-radius: 50%; display: inline-block;" title="Trendyol"></span>
+                <span style="background: #4CAF50; width: 8px; height: 8px; border-radius: 50%; display: inline-block;" title="Hepsiburada"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;" title="N11"></span>
+              </div>
+            </div>
+            <div style="border: 1px solid #444; border-radius: 4px; padding: 8px; margin-bottom: 4px;">
+              <div style="font-weight: bold; font-size: 13px;">Adidas</div>
+              <div style="display: flex; gap: 4px; margin-top: 4px;">
+                <span style="background: #4CAF50; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+              </div>
+            </div>
+            <div style="border: 1px solid #444; border-radius: 4px; padding: 8px; margin-bottom: 4px;">
+              <div style="font-weight: bold; font-size: 13px;">Samsung</div>
+              <div style="display: flex; gap: 4px; margin-top: 4px;">
+                <span style="background: #FF9800; width: 8px; height: 8px; border-radius: 50%; display: inline-block;" title="Beklemede"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+              </div>
+            </div>
+            <div style="border: 1px solid #444; border-radius: 4px; padding: 8px; margin-bottom: 4px; opacity: 0.6;">
+              <div style="font-weight: bold; font-size: 13px; color: #999;">Puma</div>
+              <div style="display: flex; gap: 4px; margin-top: 4px;">
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                <span style="background: #666; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+              </div>
+            </div>
+          </div>
+          <!-- Sağ: Detay Paneli -->
+          <div style="flex: 1; padding-left: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="font-size: 18px; font-weight: bold;">Nike</span>
+              <span style="background: #4CAF50; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px;">2/3 Eşleşti</span>
+            </div>
+            <!-- Trendyol -->
+            <div style="border: 1px solid #444; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+              <div style="width: 80px; text-align: center;">
+                <div style="font-weight: bold; font-size: 12px; color: #FF6B00;">Trendyol</div>
+              </div>
+              <div style="flex: 1; background: #1a3a1a; border: 1px solid #4CAF50; border-radius: 4px; padding: 6px 10px; font-size: 12px;">
+                ✅ Nike (#1234)
+              </div>
+              <button class="mock-button" style="font-size: 11px; padding: 4px 8px; background: #c62828;">✕</button>
+            </div>
+            <!-- Hepsiburada -->
+            <div style="border: 1px solid #444; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+              <div style="width: 80px; text-align: center;">
+                <div style="font-weight: bold; font-size: 12px; color: #FF6B00;">Hepsiburada</div>
+              </div>
+              <div style="flex: 1; background: #1a3a1a; border: 1px solid #4CAF50; border-radius: 4px; padding: 6px 10px; font-size: 12px;">
+                ✅ NIKE (#5678)
+              </div>
+              <button class="mock-button" style="font-size: 11px; padding: 4px 8px; background: #c62828;">✕</button>
+            </div>
+            <!-- N11 - eşleşmemiş -->
+            <div style="border: 1px solid #555; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+              <div style="width: 80px; text-align: center;">
+                <div style="font-weight: bold; font-size: 12px; color: #9C27B0;">N11</div>
+              </div>
+              <div style="flex: 1;">
+                <input class="mock-input" placeholder="Marketplace markası ara..." style="width: 100%; font-size: 12px;">
+              </div>
+              <button class="mock-button" style="font-size: 11px; padding: 4px 8px;">💾</button>
+            </div>
+            <div style="margin-top: 16px; padding: 10px; background: #1a2a3a; border-radius: 6px; font-size: 11px; color: #888;">
+              💡 Her satırda marketplace markasını arayıp seçin. Yeşil = eşleştirilmiş, gri = bekleyen.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top: 10px;">
+        <div class="pros"><h4>Avantajlar</h4><ul><li>Tüm marketplace'ler tek bakışta</li><li>Hızlı gezinme — sol listeden seçim</li><li>Durum chip'leri ile hızlı overview</li></ul></div>
+        <div class="cons"><h4>Dezavantajlar</h4><ul><li>Küçük ekranlarda dar kalabilir</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Tablo + Inline Edit</h3>
+      <p>Tek büyük DataGrid: her satır bir marka, her marketplace için ayrı kolon. Hücreler inline autocomplete ile düzenlenir.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-header">DataGrid — Marketplace Kolonları</div>
+        <div class="mockup-body">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+              <tr style="border-bottom: 2px solid #555;">
+                <th style="text-align: left; padding: 8px;">Marka</th>
+                <th style="text-align: left; padding: 8px; color: #FF6B00;">Trendyol</th>
+                <th style="text-align: left; padding: 8px; color: #FF6B00;">Hepsiburada</th>
+                <th style="text-align: left; padding: 8px; color: #9C27B0;">N11</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 8px; font-weight: bold;">Nike</td>
+                <td style="padding: 8px;"><span style="color: #4CAF50;">Nike (#1234)</span></td>
+                <td style="padding: 8px;"><span style="color: #4CAF50;">NIKE (#5678)</span></td>
+                <td style="padding: 8px; color: #666;">— eşleştirilmemiş —</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 8px; font-weight: bold;">Adidas</td>
+                <td style="padding: 8px;"><span style="color: #4CAF50;">Adidas (#2345)</span></td>
+                <td style="padding: 8px; color: #666;">— eşleştirilmemiş —</td>
+                <td style="padding: 8px; color: #666;">— eşleştirilmemiş —</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 8px; font-weight: bold;">Samsung</td>
+                <td style="padding: 8px; color: #666;">— eşleştirilmemiş —</td>
+                <td style="padding: 8px; color: #666;">— eşleştirilmemiş —</td>
+                <td style="padding: 8px; color: #666;">— eşleştirilmemiş —</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="font-size: 11px; color: #888; margin-top: 8px;">Hücreye tıklayarak inline autocomplete ile eşleştirme yapılır</p>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top: 10px;">
+        <div class="pros"><h4>Avantajlar</h4><ul><li>Tüm markalar + marketplace'ler tek tabloda</li><li>Spreadsheet benzeri hızlı düzenleme</li></ul></div>
+        <div class="cons"><h4>Dezavantajlar</h4><ul><li>Marketplace sayısı arttıkça tablo çok geniş</li><li>MudDataGrid'de inline autocomplete karmaşık</li><li>200+ satırda performans riski</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Detay Sayfası (Ayrı Route)</h3>
+      <p>Ana listeden markaya tıklayınca <code>/marketplace/sync/brands/{id}</code> detay sayfasına gider. Orada tüm marketplace eşleştirmeleri card layout ile gösterilir.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-header">/marketplace/sync/brands/42 — Nike Detay</div>
+        <div class="mockup-body">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #888;">← Marka Listesi</span>
+            <span style="font-size: 18px; font-weight: bold;">Nike</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="border: 1px solid #4CAF50; border-radius: 8px; padding: 12px;">
+              <div style="font-weight: bold; color: #FF6B00; margin-bottom: 8px;">Trendyol</div>
+              <div style="color: #4CAF50;">✅ Nike (#1234)</div>
+              <button class="mock-button" style="font-size: 10px; margin-top: 8px;">Değiştir</button>
+            </div>
+            <div style="border: 1px solid #4CAF50; border-radius: 8px; padding: 12px;">
+              <div style="font-weight: bold; color: #FF6B00; margin-bottom: 8px;">Hepsiburada</div>
+              <div style="color: #4CAF50;">✅ NIKE (#5678)</div>
+              <button class="mock-button" style="font-size: 10px; margin-top: 8px;">Değiştir</button>
+            </div>
+            <div style="border: 1px solid #555; border-radius: 8px; padding: 12px;">
+              <div style="font-weight: bold; color: #9C27B0; margin-bottom: 8px;">N11</div>
+              <input class="mock-input" placeholder="Ara..." style="width: 100%; font-size: 12px;">
+            </div>
+            <div style="border: 1px solid #555; border-radius: 8px; padding: 12px;">
+              <div style="font-weight: bold; color: #2196F3; margin-bottom: 8px;">Pazarama</div>
+              <input class="mock-input" placeholder="Ara..." style="width: 100%; font-size: 12px;">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top: 10px;">
+        <div class="pros"><h4>Avantajlar</h4><ul><li>Geniş alan — mobilde de iyi çalışır</li><li>URL ile doğrudan erişim</li><li>Card layout ile temiz UX</li></ul></div>
+        <div class="cons"><h4>Dezavantajlar</h4><ul><li>Sayfa geçişi — liste ↔ detay arasında zıplama</li><li>Hızlı geçiş zorlaşır (sıradaki markaya geçmek için geri dönmek lazım)</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
