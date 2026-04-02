@@ -1,0 +1,80 @@
+@model Entegrasyon.Entity.Dtos.Customers.CustomerAddDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Musteriler</div>
+                <h2 class="page-title">Yeni Musteri</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/customers" class="btn btn-outline-secondary">Geri Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/customers/create">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Musteri Tipi</label>
+                            <select name="CustomerType" class="form-select" required>
+                                <option value="Retail">Bireysel</option>
+                                <option value="Corporate">Kurumsal</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad</label>
+                            <input type="text" name="Name" class="form-control"
+                                   value="@(Model?.Name)" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Soyad</label>
+                            <input type="text" name="Surname" class="form-control"
+                                   value="@(Model?.Surname)" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Firma Adi</label>
+                            <input type="text" name="CorporateName" class="form-control"
+                                   value="@(Model?.CorporateName)" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">TC / Vergi No</label>
+                            <input type="text" name="NationalIdentity" class="form-control"
+                                   value="@(Model?.NationalIdentity)" />
+                            <input type="hidden" name="TaxNumber" value="@(Model?.TaxNumber ?? "")" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" name="PhoneNumber" class="form-control"
+                                   value="@(Model?.PhoneNumber)" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Adres</label>
+                        <textarea name="FullAddress" class="form-control" rows="3">@(Model?.FullAddress)</textarea>
+                    </div>
+
+                    <div class="text-end">
+                        <a href="/customers" class="btn btn-link me-2">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

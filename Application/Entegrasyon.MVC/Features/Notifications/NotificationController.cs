@@ -1,13 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Notifications;
+using Entegrasyon.Entity.Notifications;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 using System.Security.Claims;
 
 namespace Entegrasyon.MVC.Features.Notifications;
 
 [Authorize]
-public class NotificationController(INotificationManager notificationManager) : Controller
+public class NotificationController(
+    INotificationManager notificationManager,
+    INotificationRecipientResolver recipientResolver) : Controller
 {
     [HttpGet("/notifications")]
     public async Task<IActionResult> Index(bool onlyUnread = false)
@@ -56,11 +60,80 @@ public class NotificationController(INotificationManager notificationManager) : 
     }
 
     [HttpGet("/admin/notifications")]
-    public IActionResult Admin()
+    public async Task<IActionResult> Admin()
     {
         ViewData.SetPageTitle("Bildirim Yonetimi");
         ViewData.SetActiveNav("notifications");
+
+        var recentNotifications = await notificationManager.GetAllNotificationsAsync(50);
+        ViewBag.RecentNotifications = recentNotifications;
+
         return View("~/Features/Notifications/Views/Admin.cshtml");
+    }
+
+    [HttpPost("/admin/notifications/send")]
+    public async Task<IActionResult> Send(
+        string title,
+        string message,
+        NotificationSeverity severity = NotificationSeverity.Info,
+        NotificationCategory category = NotificationCategory.Sistem,
+        string target = "all")
+    {
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(message))
+        {
+            if (Request.IsHtmx())
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Baslik ve mesaj zorunludur.", type = "danger" });
+                return StatusCode(422);
+            }
+
+            TempData.SetError("Baslik ve mesaj zorunludur.");
+            return RedirectToAction(nameof(Admin));
+        }
+
+        try
+        {
+            var userIds = await recipientResolver.ResolveAllActiveUsersAsync();
+
+            if (userIds.Count == 0)
+            {
+                if (Request.IsHtmx())
+                {
+                    Response.HtmxTriggerWithData("showToast",
+                        new { message = "Bildirim gonderilecek kullanici bulunamadi.", type = "warning" });
+                    return StatusCode(422);
+                }
+
+                TempData.SetWarning("Bildirim gonderilecek kullanici bulunamadi.");
+                return RedirectToAction(nameof(Admin));
+            }
+
+            await notificationManager.SendNotification(title, message, severity, category, userIds);
+
+            if (Request.IsHtmx())
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = $"Bildirim {userIds.Count} kullaniciya gonderildi.", type = "success" });
+                Response.HtmxTrigger("refreshNotifications");
+                return Content("");
+            }
+
+            TempData.SetSuccess($"Bildirim {userIds.Count} kullaniciya gonderildi.");
+        }
+        catch (Exception ex)
+        {
+            if (Request.IsHtmx())
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = $"Bildirim gonderilemedi: {ex.Message}", type = "danger" });
+                return StatusCode(500);
+            }
+
+            TempData.SetError($"Bildirim gonderilemedi: {ex.Message}");
+        }
+
+        return RedirectToAction(nameof(Admin));
     }
 
     [HttpPost("/notifications/{id:long}/dismiss")]

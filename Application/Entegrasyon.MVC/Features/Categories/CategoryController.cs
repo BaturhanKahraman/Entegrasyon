@@ -181,6 +181,21 @@ public class CategoryController(
         return View(result.Data);
     }
 
+    [HttpPost("/categories/{id:int}/edit")]
+    public async Task<IActionResult> Edit(int id, [FromForm] string name, [FromForm] int? superCategoryId,
+        [FromForm] bool isFavorite, [FromForm] decimal? defaultVatRate, [FromForm] bool isImported)
+    {
+        var dto = new EditCategoryDto(id, name, superCategoryId, isFavorite, isImported, defaultVatRate);
+        var result = await categoryService.UpdateCategory(dto);
+
+        if (result.Success)
+            TempData.SetSuccess("Kategori basariyla guncellendi.");
+        else
+            TempData.SetError(result.Message ?? "Kategori guncellenemedi.");
+
+        return RedirectToAction(nameof(Index));
+    }
+
     // ── Import ────────────────────────────────────────────────────────
 
     /// <summary>Category import page (multi-marketplace)</summary>

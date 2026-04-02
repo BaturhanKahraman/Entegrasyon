@@ -42,6 +42,64 @@ public class CustomerController(ICustomerManager customerManager) : Controller
         return View(result.Data);
     }
 
+    [HttpGet("/customers/create")]
+    public IActionResult Create()
+    {
+        ViewData.SetPageTitle("Yeni Musteri");
+        ViewData.SetActiveNav("customers");
+        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Yeni Musteri", null));
+        return View();
+    }
+
+    [HttpPost("/customers/create")]
+    public async Task<IActionResult> Create([FromForm] CustomerAddDto dto)
+    {
+        var result = await customerManager.AddCustomer(dto);
+
+        if (result.Success)
+        {
+            TempData.SetSuccess("Musteri basariyla eklendi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData.SetError(result.Message ?? "Musteri eklenemedi.");
+        return View(dto);
+    }
+
+    [HttpGet("/customers/{id:int}/edit")]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var result = await customerManager.GetCustomerDetailById(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Musteri bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("Musteri Duzenle");
+        ViewData.SetActiveNav("customers");
+        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Duzenle", null));
+        return View(result.Data);
+    }
+
+    [HttpPost("/customers/{id:int}/edit")]
+    public async Task<IActionResult> Edit(int id, [FromForm] UpdateCustomerDto dto)
+    {
+        if (dto.Id != id)
+            dto = dto with { Id = id };
+
+        var result = await customerManager.UpdateCustomer(dto);
+
+        if (result.Success)
+        {
+            TempData.SetSuccess("Musteri basariyla guncellendi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData.SetError(result.Message ?? "Musteri guncellenemedi.");
+        return RedirectToAction(nameof(Edit), new { id });
+    }
+
     [HttpPost("/customers/{id:int}/delete")]
     public async Task<IActionResult> Delete(int id)
     {

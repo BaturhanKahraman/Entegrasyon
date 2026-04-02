@@ -1,3 +1,5 @@
+@using Entegrasyon.Entity.Notifications
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
@@ -18,25 +20,49 @@
                         <h3 class="card-title">Bildirim Gonder</h3>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Baslik</label>
-                            <input type="text" class="form-control" placeholder="Bildirim basligi" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Mesaj</label>
-                            <textarea class="form-control" rows="4" placeholder="Bildirim icerigi"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Hedef</label>
-                            <select class="form-select">
-                                <option value="all">Tum Kullanicilar</option>
-                                <option value="admins">Yoneticiler</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" disabled>
-                            Bildirim Gonder
-                        </button>
-                        <p class="text-secondary small mt-2">Bu sayfa gelistirme asamasindadir.</p>
+                        <form method="post" action="/admin/notifications/send">
+                            <div class="mb-3">
+                                <label class="form-label">Baslik</label>
+                                <input type="text" class="form-control" name="title" placeholder="Bildirim basligi" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mesaj</label>
+                                <textarea class="form-control" name="message" rows="4" placeholder="Bildirim icerigi" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Onem Derecesi</label>
+                                <select class="form-select" name="severity">
+                                    @foreach (var s in Enum.GetValues<NotificationSeverity>())
+                                    {
+                                        <option value="@s">@s</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Kategori</label>
+                                <select class="form-select" name="category">
+                                    @foreach (var c in Enum.GetValues<NotificationCategory>())
+                                    {
+                                        <option value="@c">@c</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Hedef</label>
+                                <select class="form-select" name="target">
+                                    <option value="all">Tum Kullanicilar</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-send" width="24" height="24"
+                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M10 14l11 -11"/>
+                                    <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/>
+                                </svg>
+                                Bildirim Gonder
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -45,8 +71,39 @@
                     <div class="card-header">
                         <h3 class="card-title">Son Gonderilen Bildirimler</h3>
                     </div>
-                    <div class="card-body text-center py-5">
-                        <p class="text-secondary">Bildirim gecmisi burada listelenecektir.</p>
+                    <div class="card-body">
+                        @{
+                            var notifications = ViewBag.RecentNotifications as List<Notification>;
+                        }
+                        @if (notifications is null || notifications.Count == 0)
+                        {
+                            <p class="text-secondary text-center py-4">Henuz bildirim gonderilmemis.</p>
+                        }
+                        else
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var n in notifications.Take(20))
+                                {
+                                    var badgeClass = n.Severity switch
+                                    {
+                                        NotificationSeverity.Success => "bg-success",
+                                        NotificationSeverity.Warning => "bg-warning",
+                                        NotificationSeverity.Error => "bg-danger",
+                                        _ => "bg-info"
+                                    };
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <span class="badge @badgeClass me-1">@n.Severity</span>
+                                                <strong>@n.Header</strong>
+                                                <p class="text-secondary mb-0 small">@n.Content</p>
+                                            </div>
+                                            <small class="text-muted">@n.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
