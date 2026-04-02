@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Entity.Dtos.Reports;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -8,6 +9,7 @@ namespace Entegrasyon.Blazor.Features.Dashboard;
 public partial class DashboardProfitChart : ComponentBase
 {
     [Inject] private IReportManager ReportManager { get; set; } = default!;
+    [Inject] private ITenantContext TenantContext { get; set; } = null!;
 
     private List<ChartSeries> _chartData = [];
     private string[] _xAxisLabels = [];
@@ -17,6 +19,7 @@ public partial class DashboardProfitChart : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        if (!TenantContext.IsInitialized) return;
         try
         {
             var filter = new SalesReportFilterDto(

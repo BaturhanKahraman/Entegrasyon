@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -7,6 +8,7 @@ namespace Entegrasyon.Blazor.Features.Dashboard;
 public partial class DashboardWeeklyChart
 {
     [Inject] private IDashboardManager DashboardManager { get; set; } = null!;
+    [Inject] private ITenantContext TenantContext { get; set; } = null!;
 
     private List<ChartSeries> _chartData = [];
     private string[] _xAxisLabels = [];
@@ -15,6 +17,7 @@ public partial class DashboardWeeklyChart
 
     protected override async Task OnInitializedAsync()
     {
+        if (!TenantContext.IsInitialized) return;
         var weeklySales = await DashboardManager.GetWeeklySalesAsync();
 
         _xAxisLabels = weeklySales

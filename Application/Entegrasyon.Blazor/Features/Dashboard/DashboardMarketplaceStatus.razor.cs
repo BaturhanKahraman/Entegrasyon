@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Tenants;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -7,12 +8,14 @@ namespace Entegrasyon.Blazor.Features.Dashboard;
 public partial class DashboardMarketplaceStatus
 {
     [Inject] private IDashboardManager DashboardManager { get; set; } = null!;
+    [Inject] private ITenantContext TenantContext { get; set; } = null!;
 
     private List<MarketplaceStatusViewModel> _marketplaceStatuses = [];
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        if (!TenantContext.IsInitialized) return;
         await LoadAsync();
     }
 
