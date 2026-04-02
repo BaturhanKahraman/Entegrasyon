@@ -202,6 +202,16 @@ if (args.Contains("--migrate"))
     return;
 }
 
+// Testing ortamında (E2E) otomatik migration — DB boş başlıyor
+if (app.Environment.EnvironmentName == "Testing")
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+    await using var db = await factory.CreateDbContextAsync();
+    await db.Database.MigrateAsync();
+    Console.WriteLine("Testing environment: migrations applied automatically.");
+}
+
 app.Lifetime.ApplicationStarted.Register(async () =>
 {
     await using var serviceScope = app.Services.CreateAsyncScope();

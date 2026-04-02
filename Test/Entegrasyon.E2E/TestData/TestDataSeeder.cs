@@ -65,11 +65,12 @@ public static class TestDataSeeder
     private static async Task SeedBranchOfficeAsync(NpgsqlConnection conn)
     {
         await using var cmd = new NpgsqlCommand(@"
-            INSERT INTO ""BranchOffices"" (""Id"", ""Name"", ""IsDefaultMarketPlaceStock"", ""CreatedAt"", ""IsDeleted"")
-            VALUES (1, 'Merkez Şube', true, @now, false)
+            INSERT INTO ""BranchOffices"" (""Id"", ""Name"", ""IsDefaultMarketPlaceStock"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
+            VALUES (1, 'Merkez Şube', true, @now, @now, @epoch, false)
             ON CONFLICT (""Id"") DO NOTHING", conn);
 
         cmd.Parameters.AddWithValue("now", DateTimeOffset.UtcNow);
+        cmd.Parameters.AddWithValue("epoch", DateTimeOffset.MinValue);
         await cmd.ExecuteNonQueryAsync();
     }
 
@@ -77,29 +78,32 @@ public static class TestDataSeeder
     {
         // Ana kategori
         await using var cmd1 = new NpgsqlCommand(@"
-            INSERT INTO ""Categories"" (""Id"", ""Name"", ""ParentCategoryId"", ""CreatedAt"", ""IsDeleted"")
-            VALUES (9900, 'E2E Test Ana Kategori', null, @now, false)
+            INSERT INTO ""Categories"" (""Id"", ""Name"", ""ParentCategoryId"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
+            VALUES (9900, 'E2E Test Ana Kategori', null, @now, @now, @epoch, false)
             ON CONFLICT (""Id"") DO NOTHING", conn);
         cmd1.Parameters.AddWithValue("now", DateTimeOffset.UtcNow);
+        cmd1.Parameters.AddWithValue("epoch", DateTimeOffset.MinValue);
         await cmd1.ExecuteNonQueryAsync();
 
         // Alt kategori
         await using var cmd2 = new NpgsqlCommand(@"
-            INSERT INTO ""Categories"" (""Id"", ""Name"", ""ParentCategoryId"", ""CreatedAt"", ""IsDeleted"")
-            VALUES (9901, 'E2E Test Alt Kategori', 9900, @now, false)
+            INSERT INTO ""Categories"" (""Id"", ""Name"", ""ParentCategoryId"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
+            VALUES (9901, 'E2E Test Alt Kategori', 9900, @now, @now, @epoch, false)
             ON CONFLICT (""Id"") DO NOTHING", conn);
         cmd2.Parameters.AddWithValue("now", DateTimeOffset.UtcNow);
+        cmd2.Parameters.AddWithValue("epoch", DateTimeOffset.MinValue);
         await cmd2.ExecuteNonQueryAsync();
     }
 
     private static async Task SeedTestBrandAsync(NpgsqlConnection conn)
     {
         await using var cmd = new NpgsqlCommand(@"
-            INSERT INTO ""Brands"" (""Id"", ""Name"", ""CreatedAt"", ""IsDeleted"")
-            VALUES (9900, 'E2E Test Marka', @now, false)
+            INSERT INTO ""Brands"" (""Id"", ""Name"", ""CreatedAt"", ""UpdatedAt"", ""DeletedAt"", ""IsDeleted"")
+            VALUES (9900, 'E2E Test Marka', @now, @now, @epoch, false)
             ON CONFLICT (""Id"") DO NOTHING", conn);
 
         cmd.Parameters.AddWithValue("now", DateTimeOffset.UtcNow);
+        cmd.Parameters.AddWithValue("epoch", DateTimeOffset.MinValue);
         await cmd.ExecuteNonQueryAsync();
     }
 
