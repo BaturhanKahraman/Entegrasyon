@@ -147,12 +147,12 @@ public class CheckoutController(
         return RedirectToAction("Basarisiz");
     }
 
-    public async Task<IActionResult> Basarili(Guid id)
+    public Task<IActionResult> Basarili(Guid id)
     {
         ViewBag.OrderId = id;
         ViewBag.SeoTitle = $"Siparis Onaylandi | {tenant.Settings.StoreName}";
         ViewBag.EstimatedDeliveryDays = tenant.Settings.EstimatedDeliveryDays;
-        return View();
+        return Task.FromResult<IActionResult>(View());
     }
 
     public IActionResult Basarisiz()

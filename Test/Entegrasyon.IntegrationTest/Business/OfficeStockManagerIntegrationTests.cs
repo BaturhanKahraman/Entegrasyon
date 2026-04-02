@@ -172,7 +172,7 @@ public class OfficeStockManagerIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CheckIfProductCountZero_ShouldReturnError_WhenAllZero()
+    public Task CheckIfProductCountZero_ShouldReturnError_WhenAllZero()
     {
         // Arrange
         var (service, scope) = GetScopedService<IOfficeStockManager>();
@@ -189,6 +189,7 @@ public class OfficeStockManagerIntegrationTests : IntegrationTestBase
 
         // Assert
         result.Success.Should().BeFalse();
+        return Task.CompletedTask;
     }
 
     [Fact]
