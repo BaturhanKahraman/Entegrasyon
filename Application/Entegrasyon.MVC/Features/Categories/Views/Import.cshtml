@@ -1,9 +1,30 @@
+@{
+    var marketplaces = new[]
+    {
+        new { Key = "trendyol", Name = "Trendyol", Color = "orange",
+              Desc = "Trendyol kategori agacini iceri aktarin." },
+        new { Key = "hepsiburada", Name = "Hepsiburada", Color = "orange",
+              Desc = "Hepsiburada kategori agacini iceri aktarin." },
+        new { Key = "n11", Name = "N11", Color = "purple",
+              Desc = "N11 kategori agacini iceri aktarin." },
+        new { Key = "amazon", Name = "Amazon", Color = "yellow",
+              Desc = "Amazon kategori agacini iceri aktarin." },
+        new { Key = "pazarama", Name = "Pazarama", Color = "cyan",
+              Desc = "Pazarama kategori agacini iceri aktarin." },
+        new { Key = "pttavm", Name = "PttAVM", Color = "red",
+              Desc = "PttAVM kategori agacini iceri aktarin." },
+    };
+}
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Kategoriler</div>
                 <h2 class="page-title">Kategori Aktarimi</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/categories" class="btn btn-outline-secondary">Kategorilere Don</a>
             </div>
         </div>
     </div>
@@ -16,37 +37,67 @@
                 <h3 class="card-title">Pazaryeri Kategori Aktarimi</h3>
             </div>
             <div class="card-body">
+                <p class="text-secondary mb-3">
+                    Asagidaki pazaryerlerinden kategori agacini sisteme aktarabilirsiniz.
+                    Aktarim arka planda calisan servisler tarafindan gerceklestirilir.
+                </p>
+
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="card card-sm">
-                            <div class="card-body text-center py-4">
-                                <h4>Trendyol</h4>
-                                <p class="text-secondary small">Trendyol kategori agacini iceri aktarin.</p>
-                                <button class="btn btn-outline-primary btn-sm" disabled>Aktarimi Baslat</button>
+                    @foreach (var mp in marketplaces)
+                    {
+                        <div class="col-md-4 col-sm-6">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar bg-@(mp.Color)-lt me-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                 class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                                 stroke-width="2" stroke="currentColor" fill="none"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                                <path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/>
+                                                <path d="M17 17h-11v-14h-2"/>
+                                                <path d="M6 5l14 1l-1 7h-13"/>
+                                            </svg>
+                                        </span>
+                                        <h4 class="m-0">@mp.Name</h4>
+                                    </div>
+                                    <p class="text-secondary small mb-3">@mp.Desc</p>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <form method="post" action="/categories/import/@mp.Key">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-primary btn-sm"
+                                                    onclick="this.disabled=true; this.textContent='Baslatiliyor...'; this.form.submit();">
+                                                Aktarimi Baslat
+                                            </button>
+                                        </form>
+                                        <span class="badge bg-secondary-lt">Hazir</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card card-sm">
-                            <div class="card-body text-center py-4">
-                                <h4>Hepsiburada</h4>
-                                <p class="text-secondary small">Hepsiburada kategori agacini iceri aktarin.</p>
-                                <button class="btn btn-outline-primary btn-sm" disabled>Aktarimi Baslat</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card card-sm">
-                            <div class="card-body text-center py-4">
-                                <h4>N11</h4>
-                                <p class="text-secondary small">N11 kategori agacini iceri aktarin.</p>
-                                <button class="btn btn-outline-primary btn-sm" disabled>Aktarimi Baslat</button>
-                            </div>
-                        </div>
-                    </div>
+                    }
                 </div>
+
                 <div class="alert alert-info mt-3">
-                    Bu sayfa gelistirme asamasindadir. Kategori aktarimi arka plan servisleri uzerinden otomatik olarak calismaktadir.
+                    <div class="d-flex">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
+                                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/>
+                                <path d="M12 9h.01"/>
+                                <path d="M11 12h1v4h1"/>
+                            </svg>
+                        </div>
+                        <div>
+                            Kategori aktarimi arka plan servisleri uzerinden gerceklestirilir.
+                            Islem tamamlandiginda bildirim alacaksiniz. Buyuk kategori agaclari
+                            icin islem birkas dakika surebilir.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,10 +1,7 @@
-@{
-    ViewData.SetPageTitle("Yeni Kategori");
-    ViewData.SetActiveNav("categories");
-    ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Yeni Kategori", null));
+@model Entegrasyon.MVC.Features.Categories.ViewModels.CategoryCreateVm
 
-    var parents = ViewBag.Parents as List<Entegrasyon.Entity.Categories.Category>
-                  ?? new List<Entegrasyon.Entity.Categories.Category>();
+@{
+    ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Yeni Kategori", null));
 }
 
 <div class="page-header d-print-none">
@@ -12,7 +9,12 @@
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Kategoriler</div>
-                <h2 class="page-title">Yeni Kategori</h2>
+                <h2 class="page-title">Yeni Kategori Ekle</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/categories" class="btn btn-outline-secondary">
+                    Listeye Don
+                </a>
             </div>
         </div>
     </div>
@@ -20,57 +22,40 @@
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Genel Bilgiler</h3>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" action="/categories/add">
-                            <div class="mb-3">
-                                <label class="form-label required">Kategori Adi</label>
-                                <input type="text" name="Name" class="form-control" required
-                                       placeholder="Kategori adini girin" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Ust Kategori</label>
-                                <select name="SuperCategoryId" class="form-select">
-                                    <option value="">— Ust kategori yok (Kok kategori) —</option>
-                                    @foreach (var parent in parents.OrderBy(p => p.Name))
-                                    {
-                                        <option value="@parent.Id">@parent.Name</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Varsayilan KDV Orani (%)</label>
-                                <input type="number" name="DefaultVatRate" class="form-control"
-                                       step="0.01" min="0" max="100"
-                                       placeholder="orn. 20" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="IsFavorite" value="true" />
-                                    <span class="form-check-label">Favori Kategori</span>
-                                </label>
-                            </div>
-
-                            <div class="alert alert-info">
-                                <strong>Not:</strong> Ozellik ve pazaryeri eslestirmeleri kategori olusturulduktan sonra duzenlenebilir.
-                            </div>
-
-                            <div class="card-footer text-end">
-                                <a href="/categories" class="btn btn-link me-2">Iptal</a>
-                                <button type="submit" class="btn btn-primary">Kategori Olustur</button>
-                            </div>
-                        </form>
-                    </div>
+        <!-- Step indicator -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="wizard-steps" id="wizard-steps">
+                    <span class="wizard-step active" data-step="1">1. Genel Bilgiler</span>
+                    <span class="wizard-step" data-step="2">2. Ozellikler</span>
+                    <span class="wizard-step" data-step="3">3. Onay</span>
                 </div>
             </div>
         </div>
+
+        <!-- Wizard content area -->
+        <div id="wizard-content">
+            <partial name="Partials/_CreateStep1" model="Model" />
+        </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'wizard-content') {
+            var content = evt.detail.target.innerHTML;
+            var steps = document.querySelectorAll('.wizard-step');
+            var currentStep = 1;
+            if (content.indexOf('step2-attributes') > -1 || content.indexOf('Ozellik Secimi') > -1) currentStep = 2;
+            if (content.indexOf('step3-review') > -1 || content.indexOf('Onay') > -1) currentStep = 3;
+            steps.forEach(function(s) {
+                var step = parseInt(s.getAttribute('data-step'));
+                s.classList.remove('active', 'done');
+                if (step < currentStep) s.classList.add('done');
+                if (step === currentStep) s.classList.add('active');
+            });
+        }
+    });
+</script>
+}

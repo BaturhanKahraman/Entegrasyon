@@ -1,0 +1,54 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
+<form hx-post="/products/add/step2" hx-target="#wizard-content" hx-swap="innerHTML">
+    <!-- Hidden fields for step 1 data -->
+    <input type="hidden" name="Title" value="@Model.Title" />
+    <input type="hidden" name="Description" value="@Model.Description" />
+    <input type="hidden" name="StockCode" value="@Model.StockCode" />
+    <input type="hidden" name="Season" value="@Model.Season" />
+    <input type="hidden" name="Year" value="@Model.Year" />
+    <input type="hidden" name="BrandId" value="@Model.BrandId" />
+    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+    <input type="hidden" name="BrandName" value="@Model.BrandName" />
+    <input type="hidden" name="CategoryName" value="@Model.CategoryName" />
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Varyant Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-vcenter" id="variant-table">
+                    <thead>
+                        <tr>
+                            <th>Barkod</th>
+                            <th>Liste Fiyat</th>
+                            <th>Satis Fiyat</th>
+                            <th>Maliyet</th>
+                            <th>KDV %</th>
+                            <th>Stok</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Variants.Count; i++)
+                        {
+                            <tr>
+                                <td><input name="Variants[@i].Barcode" value="@Model.Variants[i].Barcode" class="form-control form-control-sm" placeholder="Otomatik" /></td>
+                                <td><input name="Variants[@i].ListPrice" value="@Model.Variants[i].ListPrice" type="number" step="0.01" class="form-control form-control-sm" /></td>
+                                <td><input name="Variants[@i].SalePrice" value="@Model.Variants[i].SalePrice" type="number" step="0.01" class="form-control form-control-sm" /></td>
+                                <td><input name="Variants[@i].CostPrice" value="@Model.Variants[i].CostPrice" type="number" step="0.01" class="form-control form-control-sm" /></td>
+                                <td><input name="Variants[@i].VatRate" value="@Model.Variants[i].VatRate" type="number" step="1" class="form-control form-control-sm" style="width:80px" /></td>
+                                <td><input name="Variants[@i].Stock" value="@Model.Variants[i].Stock" type="number" class="form-control form-control-sm" style="width:80px" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-secondary small mt-2">Barkod bos birakilirsa otomatik olusturulur.</p>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+            <button type="submit" class="btn btn-primary">Devam: Onay &rarr;</button>
+        </div>
+    </div>
+</form>

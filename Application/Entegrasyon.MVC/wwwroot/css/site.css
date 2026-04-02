@@ -27,3 +27,25 @@
 #modal-container .modal {
     display: block;
 }
+
+/* Wizard step indicators */
+.wizard-steps {
+    display: flex;
+    gap: 1rem;
+}
+.wizard-steps .wizard-step {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background: #f1f3f5;
+    color: #666;
+    font-size: 0.875rem;
+}
+.wizard-steps .wizard-step.active {
+    background: #206bc4;
+    color: white;
+    font-weight: bold;
+}
+.wizard-steps .wizard-step.done {
+    background: #2fb344;
+    color: white;
+}
