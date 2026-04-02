@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Results;
@@ -133,5 +135,40 @@ public sealed class MockTrendyolProductService(
 
         logger.LogInformation("Mock: Product {ProductId} deleted from Trendyol", productId);
         return new SuccessResult("Urun Trendyol'dan silindi (mock).");
+    }
+
+    public async Task<IDataResult<TrendyolSendPreviewDto>> GetSendPreviewAsync(
+        Guid productId,
+        MarketplaceOverrideDetailDto? overrides)
+    {
+        // Mock implementation — returns sample preview data
+        await using var context = await contextFactory.CreateDbContextAsync();
+
+        var product = await context.MainProducts
+            .Include(p => p.Brand)
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product is null)
+            return new ErrorDataResult<TrendyolSendPreviewDto>(null!, "Ürün bulunamadı (mock).");
+
+        // Mock: Generate simple preview
+        var title = overrides?.TitleOverride ?? product.Title;
+        var description = overrides?.DescriptionOverride ?? product.Description;
+
+        var preview = new TrendyolSendPreviewDto(
+            Title: title,
+            BrandName: product.Brand?.Name ?? "Mock Brand",
+            TrendyolBrandName: "MOCK_BRAND",
+            CategoryName: product.Category.Name,
+            TrendyolCategoryName: "Mock Kategori",
+            TrendyolCategoryId: 9999,
+            Description: description,
+            Attributes: new List<TrendyolPreviewAttributeDto>(),
+            Variants: new List<TrendyolPreviewVariantDto>()
+        );
+
+        logger.LogInformation("Mock: GetSendPreview for product {ProductId} called", productId);
+        return new SuccessDataResult<TrendyolSendPreviewDto>(preview);
     }
 }

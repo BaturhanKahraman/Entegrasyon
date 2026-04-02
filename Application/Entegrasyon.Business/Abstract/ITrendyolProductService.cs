@@ -1,3 +1,5 @@
+using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Results;
 
@@ -23,4 +25,12 @@ public interface ITrendyolProductService
     /// Silinebilir: onay bekleyenler + 1 günden fazla arşivlenmiş ürünler.
     /// </summary>
     Task<IResult> DeleteProductAsync(Guid productId);
+
+    /// <summary>
+    /// Trendyol'a gönderilecek ürünün ön izlemesini oluştur.
+    /// Override'lar varsa (title, description, variant fiyatları) bunları uygula.
+    /// </summary>
+    Task<IDataResult<TrendyolSendPreviewDto>> GetSendPreviewAsync(
+        Guid productId,
+        MarketplaceOverrideDetailDto? overrides);
 }
