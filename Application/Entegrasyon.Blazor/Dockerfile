@@ -12,10 +12,9 @@ COPY ["Application/Entegrasyon.Business/Entegrasyon.Business.csproj", "Applicati
 COPY ["Application/Entegrasyon.DataAccess/Entegrasyon.DataAccess.csproj", "Application/Entegrasyon.DataAccess/"]
 COPY ["Application/Entegrasyon.Entity/Entegrasyon.Entity.csproj", "Application/Entegrasyon.Entity/"]
 COPY ["Application/Entegrasyon.ApplicationBootstrap/Entegrasyon.ApplicationBootstrap.csproj", "Application/Entegrasyon.ApplicationBootstrap/"]
-COPY ["Application/Entegrasyon.MessageQueue/Entegrasyon.MessageQueue.Handler.csproj", "Application/Entegrasyon.MessageQueue/"]
-COPY ["Application/Entegrasyon.MessageQueue.Commands/Entegrasyon.MessageQueue.Commands.csproj", "Application/Entegrasyon.MessageQueue.Commands/"]
-COPY ["Shared/Shared/Shared.csproj", "Shared/Shared/"]
-COPY ["Shared/MarketPlace/MarketPlace.csproj", "Shared/MarketPlace/"]
+COPY ["Application/Entegrasyon.AdminPanel/Entegrasyon.AdminPanel.csproj", "Application/Entegrasyon.AdminPanel/"]
+COPY ["Application/Entegrasyon.Storefront/Entegrasyon.Storefront.csproj", "Application/Entegrasyon.Storefront/"]
+COPY ["Agent/Entegrasyon.PrintAgent.Contracts/Entegrasyon.PrintAgent.Contracts.csproj", "Agent/Entegrasyon.PrintAgent.Contracts/"]
 
 RUN dotnet restore "Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj"
 
