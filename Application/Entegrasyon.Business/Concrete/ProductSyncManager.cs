@@ -166,7 +166,8 @@ public sealed class ProductSyncManager(
                 ExternalProductId: record?.ExternalProductId,
                 ContentId: record?.ContentId,
                 IsApproved: record?.IsApproved,
-                IsArchived: record?.IsArchived);
+                IsArchived: record?.IsArchived,
+                HasCredentials: HasMarketplaceCredentials(mp));
         }).ToList();
 
         var dto = new ProductSyncDetailDto(
@@ -435,6 +436,25 @@ public sealed class ProductSyncManager(
         );
 
         return new SuccessDataResult<ProductSendPreflightDto>(preflight);
+    }
+
+    private static bool HasMarketplaceCredentials(MarketPlace marketplace)
+    {
+        // Trendyol: requires SellerId, ApiKey, ApiSecret
+        if (marketplace.Id == 1)
+            return !string.IsNullOrEmpty(marketplace.SellerId)
+                && !string.IsNullOrEmpty(marketplace.ApiKey)
+                && !string.IsNullOrEmpty(marketplace.ApiSecret);
+
+        // OAuth2-based marketplaces (Pazarama, Amazon)
+        if (marketplace.Id == 5 || marketplace.Id == 4)
+            return !string.IsNullOrEmpty(marketplace.ApiKey)
+                && !string.IsNullOrEmpty(marketplace.ApiSecret)
+                && !string.IsNullOrEmpty(marketplace.TokenUrl);
+
+        // Default: requires ApiKey and ApiSecret (for other marketplaces)
+        return !string.IsNullOrEmpty(marketplace.ApiKey)
+            && !string.IsNullOrEmpty(marketplace.ApiSecret);
     }
 
     private static MarketplaceSyncState MapSyncState(ProductMarketplace? marketplace, DateTimeOffset productUpdatedAt)
