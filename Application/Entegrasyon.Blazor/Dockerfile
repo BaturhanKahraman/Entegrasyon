@@ -21,7 +21,7 @@ RUN dotnet restore "Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj"
 COPY . .
 
 WORKDIR "/src/Application/Entegrasyon.Blazor"
-RUN dotnet publish "Entegrasyon.Blazor.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Entegrasyon.Blazor.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false /p:ErrorOnDuplicatePublishOutputFiles=false
 
 FROM base AS final
 WORKDIR /app
