@@ -27,36 +27,45 @@ public sealed class AdminPanelTenantDataSource(IConfiguration configuration) : I
 
         var tenants = new List<TenantRegistryEntry>();
 
-        await using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync();
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT t."Id", t."Subdomain", t."CompanyName", t."ConnectionString", t."IsActive",
-                   (SELECT l."Type" FROM "TenantLicenses" l
-                    WHERE l."TenantId" = t."Id"
-                      AND NOW() BETWEEN l."StartDate" AND l."EndDate"
-                    ORDER BY l."Id" DESC LIMIT 1) as "LicenseType"
-            FROM "Tenants" t
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
+        try
         {
-            string? licenseType = null;
-            if (!reader.IsDBNull(5))
-            {
-                var rawValue = reader.GetInt32(5);
-                LicenseTypeMap.TryGetValue(rawValue, out licenseType);
-            }
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync();
 
-            tenants.Add(new TenantRegistryEntry(
-                TenantId: reader.GetInt32(0),
-                Subdomain: reader.GetString(1),
-                CompanyName: reader.GetString(2),
-                ConnectionString: reader.GetString(3),
-                IsActive: reader.GetBoolean(4),
-                LicenseType: licenseType));
+            await using var command = connection.CreateCommand();
+            command.CommandText = """
+                SELECT t."Id", t."Subdomain", t."CompanyName", t."ConnectionString", t."IsActive",
+                       (SELECT l."Type" FROM "TenantLicenses" l
+                        WHERE l."TenantId" = t."Id"
+                          AND NOW() BETWEEN l."StartDate" AND l."EndDate"
+                        ORDER BY l."Id" DESC LIMIT 1) as "LicenseType"
+                FROM "Tenants" t
+                """;
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                string? licenseType = null;
+                if (!reader.IsDBNull(5))
+                {
+                    var rawValue = reader.GetInt32(5);
+                    LicenseTypeMap.TryGetValue(rawValue, out licenseType);
+                }
+
+                tenants.Add(new TenantRegistryEntry(
+                    TenantId: reader.GetInt32(0),
+                    Subdomain: reader.GetString(1),
+                    CompanyName: reader.GetString(2),
+                    ConnectionString: reader.GetString(3),
+                    IsActive: reader.GetBoolean(4),
+                    LicenseType: licenseType));
+            }
+        }
+        catch (PostgresException ex) when (ex.SqlState == "42P01") // relation does not exist
+        {
+            // Tenants tablosu henuz olusturulmamis — bos liste don,
+            // middleware Development/Testing fallback'e dusecek
+            return Array.Empty<TenantRegistryEntry>();
         }
 
         return tenants.AsReadOnly();
