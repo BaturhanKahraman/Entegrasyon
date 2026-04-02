@@ -1,12 +1,55 @@
 @using Entegrasyon.Entity.Dtos.Product.Marketplace
+@using Microsoft.AspNetCore.Components
 
 <MudPaper Elevation="1" Class="pa-4">
-    <MudText Typo="Typo.h6" Class="mb-4">Geçersiz Kılmalar</MudText>
-    <MudText Color="Color.Tertiary">Task 13: SendOverrideForm placeholder</MudText>
+    <MudText Typo="Typo.h6" Class="mb-4">Başlık ve Açıklama Geçersiz Kılmaları</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+        Trendyol'a gönderilirken başlık ve açıklamayı özelleştirmek için boş bırakmayın.
+    </MudText>
+
+    <MudStack Spacing="3">
+        @* Başlık Override *@
+        <MudTextField Label="Başlık Geçersiz Kılması"
+                      Placeholder="Özgün başlığı kullan"
+                      FullWidth="true"
+                      @bind-Value="_overrideTitle"
+                      @bind-Value:after="NotifyChanges"
+                      Lines="1"
+                      Helpertext="Boş bırakılırsa ürünün orijinal başlığı kullanılacak" />
+
+        @* Açıklama Override *@
+        <MudTextField Label="Açıklama Geçersiz Kılması"
+                      Placeholder="Özgün açıklamayı kullan"
+                      FullWidth="true"
+                      @bind-Value="_overrideDescription"
+                      @bind-Value:after="NotifyChanges"
+                      Lines="4"
+                      Helpertext="Boş bırakılırsa ürünün orijinal açıklaması kullanılacak" />
+
+        @* İpucu *@
+        <MudAlert Severity="Severity.Info" Dense="true">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
+            Marketplace'e gönderilecek veriler önizlemede gösterilecektir.
+        </MudAlert>
+    </MudStack>
 </MudPaper>
 
 @code {
     [Parameter] public string? CurrentTitle { get; set; }
     [Parameter] public string? CurrentDescription { get; set; }
     [Parameter] public EventCallback<(string? Title, string? Description)> OnOverrideChanged { get; set; }
+
+    private string? _overrideTitle;
+    private string? _overrideDescription;
+
+    protected override void OnInitialized()
+    {
+        _overrideTitle = CurrentTitle;
+        _overrideDescription = CurrentDescription;
+    }
+
+    private async Task NotifyChanges()
+    {
+        await OnOverrideChanged.InvokeAsync((_overrideTitle, _overrideDescription));
+    }
 }
