@@ -1,3 +1,5 @@
+stream_over_http_enabled: true
+
 server:
   http_listen_port: 3200
 
@@ -9,22 +11,23 @@ distributor:
           endpoint: 0.0.0.0:4317
         http:
           endpoint: 0.0.0.0:4318
+  ring:
+    kvstore:
+      store: inmemory
+
+ingester:
+  trace_idle_period: 10s
+  max_block_bytes: 1_000_000
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 48h
 
 storage:
   trace:
     backend: local
-    local:
-      path: /var/tempo/traces
     wal:
       path: /var/tempo/wal
-
-metrics_generator:
-  storage:
-    path: /var/tempo/metrics
-  traces_storage:
-    path: /var/tempo/traces
-
-overrides:
-  defaults:
-    metrics_generator:
-      processors: []
+    local:
+      path: /var/tempo/blocks

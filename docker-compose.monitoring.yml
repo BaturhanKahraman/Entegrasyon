@@ -4,13 +4,13 @@ services:
     container_name: entegrasyon-grafana
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3003:3000"
     volumes:
       - grafana-data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     networks:
-      - entegrasyon-net
+      - app-net
 
   loki:
     image: grafana/loki:latest
@@ -22,10 +22,10 @@ services:
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
-      - entegrasyon-net
+      - app-net
 
   tempo:
-    image: grafana/tempo:latest
+    image: grafana/tempo:2.6.1
     container_name: entegrasyon-tempo
     restart: unless-stopped
     command: ["-config.file=/etc/tempo.yaml"]
@@ -37,18 +37,18 @@ services:
       - ./monitoring/tempo.yaml:/etc/tempo.yaml:ro
       - tempo-data:/var/tempo
     networks:
-      - entegrasyon-net
+      - app-net
 
   uptime-kuma:
     image: louislam/uptime-kuma:1
     container_name: entegrasyon-uptime
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "3004:3001"
     volumes:
       - uptime-data:/app/data
     networks:
-      - entegrasyon-net
+      - app-net
 
 volumes:
   grafana-data:
@@ -57,6 +57,6 @@ volumes:
   uptime-data:
 
 networks:
-  entegrasyon-net:
+  app-net:
     external: true
-    name: entegrasyon_entegrasyon-net
+    name: integration_app_default
