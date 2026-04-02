@@ -1,0 +1,53 @@
+@model Entegrasyon.MVC.Features.Categories.ViewModels.CategoryCreateVm
+
+@{
+    var parents = ViewBag.Parents as List<Entegrasyon.Entity.Categories.Category>
+                  ?? new List<Entegrasyon.Entity.Categories.Category>();
+}
+
+<form hx-post="/categories/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Genel Bilgiler</h3></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label required">Kategori Adi</label>
+                    <input name="Name" value="@Model.Name" class="form-control" required
+                           placeholder="Kategori adini girin" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ust Kategori</label>
+                    <select name="SuperCategoryId" class="form-select">
+                        <option value="">— Ust kategori yok (Kok kategori) —</option>
+                        @foreach (var parent in parents.OrderBy(p => p.Name))
+                        {
+                            <option value="@parent.Id"
+                                    selected="@(parent.Id == Model.SuperCategoryId)">
+                                @parent.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Varsayilan KDV Orani (%)</label>
+                    <input type="number" name="DefaultVatRate" class="form-control"
+                           step="0.01" min="0" max="100"
+                           value="@Model.DefaultVatRate"
+                           placeholder="orn. 20" />
+                </div>
+                <div class="col-md-6 mb-3 d-flex align-items-end">
+                    <label class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox"
+                               name="IsFavorite" value="true"
+                               checked="@Model.IsFavorite" />
+                        <span class="form-check-label">Favori Kategori</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a href="/categories" class="btn btn-ghost-secondary me-2">Iptal</a>
+            <button type="submit" class="btn btn-primary">Devam: Ozellikler &rarr;</button>
+        </div>
+    </div>
+</form>

@@ -1,3 +1,5 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
 @{
     ViewData.SetBreadcrumb(("Urunler", "/products"), ("Yeni Urun", null));
 }
@@ -7,7 +9,7 @@
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Urun</div>
-                <h2 class="page-title">Yeni Urun</h2>
+                <h2 class="page-title">Yeni Urun Ekle</h2>
             </div>
             <div class="col-auto ms-auto">
                 <a href="/products" class="btn btn-outline-secondary">
@@ -20,18 +22,41 @@
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
+        <!-- Step indicator -->
+        <div class="card mb-3">
             <div class="card-body">
-                <div class="empty">
-                    <p class="empty-title">Urun ekleme sayfasi gelistirme asamasindadir.</p>
-                    <p class="empty-subtitle text-secondary">
-                        Cok adimli urun ekleme sihirbazi yakinda kullanima sunulacaktir.
-                    </p>
-                    <div class="empty-action">
-                        <a href="/products" class="btn btn-primary">Urunlere Don</a>
-                    </div>
+                <div class="wizard-steps" id="wizard-steps">
+                    <span class="wizard-step active" data-step="1">1. Genel Bilgiler</span>
+                    <span class="wizard-step" data-step="2">2. Varyantlar</span>
+                    <span class="wizard-step" data-step="3">3. Onay</span>
                 </div>
             </div>
         </div>
+
+        <!-- Wizard content area -->
+        <div id="wizard-content">
+            <partial name="Partials/_CreateStep1" model="Model" />
+        </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    // Update step indicators when HTMX swaps content
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'wizard-content') {
+            var content = evt.detail.target.innerHTML;
+            var steps = document.querySelectorAll('.wizard-step');
+            var currentStep = 1;
+            if (content.indexOf('step2') > -1 || content.indexOf('Varyant Bilgileri') > -1) currentStep = 2;
+            if (content.indexOf('step3') > -1 || content.indexOf('Onay') > -1) currentStep = 3;
+            steps.forEach(function(s) {
+                var step = parseInt(s.getAttribute('data-step'));
+                s.classList.remove('active', 'done');
+                if (step < currentStep) s.classList.add('done');
+                if (step === currentStep) s.classList.add('active');
+            });
+        }
+    });
+</script>
+}

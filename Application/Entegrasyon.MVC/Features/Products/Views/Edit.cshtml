@@ -34,29 +34,33 @@
                     <li class="nav-item">
                         <a href="#tab-attributes" class="nav-link" data-bs-toggle="tab">Ozellikler</a>
                     </li>
+                    <li class="nav-item">
+                        <a href="#tab-images" class="nav-link" data-bs-toggle="tab">Gorseller</a>
+                    </li>
                 </ul>
             </div>
             <div class="card-body">
                 <div class="tab-content">
                     <!-- General Tab -->
                     <div class="tab-pane active show" id="tab-general">
-                        <form>
+                        <form method="post" action="/products/@Model.Product.Id/edit">
+                            @Html.AntiForgeryToken()
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Urun Adi</label>
+                                    <label class="form-label required">Urun Adi</label>
                                     <input type="text" class="form-control" name="Title"
-                                           value="@Model.Product.Title"/>
+                                           value="@Model.Product.Title" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Stok Kodu</label>
                                     <input type="text" class="form-control" name="StockCode"
-                                           value="@Model.Product.StockCode" readonly/>
+                                           value="@Model.Product.StockCode" readonly />
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Marka</label>
-                                    <select class="form-select" name="BrandId">
+                                    <label class="form-label required">Marka</label>
+                                    <select class="form-select" name="BrandId" required>
                                         @foreach (var brand in Model.Brands)
                                         {
                                             <option value="@brand.Id"
@@ -67,8 +71,8 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Kategori</label>
-                                    <select class="form-select" name="CategoryId">
+                                    <label class="form-label required">Kategori</label>
+                                    <select class="form-select" name="CategoryId" required>
                                         @foreach (var cat in Model.LeafCategories)
                                         {
                                             <option value="@cat.Id"
@@ -83,18 +87,22 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Sezon</label>
                                     <input type="text" class="form-control" name="Season"
-                                           value="@Model.Product.Season"/>
+                                           value="@Model.Product.Season" />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Yil</label>
                                     <input type="text" class="form-control" name="Year"
-                                           value="@Model.Product.Year"/>
+                                           value="@Model.Product.Year" />
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Aciklama</label>
                                 <textarea class="form-control" name="Description"
                                           rows="4">@Model.Product.Description</textarea>
+                            </div>
+                            <div class="text-end">
+                                <a href="/products/@Model.Product.Id" class="btn btn-ghost-secondary me-2">Iptal</a>
+                                <button type="submit" class="btn btn-primary">Kaydet</button>
                             </div>
                         </form>
                     </div>
@@ -152,6 +160,96 @@
                         else
                         {
                             <p class="text-secondary">Ozellik bulunmuyor.</p>
+                        }
+                    </div>
+
+                    <!-- Images Tab -->
+                    <div class="tab-pane" id="tab-images">
+                        @{
+                            var firstVariant = Model.Product.ProductVariants.FirstOrDefault();
+                        }
+
+                        @if (firstVariant != null && firstVariant.UploadedImages.Any())
+                        {
+                            <div class="row g-3 mb-4">
+                                @foreach (var img in firstVariant.UploadedImages.Where(i => !i.IsDeleted))
+                                {
+                                    <div class="col-6 col-sm-4 col-md-3">
+                                        <div class="card card-sm">
+                                            <img src="@img.Src" class="card-img-top" alt="Urun gorseli"
+                                                 style="height:150px;object-fit:cover;" />
+                                            <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                                @if (img.IsMain)
+                                                {
+                                                    <span class="badge bg-blue">Ana Gorsel</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-secondary small">Gorsel #@img.Id</span>
+                                                }
+                                                <form method="post"
+                                                      action="/products/@Model.Product.Id/images/@img.Id/delete"
+                                                      onsubmit="return confirm('Gorsel silinsin mi?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-ghost-danger btn-sm p-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash"
+                                                             width="18" height="18" viewBox="0 0 24 24"
+                                                             stroke-width="2" stroke="currentColor" fill="none"
+                                                             stroke-linecap="round" stroke-linejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                            <path d="M4 7l16 0"/>
+                                                            <path d="M10 11l0 6"/>
+                                                            <path d="M14 11l0 6"/>
+                                                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-secondary mb-3">Henuz gorsel yuklenmemis.</p>
+                        }
+
+                        @if (firstVariant != null)
+                        {
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Gorsel Yukle</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post"
+                                          action="/products/@Model.Product.Id/images/upload"
+                                          enctype="multipart/form-data">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="variantId" value="@firstVariant.Id" />
+                                        <div class="mb-3">
+                                            <label class="form-label">Gorsel Dosyalari</label>
+                                            <input type="file" name="files" class="form-control"
+                                                   multiple accept="image/*" required />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox"
+                                                       name="isMain" value="true" />
+                                                <span class="form-check-label">Ilk gorseli ana gorsel olarak ayarla</span>
+                                            </label>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Yukle</button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                Gorsel yuklemek icin en az bir varyant gereklidir.
+                            </div>
                         }
                     </div>
                 </div>
