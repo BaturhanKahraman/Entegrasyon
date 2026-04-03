@@ -1,0 +1,200 @@
+@model Entegrasyon.MVC.Features.Sales.ViewModels.SaleEntryVm
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Satislar</div>
+                <h2 class="page-title">Yeni Satis</h2>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <a href="/sales" class="btn btn-outline-secondary">
+                    Satislara Don
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row g-3">
+            <!-- Sol Panel: Arama + Sepet -->
+            <div class="col-lg-8">
+                <!-- Urun Arama -->
+                <div class="card mb-3">
+                    <div class="card-body py-2">
+                        <div class="position-relative">
+                            <input type="text" class="form-control form-control-lg"
+                                   id="saleSearchInput"
+                                   placeholder="Barkod okutun veya urun adi yazin..."
+                                   autocomplete="off"
+                                   hx-get="/sales/search-product"
+                                   hx-trigger="keyup changed delay:300ms"
+                                   hx-target="#product-search-results"
+                                   hx-swap="innerHTML"
+                                   name="q" />
+                            <div id="product-search-results"
+                                 class="position-absolute w-100 shadow-lg bg-white border rounded-bottom"
+                                 style="z-index:1050; top:100%; max-height:350px; overflow-y:auto;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sepet -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sepet</h3>
+                        <div class="card-actions">
+                            <form method="post" action="/sales/clear-cart"
+                                  hx-post="/sales/clear-cart"
+                                  hx-target="#sale-cart"
+                                  hx-swap="innerHTML">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-ghost-danger btn-sm">
+                                    Sepeti Temizle
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="sale-cart">
+                        <partial name="~/Features/Sales/Views/Partials/_SaleCart.cshtml" model="Model" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sag Panel: Musteri + Ozet + Tamamla -->
+            <div class="col-lg-4">
+                <!-- Musteri Secimi -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Musteri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="customer-badge">
+                            <partial name="~/Features/Sales/Views/Partials/_SaleCustomerBadge.cshtml" model="Model" />
+                        </div>
+                        <div class="position-relative mt-2">
+                            <input type="text" class="form-control"
+                                   id="customerSearchInput"
+                                   placeholder="Musteri ara..."
+                                   autocomplete="off"
+                                   hx-get="/sales/search-customer"
+                                   hx-trigger="keyup changed delay:300ms"
+                                   hx-target="#customer-search-results"
+                                   hx-swap="innerHTML"
+                                   name="q" />
+                            <div id="customer-search-results"
+                                 class="position-absolute w-100 shadow-lg bg-white border rounded-bottom"
+                                 style="z-index:1050; top:100%; max-height:250px; overflow-y:auto;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Satis Tamamla -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Satis Ozeti</h3>
+                    </div>
+                    <div class="card-body" id="sale-summary">
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Urun Adedi</div>
+                                <div class="datagrid-content" id="summaryItemCount">@Model.TotalItems</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Ara Toplam</div>
+                                <div class="datagrid-content" id="summarySubtotal">@Model.Subtotal.ToString("N2") TL</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">KDV</div>
+                                <div class="datagrid-content" id="summaryVat">@Model.VatTotal.ToString("N2") TL</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Toplam</div>
+                                <div class="datagrid-content fw-bold text-primary fs-3" id="summaryTotal">@Model.GrandTotal.ToString("N2") TL</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <form method="post" action="/sales/complete">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success w-100 btn-lg">
+                                Satisi Tamamla
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('saleSearchInput')?.focus();
+
+        // Urun ekleme — arama sonuclari tikladiginda
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-add-sale-product]');
+            if (!btn) return;
+            e.preventDefault();
+            var productId = btn.getAttribute('data-add-sale-product');
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            htmx.ajax('POST', '/sales/add-item', {
+                target: '#sale-cart',
+                swap: 'innerHTML',
+                values: { productId: productId, __RequestVerificationToken: token }
+            });
+            document.getElementById('product-search-results').replaceChildren();
+            document.getElementById('saleSearchInput').value = '';
+            document.getElementById('saleSearchInput').focus();
+        });
+
+        // Musteri secimi — arama sonuclari tikladiginda
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-select-customer]');
+            if (!btn) return;
+            e.preventDefault();
+            var customerId = btn.getAttribute('data-select-customer');
+            var customerName = btn.getAttribute('data-customer-name');
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            htmx.ajax('POST', '/sales/select-customer', {
+                target: '#customer-badge',
+                swap: 'innerHTML',
+                values: {
+                    customerId: customerId,
+                    customerName: customerName,
+                    __RequestVerificationToken: token
+                }
+            });
+            document.getElementById('customer-search-results').replaceChildren();
+            document.getElementById('customerSearchInput').value = '';
+        });
+
+        // Sepet guncellendiginde ozet bilgilerini guncelle
+        document.body.addEventListener('htmx:afterSwap', function(e) {
+            if (e.detail.target.id === 'sale-cart') {
+                var cartEl = document.getElementById('sale-cart');
+                if (cartEl) {
+                    var itemCount = cartEl.getAttribute('data-item-count') || '0';
+                    var subtotal = cartEl.getAttribute('data-subtotal') || '0.00';
+                    var vat = cartEl.getAttribute('data-vat') || '0.00';
+                    var total = cartEl.getAttribute('data-total') || '0.00';
+
+                    var el;
+                    el = document.getElementById('summaryItemCount');
+                    if (el) el.textContent = itemCount;
+                    el = document.getElementById('summarySubtotal');
+                    if (el) el.textContent = subtotal + ' TL';
+                    el = document.getElementById('summaryVat');
+                    if (el) el.textContent = vat + ' TL';
+                    el = document.getElementById('summaryTotal');
+                    if (el) el.textContent = total + ' TL';
+                }
+            }
+        });
+    </script>
+}
