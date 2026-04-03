@@ -1,9 +1,23 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.CampaignsVm
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Magaza</div>
                 <h2 class="page-title">Kampanyalar</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCampaignModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14"/>
+                        <path d="M5 12l14 0"/>
+                    </svg>
+                    Yeni Kampanya
+                </button>
             </div>
         </div>
     </div>
@@ -12,11 +26,169 @@
 <div class="page-body">
     <div class="container-xl">
         <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Kampanya olusturma, indirim kurallari ve zamanlama ozellikleri eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
-            </div>
+            @if (Model.Campaigns.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-secondary" width="40" height="40"
+                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4z"/>
+                            <rect x="3" y="6" width="12" height="12" rx="2"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-secondary">Henuz kampanya olusturulmamis</h3>
+                    <p class="text-secondary">Yeni bir e-posta kampanyasi olusturarak musterilerinize ulasin.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Konu</th>
+                                <th>Hedef Kitle</th>
+                                <th>Durum</th>
+                                <th>Alici</th>
+                                <th>Gonderilen</th>
+                                <th>Acilma</th>
+                                <th>Zamanlandi</th>
+                                <th>Islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.Campaigns)
+                            {
+                                <tr>
+                                    <td>@c.Subject</td>
+                                    <td>
+                                        @(c.Target switch
+                                        {
+                                            CampaignTarget.AllSubscribers => "Tum Aboneler",
+                                            CampaignTarget.AllCustomers => "Tum Musteriler",
+                                            CampaignTarget.ActiveCustomers => "Aktif Musteriler",
+                                            _ => c.Target.ToString()
+                                        })
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = c.Status switch
+                                            {
+                                                CampaignStatus.Draft => "bg-secondary",
+                                                CampaignStatus.Scheduled => "bg-info",
+                                                CampaignStatus.Sending => "bg-warning",
+                                                CampaignStatus.Sent => "bg-success",
+                                                CampaignStatus.Cancelled => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                            var statusText = c.Status switch
+                                            {
+                                                CampaignStatus.Draft => "Taslak",
+                                                CampaignStatus.Scheduled => "Zamanlandi",
+                                                CampaignStatus.Sending => "Gonderiliyor",
+                                                CampaignStatus.Sent => "Gonderildi",
+                                                CampaignStatus.Cancelled => "Iptal",
+                                                _ => c.Status.ToString()
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@statusText</span>
+                                    </td>
+                                    <td>@c.TotalRecipients</td>
+                                    <td>@c.SentCount</td>
+                                    <td>
+                                        @if (c.SentCount > 0)
+                                        {
+                                            var rate = (double)c.OpenedCount / c.SentCount * 100;
+                                            <span>%@rate.ToString("F1")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (c.ScheduledAt.HasValue)
+                                        {
+                                            @c.ScheduledAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (c.Status == CampaignStatus.Draft)
+                                        {
+                                            <div class="btn-list">
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                        hx-post="/storefront/campaigns/@c.Id/schedule"
+                                                        hx-vals='{"scheduleAt": "@DateTimeOffset.UtcNow.AddHours(1).ToString("o")"}'
+                                                        hx-confirm="Kampanya 1 saat sonra gonderilecek. Onayliyor musunuz?">
+                                                    Zamanla
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        hx-delete="/storefront/campaigns/@c.Id"
+                                                        hx-confirm="Kampanyayi silmek istediginizden emin misiniz?">
+                                                    Sil
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (c.Status == CampaignStatus.Scheduled)
+                                        {
+                                            <button class="btn btn-sm btn-outline-warning"
+                                                    hx-post="/storefront/campaigns/@c.Id/cancel"
+                                                    hx-confirm="Kampanyayi iptal etmek istediginizden emin misiniz?">
+                                                Iptal Et
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+<!-- Create Campaign Modal -->
+<div class="modal modal-blur fade" id="createCampaignModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form hx-post="/storefront/campaigns" hx-swap="none">
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Kampanya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Konu</label>
+                        <input type="text" name="Subject" class="form-control" required placeholder="Kampanya konusu" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Hedef Kitle</label>
+                        <select name="Target" class="form-select">
+                            <option value="0">Tum Aboneler</option>
+                            <option value="1">Tum Musteriler</option>
+                            <option value="2">Aktif Musteriler</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Icerik (HTML)</label>
+                        <textarea name="HtmlContent" class="form-control" rows="8" required
+                                  placeholder="E-posta icerigini HTML olarak girin..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
+                    <button type="submit" class="btn btn-primary">Olustur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@using Entegrasyon.Entity.Storefront

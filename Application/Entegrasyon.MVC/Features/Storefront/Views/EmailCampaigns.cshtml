@@ -1,3 +1,6 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.EmailCampaignsVm
+@using Entegrasyon.Entity.Storefront
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
@@ -11,12 +14,150 @@
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">E-posta kampanya olusturma, sablon yonetimi ve gonderim raporlari eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
+        <!-- Summary Cards -->
+        @{
+            var total = Model.Campaigns.Count;
+            var sent = Model.Campaigns.Count(c => c.Status == CampaignStatus.Sent);
+            var scheduled = Model.Campaigns.Count(c => c.Status == CampaignStatus.Scheduled);
+            var drafts = Model.Campaigns.Count(c => c.Status == CampaignStatus.Draft);
+        }
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Toplam</div>
+                        </div>
+                        <div class="h1 mb-0">@total</div>
+                    </div>
+                </div>
             </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Gonderildi</div>
+                        </div>
+                        <div class="h1 mb-0 text-success">@sent</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Zamanlandi</div>
+                        </div>
+                        <div class="h1 mb-0 text-info">@scheduled</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="subheader">Taslak</div>
+                        </div>
+                        <div class="h1 mb-0 text-secondary">@drafts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            @if (Model.Campaigns.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <h3 class="text-secondary">Henuz e-posta kampanyasi yok</h3>
+                    <p class="text-secondary">Kampanyalar sayfasindan yeni kampanya olusturabilirsiniz.</p>
+                    <a href="/storefront/campaigns" class="btn btn-outline-primary mt-2">Kampanyalara Git</a>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Kampanya Gecmisi</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Konu</th>
+                                <th>Durum</th>
+                                <th>Gonderim Tarihi</th>
+                                <th>Alici</th>
+                                <th>Gonderilen</th>
+                                <th>Acilma Orani</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.Campaigns.OrderByDescending(x => x.CreatedAt))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="font-weight-medium">@c.Subject</div>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = c.Status switch
+                                            {
+                                                CampaignStatus.Draft => "bg-secondary",
+                                                CampaignStatus.Scheduled => "bg-info",
+                                                CampaignStatus.Sending => "bg-warning",
+                                                CampaignStatus.Sent => "bg-success",
+                                                CampaignStatus.Cancelled => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                            var statusText = c.Status switch
+                                            {
+                                                CampaignStatus.Draft => "Taslak",
+                                                CampaignStatus.Scheduled => "Zamanlandi",
+                                                CampaignStatus.Sending => "Gonderiliyor",
+                                                CampaignStatus.Sent => "Gonderildi",
+                                                CampaignStatus.Cancelled => "Iptal",
+                                                _ => c.Status.ToString()
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@statusText</span>
+                                    </td>
+                                    <td>
+                                        @if (c.SentAt.HasValue)
+                                        {
+                                            @c.SentAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                        }
+                                        else if (c.ScheduledAt.HasValue)
+                                        {
+                                            <span class="text-info">@c.ScheduledAt.Value.ToString("dd.MM.yyyy HH:mm")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                    <td>@c.TotalRecipients</td>
+                                    <td>@c.SentCount</td>
+                                    <td>
+                                        @if (c.SentCount > 0)
+                                        {
+                                            var rate = (double)c.OpenedCount / c.SentCount * 100;
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2">%@rate.ToString("F1")</span>
+                                                <div class="progress progress-sm flex-fill" style="width: 80px;">
+                                                    <div class="progress-bar bg-primary" style="width: @rate.ToString("F0")%"></div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>

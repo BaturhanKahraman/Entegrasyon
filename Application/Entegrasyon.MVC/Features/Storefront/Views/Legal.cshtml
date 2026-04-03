@@ -1,22 +1,107 @@
-<div class="page-header d-print-none">
+@model Entegrasyon.Entity.Storefront.StorefrontSettings
+
+<div class="page-body">
     <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Yasal Bilgiler</h2>
+
+        @if (Model is null)
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <h3 class="text-secondary">Once magaza ayarlarini yapilandirin</h3>
+                    <p class="text-secondary">Yasal sayfalari duzenleyebilmek icin once genel magaza ayarlarini kaydetmeniz gerekmektedir.</p>
+                    <a href="/settings/storefront" class="btn btn-primary mt-2">Magaza Ayarlarina Git</a>
+                </div>
             </div>
+        }
+        else
+        {
+            <div class="row row-cards">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Yasal Sayfalar</h3>
+                        </div>
+                        <div class="list-group list-group-flush" id="legal-nav">
+                            <a href="#" class="list-group-item list-group-item-action active" data-field="AboutHtml" onclick="selectLegalPage(this, 'AboutHtml', 'Hakkimizda')">Hakkimizda</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="TermsHtml" onclick="selectLegalPage(this, 'TermsHtml', 'Kullanim Kosullari')">Kullanim Kosullari</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="PrivacyPolicyHtml" onclick="selectLegalPage(this, 'PrivacyPolicyHtml', 'Gizlilik Politikasi')">Gizlilik Politikasi</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="KvkkHtml" onclick="selectLegalPage(this, 'KvkkHtml', 'KVKK Aydinlatma Metni')">KVKK Aydinlatma Metni</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="CookiePolicyHtml" onclick="selectLegalPage(this, 'CookiePolicyHtml', 'Cerez Politikasi')">Cerez Politikasi</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="ReturnPolicyHtml" onclick="selectLegalPage(this, 'ReturnPolicyHtml', 'Iade Politikasi')">Iade Politikasi</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="DistanceSalesContractHtml" onclick="selectLegalPage(this, 'DistanceSalesContractHtml', 'Mesafeli Satis Sozlesmesi')">Mesafeli Satis Sozlesmesi</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="PreInfoFormHtml" onclick="selectLegalPage(this, 'PreInfoFormHtml', 'On Bilgilendirme Formu')">On Bilgilendirme Formu</a>
+                            <a href="#" class="list-group-item list-group-item-action" data-field="DeliveryTermsHtml" onclick="selectLegalPage(this, 'DeliveryTermsHtml', 'Teslimat Kosullari')">Teslimat Kosullari</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title" id="legal-editor-title">Hakkimizda</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="legal-form" method="post" action="/settings/storefront/legal"
+                                  hx-post="/settings/storefront/legal" hx-swap="none">
+                                <input type="hidden" name="fieldName" id="legal-field-name" value="AboutHtml" />
+                                <div class="mb-3">
+                                    <textarea name="htmlContent" id="legal-editor" class="form-control" rows="20"
+                                              placeholder="HTML icerik girin...">@Model.AboutHtml</textarea>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-secondary">HTML desteklenir. Basit bir metin editoru ile icerik olusturabilirsiniz.</small>
+                                    <button type="submit" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/><circle cx="12" cy="14" r="2"/><polyline points="14 4 14 8 8 8"/></svg>
+                                        Kaydet
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="mt-3">
+            <a href="/settings/storefront" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="11" y2="18"/><line x1="5" y1="12" x2="11" y2="6"/></svg>
+                Magaza Ayarlarina Don
+            </a>
         </div>
     </div>
 </div>
 
-<div class="page-body">
-    <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Gizlilik politikasi, kullanim kosullari, KVKK ve mesafeli satis sozlesmesi ayarlari eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
-            </div>
-        </div>
-    </div>
-</div>
+@section Scripts {
+<script>
+    // Legal page content map populated from model
+    var legalContents = {
+        'AboutHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.AboutHtml ?? "")),
+        'TermsHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.TermsHtml ?? "")),
+        'PrivacyPolicyHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.PrivacyPolicyHtml ?? "")),
+        'KvkkHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.KvkkHtml ?? "")),
+        'CookiePolicyHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.CookiePolicyHtml ?? "")),
+        'ReturnPolicyHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.ReturnPolicyHtml ?? "")),
+        'DistanceSalesContractHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.DistanceSalesContractHtml ?? "")),
+        'PreInfoFormHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.PreInfoFormHtml ?? "")),
+        'DeliveryTermsHtml': @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.DeliveryTermsHtml ?? ""))
+    };
+
+    function selectLegalPage(el, fieldName, title) {
+        event.preventDefault();
+        // Save current content to map before switching
+        var currentField = document.getElementById('legal-field-name').value;
+        legalContents[currentField] = document.getElementById('legal-editor').value;
+
+        // Update nav
+        document.querySelectorAll('#legal-nav .list-group-item').forEach(function(item) {
+            item.classList.remove('active');
+        });
+        el.classList.add('active');
+
+        // Update editor
+        document.getElementById('legal-editor-title').textContent = title;
+        document.getElementById('legal-field-name').value = fieldName;
+        document.getElementById('legal-editor').value = legalContents[fieldName] || '';
+    }
+</script>
+}

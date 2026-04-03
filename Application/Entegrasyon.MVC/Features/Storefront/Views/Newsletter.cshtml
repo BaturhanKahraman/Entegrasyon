@@ -1,3 +1,5 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.NewsletterVm
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
@@ -5,18 +7,140 @@
                 <div class="page-pretitle">Magaza</div>
                 <h2 class="page-title">Bulten Yonetimi</h2>
             </div>
+            <div class="col-auto ms-auto">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubscriberModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14"/>
+                        <path d="M5 12l14 0"/>
+                    </svg>
+                    Abone Ekle
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Bulten abonelikleri, abone listesi yonetimi ve gonderim planlama eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
+        <!-- Stats -->
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Abone</div>
+                        <div class="h1 mb-0">@Model.Subscribers.Count</div>
+                    </div>
+                </div>
             </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Aktif</div>
+                        <div class="h1 mb-0 text-success">@Model.ActiveCount</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Pasif</div>
+                        <div class="h1 mb-0 text-secondary">@Model.InactiveCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscriber List -->
+        <div class="card">
+            @if (Model.Subscribers.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <h3 class="text-secondary">Henuz abone yok</h3>
+                    <p class="text-secondary">Musteriler bulteninize abone olduklarinda burada gorunecektir.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Abone Listesi</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>E-posta</th>
+                                <th>Ad</th>
+                                <th>Durum</th>
+                                <th>Kayit Tarihi</th>
+                                <th>Islem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sub in Model.Subscribers.OrderByDescending(s => s.CreatedAt))
+                            {
+                                <tr>
+                                    <td>@sub.Email</td>
+                                    <td>@(sub.Name ?? "-")</td>
+                                    <td>
+                                        @if (sub.IsActive)
+                                        {
+                                            <span class="badge bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Pasif</span>
+                                        }
+                                    </td>
+                                    <td>@sub.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>
+                                        @if (sub.IsActive)
+                                        {
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    hx-post="/storefront/newsletter/unsubscribe"
+                                                    hx-vals='{"email": "@sub.Email"}'
+                                                    hx-swap="none"
+                                                    hx-confirm="Bu aboneyi kaldirmak istediginizden emin misiniz?">
+                                                Abonelikten Cikar
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add Subscriber Modal -->
+<div class="modal modal-blur fade" id="addSubscriberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form hx-post="/storefront/newsletter/subscribe" hx-swap="none">
+                <div class="modal-header">
+                    <h5 class="modal-title">Abone Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">E-posta</label>
+                        <input type="email" name="email" class="form-control" required placeholder="ornek@email.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ad Soyad</label>
+                        <input type="text" name="name" class="form-control" placeholder="Ad Soyad (istege bagli)" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

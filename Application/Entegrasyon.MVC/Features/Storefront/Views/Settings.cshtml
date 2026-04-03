@@ -1,52 +1,336 @@
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Magaza Ayarlari</h2>
-            </div>
-        </div>
-    </div>
-</div>
+@model Entegrasyon.Entity.Storefront.StorefrontSettings
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Genel Ayarlar</h3>
+        @if (Model is null)
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.066 2.573c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.573 1.066c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.066 -2.573c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <h3 class="text-secondary">Magaza ayarlari henuz yapilandirilmamis</h3>
+                    <p class="text-secondary">Asagidaki formu doldurarak magaza ayarlarinizi olusturun.</p>
+                </div>
             </div>
-            <div class="card-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">Magaza Adi</label>
-                        <input type="text" class="form-control" placeholder="Magaza adinizi girin" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Magaza Aciklamasi</label>
-                        <textarea class="form-control" rows="3" placeholder="Magaza aciklamasi"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Iletisim E-posta</label>
-                        <input type="email" class="form-control" placeholder="info@example.com" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Iletisim Telefon</label>
-                        <input type="tel" class="form-control" placeholder="+90 5xx xxx xx xx" />
-                    </div>
-                    <button type="submit" class="btn btn-primary" disabled>Kaydet (yakin zamanda aktif olacak)</button>
-                </form>
-            </div>
-        </div>
+        }
 
-        <div class="card mt-3">
-            <div class="card-body">
+        <form method="post" action="/settings/storefront"
+              hx-post="/settings/storefront" hx-swap="none">
+
+            @* ── Genel Bilgiler ─────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Genel Bilgiler</h3>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" name="Id" value="@(Model?.Id ?? 0)" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Magaza Adi</label>
+                            <input type="text" name="StoreName" class="form-control"
+                                   value="@Model?.StoreName" placeholder="Magaza adinizi girin" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Magaza Slogani</label>
+                            <input type="text" name="StoreSlogan" class="form-control"
+                                   value="@Model?.StoreSlogan" placeholder="Magaza sloganiniz" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Logo URL</label>
+                            <input type="url" name="LogoUrl" class="form-control"
+                                   value="@Model?.LogoUrl" placeholder="https://..." />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Favicon URL</label>
+                            <input type="url" name="FaviconUrl" class="form-control"
+                                   value="@Model?.FaviconUrl" placeholder="https://..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Sirket Bilgileri ─────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Sirket Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Sirket Adi</label>
+                            <input type="text" name="CompanyName" class="form-control"
+                                   value="@Model?.CompanyName" required />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label required">Vergi Dairesi</label>
+                            <input type="text" name="CompanyTaxOffice" class="form-control"
+                                   value="@Model?.CompanyTaxOffice" required />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label required">Vergi No</label>
+                            <input type="text" name="CompanyTaxNumber" class="form-control"
+                                   value="@Model?.CompanyTaxNumber" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">MERSIS No</label>
+                            <input type="text" name="MersisNumber" class="form-control"
+                                   value="@Model?.MersisNumber" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">KEP Adresi</label>
+                            <input type="text" name="KepAddress" class="form-control"
+                                   value="@Model?.KepAddress" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Iletisim ─────────────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Iletisim Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label required">Telefon</label>
+                            <input type="tel" name="ContactPhone" class="form-control"
+                                   value="@Model?.ContactPhone" required />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label required">E-posta</label>
+                            <input type="email" name="ContactEmail" class="form-control"
+                                   value="@Model?.ContactEmail" required />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">WhatsApp</label>
+                            <input type="tel" name="WhatsAppNumber" class="form-control"
+                                   value="@Model?.WhatsAppNumber" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label required">Adres</label>
+                            <input type="text" name="Address" class="form-control"
+                                   value="@Model?.Address" required />
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label required">Sehir</label>
+                            <input type="text" name="City" class="form-control"
+                                   value="@Model?.City" required />
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Ilce</label>
+                            <input type="text" name="District" class="form-control"
+                                   value="@Model?.District" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Sosyal Medya ──────────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Sosyal Medya</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Instagram</label>
+                            <input type="url" name="InstagramUrl" class="form-control"
+                                   value="@Model?.InstagramUrl" placeholder="https://instagram.com/..." />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Facebook</label>
+                            <input type="url" name="FacebookUrl" class="form-control"
+                                   value="@Model?.FacebookUrl" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Twitter / X</label>
+                            <input type="url" name="TwitterUrl" class="form-control"
+                                   value="@Model?.TwitterUrl" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">YouTube</label>
+                            <input type="url" name="YouTubeUrl" class="form-control"
+                                   value="@Model?.YouTubeUrl" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">TikTok</label>
+                            <input type="url" name="TikTokUrl" class="form-control"
+                                   value="@Model?.TikTokUrl" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Kargo & Teslimat ──────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Kargo & Teslimat</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Ucretsiz Kargo Limiti (TL)</label>
+                            <input type="number" step="0.01" name="FreeShippingThreshold" class="form-control"
+                                   value="@Model?.FreeShippingThreshold" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Sabit Kargo Ucreti (TL)</label>
+                            <input type="number" step="0.01" name="FlatShippingRate" class="form-control"
+                                   value="@Model?.FlatShippingRate" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tahmini Teslimat (gun)</label>
+                            <input type="number" name="EstimatedDeliveryDays" class="form-control"
+                                   value="@(Model?.EstimatedDeliveryDays ?? 3)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Tema & Renkler ────────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Tema & Renkler</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Ana Renk</label>
+                            <input type="color" name="PrimaryColor" class="form-control form-control-color"
+                                   value="@(Model?.PrimaryColor ?? "#2563EB")" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Ikincil Renk</label>
+                            <input type="color" name="SecondaryColor" class="form-control form-control-color"
+                                   value="@(Model?.SecondaryColor ?? "#64748B")" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Vurgu Rengi</label>
+                            <input type="color" name="AccentColor" class="form-control form-control-color"
+                                   value="@(Model?.AccentColor ?? "#F59E0B")" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── SEO ────────────────────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">SEO Varsayilanlari</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Varsayilan SEO Basligi</label>
+                        <input type="text" name="DefaultSeoTitle" class="form-control"
+                               value="@Model?.DefaultSeoTitle" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Varsayilan SEO Aciklamasi</label>
+                        <textarea name="DefaultSeoDescription" class="form-control" rows="2">@Model?.DefaultSeoDescription</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Varsayilan SEO Anahtar Kelimeler</label>
+                        <input type="text" name="DefaultSeoKeywords" class="form-control"
+                               value="@Model?.DefaultSeoKeywords" placeholder="virgul ile ayirin" />
+                    </div>
+                </div>
+            </div>
+
+            @* ── Analitik ──────────────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Analitik</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Google Analytics ID</label>
+                            <input type="text" name="GoogleAnalyticsId" class="form-control"
+                                   value="@Model?.GoogleAnalyticsId" placeholder="G-XXXXXXXXXX" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Google Tag Manager ID</label>
+                            <input type="text" name="GoogleTagManagerId" class="form-control"
+                                   value="@Model?.GoogleTagManagerId" placeholder="GTM-XXXXXXX" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Facebook Pixel ID</label>
+                            <input type="text" name="FacebookPixelId" class="form-control"
+                                   value="@Model?.FacebookPixelId" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Ozellik Flagleri ──────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Ozellik Ayarlari</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-check">
+                                <input type="checkbox" name="CookieConsentActive" value="true" class="form-check-input"
+                                       @(Model?.CookieConsentActive == true ? "checked" : "") />
+                                <span class="form-check-label">Cerez Onay Bildirimi</span>
+                            </label>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-check">
+                                <input type="checkbox" name="IsWhatsAppWidgetActive" value="true" class="form-check-input"
+                                       @(Model?.IsWhatsAppWidgetActive == true ? "checked" : "") />
+                                <span class="form-check-label">WhatsApp Widget</span>
+                            </label>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-check">
+                                <input type="checkbox" name="NewsletterEnabled" value="true" class="form-check-input"
+                                       @(Model?.NewsletterEnabled == true ? "checked" : "") />
+                                <span class="form-check-label">Bulten Aboneligi</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-check">
+                                <input type="checkbox" name="GiftWrappingEnabled" value="true" class="form-check-input"
+                                       @(Model?.GiftWrappingEnabled == true ? "checked" : "") />
+                                <span class="form-check-label">Hediye Paketi</span>
+                            </label>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-check">
+                                <input type="checkbox" name="MarketplaceEnabled" value="true" class="form-check-input"
+                                       @(Model?.MarketplaceEnabled == true ? "checked" : "") />
+                                <span class="form-check-label">Marketplace Modu</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
                 <div class="btn-list">
                     <a href="/settings/storefront/banners" class="btn btn-outline-secondary">Banner Yonetimi</a>
-                    <a href="/storefront/campaigns" class="btn btn-outline-secondary">Kampanyalar</a>
+                    <a href="/settings/storefront/payment" class="btn btn-outline-secondary">Odeme Ayarlari</a>
+                    <a href="/settings/storefront/legal" class="btn btn-outline-secondary">Yasal Bilgiler</a>
                     <a href="/storefront/reviews" class="btn btn-outline-secondary">Degerlendirmeler</a>
                     <a href="/storefront/returns" class="btn btn-outline-secondary">Iadeler</a>
                 </div>
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/><circle cx="12" cy="14" r="2"/><polyline points="14 4 14 8 8 8"/></svg>
+                    Kaydet
+                </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>

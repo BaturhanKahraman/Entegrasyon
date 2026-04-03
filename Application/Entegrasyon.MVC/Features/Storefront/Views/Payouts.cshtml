@@ -1,3 +1,6 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.PayoutsVm
+@using Entegrasyon.Entity.Storefront
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
@@ -12,11 +15,106 @@
 <div class="page-body">
     <div class="container-xl">
         <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Satici odemeleri, komisyon hesaplamalari ve odeme gecmisi eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
-            </div>
+            @if (Model.PendingPayouts.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-secondary" width="40" height="40"
+                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/>
+                            <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-secondary">Bekleyen odeme talebi yok</h3>
+                    <p class="text-secondary">Saticilardan gelen odeme talepleri burada gorunecektir.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Bekleyen Odeme Talepleri</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-warning">@Model.PendingPayouts.Count bekleyen</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Satici</th>
+                                <th>Tutar</th>
+                                <th>IBAN</th>
+                                <th>Durum</th>
+                                <th>Talep Tarihi</th>
+                                <th>Not</th>
+                                <th>Islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.PendingPayouts.OrderByDescending(x => x.CreatedAt))
+                            {
+                                <tr>
+                                    <td><span class="text-secondary">#@p.Id</span></td>
+                                    <td>@(p.Seller?.StoreName ?? $"Satici #{p.SellerId}")</td>
+                                    <td>
+                                        <span class="fw-bold">@p.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                    </td>
+                                    <td>
+                                        <code class="small">@p.Iban</code>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = p.Status switch
+                                            {
+                                                PayoutStatus.Pending => "bg-warning",
+                                                PayoutStatus.Processing => "bg-info",
+                                                PayoutStatus.Completed => "bg-success",
+                                                PayoutStatus.Rejected => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                            var statusText = p.Status switch
+                                            {
+                                                PayoutStatus.Pending => "Bekliyor",
+                                                PayoutStatus.Processing => "Isleniyor",
+                                                PayoutStatus.Completed => "Tamamlandi",
+                                                PayoutStatus.Rejected => "Reddedildi",
+                                                _ => p.Status.ToString()
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@statusText</span>
+                                    </td>
+                                    <td>@p.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@(p.Note ?? "-")</td>
+                                    <td>
+                                        @if (p.Status == PayoutStatus.Pending)
+                                        {
+                                            <div class="btn-list">
+                                                <button class="btn btn-sm btn-success"
+                                                        hx-post="/storefront/payouts/@p.Id/process"
+                                                        hx-vals='{"approve": true}'
+                                                        hx-swap="none"
+                                                        hx-confirm="Bu odemeyi onaylamak istediginizden emin misiniz?">
+                                                    Onayla
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        hx-post="/storefront/payouts/@p.Id/process"
+                                                        hx-vals='{"approve": false, "note": "Admin tarafindan reddedildi."}'
+                                                        hx-swap="none"
+                                                        hx-confirm="Bu odemeyi reddetmek istediginizden emin misiniz?">
+                                                    Reddet
+                                                </button>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>

@@ -1,3 +1,5 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.MessagesVm
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
@@ -12,11 +14,149 @@
 <div class="page-body">
     <div class="container-xl">
         <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Musteri mesajlari, otomatik yanit sablonlari ve mesaj gecmisi eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link @(Model.ActiveTab == "contact" ? "active" : "")"
+                           href="/storefront/messages?tab=contact">
+                            Iletisim Mesajlari
+                            @if (Model.ContactMessages.Count(m => !m.IsRead) > 0)
+                            {
+                                <span class="badge bg-red ms-1">@Model.ContactMessages.Count(m => !m.IsRead)</span>
+                            }
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(Model.ActiveTab == "qna" ? "active" : "")"
+                           href="/storefront/messages?tab=qna">
+                            Urun Sorulari
+                            @if (Model.UnansweredQuestions.Count > 0)
+                            {
+                                <span class="badge bg-blue ms-1">@Model.UnansweredQuestions.Count</span>
+                            }
+                        </a>
+                    </li>
+                </ul>
             </div>
+
+            @if (Model.ActiveTab == "contact")
+            {
+                @if (Model.ContactMessages.Count == 0)
+                {
+                    <div class="card-body text-center py-5">
+                        <h3 class="text-secondary">Henuz mesaj yok</h3>
+                        <p class="text-secondary">Musterilerden gelen iletisim mesajlari burada gorunecektir.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Durum</th>
+                                    <th>Gonderen</th>
+                                    <th>E-posta</th>
+                                    <th>Telefon</th>
+                                    <th>Konu</th>
+                                    <th>Mesaj</th>
+                                    <th>Tarih</th>
+                                    <th>Islem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var msg in Model.ContactMessages.OrderByDescending(m => m.CreatedAt))
+                                {
+                                    <tr class="@(!msg.IsRead ? "fw-bold" : "")">
+                                        <td>
+                                            @if (!msg.IsRead)
+                                            {
+                                                <span class="badge bg-blue">Yeni</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Okundu</span>
+                                            }
+                                        </td>
+                                        <td>@msg.Name</td>
+                                        <td>
+                                            <a href="mailto:@msg.Email">@msg.Email</a>
+                                        </td>
+                                        <td>@(msg.Phone ?? "-")</td>
+                                        <td>@(msg.Subject ?? "-")</td>
+                                        <td>
+                                            <span title="@msg.Message">
+                                                @(msg.Message.Length > 60 ? msg.Message[..60] + "..." : msg.Message)
+                                            </span>
+                                        </td>
+                                        <td>@msg.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>
+                                            @if (!msg.IsRead)
+                                            {
+                                                <button class="btn btn-sm btn-outline-primary"
+                                                        hx-post="/storefront/messages/@msg.Id/read"
+                                                        hx-swap="none">
+                                                    Okundu
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+            else
+            {
+                @if (Model.UnansweredQuestions.Count == 0)
+                {
+                    <div class="card-body text-center py-5">
+                        <h3 class="text-secondary">Cevaplanmamis soru yok</h3>
+                        <p class="text-secondary">Tum urun sorulari yanitlanmis durumda.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var q in Model.UnansweredQuestions.OrderByDescending(x => x.CreatedAt))
+                        {
+                            <div class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="avatar bg-blue-lt">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                <path d="M8 9h8"/>
+                                                <path d="M8 13h6"/>
+                                                <path d="M14 18l-4 -4h-4a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-4z"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="text-truncate">
+                                            <strong>Soru:</strong> @q.QuestionText
+                                        </div>
+                                        <div class="text-secondary small">
+                                            Musteri #@q.CustomerId &middot; @q.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <form hx-post="/storefront/questions/@q.Id/answer" hx-swap="none"
+                                              class="d-flex gap-2">
+                                            <input type="text" name="answer" class="form-control form-control-sm"
+                                                   placeholder="Yanitiniz..." required style="min-width: 250px;" />
+                                            <button type="submit" class="btn btn-sm btn-primary">Yanitla</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
         </div>
     </div>
 </div>

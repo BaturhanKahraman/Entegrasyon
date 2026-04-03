@@ -1,22 +1,226 @@
-<div class="page-header d-print-none">
+@model List<Entegrasyon.Entity.Storefront.StorefrontReview>
+
+<div class="page-body">
     <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Degerlendirmeler</h2>
+
+        @* ── Ozet Kartlari ──────────────────────────────────��───── *@
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-primary text-white avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/></svg>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">@Model.Count Toplam</div>
+                                <div class="text-secondary">degerlendirme</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-warning text-white avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12.01" y2="8"/><polyline points="11 12 12 12 12 16 13 16"/></svg>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">@Model.Count(r => !r.IsApproved) Bekleyen</div>
+                                <div class="text-secondary">onay bekliyor</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-success text-white avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">@Model.Count(r => r.IsApproved) Onaylanmis</div>
+                                <div class="text-secondary">yayinda</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-info text-white avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/></svg>
+                                </span>
+                            </div>
+                            <div class="col">
+                                @{ var avg = Model.Count > 0 ? Model.Average(r => r.Rating) : 0; }
+                                <div class="font-weight-medium">@avg.ToString("F1") Ortalama</div>
+                                <div class="text-secondary">puan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Degerlendirme Listesi ──────────────────────────────── *@
+        <div class="card" hx-get="/storefront/reviews" hx-trigger="reviewsUpdated from:body" hx-select=".card .table-responsive" hx-target=".table-responsive" hx-swap="outerHTML">
+            <div class="card-header">
+                <h3 class="card-title">Degerlendirmeler</h3>
+            </div>
+            @if (Model.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <p class="text-secondary">Henuz degerlendirme yok.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Musteri</th>
+                                <th>Puan</th>
+                                <th>Yorum</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th class="w-1">Islem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var review in Model.OrderByDescending(r => r.CreatedAt))
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <span class="text-secondary small">ID: @review.CustomerId</span>
+                                            @if (review.IsVerifiedPurchase)
+                                            {
+                                                <span class="badge bg-green-lt ms-1">Dogrulanmis</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @for (var i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= review.Rating)
+                                                {
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-filled text-yellow" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="currentColor"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/></svg>
+                                                }
+                                                else
+                                                {
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/></svg>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                    <td style="max-width: 300px;">
+                                        @if (!string.IsNullOrEmpty(review.Title))
+                                        {
+                                            <div class="font-weight-medium">@review.Title</div>
+                                        }
+                                        <div class="text-secondary text-truncate">@review.Comment</div>
+                                        @if (!string.IsNullOrEmpty(review.ReplyText))
+                                        {
+                                            <div class="mt-1 ps-2 border-start border-primary">
+                                                <small class="text-primary">Yanit: @review.ReplyText</small>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (review.IsApproved)
+                                        {
+                                            <span class="badge bg-success">Onaylanmis</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">Beklemede</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary">@review.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-list flex-nowrap">
+                                            @if (!review.IsApproved)
+                                            {
+                                                <button class="btn btn-ghost-success btn-sm"
+                                                        hx-post="/storefront/reviews/@review.Id/approve"
+                                                        hx-swap="none"
+                                                        title="Onayla">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg>
+                                                </button>
+                                                <button class="btn btn-ghost-danger btn-sm"
+                                                        hx-post="/storefront/reviews/@review.Id/reject"
+                                                        hx-swap="none"
+                                                        hx-confirm="Bu degerlendirmeyi reddetmek istediginize emin misiniz?"
+                                                        title="Reddet">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            }
+                                            @if (string.IsNullOrEmpty(review.ReplyText))
+                                            {
+                                                <button class="btn btn-ghost-primary btn-sm"
+                                                        onclick="showReplyForm(@review.Id)"
+                                                        title="Yanitla">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1"/></svg>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                @if (string.IsNullOrEmpty(review.ReplyText))
+                                {
+                                    <tr id="reply-row-@review.Id" style="display: none;">
+                                        <td colspan="6">
+                                            <form class="d-flex gap-2"
+                                                  hx-post="/storefront/reviews/@review.Id/reply"
+                                                  hx-swap="none">
+                                                <input type="text" name="replyText" class="form-control"
+                                                       placeholder="Yanitinizi yazin..." required />
+                                                <button type="submit" class="btn btn-primary btn-sm">Gonder</button>
+                                                <button type="button" class="btn btn-ghost-secondary btn-sm"
+                                                        onclick="document.getElementById('reply-row-@review.Id').style.display='none'">Iptal</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="mt-3">
+            <a href="/settings/storefront" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="11" y2="18"/><line x1="5" y1="12" x2="11" y2="6"/></svg>
+                Magaza Ayarlarina Don
+            </a>
         </div>
     </div>
 </div>
 
-<div class="page-body">
-    <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Urun degerlendirmeleri ve musteri yorumlari yonetim paneli eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
-            </div>
-        </div>
-    </div>
-</div>
+@section Scripts {
+<script>
+    function showReplyForm(reviewId) {
+        var row = document.getElementById('reply-row-' + reviewId);
+        row.style.display = row.style.display === 'none' ? '' : 'none';
+    }
+</script>
+}

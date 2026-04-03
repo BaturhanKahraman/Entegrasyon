@@ -1,22 +1,149 @@
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Banner Yonetimi</h2>
-            </div>
-        </div>
-    </div>
-</div>
+@model List<Entegrasyon.Entity.Storefront.StorefrontBanner>
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Banner yukleme, siralama ve zamanlama ozellikleri eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
+
+        @* ── Yeni Banner Formu ──────────────────────────────────── *@
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Yeni Banner Ekle</h3>
             </div>
+            <div class="card-body">
+                <form method="post" action="/settings/storefront/banners"
+                      hx-post="/settings/storefront/banners" hx-swap="none"
+                      hx-on::after-request="if(event.detail.successful) this.reset()">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label required">Baslik</label>
+                            <input type="text" name="Title" class="form-control" required />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label required">Gorsel URL</label>
+                            <input type="url" name="ImageUrl" class="form-control" required placeholder="https://..." />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Mobil Gorsel URL</label>
+                            <input type="url" name="MobileImageUrl" class="form-control" placeholder="https://..." />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Baglanti URL</label>
+                            <input type="url" name="LinkUrl" class="form-control" placeholder="https://..." />
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label required">Konum</label>
+                            <select name="Position" class="form-select">
+                                <option value="Hero">Hero</option>
+                                <option value="Sidebar">Sidebar</option>
+                                <option value="Footer">Footer</option>
+                                <option value="Popup">Popup</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 mb-3">
+                            <label class="form-label">Sira</label>
+                            <input type="number" name="DisplayOrder" class="form-control" value="0" />
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Baslangic</label>
+                            <input type="date" name="StartDate" class="form-control" />
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Bitis</label>
+                            <input type="date" name="EndDate" class="form-control" />
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                Ekle
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @* ── Banner Listesi ─────────────────────────────────────── *@
+        <div class="card" hx-get="/settings/storefront/banners" hx-trigger="bannersUpdated from:body" hx-select=".card table" hx-target="table" hx-swap="outerHTML">
+            <div class="card-header">
+                <h3 class="card-title">Bannerlar (@Model.Count)</h3>
+            </div>
+            @if (Model.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <p class="text-secondary">Henuz banner eklenmemis.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Baslik</th>
+                                <th>Konum</th>
+                                <th>Sira</th>
+                                <th>Baslangic</th>
+                                <th>Bitis</th>
+                                <th>Durum</th>
+                                <th class="w-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var banner in Model.OrderBy(b => b.DisplayOrder))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="avatar avatar-sm me-2" style="background-image: url('@banner.ImageUrl')"></span>
+                                            <div>
+                                                <div class="font-weight-medium">@banner.Title</div>
+                                                @if (!string.IsNullOrEmpty(banner.LinkUrl))
+                                                {
+                                                    <div class="text-secondary small">@banner.LinkUrl</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-blue-lt">@banner.Position</span>
+                                    </td>
+                                    <td>@banner.DisplayOrder</td>
+                                    <td>@banner.StartDate?.ToString("dd.MM.yyyy")</td>
+                                    <td>@banner.EndDate?.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (banner.IsActive)
+                                        {
+                                            <span class="badge bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Pasif</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-list flex-nowrap">
+                                            <button class="btn btn-ghost-danger btn-sm"
+                                                    hx-delete="/settings/storefront/banners/@banner.Id"
+                                                    hx-confirm="Bu banneri silmek istediginize emin misiniz?"
+                                                    hx-swap="none">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="4" y1="7" x2="20" y2="7"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="mt-3">
+            <a href="/settings/storefront" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="11" y2="18"/><line x1="5" y1="12" x2="11" y2="6"/></svg>
+                Magaza Ayarlarina Don
+            </a>
         </div>
     </div>
 </div>

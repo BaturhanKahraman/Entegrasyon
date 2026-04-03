@@ -1,22 +1,230 @@
-<div class="page-header d-print-none">
+@model List<Entegrasyon.Entity.Storefront.StorefrontReturnRequest>
+@using Entegrasyon.Entity.Storefront
+
+<div class="page-body">
     <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Iadeler</h2>
+
+        @* ── Ozet Kartlari ──────────────────────────────────────── *@
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-primary text-white avatar">@Model.Count</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam</div>
+                                <div class="text-secondary">iade talebi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-warning text-white avatar">@Model.Count(r => r.Status == ReturnStatus.Pending)</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Bekleyen</div>
+                                <div class="text-secondary">inceleme bekliyor</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-success text-white avatar">@Model.Count(r => r.Status == ReturnStatus.Approved)</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Onaylanan</div>
+                                <div class="text-secondary">iade onaylandi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">@Model.Count(r => r.Status == ReturnStatus.Completed)</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Tamamlanan</div>
+                                <div class="text-secondary">iade tamamlandi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Iade Talepleri Tablosu ─────────────────────────────── *@
+        <div class="card" hx-get="/storefront/returns" hx-trigger="returnsUpdated from:body" hx-select=".card .table-responsive" hx-target=".table-responsive" hx-swap="outerHTML">
+            <div class="card-header">
+                <h3 class="card-title">Iade Talepleri</h3>
+            </div>
+            @if (Model.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <p class="text-secondary">Henuz iade talebi yok.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Siparis</th>
+                                <th>Musteri</th>
+                                <th>Sebep</th>
+                                <th>Durum</th>
+                                <th>Iade Tutari</th>
+                                <th>Tarih</th>
+                                <th class="w-1">Islem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ret in Model.OrderByDescending(r => r.CreatedAt))
+                            {
+                                var statusBadge = ret.Status switch
+                                {
+                                    ReturnStatus.Pending => "bg-warning",
+                                    ReturnStatus.Approved => "bg-success",
+                                    ReturnStatus.Rejected => "bg-danger",
+                                    ReturnStatus.Completed => "bg-green",
+                                    _ => "bg-secondary"
+                                };
+                                var statusText = ret.Status switch
+                                {
+                                    ReturnStatus.Pending => "Beklemede",
+                                    ReturnStatus.Approved => "Onaylandi",
+                                    ReturnStatus.Rejected => "Reddedildi",
+                                    ReturnStatus.Completed => "Tamamlandi",
+                                    _ => "Bilinmiyor"
+                                };
+
+                                <tr>
+                                    <td><span class="text-secondary">@ret.Id</span></td>
+                                    <td>
+                                        <span class="font-weight-medium text-truncate" style="max-width: 120px; display: inline-block;">
+                                            @ret.OrderId.ToString()[..8]...
+                                        </span>
+                                    </td>
+                                    <td><span class="text-secondary">ID: @ret.CustomerId</span></td>
+                                    <td style="max-width: 200px;">
+                                        <div class="font-weight-medium">@ret.Reason</div>
+                                        @if (!string.IsNullOrEmpty(ret.Description))
+                                        {
+                                            <div class="text-secondary text-truncate small">@ret.Description</div>
+                                        }
+                                    </td>
+                                    <td><span class="badge @statusBadge">@statusText</span></td>
+                                    <td>
+                                        @if (ret.RefundAmount.HasValue)
+                                        {
+                                            <span class="font-weight-medium">@ret.RefundAmount.Value.ToString("N2") TL</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary">@ret.CreatedAt.ToString("dd.MM.yyyy")</span>
+                                        @if (ret.ReviewedAt.HasValue)
+                                        {
+                                            <div class="text-secondary small">Inceleme: @ret.ReviewedAt.Value.ToString("dd.MM.yyyy")</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (ret.Status == ReturnStatus.Pending)
+                                        {
+                                            <div class="btn-list flex-nowrap">
+                                                <button class="btn btn-ghost-success btn-sm"
+                                                        onclick="showReturnAction(@ret.Id, 'Approved')"
+                                                        title="Onayla">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg>
+                                                </button>
+                                                <button class="btn btn-ghost-danger btn-sm"
+                                                        onclick="showReturnAction(@ret.Id, 'Rejected')"
+                                                        title="Reddet">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (ret.Status == ReturnStatus.Approved)
+                                        {
+                                            <button class="btn btn-ghost-success btn-sm"
+                                                    onclick="showReturnAction(@ret.Id, 'Completed')"
+                                                    title="Tamamla">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 14l2 2l4 -4"/></svg>
+                                            </button>
+                                        }
+                                        @if (!string.IsNullOrEmpty(ret.ReviewNote))
+                                        {
+                                            <div class="text-secondary small mt-1">@ret.ReviewNote</div>
+                                        }
+                                    </td>
+                                </tr>
+                                @if (ret.Status == ReturnStatus.Pending || ret.Status == ReturnStatus.Approved)
+                                {
+                                    <tr id="return-action-@ret.Id" style="display: none;">
+                                        <td colspan="8">
+                                            <form class="d-flex gap-2 align-items-end"
+                                                  hx-post="/storefront/returns/@ret.Id/status"
+                                                  hx-swap="none">
+                                                <input type="hidden" name="status" id="return-status-@ret.Id" />
+                                                <div>
+                                                    <label class="form-label small">Not</label>
+                                                    <input type="text" name="reviewNote" class="form-control form-control-sm"
+                                                           placeholder="Inceleme notu..." />
+                                                </div>
+                                                <div>
+                                                    <label class="form-label small">Iade Tutari (TL)</label>
+                                                    <input type="number" step="0.01" name="refundAmount" class="form-control form-control-sm"
+                                                           placeholder="0.00" />
+                                                </div>
+                                                <button type="submit" class="btn btn-primary btn-sm">Kaydet</button>
+                                                <button type="button" class="btn btn-ghost-secondary btn-sm"
+                                                        onclick="document.getElementById('return-action-@ret.Id').style.display='none'">Iptal</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="mt-3">
+            <a href="/settings/storefront" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="11" y2="18"/><line x1="5" y1="12" x2="11" y2="6"/></svg>
+                Magaza Ayarlarina Don
+            </a>
         </div>
     </div>
 </div>
 
-<div class="page-body">
-    <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Iade talepleri, durum takibi ve onay surecleri eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
-            </div>
-        </div>
-    </div>
-</div>
+@section Scripts {
+<script>
+    function showReturnAction(returnId, status) {
+        var row = document.getElementById('return-action-' + returnId);
+        document.getElementById('return-status-' + returnId).value = status;
+        row.style.display = '';
+    }
+</script>
+}

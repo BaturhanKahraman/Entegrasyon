@@ -1,22 +1,192 @@
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Odeme Ayarlari</h2>
-            </div>
-        </div>
-    </div>
-</div>
+@model Entegrasyon.Entity.Storefront.StorefrontSettings
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Odeme yontemleri, sanal POS entegrasyonu ve taksit ayarlari eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
+
+        @if (Model is null)
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <h3 class="text-secondary">Once magaza ayarlarini yapilandirin</h3>
+                    <p class="text-secondary">Odeme ayarlarini duzenleyebilmek icin once genel magaza ayarlarini kaydetmeniz gerekmektedir.</p>
+                    <a href="/settings/storefront" class="btn btn-primary mt-2">Magaza Ayarlarina Git</a>
+                </div>
             </div>
+        }
+        else
+        {
+            @* ── Kargo & Teslimat ──────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Kargo & Teslimat Ayarlari</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="/settings/storefront"
+                          hx-post="/settings/storefront" hx-swap="none">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <input type="hidden" name="StoreName" value="@Model.StoreName" />
+                        <input type="hidden" name="CompanyName" value="@Model.CompanyName" />
+                        <input type="hidden" name="CompanyTaxOffice" value="@Model.CompanyTaxOffice" />
+                        <input type="hidden" name="CompanyTaxNumber" value="@Model.CompanyTaxNumber" />
+                        <input type="hidden" name="ContactPhone" value="@Model.ContactPhone" />
+                        <input type="hidden" name="ContactEmail" value="@Model.ContactEmail" />
+                        <input type="hidden" name="Address" value="@Model.Address" />
+                        <input type="hidden" name="City" value="@Model.City" />
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Ucretsiz Kargo Limiti (TL)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">TL</span>
+                                    <input type="number" step="0.01" name="FreeShippingThreshold" class="form-control"
+                                           value="@Model.FreeShippingThreshold" />
+                                </div>
+                                <small class="form-hint">Bu tutarin uzerindeki siparislerde kargo ucretsizdir.</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Sabit Kargo Ucreti (TL)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">TL</span>
+                                    <input type="number" step="0.01" name="FlatShippingRate" class="form-control"
+                                           value="@Model.FlatShippingRate" />
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tahmini Teslimat Suresi (gun)</label>
+                                <input type="number" name="EstimatedDeliveryDays" class="form-control"
+                                       value="@Model.EstimatedDeliveryDays" />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </form>
+                </div>
+            </div>
+
+            @* ── Hediye Paketi ─────────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Hediye Paketi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" disabled
+                                       @(Model.GiftWrappingEnabled ? "checked" : "") />
+                                <span class="form-check-label">Hediye paketi secenegi</span>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Hediye Paketi Ucreti</label>
+                            <div class="input-group">
+                                <span class="input-group-text">TL</span>
+                                <input type="number" step="0.01" class="form-control" disabled
+                                       value="@Model.GiftWrappingFee" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-secondary">Hediye paketi ayarlarini degistirmek icin genel ayarlar sayfasini kullanin.</small>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Otomatik Kampanyalar ──────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Otomatik Kampanyalar</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-green-lt me-2">Hosgeldin</span>
+                                        <span class="badge @(Model.AutoWelcomeCouponEnabled ? "bg-success" : "bg-secondary")">
+                                            @(Model.AutoWelcomeCouponEnabled ? "Aktif" : "Pasif")
+                                        </span>
+                                    </div>
+                                    <p class="text-secondary mb-0">
+                                        Yeni uyeye otomatik kupon: <strong>%@(Model.AutoWelcomeCouponPercent ?? 0)</strong> indirim
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-blue-lt me-2">Degerlendirme</span>
+                                        <span class="badge @(Model.AutoReviewRewardEnabled ? "bg-success" : "bg-secondary")">
+                                            @(Model.AutoReviewRewardEnabled ? "Aktif" : "Pasif")
+                                        </span>
+                                    </div>
+                                    <p class="text-secondary mb-0">
+                                        Degerlendirme yapana: <strong>%@(Model.AutoReviewRewardPercent ?? 0)</strong> indirim
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Terk Edilen Sepet ─────────────────────────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Terk Edilen Sepet Kurtarma</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge @(Model.AbandonedCartRecoveryEnabled ? "bg-success" : "bg-secondary") me-2">
+                            @(Model.AbandonedCartRecoveryEnabled ? "Aktif" : "Pasif")
+                        </span>
+                    </div>
+                    @if (Model.AbandonedCartRecoveryEnabled)
+                    {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card card-sm">
+                                    <div class="card-body text-center">
+                                        <div class="text-secondary small">1. E-posta</div>
+                                        <div class="h3 mb-0">@Model.AbandonedCartEmail1Hours saat</div>
+                                        <div class="text-secondary small">sonra gonderilir</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card card-sm">
+                                    <div class="card-body text-center">
+                                        <div class="text-secondary small">2. E-posta</div>
+                                        <div class="h3 mb-0">@Model.AbandonedCartEmail2Hours saat</div>
+                                        <div class="text-secondary small">sonra gonderilir</div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (Model.AbandonedCartEmail3Enabled)
+                            {
+                                <div class="col-md-4">
+                                    <div class="card card-sm">
+                                        <div class="card-body text-center">
+                                            <div class="text-secondary small">3. E-posta (indirimli)</div>
+                                            <div class="h3 mb-0">%@(Model.AbandonedCartEmail3DiscountPercent ?? 0)</div>
+                                            <div class="text-secondary small">indirim kuponu ile</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="mt-3">
+            <a href="/settings/storefront" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="11" y2="18"/><line x1="5" y1="12" x2="11" y2="6"/></svg>
+                Magaza Ayarlarina Don
+            </a>
         </div>
     </div>
 </div>

@@ -1,22 +1,100 @@
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Saticilar</h2>
-            </div>
-        </div>
-    </div>
-</div>
+@model Entegrasyon.Entity.Storefront.StorefrontSettings
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Satici listesi, satici onay sureci ve performans metrikleri eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
+
+        @if (Model is null)
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <h3 class="text-secondary">Once magaza ayarlarini yapilandirin</h3>
+                    <p class="text-secondary">Satici yonetimi icin once genel magaza ayarlarini kaydetmeniz gerekmektedir.</p>
+                    <a href="/settings/storefront" class="btn btn-primary mt-2">Magaza Ayarlarina Git</a>
+                </div>
             </div>
+        }
+        else if (!Model.MarketplaceEnabled)
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-muted mb-3" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 21l18 0"/><path d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4"/><line x1="5" y1="21" x2="5" y2="10.85"/><line x1="19" y1="21" x2="19" y2="10.85"/><path d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4"/></svg>
+                    <h3 class="text-secondary">Marketplace modu aktif degil</h3>
+                    <p class="text-secondary">
+                        Satici yonetimi icin marketplace modunun aktif olmasi gerekmektedir.
+                        Genel ayarlardan "Marketplace Modu" secenegini aktif edebilirsiniz.
+                    </p>
+                    <a href="/settings/storefront" class="btn btn-primary mt-2">Magaza Ayarlarina Git</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* ── Marketplace Aktif — Satici Yonetimi ─────────────── *@
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Marketplace Durumu</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2">Aktif</span>
+                        <span class="text-secondary">Marketplace modu aktif. Saticilar magaza uzerinden urun satabilir.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Satici Listesi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="empty">
+                        <div class="empty-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/></svg>
+                        </div>
+                        <p class="empty-title">Henuz kayitli satici yok</p>
+                        <p class="empty-subtitle text-secondary">
+                            Saticilar magaza uzerinden basvuru yaptiginda burada listelenecektir.
+                            Satici yonetim altyapisi gelistirme asamasindadir.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Marketplace Ayarlari Ozeti ────────────────────────── *@
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Komisyon & Odeme Ayarlari</h3>
+                </div>
+                <div class="card-body">
+                    <div class="datagrid">
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Marketplace Modu</div>
+                            <div class="datagrid-content">
+                                <span class="badge bg-success">Aktif</span>
+                            </div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Satici Onay Sureci</div>
+                            <div class="datagrid-content">Manuel Onay</div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Varsayilan Komisyon</div>
+                            <div class="datagrid-content">Henuz yapilandirilmadi</div>
+                        </div>
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Odeme Donemi</div>
+                            <div class="datagrid-content">Henuz yapilandirilmadi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="mt-3">
+            <a href="/settings/storefront" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="11" y2="18"/><line x1="5" y1="12" x2="11" y2="6"/></svg>
+                Magaza Ayarlarina Don
+            </a>
         </div>
     </div>
 </div>

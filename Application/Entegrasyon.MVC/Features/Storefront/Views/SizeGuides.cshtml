@@ -1,9 +1,23 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.SizeGuidesVm
+
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Magaza</div>
                 <h2 class="page-title">Beden Kilavuzlari</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSizeGuideModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14"/>
+                        <path d="M5 12l14 0"/>
+                    </svg>
+                    Yeni Kilavuz
+                </button>
             </div>
         </div>
     </div>
@@ -12,11 +26,194 @@
 <div class="page-body">
     <div class="container-xl">
         <div class="card">
-            <div class="card-body text-center py-5">
-                <h3 class="text-secondary">Bu sayfa gelistirme asamasindadir</h3>
-                <p class="text-secondary">Beden tablosu olusturma, kategori bazli kilavuzlar ve sablonlar eklenecektir.</p>
-                <a href="/settings/storefront" class="btn btn-outline-secondary mt-2">Magaza Ayarlarina Don</a>
-            </div>
+            @if (Model.SizeGuides.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-secondary" width="40" height="40"
+                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M5 3m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z"/>
+                            <path d="M9 7l6 0"/>
+                            <path d="M9 11l6 0"/>
+                            <path d="M9 15l4 0"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-secondary">Henuz beden kilavuzu olusturulmamis</h3>
+                    <p class="text-secondary">Kategorilerinize ozel beden kilavuzlari olusturarak musterilerinize yardimci olun.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Beden Kilavuzlari</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Ad</th>
+                                <th>Kategori ID'leri</th>
+                                <th>Olcum Talimatlari</th>
+                                <th>Durum</th>
+                                <th>Olusturulma</th>
+                                <th>Islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var guide in Model.SizeGuides.OrderByDescending(g => g.CreatedAt))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="font-weight-medium">@guide.Name</div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(guide.CategoryIds))
+                                        {
+                                            <span class="text-secondary small">@guide.CategoryIds</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">Genel</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(guide.MeasurementInstructions))
+                                        {
+                                            var instructions = guide.MeasurementInstructions;
+                                            <span title="@instructions">
+                                                @(instructions.Length > 50 ? instructions[..50] + "..." : instructions)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (guide.IsActive)
+                                        {
+                                            <span class="badge bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Pasif</span>
+                                        }
+                                    </td>
+                                    <td>@guide.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        <div class="btn-list">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editSizeGuideModal-@guide.Id">
+                                                Duzenle
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    hx-delete="/storefront/size-guides/@guide.Id"
+                                                    hx-swap="none"
+                                                    hx-confirm="Bu kilavuzu silmek istediginizden emin misiniz?">
+                                                Sil
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+<!-- Create Size Guide Modal -->
+<div class="modal modal-blur fade" id="createSizeGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form hx-post="/storefront/size-guides" hx-swap="none">
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Beden Kilavuzu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Kilavuz Adi</label>
+                        <input type="text" name="Name" class="form-control" required placeholder="ornegin: Erkek Ust Giyim" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kategori ID'leri</label>
+                        <input type="text" name="CategoryIds" class="form-control" placeholder="Virgul ile ayrilmis kategori ID'leri (istege bagli)" />
+                        <small class="form-hint">Bos birakilirsa genel kilavuz olarak kullanilir.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Olcum Talimatlari</label>
+                        <textarea name="MeasurementInstructions" class="form-control" rows="3"
+                                  placeholder="Musteriye nasil olcum alacagini anlatin..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Beden Verisi (JSON)</label>
+                        <textarea name="SizeData" class="form-control" rows="6" required
+                                  placeholder='[{"size":"S","chest":"88-92","waist":"72-76"},...]'></textarea>
+                        <small class="form-hint">JSON formatinda beden tablosu verisi girin.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-check form-switch">
+                            <input type="checkbox" name="IsActive" value="true" checked class="form-check-input" />
+                            <span class="form-check-label">Aktif</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
+                    <button type="submit" class="btn btn-primary">Olustur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modals -->
+@foreach (var guide in Model.SizeGuides)
+{
+    <div class="modal modal-blur fade" id="editSizeGuideModal-@guide.Id" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form hx-put="/storefront/size-guides/@guide.Id" hx-swap="none">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Beden Kilavuzu Duzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label required">Kilavuz Adi</label>
+                            <input type="text" name="Name" class="form-control" required value="@guide.Name" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kategori ID'leri</label>
+                            <input type="text" name="CategoryIds" class="form-control" value="@(guide.CategoryIds ?? "")" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Olcum Talimatlari</label>
+                            <textarea name="MeasurementInstructions" class="form-control" rows="3">@(guide.MeasurementInstructions ?? "")</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">Beden Verisi (JSON)</label>
+                            <textarea name="SizeData" class="form-control" rows="6" required>@guide.SizeData</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-check form-switch">
+                                <input type="checkbox" name="IsActive" value="true" @(guide.IsActive ? "checked" : "") class="form-check-input" />
+                                <span class="form-check-label">Aktif</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
