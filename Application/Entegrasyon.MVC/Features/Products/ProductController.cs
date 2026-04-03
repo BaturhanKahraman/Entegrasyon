@@ -8,6 +8,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.MVC.Features.Products.ViewModels;
 using Entegrasyon.Entity.Dtos.Product.Discount;
+using Entegrasyon.Entity.Dtos.BulkOperations;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Products;
@@ -19,7 +20,8 @@ public class ProductController(
     ICategoryService categoryService,
     IImageManager imageManager,
     IDiscountManager discountManager,
-    ILabelService labelService) : Controller
+    ILabelService labelService,
+    IBulkOperationManager bulkOperationManager) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -370,6 +372,21 @@ public class ProductController(
 
         var ext = result.Data!.PrinterLanguage == "ZPL" ? "zpl" : "bin";
         return File(result.Data.RawBytes, "application/octet-stream", $"barcode-{variantId}.{ext}");
+    }
+
+    // ── Export ───────────────────────────────────────────────────────
+
+    [HttpGet("/products/export")]
+    public async Task<IActionResult> Export(int? categoryId = null, int? brandId = null)
+    {
+        var filter = new ExportFilterDto(CategoryId: categoryId, BrandId: brandId);
+        var result = await bulkOperationManager.ExportProductsAsync(filter);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Export basarisiz.");
+            return RedirectToAction(nameof(Index));
+        }
+        return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"urunler-{DateTime.Now:yyyyMMdd}.xlsx");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
