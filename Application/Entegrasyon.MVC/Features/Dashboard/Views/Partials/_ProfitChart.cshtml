@@ -1,0 +1,56 @@
+@model Entegrasyon.Entity.Dtos.Reports.SalesReportDto
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Son 30 Gun — Ciro Trendi</h3>
+    </div>
+    <div class="card-body">
+        @if (Model.DailySales.Count == 0)
+        {
+            <div class="text-center text-secondary py-4">
+                Henuz satis verisi bulunmuyor.
+            </div>
+        }
+        else
+        {
+            <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                    <span class="text-secondary">Toplam Ciro</span>
+                    <h2 class="mb-0">@Model.Summary.TotalRevenue.ToString("N2") TL</h2>
+                </div>
+                <div class="col-auto">
+                    <span class="text-secondary">Toplam Satis</span>
+                    <h2 class="mb-0">@Model.Summary.TotalSales</h2>
+                </div>
+                <div class="col-auto">
+                    <span class="text-secondary">Ortalama Siparis</span>
+                    <h2 class="mb-0">@Model.Summary.AverageOrderValue.ToString("N2") TL</h2>
+                </div>
+            </div>
+            <div id="profit-chart" style="height: 250px;"></div>
+        }
+    </div>
+</div>
+
+@if (Model.DailySales.Count > 0)
+{
+    <script>
+        (function() {
+            var options = {
+                chart: { type: 'bar', height: 250, toolbar: { show: false } },
+                series: [{ name: 'Ciro', data: [@string.Join(",", Model.DailySales.Select(d => d.Revenue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)))] }],
+                xaxis: { categories: [@string.Join(",", Model.DailySales.Select(d => $"'{d.Date:dd.MM}'"))], labels: { rotate: -45, style: { fontSize: '10px' } } },
+                yaxis: { labels: { formatter: function(val) { return val.toLocaleString('tr-TR', {style:'currency', currency:'TRY'}); } } },
+                colors: ['#206bc4'],
+                plotOptions: { bar: { borderRadius: 2, columnWidth: '70%' } },
+                dataLabels: { enabled: false },
+                tooltip: {
+                    y: { formatter: function(val) { return val.toLocaleString('tr-TR', {style:'currency', currency:'TRY'}); } }
+                }
+            };
+            if (typeof ApexCharts !== 'undefined') {
+                new ApexCharts(document.querySelector('#profit-chart'), options).render();
+            }
+        })();
+    </script>
+}
