@@ -77,7 +77,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
     });
 
-// ── Authorization — AppPermissions (aynen Blazor'dakiyle aynı) ───────────
+// ── Authorization — AppPermissions ────────────────────────────────────────
 builder.Services.AddAuthorization(options =>
 {
     foreach (var permission in AppPermissions.GetAllPermissions())
@@ -106,7 +106,6 @@ builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddClients();
 
 // Background service'ler: Production/Staging'de etkin, Development'ta devre dışı
-// (Blazor ile aynı anda çalışırken çift polling önlenir)
 if (!builder.Environment.IsDevelopment())
     builder.Services.AddBackgroundServices();
 
@@ -226,9 +225,7 @@ builder.Services.AddSignalR(options =>
 });
 builder.Services.AddSignalRSettings();
 builder.Services.AddNotification();
-// TODO: Faz 7'de MVC-specific notification delivery servisi eklenecek
-// (Blazor'daki InProcessNotificationDeliveryService + NotificationEventPublisher
-// Blazor projesine bağlı — MVC'ye taşınması veya Business'a refactor edilmesi gerekecek)
+// TODO: MVC-specific notification delivery servisi eklenecek
 
 // ── Exception Handling ───────────────────────────────────────────────────
 builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();

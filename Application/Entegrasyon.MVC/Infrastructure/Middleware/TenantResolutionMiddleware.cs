@@ -6,7 +6,7 @@ namespace Entegrasyon.MVC.Infrastructure.Middleware;
 
 /// <summary>
 /// MVC icin subdomain-based tenant resolution middleware.
-/// BlazorTenantResolutionMiddleware'den adapte edildi — circuit/Blazor bagimliligini kaldirildi.
+/// Subdomain'den tenant bilgisini cozumler.
 /// Development modda tenant registry'de kayit yoksa fallback connection string kullanir.
 /// </summary>
 public class TenantResolutionMiddleware(RequestDelegate next)
