@@ -74,8 +74,12 @@ else
                     <span class="text-secondary me-3">
                         @Model.OpenedAt.ToLocalTime().ToString("HH:mm")
                     </span>
-                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
-                            data-bs-target="#closeSessionModal">
+                    <button type="button" class="btn btn-outline-danger"
+                            hx-get="/pos/close-session-dialog?sessionId=@Model.SessionId"
+                            hx-target="#dynamicModal"
+                            hx-swap="innerHTML"
+                            data-bs-toggle="modal"
+                            data-bs-target="#dynamicModal">
                         Kasayi Kapat
                     </button>
                 </div>
@@ -172,83 +176,34 @@ else
                         </div>
                     }
 
-                    <!-- Odeme Formu -->
+                    <!-- Odeme Butonu -->
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Odeme</h3>
+                        <div class="card-body text-center py-4">
+                            <button type="button" class="btn btn-success w-100 btn-lg"
+                                    hx-get="/pos/payment-dialog?sessionId=@Model.SessionId"
+                                    hx-target="#dynamicModal"
+                                    hx-swap="innerHTML"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#dynamicModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg me-1" width="24" height="24"
+                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2"/>
+                                    <path d="M21 17v-6a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2z"/>
+                                    <path d="M16 14a1 1 0 1 0 -2 0a1 1 0 0 0 2 0"/>
+                                </svg>
+                                Satisi Tamamla
+                            </button>
                         </div>
-                        <form method="post" action="/pos/complete-sale" id="paymentForm">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="sessionId" value="@Model.SessionId" />
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Odeme Yontemi</label>
-                                    <div class="btn-group w-100" role="group">
-                                        <input type="radio" class="btn-check" name="paymentMethod"
-                                               id="pmCash" value="1" checked />
-                                        <label class="btn btn-outline-primary" for="pmCash">Nakit</label>
-
-                                        <input type="radio" class="btn-check" name="paymentMethod"
-                                               id="pmCard" value="2" />
-                                        <label class="btn btn-outline-primary" for="pmCard">Kredi Karti</label>
-
-                                        <input type="radio" class="btn-check" name="paymentMethod"
-                                               id="pmDebit" value="3" />
-                                        <label class="btn btn-outline-primary" for="pmDebit">Banka Karti</label>
-                                    </div>
-                                </div>
-                                <div class="mb-3" id="cashReceivedGroup">
-                                    <label class="form-label">Alinan Tutar (TL)</label>
-                                    <input type="number" name="cashReceived" id="cashReceived"
-                                           class="form-control form-control-lg" step="0.01" min="0" value="0" />
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <button type="submit" class="btn btn-success w-100 btn-lg">
-                                    Satisi Tamamla
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Kasa Kapat Modal -->
-    <div class="modal fade" id="closeSessionModal" tabindex="-1">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <form method="post" action="/pos/close-session">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="sessionId" value="@Model.SessionId" />
-                    <div class="modal-header">
-                        <h5 class="modal-title">Kasayi Kapat</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="text-secondary">
-                            Kasadaki mevcut nakit tutari girin. Sistem beklenen tutar ile karsilastiracaktir.
-                        </p>
-                        <div class="mb-3">
-                            <label class="form-label">Kapatilis Kasasi (TL)</label>
-                            <input type="number" name="closingCash" class="form-control"
-                                   step="0.01" min="0" required />
-                        </div>
-                        @if (Model.Summary is not null)
-                        {
-                            <div class="alert alert-info py-2 mb-0">
-                                Beklenen kasa: <strong>@Model.Summary.ExpectedCash.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</strong>
-                            </div>
-                        }
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
-                        <button type="submit" class="btn btn-danger">Kasayi Kapat</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    <!-- Dynamic Modal Container -->
+    <div class="modal fade" id="dynamicModal" tabindex="-1">
     </div>
 
     @section Scripts {
@@ -269,13 +224,6 @@ else
                 document.getElementById('search-results').replaceChildren();
                 document.getElementById('posSearchInput').value = '';
                 document.getElementById('posSearchInput').focus();
-            });
-
-            document.querySelectorAll('input[name="paymentMethod"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    var isCash = this.value === '1';
-                    document.getElementById('cashReceivedGroup').style.display = isCash ? 'block' : 'none';
-                });
             });
         </script>
     }

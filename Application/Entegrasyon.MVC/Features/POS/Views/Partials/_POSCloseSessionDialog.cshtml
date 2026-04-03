@@ -1,0 +1,116 @@
+@model Entegrasyon.MVC.Features.POS.ViewModels.POSCloseSessionDialogVm
+
+@{
+    var culture = new System.Globalization.CultureInfo("tr-TR");
+}
+
+<div class="modal-dialog modal-md">
+    <div class="modal-content">
+        <form method="post" action="/pos/close-session" id="closeSessionForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="sessionId" value="@Model.SessionId" />
+
+            <div class="modal-header">
+                <h5 class="modal-title">Kasayi Kapat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Oturum Ozeti -->
+                <h4 class="mb-3">Oturum Ozeti</h4>
+                <div class="datagrid mb-4">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Islem Sayisi</div>
+                        <div class="datagrid-content">
+                            <span class="badge bg-blue">@Model.TransactionCount</span>
+                        </div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Toplam Satis</div>
+                        <div class="datagrid-content text-green fw-bold">@Model.TotalSales.ToString("C", culture)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Acilis Kasasi</div>
+                        <div class="datagrid-content">@Model.OpeningCash.ToString("C", culture)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Nakit Satislar</div>
+                        <div class="datagrid-content">@Model.TotalCash.ToString("C", culture)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Kart Satislar</div>
+                        <div class="datagrid-content">@Model.TotalCard.ToString("C", culture)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Beklenen Kasa</div>
+                        <div class="datagrid-content fw-bold text-primary"
+                             id="csExpectedCash"
+                             data-amount="@Model.ExpectedCash">@Model.ExpectedCash.ToString("C", culture)</div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <!-- Kasa Mutabakat -->
+                <h4 class="mb-3">Kasa Mutabakati</h4>
+                <div class="mb-3">
+                    <label class="form-label">Kasadaki Gercek Nakit (TL)</label>
+                    <input type="number" name="closingCash" id="csClosingCash"
+                           class="form-control form-control-lg" step="0.01" min="0" required
+                           placeholder="Kasadaki nakit tutari girin" />
+                </div>
+
+                <div id="csDifferenceRow" class="alert py-2 mb-0" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Fark:</span>
+                        <span class="fw-bold fs-3" id="csDifferenceAmount">0.00 TL</span>
+                    </div>
+                    <div class="text-secondary small" id="csDifferenceLabel"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                <button type="submit" class="btn btn-danger">Kasayi Kapat</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    var expected = parseFloat(document.getElementById('csExpectedCash').dataset.amount);
+    var closingInput = document.getElementById('csClosingCash');
+    var diffRow = document.getElementById('csDifferenceRow');
+    var diffAmount = document.getElementById('csDifferenceAmount');
+    var diffLabel = document.getElementById('csDifferenceLabel');
+
+    function updateDifference() {
+        var actual = parseFloat(closingInput.value) || 0;
+        var diff = actual - expected;
+
+        if (closingInput.value === '') {
+            diffRow.style.display = 'none';
+            return;
+        }
+
+        diffRow.style.display = 'block';
+
+        if (Math.abs(diff) < 0.01) {
+            diffRow.className = 'alert alert-success py-2 mb-0';
+            diffAmount.textContent = '0.00 TL';
+            diffLabel.textContent = 'Kasa tutarli.';
+        } else if (diff > 0) {
+            diffRow.className = 'alert alert-warning py-2 mb-0';
+            diffAmount.textContent = '+' + diff.toFixed(2) + ' TL';
+            diffLabel.textContent = 'Kasada fazla nakit var.';
+        } else {
+            diffRow.className = 'alert alert-danger py-2 mb-0';
+            diffAmount.textContent = diff.toFixed(2) + ' TL';
+            diffLabel.textContent = 'Kasada eksik nakit var.';
+        }
+    }
+
+    closingInput.addEventListener('input', updateDifference);
+})();
+</script>

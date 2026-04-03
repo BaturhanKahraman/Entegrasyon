@@ -202,6 +202,48 @@ public class POSController(
         return PartialView("Partials/_POSCart", new POSCartVm { Items = [] });
     }
 
+    // ── Payment Dialog (HTMX) ───────────────────────────────────────────
+
+    [HttpGet("/pos/payment-dialog")]
+    public IActionResult PaymentDialog([FromQuery] long sessionId)
+    {
+        var cart = GetCartFromSession();
+        var cartVm = new POSCartVm { Items = cart };
+
+        var vm = new POSPaymentDialogVm
+        {
+            SessionId = sessionId,
+            Subtotal = cartVm.Subtotal,
+            VatTotal = cartVm.VatTotal,
+            GrandTotal = cartVm.GrandTotal,
+            ItemCount = cartVm.TotalItems
+        };
+
+        return PartialView("Partials/_POSPaymentDialog", vm);
+    }
+
+    // ── Close Session Dialog (HTMX) ─────────────────────────────────────
+
+    [HttpGet("/pos/close-session-dialog")]
+    public async Task<IActionResult> CloseSessionDialog([FromQuery] long sessionId)
+    {
+        var summaryResult = await posSessionManager.GetSessionSummaryAsync(sessionId);
+        var summary = summaryResult.Data;
+
+        var vm = new POSCloseSessionDialogVm
+        {
+            SessionId = sessionId,
+            OpeningCash = summary?.OpeningCash ?? 0,
+            TotalSales = summary?.TotalSales ?? 0,
+            TotalCash = summary?.TotalCash ?? 0,
+            TotalCard = summary?.TotalCard ?? 0,
+            TransactionCount = summary?.TransactionCount ?? 0,
+            ExpectedCash = summary?.ExpectedCash ?? 0
+        };
+
+        return PartialView("Partials/_POSCloseSessionDialog", vm);
+    }
+
     // ── Complete Sale ────────────────────────────────────────────────────
 
     [HttpPost("/pos/complete-sale")]
@@ -209,7 +251,8 @@ public class POSController(
     public async Task<IActionResult> CompleteSale(
         [FromForm] long sessionId,
         [FromForm] PaymentMethod paymentMethod,
-        [FromForm] decimal cashReceived)
+        [FromForm] decimal cashReceived,
+        [FromForm] string? cardAuthCode)
     {
         var cart = GetCartFromSession();
         if (cart.Count == 0)
@@ -247,7 +290,7 @@ public class POSController(
             Sale: makeSaleDto,
             PaymentMethod: paymentMethod,
             CashReceived: cashReceived,
-            CardAuthCode: null);
+            CardAuthCode: cardAuthCode);
 
         await posSessionManager.RecordTransactionAsync(transactionDto);
 

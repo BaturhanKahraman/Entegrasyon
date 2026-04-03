@@ -49,3 +49,23 @@ public class POSSearchItemVm
     public string BrandName { get; set; } = "";
     public int CurrentStock { get; set; }
 }
+
+public class POSPaymentDialogVm
+{
+    public long SessionId { get; set; }
+    public decimal Subtotal { get; set; }
+    public decimal VatTotal { get; set; }
+    public decimal GrandTotal { get; set; }
+    public int ItemCount { get; set; }
+}
+
+public class POSCloseSessionDialogVm
+{
+    public long SessionId { get; set; }
+    public decimal OpeningCash { get; set; }
+    public decimal TotalSales { get; set; }
+    public decimal TotalCash { get; set; }
+    public decimal TotalCard { get; set; }
+    public int TransactionCount { get; set; }
+    public decimal ExpectedCash { get; set; }
+}

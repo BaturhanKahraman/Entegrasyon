@@ -1,0 +1,211 @@
+@model Entegrasyon.MVC.Features.POS.ViewModels.POSPaymentDialogVm
+
+<div class="modal-dialog modal-md">
+    <div class="modal-content">
+        <form method="post" action="/pos/complete-sale" id="paymentModalForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="sessionId" value="@Model.SessionId" />
+
+            <div class="modal-header">
+                <h5 class="modal-title">Odeme</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Sepet Ozeti -->
+                <div class="alert alert-info py-2 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>@Model.ItemCount adet urun</span>
+                        <span class="fw-bold">Ara Toplam: @Model.Subtotal.ToString("N2") TL</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>KDV</span>
+                        <span>@Model.VatTotal.ToString("N2") TL</span>
+                    </div>
+                    <hr class="my-1" />
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold fs-4">TOPLAM</span>
+                        <span class="fw-bold fs-4 text-primary" id="pmGrandTotal"
+                              data-amount="@Model.GrandTotal">@Model.GrandTotal.ToString("N2") TL</span>
+                    </div>
+                </div>
+
+                <!-- Odeme Yontemi -->
+                <div class="mb-3">
+                    <label class="form-label">Odeme Yontemi</label>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="radio" name="paymentMethod" value="1"
+                                       class="form-selectgroup-input pm-radio" checked />
+                                <span class="form-selectgroup-label d-flex align-items-center justify-content-center p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2"/>
+                                        <path d="M21 17v-6a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2z"/>
+                                        <path d="M16 14a1 1 0 1 0 -2 0a1 1 0 0 0 2 0"/>
+                                    </svg>
+                                    Nakit
+                                </span>
+                            </label>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="radio" name="paymentMethod" value="2"
+                                       class="form-selectgroup-input pm-radio" />
+                                <span class="form-selectgroup-label d-flex align-items-center justify-content-center p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 5m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z"/>
+                                        <path d="M3 10l18 0"/>
+                                        <path d="M7 15l.01 0"/>
+                                        <path d="M11 15l2 0"/>
+                                    </svg>
+                                    Kredi Karti
+                                </span>
+                            </label>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-selectgroup-item flex-fill">
+                                <input type="radio" name="paymentMethod" value="4"
+                                       class="form-selectgroup-input pm-radio" />
+                                <span class="form-selectgroup-label d-flex align-items-center justify-content-center p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M3 12h4l3 8l4 -16l3 8h4"/>
+                                    </svg>
+                                    Karma
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nakit Alani -->
+                <div id="pmCashSection">
+                    <div class="mb-3">
+                        <label class="form-label">Alinan Nakit (TL)</label>
+                        <input type="number" name="cashReceived" id="pmCashReceived"
+                               class="form-control form-control-lg" step="0.01" min="0"
+                               value="@Model.GrandTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" />
+                    </div>
+                    <div id="pmChangeRow" class="alert alert-success py-2 mb-3" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Para Ustu:</span>
+                            <span class="fw-bold fs-3" id="pmChangeAmount">0.00 TL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kart Alani -->
+                <div id="pmCardSection" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label">Provizyon Kodu (Opsiyonel)</label>
+                        <input type="text" name="cardAuthCode" id="pmCardAuthCode"
+                               class="form-control" placeholder="orn. 123456" />
+                    </div>
+                </div>
+
+                <!-- Karma Odeme Alani -->
+                <div id="pmMixedSection" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label">Nakit Tutar (TL)</label>
+                        <input type="number" id="pmMixedCash"
+                               class="form-control" step="0.01" min="0" value="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kart Tutar (TL)</label>
+                        <input type="text" id="pmMixedCard" class="form-control" readonly
+                               value="@Model.GrandTotal.ToString("N2")" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Provizyon Kodu (Opsiyonel)</label>
+                        <input type="text" id="pmMixedAuthCode" class="form-control" placeholder="orn. 123456" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                <button type="submit" class="btn btn-success btn-lg" id="pmSubmitBtn">
+                    Odemeyi Tamamla
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    var grandTotal = parseFloat(document.getElementById('pmGrandTotal').dataset.amount);
+    var cashSection = document.getElementById('pmCashSection');
+    var cardSection = document.getElementById('pmCardSection');
+    var mixedSection = document.getElementById('pmMixedSection');
+    var cashInput = document.getElementById('pmCashReceived');
+    var changeRow = document.getElementById('pmChangeRow');
+    var changeAmount = document.getElementById('pmChangeAmount');
+    var form = document.getElementById('paymentModalForm');
+
+    function updateChange() {
+        var received = parseFloat(cashInput.value) || 0;
+        var change = received - grandTotal;
+        if (change > 0) {
+            changeRow.style.display = 'block';
+            changeAmount.textContent = change.toFixed(2) + ' TL';
+        } else {
+            changeRow.style.display = 'none';
+        }
+    }
+
+    function showSection(method) {
+        cashSection.style.display = method === '1' ? 'block' : 'none';
+        cardSection.style.display = method === '2' || method === '3' ? 'block' : 'none';
+        mixedSection.style.display = method === '4' ? 'block' : 'none';
+    }
+
+    document.querySelectorAll('.pm-radio').forEach(function(radio) {
+        radio.addEventListener('change', function() { showSection(this.value); });
+    });
+
+    if (cashInput) {
+        cashInput.addEventListener('input', updateChange);
+        updateChange();
+    }
+
+    // Karma odeme: nakit degisince kart otomatik hesapla
+    var mixedCash = document.getElementById('pmMixedCash');
+    var mixedCard = document.getElementById('pmMixedCard');
+    if (mixedCash && mixedCard) {
+        mixedCash.addEventListener('input', function() {
+            var c = parseFloat(this.value) || 0;
+            var remainder = Math.max(0, grandTotal - c);
+            mixedCard.value = remainder.toFixed(2);
+        });
+    }
+
+    // Form submit: karma odeme icin hidden degerler ekle
+    form.addEventListener('submit', function(e) {
+        var selected = document.querySelector('.pm-radio:checked').value;
+        if (selected === '4') {
+            // Karma: cashReceived = nakit kisim, cardAuthCode = mixed auth
+            cashInput.value = mixedCash.value || '0';
+            var mixedAuth = document.getElementById('pmMixedAuthCode');
+            var authField = document.getElementById('pmCardAuthCode');
+            if (!authField) {
+                var h = document.createElement('input');
+                h.type = 'hidden'; h.name = 'cardAuthCode';
+                h.value = mixedAuth ? mixedAuth.value : '';
+                form.appendChild(h);
+            } else {
+                authField.value = mixedAuth ? mixedAuth.value : '';
+            }
+        }
+    });
+})();
+</script>
