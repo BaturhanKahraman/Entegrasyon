@@ -8,10 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build
 dotnet build Entegrasyon.sln
 
-# Run Blazor app (legacy — migration in progress)
-cd Application/Entegrasyon.Blazor && dotnet run
-
-# Run MVC app (new — port 5100)
+# Run MVC app (port 5100)
 cd Application/Entegrasyon.MVC && dotnet run
 
 # Run tests
@@ -33,10 +30,10 @@ dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj
 dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj --filter "FullyQualifiedName~TestClassName"
 
 # Apply EF Core migrations
-dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor
+dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.MVC
 
 # Add a new migration
-dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor
+dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.MVC
 ```
 
 **Test kullanıcısı (dev):** admin / 123456789
@@ -49,7 +46,7 @@ dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess -
 
 ## Architecture
 
-Klasik katmanlı mimari — Entity → DataAccess → Business → MVC/Blazor:
+Klasik katmanlı mimari — Entity → DataAccess → Business → MVC:
 
 | Proje | Görev |
 |---|---|
@@ -57,8 +54,7 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → MVC/Blazor:
 | `Entegrasyon.DataAccess` | EF Core context, migrations, entity configurations |
 | `Entegrasyon.Business` | Business managers (Abstract + Concrete) |
 | `Entegrasyon.ApplicationBootstrap` | DI container kurulumu |
-| `Entegrasyon.MVC` | **YENİ** — ASP.NET Core MVC + HTMX + Tabler UI (port 5100) |
-| `Entegrasyon.Blazor` | Blazor Server UI — legacy, migration devam ediyor (port 5099) |
+| `Entegrasyon.MVC` | ASP.NET Core MVC + HTMX + Tabler UI (port 5100) |
 
 ### MVC Projesi Yapısı (Entegrasyon.MVC)
 
@@ -93,19 +89,12 @@ Tüm Business Manager (`XxxManager.cs`) metodları KESİNLİKLE aşağıdaki 3 a
 
 **Manager/Interface pattern:** Her business servisi için `Abstract/IXxxManager.cs` + `Concrete/XxxManager.cs`. Tümü `ApplicationDependencyExtension.cs` üzerinden DI'a kaydedilir.
 
-**MudBlazor namespace çakışması:** `MudBlazor.CategoryAttribute` ile domain `CategoryAttribute` çakışır — Blazor dosyalarında alias kullan:
-```csharp
-using AppCategoryAttribute = Entegrasyon.Entity.Categories.CategoryAttribute;
-```
-
-**MudDataGrid:** `Items` parametresi `IEnumerable<T>` ister — `List<T>` üzerinde `.AsEnumerable()` çağır.
-
 **EF Core:** Default olarak no-tracking. `SaveChangesAsync()` otomatik UTC dönüşümü yapar. Tüm entity'ler `BaseEntity`'den türer (`IsDeleted`, `DeletedAt`, `CreatedAt`, `UpdatedAt`).
 
 **EF Core Migration (Strict Rule):** Entity veya DbContext'te değişiklik yapıldığında KESİNLİKLE migration oluşturulmalı ve dev DB'ye uygulanmalıdır. Adımlar:
-1. `dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor --context IntegrationDbContext`
+1. `dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.MVC --context IntegrationDbContext`
 2. Oluşan migration dosyasını gözden geçir (gereksiz/duplicate değişiklik var mı?)
-3. `dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.Blazor --context IntegrationDbContext`
+3. `dotnet ef database update -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.MVC --context IntegrationDbContext`
 4. `dotnet ef migrations has-pending-model-changes ...` ile model-snapshot senkronizasyonunu doğrula
 Migration olmadan entity değişikliği TAMAMLANMIŞ SAYILMAZ.
 
@@ -126,20 +115,6 @@ logger.LogInformation("Adding product {ProductId}", productId);
 ```csharp
 EventChannel<CategoryUpdatedEvent> // publisher → subscriber
 ```
-
-## Blazor & UI Development Standards (Legacy — Entegrasyon.Blazor)
-
-> **NOT:** Yeni özellikler `Entegrasyon.MVC` projesinde geliştirilmelidir. Blazor projesine yeni özellik eklenmez — sadece bug fix yapılabilir. Migration tamamlandığında Blazor kaldırılacak.
-
-**Maximize .NET 8 & Blazor Features:** Sürekli olarak .NET 8'in sunduğu en modern özellikleri kullan. Etkileşimli render modlarını (InteractiveServer, InteractiveWebAssembly, InteractiveAuto) ve SSR (Server-Side Rendering) özelliklerini senaryoya en uygun ve performanslı olacak şekilde seç.
-
-**Code-Behind Pattern (Strict Rule):** Hiçbir zaman `.razor` dosyalarının içine uzun C# kodları yazma. UI (HTML/Razor) ve iş mantığı kesinlikle ayrılmalıdır. Her `.razor` dosyasının mutlaka bir `.razor.cs` (code-behind) dosyası olmalıdır.
-
-**Componentization:** Uzun ve karmaşık kodlardan kaçın. Temiz ve okunabilir bir altyapı için, küçük iş mantıklarını ve UI parçalarını alt component'lara (child components) ayır. Tek kullanımlık bile olsa, kodu modüler hale getirmek için component oluşturmaktan çekinme.
-
-**Feature-Based Folder Structure:** Dosyaları teknik rollerine göre (`Pages`, `Components`) ayırmak yerine, ait oldukları özelliğe göre (`Features`) grupla. Örneğin bir kategoriye ait sayfa ve o sayfada kullanılan tek kullanımlık bileşenler aynı klasör dizininde (`Features/Categories/`) yer almalıdır. Sadece birden fazla feature tarafından ortak kullanılan yapıları (Layouts, genel buton componentları, genel dialoglar) Shared klasöründe tut.
-
-
 
 ## Domain Özeti
 
@@ -162,13 +137,6 @@ EventChannel<CategoryUpdatedEvent> // publisher → subscriber
 - `AddBackgroundServices()` — Trendyol import, product publish
 - `AddStorageServices()` — MinIO + ImageSharp
 - `AddSignalRSettings()` + `AddNotification()` — real-time bildirimler
-
-## Blazor Sayfa Yapısı
-
-- Pages: category, product (çok adımlı ekleme), attributes, customers, users, admin/role-management, sales, marketplace-sync, brand
-- Components/Dialogs: `CategoryDialog`, `CustomerDialog`, `RoleDialog`, `UserDialog`, `ProductImageUploadDialog`
-- Components/Shared: layout, nav, category tree, attribute detail paneli
-- SignalR hub: `/NotificationHub`
 
 ## Development Workflow (Strict Rule)
 
