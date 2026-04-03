@@ -377,3 +377,4 @@ appsettings.*.local.json
 .worktrees/
 .mcp.json
 docs/trendyol/attributes-snapshot.json
+.superpowers/
