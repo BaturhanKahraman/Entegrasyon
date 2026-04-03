@@ -263,7 +263,7 @@ public class CategoryAutoMatchServiceTests : BaseTest
         var result = await _sut.GetAutoMatchSuggestionsAsync(request);
 
         // Assert
-        result.Data[0].Confidence.Should().BeGreaterOrEqualTo(0.8);
+        result.Data[0].Confidence.Should().BeGreaterThanOrEqualTo(0.8);
         result.Data[0].Reason.Should().NotBeNullOrEmpty();
     }
 

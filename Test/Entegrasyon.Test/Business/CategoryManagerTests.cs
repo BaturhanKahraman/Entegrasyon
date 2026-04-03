@@ -30,7 +30,9 @@ public class CategoryManagerTests : BaseTest
             _categoryMapper,
             MockValidator.Object,
             _mockProductService.Object,
-            tenantCache
+            tenantCache,
+            mockHybridCache.Object,
+            mockTenantContext.Object
         );
     }
 

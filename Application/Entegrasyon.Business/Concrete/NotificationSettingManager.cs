@@ -12,7 +12,7 @@ public sealed class NotificationSettingManager(
 {
     public async Task<NotificationSetting> GetOrCreateForUserAsync(Guid userId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var setting = await dbContext.NotificationSettings
             .FirstOrDefaultAsync(s => s.UserId == userId);
 
@@ -36,7 +36,7 @@ public sealed class NotificationSettingManager(
 
     public async Task UpdateAsync(Guid userId, UpdateNotificationSettingDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var setting = await dbContext.NotificationSettings
             .FirstOrDefaultAsync(s => s.UserId == userId);
 

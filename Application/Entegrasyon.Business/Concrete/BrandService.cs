@@ -13,26 +13,34 @@ using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache)
+public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext)
     : IBrandService
 {
     private const string brandListCacheKey = "brands:list";
 
     public async Task<IDataResult<List<BrandListDetailDto>>> GetBrandListDetails()
     {
-        if (cache.TryGetValue(brandListCacheKey, out List<BrandListDetailDto>? cached))
-            return new SuccessDataResult<List<BrandListDetailDto>>(cached!);
+        var result = await hybridCache.GetOrCreateAsync(
+            $"t:{tenantContext.TenantId}:{brandListCacheKey}",
+            async ct =>
+            {
+                await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
+                return await dbContext.Brands
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
+                    .ToListAsync(ct);
+            },
+            new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(30),
+                LocalCacheExpiration = TimeSpan.FromMinutes(10)
+            },
+            tags: ["brands"]);
 
-        await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var result = await dbContext.Brands
-            .OrderByDescending(x => x.CreatedAt)
-            .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
-            .ToListAsync();
-
-        cache.Set(brandListCacheKey, result, TimeSpan.FromMinutes(30));
         return new SuccessDataResult<List<BrandListDetailDto>>(result);
     }
 
@@ -52,6 +60,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         dbContext.Brands.Add(brand);
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
+        await hybridCache.RemoveByTagAsync("brands");
         await applicationLogManager.AddLog("Marka basariyla eklendi.", LogType.Brand, LogAction.Add, brandDto);
         return new SuccessDataResult<Brand>(brand);
     }
@@ -71,6 +80,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         dbContext.Brands.Update(brand);
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
+        await hybridCache.RemoveByTagAsync("brands");
         await applicationLogManager.AddLog("Marka basariyla guncellendi.", LogType.Brand, LogAction.Update, brand);
         var detail = await dbContext.Brands
             .Where(x => x.Id == brand.Id)
@@ -93,6 +103,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         brand.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
+        await hybridCache.RemoveByTagAsync("brands");
         await applicationLogManager.AddLog("Marka basariyla silindi.", LogType.Brand, LogAction.Delete, brand);
         return new SuccessResult();
     }

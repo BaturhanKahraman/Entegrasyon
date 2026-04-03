@@ -312,7 +312,7 @@ public sealed class TrendyolProductService(
         MarketplaceOverrideDetailDto? overrides)
     {
         const int TrendyolMarketPlaceId = 1;
-        using var context = contextFactory.CreateDbContext();
+        await using var context = await contextFactory.CreateDbContextAsync();
 
         var product = await context.MainProducts
             .Include(p => p.Brand)

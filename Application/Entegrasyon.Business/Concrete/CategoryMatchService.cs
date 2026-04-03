@@ -17,7 +17,7 @@ public class CategoryMatchService(
 {
     public async Task<CategoryMatchSummaryDto> GetCategoryMatchSummaryAsync(int? marketPlaceId = null)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var totalCategories = await dbContext.Categories
             .Where(x => !x.IsDeleted)
@@ -62,7 +62,7 @@ public class CategoryMatchService(
 
     public async Task<List<CategoryMarketplaceMappingDto>> GetAllCategoryMappingsAsync(int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         return await dbContext.CategoryMarketplaces
             .Where(x => x.MarketPlaceId == marketPlaceId && x.IsActive)
@@ -81,7 +81,7 @@ public class CategoryMatchService(
 
     public async Task<IResult> CreateCategoryMappingAsync(CreateCategoryMarketplaceMatchDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         await applicationLogManager.AddLog("Kategori mapping oluşturma isteği", LogType.Category, LogAction.Add, dto);
 
@@ -152,7 +152,7 @@ public class CategoryMatchService(
             return new ErrorDataResult<BulkCategoryMatchResultDto>(new BulkCategoryMatchResultDto(), errorMessages);
         }
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         await applicationLogManager.AddLog(
             $"Toplu kategori eşleştirme isteği ({dto.Items.Count} öğe, MarketPlaceId: {dto.MarketPlaceId})",
@@ -246,7 +246,7 @@ public class CategoryMatchService(
 
     public async Task<IResult> RemoveCategoryMappingAsync(int categoryId, int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         await applicationLogManager.AddLog($"Kategori mapping silme isteği (CategoryId: {categoryId})", LogType.Category, LogAction.Delete);
 
@@ -275,7 +275,7 @@ public class CategoryMatchService(
 
     public async Task<IDataResult<List<CategoryMatchTemplateDto>>> GetTemplatesAsync(int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var templates = await dbContext.CategoryMatchTemplates
             .Where(t => t.MarketPlaceId == marketPlaceId && !t.IsDeleted)
@@ -296,7 +296,7 @@ public class CategoryMatchService(
 
     public async Task<IDataResult<CategoryMatchTemplateDetailDto>> GetTemplateDetailAsync(int templateId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var template = await dbContext.CategoryMatchTemplates
             .Include(t => t.Items)
@@ -332,7 +332,7 @@ public class CategoryMatchService(
         if (string.IsNullOrWhiteSpace(dto.Name))
             return new ErrorResult("Template adi bos olamaz.");
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // Business Rules: fetch current mappings
         var currentMappings = await dbContext.CategoryMarketplaces
@@ -371,7 +371,7 @@ public class CategoryMatchService(
 
     public async Task<IDataResult<BulkCategoryMatchResultDto>> ApplyTemplateAsync(int templateId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var template = await dbContext.CategoryMatchTemplates
             .Include(t => t.Items)
@@ -399,7 +399,7 @@ public class CategoryMatchService(
 
     public async Task<IResult> DeleteTemplateAsync(int templateId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var template = await dbContext.CategoryMatchTemplates
             .AsTracking()

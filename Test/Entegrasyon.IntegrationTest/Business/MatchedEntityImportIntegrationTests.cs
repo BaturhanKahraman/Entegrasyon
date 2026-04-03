@@ -143,7 +143,7 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCountGreaterOrEqualTo(1);
+        result.Data.Should().HaveCountGreaterThanOrEqualTo(1);
         result.Data.Should().Contain(p => p.Name == "Elektronik > Cep Telefonu");
     }
 
@@ -269,7 +269,7 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCountGreaterOrEqualTo(1);
+        result.Data.Should().HaveCountGreaterThanOrEqualTo(1);
         result.Data.Should().Contain(c =>
             c.TemplateName == "Elektronik" &&
             (c.ConflictType == ConflictType.NameMatch || c.ConflictType == ConflictType.Both));

@@ -11,7 +11,7 @@ public sealed class Order : BaseEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public decimal TotalPrice { get; set; }//calculated
 
-    public IEnumerable<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public Address BillingAddress { get; set; } = null!;
     public Address ShippingAddress { get; set; } = null!;
 

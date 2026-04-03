@@ -34,7 +34,7 @@ public class OrderManager(
 
     public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.Orders.AsNoTracking()
             .Include(o => o.OrderItems)
             .AsQueryable();
@@ -53,7 +53,7 @@ public class OrderManager(
 
     public async Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var order = await dbContext.Orders.AsNoTracking()
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -66,7 +66,7 @@ public class OrderManager(
 
     public async Task<IResult> ImportTrendyolOrdersAsync(List<TrendyolShipmentPackage> packages)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         if (packages.Count == 0)
             return new SuccessResult("İmport edilecek sipariş yok.");
 
@@ -91,7 +91,7 @@ public class OrderManager(
 
     public async Task<IResult> ImportN11OrdersAsync(List<N11OrderDto> orders)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         if (orders.Count == 0)
             return new SuccessResult("İmport edilecek sipariş yok.");
 
@@ -116,7 +116,7 @@ public class OrderManager(
 
     public async Task<IResult> ImportPazaramaOrdersAsync(List<PazaramaOrderDto> orders)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         if (orders.Count == 0)
             return new SuccessResult("İmport edilecek sipariş yok.");
 
@@ -541,7 +541,7 @@ public class OrderManager(
 
     public async Task<IResult> UpdateOrderStatusAsync(Guid orderId, string newStatus)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
         if (order is null)
             return new ErrorResult("Sipariş bulunamadı.");
@@ -553,7 +553,7 @@ public class OrderManager(
 
     public async Task<IResult> UpdateOrderByShipmentPackageAsync(long shipmentPackageId, string? status, string? trackingNumber)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var order = await dbContext.Orders
             .FirstOrDefaultAsync(o => o.ShipmentPackageId == shipmentPackageId);
 
@@ -707,7 +707,7 @@ public class OrderManager(
     private async Task DecreaseStockForMarketplaceOrder(
         List<int> warehouseIds, Guid productVariantId, int quantity, string referenceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         foreach (var warehouseId in warehouseIds)
         {
             var stockResult = await officeStockManager.DecreaseStockAtomicAsync(

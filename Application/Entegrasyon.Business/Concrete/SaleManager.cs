@@ -23,7 +23,7 @@ public sealed class SaleManager(
 {
     public async Task<IResult> MakeSale(MakeSaleDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("Satış yapma isteği geldi.", LogType.Sale, LogAction.Add, dto);
         await fluentValidator.ValidateAndThrowAsync(dto);
         var sale = mapper.MapToEntity(dto);
@@ -47,7 +47,7 @@ public sealed class SaleManager(
 
     public async Task<IDataResult<Pageable<SaleListDetailDto>>> GetSalesPageable(SalePageableDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var expression = new ExpressionBuilder<Sale>()
             .AddAnd(x => x.CustomerId == dto.CustomerId, dto.CustomerId.HasValue)
             .AddAnd(x => x.CreatedAt >= dto.DateBetweenStart, dto.DateBetweenStart is not null)

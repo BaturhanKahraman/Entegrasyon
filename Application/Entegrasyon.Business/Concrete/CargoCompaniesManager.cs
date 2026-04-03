@@ -27,7 +27,7 @@ public class CargoCompaniesManager(
         if (memoryCache.TryGetValue<List<CargoCompany>>(CacheKey, out var cached) && cached is not null)
             return new SuccessDataResult<List<CargoCompany>>(cached);
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var result = await dbContext.CargoCompanies.AsNoTracking().ToListAsync();
         memoryCache.Set(CacheKey, result, TimeSpan.FromMinutes(30));
         return new SuccessDataResult<List<CargoCompany>>(result);
@@ -51,7 +51,7 @@ public class CargoCompaniesManager(
 
     public async Task<IResult> AddCargoCompany(AddCargoCompanyDto cargoCompanyDto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("Kargo şirketi ekleme isteği geldi.", LogType.Brand, LogAction.Add, cargoCompanyDto);
         var cargo = mapper.MapToEntity(cargoCompanyDto);
         var result = LogicRunner.Run(await CheckIfTheSameNameExits(cargo.Name));
@@ -70,7 +70,7 @@ public class CargoCompaniesManager(
 
     public async Task<IResult> UpdateCargoCompany(CargoCompany cargoCompany)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("Kargo şirketi güncelleme isteği geldi.", LogType.Brand, LogAction.Update, cargoCompany);
         var result = LogicRunner.Run(await CheckIfTheSameNameExits(cargoCompany.Name));
         if (result != null)
@@ -88,7 +88,7 @@ public class CargoCompaniesManager(
 
     public async Task<IResult> DeleteCargoCompany(CargoCompany cargoCompany)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("Kargo şirketi silme isteği geldi.", LogType.Brand, LogAction.Delete, cargoCompany);
         if (!await dbContext.CargoCompanies.AnyAsync(x => x.Id == cargoCompany.Id))
         {

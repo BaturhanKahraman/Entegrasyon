@@ -17,7 +17,7 @@ public sealed class MarketplaceOverrideManager(
 {
     public async Task<IDataResult<MarketplaceOverrideDetailDto>> GetOverridesAsync(Guid productId, int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var product = await dbContext.MainProducts
             .AsNoTracking()
             .Include(p => p.ProductVariants)
@@ -72,7 +72,7 @@ public sealed class MarketplaceOverrideManager(
 
     public async Task<IResult> SaveOverridesAsync(SaveMarketplaceOverridesDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         // 1. Validation
         await validator.ValidateAndThrowAsync(dto);
 

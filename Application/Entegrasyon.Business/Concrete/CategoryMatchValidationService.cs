@@ -11,7 +11,7 @@ public class CategoryMatchValidationService(
 {
     public async Task<IDataResult<CategoryMatchValidationResultDto>> ValidateCategoryMatchAsync(int categoryId, int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var category = await dbContext.Categories
             .FirstOrDefaultAsync(c => c.Id == categoryId && !c.IsDeleted);
@@ -78,7 +78,7 @@ public class CategoryMatchValidationService(
 
     public async Task<IDataResult<List<CategoryMatchValidationResultDto>>> ValidateAllMatchesAsync(int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var mappedCategoryIds = await dbContext.CategoryMarketplaces
             .Where(cm => cm.MarketPlaceId == marketPlaceId && cm.IsActive)

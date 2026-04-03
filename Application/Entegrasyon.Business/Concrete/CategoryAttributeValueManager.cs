@@ -15,13 +15,13 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
 
     public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeId(int id)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         return await dbContext.CategoryAttributeValues.Where(x=>x.CategoryAttributeId== id).ToListAsync();
     }
 
     public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeIds(IEnumerable<int> categoryAttributeIds)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         return await dbContext.CategoryAttributeValues
             .Where(cav=>categoryAttributeIds.Contains(cav.CategoryAttributeId))
             .ToListAsync();

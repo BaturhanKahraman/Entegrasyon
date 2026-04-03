@@ -56,6 +56,9 @@ public class ScrutorScanTests
         services.AddDbContextFactory<IntegrationDbContext>(opts =>
             opts.UseInMemoryDatabase("ScrutorTest"), ServiceLifetime.Scoped);
 
+        // HybridCache — business managers inject this
+        services.AddHybridCache();
+
         // The method under test
         services.AddApplicationDependencies(config);
         services.AddNotification();

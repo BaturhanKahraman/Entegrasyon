@@ -32,13 +32,13 @@ public class DiscountVoucherManager : IDiscountVoucherManager
 
     public async Task<bool> CodeExits(string code)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         return await dbContext.DiscountVouchers.AnyAsync(x => x.Code == code);
     }
 
     public async Task<IDataResult<string>> CreateDiscountVoucher(CreateDiscountVoucherDto dto)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         await _applicationLogManager.AddLog("İndirim kodu oluşturulma isteği geldi.", LogType.DiscountVoucher, LogAction.Add, dto);
         await _fluentValidator.ValidateAndThrowAsync(dto);
 
@@ -61,7 +61,7 @@ public class DiscountVoucherManager : IDiscountVoucherManager
 
     public async Task<IResult> MakePassiveDiscountVouchers(IEnumerable<int> voucherIds)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         await _applicationLogManager.AddLog("İndirim kodları pasife çekiliyor.", LogType.DiscountVoucher, LogAction.Update);
         var vouchers = await dbContext.DiscountVouchers.AsTracking().Where(x => voucherIds.Contains(x.Id)).ToListAsync();
         vouchers.ForEach(x => x.IsActive = false);
@@ -72,7 +72,7 @@ public class DiscountVoucherManager : IDiscountVoucherManager
 
     public async Task<IResult> MakeActiveDiscountVouchers(IEnumerable<int> voucherIds)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         await _applicationLogManager.AddLog("İndirim kodları aktife çekiliyor.", LogType.DiscountVoucher, LogAction.Update);
         var vouchers = await dbContext.DiscountVouchers.AsTracking().Where(x => voucherIds.Contains(x.Id)).ToListAsync();
         vouchers.ForEach(x => x.IsActive = true);
@@ -83,7 +83,7 @@ public class DiscountVoucherManager : IDiscountVoucherManager
 
     public async Task<IDataResult<Pageable<DiscountVoucherDto>>> GetDiscountVouchers(int pageIndex, int pagesize, string? searchParam = null)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var query = dbContext.DiscountVouchers.AsQueryable();
         if (!string.IsNullOrEmpty(searchParam))
             query = query.Where(x => x.Code == searchParam || x.Customer!.FullName!.Contains(searchParam));
@@ -105,7 +105,7 @@ public class DiscountVoucherManager : IDiscountVoucherManager
 
     public async Task<IResult> CheckVoucherValid(string code)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var discountVoucher = await dbContext.DiscountVouchers.FirstOrDefaultAsync(x => x.Code == code);
         if (discountVoucher == null)
             return new ErrorResult($"{code} kodunda herhangi bir kupon bulunamamıştır.");

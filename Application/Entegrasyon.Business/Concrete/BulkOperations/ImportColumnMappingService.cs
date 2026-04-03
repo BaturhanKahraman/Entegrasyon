@@ -57,7 +57,7 @@ public class ImportColumnMappingService(
 
     public async Task<List<ImportColumnProfile>> GetProfilesAsync(BulkOperationType type)
     {
-        using var db = contextFactory.CreateDbContext();
+        await using var db = await contextFactory.CreateDbContextAsync();
         return await db.ImportColumnProfiles
             .AsNoTracking()
             .Where(p => p.ImportType == type && !p.IsDeleted)
@@ -70,7 +70,7 @@ public class ImportColumnMappingService(
         if (string.IsNullOrWhiteSpace(name))
             return new ErrorResult("Profil adı boş olamaz.");
 
-        using var db = contextFactory.CreateDbContext();
+        await using var db = await contextFactory.CreateDbContextAsync();
 
         var exists = await db.ImportColumnProfiles
             .AnyAsync(p => p.Name == name.Trim() && p.ImportType == type && !p.IsDeleted);
@@ -90,7 +90,7 @@ public class ImportColumnMappingService(
 
     public async Task<IResult> DeleteProfileAsync(int id)
     {
-        using var db = contextFactory.CreateDbContext();
+        await using var db = await contextFactory.CreateDbContextAsync();
         var profile = await db.ImportColumnProfiles.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (profile is null)
             return new ErrorResult("Profil bulunamadı.");

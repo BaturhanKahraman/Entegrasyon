@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Photino.Blazor" Version="3.*" />
-    <PackageReference Include="Velopack" Version="0.*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.*" />
-    <PackageReference Include="MudBlazor" Version="7.*" />
+    <PackageReference Include="Photino.Blazor" />
+    <PackageReference Include="Velopack" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="MudBlazor" />
   </ItemGroup>
 
   <ItemGroup>

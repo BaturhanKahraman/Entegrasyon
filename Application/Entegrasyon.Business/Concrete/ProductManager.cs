@@ -43,7 +43,7 @@ public class ProductManager(
         await applicationLogManager.AddLog("Ürün ekleme isteği geldi.", LogType.Product, LogAction.Add, dto);
         await validator.ValidateAndThrowAsync(dto);
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // Business Rules
         var stockCodeConflict = !string.IsNullOrEmpty(dto.StockCode) &&
@@ -92,7 +92,7 @@ public class ProductManager(
         if (string.IsNullOrEmpty(barcode))
             return new ErrorResult("Barkod boş olamaz.");
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var dto = await dbContext.MainProducts
             .Where(x => x.ProductVariants.Any(pv => pv.Barcode == barcode))
@@ -110,7 +110,7 @@ public class ProductManager(
 
     public async Task<IDataResult<ProductEditPageDto>> GetProductEditPageData(Guid id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var product = await dbContext.MainProducts
             .Where(p => p.Id == id)
@@ -177,7 +177,7 @@ public class ProductManager(
         try { await validator.ValidateAndThrowAsync(dto); }
         catch (Exception ex) { return new ErrorResult(ex.Message); }
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var stockCodeConflict = await dbContext.MainProducts
             .AnyAsync(p => p.StockCode == dto.StockCode && p.Id != dto.Id && !p.IsDeleted);
@@ -263,7 +263,7 @@ public class ProductManager(
 
     public async Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var result = await dbContext.MainProducts
             .Where(p => p.Id == productId)
@@ -304,7 +304,7 @@ public class ProductManager(
 
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var query = dbContext.MainProducts.AsQueryable();
         if (!string.IsNullOrEmpty(dto.FullTextSearchKey))
@@ -331,7 +331,7 @@ public class ProductManager(
     {
         await applicationLogManager.AddLog("Ürün silme isteği alındı.", LogType.Product, LogAction.Delete, new { id });
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var product = await dbContext.MainProducts.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (product is null)
@@ -345,19 +345,19 @@ public class ProductManager(
 
     public async Task<int> GetProductCountByCategoryId(int categoryId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return await dbContext.MainProducts.CountAsync(p => p.CategoryId == categoryId);
     }
 
     public async Task<bool> HasSoldProductsInCategory(int categoryId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return await dbContext.SaleItems.AnyAsync(si => si.ProductVariant.Product.CategoryId == categoryId);
     }
 
     public async Task<IDataResult<Product>> GetProductBySeoSlugAsync(string slug)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var product = await dbContext.MainProducts
             .Include(p => p.Brand)
@@ -377,7 +377,7 @@ public class ProductManager(
 
     public async Task<IDataResult<Pageable<StorefrontProductCardDto>>> GetStorefrontProductsAsync(StorefrontCatalogQuery query)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var q = dbContext.MainProducts.Where(p => !p.IsDeleted);
 
@@ -466,7 +466,7 @@ public class ProductManager(
         if (string.IsNullOrWhiteSpace(query) || query.Trim().Length < 2)
             return new SuccessDataResult<List<StorefrontSearchSuggestionDto>>(new List<StorefrontSearchSuggestionDto>());
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var term = query.Trim();
 
         var products = await dbContext.MainProducts
@@ -572,7 +572,7 @@ public class ProductManager(
             return new SuccessDataResult<List<StorefrontProductDetailDto>>(new List<StorefrontProductDetailDto>());
 
         var distinctIds = ids.Distinct().Take(10).ToList();
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var products = await dbContext.MainProducts
             .Include(p => p.ProductVariants).ThenInclude(pv => pv.BranchOfficeStocks)
@@ -644,7 +644,7 @@ public class ProductManager(
 
     public async Task<IDataResult<List<BrandFilterDto>>> GetBrandsForCategoryAsync(int categoryId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var brands = await dbContext.MainProducts
             .AsNoTracking()

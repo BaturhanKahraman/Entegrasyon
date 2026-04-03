@@ -22,13 +22,13 @@ public class ProductVariantManager : IProductVariantManager
 
     public async Task<ProductVariant> GetById(Guid id)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         return (await dbContext.ProductVariants.FirstOrDefaultAsync(x => x.Id == id))!;
     }
 
     public async Task<string> GetLastProductVariantBarcode()
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         return (await dbContext.ProductVariants.AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(x => x.Barcode != null))?.Barcode ?? "";
@@ -36,13 +36,13 @@ public class ProductVariantManager : IProductVariantManager
 
     public async Task<List<string>> GetAllVariantsBarcodes()
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         return await dbContext.ProductVariants.Select(x => x.Barcode!).ToListAsync();
     }
 
     public async Task<IDataResult<ProductVariantSaleSearchDto>> GetProductVariantByBarcode(string barcode)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var result = await dbContext.ProductVariants
             .Where(x => x.Barcode == barcode)
             .Select(x => new ProductVariantSaleSearchDto(
@@ -59,7 +59,7 @@ public class ProductVariantManager : IProductVariantManager
 
     public async Task<IResult> GetProductVariantsBySearchText(string fullTextSearch)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var result = await dbContext.ProductVariants
             .Where(x => x.BranchOfficeStocks.Sum(stck => stck.CurrentStock) > 0 &&
                 (x.Product.SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))

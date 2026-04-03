@@ -20,7 +20,7 @@ public sealed class POSSessionManager(
 {
     public async Task<IDataResult<POSSession>> OpenSessionAsync(OpenSessionDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // 1. Validation
         await fluentValidator.ValidateAndThrowAsync(dto);
@@ -55,7 +55,7 @@ public sealed class POSSessionManager(
 
     public async Task<IResult> CloseSessionAsync(CloseSessionDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // 1. Validation
         await fluentValidator.ValidateAndThrowAsync(dto);
@@ -114,7 +114,7 @@ public sealed class POSSessionManager(
 
     public async Task<IDataResult<POSSession>> GetActiveSessionAsync(int branchOfficeId, string? terminalId = null)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var query = dbContext.POSSessions
             .Where(s => s.BranchOfficeId == branchOfficeId && s.Status == POSSessionStatus.Open);
@@ -131,7 +131,7 @@ public sealed class POSSessionManager(
 
     public async Task<IDataResult<POSTransaction>> RecordTransactionAsync(POSTransactionDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // 1. Validation
         await fluentValidator.ValidateAndThrowAsync(dto);
@@ -183,7 +183,7 @@ public sealed class POSSessionManager(
 
     public async Task<IResult> AddCashMovementAsync(AddCashMovementDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // 1. Validation
         await fluentValidator.ValidateAndThrowAsync(dto);
@@ -223,7 +223,7 @@ public sealed class POSSessionManager(
 
     public async Task<IDataResult<POSSummaryDto>> GetSessionSummaryAsync(long sessionId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var session = await dbContext.POSSessions
             .FirstOrDefaultAsync(s => s.Id == sessionId);
@@ -279,7 +279,7 @@ public sealed class POSSessionManager(
 
     public async Task<IDataResult<POSSummaryDto>> GetDailySummaryAsync(int branchOfficeId, DateOnly date)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var startOfDay = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var endOfDay = startOfDay.AddDays(1);

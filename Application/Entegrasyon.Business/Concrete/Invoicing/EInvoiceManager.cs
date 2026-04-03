@@ -25,7 +25,7 @@ public sealed class EInvoiceManager(
         // 2. Business Rules — su anda ek kural yok, ileride LogicRunner eklenebilir
 
         // 3. Execution
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("E-Fatura olusturma istegi geldi.", LogType.Invoice, LogAction.Add, dto);
 
         var invoice = MapToEntity(dto);
@@ -65,7 +65,7 @@ public sealed class EInvoiceManager(
 
     public async Task<IDataResult<Pageable<EInvoiceListDto>>> GetInvoices(EInvoiceFilterDto filter)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var query = dbContext.EInvoices.AsQueryable();
 
@@ -104,7 +104,7 @@ public sealed class EInvoiceManager(
 
     public async Task<IDataResult<EInvoiceDetailDto>> GetInvoiceDetail(Guid invoiceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var invoice = await dbContext.EInvoices
             .Include(x => x.Lines)
@@ -142,7 +142,7 @@ public sealed class EInvoiceManager(
 
     public async Task<IResult> CancelInvoice(Guid invoiceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var invoice = await dbContext.EInvoices.FindAsync(invoiceId);
         if (invoice is null)
@@ -171,7 +171,7 @@ public sealed class EInvoiceManager(
 
     public async Task<IResult> SendToGib(Guid invoiceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var invoice = await dbContext.EInvoices
             .Include(x => x.Lines)
@@ -207,7 +207,7 @@ public sealed class EInvoiceManager(
 
     public async Task<IDataResult<byte[]>> DownloadPdf(Guid invoiceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var invoice = await dbContext.EInvoices.FindAsync(invoiceId);
         if (invoice is null)
@@ -221,7 +221,7 @@ public sealed class EInvoiceManager(
 
     public async Task<IDataResult<CreateEInvoiceDto>> GetInvoiceFromSale(Guid saleId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var sale = await dbContext.Sales
             .Include(s => s.SaleItems)

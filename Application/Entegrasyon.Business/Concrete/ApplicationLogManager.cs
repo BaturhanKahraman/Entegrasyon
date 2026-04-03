@@ -18,7 +18,7 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
 
     public async Task AddLog(string content,LogType type,LogAction action = LogAction.None,object? obj = null,CancellationToken token = default)
     {
-        using var context = contextFactory.CreateDbContext();
+        await using var context = await contextFactory.CreateDbContextAsync();
         var log = new ApplicationLog()
         {
             Content = content,
@@ -49,7 +49,7 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
     public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int pageIndex = 0,int itemCount = 50,
         LogType? logType = null,LogAction? logAction = null,CancellationToken token=default)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var logs = await dbContext.Logs.OrderByDescending(x => x.Id)
                 .Where(x => x.LogType == logType)
                 .Where(x => x.LogAction == logAction)

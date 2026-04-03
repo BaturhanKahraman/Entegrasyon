@@ -28,7 +28,7 @@ public class CategoryAutoMatchService(
             return new SuccessDataResult<List<CategoryAutoMatchSuggestionDto>>([], "Kategori listesi bos.");
 
         // Leaf guard — only suggest matches for leaf categories
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var requestedIds = request.Categories.Select(c => c.CategoryId).ToList();
         var nonLeafIdsList = await dbContext.Categories
             .Where(c => !c.IsDeleted && requestedIds.Contains(c.SuperCategoryId ?? 0))

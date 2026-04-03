@@ -20,7 +20,7 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
 
     public async Task<IResult> AddCategoryAttributeForCategory(int catId, IEnumerable<AddCategoryAttributeDto> dto)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var dtoList = dto.ToList();
 
         if (dtoList.Count(d => d.IsVarianter) > 1)

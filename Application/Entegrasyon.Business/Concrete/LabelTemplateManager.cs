@@ -19,7 +19,7 @@ public class LabelTemplateManager(
 {
     public async Task<IDataResult<List<LabelTemplateDto>>> GetAllAsync()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var templates = await dbContext.LabelTemplates
             .Where(t => !t.IsDeleted)
             .OrderByDescending(t => t.IsDefault)
@@ -32,7 +32,7 @@ public class LabelTemplateManager(
 
     public async Task<IDataResult<LabelTemplateDto>> GetByIdAsync(Guid id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
@@ -44,7 +44,7 @@ public class LabelTemplateManager(
 
     public async Task<IDataResult<LabelTemplateDto>> GetDefaultAsync(LabelType type)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Type == type && t.IsDefault && !t.IsDeleted);
 
@@ -56,7 +56,7 @@ public class LabelTemplateManager(
 
     public async Task<IDataResult<LabelTemplateDto>> SaveAsync(SaveLabelTemplateDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         // 1. Validation
         var validationResult = await validator.Validate(dto);
         if (!validationResult.IsValid)
@@ -127,7 +127,7 @@ public class LabelTemplateManager(
 
     public async Task<IResult> DeleteAsync(Guid id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
@@ -148,7 +148,7 @@ public class LabelTemplateManager(
 
     public async Task<IResult> SetAsDefaultAsync(Guid id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var template = await dbContext.LabelTemplates
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 

@@ -15,25 +15,17 @@ using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CustomerManager : ICustomerManager
+public class CustomerManager(
+    IDbContextFactory<IntegrationDbContext> contextFactory,
+    IFluentValidator fluentValidator,
+    CustomerMapper mapper,
+    IApplicationLogManager applicationLogManager) : ICustomerManager
 {
-    private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
-    private readonly IFluentValidator _fluentValidator;
-    private readonly CustomerMapper _mapper;
-    private readonly IApplicationLogManager _applicationLogManager;
-
-    public CustomerManager(IDbContextFactory<IntegrationDbContext> contextFactory, IFluentValidator fluentValidator, CustomerMapper mapper, IApplicationLogManager applicationLogManager)
-    {
-        _contextFactory = contextFactory;
-        _fluentValidator = fluentValidator;
-        _mapper = mapper;
-        _applicationLogManager = applicationLogManager;
-    }
 
     public async Task<IDataResult<Customer>> UpdateCustomer(UpdateCustomerDto customerDto)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
-        await _applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.", LogType.Customer, LogAction.Update);
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        await applicationLogManager.AddLog("Müşteri düzenleme isteği geldi.", LogType.Customer, LogAction.Update);
         Customer applicationCustomer = (await dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == customerDto.Id))!;
         if (customerDto.CustomerType == "Retail")
         {
@@ -62,28 +54,28 @@ public class CustomerManager : ICustomerManager
             corporateCustomer.PhoneNumber = customerDto.PhoneNumber;
         }
         await dbContext.SaveChangesAsync();
-        await _applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.", LogType.Customer, LogAction.Update);
+        await applicationLogManager.AddLog("Müşteri düzenleme isteği başarılı oldu.", LogType.Customer, LogAction.Update);
         return new SuccessDataResult<Customer>(applicationCustomer!);
     }
 
     public async Task<IResult> AddCustomer(CustomerAddDto dto)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
-        await _applicationLogManager.AddLog("Müşteri ekleme isteği geldi.", LogType.Customer, LogAction.Add);
-        await _fluentValidator.ValidateAndThrowAsync(dto);
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        await applicationLogManager.AddLog("Müşteri ekleme isteği geldi.", LogType.Customer, LogAction.Add);
+        await fluentValidator.ValidateAndThrowAsync(dto);
         Customer customer = dto.CustomerType == "Retail"
-            ? _mapper.MapToRetail(dto)
-            : _mapper.MapToCorporate(dto);
+            ? mapper.MapToRetail(dto)
+            : mapper.MapToCorporate(dto);
         dbContext.Customers.Add(customer);
         await dbContext.SaveChangesAsync();
-        await _applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add);
+        await applicationLogManager.AddLog("Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add);
         var result = FuncMappings.CustomerToDetailDto()(customer);
         return new SuccessDataResult<CustomerDetailDto>(result, "Müşteri başarıyla eklendi.");
     }
 
     public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo, int pageIndex = 0, int itemCount = 50)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.Customers.AsQueryable();
         if (!string.IsNullOrEmpty(customerInfo))
             query = query.Where(x =>
@@ -104,14 +96,14 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IResult> CheckIfCustomerExits(int id)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var result = await dbContext.Customers.AnyAsync(x => x.Id == id);
         return result ? new SuccessResult() : new ErrorResult("Müşteri bulunamamıştır.");
     }
 
     public async Task<IDataResult<IEnumerable<CustomerDetailDto>>> GetCustomerBySearch(string searchText)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         if (string.IsNullOrEmpty(searchText))
             throw new ValidationException("Arama kriteri boş olamaz.");
 
@@ -127,13 +119,13 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IDataResult<Customer>> GetCustomerById(int id)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return new SuccessDataResult<Customer>((await dbContext.Customers.FirstOrDefaultAsync(x => x.Id == id))!);
     }
 
     public async Task<IDataResult<CustomerDetailDto>> GetCustomerDetailById(int id)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var cust = await dbContext.Customers
             .Where(c => c.Id == id)
             .Select(FuncMappings.CustomerToDetailDto().ToExpression())
@@ -143,7 +135,7 @@ public class CustomerManager : ICustomerManager
 
     public async Task<IResult> SoftDelete(int id)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var cust = await dbContext.Customers.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (cust == null)
             return new ErrorResult(Messages.CustomerNotFound);

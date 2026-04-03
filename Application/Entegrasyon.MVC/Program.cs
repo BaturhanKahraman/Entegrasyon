@@ -136,6 +136,17 @@ if (!string.IsNullOrEmpty(redisConnection))
 builder.Services.AddDistributedMemoryCache(); // Redis yoksa veya düşerse fallback
 builder.Services.AddMemoryCache();
 
+// ── Hybrid Cache (.NET 10) ──────────────────────────────────────────────
+// L1 (in-memory) + L2 (Redis) otomatik. Stampede protection dahili.
+builder.Services.AddHybridCache(options =>
+{
+    options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
+    {
+        Expiration = TimeSpan.FromMinutes(15),
+        LocalCacheExpiration = TimeSpan.FromMinutes(5)
+    };
+});
+
 // ── Output Cache ─────────────────────────────────────────────────────────
 builder.Services.AddOutputCache(options =>
 {

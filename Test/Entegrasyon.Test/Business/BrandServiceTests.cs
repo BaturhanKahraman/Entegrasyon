@@ -36,7 +36,9 @@ public class BrandServiceTests : BaseTest
             mockApplicationLogger.Object,
             _brandMapper,
             mockContextFactory.Object,
-            _tenantCache);
+            _tenantCache,
+            mockHybridCache.Object,
+            mockTenantContext.Object);
     }
 
     [Fact]

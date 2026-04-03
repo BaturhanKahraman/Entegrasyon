@@ -25,7 +25,7 @@ public class ApplicationLifetimeManager(
 
     private async Task MigrateDatabase(CancellationToken ct = default)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(ct);
         var pending = pendingMigrations.ToList();
 

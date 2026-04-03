@@ -19,7 +19,7 @@ public class DiscountManager(
 {
     public async Task<IDataResult<DiscountPreviewDto>> GetDiscountPreviewAsync(Guid productId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var product = await dbContext.MainProducts
             .Where(p => p.Id == productId)
             .Select(p => new
@@ -88,7 +88,7 @@ public class DiscountManager(
 
     public async Task<IDataResult<DiscountResultDto>> ApplyDiscountAsync(ApplyDiscountDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         // 1. Validation
         await validator.ValidateAndThrowAsync(dto);
 

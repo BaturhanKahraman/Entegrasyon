@@ -18,7 +18,7 @@ public sealed class CommissionCalculator(
         int marketPlaceId, int? categoryId, decimal salePrice, decimal costPrice,
         CancellationToken ct = default)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // Kategori bazlı oran bul, yoksa default
         var rate = await dbContext.MarketplaceCommissionRates
@@ -61,7 +61,7 @@ public sealed class CommissionCalculator(
     public async Task<IDataResult<List<MarketplaceCommissionRateDto>>> GetCommissionRatesAsync(
         int marketPlaceId, CancellationToken ct = default)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var rates = await dbContext.MarketplaceCommissionRates
             .AsNoTracking()
@@ -93,7 +93,7 @@ public sealed class CommissionCalculator(
         // 1. Validation
         await validator.ValidateAndThrowAsync(dto);
 
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         // 2. Business Rules
         var marketplaceExists = await dbContext.MarketPlaces.AsNoTracking()
@@ -178,7 +178,7 @@ public sealed class CommissionCalculator(
 
     public async Task<IResult> DeleteCommissionRateAsync(int rateId, CancellationToken ct = default)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var rate = await dbContext.MarketplaceCommissionRates
             .FirstOrDefaultAsync(r => r.Id == rateId, ct);

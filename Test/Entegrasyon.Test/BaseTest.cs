@@ -5,6 +5,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Logs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -20,6 +21,7 @@ public class BaseTest
     protected Mock<IFluentValidator> MockValidator = null!;
     protected Mock<IMemoryCache> mockMemoryCache = null!;
     protected Mock<ITenantContext> mockTenantContext = null!;
+    protected Mock<HybridCache> mockHybridCache = null!;
     public BaseTest()
     {
         //mock dbcontextoptions
@@ -58,5 +60,8 @@ public class BaseTest
         mockTenantContext.Setup(t => t.TenantId).Returns(1);
         mockTenantContext.Setup(t => t.IsInitialized).Returns(true);
         //MockValidator
+
+        //hybrid cache mock
+        mockHybridCache = new Mock<HybridCache>();
     }
 }

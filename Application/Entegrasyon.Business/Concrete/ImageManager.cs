@@ -26,7 +26,7 @@ public class ImageManager : IImageManager
 
     public async Task<IResult> AddProductImages(Guid productId, IEnumerable<VariantImageStream> images)
     {
-        using var dbContext = _contextFactory.CreateDbContext();
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var entities = new List<Image>();
         var displayOrderByVariant = new Dictionary<Guid, int>();
 

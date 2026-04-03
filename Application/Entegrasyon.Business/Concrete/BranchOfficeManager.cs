@@ -22,13 +22,13 @@ public class BranchOfficeManager(
 {
     public async Task<IDataResult<List<BranchOffice>>> GetBranchList(CancellationToken token=default)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return new SuccessDataResult<List<BranchOffice>>(await dbContext.BranchOffices.AsNoTracking().ToListAsync(token));
     }
 
     public async Task<IDataResult<BranchOffice>> AddBranch(BranchOfficeAddDto officeDto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         //VALİDATE
         await applicationLogManager.AddLog("Ofis ekleme işlemi yapılmakta.",LogType.Branch,LogAction.Add);
         var result = LogicRunner.Run(await CheckIfTheSameNameExists(dbContext, officeDto.Name, 0));
@@ -43,7 +43,7 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<BranchDetailDto>> GetBranchDetailById(int branchId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var data = await dbContext.BranchOffices.Select(b =>
             new BranchDetailDto(b.Id, b.Name!, b.Users.Count(), b.CreatedAt))
             .FirstOrDefaultAsync(b=>b.Id==branchId);
@@ -52,7 +52,7 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<BranchOffice>> Update(BranchOfficeEditDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         //validate
         //TODO update için rowversion ekle
         await applicationLogManager.AddLog("Ofis düzenleme işlemi yapılmakta.",LogType.Branch,LogAction.Update,dto);
@@ -67,7 +67,7 @@ public class BranchOfficeManager(
     }
     public async Task<IResult> Delete(int id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("Ofis silme işlemi yapılmakta.", LogType.Branch, LogAction.Delete);
 
         if (id <= 0)
@@ -109,7 +109,7 @@ public class BranchOfficeManager(
 
     public async Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var officeIdArray = officeIds.ToArray();
         var existingCount = await dbContext.BranchOffices.CountAsync(o => officeIdArray.Contains(o.Id));
         return existingCount == officeIdArray.Length;
@@ -117,7 +117,7 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(int pageIndex = 0, int pageSize = 50)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         int total = await dbContext.BranchOffices.CountAsync();
         var items = await dbContext.BranchOffices
             .OrderByDescending(b => b.CreatedAt)
@@ -130,7 +130,7 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(BranchPaginatedRequest request)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         int total = await dbContext.BranchOffices.CountAsync();
         var items = await dbContext.BranchOffices
             .OrderByDescending(b => b.CreatedAt)
@@ -143,13 +143,13 @@ public class BranchOfficeManager(
 
     public async Task<BranchOffice> GetBranchById(int id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return (await dbContext.BranchOffices.FirstOrDefaultAsync(x => x.Id == id))!;
     }
 
     public async Task<IDataResult<List<BranchOfficePageListDto>>> GetPageBranchListAsync()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         // Ana query — scalar sub-query'ler EF Core translate edebilir
         var items = await dbContext.BranchOffices
             .AsNoTracking()
@@ -189,7 +189,7 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<List<BranchStockItemDto>>> GetBranchStocksAsync(int branchId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var stocks = await dbContext.BranchOfficeStocks
             .AsNoTracking()
             .Where(s => s.BranchOfficeId == branchId)
@@ -207,7 +207,7 @@ public class BranchOfficeManager(
     public async Task<IDataResult<List<StockMovementViewDto>>> GetBranchStockMovementsAsync(
         int branchId, DateTimeOffset? from, DateTimeOffset? to)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.StockMovements
             .AsNoTracking()
             .Where(m => m.BranchOfficeId == branchId);
@@ -236,7 +236,7 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<List<MarketPlaceWarehouse>>> GetBranchMarketPlacesAsync(int branchId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var warehouses = await dbContext.MarketPlaceWarehouses
             .AsNoTracking()
             .Where(w => w.BranchOfficeId == branchId)
@@ -247,7 +247,7 @@ public class BranchOfficeManager(
 
     public async Task<IResult> AddMarketPlaceWarehouseAsync(int branchId, int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var existing = await dbContext.MarketPlaceWarehouses
             .AnyAsync(w => w.BranchOfficeId == branchId && w.MarketPlaceId == marketPlaceId);
         if (existing)
@@ -265,7 +265,7 @@ public class BranchOfficeManager(
 
     public async Task<IResult> RemoveMarketPlaceWarehouseAsync(int warehouseId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var warehouse = await dbContext.MarketPlaceWarehouses.AsTracking()
             .FirstOrDefaultAsync(w => w.Id == warehouseId);
         if (warehouse is null)

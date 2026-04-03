@@ -11,7 +11,7 @@ public sealed class ApplicationSettingManager(
 {
     public async Task<List<ApplicationSettingDto>> GetAllSettingsAsync()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var settings = await dbContext.ApplicationSettings
             .OrderBy(s => s.Group)
             .ThenBy(s => s.Id)
@@ -21,7 +21,7 @@ public sealed class ApplicationSettingManager(
 
     public async Task<List<ApplicationSettingDto>> GetSettingsByGroupAsync(string group)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var settings = await dbContext.ApplicationSettings
             .Where(s => s.Group == group)
             .OrderBy(s => s.Id)
@@ -31,7 +31,7 @@ public sealed class ApplicationSettingManager(
 
     public async Task<ApplicationSettingDto?> GetSettingAsync(string key)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var setting = await dbContext.ApplicationSettings
             .FirstOrDefaultAsync(s => s.Key == key);
         return setting is null ? null : SettingMapper.MapToDto(setting);
@@ -39,7 +39,7 @@ public sealed class ApplicationSettingManager(
 
     public async Task<bool> UpdateSettingsAsync(List<UpdateApplicationSettingDto> settings)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var ids = settings.Select(s => s.Id).ToList();
         var entities = await dbContext.ApplicationSettings
             .Where(s => ids.Contains(s.Id))
@@ -58,7 +58,7 @@ public sealed class ApplicationSettingManager(
 
     public async Task<bool> TestSmtpConnectionAsync()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var settings = await dbContext.ApplicationSettings
             .Where(s => s.Group == "E-posta Ayarları")
             .ToDictionaryAsync(s => s.Key, s => s.Value);
@@ -88,7 +88,7 @@ public sealed class ApplicationSettingManager(
 
     public async Task SendTestEmailAsync()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var settings = await dbContext.ApplicationSettings
             .Where(s => s.Group == "E-posta Ayarları")
             .ToDictionaryAsync(s => s.Key, s => s.Value);

@@ -1,5 +1,6 @@
 namespace Entegrasyon.Entity.Results
 {
+    [Obsolete("Use Result<T>.Fail() instead. Will be removed in a future version.")]
     public class ErrorDataResult<T> : DataResult<T>
     {
         public ErrorDataResult(T data) : base(data,false)

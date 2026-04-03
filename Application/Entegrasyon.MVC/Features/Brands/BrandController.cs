@@ -4,12 +4,13 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Requests;
+using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Brands;
 
 [Authorize]
-public class BrandController(IBrandService brandService) : Controller
+public class BrandController(IBrandService brandService) : HtmxController
 {
     [HttpGet("/brands")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -32,27 +33,7 @@ public class BrandController(IBrandService brandService) : Controller
     {
         var result = await brandService.AddBrand(new AddBrandDto { Name = name });
 
-        if (Request.IsHtmx())
-        {
-            if (result.Success)
-            {
-                Response.HtmxTriggerWithData("showToast",
-                    new { message = "Marka eklendi.", type = "success" });
-                Response.Headers.Append("HX-Trigger", "brandChanged");
-                return Content("");
-            }
-
-            Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Eklenemedi.", type = "danger" });
-            return StatusCode(422);
-        }
-
-        if (result.Success)
-            TempData.SetSuccess("Marka basariyla eklendi.");
-        else
-            TempData.SetError(result.Message ?? "Marka eklenemedi.");
-
-        return RedirectToAction(nameof(Index));
+        return HtmxMutationResult(result, "Marka eklendi.", "Eklenemedi.", refreshEvent: "brandChanged");
     }
 
     [HttpPost("/brands/{id:int}/delete")]
@@ -60,25 +41,6 @@ public class BrandController(IBrandService brandService) : Controller
     {
         var result = await brandService.DeleteBrand(id);
 
-        if (Request.IsHtmx())
-        {
-            if (result.Success)
-            {
-                Response.HtmxTriggerWithData("showToast",
-                    new { message = "Marka silindi.", type = "success" });
-                return Content("");
-            }
-
-            Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Silinemedi.", type = "danger" });
-            return StatusCode(422);
-        }
-
-        if (result.Success)
-            TempData.SetSuccess("Marka basariyla silindi.");
-        else
-            TempData.SetError(result.Message ?? "Marka silinemedi.");
-
-        return RedirectToAction(nameof(Index));
+        return HtmxMutationResult(result, "Marka silindi.", "Silinemedi.");
     }
 }

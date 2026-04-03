@@ -17,7 +17,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 {
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var list = attrs.ToList();
         var newAttrs = list.Where(x => x.Id <= 0).ToList();
         if (newAttrs.Any())
@@ -30,20 +30,20 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<bool> CheckIfCategoryHasCategoryAttribute(int categoryId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return await dbContext.CategoryAttributes.AnyAsync(x => x.Categories.Any(c => c.CategoryId == categoryId));
     }
 
     public async Task<bool> CheckIfExits(string name)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         string nameNormalize = name.Trim().ToLower();
         return await dbContext.CategoryAttributes.AnyAsync(x => x.CategoryAttributeKey!.Trim().ToLower() == nameNormalize);
     }
 
     public async Task<IDataResult<List<CategoryAttribute>>> GetCategoryAttributes()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return new SuccessDataResult<List<CategoryAttribute>>(
             await dbContext.CategoryAttributes
                 .Include(x => x.CategoryAttributeValues)
@@ -52,7 +52,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IDataResult<Pageable<CategoryAttribute>>> GetCategoryAttributesPageable(SearchablePageDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var query = dbContext.CategoryAttributes
             .Include(x => x.CategoryAttributeValues)
@@ -79,7 +79,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IDataResult<List<CategoryAttributeDto>>> GetCategoryAttributesByCategory(int categoryId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var result = await dbContext.CategoryAttributes
             .AsSingleQuery()
             .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
@@ -99,7 +99,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IDataResult<CategoryAttribute>> GetCategoryAttributeById(int id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var attr = await dbContext.CategoryAttributes
             .Include(x => x.CategoryAttributeValues)
             .Include(x => x.Categories).ThenInclude(c => c.Category)
@@ -111,7 +111,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> UpdateCategoryAttribute(EditCategoryAttributeDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await fluentValidator.ValidateAndThrowAsync(dto);
         var attr = await dbContext.CategoryAttributes
             .AsTracking()
@@ -158,7 +158,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> DeleteCategoryAttribute(int id)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         bool inUse = await dbContext.AttributeKeyValues.AnyAsync(x => x.CategoryAttributeId == id);
         if (inUse)
         {
@@ -182,7 +182,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await fluentValidator.ValidateAndThrowAsync(dto);
         var categoryAttr = mapper.MapToEntity(dto);
         dbContext.CategoryAttributes.Add(categoryAttr);
@@ -192,7 +192,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task RemoveAllAttributesByCategoryId(int categoryId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         var attrs = await dbContext.CategoryAttributes
             .Where(x => x.Categories.Any(c => c.CategoryId == categoryId))
             .ToListAsync();
@@ -205,20 +205,20 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task RemoveAttributes(IEnumerable<CategoryAttribute> attrs)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         dbContext.CategoryAttributes.RemoveRange(attrs);
         await dbContext.SaveChangesAsync();
     }
 
     public async Task<List<CategoryAttribute>> GetCategoryAttributesByIds(IEnumerable<int> ids)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return await dbContext.CategoryAttributes.Where(x => ids.Contains(x.Id)).ToListAsync();
     }
 
     public async Task<Dictionary<int, AttributeMarketPlaceMatchDto>> GetAttributeMarketPlaceMatchesAsync()
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
         return await dbContext.CategoryAttributeMarketPlaceMatches
             .AsNoTracking()
             .Include(m => m.MarketPlace)
@@ -234,7 +234,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> CreateAttributeMarketPlaceMatchAsync(CreateAttributeMarketPlaceMatchDto dto)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         await applicationLogManager.AddLog("Özellik marketplace mapping oluşturma isteği", LogType.Matching, LogAction.Add, dto);
 
@@ -283,7 +283,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> RemoveAttributeMarketPlaceMatchAsync(int attributeId, int marketPlaceId)
     {
-        using var dbContext = contextFactory.CreateDbContext();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         await applicationLogManager.AddLog($"Özellik marketplace mapping silme isteği (AttributeId: {attributeId})", LogType.Matching, LogAction.Delete);
 
