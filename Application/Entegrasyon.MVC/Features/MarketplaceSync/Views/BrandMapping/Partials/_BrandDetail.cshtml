@@ -1,0 +1,93 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.BrandDetailVm
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@Model.BrandName</h3>
+    </div>
+    <div class="card-body">
+        @if (Model.IsMapped && Model.Mapping is not null)
+        {
+            <div class="alert alert-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Eslendi</strong>
+                        <div class="mt-1">
+                            <span class="text-secondary">Pazaryeri Marka ID:</span>
+                            <strong>@Model.Mapping.MarketPlaceBrandId</strong>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Mapping.MarketPlaceBrandName))
+                        {
+                            <div>
+                                <span class="text-secondary">Pazaryeri Marka Adi:</span>
+                                <strong>@Model.Mapping.MarketPlaceBrandName</strong>
+                            </div>
+                        }
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm"
+                            hx-post="/marketplace/sync/brands/@Model.BrandId/unmap?mp=@Model.MarketPlaceId"
+                            hx-confirm="Marka eslemesini kaldirmak istediginize emin misiniz?"
+                            hx-swap="none"
+                            hx-on::after-request="if(event.detail.successful) { htmx.ajax('GET', '/marketplace/sync/brands/@Model.BrandId/detail?mp=@Model.MarketPlaceId', {target:'#brand-detail-panel'}); }">
+                        Eslemeyi Kaldir
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-secondary mb-3">
+                <strong>Eslenmedi</strong> — Bu marka henuz bu pazaryeri ile eslenmemis.
+            </div>
+
+            <h4 class="mb-3">Yeni Esleme Olustur</h4>
+            <form hx-post="/marketplace/sync/brands/@Model.BrandId/map"
+                  hx-swap="none"
+                  hx-on::after-request="if(event.detail.successful) { htmx.ajax('GET', '/marketplace/sync/brands/@Model.BrandId/detail?mp=@Model.MarketPlaceId', {target:'#brand-detail-panel'}); }"
+                  class="row g-3 align-items-end">
+                <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
+                <div class="col-md-6">
+                    <label class="form-label">Pazaryeri Marka ID</label>
+                    <input type="number" class="form-control" name="externalBrandId" required
+                           placeholder="Ornek: 12345" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24"
+                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M9 15l6 -6"/>
+                            <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/>
+                            <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>
+                        </svg>
+                        Esle
+                    </button>
+                </div>
+            </form>
+        }
+
+        <!-- Brand Info -->
+        <div class="datagrid mt-4">
+            <div class="datagrid-item">
+                <div class="datagrid-title">Uygulama Marka ID</div>
+                <div class="datagrid-content">@Model.BrandId</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Marka Adi</div>
+                <div class="datagrid-content">@Model.BrandName</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Esleme Durumu</div>
+                <div class="datagrid-content">
+                    @if (Model.IsMapped)
+                    {
+                        <span class="badge bg-success-lt">Eslendi</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary-lt">Eslenmedi</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

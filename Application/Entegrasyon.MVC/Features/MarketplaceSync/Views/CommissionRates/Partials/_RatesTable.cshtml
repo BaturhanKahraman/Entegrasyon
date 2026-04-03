@@ -1,0 +1,114 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CommissionRatesVm
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Komisyon Oranlari</h3>
+        <div class="card-actions">
+            <span class="badge bg-blue-lt">@Model.Rates.Count oran tanimli</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Kategori</th>
+                    <th>Komisyon %</th>
+                    <th>Hizmet Bedeli %</th>
+                    <th>Islem Ucreti (TL)</th>
+                    <th>Aciklama</th>
+                    <th>Varsayilan</th>
+                    <th class="w-1">Islemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Rates.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary py-4">
+                            Henuz komisyon orani tanimlanmamis.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var rate in Model.Rates)
+                    {
+                        <tr id="rate-row-@rate.Id">
+                            <td>
+                                @if (rate.CategoryName is not null)
+                                {
+                                    <span>@rate.CategoryName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary fst-italic">Genel</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge bg-blue-lt">%@rate.CommissionPercent.ToString("0.##")</span>
+                            </td>
+                            <td>
+                                @if (rate.ServiceFeePercent.HasValue)
+                                {
+                                    <span>%@rate.ServiceFeePercent.Value.ToString("0.##")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (rate.TransactionFeeFixed.HasValue)
+                                {
+                                    <span>@rate.TransactionFeeFixed.Value.ToString("0.00") TL</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(rate.Description))
+                                {
+                                    <span>@rate.Description</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (rate.IsDefault)
+                                {
+                                    <span class="badge bg-green-lt">Evet</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">Hayir</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-ghost-danger btn-sm"
+                                        hx-post="/marketplace/commission-rates/@rate.Id/delete?mp=@Model.SelectedMarketPlaceId"
+                                        hx-swap="none"
+                                        hx-confirm="Bu komisyon oranini silmek istediginizden emin misiniz?">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M4 7l16 0"/>
+                                        <path d="M10 11l0 6"/>
+                                        <path d="M14 11l0 6"/>
+                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                                    </svg>
+                                    Sil
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

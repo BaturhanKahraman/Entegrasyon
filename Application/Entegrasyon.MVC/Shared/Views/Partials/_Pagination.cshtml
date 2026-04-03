@@ -1,0 +1,40 @@
+@model Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+
+@if (Model.TotalPages > 1)
+{
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <span class="text-secondary">Toplam @Model.TotalCount kayit</span>
+        <ul class="pagination m-0">
+            <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+                <a class="page-link"
+                   hx-get="@(Model.BaseUrl)?page=@(Model.CurrentPage - 1)"
+                   hx-target="@Model.TargetId"
+                   hx-swap="outerHTML"
+                   tabindex="-1">
+                    Onceki
+                </a>
+            </li>
+
+            @for (var i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       hx-get="@(Model.BaseUrl)?page=@i"
+                       hx-target="@Model.TargetId"
+                       hx-swap="outerHTML">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   hx-get="@(Model.BaseUrl)?page=@(Model.CurrentPage + 1)"
+                   hx-target="@Model.TargetId"
+                   hx-swap="outerHTML">
+                    Sonraki
+                </a>
+            </li>
+        </ul>
+    </div>
+}

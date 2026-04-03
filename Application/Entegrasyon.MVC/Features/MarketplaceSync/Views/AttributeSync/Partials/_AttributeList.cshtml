@@ -1,0 +1,67 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.AttributeSyncVm
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Ozellikler</h3>
+        <div class="card-actions">
+            <div class="input-icon">
+                <span class="input-icon-addon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
+                        <path d="M21 21l-6 -6"/>
+                    </svg>
+                </span>
+                <input type="text" class="form-control form-control-sm" placeholder="Ozellik ara..."
+                       onkeyup="filterAttributeList(this.value)">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush" id="attribute-list">
+            @foreach (var attr in Model.Attributes.OrderBy(a => a.Humanized ?? a.Key))
+            {
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center attribute-item"
+                   href="#"
+                   hx-get="/marketplace/sync/attributes/@attr.Id/detail?mp=@Model.SelectedMarketPlaceId"
+                   hx-target="#attribute-detail-panel"
+                   hx-swap="innerHTML">
+                    <div>
+                        <span class="attribute-name">@(attr.Humanized ?? attr.Key)</span>
+                        @if (!string.IsNullOrEmpty(attr.Humanized) && attr.Humanized != attr.Key)
+                        {
+                            <small class="text-muted d-block">@attr.Key</small>
+                        }
+                    </div>
+                    @if (attr.IsMapped)
+                    {
+                        <span class="badge bg-success-lt">Eslendi</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary-lt">Eslenmedi</span>
+                    }
+                </a>
+            }
+        </div>
+
+        @if (!Model.Attributes.Any())
+        {
+            <div class="empty py-4">
+                <p class="empty-title">Ozellik bulunamadi</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function filterAttributeList(query) {
+        var items = document.querySelectorAll('#attribute-list .attribute-item');
+        var lower = query.toLowerCase();
+        items.forEach(function (item) {
+            var name = item.querySelector('.attribute-name').textContent.toLowerCase();
+            item.style.display = name.includes(lower) ? '' : 'none';
+        });
+    }
+</script>

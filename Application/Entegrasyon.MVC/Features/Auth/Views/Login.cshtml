@@ -1,0 +1,52 @@
+@model Entegrasyon.MVC.Features.Auth.ViewModels.LoginVm
+@{
+    Layout = "~/Shared/Views/_AuthLayout.cshtml";
+    ViewData.SetPageTitle("Giris Yap");
+}
+
+<div class="text-center mb-4">
+    <h2 class="h2">Entegrasyon</h2>
+    <p class="text-secondary">Hesabiniza giris yapin</p>
+</div>
+
+<div class="card card-md">
+    <div class="card-body">
+        <form method="post" asp-action="Login" asp-controller="Auth" autocomplete="off">
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <div asp-validation-summary="All"></div>
+                </div>
+            }
+
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label">Kullanici Adi</label>
+                <input asp-for="Username" class="form-control" placeholder="Kullanici adinizi girin" autofocus />
+                <span asp-validation-for="Username" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Sifre</label>
+                <input asp-for="Password" class="form-control" placeholder="Sifrenizi girin" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <span class="form-check-label">Beni hatirla</span>
+                </label>
+            </div>
+
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary w-100">Giris Yap</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="text-center text-secondary mt-3">
+    <a href="/auth/reset-password">Sifremi unuttum</a>
+</div>

@@ -1,0 +1,202 @@
+@model Entegrasyon.Entity.Dtos.Product.ProductSyncDetailDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Urun Senkronizasyon</div>
+                <h2 class="page-title">@Model.Title</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/marketplace/matching" class="btn btn-outline-secondary">
+                    Listeye Don
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <!-- Product Info -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Urun Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Urun Adi</div>
+                        <div class="datagrid-content">@Model.Title</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Stok Kodu</div>
+                        <div class="datagrid-content">@Model.StockCode</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Marka</div>
+                        <div class="datagrid-content">@Model.BrandName</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Kategori</div>
+                        <div class="datagrid-content">@Model.CategoryName</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Varyant Sayisi</div>
+                        <div class="datagrid-content">@Model.VariantCount</div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Aciklama</div>
+                            <div class="datagrid-content">@Model.Description</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketplace Sync Status Cards -->
+        <div class="row row-deck row-cards">
+            @foreach (var mp in Model.Marketplaces)
+            {
+                <div class="col-sm-6 col-lg-4">
+                    <div class="card @(!mp.HasCredentials ? "card-inactive" : "")">
+                        <div class="card-header">
+                            <h3 class="card-title">@mp.MarketPlaceName</h3>
+                            <div class="card-actions">
+                                @switch (mp.SyncState)
+                                {
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Synced:
+                                        <span class="badge bg-green-lt">Senkronize</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Waiting:
+                                        <span class="badge bg-warning-lt">Bekleyen</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Processing:
+                                        <span class="badge bg-info-lt">Isleniyor</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.OutOfSync:
+                                        <span class="badge bg-orange-lt">Guncellenmemis</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Failed:
+                                        <span class="badge bg-danger-lt">Hatali</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Rejected:
+                                        <span class="badge bg-danger-lt">Reddedildi</span>
+                                        break;
+                                    case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.NeverSynced:
+                                    default:
+                                        <span class="badge bg-secondary-lt">Hic Senkronize Edilmemis</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="datagrid">
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Son Senkron</div>
+                                    <div class="datagrid-content">
+                                        @if (mp.LastSyncedAt.HasValue)
+                                        {
+                                            @mp.LastSyncedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(mp.ExternalProductId))
+                                {
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Dis Urun ID</div>
+                                        <div class="datagrid-content">@mp.ExternalProductId</div>
+                                    </div>
+                                }
+                                @if (mp.ContentId.HasValue)
+                                {
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Content ID</div>
+                                        <div class="datagrid-content">@mp.ContentId</div>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(mp.BatchRequestId))
+                                {
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Batch Request ID</div>
+                                        <div class="datagrid-content">
+                                            <code>@mp.BatchRequestId</code>
+                                        </div>
+                                    </div>
+                                }
+                                @if (mp.IsApproved.HasValue)
+                                {
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Onay Durumu</div>
+                                        <div class="datagrid-content">
+                                            @if (mp.IsApproved.Value)
+                                            {
+                                                <span class="badge bg-green-lt">Onayli</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning-lt">Onay Bekliyor</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(mp.StatusMessage))
+                                {
+                                    <div class="datagrid-item">
+                                        <div class="datagrid-title">Durum Mesaji</div>
+                                        <div class="datagrid-content text-secondary">@mp.StatusMessage</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        @if (mp.HasCredentials)
+                        {
+                            <div class="card-footer">
+                                <button class="btn btn-primary btn-sm"
+                                        hx-post="/marketplace/matching/@Model.ProductId/sync?mp=@mp.MarketPlaceId"
+                                        hx-swap="none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24"
+                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
+                                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+                                    </svg>
+                                    Simdi Senkronize Et
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="card-footer text-secondary">
+                                <small>API kimlik bilgileri yapilandirilmamis.</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (!Model.Marketplaces.Any())
+        {
+            <div class="card">
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Pazaryeri durumu bulunamadi",
+                                 Subtitle = "Bu urun icin pazaryeri senkronizasyon bilgisi mevcut degil."
+                             }'/>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

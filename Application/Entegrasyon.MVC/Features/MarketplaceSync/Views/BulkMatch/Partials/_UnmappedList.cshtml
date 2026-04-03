@@ -1,0 +1,139 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.BulkCategoryMatchVm
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Eslenmemis Kategoriler</h3>
+        <div class="card-actions">
+            <div class="input-icon">
+                <span class="input-icon-addon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
+                        <path d="M21 21l-6 -6"/>
+                    </svg>
+                </span>
+                <input type="text" class="form-control form-control-sm" placeholder="Kategori ara..."
+                       onkeyup="filterUnmappedList(this.value)" />
+            </div>
+        </div>
+    </div>
+
+    @if (Model.UnmappedCategories.Count == 0)
+    {
+        <div class="card-body">
+            <div class="empty py-5">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="40" height="40"
+                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M5 12l5 5l10 -10"/>
+                    </svg>
+                </div>
+                <p class="empty-title">Tum kategoriler eslenmis</p>
+                <p class="empty-subtitle text-secondary">
+                    Bu pazaryeri icin eslenmemis kategori bulunmuyor.
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <form hx-post="/marketplace/sync/categories/bulk/submit"
+              hx-swap="none">
+            <input type="hidden" name="mp" value="@Model.SelectedMarketPlaceId" />
+
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th class="w-1">
+                                <input type="checkbox" class="form-check-input" onchange="toggleSelectAll(this)" />
+                            </th>
+                            <th>Uygulama Kategorisi</th>
+                            <th>Pazaryeri Kategori ID</th>
+                            <th>Harici Kategori ID</th>
+                            <th>Pazaryeri Kategori Adi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unmapped-category-list">
+                        @for (var i = 0; i < Model.UnmappedCategories.Count; i++)
+                        {
+                            var cat = Model.UnmappedCategories[i];
+                            <tr class="unmapped-row">
+                                <td>
+                                    <input type="checkbox" class="form-check-input category-checkbox"
+                                           name="categoryIds" value="@cat.Id"
+                                           onchange="toggleRowInputs(this)" />
+                                </td>
+                                <td>
+                                    <span class="category-name">@cat.Name</span>
+                                    <input type="hidden" name="categoryIds" value="@cat.Id" disabled />
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm mapping-input"
+                                           name="marketPlaceCategoryIds" placeholder="Kategori ID" disabled />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm mapping-input"
+                                           name="externalCategoryIds" placeholder="Harici ID (opsiyonel)" disabled />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm mapping-input"
+                                           name="marketPlaceCategoryNames" placeholder="Kategori adi (opsiyonel)" disabled />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <span class="text-secondary" id="selected-count">0 kategori secildi</span>
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M5 12l5 5l10 -10"/>
+                    </svg>
+                    Toplu Esle
+                </button>
+            </div>
+        </form>
+    }
+</div>
+
+<script>
+    function toggleRowInputs(checkbox) {
+        var row = checkbox.closest('tr');
+        var inputs = row.querySelectorAll('.mapping-input');
+        inputs.forEach(function (input) {
+            input.disabled = !checkbox.checked;
+            if (!checkbox.checked) input.value = '';
+        });
+        updateSelectedCount();
+    }
+
+    function toggleSelectAll(source) {
+        var checkboxes = document.querySelectorAll('.category-checkbox');
+        checkboxes.forEach(function (cb) {
+            cb.checked = source.checked;
+            toggleRowInputs(cb);
+        });
+    }
+
+    function updateSelectedCount() {
+        var checked = document.querySelectorAll('.category-checkbox:checked').length;
+        var el = document.getElementById('selected-count');
+        if (el) el.textContent = checked + ' kategori secildi';
+    }
+
+    function filterUnmappedList(query) {
+        var rows = document.querySelectorAll('#unmapped-category-list .unmapped-row');
+        var lower = query.toLowerCase();
+        rows.forEach(function (row) {
+            var name = row.querySelector('.category-name').textContent.toLowerCase();
+            row.style.display = name.includes(lower) ? '' : 'none';
+        });
+    }
+</script>

@@ -1,0 +1,122 @@
+@model List<Entegrasyon.Entity.BulkOperations.BulkOperationLog>?
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Toplu Islemler</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row row-cards">
+            <!-- Import Section -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Import (Iceri Aktar)</h3>
+                    </div>
+                    <div class="card-body">
+                        <form hx-post="/bulk-operations/import"
+                              hx-swap="none"
+                              hx-encoding="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">Islem Turu</label>
+                                <select class="form-select" name="type" required>
+                                    <option value="1">Urun Import</option>
+                                    <option value="2">Fiyat Import</option>
+                                    <option value="3">Stok Import</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Excel Dosyasi</label>
+                                <input type="file" class="form-control" name="file" accept=".xlsx,.xls" required />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                Iceri Aktar
+                            </button>
+                        </form>
+
+                        <hr class="my-3" />
+                        <h4 class="mb-2">Sablon Indir</h4>
+                        <div class="btn-list">
+                            <a href="/bulk-operations/template?type=1" class="btn btn-outline-secondary btn-sm">Urun Sablonu</a>
+                            <a href="/bulk-operations/template?type=2" class="btn btn-outline-secondary btn-sm">Fiyat Sablonu</a>
+                            <a href="/bulk-operations/template?type=3" class="btn btn-outline-secondary btn-sm">Stok Sablonu</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Export (Disari Aktar)</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-secondary mb-3">Mevcut verileri Excel olarak indirin.</p>
+                        <div class="btn-list">
+                            <a href="/bulk-operations/export?type=4" class="btn btn-outline-primary">
+                                Urunleri Indir
+                            </a>
+                            <a href="/bulk-operations/export?type=5" class="btn btn-outline-primary">
+                                Fiyatlari Indir
+                            </a>
+                            <a href="/bulk-operations/export?type=6" class="btn btn-outline-primary">
+                                Stoklari Indir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Operations -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Son Islemler</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Dosya</th>
+                                <th>Tur</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var op in Model)
+                            {
+                                <tr>
+                                    <td class="text-secondary">@op.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@op.FileName</td>
+                                    <td><span class="badge bg-blue-lt">@op.OperationType</span></td>
+                                    <td>
+                                        @{
+                                            var statusClass = op.Status switch
+                                            {
+                                                Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Completed => "bg-green-lt",
+                                                Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Failed => "bg-red-lt",
+                                                _ => "bg-yellow-lt"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@op.Status</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

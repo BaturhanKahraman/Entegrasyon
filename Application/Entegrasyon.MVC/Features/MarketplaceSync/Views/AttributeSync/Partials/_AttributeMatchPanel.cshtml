@@ -1,0 +1,174 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.AttributeMatchPanelVm
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@(Model.AttributeHumanized ?? Model.AttributeKey)</h3>
+        @if (!string.IsNullOrEmpty(Model.AttributeHumanized) && Model.AttributeHumanized != Model.AttributeKey)
+        {
+            <span class="text-muted ms-2">(@Model.AttributeKey)</span>
+        }
+    </div>
+    <div class="card-body">
+        <!-- Attribute Match -->
+        <h4 class="mb-3">Ozellik Eslesmesi</h4>
+        @if (Model.AttributeMatch is not null)
+        {
+            <div class="alert alert-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Eslendi:</strong> Pazaryeri Ozellik ID: @Model.AttributeMatch.MarketPlaceCategoryAttributeId
+                        @if (!string.IsNullOrEmpty(Model.AttributeMatch.MarketPlaceCategoryAttributeExternalId))
+                        {
+                            <span class="text-muted ms-1">(External: @Model.AttributeMatch.MarketPlaceCategoryAttributeExternalId)</span>
+                        }
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm"
+                            hx-post="/marketplace/sync/attributes/@Model.AttributeId/unmap?mp=@Model.MarketPlaceId"
+                            hx-confirm="Ozellik eslemesini kaldirmak istediginize emin misiniz?"
+                            hx-swap="none">
+                        Kaldir
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-secondary">
+                <form hx-post="/marketplace/sync/attributes/@Model.AttributeId/map"
+                      hx-swap="none"
+                      class="row g-2 align-items-end">
+                    <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
+                    <div class="col-auto">
+                        <label class="form-label">Pazaryeri Ozellik ID</label>
+                        <input type="number" class="form-control form-control-sm" name="mpAttributeId" required />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">External ID (opsiyonel)</label>
+                        <input type="text" class="form-control form-control-sm" name="externalId" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary btn-sm">Esle</button>
+                    </div>
+                </form>
+            </div>
+        }
+
+        <!-- Value Matches -->
+        @if (Model.ValueMatches.Any())
+        {
+            <h4 class="mt-4 mb-3">Deger Eslesmeleri</h4>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Deger</th>
+                            <th>Pazaryeri Degeri</th>
+                            <th>Durum</th>
+                            <th class="w-1">Islem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var val in Model.ValueMatches)
+                        {
+                            <tr>
+                                <td>@val.ValueName</td>
+                                <td>
+                                    @if (val.IsMapped)
+                                    {
+                                        <span>ID: @val.MarketPlaceValueId</span>
+                                        @if (!string.IsNullOrEmpty(val.MarketPlaceValueExternalId))
+                                        {
+                                            <small class="text-muted ms-1">(External: @val.MarketPlaceValueExternalId)</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (val.IsMapped)
+                                    {
+                                        <span class="badge bg-success-lt">Eslendi</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-lt">Eslenmedi</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (val.IsMapped)
+                                    {
+                                        <button class="btn btn-outline-danger btn-sm"
+                                                hx-post="/marketplace/sync/attributes/values/@val.ValueId/unmap?mp=@Model.MarketPlaceId"
+                                                hx-confirm="Deger eslemesini kaldirmak istediginize emin misiniz?"
+                                                hx-target="closest tr"
+                                                hx-swap="outerHTML"
+                                                hx-on::after-request="htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'})">
+                                            Kaldir
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-primary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#mapValueModal"
+                                                onclick="openValueMapModal(@val.ValueId, '@val.ValueName.Replace("'", "\\'")' )">
+                                            Esle
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-muted mt-3">Bu ozelligin onceden tanimlanmis degeri yok.</div>
+        }
+    </div>
+</div>
+
+<!-- Map Value Modal -->
+<div class="modal modal-blur fade" id="mapValueModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Deger Esle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="mapValueForm" method="post" hx-swap="none"
+                  hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('mapValueModal')).hide(); htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'}); }">
+                <div class="modal-body">
+                    <p class="text-secondary mb-3">
+                        <strong id="modal-value-name"></strong> icin pazaryeri degeri girin.
+                    </p>
+                    <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
+                    <div class="mb-3">
+                        <label class="form-label">Pazaryeri Deger ID</label>
+                        <input type="number" class="form-control" name="mpValueId" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">External ID (opsiyonel)</label>
+                        <input type="text" class="form-control" name="externalId" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary">Esle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openValueMapModal(valueId, valueName) {
+        document.getElementById('modal-value-name').textContent = valueName;
+        var form = document.getElementById('mapValueForm');
+        form.setAttribute('hx-post', '/marketplace/sync/attributes/values/' + valueId + '/map');
+        htmx.process(form);
+    }
+</script>

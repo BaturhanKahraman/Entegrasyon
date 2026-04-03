@@ -1,0 +1,38 @@
+@model Entegrasyon.Entity.Dtos.Dashboard.DashboardStatsDto
+
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Toplam Urun</div>
+                <div class="h1 mb-0">@Model.TotalProducts</div>
+                <div class="text-secondary small">@Model.TotalVariants varyant</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Bugunku Satis</div>
+                <div class="h1 mb-0">@Model.TodaySales</div>
+                <div class="text-secondary small">@Model.TodayRevenue.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Bekleyen Siparis</div>
+                <div class="h1 mb-0 @(Model.PendingOrders > 0 ? "text-warning" : "")">@Model.PendingOrders</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="subheader">Dusuk Stok</div>
+                <div class="h1 mb-0 @(Model.LowStockProducts > 0 ? "text-danger" : "")">@Model.LowStockProducts</div>
+            </div>
+        </div>
+    </div>
+</div>

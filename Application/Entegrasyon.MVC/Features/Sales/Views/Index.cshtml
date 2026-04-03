@@ -1,0 +1,116 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Sale.SaleListDetailDto>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Satislar</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="row g-2 align-items-center w-100">
+                    <div class="col-auto">
+                        <input type="text"
+                               class="form-control"
+                               name="search"
+                               placeholder="Satis ara..."
+                               value="@ViewBag.Search"
+                               hx-get="/sales"
+                               hx-trigger="keyup changed delay:300ms"
+                               hx-target="#sale-table"
+                               hx-swap="outerHTML"
+                               hx-include="[name='search'], [name='startDate'], [name='endDate']"/>
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate"
+                               hx-get="/sales"
+                               hx-trigger="change"
+                               hx-target="#sale-table"
+                               hx-swap="outerHTML"
+                               hx-include="[name='search'], [name='startDate'], [name='endDate']"/>
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate"
+                               hx-get="/sales"
+                               hx-trigger="change"
+                               hx-target="#sale-table"
+                               hx-swap="outerHTML"
+                               hx-include="[name='search'], [name='startDate'], [name='endDate']"/>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sale-table">
+                @if (Model.HasItem)
+                {
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Musteri</th>
+                                    <th>Satici</th>
+                                    <th>Urun Cesidi</th>
+                                    <th>Toplam Adet</th>
+                                    <th>Indirim</th>
+                                    <th>Toplam Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var sale in Model.Items)
+                                {
+                                    <tr>
+                                        <td class="text-secondary">@sale.SaleDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@sale.CustomerFullName</td>
+                                        <td class="text-secondary">@sale.SalePersonFullName</td>
+                                        <td>@sale.SaleItemVarietyCount</td>
+                                        <td>@sale.SaleItemCount</td>
+                                        <td>
+                                            @if (sale.IsDiscountApplied)
+                                            {
+                                                <span class="badge bg-yellow-lt">%@sale.GeneralDiscount</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-secondary">-</span>
+                                            }
+                                        </td>
+                                        <td><strong>@sale.TotalPrice.ToString("C2")</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                             {
+                                 CurrentPage = Model.CurrentPageIndex + 1,
+                                 TotalPages = Model.TotalPageCount,
+                                 TotalCount = Model.TotalItemCount,
+                                 BaseUrl = "/sales",
+                                 TargetId = "#sale-table"
+                             }'/>
+                }
+                else
+                {
+                    <div class="card-body">
+                        <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                                 model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                                 {
+                                     Title = "Satis bulunamadi",
+                                     Subtitle = "Henuz satis kaydi yok veya arama kriterinize uygun satis bulunamadi."
+                                 }'/>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

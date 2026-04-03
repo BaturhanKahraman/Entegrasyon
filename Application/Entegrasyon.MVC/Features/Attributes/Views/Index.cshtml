@@ -1,0 +1,78 @@
+@using Entegrasyon.Entity
+@using Entegrasyon.Entity.Categories
+@model Pageable<CategoryAttribute>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Ozellikler</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <form method="get" action="/attributes" class="d-flex gap-2">
+                    <input type="text" name="search" value="@ViewBag.Search" class="form-control"
+                           placeholder="Ozellik ara..." style="max-width:250px;" />
+                    <button type="submit" class="btn btn-primary">Ara</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <!-- Attribute List -->
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ozellik Listesi</h3>
+                        <div class="card-actions">
+                            <span class="badge bg-blue">@(Model?.TotalItemCount ?? 0) ozellik</span>
+                        </div>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        @if (Model?.Items != null)
+                        {
+                            @foreach (var attr in Model.Items)
+                            {
+                                <a href="#attr-@attr.Id" class="list-group-item list-group-item-action"
+                                   hx-get="/attributes/@attr.Id/detail" hx-target="#attribute-detail" hx-swap="innerHTML">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@attr.CategoryAttributeHumanized</strong>
+                                            <div class="text-secondary small">@attr.CategoryAttributeKey</div>
+                                        </div>
+                                        @if (attr.AllowCustom)
+                                        {
+                                            <span class="badge bg-green-lt">Ozel Deger</span>
+                                        }
+                                    </div>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="list-group-item text-center text-secondary py-4">
+                                Henuz ozellik tanimlanmamis.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Panel -->
+            <div class="col-lg-7">
+                <div id="attribute-detail">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <h3 class="text-secondary">Detay goruntuleme</h3>
+                            <p class="text-secondary">Sol listeden bir ozellik secin.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

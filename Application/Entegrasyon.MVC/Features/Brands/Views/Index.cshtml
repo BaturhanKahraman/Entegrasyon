@@ -1,0 +1,70 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Brand.BrandListDetailDto>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Yonetim</div>
+                <h2 class="page-title">Markalar</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBrandModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14"/>
+                        <path d="M5 12l14 0"/>
+                    </svg>
+                    Yeni Marka
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="col-auto">
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           placeholder="Marka ara..."
+                           value="@ViewBag.Search"
+                           hx-get="/brands"
+                           hx-trigger="keyup changed delay:300ms"
+                           hx-target="#brand-table"
+                           hx-swap="outerHTML"
+                           hx-include="this"/>
+                </div>
+            </div>
+            <partial name="Partials/_BrandTable" model="Model"/>
+        </div>
+    </div>
+</div>
+
+<!-- Add Brand Modal -->
+<div class="modal modal-blur fade" id="addBrandModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Marka</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form hx-post="/brands/create" hx-swap="none">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Marka Adi</label>
+                        <input type="text" class="form-control" name="name" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

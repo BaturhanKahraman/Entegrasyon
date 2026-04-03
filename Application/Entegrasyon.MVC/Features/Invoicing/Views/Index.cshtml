@@ -1,0 +1,78 @@
+@using Entegrasyon.Entity.Invoicing
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Invoicing.EInvoiceListDto>?
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Finans</div>
+                <h2 class="page-title">Faturalar</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/invoicing/create" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 5l0 14"/>
+                        <path d="M5 12l14 0"/>
+                    </svg>
+                    Yeni Fatura
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="row w-100 g-2">
+                    <div class="col-auto">
+                        <input type="text"
+                               class="form-control"
+                               name="search"
+                               placeholder="Fatura no veya musteri ara..."
+                               value="@ViewBag.Search"
+                               hx-get="/invoicing"
+                               hx-trigger="keyup changed delay:300ms"
+                               hx-target="#invoice-table"
+                               hx-swap="outerHTML"
+                               hx-include="[name='status'],[name='type']"/>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select"
+                                name="status"
+                                hx-get="/invoicing"
+                                hx-trigger="change"
+                                hx-target="#invoice-table"
+                                hx-swap="outerHTML"
+                                hx-include="[name='search'],[name='type']">
+                            <option value="">Tum Durumlar</option>
+                            <option value="@((int)EInvoiceStatus.Draft)">Taslak</option>
+                            <option value="@((int)EInvoiceStatus.Sent)">Gonderildi</option>
+                            <option value="@((int)EInvoiceStatus.Accepted)">Onaylandi</option>
+                            <option value="@((int)EInvoiceStatus.Rejected)">Reddedildi</option>
+                            <option value="@((int)EInvoiceStatus.Cancelled)">Iptal</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select"
+                                name="type"
+                                hx-get="/invoicing"
+                                hx-trigger="change"
+                                hx-target="#invoice-table"
+                                hx-swap="outerHTML"
+                                hx-include="[name='search'],[name='status']">
+                            <option value="">Tum Tipler</option>
+                            <option value="@((int)EInvoiceType.EFatura)">e-Fatura</option>
+                            <option value="@((int)EInvoiceType.EArsiv)">e-Arsiv</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <partial name="~/Features/Invoicing/Views/Partials/_InvoiceTable.cshtml" model="Model"/>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+@model List<Entegrasyon.Entity.Dtos.Reports.ProductPerformanceDto>
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Raporlar</div>
+                <h2 class="page-title">Urun Performansi</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Date Filter -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/product-performance" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Baslangic</label>
+                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitis</label>
+                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chart Placeholder -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Performans Grafigi</h3>
+            </div>
+            <div class="card-body">
+                <div id="performance-chart" style="height:300px; display:flex; align-items:center; justify-content:center;">
+                    <span class="text-secondary">Grafik alani — chart kutuphanesi entegre edilecek</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Urun Performans Tablosu</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Urun</th>
+                            <th>Satilan Adet</th>
+                            <th>Toplam Gelir</th>
+                            <th>Iade Orani</th>
+                            <th>Ort. Puan</th>
+                            <th>Stok Devir Hizi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model)
+                        {
+                            <tr>
+                                <td>@p.ProductName</td>
+                                <td>@p.TotalSold</td>
+                                <td>@p.TotalRevenue.ToString("C2")</td>
+                                <td>
+                                    <span class="badge @(p.ReturnRate > 5 ? "bg-red-lt" : "bg-green-lt")">
+                                        %@p.ReturnRate.ToString("F1")
+                                    </span>
+                                </td>
+                                <td>@p.AverageRating.ToString("F1")</td>
+                                <td>@p.StockTurnoverRate.ToString("F2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

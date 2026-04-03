@@ -1,0 +1,122 @@
+@model Entegrasyon.Entity.Categories.Category
+@{
+    var productCount = (int)(ViewBag.ProductCount ?? 0);
+    var attributes = Model.CategoryAttributes?.ToList() ?? new List<Entegrasyon.Entity.Categories.CategoryAttributeCategory>();
+    var subCount = Model.SubCategories?.Count() ?? 0;
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@Model.Name</h3>
+        <div class="card-actions">
+            <a href="/categories/@Model.Id/edit" class="btn btn-outline-primary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="18" height="18"
+                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                </svg>
+                Duzenle
+            </a>
+            <button class="btn btn-outline-danger btn-sm ms-1"
+                    hx-post="/categories/@Model.Id/delete"
+                    hx-confirm="'@Model.Name' kategorisini silmek istediginize emin misiniz?"
+                    hx-swap="none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="18" height="18"
+                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M4 7l16 0"/>
+                    <path d="M10 11l0 6"/>
+                    <path d="M14 11l0 6"/>
+                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                </svg>
+                Sil
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="datagrid">
+            <div class="datagrid-item">
+                <div class="datagrid-title">Ust Kategori</div>
+                <div class="datagrid-content">
+                    @(Model.SuperCategory?.Name ?? "—")
+                </div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Alt Kategoriler</div>
+                <div class="datagrid-content">@subCount</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Urun Sayisi</div>
+                <div class="datagrid-content">@productCount</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Ozellik Sayisi</div>
+                <div class="datagrid-content">@attributes.Count</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Favori</div>
+                <div class="datagrid-content">
+                    @if (Model.IsFavorite)
+                    {
+                        <span class="badge bg-yellow-lt">Favori</span>
+                    }
+                    else
+                    {
+                        <span class="text-secondary">Hayir</span>
+                    }
+                </div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Varsayilan KDV</div>
+                <div class="datagrid-content">
+                    @(Model.DefaultVatRate.HasValue ? $"%{Model.DefaultVatRate.Value}" : "—")
+                </div>
+            </div>
+        </div>
+
+        @if (attributes.Any())
+        {
+            <h4 class="mt-4 mb-2">Ozellikler</h4>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Ozellik</th>
+                            <th>Zorunlu</th>
+                            <th>Varyanter</th>
+                            <th>Dilimleyici</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attr in attributes)
+                        {
+                            <tr>
+                                <td>@(attr.CategoryAttribute?.CategoryAttributeHumanized ?? attr.CategoryAttribute?.CategoryAttributeKey ?? "—")</td>
+                                <td>
+                                    @if (attr.IsRequired)
+                                    {
+                                        <span class="badge bg-blue-lt">Zorunlu</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (attr.IsVarianter)
+                                    {
+                                        <span class="badge bg-purple-lt">Varyanter</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (attr.IsSlicer)
+                                    {
+                                        <span class="badge bg-green-lt">Dilimleyici</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,71 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.BrandMappingVm
+@{
+    var mappedBrandIds = Model.Mappings.Select(m => m.ApplicationBrandId).ToHashSet();
+
+    // Combine mapped + unmapped into one unified list
+    var allBrands = Model.Mappings
+        .Select(m => new { Id = m.ApplicationBrandId, Name = m.ApplicationBrandName, IsMapped = true })
+        .Concat(Model.UnmappedBrands.Select(b => new { Id = b.Id, Name = b.Name, IsMapped = false }))
+        .OrderBy(b => b.Name)
+        .ToList();
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Markalar</h3>
+        <div class="card-actions">
+            <div class="input-icon">
+                <span class="input-icon-addon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
+                        <path d="M21 21l-6 -6"/>
+                    </svg>
+                </span>
+                <input type="text" class="form-control form-control-sm" placeholder="Marka ara..."
+                       onkeyup="filterBrandList(this.value)">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush" id="brand-list" style="max-height: 600px; overflow-y: auto;">
+            @foreach (var brand in allBrands)
+            {
+                <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center brand-item"
+                   href="#"
+                   hx-get="/marketplace/sync/brands/@brand.Id/detail?mp=@Model.SelectedMarketPlaceId"
+                   hx-target="#brand-detail-panel"
+                   hx-swap="innerHTML">
+                    <span class="brand-name">@brand.Name</span>
+                    @if (brand.IsMapped)
+                    {
+                        <span class="badge bg-success-lt">Eslendi</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary-lt">Eslenmedi</span>
+                    }
+                </a>
+            }
+        </div>
+
+        @if (!allBrands.Any())
+        {
+            <div class="empty py-4">
+                <p class="empty-title">Marka bulunamadi</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function filterBrandList(query) {
+        var items = document.querySelectorAll('#brand-list .brand-item');
+        var lower = query.toLowerCase();
+        items.forEach(function (item) {
+            var name = item.querySelector('.brand-name').textContent.toLowerCase();
+            item.style.display = name.includes(lower) ? '' : 'none';
+        });
+    }
+</script>
