@@ -16,43 +16,89 @@
     <div class="container-xl">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Mevcut Paketler</h3>
+                <div class="row w-100 g-2 align-items-center">
+                    <div class="col-12 col-md-4">
+                        <input type="text"
+                               class="form-control"
+                               name="search"
+                               placeholder="Paket ara..."
+                               value="@ViewBag.Search"
+                               hx-get="/matched-entities"
+                               hx-trigger="keyup changed delay:300ms"
+                               hx-target="#package-table"
+                               hx-swap="outerHTML"
+                               hx-include="[name='type']" />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <select class="form-select"
+                                name="type"
+                                hx-get="/matched-entities"
+                                hx-trigger="change"
+                                hx-target="#package-table"
+                                hx-swap="outerHTML"
+                                hx-include="[name='search']">
+                            <option value="">Tum Turler</option>
+                            <option value="0" selected="@(ViewBag.TypeFilter != null && (int)ViewBag.TypeFilter == 0)">Kategori</option>
+                            <option value="1" selected="@(ViewBag.TypeFilter != null && (int)ViewBag.TypeFilter == 1)">Marka</option>
+                            <option value="2" selected="@(ViewBag.TypeFilter != null && (int)ViewBag.TypeFilter == 2)">Kargo Sirketi</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            @if (Model != null && Model.Count > 0)
-            {
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
-                        <thead>
-                            <tr>
-                                <th>Paket Adi</th>
-                                <th>Tur</th>
-                                <th>Durum</th>
-                                <th class="w-1"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var pkg in Model)
-                            {
-                                <tr>
-                                    <td>@pkg.Name</td>
-                                    <td><span class="badge">@pkg.EntityType</span></td>
-                                    <td><span class="badge bg-green-lt">Yayinda</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary" disabled>Aktar</button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="card-body text-center py-5">
-                    <h3 class="text-secondary">Henuz paket bulunmamaktadir</h3>
-                    <p class="text-secondary">Eslestirilmis varlik paketleri burada listelenecektir.</p>
-                </div>
-            }
+            <partial name="~/Features/MatchedEntityImport/Views/Partials/_PackageTable.cshtml" model="Model" />
         </div>
     </div>
 </div>
+
+<!-- Detail Modal -->
+<div class="modal modal-blur fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="detail-modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-secondary mt-2">Yukleniyor...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conflict Resolution Modal -->
+<div class="modal modal-blur fade" id="conflictModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="conflict-modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-secondary mt-2">Cakismalar kontrol ediliyor...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // After HTMX swaps detail modal content, show the modal
+    document.addEventListener('htmx:afterSwap', function (e) {
+        if (e.detail.target.id === 'detail-modal-content') {
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal'));
+            modal.show();
+        }
+        if (e.detail.target.id === 'conflict-modal-content') {
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('conflictModal'));
+            modal.show();
+        }
+    });
+
+    // Handle successful import — close modals and refresh table
+    document.addEventListener('showToast', function (e) {
+        if (e.detail && e.detail.type === 'success') {
+            var detailModal = bootstrap.Modal.getInstance(document.getElementById('detailModal'));
+            if (detailModal) detailModal.hide();
+            var conflictModal = bootstrap.Modal.getInstance(document.getElementById('conflictModal'));
+            if (conflictModal) conflictModal.hide();
+
+            // Refresh the package table
+            htmx.ajax('GET', '/matched-entities', { target: '#package-table', swap: 'outerHTML' });
+        }
+    });
+</script>
+}

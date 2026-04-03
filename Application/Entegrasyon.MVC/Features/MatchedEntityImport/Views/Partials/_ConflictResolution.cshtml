@@ -1,0 +1,140 @@
+@using Entegrasyon.Entity.Dtos.Templates
+@using Entegrasyon.MVC.Features.MatchedEntityImport
+@model ConflictCheckVm
+
+@{
+    string ConflictTypeLabel(ConflictType type) => type switch
+    {
+        ConflictType.NameMatch => "Isim Eslesmesi",
+        ConflictType.ExternalIdMatch => "Dis ID Eslesmesi",
+        ConflictType.Both => "Isim + Dis ID Eslesmesi",
+        _ => type.ToString()
+    };
+}
+
+<div class="modal-header">
+    @if (Model.Conflicts.Count > 0)
+    {
+        <h5 class="modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-triangle text-warning me-1" width="24" height="24"
+                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 9v4"/>
+                <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/>
+                <path d="M12 16h.01"/>
+            </svg>
+            Cakisma Tespit Edildi (@Model.Conflicts.Count)
+        </h5>
+    }
+    else
+    {
+        <h5 class="modal-title">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-check text-success me-1" width="24" height="24"
+                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                <path d="M9 12l2 2l4 -4"/>
+            </svg>
+            Cakisma Yok
+        </h5>
+    }
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+@if (Model.Conflicts.Count > 0)
+{
+    <form hx-post="/matched-entities/@Model.PackageId/import"
+          hx-swap="none">
+        <div class="modal-body">
+            <div class="alert alert-warning mb-3">
+                <p class="mb-0">
+                    Sisteminizde bu paketle eslesen varliklar bulundu.
+                    Her cakisma icin bir strateji secin:
+                </p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-vcenter table-sm">
+                    <thead>
+                        <tr>
+                            <th>Tur</th>
+                            <th>Paketteki</th>
+                            <th>Sistemdeki</th>
+                            <th>Cakisma</th>
+                            <th>Strateji</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Conflicts.Count; i++)
+                        {
+                            var conflict = Model.Conflicts[i];
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary-lt">@conflict.EntityType</span>
+                                </td>
+                                <td><strong>@conflict.TemplateName</strong></td>
+                                <td>
+                                    @conflict.ExistingEntityName
+                                    <small class="text-secondary">(#@conflict.ExistingEntityId)</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning-lt">@ConflictTypeLabel(conflict.ConflictType)</span>
+                                </td>
+                                <td>
+                                    <input type="hidden" name="Resolutions[@i].TemplateEntityId" value="@conflict.TemplateEntityId" />
+                                    <input type="hidden" name="Resolutions[@i].ExistingEntityId" value="@conflict.ExistingEntityId" />
+                                    <select class="form-select form-select-sm" name="Resolutions[@i].Strategy" required>
+                                        <option value="UseExisting">Mevcut Koru</option>
+                                        <option value="UseImported">Pakettekini Kullan</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+            <button type="submit" class="btn btn-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24"
+                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                    <path d="M7 11l5 5l5 -5"/>
+                    <path d="M12 4l0 12"/>
+                </svg>
+                Cakismalari Cozumle ve Aktar
+            </button>
+        </div>
+    </form>
+}
+else
+{
+    <div class="modal-body">
+        <div class="alert alert-success mb-0">
+            <p class="mb-0">
+                Bu paket mevcut verilerinizle cakismiyor. Guvenle import edebilirsiniz.
+            </p>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+        <button class="btn btn-primary"
+                hx-post="/matched-entities/@Model.PackageId/import"
+                hx-swap="none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24"
+                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                <path d="M7 11l5 5l5 -5"/>
+                <path d="M12 4l0 12"/>
+            </svg>
+            Paketi Aktar
+        </button>
+    </div>
+}

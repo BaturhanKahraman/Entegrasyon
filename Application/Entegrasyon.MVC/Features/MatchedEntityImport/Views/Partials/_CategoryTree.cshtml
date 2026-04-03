@@ -1,0 +1,66 @@
+@using Entegrasyon.Entity.Dtos.Templates
+@model List<TemplateCategoryDetailDto>
+
+@{
+    string MarketPlaceName(int id) => id switch
+    {
+        1 => "Trendyol",
+        2 => "N11",
+        3 => "Hepsiburada",
+        4 => "Amazon",
+        5 => "Pazarama",
+        7 => "PttAVM",
+        8 => "Ciceksepeti",
+        _ => $"MP #{id}"
+    };
+
+    string MarketPlaceBadge(int id) => id switch
+    {
+        1 => "bg-orange-lt",
+        2 => "bg-red-lt",
+        3 => "bg-yellow-lt",
+        4 => "bg-blue-lt",
+        5 => "bg-purple-lt",
+        7 => "bg-cyan-lt",
+        8 => "bg-pink-lt",
+        _ => "bg-secondary-lt"
+    };
+}
+
+<ul class="list-group list-group-flush">
+    @foreach (var cat in Model)
+    {
+        <li class="list-group-item">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <strong>@cat.Name</strong>
+                    @if (cat.DefaultVatRate.HasValue)
+                    {
+                        <span class="badge bg-secondary-lt ms-1">KDV %@cat.DefaultVatRate</span>
+                    }
+                </div>
+                <div>
+                    @foreach (var mp in cat.MarketplaceMappings)
+                    {
+                        <span class="badge @MarketPlaceBadge(mp.MarketPlaceId) ms-1"
+                              title="@(mp.ExternalName ?? mp.ExternalStringId ?? mp.ExternalId.ToString())">
+                            @MarketPlaceName(mp.MarketPlaceId)
+                        </span>
+                    }
+                </div>
+            </div>
+            @if (cat.Attributes.Count > 0)
+            {
+                <div class="mt-1 ms-3">
+                    <small class="text-secondary">@cat.Attributes.Count ozellik</small>
+                </div>
+            }
+            @if (cat.Children.Count > 0)
+            {
+                <div class="ms-3 mt-1">
+                    <partial name="~/Features/MatchedEntityImport/Views/Partials/_CategoryTree.cshtml" model="cat.Children" />
+                </div>
+            }
+        </li>
+    }
+</ul>

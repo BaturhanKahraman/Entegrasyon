@@ -1,0 +1,79 @@
+@using Entegrasyon.Entity.Dtos.Templates
+@model List<TemplateAttributeDetailDto>
+
+<div class="table-responsive">
+    <table class="table table-vcenter table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Ozellik</th>
+                <th>Degerler</th>
+                <th>Zorunlu</th>
+                <th>Varyant</th>
+                <th>Dilimleyici</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var attr in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@(attr.AttributeHumanized ?? attr.AttributeKey)</strong>
+                        @if (attr.AllowCustom)
+                        {
+                            <span class="badge bg-cyan-lt ms-1" title="Kullanici ozel deger girebilir">Ozel</span>
+                        }
+                    </td>
+                    <td>
+                        @if (attr.Values.Count > 0)
+                        {
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var val in attr.Values.Take(5))
+                                {
+                                    <span class="badge bg-secondary-lt">@val.ValueName</span>
+                                }
+                                @if (attr.Values.Count > 5)
+                                {
+                                    <span class="badge bg-secondary-lt">+@(attr.Values.Count - 5) daha</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-secondary">-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (attr.IsRequired)
+                        {
+                            <span class="badge bg-red-lt">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="text-secondary">Hayir</span>
+                        }
+                    </td>
+                    <td>
+                        @if (attr.IsVarianter)
+                        {
+                            <span class="badge bg-purple-lt">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="text-secondary">Hayir</span>
+                        }
+                    </td>
+                    <td>
+                        @if (attr.IsSlicer)
+                        {
+                            <span class="badge bg-orange-lt">Evet</span>
+                        }
+                        else
+                        {
+                            <span class="text-secondary">Hayir</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

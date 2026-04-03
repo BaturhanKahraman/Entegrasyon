@@ -1,0 +1,115 @@
+@using Entegrasyon.Entity.Dtos.Templates
+@using Entegrasyon.Entity.Templates
+@model List<MatchedEntityPackageDto>
+
+@{
+    string EntityTypeBadge(MatchedEntityType type) => type switch
+    {
+        MatchedEntityType.Category => "bg-blue-lt",
+        MatchedEntityType.Brand => "bg-purple-lt",
+        MatchedEntityType.CargoCompany => "bg-orange-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string EntityTypeLabel(MatchedEntityType type) => type switch
+    {
+        MatchedEntityType.Category => "Kategori",
+        MatchedEntityType.Brand => "Marka",
+        MatchedEntityType.CargoCompany => "Kargo Sirketi",
+        _ => type.ToString()
+    };
+}
+
+<div id="package-table">
+    @if (Model is { Count: > 0 })
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Paket Adi</th>
+                        <th>Tur</th>
+                        <th>Varlik</th>
+                        <th>Pazaryeri</th>
+                        <th>Versiyon</th>
+                        <th>Tarih</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pkg in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <strong>@pkg.Name</strong>
+                                    @if (!string.IsNullOrWhiteSpace(pkg.Description))
+                                    {
+                                        <small class="text-secondary">@pkg.Description</small>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge @EntityTypeBadge(pkg.EntityType)">@EntityTypeLabel(pkg.EntityType)</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-lt">@pkg.EntityCount</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-green-lt">@pkg.MarketplaceCount pazaryeri</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary">v@(pkg.Version)</span>
+                            </td>
+                            <td class="text-secondary">
+                                @pkg.CreatedAt.ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            hx-get="/matched-entities/@pkg.Id/detail"
+                                            hx-target="#detail-modal-content"
+                                            hx-swap="innerHTML">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye" width="24" height="24"
+                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                             stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                        </svg>
+                                        Detay
+                                    </button>
+                                    <button class="btn btn-sm btn-primary"
+                                            hx-get="/matched-entities/@pkg.Id/conflicts"
+                                            hx-target="#conflict-modal-content"
+                                            hx-swap="innerHTML">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24"
+                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                             stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+                                            <path d="M7 11l5 5l5 -5"/>
+                                            <path d="M12 4l0 12"/>
+                                        </svg>
+                                        Aktar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Paket bulunamadi",
+                         Subtitle = "Henuz paket eklenmemis veya arama kriterinize uygun paket yok."
+                     }' />
+        </div>
+    }
+</div>

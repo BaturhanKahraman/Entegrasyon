@@ -1,0 +1,180 @@
+@using Entegrasyon.Entity.Dtos.Templates
+@using Entegrasyon.Entity.Templates
+@model MatchedEntityPackageDetailDto
+
+@{
+    string MarketPlaceName(int id) => id switch
+    {
+        1 => "Trendyol",
+        2 => "N11",
+        3 => "Hepsiburada",
+        4 => "Amazon",
+        5 => "Pazarama",
+        7 => "PttAVM",
+        8 => "Ciceksepeti",
+        _ => $"MP #{id}"
+    };
+
+    string MarketPlaceBadge(int id) => id switch
+    {
+        1 => "bg-orange-lt",
+        2 => "bg-red-lt",
+        3 => "bg-yellow-lt",
+        4 => "bg-blue-lt",
+        5 => "bg-purple-lt",
+        7 => "bg-cyan-lt",
+        8 => "bg-pink-lt",
+        _ => "bg-secondary-lt"
+    };
+}
+
+<div class="modal-header">
+    <h5 class="modal-title">@Model.Name</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    @if (!string.IsNullOrWhiteSpace(Model.Description))
+    {
+        <p class="text-secondary mb-3">@Model.Description</p>
+    }
+
+    <div class="row mb-3">
+        <div class="col-auto">
+            <span class="badge bg-blue-lt">v@(Model.Version)</span>
+        </div>
+        <div class="col-auto">
+            <small class="text-secondary">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+        </div>
+    </div>
+
+    @if (Model.EntityType == MatchedEntityType.Category && Model.Categories.Count > 0)
+    {
+        <h4 class="mb-2">Kategoriler</h4>
+        <div class="accordion" id="categoryAccordion">
+            @for (var i = 0; i < Model.Categories.Count; i++)
+            {
+                var cat = Model.Categories[i];
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button @(i > 0 ? "collapsed" : "")" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#cat-@cat.Id">
+                            @cat.Name
+                            @if (cat.DefaultVatRate.HasValue)
+                            {
+                                <span class="badge bg-secondary-lt ms-2">KDV %@cat.DefaultVatRate</span>
+                            }
+                            @foreach (var mp in cat.MarketplaceMappings)
+                            {
+                                <span class="badge @MarketPlaceBadge(mp.MarketPlaceId) ms-1">@MarketPlaceName(mp.MarketPlaceId)</span>
+                            }
+                        </button>
+                    </h2>
+                    <div id="cat-@cat.Id" class="accordion-collapse collapse @(i == 0 ? "show" : "")">
+                        <div class="accordion-body p-0">
+                            @if (cat.Children.Count > 0)
+                            {
+                                <partial name="~/Features/MatchedEntityImport/Views/Partials/_CategoryTree.cshtml" model="cat.Children" />
+                            }
+                            @if (cat.Attributes.Count > 0)
+                            {
+                                <div class="px-3 py-2">
+                                    <h5 class="mb-2">Ozellikler (@cat.Attributes.Count)</h5>
+                                    <partial name="~/Features/MatchedEntityImport/Views/Partials/_AttributeList.cshtml" model="cat.Attributes" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.EntityType == MatchedEntityType.Brand && Model.Brands.Count > 0)
+    {
+        <h4 class="mb-2">Markalar (@Model.Brands.Count)</h4>
+        <div class="table-responsive">
+            <table class="table table-vcenter table-sm">
+                <thead>
+                    <tr>
+                        <th>Marka Adi</th>
+                        <th>Pazaryeri Eslestirmeleri</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var brand in Model.Brands)
+                    {
+                        <tr>
+                            <td><strong>@brand.Name</strong></td>
+                            <td>
+                                @foreach (var mp in brand.MarketplaceMappings)
+                                {
+                                    <span class="badge @MarketPlaceBadge(mp.MarketPlaceId) me-1">
+                                        @MarketPlaceName(mp.MarketPlaceId)
+                                        @if (mp.ExternalId > 0) { <text>: @mp.ExternalId</text> }
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (Model.EntityType == MatchedEntityType.CargoCompany && Model.CargoCompanies.Count > 0)
+    {
+        <h4 class="mb-2">Kargo Sirketleri (@Model.CargoCompanies.Count)</h4>
+        <div class="table-responsive">
+            <table class="table table-vcenter table-sm">
+                <thead>
+                    <tr>
+                        <th>Sirket Adi</th>
+                        <th>Kod</th>
+                        <th>Pazaryeri Eslestirmeleri</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cargo in Model.CargoCompanies)
+                    {
+                        <tr>
+                            <td><strong>@cargo.Name</strong></td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(cargo.Code))
+                                {
+                                    <code>@cargo.Code</code>
+                                }
+                            </td>
+                            <td>
+                                @foreach (var mp in cargo.MarketplaceMappings)
+                                {
+                                    <span class="badge @MarketPlaceBadge(mp.MarketPlaceId) me-1">
+                                        @MarketPlaceName(mp.MarketPlaceId)
+                                        @if (mp.ExternalId > 0) { <text>: @mp.ExternalId</text> }
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Kapat</button>
+    <button class="btn btn-primary"
+            hx-get="/matched-entities/@Model.Id/conflicts"
+            hx-target="#conflict-modal-content"
+            hx-swap="innerHTML"
+            onclick="bootstrap.Modal.getInstance(document.getElementById('detailModal'))?.hide()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24"
+             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/>
+            <path d="M7 11l5 5l5 -5"/>
+            <path d="M12 4l0 12"/>
+        </svg>
+        Bu Paketi Aktar
+    </button>
+</div>
