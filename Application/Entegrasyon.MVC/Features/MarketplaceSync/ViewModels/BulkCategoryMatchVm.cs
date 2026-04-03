@@ -9,6 +9,9 @@ public class BulkCategoryMatchVm
     public List<MarketPlace> MarketPlaces { get; set; } = [];
     public CategoryMatchSummaryDto Summary { get; set; } = new();
     public List<UnmappedCategoryItemVm> UnmappedCategories { get; set; } = [];
+    public bool AutoMatchAvailable { get; set; }
+    public List<CategoryAutoMatchSuggestionDto> Suggestions { get; set; } = [];
+    public bool SuggestionsLoaded { get; set; }
 }
 
 public class UnmappedCategoryItemVm

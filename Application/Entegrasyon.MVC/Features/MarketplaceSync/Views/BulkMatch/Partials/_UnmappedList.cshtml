@@ -60,7 +60,7 @@
                         @for (var i = 0; i < Model.UnmappedCategories.Count; i++)
                         {
                             var cat = Model.UnmappedCategories[i];
-                            <tr class="unmapped-row">
+                            <tr class="unmapped-row" data-category-id="@cat.Id">
                                 <td>
                                     <input type="checkbox" class="form-check-input category-checkbox"
                                            name="categoryIds" value="@cat.Id"

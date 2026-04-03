@@ -1,12 +1,5 @@
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.BulkCategoryMatchVm
 @{
-    ViewData.SetPageTitle("Toplu Kategori Esleme");
-    ViewData.SetActiveNav("marketplace-sync");
-    ViewData.SetBreadcrumb(
-        ("Pazaryeri Senkronizasyonu", "/marketplace/sync"),
-        ("Kategori Eslemesi", "/marketplace/sync/categories"),
-        ("Toplu Esleme", null));
-
     var total = Model.Summary.TotalCategories;
     var unmappedCount = Model.UnmappedCategories.Count;
 }
@@ -73,9 +66,40 @@
                     <div class="col-auto">
                         <strong>@total</strong>
                     </div>
+                    @if (Model.AutoMatchAvailable && unmappedCount > 0)
+                    {
+                        <div class="col-auto ms-auto">
+                            <button type="button" class="btn btn-purple" id="auto-match-btn"
+                                    onclick="requestAutoMatch()">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon auto-match-icon" width="24" height="24" viewBox="0 0 24 24"
+                                     stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275l5.813 1.912l-5.813 1.912a2 2 0 0 0 -1.275 1.275l-1.912 5.813l-1.912 -5.813a2 2 0 0 0 -1.275 -1.275l-5.813 -1.912l5.813 -1.912a2 2 0 0 0 1.275 -1.275z"/>
+                                </svg>
+                                <span class="auto-match-label">Otomatik Esle (AI)</span>
+                                <span class="spinner-border spinner-border-sm d-none auto-match-spinner" role="status"></span>
+                            </button>
+                        </div>
+                    }
+                    else if (!Model.AutoMatchAvailable && unmappedCount > 0)
+                    {
+                        <div class="col-auto ms-auto">
+                            <span class="badge bg-secondary-lt" title="Ollama servisi erisilemez durumda">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                     stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275l5.813 1.912l-5.813 1.912a2 2 0 0 0 -1.275 1.275l-1.912 5.813l-1.912 -5.813a2 2 0 0 0 -1.275 -1.275l-5.813 -1.912l5.813 -1.912a2 2 0 0 0 1.275 -1.275z"/>
+                                </svg>
+                                AI Devre Disi
+                            </span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
+
+        <!-- Auto-Match Suggestions Panel -->
+        <div id="suggestions-container" class="mb-3"></div>
 
         <!-- Unmapped Categories List -->
         <div id="unmapped-list-container">
@@ -87,12 +111,107 @@
 <script>
     document.addEventListener('refreshUnmapped', function () {
         htmx.ajax('GET', '/marketplace/sync/categories/bulk?mp=@Model.SelectedMarketPlaceId', { target: '#unmapped-list-container' });
+        // Clear suggestions panel after successful apply
+        var sc = document.getElementById('suggestions-container');
+        while (sc.firstChild) sc.removeChild(sc.firstChild);
     });
+
+    function setAutoMatchLoading(loading) {
+        var btn = document.getElementById('auto-match-btn');
+        if (!btn) return;
+        var icon = btn.querySelector('.auto-match-icon');
+        var label = btn.querySelector('.auto-match-label');
+        var spinner = btn.querySelector('.auto-match-spinner');
+        btn.disabled = loading;
+        icon.classList.toggle('d-none', loading);
+        spinner.classList.toggle('d-none', !loading);
+        label.textContent = loading ? 'AI analiz ediyor...' : 'Otomatik Esle (AI)';
+    }
+
+    function requestAutoMatch() {
+        setAutoMatchLoading(true);
+
+        var rows = document.querySelectorAll('#unmapped-category-list .unmapped-row');
+        var formData = new FormData();
+        formData.append('mp', '@Model.SelectedMarketPlaceId');
+
+        rows.forEach(function (row) {
+            var catId = row.getAttribute('data-category-id');
+            var catName = row.querySelector('.category-name').textContent.trim();
+            if (catId) {
+                formData.append('categoryIds', catId);
+                formData.append('categoryNames', catName);
+            }
+        });
+
+        htmx.ajax('POST', '/marketplace/sync/categories/bulk/auto-match', {
+            target: '#suggestions-container',
+            swap: 'innerHTML',
+            values: Object.fromEntries(formData)
+        }).then(function () {
+            setAutoMatchLoading(false);
+        }).catch(function () {
+            setAutoMatchLoading(false);
+        });
+    }
 
     function toggleSelectAll(source) {
         var checkboxes = document.querySelectorAll('.category-checkbox');
         checkboxes.forEach(function (cb) {
             cb.checked = source.checked;
         });
+    }
+
+    function toggleSuggestionSelectAll(source) {
+        var checkboxes = document.querySelectorAll('.suggestion-checkbox');
+        checkboxes.forEach(function (cb) {
+            cb.checked = source.checked;
+        });
+        updateSuggestionCount();
+    }
+
+    function updateSuggestionCount() {
+        var checked = document.querySelectorAll('.suggestion-checkbox:checked').length;
+        var el = document.getElementById('suggestion-selected-count');
+        if (el) el.textContent = checked + ' oneri secildi';
+    }
+
+    function applySuggestions() {
+        var checked = document.querySelectorAll('.suggestion-checkbox:checked');
+        if (checked.length === 0) return;
+
+        var formData = new FormData();
+        formData.append('mp', '@Model.SelectedMarketPlaceId');
+        checked.forEach(function (cb) {
+            var row = cb.closest('tr');
+            formData.append('applicationCategoryIds', row.getAttribute('data-app-cat-id'));
+            formData.append('suggestedMarketPlaceCategoryIds', row.getAttribute('data-mp-cat-id'));
+            formData.append('suggestedMarketPlaceCategoryNames', row.getAttribute('data-mp-cat-name') || '');
+        });
+
+        var applyBtn = document.getElementById('apply-suggestions-btn');
+        if (applyBtn) {
+            applyBtn.disabled = true;
+            applyBtn.querySelector('.apply-label').textContent = 'Uygulaniyor...';
+            applyBtn.querySelector('.apply-spinner').classList.remove('d-none');
+        }
+
+        htmx.ajax('POST', '/marketplace/sync/categories/bulk/apply-suggestions', {
+            swap: 'none',
+            values: Object.fromEntries(formData)
+        }).then(function () {
+            resetApplyBtn();
+        }).catch(function () {
+            resetApplyBtn();
+        });
+    }
+
+    function resetApplyBtn() {
+        var applyBtn = document.getElementById('apply-suggestions-btn');
+        if (applyBtn) {
+            applyBtn.disabled = false;
+            applyBtn.querySelector('.apply-label').textContent = 'Secilenleri Uygula';
+            applyBtn.querySelector('.apply-spinner').classList.add('d-none');
+        }
     }
 </script>

@@ -10,6 +10,7 @@ namespace Entegrasyon.MVC.Features.MarketplaceSync;
 [Authorize]
 public class BulkMatchController(
     ICategoryMatchService categoryMatchService,
+    ICategoryAutoMatchService categoryAutoMatchService,
     ICategoryService categoryService,
     IMarketPlaceManager marketPlaceManager) : Controller
 {
@@ -29,6 +30,7 @@ public class BulkMatchController(
         var summary = await categoryMatchService.GetCategoryMatchSummaryAsync(mp);
         var mappings = await categoryMatchService.GetAllCategoryMappingsAsync(mp);
         var allCategories = await categoryService.GetAllCategoriesWithoutAttributesAsync();
+        var autoMatchAvailable = await categoryAutoMatchService.IsAvailableAsync();
 
         var mappedCategoryIds = mappings.Select(m => m.ApplicationCategoryId).ToHashSet();
 
@@ -47,13 +49,114 @@ public class BulkMatchController(
             SelectedMarketPlaceId = mp,
             MarketPlaces = marketPlaces.Data ?? [],
             Summary = summary,
-            UnmappedCategories = unmapped
+            UnmappedCategories = unmapped,
+            AutoMatchAvailable = autoMatchAvailable
         };
 
         if (Request.IsHtmx() && Request.HtmxTarget() == "unmapped-list-container")
             return PartialView($"{ViewBase}/Partials/_UnmappedList.cshtml", vm);
 
         return View($"{ViewBase}/Index.cshtml", vm);
+    }
+
+    [HttpPost("/marketplace/sync/categories/bulk/auto-match")]
+    public async Task<IActionResult> AutoMatch(int mp, int[] categoryIds, string[] categoryNames)
+    {
+        var items = new List<CategoryAutoMatchItemDto>();
+        for (var i = 0; i < categoryIds.Length; i++)
+        {
+            items.Add(new CategoryAutoMatchItemDto
+            {
+                CategoryId = categoryIds[i],
+                CategoryName = categoryNames.Length > i ? categoryNames[i] : string.Empty
+            });
+        }
+
+        if (items.Count == 0)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Otomatik esleme icin kategori secilmedi.", type = "warning" });
+            return StatusCode(422);
+        }
+
+        var request = new CategoryAutoMatchRequestDto
+        {
+            MarketPlaceId = mp,
+            Categories = items
+        };
+
+        var result = await categoryAutoMatchService.GetAutoMatchSuggestionsAsync(request);
+
+        if (!result.Success || result.Data.Count == 0)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Otomatik esleme onerisi bulunamadi.", type = "info" });
+            return PartialView($"{ViewBase}/Partials/_SuggestionsEmpty.cshtml");
+        }
+
+        var vm = new BulkCategoryMatchVm
+        {
+            SelectedMarketPlaceId = mp,
+            Suggestions = result.Data,
+            SuggestionsLoaded = true
+        };
+
+        return PartialView($"{ViewBase}/Partials/_SuggestionsPanel.cshtml", vm);
+    }
+
+    [HttpPost("/marketplace/sync/categories/bulk/apply-suggestions")]
+    public async Task<IActionResult> ApplySuggestions(int mp, int[] applicationCategoryIds,
+        int[] suggestedMarketPlaceCategoryIds, string?[] suggestedMarketPlaceCategoryNames)
+    {
+        var items = new List<BulkCategoryMatchItemDto>();
+        for (var i = 0; i < applicationCategoryIds.Length; i++)
+        {
+            if (suggestedMarketPlaceCategoryIds.Length <= i || suggestedMarketPlaceCategoryIds[i] == 0)
+                continue;
+
+            items.Add(new BulkCategoryMatchItemDto
+            {
+                ApplicationCategoryId = applicationCategoryIds[i],
+                MarketPlaceCategoryId = suggestedMarketPlaceCategoryIds[i],
+                MarketPlaceCategoryName = suggestedMarketPlaceCategoryNames?.Length > i
+                    ? suggestedMarketPlaceCategoryNames[i]
+                    : null
+            });
+        }
+
+        if (items.Count == 0)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Uygulanacak oneri secilmedi.", type = "warning" });
+            return StatusCode(422);
+        }
+
+        var dto = new BulkCategoryMatchDto
+        {
+            MarketPlaceId = mp,
+            Items = items
+        };
+
+        var result = await categoryMatchService.BulkCreateCategoryMappingsAsync(dto);
+
+        if (result.Success)
+        {
+            var data = result.Data!;
+            var msg = $"{data.SuccessCount} kategori otomatik eslendi.";
+            if (data.FailedCount > 0)
+                msg += $" {data.FailedCount} basarisiz.";
+            if (data.SkippedCount > 0)
+                msg += $" {data.SkippedCount} atlandi.";
+
+            Response.HtmxTriggerWithData("showToast",
+                new { message = msg, type = data.FailedCount > 0 ? "warning" : "success" });
+            Response.HtmxTrigger("refreshUnmapped");
+            return Content("");
+        }
+
+        Response.HtmxTriggerWithData("showToast",
+            new { message = result.Message ?? "Otomatik esleme basarisiz.", type = "danger" });
+        return StatusCode(422);
     }
 
     [HttpPost("/marketplace/sync/categories/bulk/submit")]
