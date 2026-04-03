@@ -26,11 +26,11 @@ jobs:
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           docker build \
-            -t 192.168.1.78:5252/entegrasyon-blazor:stage-${SHORT_SHA} \
-            -t 192.168.1.78:5252/entegrasyon-blazor:stage \
-            -f Application/Entegrasyon.Blazor/Dockerfile .
-          docker push 192.168.1.78:5252/entegrasyon-blazor:stage-${SHORT_SHA}
-          docker push 192.168.1.78:5252/entegrasyon-blazor:stage
+            -t 192.168.1.78:5252/entegrasyon-mvc:stage-${SHORT_SHA} \
+            -t 192.168.1.78:5252/entegrasyon-mvc:stage \
+            -f Application/Entegrasyon.MVC/Dockerfile .
+          docker push 192.168.1.78:5252/entegrasyon-mvc:stage-${SHORT_SHA}
+          docker push 192.168.1.78:5252/entegrasyon-mvc:stage
           echo "Pushed image with tags: stage-${SHORT_SHA}, stage"
 
   deploy:
@@ -52,8 +52,8 @@ jobs:
         run: |
           docker run --rm --network host \
             -e "ConnectionStrings__Main=${STAGE_DB_CONNECTION}" \
-            192.168.1.78:5252/entegrasyon-blazor:stage \
-            dotnet Entegrasyon.Blazor.dll --migrate
+            192.168.1.78:5252/entegrasyon-mvc:stage \
+            dotnet Entegrasyon.MVC.dll --migrate
 
       - name: Deploy staging
         run: |
