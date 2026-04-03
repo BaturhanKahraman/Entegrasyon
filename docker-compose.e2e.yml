@@ -28,10 +28,10 @@ services:
     networks:
       - e2e-net
 
-  blazor-e2e:
+  mvc-e2e:
     build:
       context: .
-      dockerfile: Application/Entegrasyon.Blazor/Dockerfile
+      dockerfile: Application/Entegrasyon.MVC/Dockerfile
     container_name: entegrasyon-e2e-app
     ports:
       - "5099:8080"
@@ -46,14 +46,14 @@ services:
       - Minio__UseSSL=false
       - Minio__BucketName=products-e2e
       - Minio__PublicBaseUrl=http://localhost:9099
-      - JwtTokenOptions__SecurityKey=E2ETestSecurityKey_12345678!
+      - Tenant__DefaultSubdomain=dev
       - Trendyol__UseMock=true
       - N11__UseMock=true
     depends_on:
       db-e2e:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health/live"]
       interval: 10s
       timeout: 5s
       retries: 10

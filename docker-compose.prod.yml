@@ -1,8 +1,8 @@
 services:
-  blazor-prod:
+  mvc-prod:
     build:
       context: .
-      dockerfile: Application/Entegrasyon.Blazor/Dockerfile
+      dockerfile: Application/Entegrasyon.MVC/Dockerfile
     container_name: entegrasyon-prod
     restart: unless-stopped
     ports:
@@ -12,13 +12,14 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__Main=${PROD_DB_CONNECTION}
       - ConnectionStrings__Redis=${REDIS_CONNECTION:-redis:6379}
+      - ConnectionStrings__AdminPanel=${ADMIN_DB_CONNECTION}
       - Minio__Endpoint=${MINIO_ENDPOINT}
       - Minio__AccessKey=${MINIO_ACCESS_KEY}
       - Minio__SecretKey=${MINIO_SECRET_KEY}
       - Minio__UseSSL=false
       - Minio__BucketName=products
       - Minio__PublicBaseUrl=${MINIO_PUBLIC_URL}
-      - JwtTokenOptions__SecurityKey=${JWT_SECRET_KEY}
+      - Tenant__DefaultSubdomain=${TENANT_DEFAULT_SUBDOMAIN:-dev}
     networks:
       - entegrasyon-net
 
