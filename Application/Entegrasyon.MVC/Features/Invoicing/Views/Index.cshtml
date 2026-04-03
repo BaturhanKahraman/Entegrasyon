@@ -8,7 +8,10 @@
                 <div class="page-pretitle">Finans</div>
                 <h2 class="page-title">Faturalar</h2>
             </div>
-            <div class="col-auto ms-auto">
+            <div class="col-auto ms-auto d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulk-invoice-modal">
+                    Toplu Fatura
+                </button>
                 <a href="/invoicing/create" class="btn btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -76,3 +79,74 @@
         </div>
     </div>
 </div>
+
+<!-- Bulk Invoice Modal -->
+<div class="modal modal-blur fade" id="bulk-invoice-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Toplu Fatura Olustur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Fatura JSON Verisi</label>
+                    <textarea id="bulk-invoice-json" class="form-control" rows="10"
+                              placeholder='{"invoices": [{"invoiceType": 0, "customerTaxId": "...", "customerTitle": "...", "issueDate": "...", "integratorProvider": 0, "lines": [{"productName": "...", "quantity": 1, "unitPrice": 100, "taxRate": 20}]}]}'></textarea>
+                    <small class="form-hint">JSON formatinda birden fazla fatura tanimlayin.</small>
+                </div>
+                <div id="bulk-invoice-error" class="alert alert-danger d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                <button type="button" id="bulk-invoice-submit" class="btn btn-primary">Faturalari Olustur</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('bulk-invoice-submit').addEventListener('click', async function () {
+        const errorEl = document.getElementById('bulk-invoice-error');
+        errorEl.classList.add('d-none');
+
+        let payload;
+        try {
+            payload = JSON.parse(document.getElementById('bulk-invoice-json').value);
+        } catch (e) {
+            errorEl.textContent = 'Gecersiz JSON formati.';
+            errorEl.classList.remove('d-none');
+            return;
+        }
+
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Gonderiliyor...';
+
+        try {
+            const response = await fetch('/invoicing/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                errorEl.textContent = data.message || 'Bir hata olustu.';
+                errorEl.classList.remove('d-none');
+                return;
+            }
+
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
+        } catch (e) {
+            errorEl.textContent = 'Istek gonderilemedi.';
+            errorEl.classList.remove('d-none');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Faturalari Olustur';
+        }
+    });
+</script>

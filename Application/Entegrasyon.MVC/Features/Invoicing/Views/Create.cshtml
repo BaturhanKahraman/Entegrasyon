@@ -1,0 +1,132 @@
+@using Entegrasyon.Entity.Invoicing
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Finans</div>
+                <h2 class="page-title">Yeni Fatura</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/invoicing" class="btn btn-outline-secondary">Geri Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/invoicing/create">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fatura Tipi</label>
+                            <select name="InvoiceType" class="form-select" required>
+                                <option value="@((int)EInvoiceType.EFatura)">e-Fatura</option>
+                                <option value="@((int)EInvoiceType.EArsiv)">e-Arsiv</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Entegrator</label>
+                            <select name="IntegratorProvider" class="form-select" required>
+                                <option value="@((int)IntegratorProvider.Custom)">Custom</option>
+                                <option value="@((int)IntegratorProvider.Parasut)">Parasut</option>
+                                <option value="@((int)IntegratorProvider.ForIba)">ForIba</option>
+                                <option value="@((int)IntegratorProvider.Logo)">Logo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Duzenleme Tarihi</label>
+                            <input type="date" name="IssueDate" class="form-control"
+                                   value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Musteri Vergi / TC No</label>
+                            <input type="text" name="CustomerTaxId" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Musteri Unvani</label>
+                            <input type="text" name="CustomerTitle" class="form-control" required />
+                        </div>
+                    </div>
+
+                    @if (ViewBag.SaleId != null)
+                    {
+                        <input type="hidden" name="SaleId" value="@ViewBag.SaleId" />
+                    }
+
+                    <hr class="my-3" />
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="card-title mb-0">Fatura Satirlari</h3>
+                        <button type="button" id="add-line" class="btn btn-outline-primary btn-sm">
+                            + Satir Ekle
+                        </button>
+                    </div>
+
+                    <div id="invoice-lines">
+                        <div class="row g-2 mb-1 d-none d-md-flex text-muted small">
+                            <div class="col-md-4">Urun Adi</div>
+                            <div class="col-md-2">Miktar</div>
+                            <div class="col-md-2">Birim Fiyat</div>
+                            <div class="col-md-2">KDV</div>
+                            <div class="col-md-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <a href="/invoicing" class="btn btn-link me-2">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Fatura Olustur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let lineIndex = 0;
+
+    function addInvoiceLine() {
+        const container = document.getElementById('invoice-lines');
+        const html = `<div class="row g-2 mb-2 invoice-line">
+            <div class="col-md-4">
+                <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Urun Adi" required>
+            </div>
+            <div class="col-md-2">
+                <input name="Lines[${lineIndex}].Quantity" type="number" class="form-control form-control-sm" value="1" min="1" required>
+            </div>
+            <div class="col-md-2">
+                <input name="Lines[${lineIndex}].UnitPrice" type="number" step="0.01" class="form-control form-control-sm" placeholder="Birim Fiyat" required>
+            </div>
+            <div class="col-md-2">
+                <select name="Lines[${lineIndex}].TaxRate" class="form-select form-select-sm">
+                    <option value="20">%20</option>
+                    <option value="10">%10</option>
+                    <option value="1">%1</option>
+                    <option value="0">%0</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-line">Sil</button>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        lineIndex++;
+    }
+
+    document.getElementById('add-line').addEventListener('click', addInvoiceLine);
+
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-line')) {
+            e.target.closest('.invoice-line').remove();
+        }
+    });
+
+    // Start with one empty line
+    addInvoiceLine();
+</script>

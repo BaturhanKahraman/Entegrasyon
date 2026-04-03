@@ -158,6 +158,20 @@ public class InvoiceController(IEInvoiceManager invoiceManager) : Controller
         return RedirectToAction(nameof(Detail), new { id });
     }
 
+    [HttpPost("/invoicing/bulk")]
+    public async Task<IActionResult> BulkCreate([FromBody] BulkInvoiceDto dto)
+    {
+        var result = await invoiceManager.CreateBulkInvoices(dto);
+        if (!result.Success)
+        {
+            Response.StatusCode = 422;
+            return Json(new { message = result.Message });
+        }
+
+        TempData.SetSuccess($"{result.Data!.Count} fatura basariyla olusturuldu.");
+        return Json(new { redirect = "/invoicing" });
+    }
+
     [HttpGet("/invoicing/{id:guid}/pdf")]
     public async Task<IActionResult> DownloadPdf(Guid id)
     {
