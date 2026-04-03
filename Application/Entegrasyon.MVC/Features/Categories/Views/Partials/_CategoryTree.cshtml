@@ -1,0 +1,7 @@
+@model List<Entegrasyon.Entity.Categories.Category>
+<div class="list-group list-group-flush">
+    @foreach (var root in Model.Where(c => c.SuperCategoryId == null).OrderBy(c => c.Name))
+    {
+        @await Html.PartialAsync("Partials/_CategoryNode", root, new ViewDataDictionary(ViewData) { ["Depth"] = 0 })
+    }
+</div>

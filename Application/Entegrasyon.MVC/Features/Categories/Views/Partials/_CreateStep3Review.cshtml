@@ -1,0 +1,75 @@
+@model Entegrasyon.MVC.Features.Categories.ViewModels.CategoryCreateVm
+
+<!-- step3-review marker for JS step detection -->
+<div class="card">
+    <div class="card-header"><h3 class="card-title">Onay</h3></div>
+    <div class="card-body">
+        <div class="datagrid">
+            <div class="datagrid-item">
+                <div class="datagrid-title">Kategori Adi</div>
+                <div class="datagrid-content">@Model.Name</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Ust Kategori</div>
+                <div class="datagrid-content">@(Model.SuperCategoryName ?? "Yok (Kok kategori)")</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">KDV Orani</div>
+                <div class="datagrid-content">
+                    @(Model.DefaultVatRate.HasValue ? $"%{Model.DefaultVatRate.Value}" : "Belirtilmedi")
+                </div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Favori</div>
+                <div class="datagrid-content">
+                    @(Model.IsFavorite ? "Evet" : "Hayir")
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Attributes.Any())
+        {
+            <h4 class="mt-4">Secilen Ozellikler (@Model.Attributes.Count adet)</h4>
+            <div class="table-responsive">
+                <table class="table table-vcenter">
+                    <thead>
+                        <tr>
+                            <th>Ozellik</th>
+                            <th class="text-center">Zorunlu</th>
+                            <th class="text-center">Varyanter</th>
+                            <th class="text-center">Dilimleyici</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attr in Model.Attributes)
+                        {
+                            <tr>
+                                <td>@attr.AttributeName</td>
+                                <td class="text-center">
+                                    @(attr.IsRequired ? "Evet" : "-")
+                                </td>
+                                <td class="text-center">
+                                    @(attr.IsVarianter ? "Evet" : "-")
+                                </td>
+                                <td class="text-center">
+                                    @(attr.IsSlicer ? "Evet" : "-")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-secondary mt-3">Ozellik secilmedi.</p>
+        }
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <a href="/categories/add" class="btn btn-ghost-secondary">&larr; Bastan Baslat</a>
+        <form method="post" action="/categories/add/save">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success">Kategoriyi Olustur</button>
+        </form>
+    </div>
+</div>

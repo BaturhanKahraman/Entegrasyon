@@ -280,6 +280,8 @@ namespace Entegrasyon.Business.Concrete
         {
             using var dbContext = contextFactory.CreateDbContext();
             return await dbContext.Categories
+                .Include(c => c.SuperCategory)
+                .Include(c => c.SubCategories)
                 .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
                 .FirstOrDefaultAsync(c => c.Id == categoryId);
         }

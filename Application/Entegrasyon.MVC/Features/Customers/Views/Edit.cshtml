@@ -1,0 +1,70 @@
+@model Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Musteriler</div>
+                <h2 class="page-title">Musteri Duzenle</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/customers" class="btn btn-outline-secondary">Geri Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/customers/@Model.Id/edit">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Musteri Tipi</label>
+                            <select name="CustomerType" class="form-select">
+                                <option value="Retail" selected="@(Model.CustomerType == "Retail")">Bireysel</option>
+                                <option value="Corporate" selected="@(Model.CustomerType == "Corporate")">Kurumsal</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad Soyad</label>
+                            <input type="text" name="Name" class="form-control"
+                                   value="@Model.NameSurname" />
+                            <input type="hidden" name="Surname" value="" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Firma Adi</label>
+                            <input type="text" name="CorporateName" class="form-control"
+                                   value="@Model.CorporateName" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">TC / Vergi No</label>
+                            <input type="text" name="NationalIdentity" class="form-control"
+                                   value="@Model.NationalIdentityOrTaxNumber" />
+                            <input type="hidden" name="TaxNumber" value="" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" name="PhoneNumber" class="form-control"
+                                   value="@Model.PhoneNumber" />
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a href="/customers" class="btn btn-link me-2">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

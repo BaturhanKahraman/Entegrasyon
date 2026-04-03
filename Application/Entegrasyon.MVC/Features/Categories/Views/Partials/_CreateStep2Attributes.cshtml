@@ -1,0 +1,77 @@
+@model Entegrasyon.MVC.Features.Categories.ViewModels.CategoryCreateVm
+
+<!-- step2-attributes marker for JS step detection -->
+<form hx-post="/categories/add/step2" hx-target="#wizard-content" hx-swap="innerHTML">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Ozellik Secimi</h3>
+            <div class="card-actions">
+                <span class="text-secondary">@Model.Attributes.Count ozellik mevcut</span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.Attributes.Count == 0)
+            {
+                <div class="alert alert-info">
+                    Henuz tanimli ozellik bulunmuyor. Kategori olusturulduktan sonra ozellik ekleyebilirsiniz.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter">
+                        <thead>
+                            <tr>
+                                <th style="width:40px">Sec</th>
+                                <th>Ozellik</th>
+                                <th style="width:100px" class="text-center">Zorunlu</th>
+                                <th style="width:100px" class="text-center">Varyanter</th>
+                                <th style="width:100px" class="text-center">Dilimleyici</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Attributes.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="Attributes[@i].AttributeId"
+                                               value="@Model.Attributes[i].AttributeId" />
+                                        <input type="hidden" name="Attributes[@i].AttributeName"
+                                               value="@Model.Attributes[i].AttributeName" />
+                                        <input type="hidden" name="Attributes[@i].AllowCustom"
+                                               value="@Model.Attributes[i].AllowCustom" />
+                                        <input type="checkbox" class="form-check-input"
+                                               name="Attributes[@i].Selected" value="true" />
+                                    </td>
+                                    <td>
+                                        @Model.Attributes[i].AttributeName
+                                        @if (Model.Attributes[i].AllowCustom)
+                                        {
+                                            <span class="badge bg-cyan-lt ms-1">Ozel deger</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input"
+                                               name="Attributes[@i].IsRequired" value="true" />
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input"
+                                               name="Attributes[@i].IsVarianter" value="true" />
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input"
+                                               name="Attributes[@i].IsSlicer" value="true" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a href="/categories/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+            <button type="submit" class="btn btn-primary">Devam: Onay &rarr;</button>
+        </div>
+    </div>
+</form>

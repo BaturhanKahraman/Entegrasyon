@@ -2,36 +2,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Blazor (Debug + OTel)",
+            "name": "MVC",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
-            "preLaunchTask": "ensure-aspire-dashboard",
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:7070"
-            }
-        },
-        {
-            "name": "Blazor (Debug)",
-            "type": "dotnet",
-            "request": "launch",
-            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:7070"
-            }
-        },
-        {
-            "name": "Blazor (Hot Reload)",
-            "type": "dotnet",
-            "request": "launch",
-            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
+            "projectPath": "${workspaceFolder}/Application/Entegrasyon.MVC/Entegrasyon.MVC.csproj",
             "hotReloadEnabled": true,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:7070",
+                "ASPNETCORE_URLS": "http://localhost:5100",
                 "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true"
+            }
+        },
+        {
+            "name": "Blazor",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/Application/Entegrasyon.Blazor/Entegrasyon.Blazor.csproj",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:7070"
             }
         }
     ]

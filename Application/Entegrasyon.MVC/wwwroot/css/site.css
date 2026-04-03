@@ -1,0 +1,51 @@
+/* Entegrasyon MVC — Site-specific overrides */
+
+/* HTMX loading indicator */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+/* Cursor pointer for clickable table headers */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Toast container positioning */
+#toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+    width: 380px;
+}
+
+/* Modal container */
+#modal-container .modal {
+    display: block;
+}
+
+/* Wizard step indicators */
+.wizard-steps {
+    display: flex;
+    gap: 1rem;
+}
+.wizard-steps .wizard-step {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background: #f1f3f5;
+    color: #666;
+    font-size: 0.875rem;
+}
+.wizard-steps .wizard-step.active {
+    background: #206bc4;
+    color: white;
+    font-weight: bold;
+}
+.wizard-steps .wizard-step.done {
+    background: #2fb344;
+    color: white;
+}

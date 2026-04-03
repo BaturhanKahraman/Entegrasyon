@@ -1,0 +1,31 @@
+<header class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="page-header-content d-flex align-items-center">
+            <div class="flex-fill">
+                <h2 class="page-title">@ViewData.GetPageTitle()</h2>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                @await Component.InvokeAsync("NotificationBell")
+                <!-- User dropdown -->
+                <div class="dropdown">
+                    <a href="#" class="btn btn-ghost-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="24" height="24" viewBox="0 0 24 24"
+                             stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <circle cx="12" cy="7" r="4" />
+                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                        </svg>
+                        <span>@(User.Identity?.Name ?? "Kullanici")</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="/profile">Profil</a>
+                        <div class="dropdown-divider"></div>
+                        <form asp-controller="Auth" asp-action="Logout" method="post">
+                            <button type="submit" class="dropdown-item text-danger">Cikis Yap</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

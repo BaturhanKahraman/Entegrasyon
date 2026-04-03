@@ -1,0 +1,95 @@
+@model Entegrasyon.Entity.Dtos.Branches.BranchDetailDto
+@{
+    var stocks = ViewBag.Stocks as List<Entegrasyon.Entity.Dtos.Branches.BranchStockItemDto>;
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Subeler</div>
+                <h2 class="page-title">@Model.Name</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/branch-offices" class="btn btn-outline-secondary">Geri Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Branch Info -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Sube Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Sube Adi</div>
+                        <div class="datagrid-content">@Model.Name</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Kullanici Sayisi</div>
+                        <div class="datagrid-content">@Model.UserCount</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Olusturma Tarihi</div>
+                        <div class="datagrid-content">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Stok Bilgileri</h3>
+            </div>
+            @if (stocks != null && stocks.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Urun</th>
+                                <th>Barkod</th>
+                                <th>Baslangic Stok</th>
+                                <th>Satilan</th>
+                                <th>Mevcut Stok</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var stock in stocks)
+                            {
+                                <tr>
+                                    <td>@stock.ProductName</td>
+                                    <td class="text-secondary"><code>@stock.Barcode</code></td>
+                                    <td>@stock.FirstTotalStock</td>
+                                    <td>@stock.SoldQuantity</td>
+                                    <td>
+                                        <span class="badge @(stock.CurrentStock > 0 ? "bg-green-lt" : "bg-red-lt")">
+                                            @stock.CurrentStock
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Stok verisi yok",
+                                 Subtitle = "Bu subede henuz stok kaydi bulunmuyor."
+                             }'/>
+                </div>
+            }
+        </div>
+    </div>
+</div>

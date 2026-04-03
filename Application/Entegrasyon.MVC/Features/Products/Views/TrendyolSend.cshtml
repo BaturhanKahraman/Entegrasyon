@@ -1,0 +1,59 @@
+@using Entegrasyon.Entity.Dtos.Product
+@model ProductDetailDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Trendyol Gonderim</div>
+                <h2 class="page-title">@Model.Title</h2>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/products/@Model.Id/sync" class="btn btn-outline-secondary">Geri Don</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">On-Ucus Kontrolleri</h3>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-yellow me-2">Bekliyor</span>
+                            <span>Kategori eslestirmesi kontrol ediliyor</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-yellow me-2">Bekliyor</span>
+                            <span>Zorunlu ozellikler kontrol ediliyor</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-yellow me-2">Bekliyor</span>
+                            <span>Marka eslestirmesi kontrol ediliyor</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-yellow me-2">Bekliyor</span>
+                            <span>Gorsel gereksinimleri kontrol ediliyor</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3">
+                    Bu sayfa gelistirme asamasindadir. On-ucus kontrolleri otomatik olarak calistirilacak
+                    ve tum kontroller basarili oldugunda gonderim butonu aktif olacaktir.
+                </div>
+                <button class="btn btn-primary mt-2" disabled>Trendyol'a Gonder</button>
+            </div>
+        </div>
+    </div>
+</div>

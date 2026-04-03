@@ -1,0 +1,113 @@
+@model Entegrasyon.Entity.Dtos.Reports.SalesReportDto
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Raporlar</div>
+                <h2 class="page-title">Satis Raporu</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Date Filter -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/sales" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Baslangic</label>
+                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitis</label>
+                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Satis</div>
+                        <div class="h1 mb-0">@Model.Summary.TotalSales</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Gelir</div>
+                        <div class="h1 mb-0">@Model.Summary.TotalRevenue.ToString("C2")</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Ortalama Siparis</div>
+                        <div class="h1 mb-0">@Model.Summary.AverageOrderValue.ToString("C2")</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Satilan Urun</div>
+                        <div class="h1 mb-0">@Model.Summary.TotalItemsSold</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Placeholder -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Gunluk Satis Grafigi</h3>
+            </div>
+            <div class="card-body">
+                <div id="sales-chart" style="height:300px; display:flex; align-items:center; justify-content:center;">
+                    <span class="text-secondary">Grafik alani — chart kutuphanesi entegre edilecek</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">En Cok Satan Urunler</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Urun</th>
+                            <th>Varyant</th>
+                            <th>Satilan Adet</th>
+                            <th>Gelir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.TopProducts)
+                        {
+                            <tr>
+                                <td>@p.ProductTitle</td>
+                                <td class="text-secondary">@p.VariantTitle</td>
+                                <td>@p.QuantitySold</td>
+                                <td>@p.Revenue.ToString("C2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

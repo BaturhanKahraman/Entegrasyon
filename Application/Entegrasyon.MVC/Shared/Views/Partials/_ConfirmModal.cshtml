@@ -1,0 +1,20 @@
+<div class="modal modal-blur fade show" id="confirm-modal" tabindex="-1" style="display:block" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="modal-title">Emin misiniz?</div>
+                <div class="text-secondary mt-2">Bu islemi geri alamazsiniz.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal"
+                        onclick="document.getElementById('confirm-modal').remove()">
+                    Iptal
+                </button>
+                <button type="button" class="btn btn-danger ms-auto" id="confirm-modal-ok">
+                    Onayla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="document.getElementById('confirm-modal')?.remove(); this.remove();"></div>

@@ -1,0 +1,61 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
+<form hx-post="/products/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Genel Bilgiler</h3></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label required">Urun Adi</label>
+                    <input name="Title" value="@Model.Title" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Stok Kodu</label>
+                    <input name="StockCode" value="@Model.StockCode" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label required">Marka</label>
+                    <select name="BrandId" class="form-select" required>
+                        <option value="">Marka Secin</option>
+                        @if (ViewBag.Brands is not null)
+                        {
+                            foreach (var brand in (IEnumerable<dynamic>)ViewBag.Brands)
+                            {
+                                <option value="@brand.Id" selected="@(brand.Id == Model.BrandId)">@brand.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label required">Kategori</label>
+                    <select name="CategoryId" class="form-select" required>
+                        <option value="">Kategori Secin</option>
+                        @if (ViewBag.Categories is not null)
+                        {
+                            foreach (var cat in (IEnumerable<dynamic>)ViewBag.Categories)
+                            {
+                                <option value="@cat.Id" selected="@(cat.Id == Model.CategoryId)">@cat.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Sezon</label>
+                    <input name="Season" value="@Model.Season" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Yil</label>
+                    <input name="Year" value="@Model.Year" class="form-control" />
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Aciklama</label>
+                    <textarea name="Description" class="form-control" rows="3">@Model.Description</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a href="/products" class="btn btn-ghost-secondary me-2">Iptal</a>
+            <button type="submit" class="btn btn-primary">Devam: Varyantlar &rarr;</button>
+        </div>
+    </div>
+</form>

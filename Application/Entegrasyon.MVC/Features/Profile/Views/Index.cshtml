@@ -1,0 +1,66 @@
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Hesap</div>
+                <h2 class="page-title">Profil</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Profile Info -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Kisisel Bilgiler</h3>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">Kullanici Adi</label>
+                                <input type="text" class="form-control" value="@ViewBag.UserName" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ad Soyad</label>
+                                <input type="text" class="form-control" value="@ViewBag.FullName" placeholder="Adinizi girin" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">E-posta</label>
+                                <input type="email" class="form-control" value="@ViewBag.Email" placeholder="E-posta adresiniz" />
+                            </div>
+                            <button type="submit" class="btn btn-primary" disabled>Kaydet (yakin zamanda aktif olacak)</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Password Change -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sifre Degistir</h3>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">Mevcut Sifre</label>
+                                <input type="password" class="form-control" placeholder="Mevcut sifreniz" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Yeni Sifre</label>
+                                <input type="password" class="form-control" placeholder="Yeni sifreniz" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Yeni Sifre (Tekrar)</label>
+                                <input type="password" class="form-control" placeholder="Yeni sifrenizi tekrar girin" />
+                            </div>
+                            <button type="submit" class="btn btn-warning" disabled>Sifre Degistir (yakin zamanda aktif olacak)</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

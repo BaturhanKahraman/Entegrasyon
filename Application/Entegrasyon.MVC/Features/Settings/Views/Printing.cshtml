@@ -1,0 +1,272 @@
+@model Entegrasyon.MVC.Features.Settings.ViewModels.PrintingSettingsVm
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="page-pretitle">Ayarlar</div>
+                <h2 class="page-title">Yazici Ayarlari</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-md-3">
+                <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
+            </div>
+            <div class="col-md-9">
+
+                <!-- Yazici Baglanti Ayarlari -->
+                <form method="post" action="/settings/printing/save-printer">
+                    @Html.AntiForgeryToken()
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Yazici Baglantisi</h3>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Settings.Any())
+                            {
+                                @foreach (var setting in Model.Settings)
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            @(setting.Description ?? setting.Key)
+                                        </label>
+                                        @if (setting.ValueType == Entegrasyon.Entity.Settings.SettingValueType.Boolean)
+                                        {
+                                            <label class="form-check form-switch">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       name="settings[@setting.Id]"
+                                                       value="true"
+                                                       @(setting.Value == "true" ? "checked" : "")/>
+                                            </label>
+                                            @if (setting.Value != "true")
+                                            {
+                                                <input type="hidden" name="settings[@setting.Id]" value="false"/>
+                                            }
+                                        }
+                                        else if (setting.ValueType == Entegrasyon.Entity.Settings.SettingValueType.Password)
+                                        {
+                                            <input type="password"
+                                                   class="form-control"
+                                                   name="settings[@setting.Id]"
+                                                   value="@setting.Value"/>
+                                        }
+                                        else
+                                        {
+                                            <input type="text"
+                                                   class="form-control"
+                                                   name="settings[@setting.Id]"
+                                                   value="@setting.Value"/>
+                                        }
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-info mb-0">
+                                    <h4 class="alert-title">Yazici ayarlari henuz tanimlanmamis</h4>
+                                    <p class="text-secondary">
+                                        Yazici baglanti ayarlari (IP, Port, Dil) admin panelinden "Printer" grubunda tanimlanabilir.
+                                        Asagidaki tipik ayarlari kullanabilirsiniz:
+                                    </p>
+                                    <ul class="text-secondary mb-0">
+                                        <li><strong>Printer.IP</strong> — Yazici IP adresi (orn. 192.168.1.100)</li>
+                                        <li><strong>Printer.Port</strong> — Yazici portu (orn. 9100)</li>
+                                        <li><strong>Printer.Language</strong> — Yazici dili (ZPL veya ESC/POS)</li>
+                                        <li><strong>Printer.Enabled</strong> — Yazici aktif mi</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                        @if (Model.Settings.Any())
+                        {
+                            <div class="card-footer text-end">
+                                <button type="submit" class="btn btn-primary">Yazici Ayarlarini Kaydet</button>
+                            </div>
+                        }
+                    </div>
+                </form>
+
+                <!-- Barkod Ayarlari -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Barkod Ayarlari</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Barkod Formati</label>
+                                    <select class="form-select" disabled>
+                                        <option selected>EAN-13</option>
+                                        <option>Code128</option>
+                                        <option>QR Code</option>
+                                    </select>
+                                    <small class="form-hint">Barkod formati sistem genelinde tanimlidir ve BarcodeSequence tablosu uzerinden yonetilir.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Barkod Oneki</label>
+                                    <input type="text" class="form-control" value="869" disabled />
+                                    <small class="form-hint">Turkiye ulke kodu (869) otomatik kullanilir.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Etiket Sablonlari -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Etiket Sablonlari</h3>
+                        <div class="card-actions">
+                            <button type="button" class="btn btn-primary btn-sm"
+                                    data-bs-toggle="modal" data-bs-target="#newTemplateModal">
+                                Yeni Sablon
+                            </button>
+                        </div>
+                    </div>
+                    @if (Model.Templates.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ad</th>
+                                        <th>Tur</th>
+                                        <th>Boyut (mm)</th>
+                                        <th>DPI</th>
+                                        <th>Varsayilan</th>
+                                        <th class="text-end">Islemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var template in Model.Templates)
+                                    {
+                                        <tr>
+                                            <td class="fw-bold">@template.Name</td>
+                                            <td>
+                                                <span class="badge @(template.Type == Entegrasyon.Entity.Labels.LabelType.ProductBarcode ? "bg-blue-lt" : "bg-green-lt")">
+                                                    @(template.Type == Entegrasyon.Entity.Labels.LabelType.ProductBarcode ? "Urun Barkodu" : "Raf Etiketi")
+                                                </span>
+                                            </td>
+                                            <td>@template.WidthMm x @template.HeightMm</td>
+                                            <td>@template.Dpi</td>
+                                            <td>
+                                                @if (template.IsDefault)
+                                                {
+                                                    <span class="badge bg-green">Varsayilan</span>
+                                                }
+                                                else
+                                                {
+                                                    <form method="post" action="/settings/printing/set-default" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="templateId" value="@template.Id" />
+                                                        <button type="submit" class="btn btn-ghost-primary btn-sm">
+                                                            Varsayilan Yap
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <form method="post" action="/settings/printing/delete-template" class="d-inline"
+                                                      onsubmit="return confirm('Bu sablonu silmek istediginize emin misiniz?')">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="templateId" value="@template.Id" />
+                                                    <button type="submit" class="btn btn-ghost-danger btn-sm">Sil</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            <div class="empty py-3">
+                                <p class="empty-title">Henuz etiket sablonu yok</p>
+                                <p class="empty-subtitle text-secondary">
+                                    Urun barkodu veya raf etiketi icin sablon olusturun.
+                                </p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Yeni Sablon Modal -->
+<div class="modal fade" id="newTemplateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/settings/printing/save-template">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Etiket Sablonu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Sablon Adi</label>
+                        <input type="text" name="name" class="form-control" required
+                               placeholder="orn. Standart Barkod 40x25" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Etiket Turu</label>
+                        <select name="type" class="form-select" required>
+                            <option value="1">Urun Barkodu</option>
+                            <option value="2">Raf Etiketi</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">Genislik (mm)</label>
+                                <input type="number" name="widthMm" class="form-control"
+                                       min="10" max="200" value="40" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label required">Yukseklik (mm)</label>
+                                <input type="number" name="heightMm" class="form-control"
+                                       min="10" max="200" value="25" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">DPI</label>
+                                <select name="dpi" class="form-select">
+                                    <option value="203" selected>203</option>
+                                    <option value="300">300</option>
+                                    <option value="600">600</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="isDefault" value="true" />
+                            <span class="form-check-label">Varsayilan sablon olarak ayarla</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
