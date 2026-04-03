@@ -15,6 +15,7 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 using Entegrasyon.MVC.Infrastructure.ExceptionHandlers;
 using Entegrasyon.MVC.Infrastructure.Filters;
 using Entegrasyon.MVC.Infrastructure.Middleware;
+using System.Net.ServerSentEvents;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -114,12 +115,25 @@ builder.Services.AddStorageServices(builder.Configuration);
 builder.Services.AddCustomDbContext(builder.Configuration);
 
 // ── Caching ──────────────────────────────────────────────────────────────
-builder.Services.AddStackExchangeRedisCache(opt =>
+// Redis opsiyonel — bağlantı yoksa in-memory cache'e fallback
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnection))
 {
-    opt.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "redis:6379";
-    opt.InstanceName = "MVC:";
-});
-builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddStackExchangeRedisCache(opt =>
+    {
+        opt.Configuration = redisConnection;
+        opt.InstanceName = "MVC:";
+        opt.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
+        {
+            EndPoints = { redisConnection },
+            AbortOnConnectFail = false,      // Bağlantı başarısızsa çökmez
+            ConnectTimeout = 3000,
+            SyncTimeout = 3000,
+            ConnectRetry = 2
+        };
+    });
+}
+builder.Services.AddDistributedMemoryCache(); // Redis yoksa veya düşerse fallback
 builder.Services.AddMemoryCache();
 
 // ── Output Cache ─────────────────────────────────────────────────────────
@@ -324,7 +338,50 @@ app.UseSession();
 app.UseAntiforgery();
 
 // ── Endpoints ────────────────────────────────────────────────────────────
-app.MapHub<NotificationHub>("/NotificationHub");
+
+// SSE: Bildirim stream'i (SignalR NotificationHub yerine — tek yönlü, hafif)
+app.MapGet("/notifications/stream", async (
+    HttpContext context,
+    IServiceScopeFactory scopeFactory,
+    CancellationToken ct) =>
+{
+    var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (userId is null) return Results.Unauthorized();
+
+    async IAsyncEnumerable<SseItem<string>> GetNotifications(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var uid = Guid.Parse(userId);
+        DateTimeOffset lastCheck = DateTimeOffset.UtcNow;
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await Task.Delay(3000, cancellationToken);
+
+            using var scope = scopeFactory.CreateScope();
+            var notificationManager = scope.ServiceProvider
+                .GetRequiredService<Entegrasyon.Business.Abstract.INotificationManager>();
+
+            var recent = await notificationManager.GetNotificationsForUser(uid, onlyUnread: true);
+            var newOnes = recent?.Where(n => n.CreatedAt > lastCheck).ToList();
+
+            if (newOnes is { Count: > 0 })
+            {
+                lastCheck = DateTimeOffset.UtcNow;
+                foreach (var n in newOnes)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(
+                        new { n.Id, Header = n.Header ?? "", Content = n.Content ?? "" });
+                    yield return new SseItem<string>(json, eventType: "notification");
+                }
+            }
+        }
+    }
+
+    return TypedResults.ServerSentEvents(GetNotifications(ct));
+}).RequireAuthorization();
+
+// Chat hala SignalR (bidirectional gerekli)
 app.MapHub<ChatHub>("/ChatHub");
 
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

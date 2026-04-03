@@ -66,44 +66,48 @@ document.body.addEventListener('htmx:responseError', function (event) {
     }
 });
 
-// ── Notification Bell (Real-time via SignalR) ─────────────────────────
+// ── Notification Bell (Real-time via SSE — Server-Sent Events) ───────
 
 (function () {
-    if (typeof signalR === 'undefined') return;
+    // SSE sadece authenticated kullanicilar icin calısır
+    if (!document.getElementById('notification-bell')) return;
 
-    var connection = new signalR.HubConnectionBuilder()
-        .withUrl('/NotificationHub')
-        .withAutomaticReconnect()
-        .build();
+    var source = new EventSource('/notifications/stream');
 
-    connection.on('ReceiveNotification', function (notification) {
-        // Update bell badge count
-        var badge = document.getElementById('notification-badge');
-        if (badge) {
-            var count = parseInt(badge.textContent || '0') + 1;
-            badge.textContent = count;
-            badge.style.display = '';
-        } else {
-            var link = document.querySelector('#notification-bell a');
-            if (link) {
-                var newBadge = document.createElement('span');
-                newBadge.className = 'badge bg-red badge-notification';
-                newBadge.id = 'notification-badge';
-                newBadge.textContent = '1';
-                link.appendChild(newBadge);
+    source.addEventListener('notification', function (event) {
+        try {
+            var data = JSON.parse(event.data);
+
+            // Badge guncelle
+            var badge = document.getElementById('notification-badge');
+            if (badge) {
+                var count = parseInt(badge.textContent || '0') + 1;
+                badge.textContent = count;
+                badge.style.display = '';
+            } else {
+                var link = document.querySelector('#notification-bell a');
+                if (link) {
+                    var newBadge = document.createElement('span');
+                    newBadge.className = 'badge bg-red badge-notification';
+                    newBadge.id = 'notification-badge';
+                    newBadge.textContent = '1';
+                    link.appendChild(newBadge);
+                }
             }
+
+            // Toast goster
+            document.body.dispatchEvent(new CustomEvent('showToast', {
+                detail: {
+                    message: data.Header || 'Yeni bildirim',
+                    type: 'info'
+                }
+            }));
+        } catch (e) {
+            console.warn('SSE notification parse error:', e);
         }
-
-        // Show toast notification
-        document.body.dispatchEvent(new CustomEvent('showToast', {
-            detail: {
-                message: notification.header || 'Yeni bildirim',
-                type: 'info'
-            }
-        }));
     });
 
-    connection.start().catch(function (err) {
-        console.warn('NotificationHub connection failed:', err);
-    });
+    source.onerror = function () {
+        console.warn('SSE bildirim baglantisi kesildi, tarayici otomatik yeniden deneyecek...');
+    };
 })();
