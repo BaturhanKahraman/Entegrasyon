@@ -39,6 +39,23 @@
             </div>
             <div class="col-auto ms-auto">
                 <div class="btn-list">
+                    @if (Model.MarketPlaceId == 1 && Model.MarketplaceOrderStatus == "Created")
+                    {
+                        <button class="btn btn-outline-danger"
+                                hx-post="/orders/@Model.Id/mark-unsupplied"
+                                hx-confirm="Bu siparisi tedarik edilemez olarak isaretlemek istediginize emin misiniz?"
+                                hx-swap="none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package-off" width="24" height="24"
+                                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M3 3l18 18"/>
+                                <path d="M12 3l8 4.5v9l-2 1.12"/>
+                                <path d="M12 12v9l-8 -4.5v-9l8 -4.5"/>
+                                <path d="M16 5.25l-8 4.5"/>
+                            </svg>
+                            Tedarik Edilemez
+                        </button>
+                    }
                     <a href="/orders" class="btn btn-outline-secondary">
                         Listeye Don
                     </a>

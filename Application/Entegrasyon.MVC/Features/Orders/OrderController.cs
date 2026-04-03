@@ -6,7 +6,9 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 namespace Entegrasyon.MVC.Features.Orders;
 
 [Authorize]
-public class OrderController(IOrderManager orderManager) : Controller
+public class OrderController(
+    IOrderManager orderManager,
+    ITrendyolOrderService trendyolOrderService) : Controller
 {
     [HttpGet("/orders")]
     public async Task<IActionResult> Index(string? search = null, string? status = null, int page = 1)
@@ -106,6 +108,82 @@ public class OrderController(IOrderManager orderManager) : Controller
             TempData.SetSuccess("Siparis durumu basariyla guncellendi.");
         else
             TempData.SetError(result.Message ?? "Siparis durumu guncellenemedi.");
+
+        return RedirectToAction(nameof(Detail), new { id });
+    }
+
+    [HttpPost("/orders/{id:guid}/mark-unsupplied")]
+    public async Task<IActionResult> MarkUnsupplied(Guid id)
+    {
+        var orderResult = await orderManager.GetOrderByIdAsync(id);
+        if (!orderResult.Success || orderResult.Data is null)
+        {
+            if (Request.IsHtmx())
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Siparis bulunamadi.", type = "danger" });
+                return StatusCode(404);
+            }
+
+            TempData.SetError("Siparis bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var order = orderResult.Data;
+
+        if (order.MarketPlaceId != 1 || order.ShipmentPackageId is null)
+        {
+            if (Request.IsHtmx())
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Bu islem sadece Trendyol siparisleri icin gecerlidir.", type = "danger" });
+                return StatusCode(422);
+            }
+
+            TempData.SetError("Bu islem sadece Trendyol siparisleri icin gecerlidir.");
+            return RedirectToAction(nameof(Detail), new { id });
+        }
+
+        var lineIds = order.OrderItems
+            .Where(i => i.LineId.HasValue)
+            .Select(i => i.LineId!.Value)
+            .ToList();
+
+        if (lineIds.Count == 0)
+        {
+            if (Request.IsHtmx())
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Siparis kalemlerinde satir ID bulunamadi.", type = "danger" });
+                return StatusCode(422);
+            }
+
+            TempData.SetError("Siparis kalemlerinde satir ID bulunamadi.");
+            return RedirectToAction(nameof(Detail), new { id });
+        }
+
+        var result = await trendyolOrderService.MarkUnsuppliedAsync(
+            order.ShipmentPackageId.Value, lineIds);
+
+        if (Request.IsHtmx())
+        {
+            if (result.Success)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Siparis tedarik edilemez olarak isaretlendi.", type = "success" });
+                Response.HtmxRefresh();
+                return Content("");
+            }
+
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Islem basarisiz.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        if (result.Success)
+            TempData.SetSuccess("Siparis tedarik edilemez olarak isaretlendi.");
+        else
+            TempData.SetError(result.Message ?? "Siparis tedarik edilemez olarak isaretlenemedi.");
 
         return RedirectToAction(nameof(Detail), new { id });
     }

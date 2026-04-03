@@ -7,6 +7,7 @@ using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.MVC.Features.Products.ViewModels;
+using Entegrasyon.Entity.Dtos.Product.Discount;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Products;
@@ -16,7 +17,9 @@ public class ProductController(
     IProductService productService,
     IBrandService brandService,
     ICategoryService categoryService,
-    IImageManager imageManager) : Controller
+    IImageManager imageManager,
+    IDiscountManager discountManager,
+    ILabelService labelService) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -322,6 +325,51 @@ public class ProductController(
         // TODO: implement when IImageManager has delete method
         TempData.SetWarning("Gorsel silme henuz desteklenmiyor.");
         return RedirectToAction(nameof(Edit), new { id });
+    }
+
+    // ── Discount ─────────────────────────────────────────────────────
+
+    [HttpGet("/products/{id:guid}/discount")]
+    public async Task<IActionResult> Discount(Guid id)
+    {
+        var result = await discountManager.GetDiscountPreviewAsync(id);
+        if (!result.Success) return BadRequest(result.Message);
+        return PartialView("Partials/_DiscountDialog", result.Data);
+    }
+
+    [HttpPost("/products/{id:guid}/discount")]
+    public async Task<IActionResult> ApplyDiscount(Guid id, [FromForm] decimal discountPercentage, [FromForm] List<int> marketplaceIds)
+    {
+        var dto = new ApplyDiscountDto(id, discountPercentage, marketplaceIds);
+        var result = await discountManager.ApplyDiscountAsync(dto);
+        if (!result.Success)
+        {
+            Response.StatusCode = 422;
+            return Content(result.Message ?? "Islem basarisiz.");
+        }
+
+        TempData.SetSuccess($"{result.Data!.VariantsUpdated} varyanta %{discountPercentage} indirim uyguland\u0131.");
+        return RedirectToAction(nameof(Detail), new { id });
+    }
+
+    // ── Barcode ─────────────────────────────────────────────────────
+
+    [HttpGet("/products/{id:guid}/barcode")]
+    public async Task<IActionResult> PrintBarcode(Guid id, [FromQuery] Guid? variantId)
+    {
+        if (variantId == null)
+        {
+            var product = await productService.GetProductDetailById(id);
+            if (!product.Success) return NotFound();
+            variantId = product.Data!.ProductVariantsDetails?.FirstOrDefault()?.Id;
+            if (variantId == null) return BadRequest("Urun varyanti bulunamadi.");
+        }
+
+        var result = await labelService.GenerateProductLabel(variantId.Value);
+        if (!result.Success) return BadRequest(result.Message);
+
+        var ext = result.Data!.PrinterLanguage == "ZPL" ? "zpl" : "bin";
+        return File(result.Data.RawBytes, "application/octet-stream", $"barcode-{variantId}.{ext}");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
