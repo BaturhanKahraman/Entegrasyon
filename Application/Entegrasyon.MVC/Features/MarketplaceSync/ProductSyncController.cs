@@ -10,7 +10,8 @@ namespace Entegrasyon.MVC.Features.MarketplaceSync;
 [Authorize]
 public class ProductSyncController(
     IMarketPlaceManager marketPlaceManager,
-    IProductSyncManager productSyncManager) : Controller
+    IProductSyncManager productSyncManager,
+    IProductActivityLogger productActivityLogger) : Controller
 {
     private const string ViewBase = "~/Features/MarketplaceSync/Views/ProductSync";
 
@@ -68,7 +69,7 @@ public class ProductSyncController(
     }
 
     [HttpGet("/marketplace/matching/{id:guid}")]
-    public async Task<IActionResult> Detail(Guid id)
+    public async Task<IActionResult> Detail(Guid id, int? tab = null)
     {
         var result = await productSyncManager.GetProductSyncDetailAsync(id);
         if (!result.Success)
@@ -77,6 +78,8 @@ public class ProductSyncController(
             return RedirectToAction(nameof(Index));
         }
 
+        var timelineResult = await productActivityLogger.GetTimelineAsync(id, 50);
+
         ViewData.SetPageTitle(result.Data!.Title);
         ViewData.SetActiveNav("marketplace-sync");
         ViewData.SetBreadcrumb(
@@ -84,7 +87,14 @@ public class ProductSyncController(
             ("Urun Senkronizasyon", "/marketplace/matching"),
             (result.Data.Title, null));
 
-        return View($"{ViewBase}/Detail.cshtml", result.Data);
+        var vm = new ProductSyncDetailVm
+        {
+            Product = result.Data,
+            ActivityTimeline = timelineResult.Success ? timelineResult.Data ?? [] : [],
+            SelectedMarketPlaceTab = tab
+        };
+
+        return View($"{ViewBase}/Detail.cshtml", vm);
     }
 
     [HttpPost("/marketplace/matching/{id:guid}/sync")]

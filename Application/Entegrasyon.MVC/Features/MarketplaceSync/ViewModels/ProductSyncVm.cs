@@ -1,5 +1,6 @@
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Product;
+using Entegrasyon.Entity.Logs;
 
 namespace Entegrasyon.MVC.Features.MarketplaceSync.ViewModels;
 
@@ -19,4 +20,11 @@ public class ProductSyncTableVm
     public Pageable<ProductSyncListItemDto> Products { get; set; } = new([], 0, 20, 0);
     public string? SearchKey { get; set; }
     public string? StateFilter { get; set; }
+}
+
+public class ProductSyncDetailVm
+{
+    public required ProductSyncDetailDto Product { get; set; }
+    public List<ProductActivityLog> ActivityTimeline { get; set; } = [];
+    public int? SelectedMarketPlaceTab { get; set; }
 }
