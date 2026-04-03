@@ -1,0 +1,55 @@
+@model List<Entegrasyon.Entity.Dtos.BulkOperations.ExportColumnDto>?
+
+@if (Model != null && Model.Any())
+{
+    var exportType = (Entegrasyon.Entity.BulkOperations.BulkOperationType)ViewBag.ExportType;
+
+    <form action="/bulk-operations/export-with-columns" method="post" class="mt-3">
+        <input type="hidden" name="type" value="@((int)exportType)" />
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Kolon Secimi</h3>
+                <div class="btn-list">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="select-all-cols">Tumu Sec</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-cols">Temizle</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var col in Model)
+                    {
+                        <div class="col-md-4 col-sm-6 mb-2">
+                            <label class="form-check">
+                                <input class="form-check-input export-col-check" type="checkbox"
+                                       name="selectedColumns" value="@col.Key"
+                                       @(col.IsDefault ? "checked" : "") />
+                                <span class="form-check-label">@col.DisplayName</span>
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer text-end">
+                <button type="submit" class="btn btn-primary">
+                    Secili Kolonlarla Indir
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        document.getElementById('select-all-cols')?.addEventListener('click', function() {
+            document.querySelectorAll('.export-col-check').forEach(function(cb) { cb.checked = true; });
+        });
+        document.getElementById('deselect-all-cols')?.addEventListener('click', function() {
+            document.querySelectorAll('.export-col-check').forEach(function(cb) { cb.checked = false; });
+        });
+    </script>
+}
+else
+{
+    <div class="alert alert-warning mt-3">
+        Bu tur icin kolon bilgisi alinamadi.
+    </div>
+}

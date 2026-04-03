@@ -13,33 +13,86 @@
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="row row-cards">
-            <!-- Import Section -->
-            <div class="col-lg-6">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-import" type="button" role="tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler me-1" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                        <path d="M12 11v6"/>
+                        <path d="M9 14l3 3l3 -3"/>
+                    </svg>
+                    Import
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-export" type="button" role="tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler me-1" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/>
+                        <path d="M12 17v-6"/>
+                        <path d="M9 14l3 -3l3 3"/>
+                    </svg>
+                    Export
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history" type="button" role="tab"
+                        hx-get="/bulk-operations/history" hx-target="#history-content" hx-trigger="click once" hx-swap="innerHTML">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler me-1" width="24" height="24" viewBox="0 0 24 24"
+                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 8l0 4l2 2"/>
+                        <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/>
+                    </svg>
+                    Gecmis
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Import Tab -->
+            <div class="tab-pane active show" id="tab-import" role="tabpanel">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Import (Iceri Aktar)</h3>
+                        <h3 class="card-title">Dosya Yukle ve Dogrula</h3>
                     </div>
                     <div class="card-body">
-                        <form hx-post="/bulk-operations/import"
-                              hx-swap="none"
-                              hx-encoding="multipart/form-data">
-                            <div class="mb-3">
-                                <label class="form-label">Islem Turu</label>
-                                <select class="form-select" name="type" required>
-                                    <option value="1">Urun Import</option>
-                                    <option value="2">Fiyat Import</option>
-                                    <option value="3">Stok Import</option>
-                                </select>
+                        <form id="import-form"
+                              hx-post="/bulk-operations/validate"
+                              hx-target="#validation-preview"
+                              hx-swap="innerHTML"
+                              hx-encoding="multipart/form-data"
+                              hx-indicator="#validate-spinner">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Islem Turu</label>
+                                    <select class="form-select" name="type" id="import-type" required>
+                                        <option value="1">Urun Import</option>
+                                        <option value="2">Fiyat Import</option>
+                                        <option value="3">Stok Import</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-5 mb-3">
+                                    <label class="form-label">Excel Dosyasi</label>
+                                    <input type="file" class="form-control" name="file" id="import-file" accept=".xlsx,.xls" required />
+                                </div>
+                                <div class="col-md-3 mb-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <span class="spinner-border spinner-border-sm me-1 htmx-indicator" id="validate-spinner"></span>
+                                        Dogrula ve Onizle
+                                    </button>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Excel Dosyasi</label>
-                                <input type="file" class="form-control" name="file" accept=".xlsx,.xls" required />
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                Iceri Aktar
-                            </button>
                         </form>
+
+                        <!-- Validation preview will be loaded here -->
+                        <div id="validation-preview"></div>
 
                         <hr class="my-3" />
                         <h4 class="mb-2">Sablon Indir</h4>
@@ -52,71 +105,69 @@
                 </div>
             </div>
 
-            <!-- Export Section -->
-            <div class="col-lg-6">
+            <!-- Export Tab -->
+            <div class="tab-pane" id="tab-export" role="tabpanel">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Export (Disari Aktar)</h3>
+                        <h3 class="card-title">Veri Disari Aktar</h3>
                     </div>
                     <div class="card-body">
-                        <p class="text-secondary mb-3">Mevcut verileri Excel olarak indirin.</p>
+                        <p class="text-secondary mb-3">Export turunu secin, kolon secimi yaparak istediginiz alanlari indirebilirsiniz.</p>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Export Turu</label>
+                                <select class="form-select" id="export-type-select"
+                                        hx-get="/bulk-operations/export-columns"
+                                        hx-target="#export-column-selector"
+                                        hx-swap="innerHTML"
+                                        hx-trigger="change"
+                                        hx-indicator="#export-col-spinner"
+                                        name="type">
+                                    <option value="">Tur secin...</option>
+                                    <option value="4">Urunler</option>
+                                    <option value="5">Fiyatlar</option>
+                                    <option value="6">Stoklar</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <span class="spinner-border spinner-border-sm htmx-indicator" id="export-col-spinner"></span>
+
+                        <!-- Column selector will be loaded here -->
+                        <div id="export-column-selector"></div>
+
+                        <hr class="my-3" />
+                        <h4 class="mb-2">Hizli Export (Tum Kolonlar)</h4>
                         <div class="btn-list">
-                            <a href="/bulk-operations/export?type=4" class="btn btn-outline-primary">
-                                Urunleri Indir
-                            </a>
-                            <a href="/bulk-operations/export?type=5" class="btn btn-outline-primary">
-                                Fiyatlari Indir
-                            </a>
-                            <a href="/bulk-operations/export?type=6" class="btn btn-outline-primary">
-                                Stoklari Indir
-                            </a>
+                            <a href="/bulk-operations/export?type=4" class="btn btn-outline-primary">Urunleri Indir</a>
+                            <a href="/bulk-operations/export?type=5" class="btn btn-outline-primary">Fiyatlari Indir</a>
+                            <a href="/bulk-operations/export?type=6" class="btn btn-outline-primary">Stoklari Indir</a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Recent Operations -->
-        @if (Model != null && Model.Any())
-        {
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h3 class="card-title">Son Islemler</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
-                        <thead>
-                            <tr>
-                                <th>Tarih</th>
-                                <th>Dosya</th>
-                                <th>Tur</th>
-                                <th>Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var op in Model)
-                            {
-                                <tr>
-                                    <td class="text-secondary">@op.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td>@op.FileName</td>
-                                    <td><span class="badge bg-blue-lt">@op.OperationType</span></td>
-                                    <td>
-                                        @{
-                                            var statusClass = op.Status switch
-                                            {
-                                                Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Completed => "bg-green-lt",
-                                                Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Failed => "bg-red-lt",
-                                                _ => "bg-yellow-lt"
-                                            };
-                                        }
-                                        <span class="badge @statusClass">@op.Status</span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            <!-- History Tab -->
+            <div class="tab-pane" id="tab-history" role="tabpanel">
+                <div id="history-content">
+                    @if (Model != null && Model.Any())
+                    {
+                        await Html.RenderPartialAsync("_OperationHistory", Model);
+                    }
+                    else
+                    {
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="empty">
+                                    <p class="empty-title">Henuz islem yapilmamis</p>
+                                    <p class="empty-subtitle text-secondary">Import veya export islemleri burada gorunecektir.</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
-        }
+        </div>
     </div>
 </div>
