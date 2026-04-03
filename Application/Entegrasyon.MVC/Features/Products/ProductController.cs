@@ -9,6 +9,7 @@ using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.MVC.Features.Products.ViewModels;
 using Entegrasyon.Entity.Dtos.Product.Discount;
 using Entegrasyon.Entity.Dtos.BulkOperations;
+using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Products;
@@ -21,7 +22,10 @@ public class ProductController(
     IImageManager imageManager,
     IDiscountManager discountManager,
     ILabelService labelService,
-    IBulkOperationManager bulkOperationManager) : Controller
+    IBulkOperationManager bulkOperationManager,
+    IProductSyncManager productSyncManager,
+    ITrendyolProductService trendyolProductService,
+    IMarketplaceOverrideManager marketplaceOverrideManager) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -238,13 +242,76 @@ public class ProductController(
             return RedirectToAction(nameof(Index));
         }
 
+        var vm = new TrendyolSendVm
+        {
+            ProductId = id,
+            ProductTitle = result.Data!.Title
+        };
+
+        // Preflight checks
+        var preflightResult = await productSyncManager.GetSendPreflightAsync(id, marketPlaceId: 1);
+        if (preflightResult.Success && preflightResult.Data is not null)
+        {
+            vm.Preflight = preflightResult.Data;
+
+            // Load existing overrides
+            var overrideResult = await marketplaceOverrideManager.GetOverridesAsync(id, marketPlaceId: 1);
+            if (overrideResult.Success && overrideResult.Data is not null)
+            {
+                vm.TitleOverride = overrideResult.Data.TitleOverride;
+                vm.DescriptionOverride = overrideResult.Data.DescriptionOverride;
+            }
+
+            // If all preflight checks pass, load preview
+            if (vm.PreflightPassed)
+            {
+                var overrides = new MarketplaceOverrideDetailDto
+                {
+                    MarketPlaceId = 1,
+                    MarketPlaceName = "Trendyol",
+                    TitleOverride = vm.TitleOverride,
+                    DescriptionOverride = vm.DescriptionOverride
+                };
+                var previewResult = await trendyolProductService.GetSendPreviewAsync(id, overrides);
+                if (previewResult.Success && previewResult.Data is not null)
+                    vm.Preview = previewResult.Data;
+            }
+        }
+
         ViewData.SetPageTitle("Trendyol Gonderim");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(
             ("Urunler", "/products"),
-            (result.Data!.Title, $"/products/{id}"),
+            (result.Data.Title, $"/products/{id}"),
             ("Trendyol Gonderim", null));
-        return View("~/Features/Products/Views/TrendyolSend.cshtml", result.Data);
+        return View("~/Features/Products/Views/TrendyolSend.cshtml", vm);
+    }
+
+    [HttpPost("/products/{id:guid}/sync/trendyol/send")]
+    public async Task<IActionResult> TrendyolSendPost(Guid id, TrendyolSendVm vm)
+    {
+        // Save overrides if provided
+        if (!string.IsNullOrWhiteSpace(vm.TitleOverride) || !string.IsNullOrWhiteSpace(vm.DescriptionOverride))
+        {
+            var saveDto = new SaveMarketplaceOverridesDto
+            {
+                ProductId = id,
+                MarketPlaceId = 1,
+                TitleOverride = vm.TitleOverride?.Trim(),
+                DescriptionOverride = vm.DescriptionOverride?.Trim(),
+                VariantOverrides = []
+            };
+            await marketplaceOverrideManager.SaveOverridesAsync(saveDto);
+        }
+
+        // Queue the product for sync
+        var result = await productSyncManager.SyncProductAsync(id, marketPlaceId: 1);
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "Urun Trendyol'a gonderim icin kuyruga eklendi.");
+        else
+            TempData.SetError(result.Message ?? "Gonderim sirasinda bir hata olustu.");
+
+        return RedirectToAction(nameof(SyncDetail), new { id });
     }
 
     [HttpGet("/products/{id:guid}/variants")]

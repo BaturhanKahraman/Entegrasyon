@@ -1,15 +1,18 @@
-@using Entegrasyon.Entity.Dtos.Product
-@model ProductDetailDto
+@using Entegrasyon.MVC.Features.Products.ViewModels
+@model TrendyolSendVm
 
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Trendyol Gonderim</div>
-                <h2 class="page-title">@Model.Title</h2>
+                <h2 class="page-title">@Model.ProductTitle</h2>
             </div>
             <div class="col-auto ms-auto">
-                <a href="/products/@Model.Id/sync" class="btn btn-outline-secondary">Geri Don</a>
+                <a href="/products/@Model.ProductId/sync" class="btn btn-outline-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l14 0"/><path d="M5 12l6 6"/><path d="M5 12l6 -6"/></svg>
+                    Geri Don
+                </a>
             </div>
         </div>
     </div>
@@ -17,43 +20,240 @@
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">On-Ucus Kontrolleri</h3>
+        <div class="row row-deck row-cards">
+
+            @* Section 1: Preflight Checks *@
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">On-Ucus Kontrolleri</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Preflight is null)
+                        {
+                            <div class="alert alert-warning">
+                                On-ucus kontrolleri yuklenemedi. Urunun kategori ve marka eslestirmelerini kontrol edin.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="list-group list-group-flush">
+                                @{ RenderCheck(Model.Preflight.CategoryMatched,
+                                    "Kategori Eslestirmesi",
+                                    Model.Preflight.CategoryMatched
+                                        ? $"Eslesti: {Model.Preflight.MatchedCategoryName}"
+                                        : "Trendyol kategori eslestirmesi bulunamadi"); }
+
+                                @{ RenderCheck(Model.Preflight.BrandMatched,
+                                    "Marka Eslestirmesi",
+                                    Model.Preflight.BrandMatched
+                                        ? $"Eslesti: {Model.Preflight.MatchedBrandName}"
+                                        : "Trendyol marka eslestirmesi bulunamadi"); }
+
+                                @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
+                                    "Zorunlu Ozellikler",
+                                    Model.Preflight.RequiredAttributesMatched
+                                        ? "Tum zorunlu ozellikler eslesti"
+                                        : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}"); }
+
+                                @{ RenderCheck(Model.Preflight.HasVariants,
+                                    "Varyant Durumu",
+                                    Model.Preflight.HasVariants
+                                        ? "En az bir varyant mevcut"
+                                        : "Urunun varyanti bulunmuyor"); }
+
+                                @{ RenderCheck(Model.Preflight.AllVariantsHaveBarcodes,
+                                    "Barkod Durumu",
+                                    Model.Preflight.AllVariantsHaveBarcodes
+                                        ? "Tum varyantlarin barkodu mevcut"
+                                        : "Barkodu olmayan varyantlar var"); }
+                            </div>
+
+                            @if (Model.PreflightPassed)
+                            {
+                                <div class="alert alert-success mt-3 mb-0">
+                                    <div class="d-flex">
+                                        <div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg>
+                                        </div>
+                                        <div>Tum kontroller basarili. Urun gonderime hazir.</div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger mt-3 mb-0">
+                                    <div class="d-flex">
+                                        <div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/></svg>
+                                        </div>
+                                        <div>Bazi kontroller basarisiz. Lutfen eksikleri tamamlayin.</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="list-group">
-                    <div class="list-group-item">
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-yellow me-2">Bekliyor</span>
-                            <span>Kategori eslestirmesi kontrol ediliyor</span>
+
+            @* Section 2: Override Form + Send *@
+            <div class="col-lg-6">
+                <form method="post" action="/products/@Model.ProductId/sync/trendyol/send">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Gonderim Ayarlari</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Baslik Override</label>
+                                <input type="text" class="form-control" name="TitleOverride"
+                                       value="@Model.TitleOverride"
+                                       placeholder="Bos birakilirsa urun basligi kullanilir"
+                                       @(Model.PreflightPassed ? "" : "disabled")>
+                                <small class="form-hint">Trendyol'da gorunecek baslik. Bos birakirsaniz urunun mevcut basligi gonderilir.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Aciklama Override</label>
+                                <textarea class="form-control" name="DescriptionOverride" rows="4"
+                                          placeholder="Bos birakilirsa urun aciklamasi kullanilir"
+                                          @(Model.PreflightPassed ? "" : "disabled")>@Model.DescriptionOverride</textarea>
+                                <small class="form-hint">Trendyol'da gorunecek aciklama. Bos birakirsaniz urunun mevcut aciklamasi gonderilir.</small>
+                            </div>
+                        </div>
+                        <div class="card-footer text-end">
+                            <button type="submit" class="btn btn-primary"
+                                    @(Model.PreflightPassed ? "" : "disabled")
+                                    onclick="return confirm('Bu urunu Trendyol\'a gondermek istediginize emin misiniz?')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-send" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/></svg>
+                                Trendyol'a Gonder
+                            </button>
                         </div>
                     </div>
-                    <div class="list-group-item">
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-yellow me-2">Bekliyor</span>
-                            <span>Zorunlu ozellikler kontrol ediliyor</span>
+                </form>
+            </div>
+
+            @* Section 3: Preview (only when preflight passes and preview is available) *@
+            @if (Model.Preview is not null)
+            {
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Gonderim On Izleme</h3>
                         </div>
-                    </div>
-                    <div class="list-group-item">
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-yellow me-2">Bekliyor</span>
-                            <span>Marka eslestirmesi kontrol ediliyor</span>
-                        </div>
-                    </div>
-                    <div class="list-group-item">
-                        <div class="d-flex align-items-center">
-                            <span class="badge bg-yellow me-2">Bekliyor</span>
-                            <span>Gorsel gereksinimleri kontrol ediliyor</span>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="datagrid">
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Baslik</div>
+                                            <div class="datagrid-content">@Model.Preview.Title</div>
+                                        </div>
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Marka</div>
+                                            <div class="datagrid-content">@Model.Preview.BrandName &rarr; @Model.Preview.TrendyolBrandName</div>
+                                        </div>
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Kategori</div>
+                                            <div class="datagrid-content">@Model.Preview.CategoryName &rarr; @Model.Preview.TrendyolCategoryName</div>
+                                        </div>
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Trendyol Kategori ID</div>
+                                            <div class="datagrid-content">@Model.Preview.TrendyolCategoryId</div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(Model.Preview.Description))
+                                        {
+                                            <div class="datagrid-item">
+                                                <div class="datagrid-title">Aciklama</div>
+                                                <div class="datagrid-content">@Model.Preview.Description</div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    @if (Model.Preview.Attributes.Count > 0)
+                                    {
+                                        <h4 class="subheader mb-2">Ozellikler</h4>
+                                        <div class="datagrid">
+                                            @foreach (var attr in Model.Preview.Attributes)
+                                            {
+                                                <div class="datagrid-item">
+                                                    <div class="datagrid-title">@attr.Name</div>
+                                                    <div class="datagrid-content">@attr.Value</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (Model.Preview.Variants.Count > 0)
+                            {
+                                <h4 class="subheader mt-3 mb-2">Varyantlar</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter card-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Barkod</th>
+                                                <th>Ozellikler</th>
+                                                <th class="text-end">Liste Fiyati</th>
+                                                <th class="text-end">Satis Fiyati</th>
+                                                <th class="text-end">Stok</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var variant in Model.Preview.Variants)
+                                            {
+                                                <tr>
+                                                    <td><code>@variant.Barcode</code></td>
+                                                    <td>@variant.Attributes</td>
+                                                    <td class="text-end">@variant.ListPrice.ToString("N2") TL</td>
+                                                    <td class="text-end">@variant.SalePrice.ToString("N2") TL</td>
+                                                    <td class="text-end">@variant.Quantity</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
-                <div class="alert alert-info mt-3">
-                    Bu sayfa gelistirme asamasindadir. On-ucus kontrolleri otomatik olarak calistirilacak
-                    ve tum kontroller basarili oldugunda gonderim butonu aktif olacaktir.
-                </div>
-                <button class="btn btn-primary mt-2" disabled>Trendyol'a Gonder</button>
-            </div>
+            }
+
         </div>
     </div>
 </div>
+
+@functions {
+    void RenderCheck(bool passed, string label, string detail)
+    {
+        <div class="list-group-item">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    @if (passed)
+                    {
+                        <span class="status-dot status-dot-animated status-green"></span>
+                    }
+                    else
+                    {
+                        <span class="status-dot status-dot-animated status-red"></span>
+                    }
+                </div>
+                <div class="col">
+                    <div class="d-block text-truncate">@label</div>
+                    <div class="d-block text-secondary text-truncate mt-n1">@detail</div>
+                </div>
+                <div class="col-auto">
+                    @if (passed)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon text-green" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon text-red" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
