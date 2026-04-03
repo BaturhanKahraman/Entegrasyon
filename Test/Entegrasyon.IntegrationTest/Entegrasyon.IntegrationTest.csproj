@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Application\Entegrasyon.Blazor\Entegrasyon.Blazor.csproj" />
+    <ProjectReference Include="..\..\Application\Entegrasyon.MVC\Entegrasyon.MVC.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.Business\Entegrasyon.Business.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.ApplicationBootstrap\Entegrasyon.ApplicationBootstrap.csproj" />
