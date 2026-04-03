@@ -72,7 +72,7 @@ public class AuthController(
             }
         }
 
-        // Claims — Blazor'daki UserSession ile aynı yapı
+        // Claims
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),

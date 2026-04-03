@@ -1,8 +1,0 @@
-@implements IAsyncDisposable
-
-<MudChip T="string" Size="Size.Small"
-         Color="@(_isOnline ? Color.Success : Color.Error)"
-         Variant="Variant.Outlined"
-         Icon="@(_isOnline ? Icons.Material.Filled.Print : Icons.Material.Filled.PrintDisabled)">
-    @(_isOnline ? "Yazıcı Hazır" : "Yazıcı Bağlı Değil")
-</MudChip>

@@ -1,7 +1,0 @@
-::deep .hover-card {
-    transition: transform 0.2s ease-in-out;
-}
-
-::deep .hover-card:hover {
-    transform: translateY(-4px);
-}

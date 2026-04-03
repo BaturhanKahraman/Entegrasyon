@@ -14,7 +14,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Integratio
 {
     public IntegrationDbContext CreateDbContext(string[] args)
     {
-        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "Entegrasyon.Blazor");
+        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "Entegrasyon.MVC");
 
         var configuration = new ConfigurationBuilder()
             .SetBasePath(basePath)
