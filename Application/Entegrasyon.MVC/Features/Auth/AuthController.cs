@@ -36,14 +36,14 @@ public class AuthController(
 
         if (!result.Success)
         {
-            ModelState.AddModelError("", result.Message ?? "Giris basarisiz.");
+            ModelState.AddModelError("", result.Message ?? "Giriş başarısız.");
             return View(vm);
         }
 
         // Kullanıcı ilk kez giriş yapıyor — şifre oluşturma gerekli
         if (result is SuccessDataResult<LoginNewPasswordDto> newPasswordResult)
         {
-            TempData.SetWarning("Lutfen yeni sifrenizi olusturun.");
+            TempData.SetWarning("Lütfen yeni şifrenizi oluşturun.");
             return RedirectToAction(nameof(ResetPassword),
                 new { userId = newPasswordResult.Data.UserId });
         }
@@ -51,7 +51,7 @@ public class AuthController(
         // Başarılı giriş — claims oluştur
         if (result is not SuccessDataResult<UserLoginSuccessDto> successResult)
         {
-            ModelState.AddModelError("", "Beklenmeyen bir hata olustu.");
+            ModelState.AddModelError("", "Beklenmeyen bir hata oluştu.");
             return View(vm);
         }
 

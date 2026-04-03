@@ -12,11 +12,11 @@
                 <div class="modal-body">
                     <!-- Target Branch -->
                     <div class="mb-3">
-                        <label class="form-label required">Hedef Sube</label>
+                        <label class="form-label required">Hedef Şube</label>
                         @if (Model.AvailableBranches.Any())
                         {
                             <select class="form-select" name="TargetBranchId" required>
-                                <option value="">Sube secin...</option>
+                                <option value="">Şube seçin...</option>
                                 @foreach (var branch in Model.AvailableBranches)
                                 {
                                     <option value="@branch.Id">@branch.Name</option>
@@ -25,7 +25,7 @@
                         }
                         else
                         {
-                            <div class="alert alert-warning mb-0">Transfer yapilabilecek baska sube yok.</div>
+                            <div class="alert alert-warning mb-0">Transfer yapılabilecek başka şube yok.</div>
                         }
                     </div>
 
@@ -33,9 +33,9 @@
                     @if (Model.SourceStocks.Any())
                     {
                         <div class="mb-3">
-                            <label class="form-label">Urun Ara</label>
+                            <label class="form-label">Ürün Ara</label>
                             <input type="text" class="form-control" id="transfer-product-search"
-                                   placeholder="Urun adi veya barkod ile arayın..." />
+                                   placeholder="Ürün adı veya barkod ile arayın..." />
                         </div>
 
                         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -45,7 +45,7 @@
                                         <th style="width: 40px;">
                                             <input class="form-check-input" type="checkbox" id="select-all-transfer" />
                                         </th>
-                                        <th>Urun</th>
+                                        <th>Ürün</th>
                                         <th>Barkod</th>
                                         <th class="text-center">Mevcut Stok</th>
                                         <th class="text-center" style="width: 120px;">Miktar</th>
@@ -81,11 +81,11 @@
                     }
                     else
                     {
-                        <div class="alert alert-info mb-0">Bu subede transfer edilebilecek stok yok.</div>
+                        <div class="alert alert-info mb-0">Bu şubede transfer edilebilecek stok yok.</div>
                     }
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost-secondary" onclick="closeTransferModal()">Vazgec</button>
+                    <button type="button" class="btn btn-ghost-secondary" onclick="closeTransferModal()">Vazgeç</button>
                     @if (Model.SourceStocks.Any() && Model.AvailableBranches.Any())
                     {
                         <button type="submit" class="btn btn-primary" id="transfer-submit-btn">
