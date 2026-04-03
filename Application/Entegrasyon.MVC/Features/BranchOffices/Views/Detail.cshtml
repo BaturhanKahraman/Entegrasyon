@@ -11,7 +11,15 @@
                 <h2 class="page-title">@Model.Name</h2>
             </div>
             <div class="col-auto ms-auto">
-                <a href="/branch-offices" class="btn btn-outline-secondary">Geri Don</a>
+                <div class="btn-list">
+                    <button class="btn btn-primary"
+                            hx-get="/branch-offices/@Model.Id/transfer"
+                            hx-target="#modal-container"
+                            hx-swap="innerHTML">
+                        Stok Transfer
+                    </button>
+                    <a href="/branch-offices" class="btn btn-outline-secondary">Geri Don</a>
+                </div>
             </div>
         </div>
     </div>
@@ -93,3 +101,5 @@
         </div>
     </div>
 </div>
+
+<div id="modal-container"></div>

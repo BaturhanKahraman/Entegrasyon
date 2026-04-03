@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Dtos.Branches;
+using Entegrasyon.MVC.Features.BranchOffices.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.BranchOffices;
 
 [Authorize]
-public class BranchOfficeController(IBranchOfficeManager branchOfficeManager) : Controller
+public class BranchOfficeController(
+    IBranchOfficeManager branchOfficeManager,
+    IOfficeStockManager officeStockManager) : Controller
 {
     [HttpGet("/branch-offices")]
     public async Task<IActionResult> Index()
@@ -64,5 +68,78 @@ public class BranchOfficeController(IBranchOfficeManager branchOfficeManager) : 
             TempData.SetError(result.Message ?? "Sube silinemedi.");
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("/branch-offices/{id:int}/transfer")]
+    public async Task<IActionResult> TransferDialog(int id)
+    {
+        var branchResult = await branchOfficeManager.GetBranchDetailById(id);
+        if (!branchResult.Success)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Sube bulunamadi.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        var allBranches = await branchOfficeManager.GetPageBranchListAsync();
+        var stocks = await branchOfficeManager.GetBranchStocksAsync(id);
+
+        var vm = new StockTransferVm
+        {
+            SourceBranchId = id,
+            SourceBranchName = branchResult.Data!.Name,
+            AvailableBranches = allBranches.Data?.Where(b => b.Id != id).ToList() ?? [],
+            SourceStocks = stocks.Data?.Where(s => s.CurrentStock > 0).ToList() ?? []
+        };
+
+        return PartialView("_StockTransferDialog", vm);
+    }
+
+    [HttpPost("/branch-offices/transfer")]
+    public async Task<IActionResult> Transfer([FromForm] StockTransferPostVm model)
+    {
+        if (model.SourceBranchId == model.TargetBranchId)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Kaynak ve hedef sube ayni olamaz.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        var items = model.Items
+            .Where(i => i.Quantity > 0)
+            .Select(i => new TransferItemDto(i.ProductVariantId, i.Quantity))
+            .ToList();
+
+        if (items.Count == 0)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "En az bir urun secmelisiniz.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        var result = await officeStockManager.TransferStockAsync(
+            model.SourceBranchId, model.TargetBranchId, items);
+
+        if (Request.IsHtmx())
+        {
+            if (result.Success)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = $"Transfer tamamlandi. {result.Data?.TransferredCount ?? 0} urun aktarildi.", type = "success" });
+                Response.HtmxTrigger("transferCompleted");
+                return Content("");
+            }
+
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Transfer basarisiz.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        if (result.Success)
+            TempData.SetSuccess($"Transfer tamamlandi. {result.Data?.TransferredCount ?? 0} urun aktarildi.");
+        else
+            TempData.SetError(result.Message ?? "Transfer basarisiz.");
+
+        return RedirectToAction("Detail", new { id = model.SourceBranchId });
     }
 }

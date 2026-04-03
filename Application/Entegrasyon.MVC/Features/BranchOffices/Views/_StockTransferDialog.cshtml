@@ -1,0 +1,157 @@
+@model Entegrasyon.MVC.Features.BranchOffices.ViewModels.StockTransferVm
+
+<div class="modal modal-blur show" style="display:block" tabindex="-1" id="transfer-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Stok Transfer &mdash; @Model.SourceBranchName</h5>
+                <button type="button" class="btn-close" onclick="closeTransferModal()"></button>
+            </div>
+            <form hx-post="/branch-offices/transfer" hx-swap="none">
+                <input type="hidden" name="SourceBranchId" value="@Model.SourceBranchId" />
+                <div class="modal-body">
+                    <!-- Target Branch -->
+                    <div class="mb-3">
+                        <label class="form-label required">Hedef Sube</label>
+                        @if (Model.AvailableBranches.Any())
+                        {
+                            <select class="form-select" name="TargetBranchId" required>
+                                <option value="">Sube secin...</option>
+                                @foreach (var branch in Model.AvailableBranches)
+                                {
+                                    <option value="@branch.Id">@branch.Name</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning mb-0">Transfer yapilabilecek baska sube yok.</div>
+                        }
+                    </div>
+
+                    <!-- Product Selection -->
+                    @if (Model.SourceStocks.Any())
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Urun Ara</label>
+                            <input type="text" class="form-control" id="transfer-product-search"
+                                   placeholder="Urun adi veya barkod ile arayın..." />
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-vcenter table-sm" id="transfer-products-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;">
+                                            <input class="form-check-input" type="checkbox" id="select-all-transfer" />
+                                        </th>
+                                        <th>Urun</th>
+                                        <th>Barkod</th>
+                                        <th class="text-center">Mevcut Stok</th>
+                                        <th class="text-center" style="width: 120px;">Miktar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (var i = 0; i < Model.SourceStocks.Count; i++)
+                                    {
+                                        var stock = Model.SourceStocks[i];
+                                        <tr class="transfer-row" data-search="@stock.ProductName.ToLower() @stock.Barcode.ToLower()">
+                                            <td>
+                                                <input class="form-check-input transfer-check" type="checkbox"
+                                                       data-index="@i" />
+                                            </td>
+                                            <td>@stock.ProductName</td>
+                                            <td class="text-secondary"><code>@stock.Barcode</code></td>
+                                            <td class="text-center">
+                                                <span class="badge bg-blue-lt">@stock.CurrentStock</span>
+                                            </td>
+                                            <td>
+                                                <input type="hidden" name="Items[@i].ProductVariantId"
+                                                       value="@stock.ProductVariantId" disabled />
+                                                <input type="number" class="form-control form-control-sm transfer-qty"
+                                                       name="Items[@i].Quantity" value="0"
+                                                       min="0" max="@stock.CurrentStock" disabled
+                                                       data-max="@stock.CurrentStock" />
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">Bu subede transfer edilebilecek stok yok.</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary" onclick="closeTransferModal()">Vazgec</button>
+                    @if (Model.SourceStocks.Any() && Model.AvailableBranches.Any())
+                    {
+                        <button type="submit" class="btn btn-primary" id="transfer-submit-btn">
+                            Transferi Baslat
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="closeTransferModal()"></div>
+
+<script>
+(function() {
+    function closeTransferModal() {
+        var container = document.getElementById('modal-container');
+        while (container.firstChild) container.removeChild(container.firstChild);
+    }
+    window.closeTransferModal = closeTransferModal;
+
+    // Search filter
+    var searchInput = document.getElementById('transfer-product-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var query = this.value.toLowerCase();
+            document.querySelectorAll('.transfer-row').forEach(function(row) {
+                var text = row.dataset.search || '';
+                row.style.display = text.indexOf(query) >= 0 ? '' : 'none';
+            });
+        });
+    }
+
+    // Checkbox toggle for enabling quantity inputs
+    document.querySelectorAll('.transfer-check').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            var row = this.closest('tr');
+            var hiddenInput = row.querySelector('input[type="hidden"]');
+            var qtyInput = row.querySelector('.transfer-qty');
+            if (this.checked) {
+                hiddenInput.disabled = false;
+                qtyInput.disabled = false;
+                if (parseInt(qtyInput.value) === 0) {
+                    qtyInput.value = 1;
+                }
+            } else {
+                hiddenInput.disabled = true;
+                qtyInput.disabled = true;
+                qtyInput.value = 0;
+            }
+        });
+    });
+
+    // Select all
+    var selectAll = document.getElementById('select-all-transfer');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            var checked = this.checked;
+            document.querySelectorAll('.transfer-check').forEach(function(cb) {
+                var row = cb.closest('tr');
+                if (row.style.display !== 'none') {
+                    cb.checked = checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+})();
+</script>
