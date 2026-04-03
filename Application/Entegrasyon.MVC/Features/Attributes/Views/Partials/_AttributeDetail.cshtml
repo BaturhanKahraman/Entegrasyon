@@ -10,29 +10,50 @@
     <div class="card-header">
         <h3 class="card-title">@(Model.CategoryAttributeHumanized ?? Model.CategoryAttributeKey)</h3>
         <div class="card-actions">
-            <button class="btn btn-outline-primary btn-sm" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="18" height="18"
-                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
-                    <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
-                </svg>
-                Duzenle
-            </button>
+            <div class="btn-list">
+                <button class="btn btn-outline-primary btn-sm"
+                        hx-get="/attributes/@Model.Id/edit"
+                        hx-target="#attribute-detail"
+                        hx-swap="innerHTML">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-edit" width="18" height="18"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
+                        <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"/>
+                    </svg>
+                    Duzenle
+                </button>
+                <button class="btn btn-outline-danger btn-sm"
+                        hx-post="/attributes/@Model.Id/delete"
+                        hx-target="#attribute-detail"
+                        hx-swap="innerHTML"
+                        hx-confirm="Bu ozelligi silmek istediginizden emin misiniz?">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler" width="18" height="18"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M4 7l16 0"/>
+                        <path d="M10 11l0 6"/>
+                        <path d="M14 11l0 6"/>
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/>
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                    </svg>
+                    Sil
+                </button>
+            </div>
         </div>
     </div>
     <div class="card-body">
         <div class="datagrid">
             <div class="datagrid-item">
                 <div class="datagrid-title">Anahtar (Key)</div>
-                <div class="datagrid-content">@(Model.CategoryAttributeKey ?? "—")</div>
+                <div class="datagrid-content">@(Model.CategoryAttributeKey ?? "\u2014")</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Gorunen Ad</div>
-                <div class="datagrid-content">@(Model.CategoryAttributeHumanized ?? "—")</div>
+                <div class="datagrid-title">Görünen Ad</div>
+                <div class="datagrid-content">@(Model.CategoryAttributeHumanized ?? "\u2014")</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Ozel Deger Izni</div>
+                <div class="datagrid-title">Özel Değer İzni</div>
                 <div class="datagrid-content">
                     @if (Model.AllowCustom)
                     {
@@ -40,19 +61,19 @@
                     }
                     else
                     {
-                        <span class="text-secondary">Hayir</span>
+                        <span class="text-secondary">Hayır</span>
                     }
                 </div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Tanimli Deger Sayisi</div>
+                <div class="datagrid-title">Tanımlı Değer Sayısı</div>
                 <div class="datagrid-content">@values.Count</div>
             </div>
         </div>
 
         @if (values.Any())
         {
-            <h4 class="mt-4 mb-2">Tanimli Degerler</h4>
+            <h4 class="mt-4 mb-2">Tanımlı Değerler</h4>
             <div class="d-flex flex-wrap gap-1">
                 @foreach (var val in values)
                 {
@@ -78,7 +99,7 @@
                         @foreach (var cat in categories)
                         {
                             <tr>
-                                <td>@(cat.Category?.Name ?? "—")</td>
+                                <td>@(cat.Category?.Name ?? "\u2014")</td>
                                 <td>
                                     @if (cat.IsRequired)
                                     {
