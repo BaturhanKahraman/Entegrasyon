@@ -1,0 +1,121 @@
+@model Entegrasyon.Entity.Dtos.Product.Discount.DiscountPreviewDto
+
+<div class="modal modal-blur show" style="display:block" tabindex="-1" id="discount-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Indirim Uygula &mdash; @Model.ProductTitle</h5>
+                <button type="button" class="btn-close" onclick="closeDiscountModal()"></button>
+            </div>
+            <form method="post" action="/products/@Model.ProductId/discount">
+                <div class="modal-body">
+                    <!-- Discount Percentage -->
+                    <div class="mb-3">
+                        <label class="form-label required">Indirim Orani (%)</label>
+                        <input type="number" name="discountPercentage" id="discountPercentage"
+                               class="form-control" value="10" min="0.01" max="100" step="0.01" required />
+                    </div>
+
+                    <!-- Marketplace Selection -->
+                    @if (Model.MarketplacePrices.Any())
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Hedef Pazaryerleri</label>
+                            @foreach (var mp in Model.MarketplacePrices.GroupBy(m => m.MarketPlaceId))
+                            {
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="marketplaceIds" value="@mp.Key" checked />
+                                    <span class="form-check-label">@mp.First().MarketPlaceName</span>
+                                </label>
+                            }
+                        </div>
+                    }
+
+                    <!-- Variant Preview Table -->
+                    @if (Model.Variants.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter table-sm" id="discount-preview-table">
+                                <thead>
+                                    <tr>
+                                        <th>Varyant</th>
+                                        <th>Barkod</th>
+                                        <th class="text-end">Maliyet</th>
+                                        <th class="text-end">Liste</th>
+                                        <th class="text-end">Satis</th>
+                                        <th class="text-end">Yeni Fiyat</th>
+                                        <th class="text-end">Yeni Marj</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var v in Model.Variants)
+                                    {
+                                        <tr data-cost="@v.CostPrice" data-sale="@v.SalePrice" data-vat="@v.VatRate">
+                                            <td>@v.Label</td>
+                                            <td><code>@v.Barcode</code></td>
+                                            <td class="text-end">@v.CostPrice.ToString("N2")</td>
+                                            <td class="text-end">@v.ListPrice.ToString("N2")</td>
+                                            <td class="text-end">@v.SalePrice.ToString("N2")</td>
+                                            <td class="text-end new-price">@v.SalePrice.ToString("N2")</td>
+                                            <td class="text-end new-margin">%@v.ProfitMarginPercent.ToString("N1")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary"
+                            onclick="closeDiscountModal()">Vazgec</button>
+                    <button type="submit" class="btn btn-warning">Indirimi Uygula</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="closeDiscountModal()"></div>
+
+<script>
+(function() {
+    function closeDiscountModal() {
+        var container = document.getElementById('modal-container');
+        while (container.firstChild) container.removeChild(container.firstChild);
+    }
+    window.closeDiscountModal = closeDiscountModal;
+
+    var input = document.getElementById('discountPercentage');
+    var table = document.getElementById('discount-preview-table');
+    if (!input || !table) return;
+
+    function recalculate() {
+        var pct = parseFloat(input.value) || 0;
+        var rows = table.querySelectorAll('tbody tr');
+        rows.forEach(function(row) {
+            var cost = parseFloat(row.dataset.cost) || 0;
+            var sale = parseFloat(row.dataset.sale) || 0;
+            var newPrice = sale * (1 - pct / 100);
+            var margin = newPrice - cost;
+            var marginPct = newPrice > 0 ? (margin / newPrice) * 100 : 0;
+
+            var priceCell = row.querySelector('.new-price');
+            var marginCell = row.querySelector('.new-margin');
+
+            priceCell.textContent = newPrice.toFixed(2);
+            marginCell.textContent = '%' + marginPct.toFixed(1);
+
+            if (newPrice < cost) {
+                priceCell.classList.add('text-danger', 'fw-bold');
+                marginCell.classList.add('text-danger', 'fw-bold');
+            } else {
+                priceCell.classList.remove('text-danger', 'fw-bold');
+                marginCell.classList.remove('text-danger', 'fw-bold');
+            }
+        });
+    }
+
+    input.addEventListener('input', recalculate);
+    recalculate();
+})();
+</script>
