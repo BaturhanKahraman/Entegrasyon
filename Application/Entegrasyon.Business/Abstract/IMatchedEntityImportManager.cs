@@ -1,4 +1,6 @@
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Templates;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Templates;
 
@@ -12,8 +14,8 @@ public interface IMatchedEntityImportManager
     /// <summary>
     /// Yayınlanmış paketleri listeler.
     /// </summary>
-    Task<IDataResult<List<MatchedEntityPackageDto>>> GetAvailablePackagesAsync(
-        MatchedEntityType? typeFilter = null, string? searchTerm = null, CancellationToken ct = default);
+    Task<IDataResult<Pageable<MatchedEntityPackageDto>>> GetAvailablePackagesAsync(
+        MatchedEntityPackagePaginatedRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// Paket detayını getirir (tüm hiyerarşi + marketplace mapping'ler dahil).

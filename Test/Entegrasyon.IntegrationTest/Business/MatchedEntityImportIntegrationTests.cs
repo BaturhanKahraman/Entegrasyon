@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Templates;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Templates;
 using Entegrasyon.IntegrationTest.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -139,12 +140,12 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
         using var _ = scope;
 
         // Act
-        var result = await service.GetAvailablePackagesAsync();
+        var result = await service.GetAvailablePackagesAsync(new MatchedEntityPackagePaginatedRequest());
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCountGreaterThanOrEqualTo(1);
-        result.Data.Should().Contain(p => p.Name == "Elektronik > Cep Telefonu");
+        result.Data.Items.Should().HaveCountGreaterThanOrEqualTo(1);
+        result.Data.Items.Should().Contain(p => p.Name == "Elektronik > Cep Telefonu");
     }
 
     [Fact]
@@ -156,11 +157,11 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
         using var _ = scope;
 
         // Act
-        var result = await service.GetAvailablePackagesAsync();
+        var result = await service.GetAvailablePackagesAsync(new MatchedEntityPackagePaginatedRequest());
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().NotContain(p => p.Name == "Draft Paket");
+        result.Data.Items.Should().NotContain(p => p.Name == "Draft Paket");
     }
 
     [Fact]
@@ -172,11 +173,12 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
         using var _ = scope;
 
         // Act
-        var result = await service.GetAvailablePackagesAsync(typeFilter: MatchedEntityType.Brand);
+        var result = await service.GetAvailablePackagesAsync(
+            new MatchedEntityPackagePaginatedRequest { EntityType = MatchedEntityType.Brand });
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().NotContain(p => p.EntityType == MatchedEntityType.Category);
+        result.Data.Items.Should().NotContain(p => p.EntityType == MatchedEntityType.Category);
     }
 
     [Fact]
@@ -189,11 +191,12 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
         using var _ = scope;
 
         // Act
-        var result = await service.GetAvailablePackagesAsync(searchTerm: "Giyim");
+        var result = await service.GetAvailablePackagesAsync(
+            new MatchedEntityPackagePaginatedRequest { SearchTerm = "Giyim" });
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().OnlyContain(p => p.Name.Contains("Giyim"));
+        result.Data.Items.Should().OnlyContain(p => p.Name.Contains("Giyim"));
     }
 
     // ─── GetPackageDetail Tests ──────────────────────────────────────

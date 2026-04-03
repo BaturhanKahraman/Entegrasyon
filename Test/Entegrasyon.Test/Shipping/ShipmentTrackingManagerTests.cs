@@ -193,14 +193,17 @@ public class ShipmentTrackingManagerTests : Entegrasyon.UnitTest.BaseTest
 
         mockIntegrationDbContext.Setup(x => x.ShipmentTrackings).ReturnsDbSet(shipments);
 
-        var filter = new ShipmentFilterDto(Status: ShipmentStatus.InTransit);
+        var request = new Entegrasyon.Entity.Requests.ShipmentPaginatedRequest
+        {
+            Status = ShipmentStatus.InTransit
+        };
 
         var sut = CreateSut();
-        var result = await sut.GetAllShipmentsAsync(filter);
+        var result = await sut.GetAllShipmentsAsync(request);
 
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(1);
-        result.Data![0].TrackingNumber.Should().Be("TRK-001");
+        result.Data!.Items.Should().HaveCount(1);
+        result.Data!.Items[0].TrackingNumber.Should().Be("TRK-001");
     }
 
     // ── RefreshTrackingStatus Tests ───────────────────────────────────────────

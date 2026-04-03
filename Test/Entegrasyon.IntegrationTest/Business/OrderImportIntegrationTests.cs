@@ -121,12 +121,15 @@ public class OrderImportIntegrationTests : IntegrationTestBase
         // Act
         var (orderManager2, scope2) = GetScopedService<IOrderManager>();
         using var _2 = scope2;
-        var result = await orderManager2.GetOrdersAsync(marketPlaceId: 1);
+        var result = await orderManager2.GetOrdersAsync(new Entegrasyon.Entity.Requests.OrderPaginatedRequest
+        {
+            MarketPlaceId = 1
+        });
 
         // Assert
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
-        result.Data!.Should().Contain(o => o.ShipmentPackageId == 9020);
+        result.Data!.Items.Should().Contain(o => o.ShipmentPackageId == 9020);
     }
 
     [Fact]

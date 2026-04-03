@@ -44,7 +44,10 @@
                      TotalPages = Model.TotalPageCount,
                      TotalCount = Model.TotalItemCount,
                      BaseUrl = "/brands",
-                     TargetId = "#brand-table"
+                     TargetId = "#brand-table",
+                     QueryParams = ViewBag.Search != null
+                         ? new Dictionary<string, string> { ["search"] = (string)ViewBag.Search }
+                         : new()
                  }'/>
     }
     else

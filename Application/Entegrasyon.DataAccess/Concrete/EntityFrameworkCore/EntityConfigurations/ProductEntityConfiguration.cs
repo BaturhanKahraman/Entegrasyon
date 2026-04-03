@@ -33,5 +33,7 @@ public class ProductEntityConfiguration:IEntityTypeConfiguration<Product>
             .HasMethod("GIN");
 
         builder.HasIndex(x => x.SeoSlug).IsUnique().HasFilter("\"SeoSlug\" IS NOT NULL");
+
+        builder.HasIndex(x => new { x.BrandId, x.IsDeleted });
     }
 }

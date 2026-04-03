@@ -1,11 +1,14 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.N11;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -32,23 +35,29 @@ public class OrderManager(
     private const long AdvisoryLockKeyN11Import = 2002;
     private const long AdvisoryLockKeyPazaramaImport = 2005;
 
-    public async Task<IDataResult<List<Order>>> GetOrdersAsync(int? marketPlaceId = null, int page = 0, int pageSize = 50)
+    public async Task<IDataResult<Pageable<Order>>> GetOrdersAsync(OrderPaginatedRequest request)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.Orders.AsNoTracking()
             .Include(o => o.OrderItems)
             .AsQueryable();
 
-        if (marketPlaceId.HasValue)
-            query = query.Where(o => o.MarketPlaceId == marketPlaceId);
+        if (request.MarketPlaceId.HasValue)
+            query = query.Where(o => o.MarketPlaceId == request.MarketPlaceId);
 
-        var orders = await query
-            .OrderByDescending(o => o.OrderDate ?? o.CreatedAt)
-            .Skip(page * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        if (!string.IsNullOrWhiteSpace(request.Status))
+            query = query.Where(o => o.MarketplaceOrderStatus == request.Status);
 
-        return new SuccessDataResult<List<Order>>(orders);
+        query = query
+            .ApplyGlobalSearch(request.SearchTerm,
+                nameof(Order.OrderNumber),
+                nameof(Order.CustomerFirstName),
+                nameof(Order.CustomerLastName))
+            .OrderByDescending(o => o.OrderDate ?? o.CreatedAt);
+
+        var result = await query.ToPageableAsync(request);
+
+        return new SuccessDataResult<Pageable<Order>>(result);
     }
 
     public async Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId)

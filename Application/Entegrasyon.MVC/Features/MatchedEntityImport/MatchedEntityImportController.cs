@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Templates;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Templates;
 using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
@@ -15,20 +16,27 @@ public class MatchedEntityImportController(IMatchedEntityImportManager matchedEn
 
     [HttpGet("/matched-entities")]
     public async Task<IActionResult> Index(
-        string? search = null, int? type = null, CancellationToken ct = default)
+        string? search = null, int? type = null, int page = 1, CancellationToken ct = default)
     {
         ViewData.SetPageTitle("Eslestirilmis Varlik Aktarimi");
         ViewData.SetActiveNav("matched-entities");
 
         var typeFilter = type.HasValue ? (MatchedEntityType)type.Value : (MatchedEntityType?)null;
-        var result = await matchedEntityImportManager.GetAvailablePackagesAsync(typeFilter, search, ct);
+        var result = await matchedEntityImportManager.GetAvailablePackagesAsync(
+            new MatchedEntityPackagePaginatedRequest
+            {
+                SearchTerm = search,
+                EntityType = typeFilter,
+                PageIndex = page - 1,
+                PageSize = 20
+            }, ct);
 
         if (Request.IsHtmx())
-            return PartialView($"{ViewBase}/Partials/_PackageTable.cshtml", result.Data ?? []);
+            return PartialView($"{ViewBase}/Partials/_PackageTable.cshtml", result.Data);
 
         ViewBag.Search = search;
         ViewBag.TypeFilter = type;
-        return View($"{ViewBase}/Index.cshtml", result.Data ?? []);
+        return View($"{ViewBase}/Index.cshtml", result.Data);
     }
 
     [HttpGet("/matched-entities/{id:int}/detail")]

@@ -1,8 +1,10 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Templates;
 using Entegrasyon.Entity.Matches;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Templates;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +20,8 @@ public class MatchedEntityImportManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     ILogger<MatchedEntityImportManager> logger) : IMatchedEntityImportManager
 {
-    public async Task<IDataResult<List<MatchedEntityPackageDto>>> GetAvailablePackagesAsync(
-        MatchedEntityType? typeFilter = null, string? searchTerm = null, CancellationToken ct = default)
+    public async Task<IDataResult<Pageable<MatchedEntityPackageDto>>> GetAvailablePackagesAsync(
+        MatchedEntityPackagePaginatedRequest request, CancellationToken ct = default)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
 
@@ -27,13 +29,13 @@ public class MatchedEntityImportManager(
             .Where(p => p.IsPublished)
             .AsQueryable();
 
-        if (typeFilter.HasValue)
-            query = query.Where(p => p.EntityType == typeFilter.Value);
+        if (request.EntityType.HasValue)
+            query = query.Where(p => p.EntityType == request.EntityType.Value);
 
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{searchTerm}%"));
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{request.SearchTerm}%"));
 
-        var packages = await query
+        var projected = query
             .OrderBy(p => p.Name)
             .Select(p => new MatchedEntityPackageDto
             {
@@ -53,10 +55,20 @@ public class MatchedEntityImportManager(
                     : p.EntityType == MatchedEntityType.Brand
                         ? p.Brands.Count()
                         : p.CargoCompanies.Count()
-            })
+            });
+
+        var totalCount = await projected.CountAsync(ct);
+        if (totalCount == 0)
+            return new SuccessDataResult<Pageable<MatchedEntityPackageDto>>(
+                new Pageable<MatchedEntityPackageDto>([], request.PageIndex, request.PageSize, 0));
+
+        var items = await projected
+            .Skip(request.PageIndex * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync(ct);
 
-        return new SuccessDataResult<List<MatchedEntityPackageDto>>(packages);
+        return new SuccessDataResult<Pageable<MatchedEntityPackageDto>>(
+            new Pageable<MatchedEntityPackageDto>(items, request.PageIndex, request.PageSize, totalCount));
     }
 
     public async Task<IDataResult<MatchedEntityPackageDetailDto>> GetPackageDetailAsync(

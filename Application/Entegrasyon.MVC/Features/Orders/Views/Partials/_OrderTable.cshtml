@@ -1,4 +1,4 @@
-@model List<Entegrasyon.Entity.Orders.Order>
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Orders.Order>
 
 @{
     string StatusBadge(string? status) => status switch
@@ -29,7 +29,7 @@
 }
 
 <div id="order-table">
-    @if (Model.Count > 0)
+    @if (Model.HasItem)
     {
         <div class="table-responsive">
             <table class="table table-vcenter card-table">
@@ -45,7 +45,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var order in Model)
+                    @foreach (var order in Model.Items)
                     {
                         <tr>
                             <td>
@@ -80,6 +80,21 @@
                 </tbody>
             </table>
         </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/orders",
+                     TargetId = "#order-table",
+                     QueryParams = new Dictionary<string, string>
+                     {
+                         ["search"] = ViewBag.Search as string ?? "",
+                         ["status"] = ViewBag.Status as string ?? ""
+                     }
+                 }'/>
     }
     else
     {

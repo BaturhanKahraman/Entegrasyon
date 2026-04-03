@@ -1,8 +1,10 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Shipping;
 using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Shipping;
 using Microsoft.EntityFrameworkCore;
@@ -114,7 +116,7 @@ public class ShipmentTrackingManager(
         }
     }
 
-    public async Task<IDataResult<List<ShipmentTrackingDto>>> GetAllShipmentsAsync(ShipmentFilterDto filter)
+    public async Task<IDataResult<Pageable<ShipmentTrackingDto>>> GetAllShipmentsAsync(ShipmentPaginatedRequest request)
     {
         try
         {
@@ -125,19 +127,24 @@ public class ShipmentTrackingManager(
                 .Include(x => x.StatusHistory)
                 .AsQueryable();
 
-            if (filter.Status.HasValue)
-                query = query.Where(x => x.CurrentStatus == filter.Status.Value);
+            if (request.Status.HasValue)
+                query = query.Where(x => x.CurrentStatus == request.Status.Value);
 
-            if (filter.CargoCompanyId.HasValue)
-                query = query.Where(x => x.CargoCompanyId == filter.CargoCompanyId.Value);
+            if (request.CargoCompanyId.HasValue)
+                query = query.Where(x => x.CargoCompanyId == request.CargoCompanyId.Value);
 
-            if (filter.FromDate.HasValue)
-                query = query.Where(x => x.CreatedAt >= filter.FromDate.Value);
+            query = query.OrderByDescending(x => x.CreatedAt);
 
-            if (filter.ToDate.HasValue)
-                query = query.Where(x => x.CreatedAt <= filter.ToDate.Value);
+            var totalCount = await query.CountAsync();
 
-            var shipments = await query.OrderByDescending(x => x.CreatedAt).ToListAsync();
+            if (totalCount == 0)
+                return new SuccessDataResult<Pageable<ShipmentTrackingDto>>(
+                    new Pageable<ShipmentTrackingDto>([], request.PageIndex, request.PageSize, 0));
+
+            var shipments = await query
+                .Skip(request.PageIndex * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
 
             var dtos = shipments.Select(s => new ShipmentTrackingDto(
                 s.Id,
@@ -156,12 +163,13 @@ public class ShipmentTrackingManager(
                 )).OrderBy(h => h.Timestamp).ToList()
             )).ToList();
 
-            return new SuccessDataResult<List<ShipmentTrackingDto>>(dtos);
+            return new SuccessDataResult<Pageable<ShipmentTrackingDto>>(
+                new Pageable<ShipmentTrackingDto>(dtos, request.PageIndex, request.PageSize, totalCount));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Kargo listesi getirme hatasi");
-            return new ErrorDataResult<List<ShipmentTrackingDto>>(null!, $"Kargo listesi getirme hatasi: {ex.Message}");
+            return new ErrorDataResult<Pageable<ShipmentTrackingDto>>(null!, $"Kargo listesi getirme hatasi: {ex.Message}");
         }
     }
 

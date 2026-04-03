@@ -1,4 +1,4 @@
-@model List<Entegrasyon.Entity.Dtos.Shipping.ShipmentTrackingDto>
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Shipping.ShipmentTrackingDto>
 
 <div class="page-header d-print-none">
     <div class="container-xl">
@@ -34,72 +34,7 @@
                     </select>
                 </div>
             </div>
-            <div id="shipment-table">
-                @if (Model != null && Model.Any())
-                {
-                    <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
-                            <thead>
-                                <tr>
-                                    <th>Takip No</th>
-                                    <th>Kargo Firmasi</th>
-                                    <th>Alici</th>
-                                    <th>Durum</th>
-                                    <th>Son Guncelleme</th>
-                                    <th>Tahmini Teslim</th>
-                                    <th class="w-1"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var shipment in Model)
-                                {
-                                    <tr>
-                                        <td><code>@shipment.TrackingNumber</code></td>
-                                        <td class="text-secondary">@shipment.CargoCompanyName</td>
-                                        <td class="text-secondary">@(shipment.RecipientName ?? "-")</td>
-                                        <td>
-                                            @{
-                                                var (badgeClass, label) = shipment.CurrentStatus switch
-                                                {
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.Delivered => ("bg-green-lt", "Teslim Edildi"),
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.InTransit => ("bg-blue-lt", "Yolda"),
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.OutForDelivery => ("bg-cyan-lt", "Dagitimda"),
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.PickedUp => ("bg-yellow-lt", "Teslim Alindi"),
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.Failed => ("bg-red-lt", "Basarisiz"),
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.Cancelled => ("bg-secondary-lt", "Iptal"),
-                                                    Entegrasyon.Entity.Shipping.ShipmentStatus.ReturnedToSender => ("bg-orange-lt", "Iade"),
-                                                    _ => ("bg-secondary-lt", "Olusturuldu")
-                                                };
-                                            }
-                                            <span class="badge @badgeClass">@label</span>
-                                        </td>
-                                        <td class="text-secondary">@(shipment.LastStatusUpdate?.ToString("dd.MM.yyyy HH:mm") ?? "-")</td>
-                                        <td class="text-secondary">@(shipment.EstimatedDeliveryDate?.ToString("dd.MM.yyyy") ?? "-")</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary"
-                                                    hx-post="/shipping/@shipment.Id/refresh"
-                                                    hx-swap="none">
-                                                Guncelle
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                else
-                {
-                    <div class="card-body">
-                        <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
-                                 model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
-                                 {
-                                     Title = "Kargo kaydi bulunamadi",
-                                     Subtitle = "Henuz kargo takibi eklenmemis."
-                                 }'/>
-                    </div>
-                }
-            </div>
+            <partial name="Partials/_ShipmentTable" model="Model"/>
         </div>
     </div>
 </div>

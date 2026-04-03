@@ -108,7 +108,13 @@
                                  TotalPages = Model.TotalPageCount,
                                  TotalCount = Model.TotalItemCount,
                                  BaseUrl = "/sales",
-                                 TargetId = "#sale-table"
+                                 TargetId = "#sale-table",
+                                 QueryParams = new Dictionary<string, string>
+                                 {
+                                     ["search"] = ViewBag.Search as string ?? "",
+                                     ["startDate"] = ViewBag.StartDate as string ?? "",
+                                     ["endDate"] = ViewBag.EndDate as string ?? ""
+                                 }
                              }'/>
                 }
                 else

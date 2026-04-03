@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Orders;
@@ -16,35 +17,21 @@ public class OrderController(
         ViewData.SetPageTitle("Siparisler");
         ViewData.SetActiveNav("orders");
 
-        var result = await orderManager.GetOrdersAsync(marketPlaceId: null, page: page - 1, pageSize: 20);
-
-        var orders = result.Data ?? [];
-
-        // Client-side filtering for search & status
-        if (!string.IsNullOrWhiteSpace(search))
+        var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
         {
-            orders = orders
-                .Where(o =>
-                    (o.OrderNumber?.Contains(search, StringComparison.OrdinalIgnoreCase) == true) ||
-                    (o.CustomerFirstName?.Contains(search, StringComparison.OrdinalIgnoreCase) == true) ||
-                    (o.CustomerLastName?.Contains(search, StringComparison.OrdinalIgnoreCase) == true))
-                .ToList();
-        }
-
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            orders = orders
-                .Where(o => o.MarketplaceOrderStatus?.Equals(status, StringComparison.OrdinalIgnoreCase) == true)
-                .ToList();
-        }
+            SearchTerm = search,
+            Status = status,
+            PageIndex = page - 1,
+            PageSize = 20
+        });
 
         ViewBag.Search = search;
         ViewBag.Status = status;
 
         if (Request.IsHtmx())
-            return PartialView("~/Features/Orders/Views/Partials/_OrderTable.cshtml", orders);
+            return PartialView("~/Features/Orders/Views/Partials/_OrderTable.cshtml", result.Data);
 
-        return View("~/Features/Orders/Views/Index.cshtml", orders);
+        return View("~/Features/Orders/Views/Index.cshtml", result.Data);
     }
 
     [HttpGet("/marketplace/orders")]
@@ -53,15 +40,19 @@ public class OrderController(
         ViewData.SetPageTitle("Pazaryeri Siparisleri");
         ViewData.SetActiveNav("orders");
 
-        var result = await orderManager.GetOrdersAsync(marketPlaceId: mp, page: page - 1, pageSize: 20);
-        var orders = result.Data ?? [];
+        var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
+        {
+            MarketPlaceId = mp,
+            PageIndex = page - 1,
+            PageSize = 20
+        });
 
         ViewBag.MarketPlaceId = mp;
 
         if (Request.IsHtmx())
-            return PartialView("~/Features/Orders/Views/Partials/_OrderTable.cshtml", orders);
+            return PartialView("~/Features/Orders/Views/Partials/_OrderTable.cshtml", result.Data);
 
-        return View("~/Features/Orders/Views/MarketplaceOrders.cshtml", orders);
+        return View("~/Features/Orders/Views/MarketplaceOrders.cshtml", result.Data);
     }
 
     [HttpGet("/marketplace/orders/{id:guid}")]

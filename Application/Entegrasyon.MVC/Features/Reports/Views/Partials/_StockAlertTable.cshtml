@@ -1,0 +1,66 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Reports.StockAlertDto>
+
+<div id="stock-alert-table">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Urun</th>
+                        <th>Barkod</th>
+                        <th>Mevcut Stok</th>
+                        <th>Min. Stok</th>
+                        <th>Tukeniyor (Gun)</th>
+                        <th>Onerilen Siparis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td class="text-secondary"><code>@(item.Barcode ?? "-")</code></td>
+                            <td>
+                                <span class="badge @(item.CurrentStock <= 0 ? "bg-red-lt" : item.CurrentStock <= item.MinimumStock ? "bg-yellow-lt" : "bg-green-lt")">
+                                    @item.CurrentStock
+                                </span>
+                            </td>
+                            <td>@item.MinimumStock</td>
+                            <td>
+                                <span class="badge @(item.DaysUntilStockout <= 3 ? "bg-red" : item.DaysUntilStockout <= 7 ? "bg-yellow" : "bg-green-lt")">
+                                    @item.DaysUntilStockout gun
+                                </span>
+                            </td>
+                            <td>@item.SuggestedOrderQuantity</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/reports/stock-alerts",
+                     TargetId = "#stock-alert-table",
+                     QueryParams = ViewBag.Threshold != null
+                         ? new Dictionary<string, string> { ["threshold"] = ViewBag.Threshold.ToString() }
+                         : new()
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Stok uyarisi yok",
+                         Subtitle = "Tum urunlerin stok seviyesi yeterli gorunuyor."
+                     }'/>
+        </div>
+    }
+</div>

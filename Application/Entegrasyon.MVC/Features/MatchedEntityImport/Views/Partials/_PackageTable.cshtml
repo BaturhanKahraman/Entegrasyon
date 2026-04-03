@@ -1,6 +1,7 @@
+@using Entegrasyon.Entity
 @using Entegrasyon.Entity.Dtos.Templates
 @using Entegrasyon.Entity.Templates
-@model List<MatchedEntityPackageDto>
+@model Pageable<MatchedEntityPackageDto>
 
 @{
     string EntityTypeBadge(MatchedEntityType type) => type switch
@@ -21,7 +22,7 @@
 }
 
 <div id="package-table">
-    @if (Model is { Count: > 0 })
+    @if (Model.HasItem)
     {
         <div class="table-responsive">
             <table class="table table-vcenter card-table">
@@ -37,7 +38,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var pkg in Model)
+                    @foreach (var pkg in Model.Items)
                     {
                         <tr>
                             <td>
@@ -100,6 +101,20 @@
                 </tbody>
             </table>
         </div>
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/matched-entities",
+                     TargetId = "#package-table",
+                     QueryParams = new Dictionary<string, string>
+                     {
+                         ["search"] = ViewBag.Search as string ?? "",
+                         ["type"] = ViewBag.TypeFilter?.ToString() ?? ""
+                     }
+                 }'/>
     }
     else
     {

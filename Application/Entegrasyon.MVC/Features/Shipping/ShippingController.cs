@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Entity.Dtos.Shipping;
+using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Shipping;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
@@ -13,7 +13,8 @@ public class ShippingController(IShipmentTrackingManager shipmentTrackingManager
     [HttpGet("/shipping")]
     public async Task<IActionResult> Index(
         string? status = null,
-        int? cargoCompanyId = null)
+        int? cargoCompanyId = null,
+        int page = 1)
     {
         ViewData.SetPageTitle("Kargo Takibi");
         ViewData.SetActiveNav("shipping");
@@ -22,11 +23,15 @@ public class ShippingController(IShipmentTrackingManager shipmentTrackingManager
         if (Enum.TryParse<ShipmentStatus>(status, out var s))
             parsedStatus = s;
 
-        var filter = new ShipmentFilterDto(
-            Status: parsedStatus,
-            CargoCompanyId: cargoCompanyId);
+        var result = await shipmentTrackingManager.GetAllShipmentsAsync(new ShipmentPaginatedRequest
+        {
+            Status = parsedStatus,
+            CargoCompanyId = cargoCompanyId,
+            PageIndex = page - 1,
+            PageSize = 20
+        });
 
-        var result = await shipmentTrackingManager.GetAllShipmentsAsync(filter);
+        ViewBag.Status = status;
 
         if (Request.IsHtmx())
             return PartialView("Partials/_ShipmentTable", result.Data);

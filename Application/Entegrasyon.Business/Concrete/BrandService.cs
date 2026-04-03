@@ -114,7 +114,6 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         IQueryable<Brand> query = dbContext.Brands;
         query = query.ApplyGlobalSearch(request.SearchTerm, nameof(Brand.Name));
 
-        int total = await query.CountAsync();
         var items = await query
             .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
             .ToPageableAsync(request);

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Reports;
 using Microsoft.EntityFrameworkCore;
 
@@ -402,7 +403,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
 
     #region Stock Alerts
 
-    public async Task<List<StockAlertDto>> GetStockAlertsAsync(int minimumStockThreshold = 10)
+    public async Task<Pageable<StockAlertDto>> GetStockAlertsAsync(StockAlertPaginatedRequest request)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
@@ -410,12 +411,18 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                     join pv in dbContext.ProductVariants on bos.ProductVariantId equals pv.Id
                     join p in dbContext.MainProducts on pv.ProductId equals p.Id
                     where !pv.IsDeleted && !p.IsDeleted
-                          && bos.CurrentStock <= minimumStockThreshold
+                          && bos.CurrentStock <= request.MinimumStockThreshold
+                    orderby bos.CurrentStock
                     select new { bos, pv, p };
 
-        var data = await query.ToListAsync();
+        var totalCount = await query.CountAsync();
 
-        return data.Select(x =>
+        var data = await query
+            .Skip(request.PageIndex * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync();
+
+        var items = data.Select(x =>
         {
             var dailySales = x.bos.SoldQuantity > 0 && x.bos.CurrentStock >= 0
                 ? Math.Max(1, x.bos.SoldQuantity / 30) // Tahmini gunluk satis
@@ -423,19 +430,19 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             var daysUntilStockout = x.bos.CurrentStock > 0
                 ? x.bos.CurrentStock / dailySales
                 : 0;
-            var suggestedOrder = Math.Max(minimumStockThreshold * 3 - x.bos.CurrentStock, 0);
+            var suggestedOrder = Math.Max(request.MinimumStockThreshold * 3 - x.bos.CurrentStock, 0);
 
             return new StockAlertDto(
                 x.pv.Id,
                 x.pv.Barcode,
                 x.p.Title ?? "",
                 x.bos.CurrentStock,
-                minimumStockThreshold,
+                request.MinimumStockThreshold,
                 daysUntilStockout,
                 suggestedOrder);
-        })
-        .OrderBy(x => x.CurrentStock)
-        .ToList();
+        }).ToList();
+
+        return new Pageable<StockAlertDto>(items, request.PageIndex, request.PageSize, totalCount);
     }
 
     #endregion

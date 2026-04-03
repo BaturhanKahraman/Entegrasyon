@@ -28,6 +28,12 @@
     display: block;
 }
 
+/* Pagination overflow prevention */
+.pagination {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
 /* Wizard step indicators */
 .wizard-steps {
     display: flex;

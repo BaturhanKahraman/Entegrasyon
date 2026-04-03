@@ -15,7 +15,6 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 using Entegrasyon.MVC.Infrastructure.ExceptionHandlers;
 using Entegrasyon.MVC.Infrastructure.Filters;
 using Entegrasyon.MVC.Infrastructure.Middleware;
-using System.Net.ServerSentEvents;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -347,47 +346,8 @@ app.UseAntiforgery();
 
 // ── Endpoints ────────────────────────────────────────────────────────────
 
-// SSE: Bildirim stream'i (SignalR NotificationHub yerine — tek yönlü, hafif)
-app.MapGet("/notifications/stream", async (
-    HttpContext context,
-    IServiceScopeFactory scopeFactory,
-    CancellationToken ct) =>
-{
-    var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    if (userId is null) return Results.Unauthorized();
-
-    async IAsyncEnumerable<SseItem<string>> GetNotifications(
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var uid = Guid.Parse(userId);
-        DateTimeOffset lastCheck = DateTimeOffset.UtcNow;
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            await Task.Delay(3000, cancellationToken);
-
-            using var scope = scopeFactory.CreateScope();
-            var notificationManager = scope.ServiceProvider
-                .GetRequiredService<Entegrasyon.Business.Abstract.INotificationManager>();
-
-            var recent = await notificationManager.GetNotificationsForUser(uid, onlyUnread: true);
-            var newOnes = recent?.Where(n => n.CreatedAt > lastCheck).ToList();
-
-            if (newOnes is { Count: > 0 })
-            {
-                lastCheck = DateTimeOffset.UtcNow;
-                foreach (var n in newOnes)
-                {
-                    var json = System.Text.Json.JsonSerializer.Serialize(
-                        new { n.Id, Header = n.Header ?? "", Content = n.Content ?? "" });
-                    yield return new SseItem<string>(json, eventType: "notification");
-                }
-            }
-        }
-    }
-
-    return TypedResults.ServerSentEvents(GetNotifications(ct));
-}).RequireAuthorization();
+// TODO: SSE bildirim stream'i şimdilik devre dışı — sayfa geçişlerinde uygulamayı blokluyor.
+// İleride SignalR veya düzgün SSE implementasyonu ile değiştirilecek.
 
 // Chat hala SignalR (bidirectional gerekli)
 app.MapHub<ChatHub>("/ChatHub");

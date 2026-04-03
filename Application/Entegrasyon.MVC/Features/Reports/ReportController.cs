@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Reports;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
@@ -63,15 +64,24 @@ public class ReportController(IReportManager reportManager) : Controller
     }
 
     [HttpGet("/reports/stock-alerts")]
-    public async Task<IActionResult> StockAlerts(int threshold = 10)
+    public async Task<IActionResult> StockAlerts(int threshold = 10, int page = 1)
     {
         ViewData.SetPageTitle("Stok Uyarilari");
         ViewData.SetActiveNav("reports");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Stok Uyarilari", null));
 
-        var data = await reportManager.GetStockAlertsAsync(threshold);
+        var data = await reportManager.GetStockAlertsAsync(new StockAlertPaginatedRequest
+        {
+            MinimumStockThreshold = threshold,
+            PageIndex = page - 1,
+            PageSize = 20
+        });
 
         ViewBag.Threshold = threshold;
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_StockAlertTable", data);
+
         return View(data);
     }
 

@@ -7,4 +7,5 @@ public class PaginationVm
     public int TotalCount { get; set; }
     public string BaseUrl { get; set; } = "";
     public string TargetId { get; set; } = "";
+    public Dictionary<string, string> QueryParams { get; set; } = new();
 }
