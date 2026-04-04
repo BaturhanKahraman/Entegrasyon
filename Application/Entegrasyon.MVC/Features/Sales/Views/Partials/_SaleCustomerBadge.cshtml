@@ -5,13 +5,7 @@
     <div class="d-flex align-items-center justify-content-between">
         <div>
             <span class="avatar avatar-sm bg-blue-lt me-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
-                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
-                </svg>
+                <i class="ti ti-user icon"></i>
             </span>
             <strong>@Model.CustomerName</strong>
         </div>
@@ -21,13 +15,7 @@
               hx-swap="innerHTML">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-ghost-danger btn-sm btn-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M18 6l-12 12"/>
-                    <path d="M6 6l12 12"/>
-                </svg>
+                <i class="ti ti-x icon"></i>
             </button>
         </form>
     </div>
