@@ -18,12 +18,7 @@
                   data-target="#@nodeId"
                   onclick="event.stopPropagation(); event.preventDefault(); toggleCategoryChildren(this);"
                   style="cursor: pointer; display: inline-flex; transition: transform 0.15s;">
-                <svg xmlns="http://www.w3.org/2000/svg" class="chevron-icon" width="16" height="16"
-                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                     stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                    <path d="M9 6l6 6l-6 6"/>
-                </svg>
+                <i class="ti ti-chevron-right chevron-icon" style="font-size:1rem;"></i>
             </span>
         }
         else
@@ -35,12 +30,7 @@
 
         @if (Model.IsFavorite)
         {
-            <svg xmlns="http://www.w3.org/2000/svg" class="text-warning ms-1" width="14" height="14"
-                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="currentColor"
-                 stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M8.243 7.34l-6.38 .925-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499-1.09 6.355-.013 .11a1 1 0 0 0 1.464 .944l5.706-3 5.693 3 .1 .046a1 1 0 0 0 1.352-1.1l-1.091-6.355 4.624-4.5 .078-.085a1 1 0 0 0-.633-1.62l-6.38-.926-2.852-5.78a1 1 0 0 0-1.794 0l-2.853 5.78z"/>
-            </svg>
+            <i class="ti ti-star-filled text-warning ms-1" style="font-size:0.875rem;"></i>
         }
 
         @if (hasChildren)
