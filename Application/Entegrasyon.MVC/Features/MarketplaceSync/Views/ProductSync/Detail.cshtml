@@ -2,28 +2,11 @@
 @using Entegrasyon.Entity.Dtos.Product
 @using Entegrasyon.Entity.Logs
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Urun Senkronizasyon</div>
-                <h2 class="page-title">@Model.Product.Title</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <a href="/marketplace/matching" class="btn btn-outline-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="24" height="24"
-                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M5 12l14 0"/>
-                        <path d="M5 12l6 6"/>
-                        <path d="M5 12l6 -6"/>
-                    </svg>
-                    Listeye Don
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <a href="/marketplace/matching" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left"></i>
+        Listeye Don
+    </a>
 </div>
 
 <div class="page-body">
@@ -111,14 +94,7 @@
                                 @if (!mp.HasCredentials)
                                 {
                                     <div class="alert alert-warning">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24"
-                                             height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                             fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <path d="M12 9v4"/>
-                                            <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/>
-                                            <path d="M12 16h.01"/>
-                                        </svg>
+                                        <i class="ti ti-alert-triangle alert-icon"></i>
                                         API kimlik bilgileri yapilandirilmamis. Senkronizasyon icin marketplace ayarlarindan API anahtarlarini yapilandirin.
                                     </div>
                                 }
@@ -219,14 +195,7 @@
                                                 <button class="btn btn-primary"
                                                         hx-post="/marketplace/matching/@Model.Product.ProductId/sync?mp=@mp.MarketPlaceId"
                                                         hx-swap="none">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm"
-                                                         width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                         stroke="currentColor" fill="none" stroke-linecap="round"
-                                                         stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/>
-                                                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
-                                                    </svg>
+                                                    <i class="ti ti-refresh"></i>
                                                     Simdi Senkronize Et
                                                 </button>
                                             </div>
@@ -263,13 +232,7 @@
                 {
                     <div class="empty">
                         <div class="empty-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg" width="24" height="24"
-                                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                 stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
-                                <path d="M12 7v5l3 3"/>
-                            </svg>
+                            <i class="ti ti-clock" style="font-size:2.5rem;"></i>
                         </div>
                         <p class="empty-title">Henuz aktivite yok</p>
                         <p class="empty-subtitle text-secondary">
