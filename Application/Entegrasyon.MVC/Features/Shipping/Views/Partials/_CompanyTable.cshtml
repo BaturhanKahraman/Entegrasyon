@@ -1,0 +1,51 @@
+@model List<Entegrasyon.Entity.CargoCompany>
+
+<div id="company-table">
+    @if (Model is { Count: > 0 })
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Firma Adi</th>
+                        <th>Kod</th>
+                        <th>Vergi Numarasi</th>
+                        <th>Olusturma Tarihi</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var company in Model)
+                    {
+                        <tr>
+                            <td>@company.Name</td>
+                            <td class="text-secondary">@(company.Code ?? "-")</td>
+                            <td class="text-secondary">@(company.TaxNumber ?? "-")</td>
+                            <td class="text-secondary">@company.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        hx-post="/shipping/companies/@company.Id/delete"
+                                        hx-target="closest tr"
+                                        hx-swap="outerHTML swap:300ms"
+                                        hx-confirm="Bu kargo firmasini silmek istediginize emin misiniz?">
+                                    Sil
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Kargo firmasi bulunamadi",
+                         Subtitle = "Henuz kargo firmasi eklenmemis veya arama kriterinize uygun firma yok."
+                     }'/>
+        </div>
+    }
+</div>

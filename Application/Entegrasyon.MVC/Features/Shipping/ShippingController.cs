@@ -1,14 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.CargoCompany;
 using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Shipping;
+using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Shipping;
 
 [Authorize]
-public class ShippingController(IShipmentTrackingManager shipmentTrackingManager) : Controller
+public class ShippingController(
+    IShipmentTrackingManager shipmentTrackingManager,
+    ICargoCompaniesManager cargoCompaniesManager) : HtmxController
 {
     [HttpGet("/shipping")]
     public async Task<IActionResult> Index(
@@ -64,5 +69,37 @@ public class ShippingController(IShipmentTrackingManager shipmentTrackingManager
             TempData.SetError(result.Message ?? "Takip durumu guncellenemedi.");
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("/shipping/companies")]
+    public async Task<IActionResult> Companies(string? search = null)
+    {
+        ViewData.SetPageTitle("Kargo Firmalari");
+        ViewData.SetActiveNav("shipping");
+
+        var result = string.IsNullOrWhiteSpace(search)
+            ? await cargoCompaniesManager.GetCargoCompanies()
+            : await cargoCompaniesManager.GetCargoCompanies(search);
+
+        ViewBag.Search = search;
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CompanyTable", result.Data);
+
+        return View(result.Data);
+    }
+
+    [HttpPost("/shipping/companies/create")]
+    public async Task<IActionResult> CreateCompany([FromForm] AddCargoCompanyDto dto)
+    {
+        var result = await cargoCompaniesManager.AddCargoCompany(dto);
+        return HtmxMutationResult(result, "Kargo firmasi eklendi.", "Eklenemedi.", refreshEvent: "companyChanged");
+    }
+
+    [HttpPost("/shipping/companies/{id:int}/delete")]
+    public async Task<IActionResult> DeleteCompany(int id)
+    {
+        var result = await cargoCompaniesManager.DeleteCargoCompany(new CargoCompany { Id = id });
+        return HtmxMutationResult(result, "Kargo firmasi silindi.", "Silinemedi.");
     }
 }

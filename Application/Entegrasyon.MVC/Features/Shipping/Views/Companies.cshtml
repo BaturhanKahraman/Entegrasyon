@@ -1,0 +1,62 @@
+@model List<Entegrasyon.Entity.CargoCompany>
+
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+        <i class="ti ti-plus icon"></i>
+        Yeni Kargo Firmasi
+    </button>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="col-auto">
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           placeholder="Kargo firmasi ara..."
+                           value="@ViewBag.Search"
+                           hx-get="/shipping/companies"
+                           hx-trigger="keyup changed delay:300ms"
+                           hx-target="#company-table"
+                           hx-swap="outerHTML"
+                           hx-include="this"/>
+                </div>
+            </div>
+            <partial name="Partials/_CompanyTable" model="Model"/>
+        </div>
+    </div>
+</div>
+
+<!-- Add Company Modal -->
+<div class="modal modal-blur fade" id="addCompanyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Kargo Firmasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form hx-post="/shipping/companies/create" hx-swap="none">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Firma Adi <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="Name" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kod</label>
+                        <input type="text" class="form-control" name="Code" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vergi Numarasi</label>
+                        <input type="text" class="form-control" name="TaxNumber" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
