@@ -46,4 +46,14 @@ public class ViewDataExtensionsTests
 
         group.Should().Be(expectedGroup);
     }
+
+    [Fact]
+    public void GetActiveNavGroup_WhenActiveNavNotSet_ShouldReturnEmpty()
+    {
+        var viewData = CreateViewData();
+
+        var group = viewData.GetActiveNavGroup();
+
+        group.Should().Be("");
+    }
 }
