@@ -21,6 +21,8 @@ public class StorefrontController(
     IStorefrontNewsletterManager newsletterManager,
     ISellerPayoutManager payoutManager,
     IStorefrontSizeGuideManager sizeGuideManager,
+    ISellerCommissionManager sellerCommissionManager,
+    IStorefrontAbandonedCartManager abandonedCartManager,
     ITenantContext tenantContext) : HtmxController
 {
     // Suppress unused-parameter warning for injected services used by other feature agents
@@ -505,5 +507,43 @@ public class StorefrontController(
             "Beden kilavuzu silinemedi.",
             refreshEvent: "sizeGuidesUpdated",
             redirectAction: nameof(SizeGuides));
+    }
+
+    // ── Commissions ─────────────────────────────────────────────────────
+
+    [HttpGet("/storefront/commissions")]
+    public async Task<IActionResult> Commissions()
+    {
+        ViewData.SetPageTitle("Satici Komisyonlari");
+        ViewData.SetActiveNav("storefront-commissions");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Satici Komisyonlari", null));
+
+        var result = await sellerCommissionManager.GetCommissionsAsync(TenantId);
+        return HtmxView("Commissions", result.Data ?? []);
+    }
+
+    [HttpPost("/storefront/commissions/{id:int}/update")]
+    public async Task<IActionResult> UpdateCommission(int id, [FromForm] decimal rate)
+    {
+        var result = await sellerCommissionManager.UpdateCommissionRateAsync(id, rate);
+
+        return HtmxMutationResult(result,
+            "Komisyon orani guncellendi.",
+            "Komisyon orani guncellenemedi.",
+            refreshEvent: "commissionsUpdated",
+            redirectAction: nameof(Commissions));
+    }
+
+    // ── Abandoned Carts ──────────────────────────────────────────────────
+
+    [HttpGet("/storefront/abandoned-carts")]
+    public async Task<IActionResult> AbandonedCarts()
+    {
+        ViewData.SetPageTitle("Terk Edilen Sepetler");
+        ViewData.SetActiveNav("storefront-abandoned-carts");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Terk Edilen Sepetler", null));
+
+        var result = await abandonedCartManager.GetAbandonedCartEmailsAsync(TenantId);
+        return HtmxView("AbandonedCarts", result.Data ?? []);
     }
 }

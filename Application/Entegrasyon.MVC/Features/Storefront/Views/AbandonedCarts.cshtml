@@ -1,0 +1,114 @@
+@model List<Entegrasyon.Entity.Storefront.StorefrontAbandonedCartEmail>
+@using Entegrasyon.Entity.Storefront
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            @if (Model.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <i class="ti ti-shopping-cart-off icon-lg text-secondary" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h3 class="text-secondary">Terk edilen sepet e-postasi yok</h3>
+                    <p class="text-secondary">Musterilerin terk ettigi sepetler icin gonderilen e-postalar burada listelenecektir.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Terk Edilen Sepet E-postalari</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-orange">@Model.Count kayit</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Musteri ID</th>
+                                <th>E-posta Adimi</th>
+                                <th>Kupon Kodu</th>
+                                <th>Durum</th>
+                                <th>Donusturuldu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var email in Model)
+                            {
+                                <tr>
+                                    <td>@email.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="text-secondary">#@email.CustomerId</span>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var stepClass = email.EmailStep switch
+                                            {
+                                                1 => "bg-blue",
+                                                2 => "bg-orange",
+                                                3 => "bg-red",
+                                                _ => "bg-secondary"
+                                            };
+                                            var stepText = email.EmailStep switch
+                                            {
+                                                1 => "1. Hatirlat",
+                                                2 => "2. Hatirlat",
+                                                3 => "3. Son Teklif",
+                                                _ => $"Adim {email.EmailStep}"
+                                            };
+                                        }
+                                        <span class="badge @stepClass">@stepText</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(email.CouponCode))
+                                        {
+                                            <code>@email.CouponCode</code>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = email.Status switch
+                                            {
+                                                AbandonedCartEmailStatus.Pending => "bg-warning",
+                                                AbandonedCartEmailStatus.Sent => "bg-success",
+                                                AbandonedCartEmailStatus.Converted => "bg-purple",
+                                                _ => "bg-secondary"
+                                            };
+                                            var statusText = email.Status switch
+                                            {
+                                                AbandonedCartEmailStatus.Pending => "Bekliyor",
+                                                AbandonedCartEmailStatus.Sent => "Gonderildi",
+                                                AbandonedCartEmailStatus.Converted => "Donusturuldu",
+                                                _ => email.Status.ToString()
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@statusText</span>
+                                    </td>
+                                    <td>
+                                        @if (email.Converted)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="ti ti-check"></i>
+                                                Evet
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Hayir</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

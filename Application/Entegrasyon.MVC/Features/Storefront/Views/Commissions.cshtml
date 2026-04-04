@@ -1,0 +1,81 @@
+@model List<Entegrasyon.Entity.Storefront.SellerCommission>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            @if (Model.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <i class="ti ti-percentage icon-lg text-secondary" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h3 class="text-secondary">Henuz komisyon tanimlanmamis</h3>
+                    <p class="text-secondary">Satici komisyon oranlari bu sayfada yonetilebilir.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Satici Komisyon Oranlari</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-blue">@Model.Count komisyon kaydi</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Satici</th>
+                                <th>Kategori ID</th>
+                                <th>Komisyon Orani (%)</th>
+                                <th>Islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var commission in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="font-weight-medium">@(commission.Seller?.StoreName ?? $"Satici #{commission.SellerId}")</div>
+                                    </td>
+                                    <td>
+                                        @if (commission.CategoryId.HasValue)
+                                        {
+                                            <span class="badge bg-secondary">Kategori #@commission.CategoryId</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">Varsayilan</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">%@commission.CommissionRate.ToString("F2")</span>
+                                    </td>
+                                    <td>
+                                        <form hx-post="/storefront/commissions/@commission.Id/update"
+                                              hx-swap="none"
+                                              class="d-flex gap-2 align-items-center">
+                                            <input type="number"
+                                                   name="rate"
+                                                   class="form-control form-control-sm"
+                                                   style="width: 100px;"
+                                                   value="@commission.CommissionRate"
+                                                   min="0"
+                                                   max="100"
+                                                   step="0.01"
+                                                   required />
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="ti ti-check"></i>
+                                                Guncelle
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

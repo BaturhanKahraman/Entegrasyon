@@ -154,6 +154,34 @@ public class SellerCommissionManager(
         return new SuccessResult("Komisyonlar basariyla islendi.");
     }
 
+    public async Task<IDataResult<List<SellerCommission>>> GetCommissionsAsync(int tenantId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var commissions = await dbContext.SellerCommissions
+            .Include(c => c.Seller)
+            .Where(c => c.TenantId == tenantId && !c.IsDeleted)
+            .OrderBy(c => c.Seller.StoreName)
+            .ToListAsync();
+
+        return new SuccessDataResult<List<SellerCommission>>(commissions);
+    }
+
+    public async Task<IResult> UpdateCommissionRateAsync(int commissionId, decimal newRate)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var commission = await dbContext.SellerCommissions.FindAsync(commissionId);
+        if (commission is null)
+            return new ErrorResult("Komisyon kaydi bulunamadi.");
+
+        commission.CommissionRate = newRate;
+        dbContext.SellerCommissions.Update(commission);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult("Komisyon orani guncellendi.");
+    }
+
     private static async Task<decimal> GetCommissionRateInternalAsync(
         IntegrationDbContext dbContext, int sellerId, int? categoryId)
     {
