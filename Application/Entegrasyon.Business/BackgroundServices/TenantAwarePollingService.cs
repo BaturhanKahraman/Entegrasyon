@@ -30,12 +30,19 @@ public abstract class TenantAwarePollingService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
-
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            await ProcessTenantsOnceAsync(stoppingToken);
-            await Task.Delay(PollInterval, stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await ProcessTenantsOnceAsync(stoppingToken);
+                await Task.Delay(PollInterval, stoppingToken);
+            }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Uygulama kapaniyor, normal shutdown — exception'i yutuyoruz.
         }
     }
 

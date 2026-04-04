@@ -34,7 +34,7 @@
     gap: 0.25rem;
 }
 
-/* Wizard step indicators */
+/* Wizard step indicators — Tabler tema uyumlu */
 .wizard-steps {
     display: flex;
     gap: 1rem;
@@ -42,16 +42,16 @@
 .wizard-steps .wizard-step {
     padding: 0.5rem 1rem;
     border-radius: 4px;
-    background: #f1f3f5;
-    color: #666;
+    background: var(--tblr-bg-surface-secondary);
+    color: var(--tblr-secondary);
     font-size: 0.875rem;
 }
 .wizard-steps .wizard-step.active {
-    background: #206bc4;
-    color: white;
+    background: var(--tblr-primary);
+    color: #fff;
     font-weight: bold;
 }
 .wizard-steps .wizard-step.done {
-    background: #2fb344;
-    color: white;
+    background: var(--tblr-success);
+    color: #fff;
 }
