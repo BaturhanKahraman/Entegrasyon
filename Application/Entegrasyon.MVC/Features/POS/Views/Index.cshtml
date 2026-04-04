@@ -3,17 +3,6 @@
 @if (!Model.HasActiveSession)
 {
     <!-- Kasa Ac Dialogu -->
-    <div class="page-header d-print-none">
-        <div class="container-xl">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="page-pretitle">Satis</div>
-                    <h2 class="page-title">POS Terminali</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="page-body">
         <div class="container-xl">
             <div class="row justify-content-center">
@@ -54,37 +43,21 @@
 else
 {
     <!-- Aktif POS Oturumu -->
-    <div class="page-header d-print-none">
-        <div class="container-xl">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="page-pretitle">
-                        Satis &mdash; Oturum #@Model.SessionId
-                        @if (!string.IsNullOrEmpty(Model.TerminalId))
-                        {
-                            <span class="ms-2 badge bg-blue-lt">@Model.TerminalId</span>
-                        }
-                    </div>
-                    <h2 class="page-title">POS Terminali</h2>
-                </div>
-                <div class="col-auto ms-auto d-print-none">
-                    <span class="text-secondary me-3">
-                        @Model.CashierName
-                    </span>
-                    <span class="text-secondary me-3">
-                        @Model.OpenedAt.ToLocalTime().ToString("HH:mm")
-                    </span>
-                    <button type="button" class="btn btn-outline-danger"
-                            hx-get="/pos/close-session-dialog?sessionId=@Model.SessionId"
-                            hx-target="#dynamicModal"
-                            hx-swap="innerHTML"
-                            data-bs-toggle="modal"
-                            data-bs-target="#dynamicModal">
-                        Kasayi Kapat
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex justify-content-end mb-3 d-print-none">
+        <span class="text-secondary me-3">
+            @Model.CashierName
+        </span>
+        <span class="text-secondary me-3">
+            @Model.OpenedAt.ToLocalTime().ToString("HH:mm")
+        </span>
+        <button type="button" class="btn btn-outline-danger"
+                hx-get="/pos/close-session-dialog?sessionId=@Model.SessionId"
+                hx-target="#dynamicModal"
+                hx-swap="innerHTML"
+                data-bs-toggle="modal"
+                data-bs-target="#dynamicModal">
+            Kasayi Kapat
+        </button>
     </div>
 
     <div class="page-body">

@@ -30,31 +30,21 @@
     };
 }
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Siparis Detayi</div>
-                <h2 class="page-title">Siparis #@title</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <div class="btn-list">
-                    @if (Model.MarketPlaceId == 1 && Model.MarketplaceOrderStatus == "Created")
-                    {
-                        <button class="btn btn-outline-danger"
-                                hx-post="/orders/@Model.Id/mark-unsupplied"
-                                hx-confirm="Bu siparisi tedarik edilemez olarak isaretlemek istediginize emin misiniz?"
-                                hx-swap="none">
-                            <i class="ti ti-package-off icon"></i>
-                            Tedarik Edilemez
-                        </button>
-                    }
-                    <a href="/orders" class="btn btn-outline-secondary">
-                        Listeye Don
-                    </a>
-                </div>
-            </div>
-        </div>
+<div class="d-flex justify-content-end mb-3">
+    <div class="btn-list">
+        @if (Model.MarketPlaceId == 1 && Model.MarketplaceOrderStatus == "Created")
+        {
+            <button class="btn btn-outline-danger"
+                    hx-post="/orders/@Model.Id/mark-unsupplied"
+                    hx-confirm="Bu siparisi tedarik edilemez olarak isaretlemek istediginize emin misiniz?"
+                    hx-swap="none">
+                <i class="ti ti-package-off icon"></i>
+                Tedarik Edilemez
+            </button>
+        }
+        <a href="/orders" class="btn btn-outline-secondary">
+            Listeye Don
+        </a>
     </div>
 </div>
 

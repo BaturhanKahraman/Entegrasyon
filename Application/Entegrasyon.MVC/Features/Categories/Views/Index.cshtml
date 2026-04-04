@@ -7,21 +7,11 @@
     var hasCategories = Model.Any(c => c.SuperCategoryId == null);
 }
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Yonetim</div>
-                <h2 class="page-title">Kategoriler</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <a href="/categories/add" class="btn btn-primary">
-                    <i class="ti ti-plus icon"></i>
-                    Yeni Kategori
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <a href="/categories/add" class="btn btn-primary">
+        <i class="ti ti-plus icon"></i>
+        Yeni Kategori
+    </a>
 </div>
 
 <div class="page-body">

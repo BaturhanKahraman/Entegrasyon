@@ -1,24 +1,14 @@
 @model Entegrasyon.Entity.Dtos.Product.ProductDetailDto
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">@Model.Title</div>
-                <h2 class="page-title">Varyantlar</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <div class="btn-list">
-                    <button class="btn btn-primary" disabled>
-                        <i class="ti ti-plus icon"></i>
-                        Yeni Varyant
-                    </button>
-                    <a href="/products/@Model.Id" class="btn btn-outline-secondary">
-                        Urune Don
-                    </a>
-                </div>
-            </div>
-        </div>
+<div class="d-flex justify-content-end mb-3">
+    <div class="btn-list">
+        <button class="btn btn-primary" disabled>
+            <i class="ti ti-plus icon"></i>
+            Yeni Varyant
+        </button>
+        <a href="/products/@Model.Id" class="btn btn-outline-secondary">
+            Urune Don
+        </a>
     </div>
 </div>
 

@@ -4,20 +4,10 @@
     var mpId = (int)(ViewBag.MarketPlaceId ?? 1);
 }
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Pazaryeri</div>
-                <h2 class="page-title">Pazaryeri Siparisleri</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <a href="/orders" class="btn btn-outline-secondary">
-                    Tum Siparisler
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <a href="/orders" class="btn btn-outline-secondary">
+        Tum Siparisler
+    </a>
 </div>
 
 <div class="page-body">

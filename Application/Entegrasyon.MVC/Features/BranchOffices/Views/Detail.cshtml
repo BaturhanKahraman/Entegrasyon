@@ -3,25 +3,15 @@
     var stocks = ViewBag.Stocks as List<Entegrasyon.Entity.Dtos.Branches.BranchStockItemDto>;
 }
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Subeler</div>
-                <h2 class="page-title">@Model.Name</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <div class="btn-list">
-                    <button class="btn btn-primary"
-                            hx-get="/branch-offices/@Model.Id/transfer"
-                            hx-target="#modal-container"
-                            hx-swap="innerHTML">
-                        Stok Transfer
-                    </button>
-                    <a href="/branch-offices" class="btn btn-outline-secondary">Geri Don</a>
-                </div>
-            </div>
-        </div>
+<div class="d-flex justify-content-end mb-3">
+    <div class="btn-list">
+        <button class="btn btn-primary"
+                hx-get="/branch-offices/@Model.Id/transfer"
+                hx-target="#modal-container"
+                hx-swap="innerHTML">
+            Stok Transfer
+        </button>
+        <a href="/branch-offices" class="btn btn-outline-secondary">Geri Don</a>
     </div>
 </div>
 

@@ -4,20 +4,10 @@
     ViewData.SetBreadcrumb(("Urunler", "/products"), ("Duzenle", null));
 }
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Urun</div>
-                <h2 class="page-title">Urun Duzenle</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <a href="/products/@Model.Product.Id" class="btn btn-outline-secondary">
-                    Iptal
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <a href="/products/@Model.Product.Id" class="btn btn-outline-secondary">
+        Iptal
+    </a>
 </div>
 
 <div class="page-body">
