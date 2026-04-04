@@ -1,34 +1,38 @@
 @model List<Entegrasyon.Entity.Dtos.Dashboard.RecentActivityDto>
 
 <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Son Aktiviteler</h3>
+    <div class="card-header">
+        <h3 class="card-title">Son Aktiviteler</h3>
+    </div>
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="card-body">
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-activity icon"></i></div>
+                <p class="empty-title">Henuz aktivite yok</p>
+            </div>
         </div>
+    }
+    else
+    {
         <div class="table-responsive">
-            <table class="table table-vcenter card-table">
+            <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Islem</th>
-                        <th>Tarih</th>
+                        <th>ISLEM</th>
+                        <th class="text-end">TARİH</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.Count == 0)
-                    {
-                        <tr>
-                            <td colspan="2" class="text-center text-secondary py-3">
-                                Henuz aktivite bulunmuyor.
-                            </td>
-                        </tr>
-                    }
                     @foreach (var activity in Model)
                     {
                         <tr>
                             <td>@activity.Content</td>
-                            <td class="text-secondary">@activity.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td class="text-end text-secondary">@activity.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+    }
 </div>
