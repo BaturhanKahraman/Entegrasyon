@@ -43,6 +43,84 @@ public class BranchOfficeController(
         return View(result.Data);
     }
 
+    [HttpGet("/branch-offices/create")]
+    public IActionResult Create()
+    {
+        ViewData.SetPageTitle("Yeni Sube");
+        ViewData.SetActiveNav("branch-offices");
+        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), ("Yeni Sube", null));
+
+        return View(new BranchOfficeCreateVm());
+    }
+
+    [HttpPost("/branch-offices/create")]
+    public async Task<IActionResult> Create(BranchOfficeCreateVm model)
+    {
+        ViewData.SetPageTitle("Yeni Sube");
+        ViewData.SetActiveNav("branch-offices");
+        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), ("Yeni Sube", null));
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var result = await branchOfficeManager.AddBranch(new BranchOfficeAddDto(model.Name));
+
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Sube eklenemedi.");
+            return View(model);
+        }
+
+        TempData.SetSuccess("Sube basariyla eklendi.");
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("/branch-offices/{id:int}/edit")]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var result = await branchOfficeManager.GetBranchDetailById(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Sube bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle($"{result.Data!.Name} - Duzenle");
+        ViewData.SetActiveNav("branch-offices");
+        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (result.Data.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+
+        var vm = new BranchOfficeEditVm { Id = id, Name = result.Data.Name };
+        return View(vm);
+    }
+
+    [HttpPost("/branch-offices/{id:int}/edit")]
+    public async Task<IActionResult> Edit(int id, BranchOfficeEditVm model)
+    {
+        ViewData.SetActiveNav("branch-offices");
+
+        if (!ModelState.IsValid)
+        {
+            ViewData.SetPageTitle($"{model.Name} - Duzenle");
+            ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+            model.Id = id;
+            return View(model);
+        }
+
+        var result = await branchOfficeManager.Update(new BranchOfficeEditDto(id, model.Name));
+
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Sube guncellenemedi.");
+            ViewData.SetPageTitle($"{model.Name} - Duzenle");
+            ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+            model.Id = id;
+            return View(model);
+        }
+
+        TempData.SetSuccess("Sube basariyla guncellendi.");
+        return RedirectToAction(nameof(Detail), new { id });
+    }
+
     [HttpPost("/branch-offices/{id:int}/delete")]
     public async Task<IActionResult> Delete(int id)
     {

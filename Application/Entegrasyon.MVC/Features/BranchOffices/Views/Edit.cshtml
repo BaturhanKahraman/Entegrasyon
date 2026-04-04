@@ -1,0 +1,29 @@
+@model Entegrasyon.MVC.Features.BranchOffices.ViewModels.BranchOfficeEditVm
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/branch-offices/@Model.Id" class="btn btn-outline-secondary">Subeye Don</a>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <form method="post" action="/branch-offices/@Model.Id/edit">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Sube Bilgileri</h3>
+                </div>
+                <div class="card-body">
+                    <input asp-for="Id" type="hidden" />
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label required">Sube Adi</label>
+                        <input asp-for="Name" class="form-control" placeholder="Sube adi giriniz" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="/branch-offices/@Model.Id" class="btn btn-ghost-secondary me-2">Iptal</a>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
