@@ -6,12 +6,7 @@
         <div class="card-actions">
             <div class="input-icon">
                 <span class="input-icon-addon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/>
-                        <path d="M21 21l-6 -6"/>
-                    </svg>
+                    <i class="ti ti-search"></i>
                 </span>
                 <input type="text" class="form-control form-control-sm" placeholder="Kategori ara..."
                        onkeyup="filterUnmappedList(this.value)" />
@@ -24,11 +19,7 @@
         <div class="card-body">
             <div class="empty py-5">
                 <div class="empty-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="40" height="40"
-                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M5 12l5 5l10 -10"/>
-                    </svg>
+                    <i class="ti ti-circle-check text-success" style="font-size:2.5rem;"></i>
                 </div>
                 <p class="empty-title">Tum kategoriler eslenmis</p>
                 <p class="empty-subtitle text-secondary">
@@ -44,7 +35,7 @@
             <input type="hidden" name="mp" value="@Model.SelectedMarketPlaceId" />
 
             <div class="table-responsive">
-                <table class="table table-vcenter card-table">
+                <table class="table table-vcenter table-hover card-table">
                     <thead>
                         <tr>
                             <th class="w-1">
@@ -91,11 +82,7 @@
             <div class="card-footer d-flex align-items-center justify-content-between">
                 <span class="text-secondary" id="selected-count">0 kategori secildi</span>
                 <button type="submit" class="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M5 12l5 5l10 -10"/>
-                    </svg>
+                    <i class="ti ti-check"></i>
                     Toplu Esle
                 </button>
             </div>
