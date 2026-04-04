@@ -5,35 +5,56 @@
         <h3 class="card-title">Haftalik Satis</h3>
     </div>
     <div class="card-body">
-        @if (Model.Count == 0)
+        @if (Model == null || Model.Count == 0)
         {
-            <div class="text-center text-secondary py-4">
-                Henuz satis verisi bulunmuyor.
-            </div>
+            <div class="text-center text-secondary py-4">Henuz satis verisi yok.</div>
         }
         else
         {
-            <div id="weekly-chart" style="height: 250px;"></div>
+            <div id="weekly-chart" data-apex-chart style="height: 250px;"></div>
+            <script>
+                (function () {
+                    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    var textColor = isDark ? '#a0aec0' : '#666';
+                    var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+
+                    var options = {
+                        chart: {
+                            id: 'weekly-chart',
+                            type: 'area',
+                            height: 250,
+                            toolbar: { show: false },
+                            fontFamily: 'inherit',
+                            background: 'transparent'
+                        },
+                        theme: { mode: isDark ? 'dark' : 'light' },
+                        series: [{
+                            name: 'Ciro (TL)',
+                            data: [@string.Join(",", Model.Select(d => d.Revenue.ToString(System.Globalization.CultureInfo.InvariantCulture)))]
+                        }],
+                        xaxis: {
+                            categories: [@string.Join(",", Model.Select(d => $"'{d.Date:dd MMM}'"))],
+                            labels: { style: { colors: textColor } }
+                        },
+                        yaxis: {
+                            labels: {
+                                style: { colors: textColor },
+                                formatter: function (val) { return val.toLocaleString('tr-TR') + ' TL'; }
+                            }
+                        },
+                        colors: [getComputedStyle(document.documentElement).getPropertyValue('--tblr-primary').trim() || '#206bc4'],
+                        fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
+                        stroke: { curve: 'smooth', width: 2 },
+                        grid: { borderColor: gridColor },
+                        tooltip: {
+                            y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' TL'; } }
+                        },
+                        dataLabels: { enabled: false }
+                    };
+
+                    new ApexCharts(document.querySelector('#weekly-chart'), options).render();
+                })();
+            </script>
         }
     </div>
 </div>
-
-@if (Model.Count > 0)
-{
-    <script>
-        (function() {
-            var options = {
-                chart: { type: 'area', height: 250, toolbar: { show: false } },
-                series: [{ name: 'Ciro', data: [@string.Join(",", Model.Select(m => m.Revenue.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)))] }],
-                xaxis: { categories: [@string.Join(",", Model.Select(m => $"'{m.Date:dd MMM}'"))] },
-                yaxis: { labels: { formatter: function(val) { return val.toLocaleString('tr-TR', {style:'currency', currency:'TRY'}); } } },
-                colors: ['#206bc4'],
-                stroke: { width: 2 },
-                fill: { opacity: 0.1 }
-            };
-            if (typeof ApexCharts !== 'undefined') {
-                new ApexCharts(document.querySelector('#weekly-chart'), options).render();
-            }
-        })();
-    </script>
-}
