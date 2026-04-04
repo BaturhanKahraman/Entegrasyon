@@ -1,0 +1,115 @@
+@using Entegrasyon.Entity.Products
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Branches.StockMovementViewDto>
+
+@{
+    string TypeBadgeClass(StockMovementType t) => t switch
+    {
+        StockMovementType.InitialStock => "bg-blue-lt",
+        StockMovementType.Sale => "bg-orange-lt",
+        StockMovementType.MarketplaceSale => "bg-purple-lt",
+        StockMovementType.Return => "bg-cyan-lt",
+        StockMovementType.ManualAdjustment => "bg-yellow-lt",
+        StockMovementType.Transfer => "bg-indigo-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string TypeLabel(StockMovementType t) => t switch
+    {
+        StockMovementType.InitialStock => "Ilk Stok",
+        StockMovementType.Sale => "Satis",
+        StockMovementType.MarketplaceSale => "Pazaryeri Satisi",
+        StockMovementType.Return => "Iade",
+        StockMovementType.ManualAdjustment => "Manuel Duzeltme",
+        StockMovementType.Transfer => "Transfer",
+        _ => "Bilinmiyor"
+    };
+}
+
+<div id="movement-table">
+    @if (Model != null && Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Urun</th>
+                        <th>Barkod</th>
+                        <th>Tip</th>
+                        <th>Miktar</th>
+                        <th>Onceki Stok</th>
+                        <th>Sonraki Stok</th>
+                        <th>Referans</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-secondary text-nowrap">
+                                @item.MovedAt.ToString("dd.MM.yyyy HH:mm")
+                            </td>
+                            <td>@item.ProductName</td>
+                            <td class="text-secondary">@item.Barcode</td>
+                            <td>
+                                <span class="badge @TypeBadgeClass(item.MovementType)">
+                                    @TypeLabel(item.MovementType)
+                                </span>
+                            </td>
+                            <td>
+                                @if (item.Quantity > 0)
+                                {
+                                    <span class="text-green fw-bold">+@item.Quantity</span>
+                                }
+                                else
+                                {
+                                    <span class="text-red fw-bold">@item.Quantity</span>
+                                }
+                            </td>
+                            <td class="text-secondary">@item.StockBefore</td>
+                            <td class="text-secondary">@item.StockAfter</td>
+                            <td class="text-secondary text-truncate" style="max-width:150px">
+                                @if (!string.IsNullOrEmpty(item.ReferenceType))
+                                {
+                                    <span title="@item.ReferenceId">@item.ReferenceType @item.ReferenceId</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.TotalPageCount > 1)
+        {
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <p class="m-0 text-secondary">
+                    Toplam <strong>@Model.TotalItemCount</strong> hareket
+                </p>
+                <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                         model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                         {
+                             CurrentPage = Model.CurrentPageIndex + 1,
+                             TotalPages = Model.TotalPageCount,
+                             TotalCount = Model.TotalItemCount,
+                             BaseUrl = "/stock/movements",
+                             TargetId = "movement-table"
+                         }' />
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Stok hareketi bulunamadi",
+                         Subtitle = "Secilen filtrelere gore stok hareketi kaydi yok."
+                     }' />
+        </div>
+    }
+</div>

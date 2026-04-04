@@ -1,3 +1,4 @@
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
@@ -45,4 +46,11 @@ public interface IOfficeStockManager
     /// </summary>
     Task<IDataResult<StockTransferResultDto>> TransferStockAsync(
         int sourceBranchId, int targetBranchId, List<TransferItemDto> items);
+
+    /// <summary>
+    /// Tüm stok hareketlerini sayfalanmış olarak listeler. Branch ve tip filtrelemesi desteklenir.
+    /// </summary>
+    Task<IDataResult<Pageable<StockMovementViewDto>>> GetStockMovementsAsync(
+        int pageIndex = 0, int pageSize = 50,
+        int? branchOfficeId = null, StockMovementType? type = null);
 }

@@ -1,4 +1,5 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Sale;
@@ -295,6 +296,43 @@ public class OfficeStockManager(
         var transferResult = new StockTransferResultDto(items.Count, sourceMovements, targetMovements);
         return new SuccessDataResult<StockTransferResultDto>(transferResult,
             $"{items.Count} ürün başarıyla transfer edildi.");
+    }
+
+    public async Task<IDataResult<Pageable<StockMovementViewDto>>> GetStockMovementsAsync(
+        int pageIndex = 0, int pageSize = 50,
+        int? branchOfficeId = null, StockMovementType? type = null)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var query = dbContext.StockMovements
+            .Include(m => m.ProductVariant).ThenInclude(pv => pv.Product)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (branchOfficeId.HasValue)
+            query = query.Where(m => m.BranchOfficeId == branchOfficeId.Value);
+        if (type.HasValue)
+            query = query.Where(m => m.Type == type.Value);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(m => m.CreatedAt)
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .Select(m => new StockMovementViewDto(
+                m.Id,
+                m.CreatedAt,
+                m.ProductVariant.Product!.Title ?? "",
+                m.ProductVariant.Barcode ?? "",
+                m.Type,
+                m.Quantity,
+                m.StockBefore,
+                m.StockAfter,
+                m.ReferenceType,
+                m.ReferenceId))
+            .ToListAsync();
+
+        return new SuccessDataResult<Pageable<StockMovementViewDto>>(
+            new Pageable<StockMovementViewDto>(items, pageIndex, pageSize, totalCount));
     }
 
     private async Task CheckStockLevelsAsync(int branchOfficeId, Guid productVariantId, int currentStock)
