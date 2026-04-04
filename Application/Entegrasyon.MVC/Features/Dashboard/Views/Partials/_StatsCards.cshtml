@@ -1,37 +1,84 @@
 @model Entegrasyon.Entity.Dtos.Dashboard.DashboardStatsDto
 
 <div class="row row-deck row-cards mb-3">
+    @* ── Toplam Ürün ── *@
     <div class="col-sm-6 col-lg-3">
-        <div class="card">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Toplam Urun</div>
-                <div class="h1 mb-0">@Model.TotalProducts</div>
-                <div class="text-secondary small">@Model.TotalVariants varyant</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary text-white avatar">
+                            <i class="ti ti-package icon"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="subheader">TOPLAM URUN</div>
+                        <div class="h1 mb-0">@Model.TotalProducts.ToString("N0")</div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-secondary">@Model.TotalVariants.ToString("N0") varyant</small>
+                </div>
             </div>
         </div>
     </div>
+
+    @* ── Bugünkü Satış ── *@
     <div class="col-sm-6 col-lg-3">
-        <div class="card">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Bugunku Satis</div>
-                <div class="h1 mb-0">@Model.TodaySales</div>
-                <div class="text-secondary small">@Model.TodayRevenue.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-success text-white avatar">
+                            <i class="ti ti-cash icon"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="subheader">BUGUNKU SATIS</div>
+                        <div class="h1 mb-0">@Model.TodaySales</div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-secondary">@Model.TodayRevenue.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</small>
+                </div>
             </div>
         </div>
     </div>
+
+    @* ── Bekleyen Sipariş ── *@
     <div class="col-sm-6 col-lg-3">
-        <div class="card">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Bekleyen Siparis</div>
-                <div class="h1 mb-0 @(Model.PendingOrders > 0 ? "text-warning" : "")">@Model.PendingOrders</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-warning text-white avatar">
+                            <i class="ti ti-clock icon"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="subheader">BEKLEYEN SIPARIS</div>
+                        <div class="h1 mb-0 @(Model.PendingOrders > 0 ? "text-warning" : "")">@Model.PendingOrders</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    @* ── Düşük Stok ── *@
     <div class="col-sm-6 col-lg-3">
-        <div class="card">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Dusuk Stok</div>
-                <div class="h1 mb-0 @(Model.LowStockProducts > 0 ? "text-danger" : "")">@Model.LowStockProducts</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-danger text-white avatar">
+                            <i class="ti ti-alert-triangle icon"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="subheader">DUSUK STOK</div>
+                        <div class="h1 mb-0 @(Model.LowStockProducts > 0 ? "text-danger" : "")">@Model.LowStockProducts</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
