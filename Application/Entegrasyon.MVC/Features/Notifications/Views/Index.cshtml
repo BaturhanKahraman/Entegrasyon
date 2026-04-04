@@ -1,26 +1,16 @@
 @model IEnumerable<Entegrasyon.Entity.Notifications.Notification>
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Sistem</div>
-                <h2 class="page-title">Bildirimler</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <div class="btn-list">
-                    <a href="/notifications?onlyUnread=@(!((bool)ViewBag.OnlyUnread))"
-                       class="btn btn-outline-secondary btn-sm">
-                        @(((bool)ViewBag.OnlyUnread) ? "Tumunu Goster" : "Sadece Okunmamis")
-                    </a>
-                    <button class="btn btn-outline-primary btn-sm"
-                            hx-post="/notifications/read-all"
-                            hx-swap="none">
-                        Tumunu Okundu Isaretle
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="d-flex justify-content-end mb-3">
+    <div class="btn-list">
+        <a href="/notifications?onlyUnread=@(!((bool)ViewBag.OnlyUnread))"
+           class="btn btn-outline-secondary btn-sm">
+            @(((bool)ViewBag.OnlyUnread) ? "Tumunu Goster" : "Sadece Okunmamis")
+        </a>
+        <button class="btn btn-outline-primary btn-sm"
+                hx-post="/notifications/read-all"
+                hx-swap="none">
+            Tumunu Okundu Isaretle
+        </button>
     </div>
 </div>
 
@@ -45,11 +35,7 @@
                                         };
                                     }
                                     <span class="avatar avatar-sm @severityClass text-white">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
-                                            <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/>
-                                            <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
-                                        </svg>
+                                        <i class="ti ti-bell"></i>
                                     </span>
                                 </div>
                                 <div class="col">
