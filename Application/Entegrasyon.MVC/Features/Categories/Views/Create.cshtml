@@ -4,20 +4,10 @@
     ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Yeni Kategori", null));
 }
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Kategoriler</div>
-                <h2 class="page-title">Yeni Kategori Ekle</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <a href="/categories" class="btn btn-outline-secondary">
-                    Listeye Don
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <a href="/categories" class="btn btn-outline-secondary">
+        Listeye Don
+    </a>
 </div>
 
 <div class="page-body">
@@ -25,10 +15,10 @@
         <!-- Step indicator -->
         <div class="card mb-3">
             <div class="card-body">
-                <div class="wizard-steps" id="wizard-steps">
-                    <span class="wizard-step active" data-step="1">1. Genel Bilgiler</span>
-                    <span class="wizard-step" data-step="2">2. Ozellikler</span>
-                    <span class="wizard-step" data-step="3">3. Onay</span>
+                <div class="steps steps-counter mb-4" id="wizard-steps">
+                    <a href="#" class="step-item active" data-step="1">Genel Bilgiler</a>
+                    <a href="#" class="step-item" data-step="2">Ozellikler</a>
+                    <a href="#" class="step-item" data-step="3">Onay</a>
                 </div>
             </div>
         </div>
@@ -45,14 +35,13 @@
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         if (evt.detail.target.id === 'wizard-content') {
             var content = evt.detail.target.innerHTML;
-            var steps = document.querySelectorAll('.wizard-step');
+            var steps = document.querySelectorAll('.step-item');
             var currentStep = 1;
             if (content.indexOf('step2-attributes') > -1 || content.indexOf('Ozellik Secimi') > -1) currentStep = 2;
             if (content.indexOf('step3-review') > -1 || content.indexOf('Onay') > -1) currentStep = 3;
             steps.forEach(function(s) {
                 var step = parseInt(s.getAttribute('data-step'));
-                s.classList.remove('active', 'done');
-                if (step < currentStep) s.classList.add('done');
+                s.classList.remove('active');
                 if (step === currentStep) s.classList.add('active');
             });
         }
