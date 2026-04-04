@@ -7,16 +7,37 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>@ViewData.GetPageTitle() - Entegrasyon</title>
     <meta name="csrf-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    @* FOUC Prevention: tema CSS'den önce uygulanır *@
+    <script>
+        (function() {
+            var theme = localStorage.getItem('tabler-theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
     <link rel="stylesheet" href="~/lib/tabler/css/tabler.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/tabler/css/tabler-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="layout-fluid">
     <div class="page">
-        <partial name="~/Shared/Views/_Sidebar.cshtml" />
+        @* ── Üst Navbar ── *@
+        <partial name="~/Shared/Views/_Navbar.cshtml" />
+
         <div class="page-wrapper">
-            <partial name="~/Shared/Views/_TopBar.cshtml" />
+            @* ── Sol Sidebar (dinamik, grup bazlı) ── *@
+            <partial name="~/Shared/Views/_Sidebar.cshtml" />
+
             <div class="page-body">
                 <div class="container-xl">
+                    @* ── Sayfa Başlığı ── *@
+                    <div class="page-header d-print-none mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <h2 class="page-title">@ViewData.GetPageTitle()</h2>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="toast-container"></div>
                     <partial name="~/Shared/Views/Partials/_Toast.cshtml" />
                     <div id="modal-container"></div>
@@ -30,7 +51,7 @@
     <script src="~/lib/htmx/htmx.min.js" asp-append-version="true"></script>
     <script src="~/lib/apexcharts/apexcharts.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @* SignalR sadece Chat sayfasında yüklenir — SSE bildirimler için gerekli değil *@
+    @* SignalR sadece Chat sayfasında yüklenir *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
