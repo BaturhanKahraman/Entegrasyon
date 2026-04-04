@@ -1,0 +1,44 @@
+@using Entegrasyon.Entity.Logs
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Log.ApplicationLogDetailDto>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="row w-100 g-2">
+                    <div class="col-auto">
+                        <select class="form-select"
+                                name="logType"
+                                hx-get="/logs"
+                                hx-trigger="change"
+                                hx-target="#log-table"
+                                hx-swap="outerHTML"
+                                hx-include="[name='logAction']">
+                            <option value="">Tum Kategoriler</option>
+                            @foreach (LogType lt in Enum.GetValues<LogType>())
+                            {
+                                <option value="@((int)lt)" selected="@(ViewBag.LogType != null && (LogType)ViewBag.LogType == lt)">@lt</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select"
+                                name="logAction"
+                                hx-get="/logs"
+                                hx-trigger="change"
+                                hx-target="#log-table"
+                                hx-swap="outerHTML"
+                                hx-include="[name='logType']">
+                            <option value="">Tum Islemler</option>
+                            @foreach (LogAction la in Enum.GetValues<LogAction>())
+                            {
+                                <option value="@((int)la)" selected="@(ViewBag.LogAction != null && (LogAction)ViewBag.LogAction == la)">@la</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <partial name="~/Features/Logs/Views/Partials/_LogTable.cshtml" model="Model"/>
+        </div>
+    </div>
+</div>

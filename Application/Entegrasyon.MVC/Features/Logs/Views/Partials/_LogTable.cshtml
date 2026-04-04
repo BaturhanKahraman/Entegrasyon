@@ -1,0 +1,100 @@
+@using Entegrasyon.Entity.Logs
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Log.ApplicationLogDetailDto>
+
+@{
+    string LogTypeBadge(LogType type) => type switch
+    {
+        LogType.Error => "bg-red-lt",
+        LogType.Auth => "bg-indigo-lt",
+        LogType.User => "bg-blue-lt",
+        LogType.Order => "bg-cyan-lt",
+        LogType.Product => "bg-teal-lt",
+        LogType.Sale => "bg-green-lt",
+        LogType.StockSync => "bg-yellow-lt",
+        LogType.Matching => "bg-orange-lt",
+        LogType.Marketplace => "bg-purple-lt",
+        LogType.Invoice => "bg-pink-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string LogActionBadge(LogAction action) => action switch
+    {
+        LogAction.Add => "bg-green-lt",
+        LogAction.Update => "bg-blue-lt",
+        LogAction.Delete => "bg-red-lt",
+        LogAction.Sync => "bg-yellow-lt",
+        LogAction.Import => "bg-cyan-lt",
+        LogAction.Publish => "bg-purple-lt",
+        LogAction.Retry => "bg-orange-lt",
+        _ => "bg-secondary-lt"
+    };
+}
+
+<div id="log-table">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Kategori</th>
+                        <th>Islem</th>
+                        <th>Icerik</th>
+                        <th>Kullanici</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-secondary text-nowrap">
+                                @log.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
+                            </td>
+                            <td>
+                                <span class="badge @LogTypeBadge(log.LogType)">@log.LogType</span>
+                            </td>
+                            <td>
+                                <span class="badge @LogActionBadge(log.LogAction)">@log.LogAction</span>
+                            </td>
+                            <td>@log.Content</td>
+                            <td class="text-secondary">
+                                @(log.ApplicationUser?.UserName ?? log.UserInfos ?? "-")
+                            </td>
+                            <td class="text-secondary">
+                                @(log.IpAddress ?? "-")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/logs",
+                     TargetId = "#log-table",
+                     QueryParams = new Dictionary<string, string>
+                     {
+                         ["logType"] = ViewBag.LogType?.ToString() ?? "",
+                         ["logAction"] = ViewBag.LogAction?.ToString() ?? ""
+                     }
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Log bulunamadi",
+                         Subtitle = "Henuz sistem logu bulunmuyor veya secilen filtreye uygun log yok."
+                     }'/>
+        </div>
+    }
+</div>
