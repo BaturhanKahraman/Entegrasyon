@@ -1,26 +1,10 @@
 @model Entegrasyon.MVC.Features.Storefront.ViewModels.CampaignsVm
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Kampanyalar</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCampaignModal">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 5l0 14"/>
-                        <path d="M5 12l14 0"/>
-                    </svg>
-                    Yeni Kampanya
-                </button>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCampaignModal">
+        <i class="ti ti-plus"></i>
+        Yeni Kampanya
+    </button>
 </div>
 
 <div class="page-body">
@@ -30,13 +14,7 @@
             {
                 <div class="card-body text-center py-5">
                     <div class="mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-secondary" width="40" height="40"
-                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
-                             stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4z"/>
-                            <rect x="3" y="6" width="12" height="12" rx="2"/>
-                        </svg>
+                        <i class="ti ti-speakerphone icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
                     <h3 class="text-secondary">Henuz kampanya olusturulmamis</h3>
                     <p class="text-secondary">Yeni bir e-posta kampanyasi olusturarak musterilerinize ulasin.</p>
@@ -45,7 +23,7 @@
             else
             {
                 <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
+                    <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
                                 <th>Konu</th>

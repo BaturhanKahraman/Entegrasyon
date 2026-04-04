@@ -1,16 +1,5 @@
 @model Entegrasyon.Entity.Dtos.Reports.InventoryReportDto
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Raporlar</div>
-                <h2 class="page-title">Envanter Raporu</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="page-body">
     <div class="container-xl">
         <!-- Summary Cards -->
@@ -57,7 +46,7 @@
             @if (Model.Items.Any())
             {
                 <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
+                    <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
                                 <th>Urun</th>

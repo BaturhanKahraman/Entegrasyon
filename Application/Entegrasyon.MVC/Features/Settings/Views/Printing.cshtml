@@ -1,16 +1,5 @@
 @model Entegrasyon.MVC.Features.Settings.ViewModels.PrintingSettingsVm
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Ayarlar</div>
-                <h2 class="page-title">Yazici Ayarlari</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="page-body">
     <div class="container-xl">
         <div class="row">
@@ -135,7 +124,7 @@
                     @if (Model.Templates.Any())
                     {
                         <div class="table-responsive">
-                            <table class="table table-vcenter card-table">
+                            <table class="table table-vcenter card-table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Ad</th>

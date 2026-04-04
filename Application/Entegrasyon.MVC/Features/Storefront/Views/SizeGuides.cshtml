@@ -1,26 +1,10 @@
 @model Entegrasyon.MVC.Features.Storefront.ViewModels.SizeGuidesVm
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Beden Kilavuzlari</h2>
-            </div>
-            <div class="col-auto ms-auto">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSizeGuideModal">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 5l0 14"/>
-                        <path d="M5 12l14 0"/>
-                    </svg>
-                    Yeni Kilavuz
-                </button>
-            </div>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSizeGuideModal">
+        <i class="ti ti-plus"></i>
+        Yeni Kilavuz
+    </button>
 </div>
 
 <div class="page-body">
@@ -30,15 +14,7 @@
             {
                 <div class="card-body text-center py-5">
                     <div class="mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-secondary" width="40" height="40"
-                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
-                             stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M5 3m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z"/>
-                            <path d="M9 7l6 0"/>
-                            <path d="M9 11l6 0"/>
-                            <path d="M9 15l4 0"/>
-                        </svg>
+                        <i class="ti ti-file-text icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
                     <h3 class="text-secondary">Henuz beden kilavuzu olusturulmamis</h3>
                     <p class="text-secondary">Kategorilerinize ozel beden kilavuzlari olusturarak musterilerinize yardimci olun.</p>
@@ -50,7 +26,7 @@
                     <h3 class="card-title">Beden Kilavuzlari</h3>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
+                    <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
                                 <th>Ad</th>

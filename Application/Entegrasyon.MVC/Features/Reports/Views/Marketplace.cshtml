@@ -1,16 +1,5 @@
 @model List<Entegrasyon.Entity.Dtos.Reports.MarketplaceSummaryDto>
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Raporlar</div>
-                <h2 class="page-title">Pazaryeri Karsilastirma</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="page-body">
     <div class="container-xl">
         <!-- Date Filter -->
@@ -52,7 +41,7 @@
             @if (Model.Any())
             {
                 <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
+                    <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
                                 <th>Pazaryeri</th>

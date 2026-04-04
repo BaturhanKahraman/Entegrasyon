@@ -1,16 +1,5 @@
 @model Entegrasyon.MVC.Features.Storefront.ViewModels.MessagesVm
 
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-auto">
-                <div class="page-pretitle">Magaza</div>
-                <h2 class="page-title">Mesajlar</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="page-body">
     <div class="container-xl">
         <div class="card">
@@ -51,7 +40,7 @@
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
+                        <table class="table table-vcenter card-table table-hover">
                             <thead>
                                 <tr>
                                     <th>Durum</th>
@@ -125,14 +114,7 @@
                                 <div class="row align-items-center">
                                     <div class="col-auto">
                                         <span class="avatar bg-blue-lt">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                                 stroke-linecap="round" stroke-linejoin="round">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                <path d="M8 9h8"/>
-                                                <path d="M8 13h6"/>
-                                                <path d="M14 18l-4 -4h-4a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-4z"/>
-                                            </svg>
+                                            <i class="ti ti-message"></i>
                                         </span>
                                     </div>
                                     <div class="col">
