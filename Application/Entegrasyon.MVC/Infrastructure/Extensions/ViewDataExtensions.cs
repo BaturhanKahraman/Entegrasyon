@@ -8,39 +8,6 @@ public static class ViewDataExtensions
     private const string ActiveNavKey = "ActiveNav";
     private const string BreadcrumbKey = "Breadcrumb";
 
-    private static readonly Dictionary<string, string> NavGroupMap = new()
-    {
-        // Yonetim
-        ["products"] = "yonetim",
-        ["categories"] = "yonetim",
-        ["attributes"] = "yonetim",
-        ["brands"] = "yonetim",
-        ["pos"] = "yonetim",
-        ["sales"] = "yonetim",
-        ["orders"] = "yonetim",
-        ["shipping"] = "yonetim",
-        ["bulk-operations"] = "yonetim",
-        ["branch-offices"] = "yonetim",
-        // Pazaryeri
-        ["marketplace-sync"] = "pazaryeri",
-        ["marketplace-matching"] = "pazaryeri",
-        ["marketplace-orders"] = "pazaryeri",
-        ["commission-rates"] = "pazaryeri",
-        ["matched-entities"] = "pazaryeri",
-        // Musteriler
-        ["customers"] = "musteriler",
-        ["invoicing"] = "musteriler",
-        // Raporlar
-        ["reports"] = "raporlar",
-        // Magaza
-        ["storefront"] = "magaza",
-        // Ayarlar
-        ["settings"] = "ayarlar",
-        ["users"] = "ayarlar",
-        ["roles"] = "ayarlar",
-        ["admin-notifications"] = "ayarlar",
-    };
-
     public static void SetPageTitle(this ViewDataDictionary viewData, string title)
         => viewData[TitleKey] = title;
 
@@ -59,10 +26,4 @@ public static class ViewDataExtensions
 
     public static (string Text, string? Url)[] GetBreadcrumb(this ViewDataDictionary viewData)
         => viewData[BreadcrumbKey] as (string, string?)[] ?? [];
-
-    public static string GetActiveNavGroup(this ViewDataDictionary viewData)
-    {
-        var activeNav = viewData.GetActiveNav();
-        return NavGroupMap.GetValueOrDefault(activeNav, "");
-    }
 }
