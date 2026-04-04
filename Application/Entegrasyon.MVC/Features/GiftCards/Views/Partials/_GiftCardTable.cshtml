@@ -1,0 +1,87 @@
+@using Entegrasyon.Entity.Storefront
+@model Entegrasyon.Entity.Pageable<StorefrontGiftCard>
+
+<div id="gift-card-table">
+    @if (Model != null && Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Baslangic Tutari</th>
+                        <th>Kalan Bakiye</th>
+                        <th>Durum</th>
+                        <th>Son Kullanim</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var card in Model.Items)
+                    {
+                        var (badgeClass, statusText) = card.Status switch
+                        {
+                            GiftCardStatus.Active => ("bg-green-lt", "Aktif"),
+                            GiftCardStatus.Used => ("bg-secondary-lt", "Kullanildi"),
+                            GiftCardStatus.Expired => ("bg-red-lt", "Suresi Doldu"),
+                            GiftCardStatus.Cancelled => ("bg-orange-lt", "Iptal"),
+                            _ => ("bg-secondary-lt", card.Status.ToString())
+                        };
+                        <tr>
+                            <td>
+                                <span class="fw-bold font-monospace">@card.Code</span>
+                            </td>
+                            <td>@card.InitialAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
+                            <td>
+                                @if (card.RemainingAmount > 0)
+                                {
+                                    <span class="text-success fw-bold">@card.RemainingAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">@card.RemainingAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @badgeClass">@statusText</span>
+                            </td>
+                            <td class="text-secondary">
+                                @card.ExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                <a href="/gift-cards/@card.Id" class="btn btn-sm btn-outline-secondary">
+                                    <i class="ti ti-eye icon"></i>
+                                    Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/gift-cards",
+                     TargetId = "#gift-card-table",
+                     QueryParams = new()
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Hediye karti bulunamadi",
+                         Subtitle = "Henuz hediye karti olusturulmamis.",
+                         ActionUrl = "/gift-cards/create",
+                         ActionText = "Yeni Hediye Karti Olustur"
+                     }'/>
+        </div>
+    }
+</div>

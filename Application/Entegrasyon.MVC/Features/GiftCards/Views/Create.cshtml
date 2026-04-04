@@ -1,0 +1,73 @@
+@model Entegrasyon.MVC.Features.GiftCards.ViewModels.GiftCardCreateVm
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/gift-cards" class="btn btn-outline-secondary">Geri Don</a>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/gift-cards/create">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Tutar</label>
+                            <div class="input-group">
+                                <input type="number"
+                                       name="Amount"
+                                       class="form-control @(ViewData.ModelState["Amount"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                       step="0.01"
+                                       min="1"
+                                       max="100000"
+                                       value="@(Model?.Amount > 0 ? Model.Amount.ToString("F2") : "")"
+                                       placeholder="0.00"/>
+                                <span class="input-group-text">TL</span>
+                                @if (ViewData.ModelState["Amount"]?.Errors.Any() == true)
+                                {
+                                    <div class="invalid-feedback">
+                                        @ViewData.ModelState["Amount"]!.Errors.First().ErrorMessage
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Alici Adi</label>
+                            <input type="text"
+                                   name="RecipientName"
+                                   class="form-control"
+                                   value="@Model?.RecipientName"
+                                   placeholder="Alicinin adi soyadı..."/>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Alici E-Posta</label>
+                            <input type="email"
+                                   name="RecipientEmail"
+                                   class="form-control"
+                                   value="@Model?.RecipientEmail"
+                                   placeholder="alici@ornek.com"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Mesaj</label>
+                            <textarea name="Message"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Hediye karti ile birlikte iletilecek mesaj...">@Model?.Message</textarea>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a href="/gift-cards" class="btn btn-link me-2">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Olustur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

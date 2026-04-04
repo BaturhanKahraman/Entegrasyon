@@ -6,6 +6,7 @@ public static class ViewDataExtensions
 {
     private const string TitleKey = "Title";
     private const string ActiveNavKey = "ActiveNav";
+    private const string ActiveNavGroupKey = "ActiveNavGroup";
     private const string BreadcrumbKey = "Breadcrumb";
 
     public static void SetPageTitle(this ViewDataDictionary viewData, string title)
@@ -13,6 +14,9 @@ public static class ViewDataExtensions
 
     public static void SetActiveNav(this ViewDataDictionary viewData, string nav)
         => viewData[ActiveNavKey] = nav;
+
+    public static void SetActiveNavGroup(this ViewDataDictionary viewData, string group)
+        => viewData[ActiveNavGroupKey] = group;
 
     public static void SetBreadcrumb(this ViewDataDictionary viewData,
         params (string Text, string? Url)[] crumbs)
@@ -23,6 +27,9 @@ public static class ViewDataExtensions
 
     public static string GetActiveNav(this ViewDataDictionary viewData)
         => viewData[ActiveNavKey] as string ?? "";
+
+    public static string GetActiveNavGroup(this ViewDataDictionary viewData)
+        => viewData[ActiveNavGroupKey] as string ?? "";
 
     public static (string Text, string? Url)[] GetBreadcrumb(this ViewDataDictionary viewData)
         => viewData[BreadcrumbKey] as (string, string?)[] ?? [];

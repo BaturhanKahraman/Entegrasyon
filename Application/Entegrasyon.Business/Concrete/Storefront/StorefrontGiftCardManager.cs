@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
@@ -146,6 +147,52 @@ public class StorefrontGiftCardManager(
             return new SuccessDataResult<decimal>(0, "Hediye kartinin bakiyesi tukenmis.");
 
         return new SuccessDataResult<decimal>(giftCard.RemainingAmount);
+    }
+
+    public async Task<IDataResult<Pageable<StorefrontGiftCard>>> GetGiftCardsAsync(int tenantId, int pageIndex = 0, int pageSize = 20)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var query = dbContext.StorefrontGiftCards
+            .AsNoTracking()
+            .Where(g => g.TenantId == tenantId && !g.IsDeleted)
+            .OrderByDescending(g => g.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new SuccessDataResult<Pageable<StorefrontGiftCard>>(
+            new Pageable<StorefrontGiftCard>(items, pageIndex, pageSize, totalCount));
+    }
+
+    public async Task<IDataResult<StorefrontGiftCard>> GetByIdAsync(int tenantId, int id)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var giftCard = await dbContext.StorefrontGiftCards
+            .AsNoTracking()
+            .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId && !g.IsDeleted);
+
+        if (giftCard is null)
+            return new ErrorDataResult<StorefrontGiftCard>(null!, "Hediye karti bulunamadi.");
+
+        return new SuccessDataResult<StorefrontGiftCard>(giftCard);
+    }
+
+    public async Task<IDataResult<List<StorefrontGiftCardTransaction>>> GetTransactionsAsync(int giftCardId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var transactions = await dbContext.StorefrontGiftCardTransactions
+            .AsNoTracking()
+            .Where(t => t.GiftCardId == giftCardId)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+
+        return new SuccessDataResult<List<StorefrontGiftCardTransaction>>(transactions);
     }
 
     private static async Task<string> GenerateUniqueCodeAsync(IntegrationDbContext dbContext, int tenantId)

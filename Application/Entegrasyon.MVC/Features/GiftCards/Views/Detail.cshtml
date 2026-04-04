@@ -1,0 +1,160 @@
+@using Entegrasyon.Entity.Storefront
+@model StorefrontGiftCard
+
+@{
+    var transactions = (List<StorefrontGiftCardTransaction>)(ViewBag.Transactions ?? new List<StorefrontGiftCardTransaction>());
+
+    var (statusBadge, statusText) = Model.Status switch
+    {
+        GiftCardStatus.Active => ("bg-green-lt", "Aktif"),
+        GiftCardStatus.Used => ("bg-secondary-lt", "Kullanildi"),
+        GiftCardStatus.Expired => ("bg-red-lt", "Suresi Doldu"),
+        GiftCardStatus.Cancelled => ("bg-orange-lt", "Iptal"),
+        _ => ("bg-secondary-lt", Model.Status.ToString())
+    };
+
+    string TransactionTypeText(string type) => type switch
+    {
+        "Purchase" => "Satin Alma",
+        "Use" => "Kullanim",
+        "Refund" => "Iade",
+        _ => type
+    };
+}
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/gift-cards" class="btn btn-outline-secondary">Listeye Don</a>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row row-cards">
+            <!-- Summary Card -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Hediye Karti Bilgileri</h3>
+                        <div class="card-actions">
+                            <span class="badge @statusBadge fs-6">@statusText</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Kod</label>
+                            <div class="fw-bold font-monospace fs-4">@Model.Code</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label text-muted">Baslangic Tutari</label>
+                                <div class="fw-bold">@Model.InitialAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-muted">Kalan Bakiye</label>
+                                @if (Model.RemainingAmount > 0)
+                                {
+                                    <div class="fw-bold text-success">@Model.RemainingAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                }
+                                else
+                                {
+                                    <div class="fw-bold text-secondary">@Model.RemainingAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Son Kullanim Tarihi</label>
+                            <div>@Model.ExpiresAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.RecipientName) || !string.IsNullOrEmpty(Model.RecipientEmail))
+                        {
+                            <hr/>
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Alici</label>
+                                @if (!string.IsNullOrEmpty(Model.RecipientName))
+                                {
+                                    <div>@Model.RecipientName</div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.RecipientEmail))
+                                {
+                                    <div class="text-secondary small">@Model.RecipientEmail</div>
+                                }
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.SenderMessage))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Mesaj</label>
+                                <div class="text-secondary">@Model.SenderMessage</div>
+                            </div>
+                        }
+
+                        <div class="mb-0">
+                            <label class="form-label text-muted">Olusturulma Tarihi</label>
+                            <div class="text-secondary small">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Card -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Islem Gecmisi</h3>
+                    </div>
+                    @if (transactions.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Islem Tipi</th>
+                                        <th>Tutar</th>
+                                        <th>Onceki Bakiye</th>
+                                        <th>Sonraki Bakiye</th>
+                                        <th>Tarih</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var tx in transactions)
+                                    {
+                                        <tr>
+                                            <td>@TransactionTypeText(tx.TransactionType)</td>
+                                            <td>
+                                                @if (tx.Amount >= 0)
+                                                {
+                                                    <span class="text-success">+@tx.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger">@tx.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                                }
+                                            </td>
+                                            <td class="text-secondary">@tx.BalanceBefore.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
+                                            <td class="text-secondary">@tx.BalanceAfter.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
+                                            <td class="text-secondary">@tx.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                                     {
+                                         Title = "Islem gecmisi bulunamadi",
+                                         Subtitle = "Bu hediye kartina ait islem kaydi yok."
+                                     }'/>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
