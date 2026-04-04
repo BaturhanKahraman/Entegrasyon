@@ -1,34 +1,38 @@
 @model List<Entegrasyon.Entity.Dtos.Dashboard.MarketplaceStatusDto>
 
 <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Pazaryeri Durumu</h3>
+    <div class="card-header">
+        <h3 class="card-title">Pazaryeri Durumu</h3>
+    </div>
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="card-body">
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-building-store icon"></i></div>
+                <p class="empty-title">Pazaryeri bağlantısı yok</p>
+                <p class="empty-subtitle text-secondary">Entegrasyon ayarlarından pazaryeri ekleyin.</p>
+            </div>
         </div>
+    }
+    else
+    {
         <div class="table-responsive">
-            <table class="table table-vcenter card-table">
+            <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Pazaryeri</th>
-                        <th>Senkron</th>
-                        <th>Bekleyen</th>
-                        <th>Hata</th>
+                        <th>PAZARYERİ</th>
+                        <th class="text-center">SENKRON</th>
+                        <th class="text-center">BEKLEYEN</th>
+                        <th class="text-center">HATA</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.Count == 0)
-                    {
-                        <tr>
-                            <td colspan="4" class="text-center text-secondary">
-                                Pazaryeri verisi bulunamadi.
-                            </td>
-                        </tr>
-                    }
                     @foreach (var mp in Model)
                     {
                         <tr>
                             <td>@mp.Name</td>
-                            <td><span class="badge bg-success">@mp.SyncedCount</span></td>
-                            <td>
+                            <td class="text-center"><span class="badge bg-success">@mp.SyncedCount</span></td>
+                            <td class="text-center">
                                 @if (mp.PendingCount > 0)
                                 {
                                     <span class="badge bg-warning">@mp.PendingCount</span>
@@ -38,7 +42,7 @@
                                     <span class="text-secondary">0</span>
                                 }
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @if (mp.FailedCount > 0)
                                 {
                                     <span class="badge bg-danger">@mp.FailedCount</span>
@@ -53,4 +57,5 @@
                 </tbody>
             </table>
         </div>
+    }
 </div>
