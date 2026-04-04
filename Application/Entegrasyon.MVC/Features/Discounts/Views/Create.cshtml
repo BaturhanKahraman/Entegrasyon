@@ -1,0 +1,63 @@
+@model Entegrasyon.MVC.Features.Discounts.ViewModels.DiscountCreateVm
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/discounts" class="btn btn-outline-secondary">Geri Don</a>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/discounts/create">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Tutar</label>
+                            <div class="input-group">
+                                <input type="number"
+                                       name="Amount"
+                                       class="form-control @(ViewData.ModelState["Amount"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                       step="0.01"
+                                       min="0.01"
+                                       value="@(Model?.Amount > 0 ? Model.Amount.ToString("F2") : "")"
+                                       placeholder="0.00"/>
+                                <span class="input-group-text">TL</span>
+                                @if (ViewData.ModelState["Amount"]?.Errors.Any() == true)
+                                {
+                                    <div class="invalid-feedback">
+                                        @ViewData.ModelState["Amount"]!.Errors.First().ErrorMessage
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Son Kullanim Tarihi</label>
+                            <input type="date"
+                                   name="ExpiringDate"
+                                   class="form-control"
+                                   value="@(Model?.ExpiringDate.HasValue == true ? Model.ExpiringDate.Value.ToString("yyyy-MM-dd") : "")"/>
+                            <div class="form-text">Bos birakilirsa kod suressiz olur.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Musteri ID (Opsiyonel)</label>
+                            <input type="number"
+                                   name="CustomerId"
+                                   class="form-control"
+                                   value="@Model?.CustomerId"
+                                   placeholder="Belirli bir musteri icin..."/>
+                            <div class="form-text">Bos birakilirsa herkes kullanabilir.</div>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a href="/discounts" class="btn btn-link me-2">Iptal</a>
+                        <button type="submit" class="btn btn-primary">Olustur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
