@@ -1,3 +1,48 @@
+// ── Theme Toggle ─────────────────────────────────────────────────────
+
+(function () {
+    var toggle = document.getElementById('theme-toggle');
+    var icon = document.getElementById('theme-icon');
+    if (!toggle || !icon) return;
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('tabler-theme', theme);
+        icon.className = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+        onThemeChange(theme);
+    }
+
+    // Sayfa yüklendiğinde ikon durumunu ayarla
+    var current = localStorage.getItem('tabler-theme') || 'light';
+    icon.className = current === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+
+    toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        var next = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+    });
+})();
+
+// ── Chart Theme Hook ─────────────────────────────────────────────────
+
+function onThemeChange(theme) {
+    var isDark = theme === 'dark';
+    var textColor = isDark ? '#a0aec0' : '#666';
+    var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+
+    document.querySelectorAll('[data-apex-chart]').forEach(function (el) {
+        var chart = ApexCharts.getChartByID(el.id);
+        if (chart) {
+            chart.updateOptions({
+                theme: { mode: theme },
+                xaxis: { labels: { style: { colors: textColor } } },
+                yaxis: { labels: { style: { colors: textColor } } },
+                grid: { borderColor: gridColor }
+            });
+        }
+    });
+}
+
 // ── HTMX Global Configuration ─────────────────────────────────────────
 
 // HTMX 2.0: swap edilen HTML'deki script taglerini calistir
