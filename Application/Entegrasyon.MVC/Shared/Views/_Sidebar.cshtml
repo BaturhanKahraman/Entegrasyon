@@ -106,6 +106,12 @@
                         <span class="nav-link-title">Kuponlar</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "pricing" ? "active" : "")" require-permission="Permissions.Products.View" href="/pricing">
+                        <span class="nav-link-icon"><i class="ti ti-currency-lira"></i></span>
+                        <span class="nav-link-title">Fiyat Yonetimi</span>
+                    </a>
+                </li>
 
                 @* ── Pazaryeri ── *@
                 <li class="nav-item mt-2">
@@ -303,6 +309,18 @@
                     <a class="nav-link @(activeNav == "storefront-abandoned-carts" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/abandoned-carts">
                         <span class="nav-link-icon"><i class="ti ti-shopping-cart-off"></i></span>
                         <span class="nav-link-title">Terk Edilen Sepetler</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "loyalty" ? "active" : "")" require-permission="Permissions.Settings.View" href="/loyalty">
+                        <span class="nav-link-icon"><i class="ti ti-diamond"></i></span>
+                        <span class="nav-link-title">Sadakat Programi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "storefront-referrals" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/referrals">
+                        <span class="nav-link-icon"><i class="ti ti-share"></i></span>
+                        <span class="nav-link-title">Referans Programi</span>
                     </a>
                 </li>
 

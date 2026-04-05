@@ -546,4 +546,16 @@ public class StorefrontController(
         var result = await abandonedCartManager.GetAbandonedCartEmailsAsync(TenantId);
         return HtmxView("AbandonedCarts", result.Data ?? []);
     }
+
+    // ── Referrals ────────────────────────────────────────────────────────
+
+    [HttpGet("/storefront/referrals")]
+    public IActionResult Referrals()
+    {
+        ViewData.SetPageTitle("Referans Programi");
+        ViewData.SetActiveNav("storefront-referrals");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Referans Programi", null));
+
+        return View();
+    }
 }

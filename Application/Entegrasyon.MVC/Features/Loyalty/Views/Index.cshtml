@@ -1,0 +1,209 @@
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-yellow text-white avatar">
+                                    <i class="ti ti-star"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Aktif Uye</div>
+                                <div class="text-secondary">1.248</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-coin"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Dagitilan Puan</div>
+                                <div class="text-secondary">84.320 puan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-gift"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Kullanilan Puan</div>
+                                <div class="text-secondary">31.500 puan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-purple text-white avatar">
+                                    <i class="ti ti-chart-line"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Bu Ay Kazanilan</div>
+                                <div class="text-secondary">4.820 puan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">En Cok Puanli Musteriler</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Musteri</th>
+                                    <th>Seviye</th>
+                                    <th class="text-end">Toplam Puan</th>
+                                    <th class="text-end">Kullanilabilir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var demoCustomers = new[]
+                                    {
+                                        new { Name = "Ahmet Yilmaz", Level = "Altin", LevelColor = "bg-yellow", Points = 4250, Available = 1820 },
+                                        new { Name = "Fatma Kaya", Level = "Platin", LevelColor = "bg-azure", Points = 3800, Available = 3800 },
+                                        new { Name = "Mehmet Demir", Level = "Gumus", LevelColor = "bg-secondary", Points = 2100, Available = 900 },
+                                        new { Name = "Ayse Celik", Level = "Altin", LevelColor = "bg-yellow", Points = 1950, Available = 1950 },
+                                        new { Name = "Ali Sahin", Level = "Bronz", LevelColor = "bg-orange", Points = 840, Available = 340 },
+                                    };
+                                }
+                                @foreach (var c in demoCustomers)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar avatar-sm me-2 text-white" style="background-color: var(--tblr-blue);">
+                                                    @c.Name[0]
+                                                </span>
+                                                @c.Name
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @c.LevelColor">@c.Level</span>
+                                        </td>
+                                        <td class="text-end fw-bold">@c.Points.ToString("N0")</td>
+                                        <td class="text-end text-success">@c.Available.ToString("N0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Seviye Dagilimi</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge bg-azure me-2">Platin</span>
+                                <span class="text-secondary">48 uye</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-azure" style="width: 4%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge bg-yellow me-2">Altin</span>
+                                <span class="text-secondary">186 uye</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-yellow" style="width: 15%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge bg-secondary me-2">Gumus</span>
+                                <span class="text-secondary">412 uye</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-secondary" style="width: 33%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge bg-orange me-2">Bronz</span>
+                                <span class="text-secondary">602 uye</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-orange" style="width: 48%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Puan Kazanma Kurallari</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-shopping-cart text-green me-2"></i>
+                                <div>
+                                    <div class="fw-medium">Satin Alma</div>
+                                    <div class="text-secondary small">Her 10 TL = 1 puan</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-star text-yellow me-2"></i>
+                                <div>
+                                    <div class="fw-medium">Degerlendirme</div>
+                                    <div class="text-secondary small">Her yorum = 50 puan</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-user-plus text-blue me-2"></i>
+                                <div>
+                                    <div class="fw-medium">Referans</div>
+                                    <div class="text-secondary small">Kayit = 200 puan</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,213 @@
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-user-plus"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam Referans</div>
+                                <div class="text-secondary">324</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-users-group"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Bu Ay Yeni</div>
+                                <div class="text-secondary">47 kayit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-orange text-white avatar">
+                                    <i class="ti ti-shopping-cart"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Donusum Orani</div>
+                                <div class="text-secondary">68%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-purple text-white avatar">
+                                    <i class="ti ti-coin"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Odenen Komisyon</div>
+                                <div class="text-secondary">12.480 TL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">En Cok Referans Yapan Musteriler</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Musteri</th>
+                                    <th>Referans Kodu</th>
+                                    <th class="text-center">Referans Sayisi</th>
+                                    <th class="text-center">Aktif</th>
+                                    <th class="text-end">Kazanilan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var demoReferrers = new[]
+                                    {
+                                        new { Name = "Zeynep Arslan", Code = "ZEY2024", Count = 18, Active = 14, Earned = 3600 },
+                                        new { Name = "Burak Ozturk", Code = "BRK5511", Count = 12, Active = 9, Earned = 2400 },
+                                        new { Name = "Selin Yildiz", Code = "SEL9900", Count = 9, Active = 7, Earned = 1800 },
+                                        new { Name = "Kerem Polat", Code = "KRM3344", Count = 7, Active = 5, Earned = 1400 },
+                                        new { Name = "Neslihan Dogan", Code = "NSL7722", Count = 5, Active = 4, Earned = 1000 },
+                                    };
+                                }
+                                @foreach (var r in demoReferrers)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar avatar-sm me-2 text-white" style="background-color: var(--tblr-indigo);">
+                                                    @r.Name[0]
+                                                </span>
+                                                @r.Name
+                                            </div>
+                                        </td>
+                                        <td><code>@r.Code</code></td>
+                                        <td class="text-center">@r.Count</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">@r.Active</span>
+                                        </td>
+                                        <td class="text-end fw-bold text-green">@r.Earned.ToString("N0") TL</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Program Ayarlari</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-medium">Referans Bonusu</div>
+                                    <div class="text-secondary small">Her basarili referans icin</div>
+                                </div>
+                                <span class="badge bg-green fs-5">200 puan</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-medium">Yeni Uye Bonusu</div>
+                                    <div class="text-secondary small">Referansla kayit olan</div>
+                                </div>
+                                <span class="badge bg-blue fs-5">100 puan</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-medium">Min. Satin Alma</div>
+                                    <div class="text-secondary small">Puan icin gerekli</div>
+                                </div>
+                                <span class="badge bg-orange fs-5">150 TL</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-medium">Gecerlilik Suresi</div>
+                                    <div class="text-secondary small">Kayittan sonra</div>
+                                </div>
+                                <span class="badge bg-secondary fs-5">30 gun</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-outline-primary w-100" disabled>
+                            <i class="ti ti-settings me-1"></i>
+                            Ayarlari Duzenle (Demo)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Son Referanslar</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        @{
+                            var recentReferrals = new[]
+                            {
+                                new { Name = "Tugce K.", Code = "ZEY2024", Date = "2 saat once" },
+                                new { Name = "Emre A.", Code = "BRK5511", Date = "5 saat once" },
+                                new { Name = "Derya S.", Code = "ZEY2024", Date = "Dun" },
+                            };
+                        }
+                        @foreach (var ref_ in recentReferrals)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    <span class="avatar avatar-sm me-2 bg-green-lt">
+                                        <i class="ti ti-user-check text-green"></i>
+                                    </span>
+                                    <div class="flex-fill">
+                                        <div class="fw-medium">@ref_.Name kayit oldu</div>
+                                        <div class="text-secondary small">Kod: <code>@ref_.Code</code></div>
+                                    </div>
+                                    <span class="text-secondary small">@ref_.Date</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
