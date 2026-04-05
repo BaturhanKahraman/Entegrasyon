@@ -1,0 +1,196 @@
+@model Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto
+@using Entegrasyon.Entity.Orders
+
+@{
+    var orders = (List<Order>)ViewBag.Orders;
+    decimal totalSpend = ViewBag.TotalSpend;
+    int orderCount = ViewBag.OrderCount;
+    DateTimeOffset? lastOrderDate = ViewBag.LastOrderDate;
+    decimal averageOrder = ViewBag.AverageOrder;
+}
+
+<div class="page-body">
+    <div class="container-xl">
+
+        @* Stat cards *@
+        <div class="row row-deck row-cards mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Harcama</div>
+                        <div class="h1 mb-3">@totalSpend.ToString("N2") ₺</div>
+                        <div class="text-muted">Tum siparislerden</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Siparis Sayisi</div>
+                        <div class="h1 mb-3">@orderCount</div>
+                        <div class="text-muted">Toplam siparis</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Son Siparis Tarihi</div>
+                        <div class="h1 mb-3">
+                            @(lastOrderDate.HasValue ? lastOrderDate.Value.ToString("dd.MM.yyyy") : "-")
+                        </div>
+                        <div class="text-muted">En son siparis</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Ortalama Siparis</div>
+                        <div class="h1 mb-3">@averageOrder.ToString("N2") ₺</div>
+                        <div class="text-muted">Siparis basina ortalama</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-deck row-cards">
+            @* Son Siparisler *@
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Son Siparisler</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Siparis No</th>
+                                    <th>Durum</th>
+                                    <th>Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (orders.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            Henuz siparis bulunmuyor.
+                                        </td>
+                                    </tr>
+                                }
+                                @foreach (var order in orders.OrderByDescending(o => o.CreatedAt).Take(20))
+                                {
+                                    <tr>
+                                        <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(order.OrderNumber))
+                                            {
+                                                <span class="text-muted">#@order.OrderNumber</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(order.MarketplaceOrderStatus))
+                                            {
+                                                <span class="badge bg-secondary-lt">@order.MarketplaceOrderStatus</span>
+                                            }
+                                            else if (order.StorefrontOrderStatus.HasValue)
+                                            {
+                                                <span class="badge bg-blue-lt">@order.StorefrontOrderStatus</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (order.GrossAmount.HasValue)
+                                            {
+                                                <strong>@order.GrossAmount.Value.ToString("N2") ₺</strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @* Musteri Bilgi Karti *@
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Musteri Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Ad Soyad</div>
+                            <div>@(Model.NameSurname ?? "-")</div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.CorporateName))
+                        {
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Firma Adi</div>
+                                <div>@Model.CorporateName</div>
+                            </div>
+                        }
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Telefon</div>
+                            <div>@(Model.PhoneNumber ?? "-")</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Musteri Tipi</div>
+                            <div>
+                                @if (Model.CustomerType == "Corporate")
+                                {
+                                    <span class="badge bg-blue-lt">Kurumsal</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-green-lt">Bireysel</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">TC / Vergi No</div>
+                            <div>@(Model.NationalIdentityOrTaxNumber ?? "-")</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Adres</div>
+                            <div>@(Model.Address ?? "-")</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Kayit Tarihi</div>
+                            <div>@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/customers/@Model.Id/edit" class="btn btn-outline-secondary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                 stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                            </svg>
+                            Duzenle
+                        </a>
+                        <a href="/customers/@Model.Id" class="btn btn-outline-primary btn-sm ms-2">
+                            Detay
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

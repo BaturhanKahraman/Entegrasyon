@@ -8,7 +8,7 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 namespace Entegrasyon.MVC.Features.Customers;
 
 [Authorize]
-public class CustomerController(ICustomerManager customerManager) : Controller
+public class CustomerController(ICustomerManager customerManager, IOrderManager orderManager) : Controller
 {
     [HttpGet("/customers")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -98,6 +98,37 @@ public class CustomerController(ICustomerManager customerManager) : Controller
 
         TempData.SetError(result.Message ?? "Musteri guncellenemedi.");
         return RedirectToAction(nameof(Edit), new { id });
+    }
+
+    [HttpGet("/customers/{id:int}/dashboard")]
+    public async Task<IActionResult> Dashboard(int id)
+    {
+        var customerResult = await customerManager.GetCustomerDetailById(id);
+        if (!customerResult.Success)
+        {
+            TempData.SetError(customerResult.Message ?? "Musteri bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var ordersResult = await orderManager.GetCustomerOrdersAsync(id, 1);
+
+        var customer = customerResult.Data!;
+        var orders = ordersResult.Data ?? [];
+
+        ViewBag.Orders = orders;
+        ViewBag.TotalSpend = orders.Sum(o => o.GrossAmount ?? 0m);
+        ViewBag.OrderCount = orders.Count;
+        ViewBag.LastOrderDate = orders.Count > 0
+            ? orders.Max(o => o.CreatedAt)
+            : (DateTimeOffset?)null;
+        ViewBag.AverageOrder = orders.Count > 0
+            ? orders.Sum(o => o.GrossAmount ?? 0m) / orders.Count
+            : 0m;
+
+        ViewData.SetPageTitle(customer.NameSurname ?? customer.CorporateName);
+        ViewData.SetActiveNav("customers");
+        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Dashboard", null));
+        return View(customer);
     }
 
     [HttpPost("/customers/{id:int}/delete")]
