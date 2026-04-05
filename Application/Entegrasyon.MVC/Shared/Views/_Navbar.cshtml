@@ -1,20 +1,21 @@
 <header class="navbar navbar-expand-md d-print-none">
     <div class="container-xl">
-        <div class="navbar-nav flex-row order-md-last">
-            @* ── Global Arama ── *@
-            <div class="d-none d-md-flex me-3">
-                <div class="input-icon">
-                    <span class="input-icon-addon">
-                        <i class="ti ti-search"></i>
-                    </span>
-                    <input type="text" class="form-control" placeholder="Ara..." aria-label="Global Arama" />
-                </div>
+        @* ── Sol: Global Arama ── *@
+        <div class="d-none d-md-flex">
+            <div class="input-icon">
+                <span class="input-icon-addon">
+                    <i class="ti ti-search"></i>
+                </span>
+                <input type="text" class="form-control" placeholder="Ara..." aria-label="Global Arama" style="min-width: 280px;" />
             </div>
+        </div>
 
+        @* ── Sag: Utility Items ── *@
+        <div class="navbar-nav flex-row ms-auto">
             @* ── Hizli Islemler ── *@
             <div class="nav-item dropdown d-none d-md-flex me-2">
                 <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Hizli Islemler" title="Hizli Islemler">
-                    <i class="ti ti-bolt fs-3"></i>
+                    <i class="ti ti-bolt fs-2"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                     <span class="dropdown-header">Hizli Islemler</span>
@@ -33,7 +34,7 @@
             @* ── Tema Toggle ── *@
             <div class="nav-item me-2">
                 <button id="theme-toggle" class="nav-link px-0 btn btn-link" type="button" title="Tema Degistir" aria-label="Tema Degistir">
-                    <i id="theme-icon" class="ti ti-sun fs-3"></i>
+                    <i id="theme-icon" class="ti ti-sun fs-2"></i>
                 </button>
             </div>
 
@@ -65,6 +66,5 @@
                 </div>
             </div>
         </div>
-
     </div>
 </header>
