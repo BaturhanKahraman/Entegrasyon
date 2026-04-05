@@ -1,0 +1,350 @@
+@model Entegrasyon.Entity.Orders.Order
+@{
+    Layout = null;
+    var title = Model.OrderNumber ?? Model.Id.ToString()[..8];
+
+    string StatusText(string? status) => status switch
+    {
+        "Created" => "Olusturuldu",
+        "Picking" => "Hazirlaniyor",
+        "Invoiced" => "Fatura Kesildi",
+        "Shipped" => "Kargoya Verildi",
+        "Delivered" => "Teslim Edildi",
+        "Cancelled" => "Iptal",
+        "UnDelivered" => "Teslim Edilemedi",
+        "ReturnAccepted" => "Iade Onaylandi",
+        _ => status ?? "-"
+    };
+
+    var displayStatus = Model.MarketplaceOrderStatus
+        ?? Model.StorefrontOrderStatus?.ToString()
+        ?? null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Siparis #@title</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #1a1a2e;
+            background: #fff;
+            padding: 20px;
+        }
+
+        .print-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #1a1a2e;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .company-sub {
+            font-size: 11px;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        .order-title {
+            text-align: right;
+        }
+
+        .order-title h2 {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .order-title .status {
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #555;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 24px;
+        }
+
+        .info-item-label {
+            font-size: 10px;
+            color: #777;
+            margin-bottom: 1px;
+        }
+
+        .info-item-value {
+            font-size: 12px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        table th {
+            background: #f0f0f0;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #ddd;
+        }
+
+        table th.text-right, table td.text-right {
+            text-align: right;
+        }
+
+        table td {
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+        }
+
+        table tfoot td {
+            background: #f7f7f7;
+            font-weight: bold;
+        }
+
+        .totals {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .totals-table {
+            width: 280px;
+        }
+
+        .totals-table td {
+            padding: 4px 8px;
+            border: none;
+        }
+
+        .totals-table .grand-total {
+            font-size: 14px;
+            font-weight: bold;
+            border-top: 2px solid #1a1a2e;
+        }
+
+        .print-footer {
+            margin-top: 24px;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+        }
+
+        @@media print {
+            body { padding: 0; }
+            @@page { margin: 15mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="print-header">
+        <div>
+            <div class="company-name">Entegrasyon</div>
+            <div class="company-sub">Siparis / Fatura Dokümani</div>
+        </div>
+        <div class="order-title">
+            <h2>Siparis #@title</h2>
+            <div class="status">
+                Tarih: @(Model.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
+            </div>
+            @if (displayStatus != null)
+            {
+                <div class="status">Durum: @StatusText(displayStatus)</div>
+            }
+            @if (Model.MarketPlace != null)
+            {
+                <div class="status">Pazaryeri: @Model.MarketPlace.Name</div>
+            }
+        </div>
+    </div>
+
+    <!-- Customer + Shipping -->
+    <div class="two-col">
+        <div class="section">
+            <div class="section-title">Musteri Bilgileri</div>
+            <div>@(Model.CustomerFirstName) @(Model.CustomerLastName)</div>
+            @if (!string.IsNullOrWhiteSpace(Model.CustomerEmail))
+            {
+                <div>@Model.CustomerEmail</div>
+            }
+        </div>
+
+        @if (Model.ShippingAddress != null)
+        {
+            <div class="section">
+                <div class="section-title">Teslimat Adresi</div>
+                @if (!string.IsNullOrWhiteSpace(Model.ShippingAddress.Street))
+                {
+                    <div>@Model.ShippingAddress.Street</div>
+                }
+                <div>
+                    @Model.ShippingAddress.County@(!string.IsNullOrWhiteSpace(Model.ShippingAddress.County) && !string.IsNullOrWhiteSpace(Model.ShippingAddress.City) ? ", " : "")@Model.ShippingAddress.City
+                    @if (!string.IsNullOrWhiteSpace(Model.ShippingAddress.ZipCode))
+                    {
+                        <text> @Model.ShippingAddress.ZipCode</text>
+                    }
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.ShippingAddress.Country))
+                {
+                    <div>@Model.ShippingAddress.Country</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.ShippingAddress.FullAddress))
+                {
+                    <div style="color:#777; font-size:10px; margin-top:4px;">@Model.ShippingAddress.FullAddress</div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Order Items -->
+    <div class="section">
+        <div class="section-title">Siparis Kalemleri</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Urun (SKU)</th>
+                    <th>Barkod</th>
+                    <th>Renk / Beden</th>
+                    <th class="text-right">Adet</th>
+                    <th class="text-right">Birim Fiyat</th>
+                    <th class="text-right">Toplam</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td>@(item.MerchantSku ?? "-")</td>
+                        <td>@(item.Barcode ?? "-")</td>
+                        <td>@(item.ProductColor ?? "-") / @(item.ProductSize ?? "-")</td>
+                        <td class="text-right">@item.Quantity</td>
+                        <td class="text-right">@item.UnitPrice.ToString("N2") TL</td>
+                        <td class="text-right">@((item.UnitPrice * item.Quantity).ToString("N2")) TL</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Totals -->
+    <div class="totals">
+        <table class="totals-table">
+            <tbody>
+                @if (Model.SubTotal.HasValue)
+                {
+                    <tr>
+                        <td>Ara Toplam</td>
+                        <td class="text-right">@Model.SubTotal.Value.ToString("N2") TL</td>
+                    </tr>
+                }
+                @if (Model.ShippingCost.HasValue && Model.ShippingCost > 0)
+                {
+                    <tr>
+                        <td>Kargo Ucreti</td>
+                        <td class="text-right">@Model.ShippingCost.Value.ToString("N2") TL</td>
+                    </tr>
+                }
+                @if (Model.DiscountAmount.HasValue && Model.DiscountAmount > 0)
+                {
+                    <tr>
+                        <td>Indirim</td>
+                        <td class="text-right">-@Model.DiscountAmount.Value.ToString("N2") TL</td>
+                    </tr>
+                }
+                @if (Model.IsGiftWrapped && Model.GiftWrappingFee.HasValue && Model.GiftWrappingFee > 0)
+                {
+                    <tr>
+                        <td>Hediye Paketleme</td>
+                        <td class="text-right">@Model.GiftWrappingFee.Value.ToString("N2") TL</td>
+                    </tr>
+                }
+                <tr class="grand-total">
+                    <td>Genel Toplam</td>
+                    <td class="text-right">@Model.TotalPrice.ToString("N2") TL</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cargo Info -->
+    @if (!string.IsNullOrWhiteSpace(Model.CargoProviderName) || !string.IsNullOrWhiteSpace(Model.CargoTrackingNumber))
+    {
+        <div class="section" style="margin-top: 16px;">
+            <div class="section-title">Kargo Bilgileri</div>
+            <div class="info-grid">
+                @if (!string.IsNullOrWhiteSpace(Model.CargoProviderName))
+                {
+                    <div>
+                        <div class="info-item-label">Kargo Firmasi</div>
+                        <div class="info-item-value">@Model.CargoProviderName</div>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.CargoTrackingNumber))
+                {
+                    <div>
+                        <div class="info-item-label">Takip No</div>
+                        <div class="info-item-value">@Model.CargoTrackingNumber</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Notes -->
+    @if (!string.IsNullOrWhiteSpace(Model.OrderNote))
+    {
+        <div class="section">
+            <div class="section-title">Siparis Notu</div>
+            <div>@Model.OrderNote</div>
+        </div>
+    }
+
+    <div class="print-footer">
+        Bu belge @DateTime.Now.ToString("dd.MM.yyyy HH:mm") tarihinde otomatik olarak olusturulmustur.
+    </div>
+
+    <script>
+        window.onload = function () { window.print(); };
+    </script>
+</body>
+</html>

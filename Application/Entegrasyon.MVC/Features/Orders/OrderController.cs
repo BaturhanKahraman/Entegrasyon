@@ -55,6 +55,39 @@ public class OrderController(
         return View("~/Features/Orders/Views/MarketplaceOrders.cshtml", result.Data);
     }
 
+    [HttpGet("/orders/{id:guid}")]
+    public async Task<IActionResult> OrderDetail(Guid id)
+    {
+        var result = await orderManager.GetOrderByIdAsync(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Siparis bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var order = result.Data!;
+        var title = order.OrderNumber ?? order.Id.ToString()[..8];
+
+        ViewData.SetPageTitle($"Siparis #{title}");
+        ViewData.SetActiveNav("orders");
+        ViewData.SetBreadcrumb(("Siparisler", "/orders"), ($"#{title}", null));
+
+        return View("~/Features/Orders/Views/OrderDetail.cshtml", order);
+    }
+
+    [HttpGet("/orders/{id:guid}/print")]
+    public async Task<IActionResult> Print(Guid id)
+    {
+        var result = await orderManager.GetOrderByIdAsync(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Siparis bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View("~/Features/Orders/Views/Print.cshtml", result.Data!);
+    }
+
     [HttpGet("/marketplace/orders/{id:guid}")]
     public async Task<IActionResult> Detail(Guid id)
     {
