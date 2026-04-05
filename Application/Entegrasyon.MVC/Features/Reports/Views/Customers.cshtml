@@ -1,0 +1,59 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Musteri</div>
+                        <div class="h1 mb-0">@Model.TotalItemCount</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Satis Yapan</div>
+                        <div class="h1 mb-0">@Model.Items.Count(c => c.SalesCount > 0)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">En Cok Satis Yapan Musteriler</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Musteri</th>
+                            <th>Tip</th>
+                            <th>Telefon</th>
+                            <th>Satis Sayisi</th>
+                            <th>Kayit Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Items.OrderByDescending(c => c.SalesCount))
+                        {
+                            <tr>
+                                <td>
+                                    <a href="/customers/@c.Id/dashboard">
+                                        @(string.IsNullOrEmpty(c.CorporateName) ? c.NameSurname : c.CorporateName)
+                                    </a>
+                                </td>
+                                <td><span class="badge @(c.CustomerType == "Corporate" ? "bg-blue-lt" : "bg-green-lt")">@c.CustomerType</span></td>
+                                <td class="text-secondary">@c.PhoneNumber</td>
+                                <td><span class="badge bg-purple-lt">@c.SalesCount</span></td>
+                                <td class="text-secondary">@c.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

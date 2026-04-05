@@ -1,0 +1,67 @@
+@model Entegrasyon.Entity.Dtos.Shipping.CargoSummaryDto
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Gonderi</div>
+                        <div class="h1 mb-0">@Model.TotalShipments</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Yolda</div>
+                        <div class="h1 mb-0 text-blue">@Model.InTransitCount</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Teslim Edilen</div>
+                        <div class="h1 mb-0 text-success">@Model.DeliveredCount</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Basarisiz</div>
+                        <div class="h1 mb-0 text-danger">@Model.FailedCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Kargo Durum Dagilimi</h3>
+            </div>
+            <div class="card-body">
+                @{
+                    var total = Model.TotalShipments > 0 ? Model.TotalShipments : 1;
+                    var deliveredPct = Model.DeliveredCount * 100.0 / total;
+                    var transitPct = Model.InTransitCount * 100.0 / total;
+                    var failedPct = Model.FailedCount * 100.0 / total;
+                    var pendingPct = Model.PendingCount * 100.0 / total;
+                }
+                <div class="progress progress-separated mb-3" style="height: 1.5rem">
+                    <div class="progress-bar bg-success" style="width: @deliveredPct%">@Model.DeliveredCount</div>
+                    <div class="progress-bar bg-blue" style="width: @transitPct%">@Model.InTransitCount</div>
+                    <div class="progress-bar bg-warning" style="width: @pendingPct%">@Model.PendingCount</div>
+                    <div class="progress-bar bg-danger" style="width: @failedPct%">@Model.FailedCount</div>
+                </div>
+                <div class="d-flex gap-3">
+                    <span><i class="ti ti-circle-filled text-success"></i> Teslim Edilen</span>
+                    <span><i class="ti ti-circle-filled text-blue"></i> Yolda</span>
+                    <span><i class="ti ti-circle-filled text-warning"></i> Bekleyen</span>
+                    <span><i class="ti ti-circle-filled text-danger"></i> Basarisiz</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

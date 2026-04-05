@@ -1,0 +1,76 @@
+@model List<Entegrasyon.Entity.Storefront.StorefrontReturnRequest>
+@using Entegrasyon.Entity.Storefront
+
+<div class="page-body">
+    <div class="container-xl">
+        @{
+            var total = Model.Count;
+            var approved = Model.Count(r => r.Status == ReturnStatus.Approved);
+            var rejected = Model.Count(r => r.Status == ReturnStatus.Rejected);
+            var pending = Model.Count(r => r.Status == ReturnStatus.Pending);
+            var returnRate = total > 0 ? (approved * 100.0 / total) : 0;
+        }
+
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Iade</div>
+                        <div class="h1 mb-0">@total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Onaylanan</div>
+                        <div class="h1 mb-0 text-success">@approved</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Reddedilen</div>
+                        <div class="h1 mb-0 text-danger">@rejected</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Onay Orani</div>
+                        <div class="h1 mb-0">%@returnRate.ToString("F1")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Iade Neden Dagilimi</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Neden</th>
+                            <th>Sayi</th>
+                            <th>Oran</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var group in Model.GroupBy(r => r.Reason).OrderByDescending(g => g.Count()))
+                        {
+                            <tr>
+                                <td>@group.Key</td>
+                                <td><span class="badge bg-blue-lt">@group.Count()</span></td>
+                                <td class="text-secondary">%@((group.Count() * 100.0 / total).ToString("F1"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -205,6 +205,36 @@
                         <span class="nav-link-title">Pazaryeri Raporlari</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "reports-customers" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/customers">
+                        <span class="nav-link-icon"><i class="ti ti-users-group"></i></span>
+                        <span class="nav-link-title">Musteri Raporu</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "reports-returns" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/returns">
+                        <span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span>
+                        <span class="nav-link-title">Iade Raporu</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "reports-tax" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/tax">
+                        <span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span>
+                        <span class="nav-link-title">Vergi Raporu</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "reports-category-sales" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/category-sales">
+                        <span class="nav-link-icon"><i class="ti ti-category"></i></span>
+                        <span class="nav-link-title">Kategori Satislari</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "reports-shipping" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/shipping">
+                        <span class="nav-link-icon"><i class="ti ti-truck-delivery"></i></span>
+                        <span class="nav-link-title">Kargo Raporu</span>
+                    </a>
+                </li>
 
                 @* ── Mesajlar ── *@
                 <li class="nav-item mt-2">

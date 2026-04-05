@@ -1,0 +1,101 @@
+@model List<Entegrasyon.Entity.Dtos.Reports.ProductPerformanceDto>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/category-sales" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Baslangic</label>
+                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitis</label>
+                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @{
+            var totalRevenue = Model.Sum(p => p.TotalRevenue);
+            var totalSold = Model.Sum(p => p.TotalSold);
+        }
+
+        <div class="row row-deck row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Urun</div>
+                        <div class="h1 mb-0">@Model.Count</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Satis</div>
+                        <div class="h1 mb-0">@totalSold</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="subheader">Toplam Gelir</div>
+                        <div class="h1 mb-0">@totalRevenue.ToString("N2") TL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Urun Bazli Satis Performansi</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Urun</th>
+                            <th>Satilan</th>
+                            <th>Gelir</th>
+                            <th>Iade Orani</th>
+                            <th>Ort. Puan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.OrderByDescending(p => p.TotalRevenue))
+                        {
+                            <tr>
+                                <td>
+                                    <a href="/products/@p.ProductId">@p.ProductName</a>
+                                </td>
+                                <td><span class="badge bg-blue-lt">@p.TotalSold</span></td>
+                                <td>@p.TotalRevenue.ToString("N2") TL</td>
+                                <td>
+                                    <span class="@(p.ReturnRate > 10 ? "text-danger" : "text-secondary")">
+                                        %@p.ReturnRate.ToString("F1")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (p.AverageRating > 0)
+                                    {
+                                        <span class="text-warning"><i class="ti ti-star-filled"></i> @p.AverageRating.ToString("F1")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
