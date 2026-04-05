@@ -4,13 +4,14 @@ namespace Entegrasyon.E2E.PageObjects.Categories;
 
 /// <summary>
 /// /categories — Kategori yönetim sayfasının POM'u.
-/// Sol panel: CategoryTreePanel (ağaç), Sağ panel: CategoryDetailsPanel (detay).
+/// Sol panel: ağaç listesi, Sağ panel: detay.
+/// Tabler UI: .col-lg-4 kolonlar, .modal dialog, Bootstrap ağaç yapısı.
 /// </summary>
 public class CategoriesPage(IPage page, string baseUrl)
 {
     public ILocator PageTitle => page.GetByText("Kategori Yönetimi");
-    public ILocator TreePanel => page.Locator(".mud-grid-item").First;
-    public ILocator DetailPanel => page.Locator(".mud-grid-item").Nth(1);
+    public ILocator TreePanel => page.Locator(".col-lg-4").First;
+    public ILocator DetailPanel => page.Locator(".col-lg-4").Nth(1);
 
     public async Task NavigateAsync()
     {
@@ -19,27 +20,25 @@ public class CategoriesPage(IPage page, string baseUrl)
     }
 
     /// <summary>
-    /// "Yeni Kategori Ekle" dialog'unu aç.
-    /// CategoryTreePanel içindeki Ekle butonuna tıklar.
+    /// "Yeni Kategori Ekle" modal'ını aç.
     /// </summary>
     public async Task ClickAddCategoryAsync()
     {
-        // TreePanel içindeki add butonunu bul
         var addButton = page.GetByRole(AriaRole.Button, new() { Name = "Ekle" });
         await addButton.ClickAsync();
     }
 
     /// <summary>
-    /// Kategori dialog'unda isim girip kaydet.
+    /// Kategori modal'ında isim girip kaydet.
     /// </summary>
     public async Task FillAndSaveCategoryDialogAsync(string name)
     {
-        var dialog = page.Locator(".mud-dialog");
-        await dialog.WaitForAsync(new() { Timeout = 5000 });
+        var modal = page.Locator(".modal.show");
+        await modal.WaitForAsync(new() { Timeout = 5000 });
 
         await page.GetByLabel("Kategori Adı").FillAsync(name);
 
-        await MudBlazorHelpers.ConfirmMudDialogAsync(page, "Kaydet");
+        await page.ConfirmModalAsync();
     }
 
     /// <summary>
@@ -57,6 +56,6 @@ public class CategoriesPage(IPage page, string baseUrl)
     public async Task SelectCategoryAsync(string categoryName)
     {
         await page.GetByText(categoryName, new() { Exact = false }).ClickAsync();
-        await page.WaitForBlazorRenderAsync();
+        await page.WaitForHtmxSettleAsync();
     }
 }

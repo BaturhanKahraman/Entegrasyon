@@ -34,7 +34,7 @@ services:
       dockerfile: Application/Entegrasyon.MVC/Dockerfile
     container_name: entegrasyon-e2e-app
     ports:
-      - "5099:8080"
+      - "5100:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Testing
       - ASPNETCORE_URLS=http://+:8080

@@ -5,13 +5,14 @@ namespace Entegrasyon.E2E.PageObjects.Categories;
 /// <summary>
 /// /categories/import — Kategori içe aktarma sayfasının POM'u.
 /// Trendyol, Hepsiburada ve N11 tab'larını barındırır.
+/// Tabler UI: .nav-tabs / .nav-link tab yapısı, .card kart yapısı.
 /// </summary>
 public class CategoryImportPage(IPage page, string baseUrl)
 {
     public ILocator PageTitle => page.GetByText("Kategori İçe Aktar");
 
-    // N11 tab — MudTabPanel içinde "N11" metni
-    public ILocator N11Tab => page.Locator(".mud-tab").Filter(new() { HasText = "N11" });
+    // N11 tab — .nav-tabs içinde "N11" metni
+    public ILocator N11Tab => page.Locator(".nav-tabs .nav-link").Filter(new() { HasText = "N11" });
 
     // N11 tab içeriği paneli — "N11 Kategorileri" başlığı
     public ILocator N11ContentTitle => page.GetByText("N11 Kategorileri");
@@ -22,10 +23,10 @@ public class CategoryImportPage(IPage page, string baseUrl)
     public ILocator LoadCategoriesButton => page.GetByRole(AriaRole.Button, new() { Name = "Kategorileri Yükle" }).Last;
 
     // Ağaç görünümü konteyneri (kategoriler yüklendikten sonra görünür)
-    public ILocator TreeViewContainer => page.Locator(".mud-treeview");
+    public ILocator TreeViewContainer => page.Locator(".tree-view, [data-tree]");
 
     // Boş durum uyarısı — "Kategorileri görüntülemek için" metni
-    public ILocator EmptyStateAlert => page.Locator(".mud-alert").Filter(new() { HasText = "Kategorileri görüntülemek için" }).Last;
+    public ILocator EmptyStateAlert => page.Locator(".alert").Filter(new() { HasText = "Kategorileri görüntülemek için" }).Last;
 
     public async Task NavigateAsync()
     {
@@ -34,11 +35,11 @@ public class CategoryImportPage(IPage page, string baseUrl)
     }
 
     /// <summary>
-    /// N11 tab'ına tıkla ve Blazor render'ını bekle.
+    /// N11 tab'ına tıkla ve HTMX settle'ı bekle.
     /// </summary>
     public async Task ClickN11TabAsync()
     {
         await N11Tab.ClickAsync();
-        await page.WaitForBlazorRenderAsync();
+        await page.WaitForHtmxSettleAsync();
     }
 }

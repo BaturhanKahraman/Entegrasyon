@@ -5,7 +5,7 @@ namespace Entegrasyon.E2E.Tests.P0_Smoke;
 /// <summary>
 /// TÜM route'ları ziyaret eder ve hiçbirinde hata olmadığını doğrular.
 /// Bu tek test bile "bir şey bozulmuş mu?" sorusunu büyük ölçüde yanıtlar.
-/// Her sayfada ErrorBoundary veya Blazor hata UI'ı aranır.
+/// Her sayfada hata UI'ı veya 500 sayfası aranır.
 /// </summary>
 [TestFixture, Order(2)]
 public class NavigationTests : E2ETestBase
@@ -19,9 +19,10 @@ public class NavigationTests : E2ETestBase
         "/products",
         "/products/add",
         "/categories",
+        "/categories/import",
         "/attributes",
         "/brands",
-        "/sales",
+        "/pos",
         "/orders",
         "/customers",
         "/invoices",
@@ -34,14 +35,47 @@ public class NavigationTests : E2ETestBase
         "/reports/sales",
         "/reports/inventory",
         "/reports/marketplace",
+        "/reports/customers",
+        "/reports/returns",
+        "/reports/tax",
+        "/reports/category-sales",
+        "/reports/shipping",
         "/users",
         "/roles",
         "/settings/general",
         "/settings/notifications",
         "/settings/integrations",
         "/settings/printing",
+        "/settings/tax",
+        "/settings/shipping",
+        "/settings/webhooks",
+        "/settings/api-keys",
         "/profile",
-        "/notifications"
+        "/profile/change-password",
+        "/profile/activity",
+        "/notifications",
+        "/logs",
+        "/stock/movements",
+        "/discounts",
+        "/discounts/create",
+        "/gift-cards",
+        "/gift-cards/create",
+        "/storefront/commissions",
+        "/storefront/abandoned-carts",
+        "/storefront/wallets",
+        "/storefront/wishlists",
+        "/storefront/stock-notifications",
+        "/storefront/search-analytics",
+        "/storefront/push-notifications",
+        "/storefront/referrals",
+        "/shipping/companies",
+        "/returns",
+        "/picking",
+        "/integrations/health",
+        "/customers/1/dashboard",
+        "/pricing",
+        "/pricing/rules",
+        "/loyalty"
     ];
 
     [SetUp]
@@ -61,12 +95,11 @@ public class NavigationTests : E2ETestBase
 
             try
             {
-                await Page.WaitForBlazorRenderAsync();
-                await Page.WaitForBlazorConnectedAsync();
+                await Page.WaitForHtmxSettleAsync();
 
                 var hasNoError = await Page.HasNoErrorAsync();
                 if (!hasNoError)
-                    failedRoutes.Add($"{route} — ErrorBoundary veya Blazor hatası görüldü");
+                    failedRoutes.Add($"{route} — Hata sayfası tespit edildi");
 
                 // Auth redirect kontrolü — session düştüyse login'e yönlenmiş olabilir
                 if (Page.Url.Contains("/auth/login"))
@@ -92,7 +125,7 @@ public class NavigationTests : E2ETestBase
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         // Dashboard içeriği yüklenmeli
-        var mainContent = Page.Locator(".mud-main-content");
+        var mainContent = Page.Locator(".page-body");
         await Expect(mainContent).ToBeVisibleAsync();
 
         var hasNoError = await Page.HasNoErrorAsync();
@@ -106,10 +139,10 @@ public class NavigationTests : E2ETestBase
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         // Sol menü görünmeli
-        var drawer = Page.Locator(".mud-drawer");
+        var drawer = Page.Locator("aside.navbar-vertical");
         await Expect(drawer).ToBeVisibleAsync();
 
-        // Temel menü grupları görünmeli
-        await Expect(Page.GetByText("Yönetim")).ToBeVisibleAsync();
+        // Temel menü linkleri görünmeli
+        await Expect(Page.Locator("aside.navbar-vertical .nav-link").First).ToBeVisibleAsync();
     }
 }

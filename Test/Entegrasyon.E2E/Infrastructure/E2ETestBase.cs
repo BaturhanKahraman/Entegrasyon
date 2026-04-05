@@ -21,7 +21,7 @@ public class E2ETestBase : PageTest
     {
         BaseUrl = Environment.GetEnvironmentVariable("E2E_BASE_URL")
                   ?? Configuration["E2E:BaseUrl"]
-                  ?? "http://localhost:5099";
+                  ?? "http://localhost:5100";
     }
 
     [SetUp]

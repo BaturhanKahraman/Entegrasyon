@@ -73,8 +73,7 @@ public class N11MarketplaceTests : E2ETestBase
     public async Task MarketplaceSyncPage_ShouldLoadWithoutErrors()
     {
         await Page.GotoAsync($"{BaseUrl}/marketplace/sync");
-        await Page.WaitForBlazorRenderAsync();
-        await Page.WaitForBlazorConnectedAsync();
+        await Page.WaitForHtmxSettleAsync();
 
         var hasNoError = await Page.HasNoErrorAsync();
         Assert.That(hasNoError, Is.True, "Pazaryeri senkronizasyon sayfasında hata tespit edildi");
@@ -87,10 +86,10 @@ public class N11MarketplaceTests : E2ETestBase
     public async Task MarketplaceSyncPage_ShouldShowN11Card()
     {
         await Page.GotoAsync($"{BaseUrl}/marketplace/sync");
-        await Page.WaitForBlazorRenderAsync();
+        await Page.WaitForHtmxSettleAsync();
 
-        // N11 kart başlığı görünmeli
-        var n11Heading = Page.Locator(".mud-card-header").Filter(new() { HasText = "N11" });
+        // N11 kart başlığı görünmeli (Tabler: .card-header)
+        var n11Heading = Page.Locator(".card-header").Filter(new() { HasText = "N11" });
         await Expect(n11Heading).ToBeVisibleAsync();
 
         var hasNoError = await Page.HasNoErrorAsync();
@@ -101,14 +100,12 @@ public class N11MarketplaceTests : E2ETestBase
     public async Task IntegrationSettingsPage_ShouldShowN11()
     {
         await Page.GotoAsync($"{BaseUrl}/settings/integrations");
-        await Page.WaitForBlazorRenderAsync();
-        await Page.WaitForBlazorConnectedAsync();
+        await Page.WaitForHtmxSettleAsync();
 
         var hasNoError = await Page.HasNoErrorAsync();
         Assert.That(hasNoError, Is.True, "Entegrasyon ayarları sayfasında hata tespit edildi");
 
-        // Sayfa "Trendyol" içermeli (N11 settings kartı henüz eklenmemiş olabilir,
-        // ancak sayfanın sorunsuz yüklendiğini doğrularız)
+        // Sayfa "Trendyol" içermeli
         await Expect(Page.GetByText("Trendyol").First).ToBeVisibleAsync();
     }
 }

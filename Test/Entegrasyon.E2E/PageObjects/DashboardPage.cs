@@ -5,7 +5,7 @@ namespace Entegrasyon.E2E.PageObjects;
 /// </summary>
 public class DashboardPage(IPage page, string baseUrl)
 {
-    public ILocator PageContent => page.Locator(".mud-main-content");
+    public ILocator PageContent => page.Locator(".page-body");
 
     public async Task NavigateAsync()
     {

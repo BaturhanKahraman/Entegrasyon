@@ -5,7 +5,7 @@ namespace Entegrasyon.E2E.Tests.P1_CoreFlows;
 
 /// <summary>
 /// Kategori yönetimi CRUD akışlarını test eder.
-/// Ağaç yapısı, kategori ekleme dialog'u, seçim ve detay paneli.
+/// Ağaç yapısı, kategori ekleme modal'ı, seçim ve detay paneli.
 /// </summary>
 [TestFixture, Order(11)]
 public class CategoryManagementTests : E2ETestBase
@@ -44,22 +44,22 @@ public class CategoryManagementTests : E2ETestBase
     }
 
     [Test]
-    public async Task CategoryAdd_OpensDialog()
+    public async Task CategoryAdd_OpensModal()
     {
         var catPage = new CategoriesPage(Page, BaseUrl);
         await catPage.NavigateAsync();
 
         await catPage.ClickAddCategoryAsync();
 
-        // Dialog açılmış olmalı
-        var dialog = Page.Locator(".mud-dialog");
-        await Expect(dialog).ToBeVisibleAsync(new() { Timeout = 5000 });
+        // Modal açılmış olmalı
+        var modal = Page.Locator(".modal.show");
+        await Expect(modal).ToBeVisibleAsync(new() { Timeout = 5000 });
 
         // Kategori Adı alanı görünmeli
         await Expect(Page.GetByLabel("Kategori Adı")).ToBeVisibleAsync();
 
-        // Dialog'u kapat
-        await MudBlazorHelpers.CancelMudDialogAsync(Page);
+        // Modal'ı kapat
+        await Page.CancelModalAsync();
     }
 
     [Test]
@@ -74,8 +74,8 @@ public class CategoryManagementTests : E2ETestBase
         await catPage.ClickAddCategoryAsync();
         await catPage.FillAndSaveCategoryDialogAsync(categoryName);
 
-        // Snackbar başarı mesajı veya ağaçta yeni kategori görünmeli
-        await Page.WaitForBlazorRenderAsync();
+        // Toast başarı mesajı veya ağaçta yeni kategori görünmeli
+        await Page.WaitForHtmxSettleAsync();
 
         var hasNoError = await Page.HasNoErrorAsync();
         Assert.That(hasNoError, Is.True, "Kategori ekleme sırasında hata oluştu");

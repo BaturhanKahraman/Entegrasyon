@@ -11,6 +11,8 @@ public class AddProductPage(IPage page, string baseUrl)
     // Step 0 — Genel Bilgiler
     public ILocator TitleField => page.GetByLabel("Ürün Başlığı");
     public ILocator StockCodeField => page.GetByLabel("Stok Kodu");
+    public ILocator BrandSelect => page.Locator("select.form-select").First;
+    public ILocator CategorySelect => page.Locator("select.form-select").Nth(1);
     public ILocator BrandAutocomplete => page.GetByLabel("Marka");
     public ILocator CategoryAutocomplete => page.GetByLabel("Kategori");
     public ILocator SeasonField => page.GetByLabel("Sezon");
@@ -33,39 +35,35 @@ public class AddProductPage(IPage page, string baseUrl)
     }
 
     /// <summary>
-    /// Step 0: Genel bilgileri doldur. Marka ve Kategori autocomplete ile seçilir.
+    /// Step 0: Genel bilgileri doldur. Marka ve Kategori select ile seçilir.
     /// </summary>
     public async Task FillGeneralInfoAsync(string title, string stockCode, string brand, string category)
     {
         await TitleField.FillAsync(title);
         await StockCodeField.FillAsync(stockCode);
 
-        // Marka autocomplete
-        await MudBlazorHelpers.FillMudAutocompleteAsync(
-            page, page.Locator(".mud-autocomplete").First, brand, brand);
+        // Marka select
+        await page.SelectOptionAsync("select.form-select >> nth=0", new SelectOptionValue { Label = brand });
 
-        // Kategori autocomplete
-        await MudBlazorHelpers.FillMudAutocompleteAsync(
-            page, page.Locator(".mud-autocomplete").Nth(1), category, category);
-
-        // Kategori seçildikten sonra attribute'ların yüklenmesini bekle
-        await page.WaitForBlazorRenderAsync();
+        // Kategori select — kategori seçildikten sonra attribute'ların yüklenmesini bekle
+        await page.SelectOptionAsync("select.form-select >> nth=1", new SelectOptionValue { Label = category });
+        await page.WaitForHtmxSettleAsync();
     }
 
     /// <summary>
-    /// İleri butonuna tıkla ve Blazor render'ını bekle.
+    /// İleri butonuna tıkla ve HTMX settle'ı bekle.
     /// </summary>
     public async Task ClickNextAsync()
     {
-        await NextButton.ClickAndWaitForBlazorAsync(page);
+        await NextButton.ClickAndWaitForHtmxAsync(page);
     }
 
     /// <summary>
-    /// Kaydet butonuna tıkla ve snackbar sonucunu döndür.
+    /// Kaydet butonuna tıkla ve toast sonucunu döndür.
     /// </summary>
     public async Task<string> ClickSaveAsync()
     {
         await SaveButton.ClickAsync();
-        return await page.WaitForSnackbarAsync();
+        return await page.WaitForToastAsync();
     }
 }

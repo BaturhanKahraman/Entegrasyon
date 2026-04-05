@@ -24,13 +24,17 @@ public class AppStartupTests : E2ETestBase
     }
 
     [Test]
-    public async Task App_BlazorSignalR_Connects()
+    public async Task App_DashboardLoads_AfterLogin()
     {
-        await Page.GotoAsync($"{BaseUrl}/auth/login");
+        await LoginAsAdminAsync();
+
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-        // Blazor bağlantı hatası olmadığını doğrula
+        // Dashboard içeriği yüklenmeli
         var hasNoError = await Page.HasNoErrorAsync();
-        Assert.That(hasNoError, Is.True, "Blazor SignalR bağlantı hatası tespit edildi");
+        Assert.That(hasNoError, Is.True, "Dashboard yüklenirken hata tespit edildi");
+
+        // .page-body görünmeli
+        await Expect(Page.Locator(".page-body")).ToBeVisibleAsync(new() { Timeout = 10000 });
     }
 }

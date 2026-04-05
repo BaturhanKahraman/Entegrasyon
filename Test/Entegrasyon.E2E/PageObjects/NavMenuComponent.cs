@@ -2,27 +2,19 @@ namespace Entegrasyon.E2E.PageObjects;
 
 /// <summary>
 /// Sol navigasyon menüsünün Page Object Model'i.
-/// MudNavMenu yapısı: expandable gruplar + MudNavLink'ler.
+/// Tabler UI: aside.navbar-vertical — flat link yapısı, collapsible grup yok.
 /// </summary>
 public class NavMenuComponent(IPage page)
 {
-    public ILocator NavDrawer => page.Locator(".mud-drawer");
+    public ILocator NavDrawer => page.Locator("aside.navbar-vertical");
 
     /// <summary>
     /// Menüde belirtilen metne sahip link'e tıkla.
     /// </summary>
     public async Task ClickNavLinkAsync(string linkText)
     {
-        await NavDrawer.GetByText(linkText, new() { Exact = false }).ClickAsync();
+        await NavDrawer.Locator(".nav-link").Filter(new() { HasText = linkText }).ClickAsync();
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-    }
-
-    /// <summary>
-    /// Expandable grup başlığına tıkla (ör: "Yönetim", "Pazaryeri").
-    /// </summary>
-    public async Task ExpandGroupAsync(string groupText)
-    {
-        await NavDrawer.GetByText(groupText, new() { Exact = false }).ClickAsync();
     }
 
     /// <summary>
@@ -31,6 +23,6 @@ public class NavMenuComponent(IPage page)
     /// </summary>
     public async Task<bool> IsNavLinkVisibleAsync(string linkText)
     {
-        return await NavDrawer.GetByText(linkText, new() { Exact = false }).IsVisibleAsync();
+        return await NavDrawer.Locator(".nav-link").Filter(new() { HasText = linkText }).IsVisibleAsync();
     }
 }

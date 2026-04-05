@@ -6,8 +6,8 @@ namespace Entegrasyon.E2E.PageObjects.Products;
 public class ProductsListPage(IPage page, string baseUrl)
 {
     public ILocator AddProductButton => page.GetByRole(AriaRole.Button, new() { Name = "Yeni Ürün Ekle" });
-    public ILocator DataGrid => page.Locator(".mud-table");
-    public ILocator DataGridRows => page.Locator(".mud-table-body tr.mud-table-row");
+    public ILocator DataGrid => page.Locator(".table");
+    public ILocator DataGridRows => page.Locator(".table tbody tr");
 
     public async Task NavigateAsync()
     {

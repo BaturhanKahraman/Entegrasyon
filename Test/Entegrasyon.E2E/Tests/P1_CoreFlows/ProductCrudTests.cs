@@ -70,7 +70,7 @@ public class ProductCrudTests : E2ETestBase
 
         // Boş form ile ileri gitmeyi dene
         await addPage.NextButton.ClickAsync();
-        await Page.WaitForBlazorRenderAsync();
+        await Page.WaitForHtmxSettleAsync();
 
         // Hala Step 0'da olmalıyız (validation hatası nedeniyle)
         await Expect(addPage.TitleField).ToBeVisibleAsync();
