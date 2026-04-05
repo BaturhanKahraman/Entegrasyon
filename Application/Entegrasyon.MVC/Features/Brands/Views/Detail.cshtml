@@ -1,0 +1,106 @@
+@model Entegrasyon.Entity.Dtos.Brand.BrandDetailDto
+
+@{
+    var mappings = ViewBag.Mappings as List<Entegrasyon.Entity.Dtos.Brand.BrandMarketPlaceMatchDto> ?? new();
+}
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/brands" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i>
+        Markalara Don
+    </a>
+</div>
+
+<div class="row row-deck row-cards">
+    <!-- Marka Bilgileri -->
+    <div class="col-lg-6">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Marka Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Marka Adi</div>
+                        <div class="datagrid-content fw-bold">@Model.Name</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Urun Sayisi</div>
+                        <div class="datagrid-content">
+                            <span class="badge bg-blue">@Model.ProductNumber urun</span>
+                        </div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Olusturulma</div>
+                        <div class="datagrid-content">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pazaryeri Eslesmeleri -->
+    <div class="col-lg-6">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Pazaryeri Eslesmeleri</h3>
+                <div class="card-actions">
+                    <span class="badge bg-blue">@mappings.Count eslestirme</span>
+                </div>
+            </div>
+            @if (mappings.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Pazaryeri</th>
+                                <th>Pazaryeri Marka ID</th>
+                                <th>Pazaryeri Marka Adi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mp in mappings)
+                            {
+                                <tr>
+                                    <td>
+                                        @{
+                                            var mpName = mp.MarketPlaceId switch
+                                            {
+                                                1 => "Trendyol",
+                                                2 => "N11",
+                                                3 => "Hepsiburada",
+                                                4 => "Amazon",
+                                                5 => "Pazarama",
+                                                7 => "PttAVM",
+                                                8 => "Ciceksepeti",
+                                                _ => $"Marketplace #{mp.MarketPlaceId}"
+                                            };
+                                        }
+                                        @mpName
+                                    </td>
+                                    <td><code>@mp.MarketPlaceBrandId</code></td>
+                                    <td>@mp.MarketPlaceBrandName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="empty py-3">
+                        <p class="empty-title">Eslestirme bulunamadi</p>
+                        <p class="empty-subtitle text-secondary">
+                            Bu marka henuz hicbir pazaryerine eslestirmemis.
+                        </p>
+                        <a href="/marketplace/matching?tab=brands" class="btn btn-primary btn-sm mt-2">
+                            <i class="ti ti-link me-1"></i>Eslestir
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

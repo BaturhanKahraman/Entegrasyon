@@ -116,6 +116,8 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
 
         var items = await query
             .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
+            .OrderByDescending(x => x.ProductNumber)
+            .ThenBy(x => x.Name)
             .ToPageableAsync(request);
 
         return new SuccessDataResult<Pageable<BrandListDetailDto>>(items);

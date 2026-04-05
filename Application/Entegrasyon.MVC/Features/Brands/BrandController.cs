@@ -10,7 +10,7 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 namespace Entegrasyon.MVC.Features.Brands;
 
 [Authorize]
-public class BrandController(IBrandService brandService) : HtmxController
+public class BrandController(IBrandService brandService, IBrandMatchService brandMatchService) : HtmxController
 {
     [HttpGet("/brands")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -34,6 +34,26 @@ public class BrandController(IBrandService brandService) : HtmxController
         var result = await brandService.AddBrand(new AddBrandDto { Name = name });
 
         return HtmxMutationResult(result, "Marka eklendi.", "Eklenemedi.", refreshEvent: "brandChanged");
+    }
+
+    [HttpGet("/brands/{id:int}")]
+    public async Task<IActionResult> Detail(int id)
+    {
+        var result = await brandService.GetBrandDetail(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Marka bulunamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var mappings = await brandMatchService.GetBrandMappingsByBrandIdAsync(id);
+
+        ViewData.SetPageTitle(result.Data!.Name);
+        ViewData.SetActiveNav("brands");
+        ViewData.SetBreadcrumb(("Markalar", "/brands"), (result.Data.Name, null));
+
+        ViewBag.Mappings = mappings.Success ? mappings.Data : new List<Entity.Dtos.Brand.BrandMarketPlaceMatchDto>();
+        return View(result.Data);
     }
 
     [HttpPost("/brands/{id:int}/delete")]

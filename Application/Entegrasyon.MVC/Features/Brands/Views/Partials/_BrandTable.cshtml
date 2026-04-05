@@ -17,7 +17,7 @@
                     @foreach (var brand in Model.Items)
                     {
                         <tr>
-                            <td>@brand.Name</td>
+                            <td><a href="/brands/@brand.Id">@brand.Name</a></td>
                             <td>
                                 <span class="badge bg-blue-lt">@brand.ProductNumber</span>
                             </td>
