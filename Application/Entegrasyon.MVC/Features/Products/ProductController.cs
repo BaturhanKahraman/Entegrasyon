@@ -261,6 +261,32 @@ public class ProductController(
             {
                 vm.TitleOverride = overrideResult.Data.TitleOverride;
                 vm.DescriptionOverride = overrideResult.Data.DescriptionOverride;
+
+                // Variant price overrides
+                vm.Variants = result.Data.ProductVariantsDetails.Select(v =>
+                {
+                    var ovr = overrideResult.Data.VariantOverrides?
+                        .FirstOrDefault(o => o.ProductVariantId == v.Id);
+                    return new VariantOverrideVm
+                    {
+                        VariantId = v.Id,
+                        Barcode = v.Barcode,
+                        ListPrice = v.ListPrice,
+                        SalePrice = v.SalePrice,
+                        ListPriceOverride = ovr?.ListPriceOverride,
+                        SalePriceOverride = ovr?.SalePriceOverride
+                    };
+                }).ToList();
+            }
+            else
+            {
+                vm.Variants = result.Data.ProductVariantsDetails.Select(v => new VariantOverrideVm
+                {
+                    VariantId = v.Id,
+                    Barcode = v.Barcode,
+                    ListPrice = v.ListPrice,
+                    SalePrice = v.SalePrice
+                }).ToList();
             }
 
             // If all preflight checks pass, load preview
@@ -291,8 +317,17 @@ public class ProductController(
     [HttpPost("/products/{id:guid}/sync/trendyol/send")]
     public async Task<IActionResult> TrendyolSendPost(Guid id, TrendyolSendVm vm)
     {
-        // Save overrides if provided
-        if (!string.IsNullOrWhiteSpace(vm.TitleOverride) || !string.IsNullOrWhiteSpace(vm.DescriptionOverride))
+        // Save overrides
+        var variantOverrides = vm.Variants?
+            .Where(v => v.ListPriceOverride.HasValue || v.SalePriceOverride.HasValue)
+            .Select(v => new Entity.Dtos.Product.Marketplace.VariantPriceOverrideDto
+            {
+                ProductVariantId = v.VariantId,
+                ListPriceOverride = v.ListPriceOverride,
+                SalePriceOverride = v.SalePriceOverride
+            }).ToList() ?? [];
+
+        if (!string.IsNullOrWhiteSpace(vm.TitleOverride) || !string.IsNullOrWhiteSpace(vm.DescriptionOverride) || variantOverrides.Count > 0)
         {
             var saveDto = new SaveMarketplaceOverridesDto
             {
@@ -300,7 +335,7 @@ public class ProductController(
                 MarketPlaceId = 1,
                 TitleOverride = vm.TitleOverride?.Trim(),
                 DescriptionOverride = vm.DescriptionOverride?.Trim(),
-                VariantOverrides = []
+                VariantOverrides = variantOverrides
             };
             await marketplaceOverrideManager.SaveOverridesAsync(saveDto);
         }

@@ -107,6 +107,58 @@
                                           @(Model.PreflightPassed ? "" : "disabled")>@Model.DescriptionOverride</textarea>
                                 <small class="form-hint">Trendyol'da gorunecek aciklama. Bos birakirsaniz urunun mevcut aciklamasi gonderilir.</small>
                             </div>
+
+                            @if (Model.Variants.Any())
+                            {
+                                <hr class="my-3" />
+                                <h4 class="subheader mb-2">Varyant Fiyat Override</h4>
+                                <small class="text-secondary d-block mb-3">Bos birakirsaniz urunun mevcut fiyati gonderilir.</small>
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Barkod</th>
+                                                <th class="text-end">Liste Fiyati</th>
+                                                <th class="text-end">Satis Fiyati</th>
+                                                <th>Trendyol Liste</th>
+                                                <th>Trendyol Satis</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (var i = 0; i < Model.Variants.Count; i++)
+                                            {
+                                                var v = Model.Variants[i];
+                                                <tr>
+                                                    <td><code>@v.Barcode</code>
+                                                        <input type="hidden" name="Variants[@i].VariantId" value="@v.VariantId" />
+                                                        <input type="hidden" name="Variants[@i].Barcode" value="@v.Barcode" />
+                                                        <input type="hidden" name="Variants[@i].ListPrice" value="@v.ListPrice" />
+                                                        <input type="hidden" name="Variants[@i].SalePrice" value="@v.SalePrice" />
+                                                    </td>
+                                                    <td class="text-end text-secondary">@v.ListPrice.ToString("N2")</td>
+                                                    <td class="text-end text-secondary">@v.SalePrice.ToString("N2")</td>
+                                                    <td>
+                                                        <input type="number" class="form-control form-control-sm"
+                                                               name="Variants[@i].ListPriceOverride"
+                                                               value="@v.ListPriceOverride"
+                                                               placeholder="@v.ListPrice.ToString("N2")"
+                                                               step="0.01" min="0"
+                                                               @(Model.PreflightPassed ? "" : "disabled") />
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" class="form-control form-control-sm"
+                                                               name="Variants[@i].SalePriceOverride"
+                                                               value="@v.SalePriceOverride"
+                                                               placeholder="@v.SalePrice.ToString("N2")"
+                                                               step="0.01" min="0"
+                                                               @(Model.PreflightPassed ? "" : "disabled") />
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
                         </div>
                         <div class="card-footer text-end">
                             <button type="submit" class="btn btn-primary"
