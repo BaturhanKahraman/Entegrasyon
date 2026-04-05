@@ -1,0 +1,81 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Orders.Order>
+
+<div id="picking-table">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Siparis No</th>
+                        <th>Musteri</th>
+                        <th>Siparis Tarihi</th>
+                        <th>Urun Adedi</th>
+                        <th>Toplam</th>
+                        <th>Pazaryeri</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Items)
+                    {
+                        <tr id="picking-row-@order.Id">
+                            <td>
+                                <a href="/marketplace/orders/@order.Id" class="text-reset fw-bold" target="_blank">
+                                    @(order.OrderNumber ?? order.Id.ToString()[..8])
+                                </a>
+                            </td>
+                            <td class="text-secondary">
+                                @order.CustomerFirstName @order.CustomerLastName
+                            </td>
+                            <td class="text-secondary">
+                                @(order.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-lt">@order.TotalQuantity adet</span>
+                            </td>
+                            <td class="fw-bold">
+                                @(order.TotalPrice.ToString("N2")) TL
+                            </td>
+                            <td class="text-secondary">
+                                @(order.MarketPlace?.Name ?? (order.MarketPlaceId.HasValue ? $"MP #{order.MarketPlaceId}" : "Magaza"))
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        hx-post="/picking/@order.Id/pack"
+                                        hx-target="#picking-row-@order.Id"
+                                        hx-swap="outerHTML swap:300ms"
+                                        hx-confirm="Bu siparis hazirlaniyor olarak isaretlensin mi?">
+                                    <i class="ti ti-package icon"></i>
+                                    Paketle
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/picking",
+                     TargetId = "#picking-table",
+                     QueryParams = new Dictionary<string, string>()
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Hazirlama bekleyen siparis yok",
+                         Subtitle = "Tum siparisler isleme alindi veya henuz yeni siparis gelmedi."
+                     }'/>
+        </div>
+    }
+</div>
