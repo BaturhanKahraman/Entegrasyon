@@ -30,31 +30,36 @@
                                     "Kategori Eslestirmesi",
                                     Model.Preflight.CategoryMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedCategoryName}"
-                                        : "Trendyol kategori eslestirmesi bulunamadi"); }
+                                        : "Trendyol kategori eslestirmesi bulunamadi",
+                                    Model.Preflight.CategoryMatched ? null : "/marketplace/matching?tab=categories"); }
 
                                 @{ RenderCheck(Model.Preflight.BrandMatched,
                                     "Marka Eslestirmesi",
                                     Model.Preflight.BrandMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedBrandName}"
-                                        : "Trendyol marka eslestirmesi bulunamadi"); }
+                                        : "Trendyol marka eslestirmesi bulunamadi",
+                                    Model.Preflight.BrandMatched ? null : "/marketplace/matching?tab=brands"); }
 
                                 @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
                                     "Zorunlu Ozellikler",
                                     Model.Preflight.RequiredAttributesMatched
                                         ? "Tum zorunlu ozellikler eslesti"
-                                        : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}"); }
+                                        : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}",
+                                    Model.Preflight.RequiredAttributesMatched ? null : "/marketplace/matching?tab=attributes"); }
 
                                 @{ RenderCheck(Model.Preflight.HasVariants,
                                     "Varyant Durumu",
                                     Model.Preflight.HasVariants
                                         ? "En az bir varyant mevcut"
-                                        : "Urunun varyanti bulunmuyor"); }
+                                        : "Urunun varyanti bulunmuyor",
+                                    Model.Preflight.HasVariants ? null : $"/products/{Model.ProductId}/variants"); }
 
                                 @{ RenderCheck(Model.Preflight.AllVariantsHaveBarcodes,
                                     "Barkod Durumu",
                                     Model.Preflight.AllVariantsHaveBarcodes
                                         ? "Tum varyantlarin barkodu mevcut"
-                                        : "Barkodu olmayan varyantlar var"); }
+                                        : "Barkodu olmayan varyantlar var",
+                                    Model.Preflight.AllVariantsHaveBarcodes ? null : $"/products/{Model.ProductId}/variants"); }
                             </div>
 
                             @if (Model.PreflightPassed)
@@ -263,9 +268,11 @@
         </div>
 
 @functions {
-    void RenderCheck(bool passed, string label, string detail)
+    void RenderCheck(bool passed, string label, string detail, string? fixUrl = null)
     {
-        <div class="list-group-item">
+        <div class="list-group-item @(!passed && fixUrl != null ? "list-group-item-action" : "")"
+             @(!passed && fixUrl != null ? $"onclick=\"window.location='{fixUrl}'\"" : "")
+             style="@(!passed && fixUrl != null ? "cursor:pointer" : "")">
             <div class="row align-items-center">
                 <div class="col-auto">
                     @if (passed)
@@ -285,6 +292,12 @@
                     @if (passed)
                     {
                         <i class="ti ti-check icon text-green"></i>
+                    }
+                    else if (fixUrl != null)
+                    {
+                        <a href="@fixUrl" class="btn btn-sm btn-outline-primary">
+                            <i class="ti ti-external-link me-1"></i>Duzelt
+                        </a>
                     }
                     else
                     {
