@@ -1,0 +1,156 @@
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-md-3">
+                <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
+            </div>
+            <div class="col-md-9">
+                <!-- KDV Oranlari Tablosu -->
+                <div class="card mb-3">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h3 class="card-title">KDV Oranlari</h3>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaxModal">
+                            <i class="ti ti-plus me-1"></i>Oran Ekle
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Oran (%)</th>
+                                    <th>Aciklama</th>
+                                    <th>Varsayilan</th>
+                                    <th>Durum</th>
+                                    <th class="w-1"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>%1</strong></td>
+                                    <td>Indirimli KDV (Temel gida, tarim urunleri)</td>
+                                    <td><span class="badge bg-green-lt">Hayir</span></td>
+                                    <td><span class="badge bg-green-lt">Aktif</span></td>
+                                    <td>
+                                        <button class="btn btn-ghost-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editTaxModal">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>%10</strong></td>
+                                    <td>Indirimli KDV (Gida, konut)</td>
+                                    <td><span class="badge bg-blue-lt">Evet</span></td>
+                                    <td><span class="badge bg-green-lt">Aktif</span></td>
+                                    <td>
+                                        <button class="btn btn-ghost-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editTaxModal">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>%20</strong></td>
+                                    <td>Standart KDV (Genel)</td>
+                                    <td><span class="badge bg-green-lt">Hayir</span></td>
+                                    <td><span class="badge bg-green-lt">Aktif</span></td>
+                                    <td>
+                                        <button class="btn btn-ghost-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editTaxModal">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-secondary small">
+                        <i class="ti ti-info-circle me-1"></i>
+                        Vergi oranlari demo amaclidir. Gercek yapilandirma yakin zamanda aktif olacak.
+                    </div>
+                </div>
+
+                <!-- Kategori Bazli KDV -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Kategori Bazli KDV Eslesme</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="empty py-3">
+                            <p class="empty-title">Kategori KDV eslesmesi tanimlanmamis</p>
+                            <p class="empty-subtitle text-secondary">
+                                Kategorilere ozgu KDV orani atamak icin bu bolumu kullanabilirsiniz.
+                            </p>
+                            <div class="empty-action">
+                                <button class="btn btn-primary" disabled>
+                                    <i class="ti ti-plus me-1"></i>Esleme Ekle (Yakin zamanda aktif)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Tax Modal -->
+<div class="modal modal-blur fade" id="addTaxModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">KDV Orani Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">KDV Orani (%)</label>
+                    <input type="number" class="form-control" placeholder="Ornegin: 20" min="0" max="100" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Aciklama</label>
+                    <input type="text" class="form-control" placeholder="KDV aciklamasi" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" />
+                        <span class="form-check-label">Varsayilan oran olarak ayarla</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Kaydet (Demo)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Tax Modal -->
+<div class="modal modal-blur fade" id="editTaxModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">KDV Orani Duzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">KDV Orani (%)</label>
+                    <input type="number" class="form-control" value="20" min="0" max="100" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Aciklama</label>
+                    <input type="text" class="form-control" value="Standart KDV (Genel)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" />
+                        <span class="form-check-label">Varsayilan oran olarak ayarla</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Kaydet (Demo)</button>
+            </div>
+        </div>
+    </div>
+</div>

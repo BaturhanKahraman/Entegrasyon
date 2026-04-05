@@ -347,6 +347,30 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link @(activeNav == "settings-tax" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/tax">
+                        <span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span>
+                        <span class="nav-link-title">Vergi Ayarlari</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "settings-shipping" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/shipping">
+                        <span class="nav-link-icon"><i class="ti ti-truck"></i></span>
+                        <span class="nav-link-title">Kargo Ayarlari</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "settings-webhooks" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/webhooks">
+                        <span class="nav-link-icon"><i class="ti ti-webhook"></i></span>
+                        <span class="nav-link-title">Webhooklar</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "settings-api-keys" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/api-keys">
+                        <span class="nav-link-icon"><i class="ti ti-key"></i></span>
+                        <span class="nav-link-title">API Anahtarlari</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link @(activeNav == "users" ? "active" : "")" require-permission="Permissions.Users.View" href="/users">
                         <span class="nav-link-icon"><i class="ti ti-users"></i></span>
                         <span class="nav-link-title">Kullanicilar</span>

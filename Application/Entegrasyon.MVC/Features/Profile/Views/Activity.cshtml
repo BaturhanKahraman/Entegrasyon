@@ -1,0 +1,79 @@
+@using Entegrasyon.Entity.Dtos.Log
+@using Entegrasyon.Entity
+@{
+    var logs = ViewBag.Logs as Entegrasyon.Entity.Pageable<ApplicationLogDetailDto>;
+}
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h3 class="card-title">Aktivite Gecmisi</h3>
+                        @if (logs != null)
+                        {
+                            <span class="text-secondary small">Toplam @logs.TotalItemCount kayit</span>
+                        }
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Tur</th>
+                                    <th>Islem</th>
+                                    <th>Aciklama</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (logs?.Items != null && logs.Items.Any())
+                                {
+                                    @foreach (var log in logs.Items)
+                                    {
+                                        <tr>
+                                            <td class="text-secondary text-nowrap">
+                                                <small>@log.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-blue-lt">@log.LogType</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-green-lt">@log.LogAction</span>
+                                            </td>
+                                            <td>@log.Content</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty py-4">
+                                                <p class="empty-title">Aktivite bulunamadi</p>
+                                                <p class="empty-subtitle text-secondary">Henuz kayitli bir aktivite bulunmuyor.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @if (logs != null && logs.TotalPageCount > 1)
+                    {
+                        <div class="card-footer d-flex align-items-center">
+                            <ul class="pagination m-0 ms-auto">
+                                @for (var i = 0; i < logs.TotalPageCount; i++)
+                                {
+                                    <li class="page-item @(i == logs.CurrentPageIndex ? "active" : "")">
+                                        <a class="page-link" href="/profile/activity?page=@i">@(i + 1)</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

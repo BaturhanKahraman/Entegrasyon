@@ -211,4 +211,36 @@ public class SettingsController(
         ViewData.SetActiveNav("settings");
         return View();
     }
+
+    [HttpGet("/settings/tax")]
+    public IActionResult Tax()
+    {
+        ViewData.SetPageTitle("Vergi Ayarlari");
+        ViewData.SetActiveNav("settings-tax");
+        return View();
+    }
+
+    [HttpGet("/settings/shipping")]
+    public IActionResult ShippingSettings()
+    {
+        ViewData.SetPageTitle("Kargo Ayarlari");
+        ViewData.SetActiveNav("settings-shipping");
+        return View();
+    }
+
+    [HttpGet("/settings/webhooks")]
+    public IActionResult Webhooks()
+    {
+        ViewData.SetPageTitle("Webhook Yonetimi");
+        ViewData.SetActiveNav("settings-webhooks");
+        return View();
+    }
+
+    [HttpGet("/settings/api-keys")]
+    public IActionResult ApiKeys()
+    {
+        ViewData.SetPageTitle("API Anahtar Yonetimi");
+        ViewData.SetActiveNav("settings-api-keys");
+        return View();
+    }
 }

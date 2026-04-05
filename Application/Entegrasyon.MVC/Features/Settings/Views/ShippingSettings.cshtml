@@ -1,0 +1,118 @@
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row">
+            <div class="col-md-3">
+                <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
+            </div>
+            <div class="col-md-9">
+                <!-- Varsayilan Kargo Firmasi -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Varsayilan Kargo Firmasi</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Kargo Firmasi</label>
+                            <select class="form-select" disabled>
+                                <option>Yurici Kargo</option>
+                                <option>Aras Kargo</option>
+                                <option>MNG Kargo</option>
+                                <option>PTT Kargo</option>
+                                <option>Surat Kargo</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Musteri Kodu</label>
+                            <input type="text" class="form-control" placeholder="Kargo musteri kodu" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">API Anahtari</label>
+                            <input type="password" class="form-control" placeholder="Kargo API anahtari" disabled />
+                        </div>
+                        <button class="btn btn-primary" disabled>Kaydet (Yakin zamanda aktif)</button>
+                    </div>
+                </div>
+
+                <!-- Desi/Kg Kurallari -->
+                <div class="card mb-3">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h3 class="card-title">Desi / Kg Kurallari</h3>
+                        <button class="btn btn-primary btn-sm" disabled>
+                            <i class="ti ti-plus me-1"></i>Kural Ekle (Demo)
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Kural Adi</th>
+                                    <th>Min Agirlik (kg)</th>
+                                    <th>Max Agirlik (kg)</th>
+                                    <th>Desi Katsayisi</th>
+                                    <th>Ucret (TL)</th>
+                                    <th class="w-1"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Hafif Paket</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>5</td>
+                                    <td>25,00</td>
+                                    <td><button class="btn btn-ghost-secondary btn-sm" disabled><i class="ti ti-edit"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td>Orta Paket</td>
+                                    <td>1</td>
+                                    <td>5</td>
+                                    <td>5</td>
+                                    <td>35,00</td>
+                                    <td><button class="btn btn-ghost-secondary btn-sm" disabled><i class="ti ti-edit"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td>Agir Paket</td>
+                                    <td>5</td>
+                                    <td>30</td>
+                                    <td>5</td>
+                                    <td>50,00</td>
+                                    <td><button class="btn btn-ghost-secondary btn-sm" disabled><i class="ti ti-edit"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-secondary small">
+                        <i class="ti ti-info-circle me-1"></i>
+                        Kargo kurallari demo amaclidir. Gercek yapilandirma yakin zamanda aktif olacak.
+                    </div>
+                </div>
+
+                <!-- Ucretsiz Kargo Esigi -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ucretsiz Kargo Esligi</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Minimum Sepet Tutari (TL)</label>
+                                    <input type="number" class="form-control" placeholder="Ornegin: 500" disabled />
+                                    <small class="text-secondary">Bu tutarin uzerindeki siparisler ucretsiz kargoya hak kazanir.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Kargo Ucreti (TL)</label>
+                                    <input type="number" class="form-control" placeholder="Ornegin: 25" disabled />
+                                    <small class="text-secondary">Esligi asmayan siparisler icin uygulanacak ucret.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" disabled>Kaydet (Yakin zamanda aktif)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
