@@ -1,0 +1,205 @@
+@using Entegrasyon.Entity.Invoicing
+@model Entegrasyon.Entity.Dtos.Invoicing.EInvoiceDetailDto
+
+@{
+    string StatusBadge(EInvoiceStatus status) => status switch
+    {
+        EInvoiceStatus.Draft => "bg-secondary-lt",
+        EInvoiceStatus.Sent => "bg-blue-lt",
+        EInvoiceStatus.Accepted => "bg-green-lt",
+        EInvoiceStatus.Rejected => "bg-red-lt",
+        EInvoiceStatus.Cancelled => "bg-orange-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string StatusText(EInvoiceStatus status) => status switch
+    {
+        EInvoiceStatus.Draft => "Taslak",
+        EInvoiceStatus.Sent => "Gonderildi",
+        EInvoiceStatus.Accepted => "Onaylandi",
+        EInvoiceStatus.Rejected => "Reddedildi",
+        EInvoiceStatus.Cancelled => "Iptal",
+        _ => status.ToString()
+    };
+
+    string TypeText(EInvoiceType type) => type switch
+    {
+        EInvoiceType.EFatura => "e-Fatura",
+        EInvoiceType.EArsiv => "e-Arsiv",
+        _ => type.ToString()
+    };
+}
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Actions -->
+        <div class="d-flex justify-content-end mb-3 gap-2">
+            @if (Model.Status == EInvoiceStatus.Draft)
+            {
+                <button class="btn btn-primary"
+                        hx-post="/invoicing/@Model.Id/send"
+                        hx-confirm="Faturayi GIB'e gondermek istediginize emin misiniz?">
+                    <i class="ti ti-send icon"></i>
+                    GIB'e Gonder
+                </button>
+            }
+            @if (Model.Status is EInvoiceStatus.Draft or EInvoiceStatus.Sent or EInvoiceStatus.Accepted)
+            {
+                <button class="btn btn-outline-danger"
+                        hx-post="/invoicing/@Model.Id/cancel"
+                        hx-confirm="Faturayi iptal etmek istediginize emin misiniz?">
+                    <i class="ti ti-x icon"></i>
+                    Iptal Et
+                </button>
+            }
+            @if (Model.PdfUrl is not null || Model.Status != EInvoiceStatus.Draft)
+            {
+                <a href="/invoicing/@Model.Id/pdf" class="btn btn-outline-secondary">
+                    <i class="ti ti-file-download icon"></i>
+                    PDF Indir
+                </a>
+            }
+        </div>
+
+        <!-- Invoice Info Card -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Fatura Bilgileri</h3>
+                <div class="card-actions">
+                    <span class="badge @StatusBadge(Model.Status) fs-6">
+                        @StatusText(Model.Status)
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Fatura No</div>
+                        <div class="datagrid-content">@Model.InvoiceNumber</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Tip</div>
+                        <div class="datagrid-content">@TypeText(Model.InvoiceType)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Musteri</div>
+                        <div class="datagrid-content">@Model.CustomerTitle</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Vergi No</div>
+                        <div class="datagrid-content">@(Model.CustomerTaxId ?? "\u2014")</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Duzenleme Tarihi</div>
+                        <div class="datagrid-content">@Model.IssueDate.ToLocalTime().ToString("dd.MM.yyyy")</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Entegrator</div>
+                        <div class="datagrid-content">@Model.IntegratorProvider</div>
+                    </div>
+                    @if (Model.GibUuid is not null)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">GIB UUID</div>
+                            <div class="datagrid-content"><code>@Model.GibUuid</code></div>
+                        </div>
+                    }
+                    @if (Model.SentAt is not null)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Gonderim Tarihi</div>
+                            <div class="datagrid-content">@Model.SentAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                    }
+                    @if (Model.AcceptedAt is not null)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Onay Tarihi</div>
+                            <div class="datagrid-content">@Model.AcceptedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                    }
+                    @if (Model.CancelledAt is not null)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Iptal Tarihi</div>
+                            <div class="datagrid-content">@Model.CancelledAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.ErrorMessage is not null)
+                {
+                    <div class="alert alert-danger mt-3 mb-0">
+                        <i class="ti ti-alert-triangle icon"></i>
+                        @Model.ErrorMessage
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Invoice Lines -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Kalemler</h3>
+            </div>
+            @if (Model.Lines.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Urun</th>
+                                <th>Adet</th>
+                                <th>Birim Fiyat</th>
+                                <th>KDV Orani</th>
+                                <th>KDV Tutari</th>
+                                <th>Satir Toplami</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr>
+                                    <td>@line.ProductName</td>
+                                    <td>@line.Quantity</td>
+                                    <td class="text-secondary">@line.UnitPrice.ToString("N2") TL</td>
+                                    <td class="text-secondary">%@line.TaxRate</td>
+                                    <td class="text-secondary">@line.TaxAmount.ToString("N2") TL</td>
+                                    <td><strong>@line.LineTotal.ToString("N2") TL</strong></td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4"></td>
+                                <td class="text-secondary">Ara Toplam</td>
+                                <td><strong>@Model.TotalAmount.ToString("N2") TL</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4"></td>
+                                <td class="text-secondary">KDV Toplami</td>
+                                <td><strong>@Model.TaxAmount.ToString("N2") TL</strong></td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td colspan="4"></td>
+                                <td>Genel Toplam</td>
+                                <td>@Model.GrandTotal.ToString("N2") TL</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Kalem bulunamadi",
+                                 Subtitle = "Bu faturada henuz kalem yok."
+                             }'/>
+                </div>
+            }
+        </div>
+    </div>
+</div>

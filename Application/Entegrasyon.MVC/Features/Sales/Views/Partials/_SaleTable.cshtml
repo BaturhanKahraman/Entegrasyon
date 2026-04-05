@@ -1,0 +1,72 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Sale.SaleListDetailDto>
+
+<div id="sale-table">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Musteri</th>
+                        <th>Satici</th>
+                        <th>Urun Cesidi</th>
+                        <th>Toplam Adet</th>
+                        <th>Indirim</th>
+                        <th>Toplam Tutar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sale in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-secondary">@sale.SaleDate.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@sale.CustomerFullName</td>
+                            <td class="text-secondary">@sale.SalePersonFullName</td>
+                            <td>@sale.SaleItemVarietyCount</td>
+                            <td>@sale.SaleItemCount</td>
+                            <td>
+                                @if (sale.IsDiscountApplied)
+                                {
+                                    <span class="badge bg-yellow-lt">%@sale.GeneralDiscount</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                            <td><strong>@sale.TotalPrice.ToString("C2")</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/sales",
+                     TargetId = "#sale-table",
+                     QueryParams = new Dictionary<string, string>
+                     {
+                         ["search"] = ViewBag.Search as string ?? "",
+                         ["startDate"] = ViewBag.StartDate as string ?? "",
+                         ["endDate"] = ViewBag.EndDate as string ?? ""
+                     }
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Satis bulunamadi",
+                         Subtitle = "Henuz satis kaydi yok veya arama kriterinize uygun satis bulunamadi."
+                     }'/>
+        </div>
+    }
+</div>

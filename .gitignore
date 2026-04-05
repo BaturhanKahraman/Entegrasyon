@@ -33,6 +33,7 @@ bld/
 [Ll]ogs/
 !**/Features/Logs/
 
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
@@ -379,3 +380,4 @@ appsettings.*.local.json
 .mcp.json
 docs/trendyol/attributes-snapshot.json
 .superpowers/
+.remember/tmp/save-session.pid

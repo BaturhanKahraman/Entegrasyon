@@ -1,0 +1,88 @@
+@model Entegrasyon.MVC.Features.Attributes.ViewModels.EditAttributeVm
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Ozellik Duzenle</h3>
+        <div class="card-actions">
+            <button class="btn btn-outline-secondary btn-sm"
+                    hx-get="/attributes/@Model.Id/detail"
+                    hx-target="#attribute-detail"
+                    hx-swap="innerHTML">
+                <i class="ti ti-x icon"></i>
+                Iptal
+            </button>
+        </div>
+    </div>
+    <form hx-post="/attributes/@Model.Id/update"
+          hx-target="#attribute-detail"
+          hx-swap="innerHTML">
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Anahtar (Key)</label>
+                <input type="text" class="form-control" name="CategoryAttributeKey"
+                       value="@Model.CategoryAttributeKey" readonly />
+                <small class="form-hint">Anahtar degistirilemez.</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Gorunen Ad</label>
+                <input type="text" class="form-control" name="CategoryAttributeHumanized"
+                       value="@Model.CategoryAttributeHumanized" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" name="AllowCustom"
+                           value="true" @(Model.AllowCustom ? "checked" : "") />
+                    <span class="form-check-label">Ozel deger girisi izni</span>
+                </label>
+            </div>
+
+            @if (Model.ExistingValues.Any())
+            {
+                <h4 class="mt-3 mb-2">Mevcut Degerler</h4>
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm">
+                        <thead>
+                            <tr>
+                                <th>Deger</th>
+                                <th class="w-1">Kaldir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.ExistingValues.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="ExistingValues[@i].Id"
+                                               value="@Model.ExistingValues[i].Id" />
+                                        <input type="text" class="form-control form-control-sm"
+                                               name="ExistingValues[@i].Name"
+                                               value="@Model.ExistingValues[i].Name" />
+                                    </td>
+                                    <td>
+                                        <label class="form-check mb-0">
+                                            <input type="checkbox" class="form-check-input"
+                                                   name="ExistingValues[@i].Remove" value="true" />
+                                        </label>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <div class="mb-3 mt-3">
+                <label class="form-label">Yeni Degerler</label>
+                <input type="text" class="form-control" name="NewValues"
+                       placeholder="Virgul ile ayirin: Kirmizi, Mavi, Yesil" />
+                <small class="form-hint">Birden fazla deger eklemek icin virgul ile ayirin.</small>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="ti ti-check icon"></i>
+                Kaydet
+            </button>
+        </div>
+    </form>
+</div>
