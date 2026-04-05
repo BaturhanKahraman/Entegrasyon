@@ -71,8 +71,14 @@
 }
 
 /* Sidebar collapsible group chevron animation */
+.sidebar-group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
 .sidebar-group-toggle .sidebar-chevron {
     transition: transform 0.2s ease;
+    font-size: 0.75rem;
 }
 .sidebar-group-toggle.collapsed .sidebar-chevron {
     transform: rotate(-90deg);

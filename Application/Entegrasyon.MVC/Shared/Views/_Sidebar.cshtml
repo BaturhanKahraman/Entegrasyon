@@ -23,21 +23,21 @@
 
                 @* ── Yonetim ── *@
                 @{
-                    var yonetimKeys = new[] { "products", "categories", "attributes", "brands", "pos", "sales", "orders", "returns", "picking", "shipping", "bulk-operations", "branch-offices", "stock-movements", "discounts", "pricing" };
+                    var yonetimKeys = new[] { "products", "categories", "brands", "pos", "sales", "orders", "returns", "picking", "shipping", "bulk-operations", "branch-offices", "stock-movements", "discounts", "pricing" };
                     var yonetimActive = yonetimKeys.Contains(activeNav);
                 }
                 <li class="nav-item mt-2">
                     <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(yonetimActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#nav-yonetim" role="button"
                        aria-expanded="@(yonetimActive ? "true" : "false")">
-                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        <span class="nav-link-icon"><i class="ti ti-layout-grid"></i></span>
                         Yonetim
+                        <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
                     <div class="collapse @(yonetimActive ? "show" : "")" id="nav-yonetim">
                         <ul class="navbar-nav ps-3">
                             <li class="nav-item"><a class="nav-link @(activeNav == "products" ? "active" : "")" require-permission="Permissions.Products.View" href="/products"><span class="nav-link-icon"><i class="ti ti-package"></i></span><span class="nav-link-title">Urunler</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "categories" ? "active" : "")" require-permission="Permissions.Categories.View" href="/categories"><span class="nav-link-icon"><i class="ti ti-category"></i></span><span class="nav-link-title">Kategoriler</span></a></li>
-                            <li class="nav-item"><a class="nav-link @(activeNav == "attributes" ? "active" : "")" require-permission="Permissions.Categories.View" href="/attributes"><span class="nav-link-icon"><i class="ti ti-tags"></i></span><span class="nav-link-title">Ozellikler</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "brands" ? "active" : "")" require-permission="Permissions.Brands.View" href="/brands"><span class="nav-link-icon"><i class="ti ti-award"></i></span><span class="nav-link-title">Markalar</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "pos" ? "active" : "")" require-permission="Permissions.Sales.Create" href="/pos"><span class="nav-link-icon"><i class="ti ti-device-desktop"></i></span><span class="nav-link-title">POS Terminal</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "sales" ? "active" : "")" require-permission="Permissions.Sales.View" href="/sales"><span class="nav-link-icon"><i class="ti ti-receipt"></i></span><span class="nav-link-title">Satis Gecmisi</span></a></li>
@@ -63,8 +63,9 @@
                     <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(pazaryeriActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#nav-pazaryeri" role="button"
                        aria-expanded="@(pazaryeriActive ? "true" : "false")">
-                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        <span class="nav-link-icon"><i class="ti ti-building-store"></i></span>
                         Pazaryeri
+                        <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
                     <div class="collapse @(pazaryeriActive ? "show" : "")" id="nav-pazaryeri">
                         <ul class="navbar-nav ps-3">
@@ -87,8 +88,9 @@
                     <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(musteriActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#nav-musteriler" role="button"
                        aria-expanded="@(musteriActive ? "true" : "false")">
-                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        <span class="nav-link-icon"><i class="ti ti-users"></i></span>
                         Musteriler
+                        <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
                     <div class="collapse @(musteriActive ? "show" : "")" id="nav-musteriler">
                         <ul class="navbar-nav ps-3">
@@ -107,8 +109,9 @@
                     <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(raporActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#nav-raporlar" role="button"
                        aria-expanded="@(raporActive ? "true" : "false")">
-                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        <span class="nav-link-icon"><i class="ti ti-chart-bar"></i></span>
                         Raporlar
+                        <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
                     <div class="collapse @(raporActive ? "show" : "")" id="nav-raporlar">
                         <ul class="navbar-nav ps-3">
@@ -144,8 +147,9 @@
                     <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(magazaActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#nav-magaza" role="button"
                        aria-expanded="@(magazaActive ? "true" : "false")">
-                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        <span class="nav-link-icon"><i class="ti ti-shopping-bag"></i></span>
                         Magaza
+                        <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
                     <div class="collapse @(magazaActive ? "show" : "")" id="nav-magaza">
                         <ul class="navbar-nav ps-3">
@@ -178,8 +182,9 @@
                     <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(ayarActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#nav-ayarlar" role="button"
                        aria-expanded="@(ayarActive ? "true" : "false")">
-                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        <span class="nav-link-icon"><i class="ti ti-settings"></i></span>
                         Ayarlar
+                        <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
                     <div class="collapse @(ayarActive ? "show" : "")" id="nav-ayarlar">
                         <ul class="navbar-nav ps-3">
