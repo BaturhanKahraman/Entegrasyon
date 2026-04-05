@@ -135,7 +135,7 @@ public class ProductVariantManager(
             return new ErrorResult("Ürün bulunamadı.");
 
         // 3. Execution
-        await applicationLogManager.AddLog("Varyant ekleniyor.", LogType.Product, LogAction.Add);
+        await applicationLogManager.AddLog("Varyant ekleniyor.", LogType.Product, LogAction.Add, "Product", productId.ToString());
 
         var barcode = string.IsNullOrWhiteSpace(dto.Barcode)
             ? await barcodeService.GenerateAsync()
@@ -167,7 +167,7 @@ public class ProductVariantManager(
         // Sync trigger: Product.UpdatedAt dokunarak OutOfSync yap
         PublishProductUpdated(product.Id, product.Title);
 
-        await applicationLogManager.AddLog($"Varyant eklendi. Barkod: {barcode}", LogType.Product, LogAction.Add);
+        await applicationLogManager.AddLog($"Varyant eklendi. Barkod: {barcode}", LogType.Product, LogAction.Add, "Product", productId.ToString());
         return new SuccessResult("Varyant başarıyla eklendi.");
     }
 
@@ -187,7 +187,7 @@ public class ProductVariantManager(
             return new ErrorResult("Güncellenecek varyant bulunamadı.");
 
         // 3. Execution
-        await applicationLogManager.AddLog("Varyant güncelleniyor.", LogType.Product, LogAction.Update);
+        await applicationLogManager.AddLog("Varyant güncelleniyor.", LogType.Product, LogAction.Update, "Product", variant.ProductId.ToString());
 
         variant.ListPrice = dto.ListPrice;
         variant.SalePrice = dto.SalePrice;
@@ -202,7 +202,7 @@ public class ProductVariantManager(
         // Sync trigger
         PublishProductUpdated(variant.ProductId, variant.Product.Title);
 
-        await applicationLogManager.AddLog("Varyant güncellendi.", LogType.Product, LogAction.Update);
+        await applicationLogManager.AddLog("Varyant güncellendi.", LogType.Product, LogAction.Update, "Product", variant.ProductId.ToString());
         return new SuccessResult("Varyant başarıyla güncellendi.");
     }
 
@@ -210,7 +210,7 @@ public class ProductVariantManager(
 
     public async Task<IResult> SoftDeleteVariant(Guid variantId)
     {
-        await applicationLogManager.AddLog("Varyant silme isteği alındı.", LogType.Product, LogAction.Delete, new { variantId });
+        await applicationLogManager.AddLog("Varyant silme isteği alındı.", LogType.Product, LogAction.Delete, "ProductVariant", variantId.ToString(), new { variantId });
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var variant = await dbContext.ProductVariants.AsTracking()
@@ -229,7 +229,7 @@ public class ProductVariantManager(
         // Sync trigger
         PublishProductUpdated(variant.ProductId, variant.Product.Title);
 
-        await applicationLogManager.AddLog($"Varyant silindi. Barkod: {variant.Barcode}", LogType.Product, LogAction.Delete);
+        await applicationLogManager.AddLog($"Varyant silindi. Barkod: {variant.Barcode}", LogType.Product, LogAction.Delete, "Product", variant.ProductId.ToString());
         return new SuccessResult("Varyant silindi.");
     }
 

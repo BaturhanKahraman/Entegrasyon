@@ -79,7 +79,7 @@ public class ProductManager(
         attributeKeyValueManager.ClearEmptyAttributes(product);
         dbContext.MainProducts.Add(product);
         await dbContext.SaveChangesAsync();
-        await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add);
+        await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add, "Product", product.Id.ToString());
         productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title)
         {
             TenantId = tenantContext.TenantId
@@ -172,7 +172,7 @@ public class ProductManager(
 
     public async Task<IResult> UpdateProduct(EditProductDto dto)
     {
-        await applicationLogManager.AddLog("Ürün güncelleme isteği alındı.", LogType.Product, LogAction.Update, dto);
+        await applicationLogManager.AddLog("Ürün güncelleme isteği alındı.", LogType.Product, LogAction.Update, "Product", dto.Id.ToString(), dto);
 
         try { await validator.ValidateAndThrowAsync(dto); }
         catch (Exception ex) { return new ErrorResult(ex.Message); }
@@ -249,7 +249,7 @@ public class ProductManager(
 
         await dbContext.SaveChangesAsync();
 
-        await applicationLogManager.AddLog($"'{product.Title}' ürünü güncellendi.", LogType.Product, LogAction.Update);
+        await applicationLogManager.AddLog($"'{product.Title}' ürünü güncellendi.", LogType.Product, LogAction.Update, "Product", product.Id.ToString());
         if (categoryChanged)
             await applicationLogManager.AddLog("Ürünün kategorisi değiştirildi, mevcut özellikler temizlendi.", LogType.Product, LogAction.Update);
 
@@ -329,7 +329,7 @@ public class ProductManager(
 
     public async Task<IResult> SoftDeleteProduct(Guid id)
     {
-        await applicationLogManager.AddLog("Ürün silme isteği alındı.", LogType.Product, LogAction.Delete, new { id });
+        await applicationLogManager.AddLog("Ürün silme isteği alındı.", LogType.Product, LogAction.Delete, "Product", id.ToString(), new { id });
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
@@ -339,7 +339,7 @@ public class ProductManager(
         product.IsDeleted = true;
         product.DeletedAt = DateTimeOffset.UtcNow;
         await dbContext.SaveChangesAsync();
-        await applicationLogManager.AddLog($"'{product.Title}' ürünü silindi.", LogType.Product, LogAction.Delete);
+        await applicationLogManager.AddLog($"'{product.Title}' ürünü silindi.", LogType.Product, LogAction.Delete, "Product", product.Id.ToString());
         return new SuccessResult("Ürün silindi.");
     }
 

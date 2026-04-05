@@ -18,6 +18,11 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
 
     public async Task AddLog(string content,LogType type,LogAction action = LogAction.None,object? obj = null,CancellationToken token = default)
     {
+        await AddLog(content, type, action, null!, null!, obj, token);
+    }
+
+    public async Task AddLog(string content,LogType type,LogAction action,string entityType,string entityId,object? obj = null,CancellationToken token = default)
+    {
         await using var context = await contextFactory.CreateDbContextAsync();
         var log = new ApplicationLog()
         {
@@ -26,7 +31,9 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
             IpAddress = httpContext?.GetIPAddress(),
             ApplicationUserId = GetUserId(),
             LogType = type,
-            LogAction = action
+            LogAction = action,
+            EntityType = string.IsNullOrEmpty(entityType) ? null : entityType,
+            EntityId = string.IsNullOrEmpty(entityId) ? null : entityId
         };
 
         if(obj != null)
@@ -47,7 +54,7 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
     }
 
     public async Task<IDataResult<Pageable<ApplicationLogDetailDto>>> GetPaginatedLogs(int pageIndex = 0,int itemCount = 50,
-        LogType? logType = null,LogAction? logAction = null,CancellationToken token=default)
+        LogType? logType = null,LogAction? logAction = null,string? entityType = null,string? entityId = null,CancellationToken token=default)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var query = dbContext.Logs.AsNoTracking().OrderByDescending(x => x.Id).AsQueryable();
@@ -56,6 +63,10 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
             query = query.Where(x => x.LogType == logType.Value);
         if (logAction.HasValue)
             query = query.Where(x => x.LogAction == logAction.Value);
+        if (!string.IsNullOrEmpty(entityType))
+            query = query.Where(x => x.EntityType == entityType);
+        if (!string.IsNullOrEmpty(entityId))
+            query = query.Where(x => x.EntityId == entityId);
 
         int totalItemCount = await query.CountAsync(token);
 
