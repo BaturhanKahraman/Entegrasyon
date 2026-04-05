@@ -39,6 +39,7 @@
                             <table class="table table-vcenter card-table table-sm table-hover" id="discount-preview-table">
                                 <thead>
                                     <tr>
+                                        <th class="w-1"><input type="checkbox" class="form-check-input" id="select-all-variants" checked /></th>
                                         <th>Varyant</th>
                                         <th>Barkod</th>
                                         <th class="text-end">Maliyet</th>
@@ -51,8 +52,9 @@
                                 <tbody>
                                     @foreach (var v in Model.Variants)
                                     {
-                                        <tr data-cost="@v.CostPrice" data-sale="@v.SalePrice" data-vat="@v.VatRate">
-                                            <td>@v.Label</td>
+                                        <tr data-cost="@v.CostPrice" data-sale="@v.SalePrice" data-vat="@v.VatRate" data-variant-id="@v.VariantId">
+                                            <td><input type="checkbox" class="form-check-input variant-check" name="variantIds" value="@v.VariantId" checked /></td>
+                                            <td>@(string.IsNullOrEmpty(v.Label) || v.Label == v.Barcode ? "—" : v.Label)</td>
                                             <td><code>@v.Barcode</code></td>
                                             <td class="text-end">@v.CostPrice.ToString("N2")</td>
                                             <td class="text-end">@v.ListPrice.ToString("N2")</td>
@@ -117,5 +119,14 @@
 
     input.addEventListener('input', recalculate);
     recalculate();
+
+    // Select-all checkbox
+    var selectAll = document.getElementById('select-all-variants');
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            var checks = document.querySelectorAll('.variant-check');
+            checks.forEach(function (cb) { cb.checked = selectAll.checked; });
+        });
+    }
 })();
 </script>
