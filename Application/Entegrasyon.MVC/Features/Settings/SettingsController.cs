@@ -222,11 +222,31 @@ public class SettingsController(
     }
 
     [HttpGet("/settings/shipping")]
-    public IActionResult ShippingSettings()
+    public async Task<IActionResult> ShippingSettings()
     {
         ViewData.SetPageTitle("Kargo Ayarlari");
         ViewData.SetActiveNav("settings-shipping");
-        return View();
+        var settings = await settingManager.GetSettingsByGroupAsync("Shipping");
+        return View(settings);
+    }
+
+    [HttpPost("/settings/shipping")]
+    public async Task<IActionResult> ShippingSettings([FromForm] Dictionary<int, string> settings)
+    {
+        var updates = settings.Select(s => new UpdateApplicationSettingDto
+        {
+            Id = s.Key,
+            Value = s.Value
+        }).ToList();
+
+        var success = await settingManager.UpdateSettingsAsync(updates);
+
+        if (success)
+            TempData.SetSuccess("Kargo ayarlari basariyla guncellendi.");
+        else
+            TempData.SetError("Ayarlar guncellenirken bir hata olustu.");
+
+        return RedirectToAction(nameof(ShippingSettings));
     }
 
     [HttpGet("/settings/webhooks")]

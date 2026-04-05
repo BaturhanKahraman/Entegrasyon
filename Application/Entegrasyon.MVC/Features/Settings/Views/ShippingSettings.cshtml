@@ -1,8 +1,60 @@
+@model List<Entegrasyon.Entity.Dtos.Settings.ApplicationSettingDto>
+
         <div class="row">
             <div class="col-md-3">
                 <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
             </div>
             <div class="col-md-9">
+                <!-- Kargo Ayarlari Form -->
+                <form method="post" action="/settings/shipping">
+                    @Html.AntiForgeryToken()
+
+                    @if (Model.Any())
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title">Kargo Ayarlari</h3>
+                            </div>
+                            <div class="card-body">
+                                @foreach (var setting in Model)
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">@(setting.Description ?? setting.Key)</label>
+                                        @if (setting.ValueType == Entegrasyon.Entity.Settings.SettingValueType.Boolean)
+                                        {
+                                            <label class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox"
+                                                       name="settings[@setting.Id]" value="true"
+                                                       @(setting.Value == "true" ? "checked" : "") />
+                                            </label>
+                                            @if (setting.Value != "true")
+                                            {
+                                                <input type="hidden" name="settings[@setting.Id]" value="false" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="form-control"
+                                                   name="settings[@setting.Id]" value="@setting.Value" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer text-end">
+                                <button type="submit" class="btn btn-primary">Kaydet</button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <p class="text-secondary">Kargo ayarlari henuz tanimlanmamis.</p>
+                            </div>
+                        </div>
+                    }
+                </form>
+
                 <!-- Varsayilan Kargo Firmasi -->
                 <div class="card mb-3">
                     <div class="card-header">
@@ -11,23 +63,26 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Kargo Firmasi</label>
-                            <select class="form-select" disabled>
+                            <select class="form-select">
                                 <option>Yurici Kargo</option>
                                 <option>Aras Kargo</option>
                                 <option>MNG Kargo</option>
                                 <option>PTT Kargo</option>
                                 <option>Surat Kargo</option>
                             </select>
+                            <small class="form-hint">Kargo entegrasyonu yakin zamanda aktif olacak.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Musteri Kodu</label>
-                            <input type="text" class="form-control" placeholder="Kargo musteri kodu" disabled />
+                            <input type="text" class="form-control" placeholder="Kargo musteri kodu" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">API Anahtari</label>
-                            <input type="password" class="form-control" placeholder="Kargo API anahtari" disabled />
+                            <input type="password" class="form-control" placeholder="Kargo API anahtari" />
                         </div>
-                        <button class="btn btn-primary" disabled>Kaydet (Yakin zamanda aktif)</button>
+                        <button class="btn btn-primary" disabled>
+                            <i class="ti ti-device-floppy me-1"></i>Kaydet (Kargo entegrasyonu yakin zamanda)
+                        </button>
                     </div>
                 </div>
 
@@ -36,7 +91,7 @@
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h3 class="card-title">Desi / Kg Kurallari</h3>
                         <button class="btn btn-primary btn-sm" disabled>
-                            <i class="ti ti-plus me-1"></i>Kural Ekle (Demo)
+                            <i class="ti ti-plus me-1"></i>Kural Ekle (Yakin zamanda)
                         </button>
                     </div>
                     <div class="table-responsive">
@@ -48,40 +103,24 @@
                                     <th>Max Agirlik (kg)</th>
                                     <th>Desi Katsayisi</th>
                                     <th>Ucret (TL)</th>
-                                    <th class="w-1"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Hafif Paket</td>
-                                    <td>0</td>
-                                    <td>1</td>
-                                    <td>5</td>
-                                    <td>25,00</td>
-                                    <td><button class="btn btn-ghost-secondary btn-sm" disabled><i class="ti ti-edit"></i></button></td>
+                                    <td>Hafif Paket</td><td>0</td><td>1</td><td>5</td><td>25,00</td>
                                 </tr>
                                 <tr>
-                                    <td>Orta Paket</td>
-                                    <td>1</td>
-                                    <td>5</td>
-                                    <td>5</td>
-                                    <td>35,00</td>
-                                    <td><button class="btn btn-ghost-secondary btn-sm" disabled><i class="ti ti-edit"></i></button></td>
+                                    <td>Orta Paket</td><td>1</td><td>5</td><td>5</td><td>35,00</td>
                                 </tr>
                                 <tr>
-                                    <td>Agir Paket</td>
-                                    <td>5</td>
-                                    <td>30</td>
-                                    <td>5</td>
-                                    <td>50,00</td>
-                                    <td><button class="btn btn-ghost-secondary btn-sm" disabled><i class="ti ti-edit"></i></button></td>
+                                    <td>Agir Paket</td><td>5</td><td>30</td><td>5</td><td>50,00</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="card-footer text-secondary small">
                         <i class="ti ti-info-circle me-1"></i>
-                        Kargo kurallari demo amaclidir. Gercek yapilandirma yakin zamanda aktif olacak.
+                        Kargo kurallari demo amaclidir. Kargo entegrasyonu eklendiginde aktif olacak.
                     </div>
                 </div>
 
@@ -95,19 +134,21 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Minimum Sepet Tutari (TL)</label>
-                                    <input type="number" class="form-control" placeholder="Ornegin: 500" disabled />
-                                    <small class="text-secondary">Bu tutarin uzerindeki siparisler ucretsiz kargoya hak kazanir.</small>
+                                    <input type="number" class="form-control" placeholder="Ornegin: 500" />
+                                    <small class="form-hint">Bu tutarin uzerindeki siparisler ucretsiz kargoya hak kazanir.</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Kargo Ucreti (TL)</label>
-                                    <input type="number" class="form-control" placeholder="Ornegin: 25" disabled />
-                                    <small class="text-secondary">Esligi asmayan siparisler icin uygulanacak ucret.</small>
+                                    <input type="number" class="form-control" placeholder="Ornegin: 25" />
+                                    <small class="form-hint">Esligi asmayan siparisler icin uygulanacak ucret.</small>
                                 </div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" disabled>Kaydet (Yakin zamanda aktif)</button>
+                        <button class="btn btn-primary" disabled>
+                            <i class="ti ti-device-floppy me-1"></i>Kaydet (Kargo entegrasyonu yakin zamanda)
+                        </button>
                     </div>
                 </div>
             </div>
