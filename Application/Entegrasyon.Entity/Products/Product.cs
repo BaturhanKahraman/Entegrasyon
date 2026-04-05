@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Brands;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Categories;
 using NpgsqlTypes;
 
@@ -35,4 +36,8 @@ public sealed class Product : BaseEntity
     public bool IsPreOrder { get; set; }
     public DateOnly? PreOrderEstimatedDate { get; set; }
     public int? PreOrderLimit { get; set; }
+
+    // Change history (grandfathering)
+    [Column(TypeName = "jsonb")]
+    public string? ChangeHistory { get; set; }
 }

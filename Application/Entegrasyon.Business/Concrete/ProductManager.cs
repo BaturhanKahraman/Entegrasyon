@@ -196,6 +196,20 @@ public class ProductManager(
         if (product is null)
             return new ErrorResult("Güncellenecek ürün bulunamadı.");
 
+        // Snapshot old values for change history
+        var changes = new Dictionary<string, ProductFieldChange>();
+        void Track(string field, string? oldVal, string? newVal)
+        {
+            if (oldVal != newVal) changes[field] = new ProductFieldChange(oldVal, newVal);
+        }
+        Track("Title", product.Title, dto.Title);
+        Track("Description", product.Description, dto.Description);
+        Track("StockCode", product.StockCode, dto.StockCode);
+        Track("Season", product.Season, dto.Season);
+        Track("Year", product.Year, dto.Year);
+        Track("BrandId", product.BrandId?.ToString(), dto.BrandId.ToString());
+        Track("CategoryId", product.CategoryId.ToString(), dto.CategoryId.ToString());
+
         product.Title = dto.Title;
         product.Description = dto.Description;
         product.StockCode = dto.StockCode;
@@ -245,6 +259,16 @@ public class ProductManager(
                 image.IsDeleted = true;
                 image.DeletedAt = DateTimeOffset.UtcNow;
             }
+        }
+
+        // Append change history
+        if (changes.Count > 0)
+        {
+            var history = string.IsNullOrEmpty(product.ChangeHistory)
+                ? new List<ProductChangeEntry>()
+                : System.Text.Json.JsonSerializer.Deserialize<List<ProductChangeEntry>>(product.ChangeHistory) ?? [];
+            history.Add(new ProductChangeEntry(DateTimeOffset.UtcNow, "admin", changes));
+            product.ChangeHistory = System.Text.Json.JsonSerializer.Serialize(history);
         }
 
         await dbContext.SaveChangesAsync();
