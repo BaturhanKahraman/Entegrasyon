@@ -50,10 +50,19 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
         LogType? logType = null,LogAction? logAction = null,CancellationToken token=default)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var logs = await dbContext.Logs.OrderByDescending(x => x.Id)
-                .Where(x => x.LogType == logType)
-                .Where(x => x.LogAction == logAction)
-                .Include(x => x.ApplicationUser).Skip((pageIndex - 1) * itemCount).Take(itemCount)
+        var query = dbContext.Logs.AsNoTracking().OrderByDescending(x => x.Id).AsQueryable();
+
+        if (logType.HasValue)
+            query = query.Where(x => x.LogType == logType.Value);
+        if (logAction.HasValue)
+            query = query.Where(x => x.LogAction == logAction.Value);
+
+        int totalItemCount = await query.CountAsync(token);
+
+        var logs = await query
+                .Include(x => x.ApplicationUser)
+                .Skip(Math.Max(0, pageIndex * itemCount))
+                .Take(itemCount)
                 .Select(x => new ApplicationLogDetailDto
                 {
                     Id = x.Id,
@@ -64,7 +73,6 @@ public class ApplicationLogManager(IDbContextFactory<IntegrationDbContext> conte
                     LogType = x.LogType,
                     UserInfos = x.ApplicationUser != null ? x.ApplicationUser.UserName + ' ' + x.ApplicationUser.Name + ' ' + x.ApplicationUser.Surname : ""
                 }).ToListAsync(token);
-        int totalItemCount = await dbContext.Logs.CountAsync(token);
         var logResult = new Pageable<ApplicationLogDetailDto>(logs, pageIndex, itemCount, totalItemCount);
         return new SuccessDataResult<Pageable<ApplicationLogDetailDto>>(logResult);
     }
