@@ -1,67 +1,143 @@
-@model List<Entegrasyon.Entity.Dtos.Settings.ApplicationSettingDto>
+@model List<Entegrasyon.Entity.MarketPlace>
 
         <div class="row">
             <div class="col-md-3">
                 <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
             </div>
             <div class="col-md-9">
-                <form method="post" action="/settings/integrations">
+                @if (!Model.Any())
+                {
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Entegrasyon Ayarlari</h3>
-                        </div>
                         <div class="card-body">
-                            @if (Model.Any())
-                            {
-                                @foreach (var setting in Model)
-                                {
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            @(setting.Description ?? setting.Key)
-                                        </label>
-                                        @if (setting.ValueType == Entegrasyon.Entity.Settings.SettingValueType.Password)
-                                        {
-                                            <input type="password"
-                                                   class="form-control"
-                                                   name="settings[@setting.Id]"
-                                                   value="@setting.Value"/>
-                                        }
-                                        else if (setting.ValueType == Entegrasyon.Entity.Settings.SettingValueType.Boolean)
-                                        {
-                                            <label class="form-check form-switch">
-                                                <input class="form-check-input"
-                                                       type="checkbox"
-                                                       name="settings[@setting.Id]"
-                                                       value="true"
-                                                       @(setting.Value == "true" ? "checked" : "")/>
-                                            </label>
-                                            @if (setting.Value != "true")
-                                            {
-                                                <input type="hidden" name="settings[@setting.Id]" value="false"/>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <input type="text"
-                                                   class="form-control"
-                                                   name="settings[@setting.Id]"
-                                                   value="@setting.Value"/>
-                                        }
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <p class="text-secondary">Entegrasyon ayarlari henuz tanimlanmamis.</p>
-                            }
+                            <p class="text-secondary">Henuz pazaryeri tanimlanmamis.</p>
                         </div>
-                        @if (Model.Any())
+                    </div>
+                }
+                else
+                {
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        @for (var i = 0; i < Model.Count; i++)
                         {
-                            <div class="card-footer text-end">
-                                <button type="submit" class="btn btn-primary">Kaydet</button>
+                            var mp = Model[i];
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link @(i == 0 ? "active" : "")"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#mp-@mp.Id"
+                                        type="button" role="tab">
+                                    @mp.Name
+                                    @{
+                                        var hasCredentials = !string.IsNullOrEmpty(mp.ApiKey) && !string.IsNullOrEmpty(mp.ApiSecret);
+                                    }
+                                    @if (hasCredentials)
+                                    {
+                                        <span class="badge bg-green-lt ms-1" style="font-size:0.65rem">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-lt ms-1" style="font-size:0.65rem">Yapilandirilmamis</span>
+                                    }
+                                </button>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="tab-content">
+                        @for (var i = 0; i < Model.Count; i++)
+                        {
+                            var mp = Model[i];
+                            <div class="tab-pane fade @(i == 0 ? "show active" : "")" id="mp-@mp.Id" role="tabpanel">
+                                <form method="post" action="/settings/integrations/@mp.Id">
+                                    @Html.AntiForgeryToken()
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">@mp.Name Entegrasyon Ayarlari</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">API Key</label>
+                                                    <input type="text" class="form-control" name="apiKey"
+                                                           value="@mp.ApiKey" placeholder="API anahtarinizi girin" />
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">API Secret</label>
+                                                    <input type="password" class="form-control" name="apiSecret"
+                                                           value="@mp.ApiSecret" placeholder="API sifrenizi girin" />
+                                                </div>
+                                            </div>
+
+                                            @if (mp.Id == 1) @* Trendyol *@
+                                            {
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Satici ID (Seller ID)</label>
+                                                        <input type="text" class="form-control" name="sellerId"
+                                                               value="@mp.SellerId" placeholder="Trendyol satici ID" />
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Base URL</label>
+                                                        <input type="text" class="form-control" name="baseUrl"
+                                                               value="@mp.BaseUrl"
+                                                               placeholder="https://apigw.trendyol.com/integration/" />
+                                                        <small class="form-hint">Stage: stageapigw.trendyol.com, Prod: apigw.trendyol.com</small>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else if (mp.Id == 4 || mp.Id == 5) @* Amazon, Pazarama — OAuth2 *@
+                                            {
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Token URL</label>
+                                                        <input type="text" class="form-control" name="tokenUrl"
+                                                               value="@mp.TokenUrl"
+                                                               placeholder="OAuth2 token endpoint URL" />
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Refresh Token</label>
+                                                        <input type="password" class="form-control" name="refreshToken"
+                                                               value="@mp.RefreshToken"
+                                                               placeholder="OAuth2 refresh token" />
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Base URL</label>
+                                                        <input type="text" class="form-control" name="baseUrl"
+                                                               value="@mp.BaseUrl" placeholder="API base URL" />
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Satici ID</label>
+                                                        <input type="text" class="form-control" name="sellerId"
+                                                               value="@mp.SellerId" placeholder="Satici ID (varsa)" />
+                                                    </div>
+                                                </div>
+                                            }
+                                            else @* Diger marketplace'ler *@
+                                            {
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Base URL</label>
+                                                        <input type="text" class="form-control" name="baseUrl"
+                                                               value="@mp.BaseUrl" placeholder="API base URL" />
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Satici ID</label>
+                                                        <input type="text" class="form-control" name="sellerId"
+                                                               value="@mp.SellerId" placeholder="Satici ID (varsa)" />
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-footer text-end">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="ti ti-device-floppy me-1"></i>Kaydet
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         }
                     </div>
-                </form>
+                }
             </div>
         </div>

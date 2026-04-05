@@ -53,25 +53,26 @@ public class SettingsController(
     public async Task<IActionResult> Integrations()
     {
         ViewData.SetPageTitle("Entegrasyon Ayarlari");
-        ViewData.SetActiveNav("settings");
+        ViewData.SetActiveNav("settings-integrations");
 
-        var settings = await settingManager.GetSettingsByGroupAsync("Integration");
-        return View(settings);
+        var marketplaces = await settingManager.GetMarketplacesAsync();
+        return View(marketplaces);
     }
 
-    [HttpPost("/settings/integrations")]
-    public async Task<IActionResult> Integrations([FromForm] Dictionary<int, string> settings)
+    [HttpPost("/settings/integrations/{id:int}")]
+    public async Task<IActionResult> UpdateMarketplace(
+        int id,
+        [FromForm] string? apiKey,
+        [FromForm] string? apiSecret,
+        [FromForm] string? sellerId,
+        [FromForm] string? baseUrl,
+        [FromForm] string? tokenUrl,
+        [FromForm] string? refreshToken)
     {
-        var updates = settings.Select(s => new UpdateApplicationSettingDto
-        {
-            Id = s.Key,
-            Value = s.Value
-        }).ToList();
-
-        var success = await settingManager.UpdateSettingsAsync(updates);
+        var success = await settingManager.UpdateMarketplaceAsync(id, apiKey, apiSecret, sellerId, baseUrl, tokenUrl, refreshToken);
 
         if (success)
-            TempData.SetSuccess("Entegrasyon ayarlari basariyla guncellendi.");
+            TempData.SetSuccess("Pazaryeri ayarlari basariyla guncellendi.");
         else
             TempData.SetError("Ayarlar guncellenirken bir hata olustu.");
 
@@ -82,7 +83,7 @@ public class SettingsController(
     public async Task<IActionResult> Notifications()
     {
         ViewData.SetPageTitle("Bildirim Ayarlari");
-        ViewData.SetActiveNav("settings");
+        ViewData.SetActiveNav("settings-notifications");
 
         var settings = await settingManager.GetSettingsByGroupAsync("Notification");
         return View(settings);

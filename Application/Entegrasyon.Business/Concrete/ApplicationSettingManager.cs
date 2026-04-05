@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Mappers;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Settings;
 using Microsoft.EntityFrameworkCore;
 
@@ -126,5 +127,31 @@ public sealed class ApplicationSettingManager(
         mailMessage.To.Add(fromAddress);
 
         await client.SendMailAsync(mailMessage);
+    }
+
+    public async Task<List<MarketPlace>> GetMarketplacesAsync()
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        return await dbContext.MarketPlaces
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.Id)
+            .ToListAsync();
+    }
+
+    public async Task<bool> UpdateMarketplaceAsync(int id, string? apiKey, string? apiSecret, string? sellerId, string? baseUrl, string? tokenUrl, string? refreshToken)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var mp = await dbContext.MarketPlaces.AsTracking().FirstOrDefaultAsync(m => m.Id == id);
+        if (mp is null) return false;
+
+        mp.ApiKey = apiKey;
+        mp.ApiSecret = apiSecret;
+        mp.SellerId = sellerId;
+        mp.BaseUrl = baseUrl;
+        mp.TokenUrl = tokenUrl;
+        mp.RefreshToken = refreshToken;
+
+        await dbContext.SaveChangesAsync();
+        return true;
     }
 }
