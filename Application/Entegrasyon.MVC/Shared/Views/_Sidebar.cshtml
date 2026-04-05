@@ -65,6 +65,18 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link @(activeNav == "returns" ? "active" : "")" require-permission="Permissions.Orders.View" href="/returns">
+                        <span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span>
+                        <span class="nav-link-title">Iade Yonetimi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "picking" ? "active" : "")" require-permission="Permissions.Orders.View" href="/picking">
+                        <span class="nav-link-icon"><i class="ti ti-barcode"></i></span>
+                        <span class="nav-link-title">Siparis Hazirlama</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link @(activeNav == "shipping" ? "active" : "")" require-permission="Permissions.Cargo.View" href="/shipping">
                         <span class="nav-link-icon"><i class="ti ti-truck"></i></span>
                         <span class="nav-link-title">Kargo Takip</span>
@@ -127,6 +139,12 @@
                     <a class="nav-link @(activeNav == "marketplace-orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/marketplace/orders">
                         <span class="nav-link-icon"><i class="ti ti-clipboard-list"></i></span>
                         <span class="nav-link-title">Siparisler</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "integration-health" ? "active" : "")" require-permission="Permissions.Integrations.View" href="/integrations/health">
+                        <span class="nav-link-icon"><i class="ti ti-heartbeat"></i></span>
+                        <span class="nav-link-title">Entegrasyon Durumu</span>
                     </a>
                 </li>
 
