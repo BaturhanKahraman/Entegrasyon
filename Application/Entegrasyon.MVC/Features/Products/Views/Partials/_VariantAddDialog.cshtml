@@ -1,0 +1,114 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.VariantFormVm
+
+<div class="modal modal-blur show" style="display:block" tabindex="-1" id="variant-add-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Varyant Ekle</h5>
+                <button type="button" class="btn-close" onclick="closeVariantModal()"></button>
+            </div>
+            <form method="post" action="/products/@Model.ProductId/variants/add"
+                  enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="CurrencyType" value="TRY" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Barkod</label>
+                        <input type="text" name="Barcode" class="form-control"
+                               placeholder="Bos birakirsaniz otomatik uretilir" />
+                        <small class="form-hint">Bos birakilirsa sistem otomatik barkod uretir.</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Liste Fiyati</label>
+                            <input type="number" name="ListPrice" class="form-control"
+                                   min="0.01" step="0.01" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Satis Fiyati</label>
+                            <input type="number" name="SalePrice" class="form-control"
+                                   min="0.01" step="0.01" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Maliyet</label>
+                            <input type="number" name="CostPrice" class="form-control"
+                                   min="0" step="0.01" value="0" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">KDV Orani (%)</label>
+                            <input type="number" name="VatRate" class="form-control"
+                                   min="0" max="100" step="0.01" value="20" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Desi</label>
+                            <input type="number" name="DimensionalWeight" class="form-control"
+                                   min="0" step="0.01" value="0" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Stok Adedi</label>
+                            <input type="number" name="BranchOfficeStocks[0].FirstTotalStock" class="form-control"
+                                   min="0" step="1" value="0" required />
+                            <input type="hidden" name="BranchOfficeStocks[0].BranchOfficeId" value="1" />
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <!-- Gorsel Yukle -->
+                    <h4 class="mb-2">Gorsel Yukle</h4>
+                    <div class="mb-3">
+                        <input type="file" name="files" class="form-control" multiple accept="image/*" />
+                        <small class="form-hint">Birden fazla gorsel secebilirsiniz.</small>
+                    </div>
+
+                    <!-- Diger Varyantlardan Sec -->
+                    @if (Model.OtherVariantImages.Any())
+                    {
+                        <h4 class="mb-2">Mevcut Gorsellerden Sec</h4>
+                        @foreach (var group in Model.OtherVariantImages)
+                        {
+                            <p class="mb-1 text-secondary" style="font-size:0.8rem">
+                                <code>@group.Barcode</code>
+                            </p>
+                            <div class="row g-2 mb-2">
+                                @foreach (var img in group.Images)
+                                {
+                                    <div class="col-4 col-sm-3">
+                                        <label class="form-imagecheck">
+                                            <input type="checkbox" name="existingImageIds" value="@img.Id"
+                                                   class="form-imagecheck-input" />
+                                            <span class="form-imagecheck-figure">
+                                                <img src="@img.Src" alt="Gorsel"
+                                                     class="form-imagecheck-image"
+                                                     style="height:70px;object-fit:cover;width:100%;border-radius:4px;" />
+                                            </span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary"
+                            onclick="closeVariantModal()">Vazgec</button>
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="closeVariantModal()"></div>
+
+<script>
+(function() {
+    window.closeVariantModal = function() {
+        var container = document.getElementById('modal-container');
+        while (container.firstChild) container.removeChild(container.firstChild);
+    };
+})();
+</script>

@@ -38,6 +38,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<UpdateCustomerDto>,UpdateCustomerDtoValidator>();
         services.AddScoped<IValidator<AddProductDto>,AddProductValidator>();
         services.AddScoped<IValidator<AddProductVariantDto>,AddProductVariantValidator>();
+        services.AddScoped<IValidator<EditProductVariantDto>,EditProductVariantValidator>();
         services.AddScoped<IValidator<AddBranchOfficeStockDto>,AddBranchOfficeStockValidator>();
         services.AddScoped<IValidator<CreateDiscountVoucherDto>,CreateDiscountVoucherDtoValidator>();
         services.AddScoped<IValidator<MakeSaleDto>,MakeSaleValidator>();

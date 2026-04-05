@@ -63,6 +63,13 @@ public class MinioFileStorage : IMinioFileStorage
         return GetPublicUrl(objectName);
     }
 
+    public async Task DeleteAsync(string objectName)
+    {
+        await _client.RemoveObjectAsync(new RemoveObjectArgs()
+            .WithBucket(_bucketName)
+            .WithObject(objectName));
+    }
+
     public string GetPublicUrl(string objectName)
     {
         if (string.IsNullOrEmpty(objectName))

@@ -36,7 +36,7 @@ public class ReportController(
     public async Task<IActionResult> ProfitLoss(DateOnly? startDate = null, DateOnly? endDate = null)
     {
         ViewData.SetPageTitle("Kar/Zarar Raporu");
-        ViewData.SetActiveNav("reports");
+        ViewData.SetActiveNav("reports-profit-loss");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Kar/Zarar", null));
 
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
@@ -54,7 +54,7 @@ public class ReportController(
     public async Task<IActionResult> ProductPerformance(DateOnly? startDate = null, DateOnly? endDate = null)
     {
         ViewData.SetPageTitle("Urun Performansi");
-        ViewData.SetActiveNav("reports");
+        ViewData.SetActiveNav("reports-product-performance");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Urun Performansi", null));
 
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
@@ -72,7 +72,7 @@ public class ReportController(
     public async Task<IActionResult> StockAlerts(int threshold = 10, int page = 1)
     {
         ViewData.SetPageTitle("Stok Uyarilari");
-        ViewData.SetActiveNav("reports");
+        ViewData.SetActiveNav("reports-stock-alerts");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Stok Uyarilari", null));
 
         var data = await reportManager.GetStockAlertsAsync(new StockAlertPaginatedRequest
@@ -94,7 +94,7 @@ public class ReportController(
     public async Task<IActionResult> Inventory(int? branchOfficeId = null, StockFilter stockFilter = StockFilter.All)
     {
         ViewData.SetPageTitle("Envanter Raporu");
-        ViewData.SetActiveNav("reports");
+        ViewData.SetActiveNav("reports-inventory");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Envanter", null));
 
         var report = await reportManager.GetInventoryReportAsync(
@@ -107,7 +107,7 @@ public class ReportController(
     public async Task<IActionResult> Marketplace(DateOnly? startDate = null, DateOnly? endDate = null)
     {
         ViewData.SetPageTitle("Pazaryeri Raporu");
-        ViewData.SetActiveNav("reports");
+        ViewData.SetActiveNav("reports-marketplace");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Pazaryeri", null));
 
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));

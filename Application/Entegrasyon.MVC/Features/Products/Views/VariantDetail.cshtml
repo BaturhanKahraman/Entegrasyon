@@ -1,0 +1,258 @@
+@model Entegrasyon.Entity.Dtos.Product.ProductVariant.VariantDetailPageDto
+@using Entegrasyon.Entity.Dtos.Product
+
+<div class="d-flex justify-content-end mb-3">
+    <div class="btn-list">
+        <button class="btn btn-primary"
+                hx-get="/products/@Model.ProductId/variants/@Model.VariantId/edit"
+                hx-target="#modal-container">
+            <i class="ti ti-edit icon"></i>
+            Duzenle
+        </button>
+        <a href="/products/@Model.ProductId/variants" class="btn btn-outline-secondary">
+            Varyantlara Don
+        </a>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <!-- Sol Kolon: Genel Bilgi + Fiyat -->
+    <div class="col-lg-8">
+        <!-- Genel Bilgi -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Varyant Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Urun</div>
+                        <div class="datagrid-content">
+                            <a href="/products/@Model.ProductId">@Model.ProductTitle</a>
+                        </div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Barkod</div>
+                        <div class="datagrid-content"><code>@Model.Barcode</code></div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Para Birimi</div>
+                        <div class="datagrid-content">@Model.CurrencyType</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Olusturulma</div>
+                        <div class="datagrid-content">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Son Guncelleme</div>
+                        <div class="datagrid-content">@Model.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fiyat Bilgileri -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Fiyat Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Liste Fiyati</div>
+                        <div class="datagrid-content fw-bold">@Model.ListPrice.ToString("N2") @Model.CurrencyType</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Satis Fiyati</div>
+                        <div class="datagrid-content fw-bold text-primary">@Model.SalePrice.ToString("N2") @Model.CurrencyType</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Maliyet</div>
+                        <div class="datagrid-content">@Model.CostPrice.ToString("N2") @Model.CurrencyType</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">E-Ticaret Fiyati</div>
+                        <div class="datagrid-content">@Model.ECommercePrice.ToString("N2") @Model.CurrencyType</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">KDV Orani</div>
+                        <div class="datagrid-content">%@Model.VatRate</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Desi</div>
+                        <div class="datagrid-content">@Model.DimensionalWeight</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stok Bilgileri -->
+        @if (Model.StockDetails.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Stok Bilgileri</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Depo</th>
+                                <th class="text-center">Baslangic</th>
+                                <th class="text-center">Satilan</th>
+                                <th class="text-center">Mevcut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var stock in Model.StockDetails)
+                            {
+                                <tr>
+                                    <td>@stock.OfficeName</td>
+                                    <td class="text-center">@stock.FirstTotalStock</td>
+                                    <td class="text-center">@stock.SoldQuantity</td>
+                                    <td class="text-center">
+                                        <span class="badge @(stock.CurrentStock > 0 ? "bg-green-lt" : "bg-red-lt")">
+                                            @stock.CurrentStock
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Ozellikler -->
+        @if (Model.Attributes.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Ozellikler</h3>
+                </div>
+                <div class="card-body">
+                    <div class="datagrid">
+                        @foreach (var attr in Model.Attributes)
+                        {
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">
+                                    @attr.Name
+                                    @if (attr.IsVarianter) { <span class="badge bg-blue-lt badge-sm ms-1">Varyanter</span> }
+                                    @if (attr.IsSlicer) { <span class="badge bg-purple-lt badge-sm ms-1">Dilimleyici</span> }
+                                </div>
+                                <div class="datagrid-content">@attr.Value</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Marketplace Durumu -->
+        @if (Model.Marketplaces.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Pazaryeri Durumu</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        @foreach (var mp in Model.Marketplaces)
+                        {
+                            var badgeText = mp.SyncState switch
+                            {
+                                MarketplaceSyncState.Synced => "Senkronize",
+                                MarketplaceSyncState.Waiting => "Bekleyen",
+                                MarketplaceSyncState.Processing => "Isleniyor",
+                                MarketplaceSyncState.OutOfSync => "Guncellenmemis",
+                                MarketplaceSyncState.Failed => "Hatali",
+                                MarketplaceSyncState.Rejected => "Reddedildi",
+                                _ => "Hic Senkronize Edilmemis"
+                            };
+                            <div class="col-md-6">
+                                <div class="card card-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h4 class="m-0">@mp.MarketPlaceName</h4>
+                                            <span class="badge @mp.SyncBadgeClass">@badgeText</span>
+                                        </div>
+                                        @if (mp.LastSyncedAt.HasValue)
+                                        {
+                                            <div class="text-secondary" style="font-size:0.8rem">
+                                                Son Sync: @mp.LastSyncedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(mp.StatusMessage))
+                                        {
+                                            <div class="text-danger mt-1" style="font-size:0.8rem">
+                                                @mp.StatusMessage
+                                            </div>
+                                        }
+                                        @if (mp.ListPriceOverride.HasValue || mp.SalePriceOverride.HasValue)
+                                        {
+                                            <div class="mt-2 pt-2 border-top">
+                                                <span class="text-secondary" style="font-size:0.75rem">Fiyat Override:</span>
+                                                @if (mp.ListPriceOverride.HasValue)
+                                                {
+                                                    <span class="ms-1">Liste: @mp.ListPriceOverride.Value.ToString("N2")</span>
+                                                }
+                                                @if (mp.SalePriceOverride.HasValue)
+                                                {
+                                                    <span class="ms-1">Satis: @mp.SalePriceOverride.Value.ToString("N2")</span>
+                                                }
+                                            </div>
+                                        }
+                                        <div class="mt-2">
+                                            <a href="/products/@Model.ProductId/sync/trendyol/send"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Senkronize Et
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Sag Kolon: Gorseller -->
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Gorseller</h3>
+                <div class="card-actions">
+                    <span class="badge bg-blue">@Model.Images.Count gorsel</span>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.Images.Any())
+                {
+                    <div class="row g-2">
+                        @foreach (var img in Model.Images)
+                        {
+                            <div class="col-6">
+                                <div class="card card-sm">
+                                    <img src="@img.Src" class="card-img-top" alt="Gorsel"
+                                         style="height:120px;object-fit:cover;" />
+                                    @if (img.IsMain)
+                                    {
+                                        <div class="card-body p-1 text-center">
+                                            <span class="badge bg-blue badge-sm">Ana Gorsel</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-secondary">Henuz gorsel yuklenmemis.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

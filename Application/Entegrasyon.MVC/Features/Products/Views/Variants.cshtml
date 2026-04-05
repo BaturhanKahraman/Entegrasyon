@@ -1,16 +1,51 @@
 @model Entegrasyon.Entity.Dtos.Product.ProductDetailDto
+@using Entegrasyon.Entity.Dtos.Product
 
 <div class="d-flex justify-content-end mb-3">
     <div class="btn-list">
-        <button class="btn btn-primary" disabled>
+        <button class="btn btn-primary"
+                hx-get="/products/@Model.Id/variants/add"
+                hx-target="#modal-container">
             <i class="ti ti-plus icon"></i>
             Yeni Varyant
         </button>
+        <a href="/products/@Model.Id/sync" class="btn btn-outline-info">
+            <i class="ti ti-refresh icon"></i>
+            Senkronizasyon
+        </a>
         <a href="/products/@Model.Id" class="btn btn-outline-secondary">
             Urune Don
         </a>
     </div>
 </div>
+
+@{
+    var syncDetail = ViewBag.SyncDetail as ProductSyncDetailDto;
+}
+@if (syncDetail?.Marketplaces?.Any() == true)
+{
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="text-secondary fw-bold" style="font-size:0.8rem">SYNC DURUMU:</span>
+                @foreach (var mp in syncDetail.Marketplaces)
+                {
+                    var (badgeClass, badgeText) = mp.SyncState switch
+                    {
+                        MarketplaceSyncState.Synced => ("bg-green-lt", "Senkronize"),
+                        MarketplaceSyncState.Waiting => ("bg-warning-lt", "Bekleyen"),
+                        MarketplaceSyncState.Processing => ("bg-info-lt", "Isleniyor"),
+                        MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Guncellenmemis"),
+                        MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatali"),
+                        MarketplaceSyncState.Rejected => ("bg-danger-lt", "Reddedildi"),
+                        _ => ("bg-secondary-lt", "Hic Senkronize Edilmemis")
+                    };
+                    <span class="badge @badgeClass">@mp.MarketPlaceName: @badgeText</span>
+                }
+            </div>
+        </div>
+    </div>
+}
 
         @if (Model.ProductVariantsDetails.Any())
         {
@@ -42,7 +77,9 @@
                                 var totalStock = variant.StockDetails?.Sum(s => s.CurrentStock) ?? 0;
                                 <tr>
                                     <td>
-                                        <code>@variant.Barcode</code>
+                                        <a href="/products/@Model.Id/variants/@variant.Id/detail">
+                                            <code>@variant.Barcode</code>
+                                        </a>
                                     </td>
                                     <td>@Model.StockCode</td>
                                     <td class="text-end">@variant.ListPrice.ToString("N2") @variant.CurrencyType</td>
@@ -57,8 +94,18 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-list justify-content-end">
-                                            <button class="btn btn-sm btn-outline-primary" disabled>Duzenle</button>
-                                            <button class="btn btn-sm btn-outline-danger" disabled>Sil</button>
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    hx-get="/products/@Model.Id/variants/@variant.Id/edit"
+                                                    hx-target="#modal-container">
+                                                Duzenle
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    hx-post="/products/@Model.Id/variants/@variant.Id/delete"
+                                                    hx-target="closest tr"
+                                                    hx-swap="outerHTML swap:300ms"
+                                                    hx-confirm="Bu varyanti silmek istediginize emin misiniz?">
+                                                Sil
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

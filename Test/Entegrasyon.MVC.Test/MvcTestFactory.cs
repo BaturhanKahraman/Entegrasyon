@@ -69,6 +69,8 @@ internal class NoOpMinioFileStorage : IMinioFileStorage
     public Task<string> UploadAsync(Stream stream, string objectName, string contentType)
         => Task.FromResult($"http://localhost:9000/test/{objectName}");
 
+    public Task DeleteAsync(string objectName) => Task.CompletedTask;
+
     public string GetPublicUrl(string objectName)
         => $"http://localhost:9000/test/{objectName}";
 }

@@ -9,6 +9,25 @@
     display: inline-block;
 }
 
+/* Top navbar — içeriği biraz büyüt */
+.page-wrapper > .navbar {
+    min-height: 3.5rem;
+    font-size: 0.9375rem;
+}
+.page-wrapper > .navbar .nav-link,
+.page-wrapper > .navbar .btn-link {
+    font-size: 1.125rem;
+}
+.page-wrapper > .navbar .form-control {
+    font-size: 0.9375rem;
+    height: 2.5rem;
+}
+.page-wrapper > .navbar .avatar-sm {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+}
+
 /* Cursor pointer for clickable table headers */
 .cursor-pointer {
     cursor: pointer;
@@ -32,6 +51,23 @@
 .pagination {
     flex-wrap: wrap;
     gap: 0.25rem;
+}
+
+/* Dark theme badge text contrast fix */
+[data-bs-theme="dark"] .badge.bg-green-lt,
+[data-bs-theme="dark"] .badge.bg-orange-lt,
+[data-bs-theme="dark"] .badge.bg-red-lt,
+[data-bs-theme="dark"] .badge.bg-yellow-lt,
+[data-bs-theme="dark"] .badge.bg-warning-lt,
+[data-bs-theme="dark"] .badge.bg-info-lt,
+[data-bs-theme="dark"] .badge.bg-secondary-lt,
+[data-bs-theme="dark"] .badge.bg-success,
+[data-bs-theme="dark"] .badge.bg-warning,
+[data-bs-theme="dark"] .badge.bg-danger,
+[data-bs-theme="dark"] .badge.bg-red,
+[data-bs-theme="dark"] .badge.bg-green,
+[data-bs-theme="dark"] .badge.bg-yellow {
+    color: #fff !important;
 }
 
 /* Wizard step indicators — Tabler tema uyumlu */

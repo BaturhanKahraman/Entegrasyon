@@ -25,7 +25,8 @@ public class ProductController(
     IBulkOperationManager bulkOperationManager,
     IProductSyncManager productSyncManager,
     ITrendyolProductService trendyolProductService,
-    IMarketplaceOverrideManager marketplaceOverrideManager) : Controller
+    IMarketplaceOverrideManager marketplaceOverrideManager,
+    IProductVariantManager productVariantManager) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -324,6 +325,10 @@ public class ProductController(
             return RedirectToAction(nameof(Index));
         }
 
+        var syncDetail = await productSyncManager.GetProductSyncDetailAsync(id);
+        if (syncDetail.Success)
+            ViewBag.SyncDetail = syncDetail.Data;
+
         ViewData.SetPageTitle("Varyantlar");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(
@@ -331,6 +336,141 @@ public class ProductController(
             (result.Data!.Title, $"/products/{id}"),
             ("Varyantlar", null));
         return View(result.Data);
+    }
+
+    [HttpGet("/products/{productId:guid}/variants/{variantId:guid}/detail")]
+    public async Task<IActionResult> VariantDetail(Guid productId, Guid variantId)
+    {
+        var result = await productVariantManager.GetVariantDetailPage(variantId);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Varyant bulunamadi.");
+            return RedirectToAction(nameof(Variants), new { id = productId });
+        }
+
+        ViewData.SetPageTitle($"Varyant — {result.Data!.Barcode}");
+        ViewData.SetActiveNav("products");
+        ViewData.SetBreadcrumb(
+            ("Urunler", "/products"),
+            (result.Data.ProductTitle, $"/products/{productId}"),
+            ("Varyantlar", $"/products/{productId}/variants"),
+            (result.Data.Barcode, null));
+        return View(result.Data);
+    }
+
+    // ── Variant CRUD ─────────────────────────────────────────────────
+
+    [HttpGet("/products/{productId:guid}/variants/add")]
+    public async Task<IActionResult> VariantAdd(Guid productId)
+    {
+        var otherImages = await GetOtherVariantImages(productId, excludeVariantId: null);
+        var vm = new VariantFormVm(productId, null, otherImages);
+        return PartialView("Partials/_VariantAddDialog", vm);
+    }
+
+    [HttpPost("/products/{productId:guid}/variants/add")]
+    public async Task<IActionResult> VariantAddPost(
+        Guid productId,
+        [FromForm] AddProductVariantDto dto,
+        List<IFormFile> files,
+        [FromForm] List<int> existingImageIds)
+    {
+        var result = await productVariantManager.AddVariant(productId, dto);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Varyant eklenemedi.");
+            return RedirectToAction(nameof(Variants), new { id = productId });
+        }
+
+        // Yeni eklenen varyantın ID'sini bulmak için son varyantı çek
+        var product = await productService.GetProductDetailById(productId);
+        var newVariant = product.Data?.ProductVariantsDetails?.OrderByDescending(v => v.Id).FirstOrDefault();
+        if (newVariant is not null)
+        {
+            // Yeni resim yükle
+            if (files.Count > 0)
+            {
+                var streams = files.Select((f, idx) => new VariantImageStream(
+                    newVariant.Id, f.OpenReadStream(), f.FileName, IsMain: idx == 0));
+                await imageManager.AddProductImages(productId, streams);
+            }
+
+            // Mevcut resimlerden kopyala
+            if (existingImageIds.Count > 0)
+                await imageManager.CloneImagesToVariant(newVariant.Id, existingImageIds);
+        }
+
+        TempData.SetSuccess("Varyant basariyla eklendi.");
+        return RedirectToAction(nameof(Variants), new { id = productId });
+    }
+
+    [HttpGet("/products/{productId:guid}/variants/{variantId:guid}/edit")]
+    public async Task<IActionResult> VariantEdit(Guid productId, Guid variantId)
+    {
+        var result = await productVariantManager.GetVariantEditDetail(variantId);
+        if (!result.Success)
+            return StatusCode(404, result.Message);
+
+        var otherImages = await GetOtherVariantImages(productId, excludeVariantId: variantId);
+        var vm = new VariantFormVm(productId, result.Data, otherImages);
+        return PartialView("Partials/_VariantEditDialog", vm);
+    }
+
+    [HttpPost("/products/{productId:guid}/variants/{variantId:guid}/edit")]
+    public async Task<IActionResult> VariantEditPost(
+        Guid productId,
+        Guid variantId,
+        [FromForm] EditProductVariantDto dto,
+        List<IFormFile> files,
+        [FromForm] List<int> existingImageIds)
+    {
+        var result = await productVariantManager.UpdateVariant(dto);
+
+        // Yeni resim yükle
+        if (files.Count > 0)
+        {
+            var streams = files.Select((f, idx) => new VariantImageStream(
+                variantId, f.OpenReadStream(), f.FileName, IsMain: false));
+            await imageManager.AddProductImages(productId, streams);
+        }
+
+        // Mevcut resimlerden kopyala
+        if (existingImageIds.Count > 0)
+            await imageManager.CloneImagesToVariant(variantId, existingImageIds);
+
+        if (result.Success)
+            TempData.SetSuccess("Varyant basariyla guncellendi.");
+        else
+            TempData.SetError(result.Message ?? "Varyant guncellenemedi.");
+
+        return RedirectToAction(nameof(Variants), new { id = productId });
+    }
+
+    [HttpPost("/products/{productId:guid}/variants/{variantId:guid}/delete")]
+    public async Task<IActionResult> VariantDelete(Guid productId, Guid variantId)
+    {
+        var result = await productVariantManager.SoftDeleteVariant(variantId);
+
+        if (Request.IsHtmx())
+        {
+            if (result.Success)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Varyant silindi.", type = "success" });
+                return Content("");
+            }
+
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Silinemedi.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        if (result.Success)
+            TempData.SetSuccess("Varyant silindi.");
+        else
+            TempData.SetError(result.Message ?? "Varyant silinemedi.");
+
+        return RedirectToAction(nameof(Variants), new { id = productId });
     }
 
     [HttpPost("/products/{id:guid}/delete")]
@@ -465,5 +605,15 @@ public class ProductController(
 
         var categories = await categoryService.GetLeafCategoriesAsync();
         ViewBag.Categories = categories;
+    }
+
+    private async Task<List<VariantImageGroup>> GetOtherVariantImages(Guid productId, Guid? excludeVariantId)
+    {
+        var data = await productVariantManager.GetProductVariantImages(productId, excludeVariantId);
+        return data.Select(v => new VariantImageGroup(
+            v.VariantId,
+            v.Barcode,
+            v.Images.Select(i => new VariantImageDto(i.ImageId, i.Src, i.IsMain)).ToList()
+        )).ToList();
     }
 }

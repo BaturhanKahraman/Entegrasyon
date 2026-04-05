@@ -7,4 +7,6 @@ public record VariantImageStream(Guid VariantId, Stream ImageStream, string File
 public interface IImageManager
 {
     Task<IResult> AddProductImages(Guid productId, IEnumerable<VariantImageStream> images);
+    Task<IResult> SoftDeleteVariantImages(Guid variantId);
+    Task<IResult> CloneImagesToVariant(Guid targetVariantId, List<int> sourceImageIds);
 }

@@ -45,10 +45,10 @@
                         theme: { mode: isDark ? 'dark' : 'light' },
                         series: [{
                             name: 'Ciro (TL)',
-                            data: [@string.Join(",", Model.DailySales.Select(d => d.Revenue.ToString(System.Globalization.CultureInfo.InvariantCulture)))]
+                            data: [@Html.Raw(string.Join(",", Model.DailySales.Select(d => d.Revenue.ToString(System.Globalization.CultureInfo.InvariantCulture))))]
                         }],
                         xaxis: {
-                            categories: [@string.Join(",", Model.DailySales.Select(d => $"'{d.Date:dd.MM}'"))],
+                            categories: [@Html.Raw(string.Join(",", Model.DailySales.Select(d => $"'{d.Date:dd.MM}'")))],
                             labels: {
                                 rotate: -45,
                                 style: { fontSize: '10px', colors: textColor }

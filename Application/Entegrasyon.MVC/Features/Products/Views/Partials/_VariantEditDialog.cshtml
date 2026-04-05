@@ -1,0 +1,141 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.VariantFormVm
+
+@{
+    var variant = Model.Variant!;
+    var productId = Model.ProductId;
+}
+
+<div class="modal modal-blur show" style="display:block" tabindex="-1" id="variant-edit-modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Varyant Duzenle &mdash; <code>@variant.Barcode</code></h5>
+                <button type="button" class="btn-close" onclick="closeVariantModal()"></button>
+            </div>
+            <form method="post" action="/products/@productId/variants/@variant.Id/edit"
+                  enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@variant.Id" />
+                <input type="hidden" name="CurrencyType" value="@variant.CurrencyType" />
+                <div class="modal-body">
+                    <!-- Fiyat Alanlari -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Liste Fiyati</label>
+                            <input type="number" name="ListPrice" class="form-control"
+                                   value="@variant.ListPrice" min="0.01" step="0.01" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Satis Fiyati</label>
+                            <input type="number" name="SalePrice" class="form-control"
+                                   value="@variant.SalePrice" min="0.01" step="0.01" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Maliyet</label>
+                            <input type="number" name="CostPrice" class="form-control"
+                                   value="@variant.CostPrice" min="0" step="0.01" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">E-Ticaret Fiyati</label>
+                            <input type="number" name="ECommercePrice" class="form-control"
+                                   value="@variant.ECommercePrice" min="0" step="0.01" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">KDV Orani (%)</label>
+                            <input type="number" name="VatRate" class="form-control"
+                                   value="@variant.VatRate" min="0" max="100" step="0.01" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Desi</label>
+                            <input type="number" name="DimensionalWeight" class="form-control"
+                                   value="@variant.DimensionalWeight" min="0" step="0.01" />
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <!-- Mevcut Gorseller -->
+                    @if (variant.UploadedImages.Any())
+                    {
+                        <h4 class="mb-2">Mevcut Gorseller</h4>
+                        <div class="row g-2 mb-3">
+                            @foreach (var img in variant.UploadedImages)
+                            {
+                                <div class="col-4 col-sm-3">
+                                    <div class="card card-sm">
+                                        <img src="@img.Src" class="card-img-top" alt="Gorsel"
+                                             style="height:80px;object-fit:cover;" />
+                                        <div class="card-body p-1 text-center">
+                                            @if (img.IsMain)
+                                            {
+                                                <span class="badge bg-blue badge-sm">Ana</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-secondary" style="font-size:0.7rem">#@img.Id</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Yeni Gorsel Yukle -->
+                    <h4 class="mb-2">Gorsel Yukle</h4>
+                    <div class="mb-3">
+                        <input type="file" name="files" class="form-control" multiple accept="image/*" />
+                        <small class="form-hint">Birden fazla gorsel secebilirsiniz.</small>
+                    </div>
+
+                    <!-- Diger Varyantlardan Sec -->
+                    @if (Model.OtherVariantImages.Any())
+                    {
+                        <h4 class="mb-2">Diger Varyantlardan Sec</h4>
+                        @foreach (var group in Model.OtherVariantImages)
+                        {
+                            <p class="mb-1 text-secondary" style="font-size:0.8rem">
+                                <code>@group.Barcode</code>
+                            </p>
+                            <div class="row g-2 mb-2">
+                                @foreach (var img in group.Images)
+                                {
+                                    <div class="col-4 col-sm-3">
+                                        <label class="form-imagecheck">
+                                            <input type="checkbox" name="existingImageIds" value="@img.Id"
+                                                   class="form-imagecheck-input" />
+                                            <span class="form-imagecheck-figure">
+                                                <img src="@img.Src" alt="Gorsel"
+                                                     class="form-imagecheck-image"
+                                                     style="height:70px;object-fit:cover;width:100%;border-radius:4px;" />
+                                            </span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary"
+                            onclick="closeVariantModal()">Vazgec</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="closeVariantModal()"></div>
+
+<script>
+(function() {
+    window.closeVariantModal = function() {
+        var container = document.getElementById('modal-container');
+        while (container.firstChild) container.removeChild(container.firstChild);
+    };
+})();
+</script>

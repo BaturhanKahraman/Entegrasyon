@@ -5,56 +5,61 @@
         <h3 class="card-title">Haftalik Satis</h3>
     </div>
     <div class="card-body">
-        @if (Model == null || Model.Count == 0)
-        {
-            <div class="text-center text-secondary py-4">Henuz satis verisi yok.</div>
+        @{
+            // Veri yoksa bile son 7 gunu 0 degerli goster
+            var days = Model ?? new List<Entegrasyon.Entity.Dtos.Dashboard.DailySalesDto>();
+            if (days.Count == 0)
+            {
+                for (int i = 6; i >= 0; i--)
+                {
+                    days.Add(new Entegrasyon.Entity.Dtos.Dashboard.DailySalesDto(
+                        DateOnly.FromDateTime(DateTime.Today.AddDays(-i)), 0));
+                }
+            }
         }
-        else
-        {
-            <div id="weekly-chart" data-apex-chart style="height: 250px;"></div>
-            <script>
-                (function () {
-                    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                    var textColor = isDark ? '#a0aec0' : '#666';
-                    var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+        <div id="weekly-chart" data-apex-chart style="height: 250px;"></div>
+        <script>
+            (function () {
+                var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                var textColor = isDark ? '#a0aec0' : '#666';
+                var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
 
-                    var options = {
-                        chart: {
-                            id: 'weekly-chart',
-                            type: 'area',
-                            height: 250,
-                            toolbar: { show: false },
-                            fontFamily: 'inherit',
-                            background: 'transparent'
-                        },
-                        theme: { mode: isDark ? 'dark' : 'light' },
-                        series: [{
-                            name: 'Ciro (TL)',
-                            data: [@string.Join(",", Model.Select(d => d.Revenue.ToString(System.Globalization.CultureInfo.InvariantCulture)))]
-                        }],
-                        xaxis: {
-                            categories: [@string.Join(",", Model.Select(d => $"'{d.Date:dd MMM}'"))],
-                            labels: { style: { colors: textColor } }
-                        },
-                        yaxis: {
-                            labels: {
-                                style: { colors: textColor },
-                                formatter: function (val) { return val.toLocaleString('tr-TR') + ' TL'; }
-                            }
-                        },
-                        colors: [getComputedStyle(document.documentElement).getPropertyValue('--tblr-primary').trim() || '#206bc4'],
-                        fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
-                        stroke: { curve: 'smooth', width: 2 },
-                        grid: { borderColor: gridColor },
-                        tooltip: {
-                            y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' TL'; } }
-                        },
-                        dataLabels: { enabled: false }
-                    };
+                var options = {
+                    chart: {
+                        id: 'weekly-chart',
+                        type: 'area',
+                        height: 250,
+                        toolbar: { show: false },
+                        fontFamily: 'inherit',
+                        background: 'transparent'
+                    },
+                    theme: { mode: isDark ? 'dark' : 'light' },
+                    series: [{
+                        name: 'Ciro (TL)',
+                        data: [@Html.Raw(string.Join(",", days.Select(d => d.Revenue.ToString(System.Globalization.CultureInfo.InvariantCulture))))]
+                    }],
+                    xaxis: {
+                        categories: [@Html.Raw(string.Join(",", days.Select(d => $"'{d.Date:dd MMM}'")))],
+                        labels: { style: { colors: textColor } }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: { colors: textColor },
+                            formatter: function (val) { return val.toLocaleString('tr-TR') + ' TL'; }
+                        }
+                    },
+                    colors: [getComputedStyle(document.documentElement).getPropertyValue('--tblr-primary').trim() || '#206bc4'],
+                    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
+                    stroke: { curve: 'smooth', width: 2 },
+                    grid: { borderColor: gridColor },
+                    tooltip: {
+                        y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' TL'; } }
+                    },
+                    dataLabels: { enabled: false }
+                };
 
-                    new ApexCharts(document.querySelector('#weekly-chart'), options).render();
-                })();
-            </script>
-        }
+                new ApexCharts(document.querySelector('#weekly-chart'), options).render();
+            })();
+        </script>
     </div>
 </div>

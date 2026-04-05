@@ -22,10 +22,12 @@ public class ImageManagerTests : BaseTest
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
+        var mockMinio = new Mock<IMinioFileStorage>();
         _sut = new ImageManager(
             _mockLogger.Object,
             _mockImageProcessing.Object,
-            mockContextFactory.Object);
+            mockContextFactory.Object,
+            mockMinio.Object);
     }
 
     [Fact]
