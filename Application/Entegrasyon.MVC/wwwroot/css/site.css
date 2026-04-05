@@ -70,6 +70,17 @@
     color: #fff !important;
 }
 
+/* Sidebar collapsible group chevron animation */
+.sidebar-group-toggle .sidebar-chevron {
+    transition: transform 0.2s ease;
+}
+.sidebar-group-toggle.collapsed .sidebar-chevron {
+    transform: rotate(-90deg);
+}
+.sidebar-group-toggle:not(.collapsed) .sidebar-chevron {
+    transform: rotate(0deg);
+}
+
 /* Wizard step indicators — Tabler tema uyumlu */
 .wizard-steps {
     display: flex;

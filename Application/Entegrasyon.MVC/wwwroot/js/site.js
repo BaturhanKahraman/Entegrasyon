@@ -115,3 +115,14 @@ document.body.addEventListener('htmx:responseError', function (event) {
 
 // TODO: SSE bildirim client'ı şimdilik devre dışı — backend endpoint kaldırıldı.
 // İleride düzgün SSE/SignalR implementasyonu ile birlikte aktif edilecek.
+
+// ── Sidebar: Scroll to Active Item ───────────────────────────────────
+
+(function () {
+    var activeLink = document.querySelector('#sidebar-menu .nav-link.active');
+    if (activeLink) {
+        setTimeout(function () {
+            activeLink.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }, 100);
+    }
+})();

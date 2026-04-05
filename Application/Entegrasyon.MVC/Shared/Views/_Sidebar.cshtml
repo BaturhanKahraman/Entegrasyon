@@ -22,234 +22,113 @@
                 </li>
 
                 @* ── Yonetim ── *@
+                @{
+                    var yonetimKeys = new[] { "products", "categories", "attributes", "brands", "pos", "sales", "orders", "returns", "picking", "shipping", "bulk-operations", "branch-offices", "stock-movements", "discounts", "pricing" };
+                    var yonetimActive = yonetimKeys.Contains(activeNav);
+                }
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Yonetim</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "products" ? "active" : "")" require-permission="Permissions.Products.View" href="/products">
-                        <span class="nav-link-icon"><i class="ti ti-package"></i></span>
-                        <span class="nav-link-title">Urunler</span>
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(yonetimActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-yonetim" role="button"
+                       aria-expanded="@(yonetimActive ? "true" : "false")">
+                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        Yonetim
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "categories" ? "active" : "")" require-permission="Permissions.Categories.View" href="/categories">
-                        <span class="nav-link-icon"><i class="ti ti-category"></i></span>
-                        <span class="nav-link-title">Kategoriler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "attributes" ? "active" : "")" require-permission="Permissions.Categories.View" href="/attributes">
-                        <span class="nav-link-icon"><i class="ti ti-tags"></i></span>
-                        <span class="nav-link-title">Ozellikler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "brands" ? "active" : "")" require-permission="Permissions.Brands.View" href="/brands">
-                        <span class="nav-link-icon"><i class="ti ti-award"></i></span>
-                        <span class="nav-link-title">Markalar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "pos" ? "active" : "")" require-permission="Permissions.Sales.Create" href="/pos">
-                        <span class="nav-link-icon"><i class="ti ti-device-desktop"></i></span>
-                        <span class="nav-link-title">POS Terminal</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "sales" ? "active" : "")" require-permission="Permissions.Sales.View" href="/sales">
-                        <span class="nav-link-icon"><i class="ti ti-receipt"></i></span>
-                        <span class="nav-link-title">Satis Gecmisi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/orders">
-                        <span class="nav-link-icon"><i class="ti ti-shopping-cart"></i></span>
-                        <span class="nav-link-title">Satislar ve Siparisler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "returns" ? "active" : "")" require-permission="Permissions.Orders.View" href="/returns">
-                        <span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span>
-                        <span class="nav-link-title">Iade Yonetimi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "picking" ? "active" : "")" require-permission="Permissions.Orders.View" href="/picking">
-                        <span class="nav-link-icon"><i class="ti ti-barcode"></i></span>
-                        <span class="nav-link-title">Siparis Hazirlama</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "shipping" ? "active" : "")" require-permission="Permissions.Cargo.View" href="/shipping">
-                        <span class="nav-link-icon"><i class="ti ti-truck"></i></span>
-                        <span class="nav-link-title">Kargo Takip</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "bulk-operations" ? "active" : "")" require-permission="Permissions.Products.Edit" href="/bulk-operations">
-                        <span class="nav-link-icon"><i class="ti ti-layers-subtract"></i></span>
-                        <span class="nav-link-title">Toplu Islem</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "branch-offices" ? "active" : "")" require-permission="Permissions.BranchOffices.View" href="/branch-offices">
-                        <span class="nav-link-icon"><i class="ti ti-building-warehouse"></i></span>
-                        <span class="nav-link-title">Depolar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "stock-movements" ? "active" : "")" require-permission="Permissions.BranchOffices.View" href="/stock/movements">
-                        <span class="nav-link-icon"><i class="ti ti-transfer"></i></span>
-                        <span class="nav-link-title">Stok Hareketleri</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "discounts" ? "active" : "")" require-permission="Permissions.Sales.View" href="/discounts">
-                        <span class="nav-link-icon"><i class="ti ti-ticket"></i></span>
-                        <span class="nav-link-title">Kuponlar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "pricing" ? "active" : "")" require-permission="Permissions.Products.View" href="/pricing">
-                        <span class="nav-link-icon"><i class="ti ti-currency-lira"></i></span>
-                        <span class="nav-link-title">Fiyat Yonetimi</span>
-                    </a>
+                    <div class="collapse @(yonetimActive ? "show" : "")" id="nav-yonetim">
+                        <ul class="navbar-nav ps-3">
+                            <li class="nav-item"><a class="nav-link @(activeNav == "products" ? "active" : "")" require-permission="Permissions.Products.View" href="/products"><span class="nav-link-icon"><i class="ti ti-package"></i></span><span class="nav-link-title">Urunler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "categories" ? "active" : "")" require-permission="Permissions.Categories.View" href="/categories"><span class="nav-link-icon"><i class="ti ti-category"></i></span><span class="nav-link-title">Kategoriler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "attributes" ? "active" : "")" require-permission="Permissions.Categories.View" href="/attributes"><span class="nav-link-icon"><i class="ti ti-tags"></i></span><span class="nav-link-title">Ozellikler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "brands" ? "active" : "")" require-permission="Permissions.Brands.View" href="/brands"><span class="nav-link-icon"><i class="ti ti-award"></i></span><span class="nav-link-title">Markalar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "pos" ? "active" : "")" require-permission="Permissions.Sales.Create" href="/pos"><span class="nav-link-icon"><i class="ti ti-device-desktop"></i></span><span class="nav-link-title">POS Terminal</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "sales" ? "active" : "")" require-permission="Permissions.Sales.View" href="/sales"><span class="nav-link-icon"><i class="ti ti-receipt"></i></span><span class="nav-link-title">Satis Gecmisi</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/orders"><span class="nav-link-icon"><i class="ti ti-shopping-cart"></i></span><span class="nav-link-title">Satislar ve Siparisler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "returns" ? "active" : "")" require-permission="Permissions.Orders.View" href="/returns"><span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span><span class="nav-link-title">Iade Yonetimi</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "picking" ? "active" : "")" require-permission="Permissions.Orders.View" href="/picking"><span class="nav-link-icon"><i class="ti ti-barcode"></i></span><span class="nav-link-title">Siparis Hazirlama</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "shipping" ? "active" : "")" require-permission="Permissions.Cargo.View" href="/shipping"><span class="nav-link-icon"><i class="ti ti-truck"></i></span><span class="nav-link-title">Kargo Takip</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "bulk-operations" ? "active" : "")" require-permission="Permissions.Products.Edit" href="/bulk-operations"><span class="nav-link-icon"><i class="ti ti-layers-subtract"></i></span><span class="nav-link-title">Toplu Islem</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "branch-offices" ? "active" : "")" require-permission="Permissions.BranchOffices.View" href="/branch-offices"><span class="nav-link-icon"><i class="ti ti-building-warehouse"></i></span><span class="nav-link-title">Depolar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "stock-movements" ? "active" : "")" require-permission="Permissions.BranchOffices.View" href="/stock/movements"><span class="nav-link-icon"><i class="ti ti-transfer"></i></span><span class="nav-link-title">Stok Hareketleri</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "discounts" ? "active" : "")" require-permission="Permissions.Sales.View" href="/discounts"><span class="nav-link-icon"><i class="ti ti-ticket"></i></span><span class="nav-link-title">Kuponlar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "pricing" ? "active" : "")" require-permission="Permissions.Products.View" href="/pricing"><span class="nav-link-icon"><i class="ti ti-currency-lira"></i></span><span class="nav-link-title">Fiyat Yonetimi</span></a></li>
+                        </ul>
+                    </div>
                 </li>
 
                 @* ── Pazaryeri ── *@
+                @{
+                    var pazaryeriKeys = new[] { "matched-entities", "marketplace-sync", "marketplace-matching", "commission-rates", "marketplace-orders", "integration-health" };
+                    var pazaryeriActive = pazaryeriKeys.Contains(activeNav);
+                }
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Pazaryeri</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "matched-entities" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/matched-entities">
-                        <span class="nav-link-icon"><i class="ti ti-template"></i></span>
-                        <span class="nav-link-title">Hazir Sablonlar</span>
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(pazaryeriActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-pazaryeri" role="button"
+                       aria-expanded="@(pazaryeriActive ? "true" : "false")">
+                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        Pazaryeri
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "marketplace-sync" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/sync">
-                        <span class="nav-link-icon"><i class="ti ti-refresh"></i></span>
-                        <span class="nav-link-title">Senkronizasyon</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "marketplace-matching" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/matching">
-                        <span class="nav-link-icon"><i class="ti ti-link"></i></span>
-                        <span class="nav-link-title">Urun Eslestirme</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "commission-rates" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/commission-rates">
-                        <span class="nav-link-icon"><i class="ti ti-percentage"></i></span>
-                        <span class="nav-link-title">Komisyon Oranlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "marketplace-orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/marketplace/orders">
-                        <span class="nav-link-icon"><i class="ti ti-clipboard-list"></i></span>
-                        <span class="nav-link-title">Siparisler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "integration-health" ? "active" : "")" require-permission="Permissions.Integrations.View" href="/integrations/health">
-                        <span class="nav-link-icon"><i class="ti ti-heartbeat"></i></span>
-                        <span class="nav-link-title">Entegrasyon Durumu</span>
-                    </a>
+                    <div class="collapse @(pazaryeriActive ? "show" : "")" id="nav-pazaryeri">
+                        <ul class="navbar-nav ps-3">
+                            <li class="nav-item"><a class="nav-link @(activeNav == "matched-entities" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/matched-entities"><span class="nav-link-icon"><i class="ti ti-template"></i></span><span class="nav-link-title">Hazir Sablonlar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "marketplace-sync" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/sync"><span class="nav-link-icon"><i class="ti ti-refresh"></i></span><span class="nav-link-title">Senkronizasyon</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "marketplace-matching" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/matching"><span class="nav-link-icon"><i class="ti ti-link"></i></span><span class="nav-link-title">Urun Eslestirme</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "commission-rates" ? "active" : "")" require-permission="Permissions.Marketplace.View" href="/marketplace/commission-rates"><span class="nav-link-icon"><i class="ti ti-percentage"></i></span><span class="nav-link-title">Komisyon Oranlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "marketplace-orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/marketplace/orders"><span class="nav-link-icon"><i class="ti ti-clipboard-list"></i></span><span class="nav-link-title">Siparisler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "integration-health" ? "active" : "")" require-permission="Permissions.Integrations.View" href="/integrations/health"><span class="nav-link-icon"><i class="ti ti-heartbeat"></i></span><span class="nav-link-title">Entegrasyon Durumu</span></a></li>
+                        </ul>
+                    </div>
                 </li>
 
                 @* ── Musteriler ── *@
+                @{
+                    var musteriKeys = new[] { "customers", "invoicing" };
+                    var musteriActive = musteriKeys.Contains(activeNav);
+                }
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Musteriler</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "customers" ? "active" : "")" require-permission="Permissions.Customers.View" href="/customers">
-                        <span class="nav-link-icon"><i class="ti ti-users"></i></span>
-                        <span class="nav-link-title">Musteriler</span>
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(musteriActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-musteriler" role="button"
+                       aria-expanded="@(musteriActive ? "true" : "false")">
+                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        Musteriler
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "invoicing" ? "active" : "")" require-permission="Permissions.Orders.View" href="/invoicing">
-                        <span class="nav-link-icon"><i class="ti ti-file-invoice"></i></span>
-                        <span class="nav-link-title">E-Fatura</span>
-                    </a>
+                    <div class="collapse @(musteriActive ? "show" : "")" id="nav-musteriler">
+                        <ul class="navbar-nav ps-3">
+                            <li class="nav-item"><a class="nav-link @(activeNav == "customers" ? "active" : "")" require-permission="Permissions.Customers.View" href="/customers"><span class="nav-link-icon"><i class="ti ti-users"></i></span><span class="nav-link-title">Musteriler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "invoicing" ? "active" : "")" require-permission="Permissions.Orders.View" href="/invoicing"><span class="nav-link-icon"><i class="ti ti-file-invoice"></i></span><span class="nav-link-title">E-Fatura</span></a></li>
+                        </ul>
+                    </div>
                 </li>
 
                 @* ── Raporlar ── *@
+                @{
+                    var raporKeys = new[] { "reports", "reports-profit-loss", "reports-product-performance", "reports-stock-alerts", "reports-inventory", "reports-marketplace", "reports-customers", "reports-returns", "reports-tax", "reports-category-sales", "reports-shipping" };
+                    var raporActive = raporKeys.Contains(activeNav);
+                }
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Raporlar</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/sales">
-                        <span class="nav-link-icon"><i class="ti ti-report-analytics"></i></span>
-                        <span class="nav-link-title">Satis Raporlari</span>
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(raporActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-raporlar" role="button"
+                       aria-expanded="@(raporActive ? "true" : "false")">
+                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        Raporlar
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-profit-loss" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/profit-loss">
-                        <span class="nav-link-icon"><i class="ti ti-trending-up"></i></span>
-                        <span class="nav-link-title">Kar/Zarar Raporu</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-product-performance" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/product-performance">
-                        <span class="nav-link-icon"><i class="ti ti-chart-dots"></i></span>
-                        <span class="nav-link-title">Urun Performansi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-stock-alerts" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/stock-alerts">
-                        <span class="nav-link-icon"><i class="ti ti-alert-triangle"></i></span>
-                        <span class="nav-link-title">Stok Uyarilari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-inventory" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/inventory">
-                        <span class="nav-link-icon"><i class="ti ti-clipboard-check"></i></span>
-                        <span class="nav-link-title">Stok Raporlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-marketplace" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/marketplace">
-                        <span class="nav-link-icon"><i class="ti ti-chart-pie"></i></span>
-                        <span class="nav-link-title">Pazaryeri Raporlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-customers" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/customers">
-                        <span class="nav-link-icon"><i class="ti ti-users-group"></i></span>
-                        <span class="nav-link-title">Musteri Raporu</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-returns" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/returns">
-                        <span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span>
-                        <span class="nav-link-title">Iade Raporu</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-tax" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/tax">
-                        <span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span>
-                        <span class="nav-link-title">Vergi Raporu</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-category-sales" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/category-sales">
-                        <span class="nav-link-icon"><i class="ti ti-category"></i></span>
-                        <span class="nav-link-title">Kategori Satislari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "reports-shipping" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/shipping">
-                        <span class="nav-link-icon"><i class="ti ti-truck-delivery"></i></span>
-                        <span class="nav-link-title">Kargo Raporu</span>
-                    </a>
+                    <div class="collapse @(raporActive ? "show" : "")" id="nav-raporlar">
+                        <ul class="navbar-nav ps-3">
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/sales"><span class="nav-link-icon"><i class="ti ti-report-analytics"></i></span><span class="nav-link-title">Satis Raporlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-profit-loss" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/profit-loss"><span class="nav-link-icon"><i class="ti ti-trending-up"></i></span><span class="nav-link-title">Kar/Zarar Raporu</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-product-performance" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/product-performance"><span class="nav-link-icon"><i class="ti ti-chart-dots"></i></span><span class="nav-link-title">Urun Performansi</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-stock-alerts" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/stock-alerts"><span class="nav-link-icon"><i class="ti ti-alert-triangle"></i></span><span class="nav-link-title">Stok Uyarilari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-inventory" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/inventory"><span class="nav-link-icon"><i class="ti ti-clipboard-check"></i></span><span class="nav-link-title">Stok Raporlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-marketplace" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/marketplace"><span class="nav-link-icon"><i class="ti ti-chart-pie"></i></span><span class="nav-link-title">Pazaryeri Raporlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-customers" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/customers"><span class="nav-link-icon"><i class="ti ti-users-group"></i></span><span class="nav-link-title">Musteri Raporu</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-returns" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/returns"><span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span><span class="nav-link-title">Iade Raporu</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-tax" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/tax"><span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span><span class="nav-link-title">Vergi Raporu</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-category-sales" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/category-sales"><span class="nav-link-icon"><i class="ti ti-category"></i></span><span class="nav-link-title">Kategori Satislari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "reports-shipping" ? "active" : "")" require-permission="Permissions.Reports.View" href="/reports/shipping"><span class="nav-link-icon"><i class="ti ti-truck-delivery"></i></span><span class="nav-link-title">Kargo Raporu</span></a></li>
+                        </ul>
+                    </div>
                 </li>
 
                 @* ── Mesajlar ── *@
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Mesajlar</span>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link @(activeNav == "chat" ? "active" : "")" href="/chat">
                         <span class="nav-link-icon"><i class="ti ti-messages"></i></span>
                         <span class="nav-link-title">Sohbetler</span>
@@ -257,169 +136,66 @@
                 </li>
 
                 @* ── Magaza ── *@
+                @{
+                    var magazaKeys = new[] { "storefront", "storefront-reviews", "storefront-returns", "storefront-campaigns", "storefront-sellers", "storefront-payouts", "gift-cards", "storefront-commissions", "storefront-abandoned-carts", "loyalty", "storefront-referrals", "storefront-wallets", "storefront-wishlists", "storefront-stock-notifications", "storefront-search-analytics", "storefront-push-notifications" };
+                    var magazaActive = magazaKeys.Contains(activeNav);
+                }
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Magaza</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/storefront">
-                        <span class="nav-link-icon"><i class="ti ti-settings"></i></span>
-                        <span class="nav-link-title">Magaza Ayarlari</span>
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(magazaActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-magaza" role="button"
+                       aria-expanded="@(magazaActive ? "true" : "false")">
+                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        Magaza
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-reviews" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/reviews">
-                        <span class="nav-link-icon"><i class="ti ti-star"></i></span>
-                        <span class="nav-link-title">Degerlendirmeler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-returns" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/returns">
-                        <span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span>
-                        <span class="nav-link-title">Iade Talepleri</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-campaigns" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/campaigns">
-                        <span class="nav-link-icon"><i class="ti ti-speakerphone"></i></span>
-                        <span class="nav-link-title">Otomatik Kampanyalar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-sellers" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/sellers">
-                        <span class="nav-link-icon"><i class="ti ti-users-group"></i></span>
-                        <span class="nav-link-title">Satici Yonetimi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-payouts" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/payouts">
-                        <span class="nav-link-icon"><i class="ti ti-cash"></i></span>
-                        <span class="nav-link-title">Odeme Talepleri</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "gift-cards" ? "active" : "")" require-permission="Permissions.Settings.View" href="/gift-cards">
-                        <span class="nav-link-icon"><i class="ti ti-gift"></i></span>
-                        <span class="nav-link-title">Hediye Kartlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-commissions" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/commissions">
-                        <span class="nav-link-icon"><i class="ti ti-percentage"></i></span>
-                        <span class="nav-link-title">Satici Komisyonlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-abandoned-carts" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/abandoned-carts">
-                        <span class="nav-link-icon"><i class="ti ti-shopping-cart-off"></i></span>
-                        <span class="nav-link-title">Terk Edilen Sepetler</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "loyalty" ? "active" : "")" require-permission="Permissions.Settings.View" href="/loyalty">
-                        <span class="nav-link-icon"><i class="ti ti-diamond"></i></span>
-                        <span class="nav-link-title">Sadakat Programi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-referrals" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/referrals">
-                        <span class="nav-link-icon"><i class="ti ti-share"></i></span>
-                        <span class="nav-link-title">Referans Programi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-wallets" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/wallets">
-                        <span class="nav-link-icon"><i class="ti ti-wallet"></i></span>
-                        <span class="nav-link-title">Musteri Cuzdanlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-wishlists" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/wishlists">
-                        <span class="nav-link-icon"><i class="ti ti-heart"></i></span>
-                        <span class="nav-link-title">Istek Listeleri</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-stock-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/stock-notifications">
-                        <span class="nav-link-icon"><i class="ti ti-bell-ringing"></i></span>
-                        <span class="nav-link-title">Stok Bildirimleri</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-search-analytics" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/search-analytics">
-                        <span class="nav-link-icon"><i class="ti ti-search"></i></span>
-                        <span class="nav-link-title">Arama Analitik</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "storefront-push-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/push-notifications">
-                        <span class="nav-link-icon"><i class="ti ti-send"></i></span>
-                        <span class="nav-link-title">Push Bildirimler</span>
-                    </a>
+                    <div class="collapse @(magazaActive ? "show" : "")" id="nav-magaza">
+                        <ul class="navbar-nav ps-3">
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/storefront"><span class="nav-link-icon"><i class="ti ti-settings"></i></span><span class="nav-link-title">Magaza Ayarlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-reviews" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/reviews"><span class="nav-link-icon"><i class="ti ti-star"></i></span><span class="nav-link-title">Degerlendirmeler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-returns" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/returns"><span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span><span class="nav-link-title">Iade Talepleri</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-campaigns" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/campaigns"><span class="nav-link-icon"><i class="ti ti-speakerphone"></i></span><span class="nav-link-title">Otomatik Kampanyalar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-sellers" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/sellers"><span class="nav-link-icon"><i class="ti ti-users-group"></i></span><span class="nav-link-title">Satici Yonetimi</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-payouts" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/payouts"><span class="nav-link-icon"><i class="ti ti-cash"></i></span><span class="nav-link-title">Odeme Talepleri</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "gift-cards" ? "active" : "")" require-permission="Permissions.Settings.View" href="/gift-cards"><span class="nav-link-icon"><i class="ti ti-gift"></i></span><span class="nav-link-title">Hediye Kartlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-commissions" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/commissions"><span class="nav-link-icon"><i class="ti ti-percentage"></i></span><span class="nav-link-title">Satici Komisyonlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-abandoned-carts" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/abandoned-carts"><span class="nav-link-icon"><i class="ti ti-shopping-cart-off"></i></span><span class="nav-link-title">Terk Edilen Sepetler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "loyalty" ? "active" : "")" require-permission="Permissions.Settings.View" href="/loyalty"><span class="nav-link-icon"><i class="ti ti-diamond"></i></span><span class="nav-link-title">Sadakat Programi</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-referrals" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/referrals"><span class="nav-link-icon"><i class="ti ti-share"></i></span><span class="nav-link-title">Referans Programi</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-wallets" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/wallets"><span class="nav-link-icon"><i class="ti ti-wallet"></i></span><span class="nav-link-title">Musteri Cuzdanlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-wishlists" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/wishlists"><span class="nav-link-icon"><i class="ti ti-heart"></i></span><span class="nav-link-title">Istek Listeleri</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-stock-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/stock-notifications"><span class="nav-link-icon"><i class="ti ti-bell-ringing"></i></span><span class="nav-link-title">Stok Bildirimleri</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-search-analytics" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/search-analytics"><span class="nav-link-icon"><i class="ti ti-search"></i></span><span class="nav-link-title">Arama Analitik</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront-push-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/push-notifications"><span class="nav-link-icon"><i class="ti ti-send"></i></span><span class="nav-link-title">Push Bildirimler</span></a></li>
+                        </ul>
+                    </div>
                 </li>
 
                 @* ── Ayarlar ── *@
+                @{
+                    var ayarKeys = new[] { "settings", "settings-integrations", "settings-printing", "settings-tax", "settings-shipping", "settings-webhooks", "settings-api-keys", "settings-notifications", "users", "roles", "logs" };
+                    var ayarActive = ayarKeys.Contains(activeNav);
+                }
                 <li class="nav-item mt-2">
-                    <span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Ayarlar</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/general">
-                        <span class="nav-link-icon"><i class="ti ti-adjustments"></i></span>
-                        <span class="nav-link-title">Genel Ayarlar</span>
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(ayarActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-ayarlar" role="button"
+                       aria-expanded="@(ayarActive ? "true" : "false")">
+                        <span class="nav-link-icon"><i class="ti ti-chevron-down sidebar-chevron"></i></span>
+                        Ayarlar
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings-integrations" ? "active" : "")" require-permission="Permissions.Integrations.View" href="/settings/integrations">
-                        <span class="nav-link-icon"><i class="ti ti-plug"></i></span>
-                        <span class="nav-link-title">Entegrasyonlar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings-printing" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/printing">
-                        <span class="nav-link-icon"><i class="ti ti-printer"></i></span>
-                        <span class="nav-link-title">Yazici & Barkod</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings-tax" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/tax">
-                        <span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span>
-                        <span class="nav-link-title">Vergi Ayarlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings-shipping" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/shipping">
-                        <span class="nav-link-icon"><i class="ti ti-truck"></i></span>
-                        <span class="nav-link-title">Kargo Ayarlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings-webhooks" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/webhooks">
-                        <span class="nav-link-icon"><i class="ti ti-webhook"></i></span>
-                        <span class="nav-link-title">Webhooklar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "settings-api-keys" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/api-keys">
-                        <span class="nav-link-icon"><i class="ti ti-key"></i></span>
-                        <span class="nav-link-title">API Anahtarlari</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "users" ? "active" : "")" require-permission="Permissions.Users.View" href="/users">
-                        <span class="nav-link-icon"><i class="ti ti-users"></i></span>
-                        <span class="nav-link-title">Kullanicilar</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "roles" ? "active" : "")" require-permission="Permissions.Roles.View" href="/roles">
-                        <span class="nav-link-icon"><i class="ti ti-shield-lock"></i></span>
-                        <span class="nav-link-title">Roller</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "logs" ? "active" : "")" require-permission="Permissions.Logs.View" href="/logs">
-                        <span class="nav-link-icon"><i class="ti ti-list-details"></i></span>
-                        <span class="nav-link-title">Aktivite Logu</span>
-                    </a>
+                    <div class="collapse @(ayarActive ? "show" : "")" id="nav-ayarlar">
+                        <ul class="navbar-nav ps-3">
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/general"><span class="nav-link-icon"><i class="ti ti-adjustments"></i></span><span class="nav-link-title">Genel Ayarlar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-integrations" ? "active" : "")" require-permission="Permissions.Integrations.View" href="/settings/integrations"><span class="nav-link-icon"><i class="ti ti-plug"></i></span><span class="nav-link-title">Entegrasyonlar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/notifications"><span class="nav-link-icon"><i class="ti ti-bell"></i></span><span class="nav-link-title">Bildirim Ayarlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-printing" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/printing"><span class="nav-link-icon"><i class="ti ti-printer"></i></span><span class="nav-link-title">Yazici & Barkod</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-tax" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/tax"><span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span><span class="nav-link-title">Vergi Ayarlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-shipping" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/shipping"><span class="nav-link-icon"><i class="ti ti-truck"></i></span><span class="nav-link-title">Kargo Ayarlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-webhooks" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/webhooks"><span class="nav-link-icon"><i class="ti ti-webhook"></i></span><span class="nav-link-title">Webhooklar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "settings-api-keys" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/api-keys"><span class="nav-link-icon"><i class="ti ti-key"></i></span><span class="nav-link-title">API Anahtarlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "users" ? "active" : "")" require-permission="Permissions.Users.View" href="/users"><span class="nav-link-icon"><i class="ti ti-users"></i></span><span class="nav-link-title">Kullanicilar</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "roles" ? "active" : "")" require-permission="Permissions.Roles.View" href="/roles"><span class="nav-link-icon"><i class="ti ti-shield-lock"></i></span><span class="nav-link-title">Roller</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "logs" ? "active" : "")" require-permission="Permissions.Logs.View" href="/logs"><span class="nav-link-icon"><i class="ti ti-list-details"></i></span><span class="nav-link-title">Aktivite Logu</span></a></li>
+                        </ul>
+                    </div>
                 </li>
 
             </ul>
