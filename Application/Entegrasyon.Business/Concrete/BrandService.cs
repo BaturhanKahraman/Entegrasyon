@@ -115,9 +115,9 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         query = query.ApplyGlobalSearch(request.SearchTerm, nameof(Brand.Name));
 
         var items = await query
-            .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
-            .OrderByDescending(x => x.ProductNumber)
+            .OrderByDescending(x => x.Products.Count())
             .ThenBy(x => x.Name)
+            .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
             .ToPageableAsync(request);
 
         return new SuccessDataResult<Pageable<BrandListDetailDto>>(items);
@@ -133,8 +133,9 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var entity = await dbContext.Brands
+            .Where(x => x.Id == id)
             .Select(x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync();
         return new SuccessDataResult<BrandDetailDto>(entity!);
     }
 
