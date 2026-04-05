@@ -1,0 +1,109 @@
+@model List<Entegrasyon.Entity.Storefront.StorefrontReturnRequest>
+
+@{
+    string StatusBadge(Entegrasyon.Entity.Storefront.ReturnStatus status) => status switch
+    {
+        Entegrasyon.Entity.Storefront.ReturnStatus.Pending => "bg-yellow-lt",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Approved => "bg-green-lt",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Rejected => "bg-red-lt",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Completed => "bg-blue-lt",
+        _ => "bg-secondary-lt"
+    };
+
+    string StatusText(Entegrasyon.Entity.Storefront.ReturnStatus status) => status switch
+    {
+        Entegrasyon.Entity.Storefront.ReturnStatus.Pending => "Beklemede",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Approved => "Onaylandi",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Rejected => "Reddedildi",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Completed => "Tamamlandi",
+        _ => status.ToString()
+    };
+}
+
+<div id="return-table"
+     hx-on:return-status-changed="htmx.trigger(this, 'returnTableRefresh')"
+     hx-get="/returns"
+     hx-trigger="returnTableRefresh"
+     hx-target="#return-table"
+     hx-swap="outerHTML"
+     hx-include="[name='status']">
+    @if (Model.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Musteri ID</th>
+                        <th>Siparis ID</th>
+                        <th>Sebep</th>
+                        <th>Aciklama</th>
+                        <th>Durum</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ret in Model)
+                    {
+                        <tr>
+                            <td class="text-secondary">
+                                @ret.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                            </td>
+                            <td class="text-secondary">
+                                #@ret.CustomerId
+                            </td>
+                            <td class="text-secondary text-truncate" style="max-width:120px;" title="@ret.OrderId">
+                                @ret.OrderId.ToString()[..8]
+                            </td>
+                            <td>@ret.Reason</td>
+                            <td class="text-secondary">@(ret.Description ?? "-")</td>
+                            <td>
+                                <span class="badge @StatusBadge(ret.Status)">
+                                    @StatusText(ret.Status)
+                                </span>
+                            </td>
+                            <td>
+                                @if (ret.Status == Entegrasyon.Entity.Storefront.ReturnStatus.Pending)
+                                {
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button"
+                                                class="btn btn-success"
+                                                hx-post="/returns/@ret.Id/approve"
+                                                hx-swap="none"
+                                                hx-confirm="Bu iade talebini onaylamak istiyor musunuz?">
+                                            <i class="ti ti-check icon"></i>
+                                            Onayla
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-danger"
+                                                hx-post="/returns/@ret.Id/reject"
+                                                hx-swap="none"
+                                                hx-confirm="Bu iade talebini reddetmek istiyor musunuz?">
+                                            <i class="ti ti-x icon"></i>
+                                            Reddet
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Iade talebi bulunamadi",
+                         Subtitle = "Henuz iade talebi bulunmuyor veya secili durumda talep yok."
+                     }'/>
+        </div>
+    }
+</div>

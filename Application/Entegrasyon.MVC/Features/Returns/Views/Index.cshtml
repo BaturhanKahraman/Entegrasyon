@@ -1,0 +1,27 @@
+@model List<Entegrasyon.Entity.Storefront.StorefrontReturnRequest>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <div class="row w-100 g-2 align-items-center">
+                    <div class="col-auto">
+                        <select class="form-select"
+                                name="status"
+                                hx-get="/returns"
+                                hx-trigger="change"
+                                hx-target="#return-table"
+                                hx-swap="outerHTML">
+                            <option value="">Tum Durumlar</option>
+                            <option value="Pending" selected="@(ViewBag.Status == "Pending")">Beklemede</option>
+                            <option value="Approved" selected="@(ViewBag.Status == "Approved")">Onaylandi</option>
+                            <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Reddedildi</option>
+                            <option value="Completed" selected="@(ViewBag.Status == "Completed")">Tamamlandi</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <partial name="~/Features/Returns/Views/Partials/_ReturnTable.cshtml" model="Model"/>
+        </div>
+    </div>
+</div>
