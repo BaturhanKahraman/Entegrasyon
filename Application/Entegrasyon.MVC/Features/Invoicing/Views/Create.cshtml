@@ -4,8 +4,6 @@
     <a href="/invoicing" class="btn btn-outline-secondary">Geri Don</a>
 </div>
 
-<div class="page-body">
-    <div class="container-xl">
         <div class="card">
             <div class="card-body">
                 <form method="post" action="/invoicing/create">
@@ -100,10 +98,8 @@
                     <option value="1">%1</option>
                     <option value="0">%0</option>
                 </select>
-            </div>
             <div class="col-md-2">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-line">Sil</button>
-            </div>
         </div>`;
         container.insertAdjacentHTML('beforeend', html);
         lineIndex++;

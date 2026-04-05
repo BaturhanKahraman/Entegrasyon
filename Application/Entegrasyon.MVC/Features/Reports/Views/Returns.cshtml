@@ -1,8 +1,6 @@
 @model List<Entegrasyon.Entity.Storefront.StorefrontReturnRequest>
 @using Entegrasyon.Entity.Storefront
 
-<div class="page-body">
-    <div class="container-xl">
         @{
             var total = Model.Count;
             var approved = Model.Count(r => r.Status == ReturnStatus.Approved);
@@ -72,5 +70,3 @@
                 </table>
             </div>
         </div>
-    </div>
-</div>

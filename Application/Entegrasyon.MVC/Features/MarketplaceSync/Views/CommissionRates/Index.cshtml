@@ -6,8 +6,6 @@
 }
 
 
-<div class="page-body">
-    <div class="container-xl">
         <!-- Marketplace Tabs -->
         <div class="card mb-3">
             <div class="card-body p-2">
@@ -80,8 +78,6 @@
         <div id="rates-table-container">
             @await Html.PartialAsync("~/Features/MarketplaceSync/Views/CommissionRates/Partials/_RatesTable.cshtml", Model)
         </div>
-    </div>
-</div>
 
 <script>
     document.addEventListener('refreshRates', function () {

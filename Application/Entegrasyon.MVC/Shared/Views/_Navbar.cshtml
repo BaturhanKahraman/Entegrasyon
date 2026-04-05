@@ -1,17 +1,5 @@
-@{
-    var activeNav = ViewData.GetActiveNav();
-    var activeGroup = ViewData.GetActiveNavGroup();
-}
-
 <header class="navbar navbar-expand-md d-print-none">
     <div class="container-xl">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-            <a href="/">Entegrasyon</a>
-        </h1>
-
         <div class="navbar-nav flex-row order-md-last">
             @* ── Global Arama ── *@
             <div class="d-none d-md-flex me-3">
@@ -78,90 +66,5 @@
             </div>
         </div>
 
-        <div class="collapse navbar-collapse" id="navbar-menu">
-            <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
-                <ul class="navbar-nav">
-                    @* ── Dashboard ── *@
-                    <li class="nav-item @(activeNav == "dashboard" ? "active" : "")">
-                        <a class="nav-link" href="/">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-home"></i>
-                            </span>
-                            <span class="nav-link-title">Dashboard</span>
-                        </a>
-                    </li>
-
-                    @* ── Yonetim ── *@
-                    <li class="nav-item @(activeGroup == "yonetim" ? "active" : "")">
-                        <a class="nav-link" href="/products">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-briefcase"></i>
-                            </span>
-                            <span class="nav-link-title">Yonetim</span>
-                        </a>
-                    </li>
-
-                    @* ── Pazaryeri ── *@
-                    <li class="nav-item @(activeGroup == "pazaryeri" ? "active" : "")">
-                        <a class="nav-link" href="/marketplace/sync">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-building-store"></i>
-                            </span>
-                            <span class="nav-link-title">Pazaryeri</span>
-                        </a>
-                    </li>
-
-                    @* ── Musteriler ── *@
-                    <li class="nav-item @(activeGroup == "musteriler" ? "active" : "")">
-                        <a class="nav-link" href="/customers">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-users"></i>
-                            </span>
-                            <span class="nav-link-title">Musteriler</span>
-                        </a>
-                    </li>
-
-                    @* ── Raporlar ── *@
-                    <li class="nav-item @(activeGroup == "raporlar" ? "active" : "")">
-                        <a class="nav-link" href="/reports/sales">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-chart-bar"></i>
-                            </span>
-                            <span class="nav-link-title">Raporlar</span>
-                        </a>
-                    </li>
-
-                    @* ── Mesajlar ── *@
-                    <li class="nav-item @(activeNav == "chat" ? "active" : "")">
-                        <a class="nav-link" href="/chat">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-message-circle"></i>
-                            </span>
-                            <span class="nav-link-title">Mesajlar</span>
-                        </a>
-                    </li>
-
-                    @* ── Magaza ── *@
-                    <li class="nav-item @(activeGroup == "magaza" ? "active" : "")">
-                        <a class="nav-link" href="/settings/storefront">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-shopping-bag"></i>
-                            </span>
-                            <span class="nav-link-title">Magaza</span>
-                        </a>
-                    </li>
-
-                    @* ── Ayarlar ── *@
-                    <li class="nav-item @(activeGroup == "ayarlar" ? "active" : "")">
-                        <a class="nav-link" href="/settings/general">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <i class="ti ti-settings"></i>
-                            </span>
-                            <span class="nav-link-title">Ayarlar</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
     </div>
 </header>

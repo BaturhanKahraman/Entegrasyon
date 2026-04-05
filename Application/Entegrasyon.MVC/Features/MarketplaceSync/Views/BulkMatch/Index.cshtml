@@ -11,8 +11,6 @@
     </a>
 </div>
 
-<div class="page-body">
-    <div class="container-xl">
         <!-- Marketplace Tabs -->
         <div class="card mb-3">
             <div class="card-body p-2">
@@ -81,8 +79,6 @@
         <div id="unmapped-list-container">
             @await Html.PartialAsync("~/Features/MarketplaceSync/Views/BulkMatch/Partials/_UnmappedList.cshtml", Model)
         </div>
-    </div>
-</div>
 
 <script>
     document.addEventListener('refreshUnmapped', function () {

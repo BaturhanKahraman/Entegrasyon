@@ -18,14 +18,14 @@
     <link rel="stylesheet" href="~/lib/tabler/css/tabler-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="layout-fluid">
+<body>
     <div class="page">
-        @* ── Üst Navbar ── *@
-        <partial name="~/Shared/Views/_Navbar.cshtml" />
+        @* ── Sol Sidebar (vertical navbar — .page'in doğrudan çocuğu) ── *@
+        <partial name="~/Shared/Views/_Sidebar.cshtml" />
 
         <div class="page-wrapper">
-            @* ── Sol Sidebar (dinamik, grup bazlı) ── *@
-            <partial name="~/Shared/Views/_Sidebar.cshtml" />
+            @* ── Üst Navbar (utility bar) ── *@
+            <partial name="~/Shared/Views/_Navbar.cshtml" />
 
             <div class="page-body">
                 <div class="container-xl">
