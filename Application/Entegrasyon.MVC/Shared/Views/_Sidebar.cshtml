@@ -323,6 +323,36 @@
                         <span class="nav-link-title">Referans Programi</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "storefront-wallets" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/wallets">
+                        <span class="nav-link-icon"><i class="ti ti-wallet"></i></span>
+                        <span class="nav-link-title">Musteri Cuzdanlari</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "storefront-wishlists" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/wishlists">
+                        <span class="nav-link-icon"><i class="ti ti-heart"></i></span>
+                        <span class="nav-link-title">Istek Listeleri</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "storefront-stock-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/stock-notifications">
+                        <span class="nav-link-icon"><i class="ti ti-bell-ringing"></i></span>
+                        <span class="nav-link-title">Stok Bildirimleri</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "storefront-search-analytics" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/search-analytics">
+                        <span class="nav-link-icon"><i class="ti ti-search"></i></span>
+                        <span class="nav-link-title">Arama Analitik</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "storefront-push-notifications" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/push-notifications">
+                        <span class="nav-link-icon"><i class="ti ti-send"></i></span>
+                        <span class="nav-link-title">Push Bildirimler</span>
+                    </a>
+                </li>
 
                 @* ── Ayarlar ── *@
                 <li class="nav-item mt-2">

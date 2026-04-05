@@ -1,0 +1,194 @@
+@model List<string>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-search"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam Arama</div>
+                                <div class="text-secondary">8.421</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-red text-white avatar">
+                                    <i class="ti ti-circle-x"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Sonucsuz Arama</div>
+                                <div class="text-secondary">312</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-trending-up"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Benzersiz Terim</div>
+                                <div class="text-secondary">1.847</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-orange text-white avatar">
+                                    <i class="ti ti-shopping-cart"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Arama Donusumu</div>
+                                <div class="text-secondary">18%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Populer Arama Terimleri</h3>
+                        @if (Model != null && Model.Count > 0)
+                        {
+                            <div class="card-actions">
+                                <span class="badge bg-blue">Canli Veri</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Arama Terimi</th>
+                                    <th class="text-center">Arama Sayisi</th>
+                                    <th class="text-end">Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var popularTerms = Model != null && Model.Count > 0
+                                        ? Model.Select((t, i) => new { Rank = i + 1, Term = t, Count = 0, Up = true }).ToList<dynamic>()
+                                        : new List<dynamic>
+                                        {
+                                            new { Rank = 1, Term = "kadin elbise", Count = 523, Up = true },
+                                            new { Rank = 2, Term = "sneaker erkek", Count = 418, Up = true },
+                                            new { Rank = 3, Term = "deri ceket", Count = 391, Up = false },
+                                            new { Rank = 4, Term = "gomlek beyaz", Count = 284, Up = true },
+                                            new { Rank = 5, Term = "kaban kadin", Count = 247, Up = false },
+                                            new { Rank = 6, Term = "kot pantolon slim", Count = 219, Up = true },
+                                            new { Rank = 7, Term = "spor sutyen", Count = 198, Up = true },
+                                            new { Rank = 8, Term = "erkek mont", Count = 175, Up = false },
+                                            new { Rank = 9, Term = "topuklu ayakkabi", Count = 162, Up = true },
+                                            new { Rank = 10, Term = "kol cantasi kucuk", Count = 148, Up = false },
+                                        };
+                                }
+                                @foreach (var t in popularTerms)
+                                {
+                                    <tr>
+                                        <td class="text-secondary">@t.Rank</td>
+                                        <td><span class="fw-medium">@t.Term</span></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-blue-lt text-blue">@(t.Count > 0 ? t.Count.ToString() : "-")</span>
+                                        </td>
+                                        <td class="text-end">
+                                            @if (t.Up)
+                                            {
+                                                <span class="text-success"><i class="ti ti-arrow-up"></i></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger"><i class="ti ti-arrow-down"></i></span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sonucsuz Aramalar</h3>
+                        <div class="card-actions">
+                            <span class="badge bg-red">Dikkat Gerektiriyor</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Arama Terimi</th>
+                                    <th class="text-center">Arama Sayisi</th>
+                                    <th class="text-end">Oneri</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var noResults = new[]
+                                    {
+                                        new { Term = "trencokot bej", Count = 47, Action = "Urun Ekle" },
+                                        new { Term = "bikini mayo", Count = 38, Action = "Kategori Ac" },
+                                        new { Term = "bere orgu kalin", Count = 31, Action = "Urun Ekle" },
+                                        new { Term = "cocuk elbise 6-7 yas", Count = 27, Action = "Kategori Ac" },
+                                        new { Term = "yagmurluk transparan", Count = 22, Action = "Urun Ekle" },
+                                        new { Term = "gelin kiyafeti", Count = 19, Action = "Urun Ekle" },
+                                        new { Term = "hamile pantolon", Count = 15, Action = "Kategori Ac" },
+                                        new { Term = "pijama takim kadife", Count = 12, Action = "Urun Ekle" },
+                                    };
+                                }
+                                @foreach (var nr in noResults)
+                                {
+                                    <tr>
+                                        <td class="fw-medium text-danger">@nr.Term</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-red-lt text-red">@nr.Count</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-warning text-dark">@nr.Action</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

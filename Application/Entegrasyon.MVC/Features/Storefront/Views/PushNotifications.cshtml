@@ -1,0 +1,164 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.PushNotificationsVm
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-device-mobile"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Abone Sayisi</div>
+                                <div class="text-secondary">@Model.SubscriberCount</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-send"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Gonderilen</div>
+                                <div class="text-secondary">@Model.SentNotifications.Count</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-orange text-white avatar">
+                                    <i class="ti ti-click"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Ortalama Erisim</div>
+                                <div class="text-secondary">
+                                    @(Model.SentNotifications.Count > 0
+                                        ? ((int)Model.SentNotifications.Average(n => n.Reached)).ToString()
+                                        : "0")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-purple text-white avatar">
+                                    <i class="ti ti-chart-bar"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Tiklama Orani</div>
+                                <div class="text-secondary">8.4%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Bildirim Gonder</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="push-form">
+                            <div class="mb-3">
+                                <label class="form-label required">Baslik</label>
+                                <input type="text" name="title" class="form-control" placeholder="Bildirim basligi..." required maxlength="100" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label required">Mesaj</label>
+                                <textarea name="body" class="form-control" rows="3" placeholder="Bildirim icerik..." required maxlength="300"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL (Opsiyonel)</label>
+                                <input type="url" name="url" class="form-control" placeholder="https://..." />
+                            </div>
+                        </form>
+                        <div id="push-result"></div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary w-100"
+                                hx-post="/storefront/push-notifications/send"
+                                hx-target="#push-result"
+                                hx-include="#push-form"
+                                hx-swap="innerHTML">
+                            <i class="ti ti-send me-1"></i>
+                            Tum Abonelere Gonder (@Model.SubscriberCount kisi)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gonderilen Bildirimler</h3>
+                    </div>
+                    @if (Model.SentNotifications.Count == 0)
+                    {
+                        <div class="card-body text-center py-4">
+                            <div class="mb-2">
+                                <i class="ti ti-send icon-lg text-secondary" style="font-size: 2rem;"></i>
+                            </div>
+                            <div class="text-secondary">Henuz bildirim gonderilmedi.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Baslik</th>
+                                        <th>Mesaj</th>
+                                        <th class="text-center">Erisim</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var n in Model.SentNotifications.OrderByDescending(x => x.SentAt))
+                                    {
+                                        <tr>
+                                            <td class="text-secondary small">@n.SentAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td class="fw-medium">@n.Title</td>
+                                            <td class="text-secondary small">@(n.Body.Length > 60 ? n.Body[..60] + "..." : n.Body)</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-blue-lt text-blue">@n.Reached</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,169 @@
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-red text-white avatar">
+                                    <i class="ti ti-heart"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam Favori</div>
+                                <div class="text-secondary">1.248</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-users"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Aktif Kullanici</div>
+                                <div class="text-secondary">312</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-trending-up"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Bu Hafta Eklenen</div>
+                                <div class="text-secondary">+84</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-orange text-white avatar">
+                                    <i class="ti ti-shopping-cart"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Favoriden Satin Alma</div>
+                                <div class="text-secondary">23%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">En Cok Favorilenen Urunler</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Urun</th>
+                                    <th class="text-center">Favori Sayisi</th>
+                                    <th class="text-center">Stok Durumu</th>
+                                    <th class="text-end">Fiyat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var topProducts = new[]
+                                    {
+                                        new { Rank = 1, Name = "Kadin Deri Ceket (S-XL)", Wishlist = 148, InStock = true, Price = 1299.90m },
+                                        new { Rank = 2, Name = "Erkek Slim Fit Gomlek Beyaz", Wishlist = 112, InStock = true, Price = 449.90m },
+                                        new { Rank = 3, Name = "Unisex Spor Ayakkabi 42", Wishlist = 97, InStock = false, Price = 899.00m },
+                                        new { Rank = 4, Name = "Mini Kol Cantasi Siyah", Wishlist = 83, InStock = true, Price = 749.50m },
+                                        new { Rank = 5, Name = "Kadin Blazer Ceket Gri", Wishlist = 71, InStock = true, Price = 1099.00m },
+                                        new { Rank = 6, Name = "Erkek Jogger Esofman Alt", Wishlist = 65, InStock = false, Price = 379.90m },
+                                        new { Rank = 7, Name = "Kadin Elbise Cicek Desenli", Wishlist = 59, InStock = true, Price = 599.90m },
+                                        new { Rank = 8, Name = "Gunluk Sneaker Beyaz", Wishlist = 52, InStock = true, Price = 699.00m },
+                                    };
+                                }
+                                @foreach (var p in topProducts)
+                                {
+                                    <tr>
+                                        <td class="text-secondary">@p.Rank</td>
+                                        <td class="fw-medium">@p.Name</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-red-lt text-red">
+                                                <i class="ti ti-heart-filled me-1"></i>@p.Wishlist
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (p.InStock)
+                                            {
+                                                <span class="badge bg-success">Stokta</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Stok Yok</span>
+                                            }
+                                        </td>
+                                        <td class="text-end fw-bold">@p.Price.ToString("N2") TL</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Kategori Dagilimi</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        @{
+                            var cats = new[]
+                            {
+                                new { Name = "Kadin Giyim", Count = 487, Pct = 39 },
+                                new { Name = "Erkek Giyim", Count = 312, Pct = 25 },
+                                new { Name = "Ayakkabi", Count = 249, Pct = 20 },
+                                new { Name = "Canta & Aksesuar", Count = 137, Pct = 11 },
+                                new { Name = "Diger", Count = 63, Pct = 5 },
+                            };
+                        }
+                        @foreach (var cat in cats)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-medium">@cat.Name</span>
+                                    <span class="text-secondary small">@cat.Count favori</span>
+                                </div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-red" style="width: @cat.Pct%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

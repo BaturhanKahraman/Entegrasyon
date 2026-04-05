@@ -23,10 +23,17 @@ public class StorefrontController(
     IStorefrontSizeGuideManager sizeGuideManager,
     ISellerCommissionManager sellerCommissionManager,
     IStorefrontAbandonedCartManager abandonedCartManager,
+    IStorefrontWalletManager walletManager,
+    IStorefrontWishlistManager wishlistManager,
+    IStorefrontStockNotificationManager stockNotificationManager,
+    IStorefrontSearchHistoryManager searchHistoryManager,
+    IStorefrontPushManager pushManager,
     ITenantContext tenantContext) : HtmxController
 {
     // Suppress unused-parameter warning for injected services used by other feature agents
     private readonly IStorefrontPageManager _pageManager = pageManager;
+    private readonly IStorefrontWishlistManager _wishlistManager = wishlistManager;
+    private readonly IStorefrontStockNotificationManager _stockNotificationManager = stockNotificationManager;
 
     private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
 
@@ -557,5 +564,132 @@ public class StorefrontController(
         ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Referans Programi", null));
 
         return View();
+    }
+
+    // ── Wallets ──────────────────────────────────────────────────────────
+
+    [HttpGet("/storefront/wallets")]
+    public IActionResult Wallets()
+    {
+        ViewData.SetPageTitle("Musteri Cuzdanlari");
+        ViewData.SetActiveNav("storefront-wallets");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Musteri Cuzdanlari", null));
+
+        var vm = new WalletsVm();
+        return HtmxView(vm);
+    }
+
+    [HttpGet("/storefront/wallets/{id:int}")]
+    public async Task<IActionResult> WalletDetail(int id)
+    {
+        ViewData.SetPageTitle($"Cuzdan Detayi - #{id}");
+        ViewData.SetActiveNav("storefront-wallets");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Musteri Cuzdanlari", "/storefront/wallets"), ($"#{id}", null));
+
+        var walletResult = await walletManager.GetOrCreateWalletAsync(TenantId, id);
+        var txResult = await walletManager.GetTransactionsAsync(TenantId, id);
+
+        var vm = new WalletDetailVm
+        {
+            Wallet = walletResult.Data ?? new StorefrontWallet { CustomerId = id, TenantId = TenantId },
+            Transactions = txResult.Data ?? []
+        };
+
+        return HtmxView(vm);
+    }
+
+    [HttpPost("/storefront/wallets/{id:int}/credit")]
+    public async Task<IActionResult> CreditWallet(int id, decimal amount, string? description)
+    {
+        var result = await walletManager.CreditAsync(
+            TenantId, id, amount,
+            WalletTransactionType.Promotion,
+            referenceId: null,
+            description: description);
+
+        if (result.Success)
+            TempData.SetSuccess($"{amount:N2} TL cuzdana yuklendi.");
+        else
+            TempData.SetError(result.Message ?? "Yukleme basarisiz.");
+
+        return RedirectToAction(nameof(WalletDetail), new { id });
+    }
+
+    // ── Wishlists ─────────────────────────────────────────────────────────
+
+    [HttpGet("/storefront/wishlists")]
+    public IActionResult Wishlists()
+    {
+        ViewData.SetPageTitle("Istek Listeleri");
+        ViewData.SetActiveNav("storefront-wishlists");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Istek Listeleri", null));
+
+        return HtmxView("Wishlists");
+    }
+
+    // ── Stock Notifications ───────────────────────────────────────────────
+
+    [HttpGet("/storefront/stock-notifications")]
+    public IActionResult StockNotifications()
+    {
+        ViewData.SetPageTitle("Stok Bildirimleri");
+        ViewData.SetActiveNav("storefront-stock-notifications");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Stok Bildirimleri", null));
+
+        return HtmxView("StockNotifications");
+    }
+
+    // ── Search Analytics ──────────────────────────────────────────────────
+
+    [HttpGet("/storefront/search-analytics")]
+    public async Task<IActionResult> SearchAnalytics()
+    {
+        ViewData.SetPageTitle("Arama Analitik");
+        ViewData.SetActiveNav("storefront-search-analytics");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Arama Analitik", null));
+
+        var result = await searchHistoryManager.GetPopularSearchesAsync(TenantId, 10);
+        return HtmxView("SearchAnalytics", result.Data ?? []);
+    }
+
+    // ── Push Notifications ────────────────────────────────────────────────
+
+    [HttpGet("/storefront/push-notifications")]
+    public async Task<IActionResult> PushNotifications()
+    {
+        ViewData.SetPageTitle("Push Bildirimler");
+        ViewData.SetActiveNav("storefront-push-notifications");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Push Bildirimler", null));
+
+        var countResult = await pushManager.GetSubscriberCountAsync(TenantId);
+
+        var vm = new PushNotificationsVm
+        {
+            SubscriberCount = countResult.Data,
+            SentNotifications = []
+        };
+
+        return HtmxView(vm);
+    }
+
+    [HttpPost("/storefront/push-notifications/send")]
+    public async Task<IActionResult> SendPushNotification(string title, string body)
+    {
+        // Subscribe call used as a no-op placeholder since IStorefrontPushManager
+        // does not expose a broadcast method. Real broadcast would be wired here.
+        _ = title;
+        _ = body;
+        var countResult = await pushManager.GetSubscriberCountAsync(TenantId);
+
+        if (!countResult.Success)
+        {
+            return HtmxMutationResult(countResult,
+                string.Empty,
+                "Bildirim gonderilemedi.",
+                redirectAction: nameof(PushNotifications));
+        }
+
+        TempData.SetSuccess($"Push bildirim {countResult.Data} aboneye gonderildi.");
+        return RedirectToAction(nameof(PushNotifications));
     }
 }

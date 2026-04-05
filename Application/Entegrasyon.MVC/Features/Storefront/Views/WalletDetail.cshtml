@@ -1,0 +1,108 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.WalletDetailVm
+@using Entegrasyon.Entity.Storefront
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="row g-3">
+
+            <div class="col-lg-4">
+                <div class="card mb-3">
+                    <div class="card-body text-center">
+                        <div class="avatar avatar-lg bg-blue-lt text-blue mb-3" style="width:3rem;height:3rem;font-size:1.4rem;">
+                            <i class="ti ti-wallet"></i>
+                        </div>
+                        <h3 class="mb-1">@Model.Wallet.Balance.ToString("N2") TL</h3>
+                        <div class="text-secondary mb-3">Mevcut Bakiye</div>
+                        <div class="text-secondary small">Musteri #@Model.Wallet.CustomerId</div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-success w-100"
+                                hx-post="/storefront/wallets/@Model.Wallet.CustomerId/credit"
+                                hx-target="#credit-result"
+                                hx-include="#credit-form"
+                                hx-swap="innerHTML">
+                            <i class="ti ti-plus me-1"></i>Manuel Yukle
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Manuel Yukleme</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="credit-form">
+                            <div class="mb-3">
+                                <label class="form-label">Tutar (TL)</label>
+                                <input type="number" name="amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Aciklama</label>
+                                <input type="text" name="description" class="form-control" placeholder="Yukleme sebebi..." />
+                            </div>
+                        </form>
+                        <div id="credit-result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Islem Gecmisi</h3>
+                        <div class="card-actions">
+                            <span class="badge bg-blue">@Model.Transactions.Count islem</span>
+                        </div>
+                    </div>
+                    @if (Model.Transactions.Count == 0)
+                    {
+                        <div class="card-body text-center py-4">
+                            <div class="text-secondary">Henuz islem yok.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Tur</th>
+                                        <th>Aciklama</th>
+                                        <th class="text-end">Tutar</th>
+                                        <th class="text-end">Sonraki Bakiye</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var tx in Model.Transactions.OrderByDescending(t => t.CreatedAt))
+                                    {
+                                        var isCredit = tx.BalanceAfter > tx.BalanceBefore;
+                                        var typeText = tx.TransactionType switch
+                                        {
+                                            WalletTransactionType.Refund => "Iade",
+                                            WalletTransactionType.OrderPayment => "Siparis Odemesi",
+                                            WalletTransactionType.Promotion => "Promosyon",
+                                            _ => tx.TransactionType.ToString()
+                                        };
+                                        <tr>
+                                            <td class="text-secondary">@tx.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge @(isCredit ? "bg-success" : "bg-danger")">@typeText</span>
+                                            </td>
+                                            <td>@(tx.Description ?? "-")</td>
+                                            <td class="text-end fw-bold @(isCredit ? "text-green" : "text-red")">
+                                                @(isCredit ? "+" : "")@tx.Amount.ToString("N2") TL
+                                            </td>
+                                            <td class="text-end text-secondary">@tx.BalanceAfter.ToString("N2") TL</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

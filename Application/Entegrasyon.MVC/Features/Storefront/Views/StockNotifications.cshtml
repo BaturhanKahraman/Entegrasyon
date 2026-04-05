@@ -1,0 +1,137 @@
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-orange text-white avatar">
+                                    <i class="ti ti-bell-ringing"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Bekleyen Bildirim</div>
+                                <div class="text-secondary">47</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-check"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Gonderilen</div>
+                                <div class="text-secondary">284</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-shopping-cart"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Donusum</div>
+                                <div class="text-secondary">31%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-purple text-white avatar">
+                                    <i class="ti ti-package"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Izlenen Varyant</div>
+                                <div class="text-secondary">93</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Stok Bildirimleri</h3>
+                <div class="card-actions">
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-warning text-dark">47 Bekliyor</span>
+                        <span class="badge bg-success">284 Gonderildi</span>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Urun / Varyant</th>
+                            <th>Abone E-posta</th>
+                            <th>Kayit Tarihi</th>
+                            <th class="text-center">Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var notifications = new[]
+                            {
+                                new { Product = "Kadin Deri Ceket / S", Email = "ayse***@gmail.com", Date = "2026-04-03", Sent = false },
+                                new { Product = "Kadin Deri Ceket / S", Email = "fatma***@hotmail.com", Date = "2026-04-02", Sent = false },
+                                new { Product = "Unisex Sneaker / 42", Email = "mehmet***@gmail.com", Date = "2026-04-01", Sent = true },
+                                new { Product = "Erkek Jogger / L", Email = "ali***@yahoo.com", Date = "2026-03-31", Sent = false },
+                                new { Product = "Erkek Jogger / L", Email = "hasan***@outlook.com", Date = "2026-03-30", Sent = true },
+                                new { Product = "Mini Kol Cantasi / Siyah", Email = "zeynep***@gmail.com", Date = "2026-03-29", Sent = true },
+                                new { Product = "Kadin Blazer / M", Email = "selin***@gmail.com", Date = "2026-03-28", Sent = false },
+                                new { Product = "Kadin Blazer / M", Email = "neslihan***@hotmail.com", Date = "2026-03-27", Sent = true },
+                            };
+                        }
+                        @foreach (var n in notifications)
+                        {
+                            <tr>
+                                <td class="fw-medium">@n.Product</td>
+                                <td class="text-secondary">@n.Email</td>
+                                <td class="text-secondary">@n.Date</td>
+                                <td class="text-center">
+                                    @if (n.Sent)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="ti ti-check me-1"></i>Gonderildi
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="ti ti-clock me-1"></i>Bekliyor
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>

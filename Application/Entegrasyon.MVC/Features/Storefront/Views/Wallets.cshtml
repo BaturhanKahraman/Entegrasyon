@@ -1,0 +1,135 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.WalletsVm
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-blue text-white avatar">
+                                    <i class="ti ti-wallet"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam Cuzdan</div>
+                                <div class="text-secondary">@Model.Wallets.Count</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-green text-white avatar">
+                                    <i class="ti ti-coin"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam Bakiye</div>
+                                <div class="text-secondary">@Model.Wallets.Sum(w => w.Balance).ToString("N2") TL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-orange text-white avatar">
+                                    <i class="ti ti-transfer"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Toplam Islem</div>
+                                <div class="text-secondary">@Model.Wallets.Sum(w => w.TransactionCount)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <span class="bg-purple text-white avatar">
+                                    <i class="ti ti-activity"></i>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Aktif Cuzdan</div>
+                                <div class="text-secondary">@Model.Wallets.Count(w => w.Balance > 0)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            @if (Model.Wallets.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <i class="ti ti-wallet icon-lg text-secondary" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h3 class="text-secondary">Henuz cuzdan yok</h3>
+                    <p class="text-secondary">Musterilerin cuzdanlari burada listelenecektir.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Musteri Cuzdanlari</h3>
+                    <div class="card-actions">
+                        <span class="badge bg-blue">@Model.Wallets.Count kayit</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Musteri ID</th>
+                                <th class="text-end">Bakiye</th>
+                                <th class="text-center">Islem Sayisi</th>
+                                <th>Son Islem</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var wallet in Model.Wallets)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="avatar avatar-sm me-2 bg-blue-lt text-blue">#</span>
+                                        <span class="fw-medium">#@wallet.CustomerId</span>
+                                    </td>
+                                    <td class="text-end fw-bold @(wallet.Balance > 0 ? "text-green" : "text-secondary")">
+                                        @wallet.Balance.ToString("N2") TL
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">@wallet.TransactionCount</span>
+                                    </td>
+                                    <td class="text-secondary">@wallet.LastActivity.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td class="text-end">
+                                        <a href="/storefront/wallets/@wallet.CustomerId" class="btn btn-sm btn-outline-primary">
+                                            <i class="ti ti-eye me-1"></i>Detay
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
