@@ -102,4 +102,16 @@ public class ShippingController(
         var result = await cargoCompaniesManager.DeleteCargoCompany(new CargoCompany { Id = id });
         return HtmxMutationResult(result, "Kargo firmasi silindi.", "Silinemedi.");
     }
+
+    [HttpGet("/shipping/{id:long}")]
+    public async Task<IActionResult> Detail(long id)
+    {
+        ViewData.SetPageTitle("Kargo Detay");
+        ViewData.SetActiveNav("shipping");
+        ViewData.SetBreadcrumb(("Kargo Takip", "/shipping"), ("Detay", null));
+
+        var result = await shipmentTrackingManager.GetShipmentHistoryAsync(id);
+
+        return View(result.Data ?? []);
+    }
 }

@@ -1,0 +1,92 @@
+@using Entegrasyon.Entity.Shipping
+@model List<Entegrasyon.Entity.Dtos.Shipping.ShipmentStatusHistoryDto>
+
+@{
+    string StatusBadge(ShipmentStatus status) => status switch
+    {
+        ShipmentStatus.Created        => "bg-blue-lt",
+        ShipmentStatus.PickedUp       => "bg-cyan-lt",
+        ShipmentStatus.InTransit      => "bg-yellow-lt",
+        ShipmentStatus.OutForDelivery => "bg-orange-lt",
+        ShipmentStatus.Delivered      => "bg-green-lt",
+        ShipmentStatus.ReturnedToSender => "bg-purple-lt",
+        ShipmentStatus.Failed         => "bg-red-lt",
+        ShipmentStatus.Cancelled      => "bg-secondary-lt",
+        _                             => "bg-secondary-lt"
+    };
+
+    string StatusText(ShipmentStatus status) => status switch
+    {
+        ShipmentStatus.Created          => "Olusturuldu",
+        ShipmentStatus.PickedUp         => "Teslim Alindi",
+        ShipmentStatus.InTransit        => "Yolda",
+        ShipmentStatus.OutForDelivery   => "Dagitimda",
+        ShipmentStatus.Delivered        => "Teslim Edildi",
+        ShipmentStatus.ReturnedToSender => "Gondericiye Iade",
+        ShipmentStatus.Failed           => "Basarisiz",
+        ShipmentStatus.Cancelled        => "Iptal",
+        _                               => status.ToString()
+    };
+}
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/shipping" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i>
+        Listeye Don
+    </a>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Takip Gecmisi</h3>
+            </div>
+            @if (Model.Count > 0)
+            {
+                <div class="card-body">
+                    <ul class="timeline">
+                        @foreach (var entry in Model.OrderByDescending(e => e.Timestamp))
+                        {
+                            <li class="timeline-event">
+                                <div class="timeline-event-icon">
+                                    <i class="ti ti-map-pin"></i>
+                                </div>
+                                <div class="card timeline-event-card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <span class="badge @StatusBadge(entry.Status)">@StatusText(entry.Status)</span>
+                                            <span class="text-secondary small">@entry.Timestamp.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(entry.Description))
+                                        {
+                                            <p class="text-secondary mb-1">@entry.Description</p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(entry.Location))
+                                        {
+                                            <div class="text-muted small">
+                                                <i class="ti ti-map-pin icon-sm"></i>
+                                                @entry.Location
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Takip gecmisi bulunamadi",
+                                 Subtitle = "Bu kargo icin henuz takip kaydı yok."
+                             }'/>
+                </div>
+            }
+        </div>
+    </div>
+</div>
