@@ -227,6 +227,36 @@ public class ProductController(
         return View(nameof(Create), vm);
     }
 
+    [HttpPost("/products/add/upload-temp-image")]
+    public async Task<IActionResult> UploadTempImage(IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+            return Json(new { success = false, message = "Dosya bulunamadi." });
+
+        var tempKey = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
+        var tempDir = Path.Combine(Path.GetTempPath(), "product-wizard-images");
+        Directory.CreateDirectory(tempDir);
+        var tempPath = Path.Combine(tempDir, tempKey);
+
+        await using var stream = new FileStream(tempPath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        return Json(new { success = true, tempKey, fileName = file.FileName });
+    }
+
+    [HttpPost("/products/add/step4")]
+    public IActionResult CreateStep4(CreateProductVm vm)
+    {
+        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep5Review", vm);
+
+        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), vm);
+    }
+
     [HttpPost("/products/add/save")]
     public async Task<IActionResult> CreateSave()
     {

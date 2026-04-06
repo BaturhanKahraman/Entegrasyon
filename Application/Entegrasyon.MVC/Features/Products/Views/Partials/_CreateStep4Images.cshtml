@@ -1,0 +1,420 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
+<div data-wizard-step="4">
+<form id="step4-form" hx-post="/products/add/step4" hx-target="#wizard-content" hx-swap="innerHTML">
+    @Html.AntiForgeryToken()
+
+    <!-- Step 1 hidden fields -->
+    <input type="hidden" name="Title" value="@Model.Title" />
+    <input type="hidden" name="Description" value="@Model.Description" />
+    <input type="hidden" name="StockCode" value="@Model.StockCode" />
+    <input type="hidden" name="Season" value="@Model.Season" />
+    <input type="hidden" name="Year" value="@Model.Year" />
+    <input type="hidden" name="BrandId" value="@Model.BrandId" />
+    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+    <input type="hidden" name="BrandName" value="@Model.BrandName" />
+    <input type="hidden" name="CategoryName" value="@Model.CategoryName" />
+
+    <!-- Step 2 hidden fields -->
+    @for (int i = 0; i < Model.CategoryAttributes.Count; i++)
+    {
+        <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@Model.CategoryAttributes[i].CategoryAttributeId" />
+        <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@Model.CategoryAttributes[i].AttributeName" />
+        <input type="hidden" name="CategoryAttributes[@i].ValueId" value="@Model.CategoryAttributes[i].ValueId" />
+        <input type="hidden" name="CategoryAttributes[@i].CustomValue" value="@Model.CategoryAttributes[i].CustomValue" />
+        <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired" />
+        <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@Model.CategoryAttributes[i].AllowCustom" />
+    }
+
+    <!-- Step 3 hidden fields -->
+    @for (int i = 0; i < Model.Variants.Count; i++)
+    {
+        <input type="hidden" name="Variants[@i].Barcode" value="@Model.Variants[i].Barcode" />
+        <input type="hidden" name="Variants[@i].ListPrice" value="@Model.Variants[i].ListPrice" />
+        <input type="hidden" name="Variants[@i].SalePrice" value="@Model.Variants[i].SalePrice" />
+        <input type="hidden" name="Variants[@i].CostPrice" value="@Model.Variants[i].CostPrice" />
+        <input type="hidden" name="Variants[@i].VatRate" value="@Model.Variants[i].VatRate" />
+        <input type="hidden" name="Variants[@i].DimensionalWeight" value="@Model.Variants[i].DimensionalWeight" />
+        <input type="hidden" name="Variants[@i].Stock" value="@Model.Variants[i].Stock" />
+        @for (int j = 0; j < Model.Variants[i].VariantAttributes.Count; j++)
+        {
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].CategoryAttributeId" value="@Model.Variants[i].VariantAttributes[j].CategoryAttributeId" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].AttributeName" value="@Model.Variants[i].VariantAttributes[j].AttributeName" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueId" value="@Model.Variants[i].VariantAttributes[j].ValueId" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueName" value="@Model.Variants[i].VariantAttributes[j].ValueName" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsCustom" value="@Model.Variants[i].VariantAttributes[j].IsCustom" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsVarianter" value="@Model.Variants[i].VariantAttributes[j].IsVarianter" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsSlicer" value="@Model.Variants[i].VariantAttributes[j].IsSlicer" />
+        }
+    }
+
+    <!-- Image Assignment hidden fields container (populated by JS) -->
+    <div id="image-assignment-fields"></div>
+
+    <!-- Upload Area -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Gorsel Yukle</h3>
+            <span class="card-subtitle">Gorseller istege baglidir, yuklemeden de devam edebilirsiniz.</span>
+        </div>
+        <div class="card-body">
+            <div id="drop-zone" class="border border-2 border-dashed rounded p-4 text-center"
+                 style="min-height: 120px; cursor: pointer; transition: border-color 0.2s;">
+                <div class="text-muted mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                        <polyline points="7 9 12 4 17 9"/>
+                        <line x1="12" y1="4" x2="12" y2="16"/>
+                    </svg>
+                </div>
+                <p class="text-muted mb-1">Gorselleri surukleyip birakin veya tiklayin</p>
+                <p class="text-muted small">PNG, JPG, WEBP - Birden fazla dosya secebilirsiniz</p>
+                <input type="file" id="file-input" multiple accept="image/*" class="d-none" />
+            </div>
+
+            <!-- Upload progress -->
+            <div id="upload-progress" class="mt-2 d-none">
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <small id="upload-status" class="text-muted"></small>
+            </div>
+
+            <!-- Uploaded thumbnails -->
+            <div id="uploaded-thumbnails" class="d-flex flex-wrap gap-2 mt-3"></div>
+        </div>
+    </div>
+
+    <!-- Variant Image Assignment -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Varyant Gorsel Atamasi</h3>
+            <span class="card-subtitle">Her varyanta gorsel atayabilirsiniz (istege bagli)</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-vcenter">
+                    <thead>
+                        <tr>
+                            <th>Varyant</th>
+                            <th>Atanan Gorseller</th>
+                            <th class="w-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="variant-assignment-body">
+                        @for (int i = 0; i < Model.Variants.Count; i++)
+                        {
+                            var variant = Model.Variants[i];
+                            var label = string.Join(" - ", variant.VariantAttributes.Select(a => a.ValueName));
+                            <tr data-variant-index="@i">
+                                <td>
+                                    <span class="fw-bold">@(string.IsNullOrEmpty(label) ? "(Varyant " + (i + 1) + ")" : label)</span>
+                                    @if (!string.IsNullOrEmpty(variant.Barcode))
+                                    {
+                                        <br /><small class="text-muted">@variant.Barcode</small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1 variant-assigned-images" data-variant-index="@i"></div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-assign-images"
+                                            data-variant-index="@i" disabled>
+                                        Gorsel Ata
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="d-flex justify-content-between">
+        <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+        <button type="submit" class="btn btn-primary">
+            Devam: Onay &rarr;
+        </button>
+    </div>
+</form>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var uploadedImages = [];
+    var dropZone = document.getElementById('drop-zone');
+    var fileInput = document.getElementById('file-input');
+    var thumbnailsContainer = document.getElementById('uploaded-thumbnails');
+    var progressContainer = document.getElementById('upload-progress');
+    var progressBar = document.getElementById('progress-bar');
+    var uploadStatus = document.getElementById('upload-status');
+    var assignmentFieldsContainer = document.getElementById('image-assignment-fields');
+
+    // --- Drop Zone Click ---
+    dropZone.addEventListener('click', function () {
+        fileInput.click();
+    });
+
+    // --- File Input Change ---
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files.length > 0) {
+            uploadFiles(fileInput.files);
+        }
+    });
+
+    // --- Drag and Drop ---
+    dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#206bc4';
+        dropZone.style.backgroundColor = 'rgba(32,107,196,0.05)';
+    });
+
+    dropZone.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '';
+        dropZone.style.backgroundColor = '';
+    });
+
+    dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '';
+        dropZone.style.backgroundColor = '';
+
+        var files = e.dataTransfer.files;
+        if (files.length > 0) {
+            uploadFiles(files);
+        }
+    });
+
+    // --- Upload Files ---
+    function uploadFiles(files) {
+        progressContainer.classList.remove('d-none');
+        var total = files.length;
+        var completed = 0;
+
+        for (var i = 0; i < files.length; i++) {
+            uploadSingleFile(files[i], function () {
+                completed++;
+                var pct = Math.round((completed / total) * 100);
+                progressBar.style.width = pct + '%';
+                uploadStatus.textContent = completed + ' / ' + total + ' yuklendi';
+
+                if (completed === total) {
+                    setTimeout(function () {
+                        progressContainer.classList.add('d-none');
+                        progressBar.style.width = '0%';
+                    }, 1500);
+                    updateAssignButtons();
+                }
+            });
+        }
+    }
+
+    function uploadSingleFile(file, onDone) {
+        var formData = new FormData();
+        formData.append('file', file);
+
+        var tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (tokenInput) {
+            formData.append('__RequestVerificationToken', tokenInput.value);
+        }
+
+        fetch('/products/add/upload-temp-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                var objectUrl = URL.createObjectURL(file);
+                uploadedImages.push({
+                    tempKey: data.tempKey,
+                    fileName: data.fileName,
+                    objectUrl: objectUrl
+                });
+                renderThumbnail(uploadedImages.length - 1);
+            }
+            onDone();
+        })
+        .catch(function () {
+            onDone();
+        });
+    }
+
+    // --- Render Thumbnails ---
+    function renderThumbnail(index) {
+        var item = uploadedImages[index];
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'position-relative';
+        wrapper.style.width = '80px';
+        wrapper.style.height = '80px';
+        wrapper.setAttribute('data-image-index', index.toString());
+
+        var img = document.createElement('img');
+        img.src = item.objectUrl;
+        img.alt = item.fileName;
+        img.className = 'rounded border';
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.objectFit = 'cover';
+        wrapper.appendChild(img);
+
+        var badge = document.createElement('span');
+        badge.className = 'badge bg-dark position-absolute top-0 start-0';
+        badge.style.fontSize = '10px';
+        badge.textContent = (index + 1).toString();
+        wrapper.appendChild(badge);
+
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0 p-0';
+        removeBtn.style.width = '18px';
+        removeBtn.style.height = '18px';
+        removeBtn.style.fontSize = '10px';
+        removeBtn.style.lineHeight = '1';
+        removeBtn.textContent = 'x';
+        removeBtn.addEventListener('click', function () {
+            URL.revokeObjectURL(item.objectUrl);
+            uploadedImages.splice(index, 1);
+            rebuildThumbnails();
+            updateAssignButtons();
+        });
+        wrapper.appendChild(removeBtn);
+
+        thumbnailsContainer.appendChild(wrapper);
+    }
+
+    function rebuildThumbnails() {
+        while (thumbnailsContainer.firstChild) {
+            thumbnailsContainer.removeChild(thumbnailsContainer.firstChild);
+        }
+        for (var i = 0; i < uploadedImages.length; i++) {
+            renderThumbnail(i);
+        }
+    }
+
+    // --- Assign Buttons ---
+    function updateAssignButtons() {
+        var buttons = document.querySelectorAll('.btn-assign-images');
+        buttons.forEach(function (btn) {
+            btn.disabled = uploadedImages.length === 0;
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-assign-images');
+        if (!btn) return;
+
+        var variantIndex = parseInt(btn.getAttribute('data-variant-index'), 10);
+        var input = prompt(
+            'Gorsel numaralarini virgul ile girin (ornek: 1,3). Ilk numara ana gorsel olur.\n' +
+            'Toplam ' + uploadedImages.length + ' gorsel yuklendi.'
+        );
+
+        if (input === null || input.trim() === '') return;
+
+        var numbers = input.split(',')
+            .map(function (s) { return parseInt(s.trim(), 10); })
+            .filter(function (n) { return !isNaN(n) && n >= 1 && n <= uploadedImages.length; });
+
+        if (numbers.length === 0) return;
+
+        // Convert to zero-based indices
+        var indices = numbers.map(function (n) { return n - 1; });
+
+        assignImagesToVariant(variantIndex, indices);
+    });
+
+    function assignImagesToVariant(variantIndex, imageIndices) {
+        // Render small thumbnails next to variant
+        var container = document.querySelector('.variant-assigned-images[data-variant-index="' + variantIndex + '"]');
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+
+        imageIndices.forEach(function (imgIdx, pos) {
+            var item = uploadedImages[imgIdx];
+            if (!item) return;
+
+            var thumb = document.createElement('img');
+            thumb.src = item.objectUrl;
+            thumb.alt = item.fileName;
+            thumb.className = 'rounded border';
+            thumb.style.width = '40px';
+            thumb.style.height = '40px';
+            thumb.style.objectFit = 'cover';
+            if (pos === 0) {
+                thumb.style.border = '2px solid #206bc4';
+                thumb.title = 'Ana gorsel';
+            }
+            container.appendChild(thumb);
+        });
+
+        rebuildAssignmentHiddenFields();
+    }
+
+    function rebuildAssignmentHiddenFields() {
+        while (assignmentFieldsContainer.firstChild) {
+            assignmentFieldsContainer.removeChild(assignmentFieldsContainer.firstChild);
+        }
+
+        var rows = document.querySelectorAll('[data-variant-index]');
+        var processedVariants = {};
+
+        rows.forEach(function (row) {
+            var variantIndex = row.getAttribute('data-variant-index');
+            if (processedVariants[variantIndex]) return;
+
+            var imgContainer = document.querySelector('.variant-assigned-images[data-variant-index="' + variantIndex + '"]');
+            if (!imgContainer) return;
+
+            var imgs = imgContainer.querySelectorAll('img');
+            if (imgs.length === 0) return;
+
+            processedVariants[variantIndex] = true;
+
+            // Find the assignment index (sequential for form binding)
+            var assignmentIndex = Object.keys(processedVariants).length - 1;
+
+            var viField = document.createElement('input');
+            viField.type = 'hidden';
+            viField.name = 'ImageAssignments[' + assignmentIndex + '].VariantIndex';
+            viField.value = variantIndex;
+            assignmentFieldsContainer.appendChild(viField);
+
+            var mainField = document.createElement('input');
+            mainField.type = 'hidden';
+            mainField.name = 'ImageAssignments[' + assignmentIndex + '].MainImageIndex';
+            mainField.value = '0';
+            assignmentFieldsContainer.appendChild(mainField);
+
+            // Find temp keys for assigned images by matching objectUrl
+            imgs.forEach(function (img, imgIdx) {
+                var tempKey = '';
+                for (var k = 0; k < uploadedImages.length; k++) {
+                    if (uploadedImages[k].objectUrl === img.src) {
+                        tempKey = uploadedImages[k].tempKey;
+                        break;
+                    }
+                }
+                var keyField = document.createElement('input');
+                keyField.type = 'hidden';
+                keyField.name = 'ImageAssignments[' + assignmentIndex + '].TempImageKeys[' + imgIdx + ']';
+                keyField.value = tempKey;
+                assignmentFieldsContainer.appendChild(keyField);
+            });
+        });
+    }
+})();
+</script>
