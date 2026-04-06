@@ -1,5 +1,6 @@
 @model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
 
+<div data-wizard-step="1">
 <form hx-post="/products/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
     <div class="card">
         <div class="card-header"><h3 class="card-title">Genel Bilgiler</h3></div>
@@ -13,32 +14,29 @@
                     <label class="form-label">Stok Kodu</label>
                     <input name="StockCode" value="@Model.StockCode" class="form-control" />
                 </div>
+
+                @* ── Brand (searchable + quick-add) ── *@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Marka</label>
-                    <select name="BrandId" class="form-select" required>
-                        <option value="">Marka Secin</option>
-                        @if (ViewBag.Brands is not null)
-                        {
-                            foreach (var brand in (IEnumerable<dynamic>)ViewBag.Brands)
-                            {
-                                <option value="@brand.Id" selected="@(brand.Id == Model.BrandId)">@brand.Name</option>
-                            }
-                        }
-                    </select>
+                    <div class="position-relative">
+                        <input type="text" id="brand-input" class="form-control" autocomplete="off"
+                               placeholder="Marka ara..." value="@Model.BrandName" required />
+                        <input type="hidden" name="BrandId" id="brand-id" value="@Model.BrandId" />
+                        <div id="brand-dropdown" class="dropdown-menu w-100" style="display:none;"></div>
+                    </div>
                 </div>
+
+                @* ── Category (searchable) ── *@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Kategori</label>
-                    <select name="CategoryId" class="form-select" required>
-                        <option value="">Kategori Secin</option>
-                        @if (ViewBag.Categories is not null)
-                        {
-                            foreach (var cat in (IEnumerable<dynamic>)ViewBag.Categories)
-                            {
-                                <option value="@cat.Id" selected="@(cat.Id == Model.CategoryId)">@cat.Name</option>
-                            }
-                        }
-                    </select>
+                    <div class="position-relative">
+                        <input type="text" id="category-input" class="form-control" autocomplete="off"
+                               placeholder="Kategori ara..." value="@Model.CategoryName" required />
+                        <input type="hidden" name="CategoryId" id="category-id" value="@Model.CategoryId" />
+                        <div id="category-dropdown" class="dropdown-menu w-100" style="display:none;"></div>
+                    </div>
                 </div>
+
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Sezon</label>
                     <input name="Season" value="@Model.Season" class="form-control" />
@@ -55,7 +53,171 @@
         </div>
         <div class="card-footer text-end">
             <a href="/products" class="btn btn-ghost-secondary me-2">Iptal</a>
-            <button type="submit" class="btn btn-primary">Devam: Varyantlar &rarr;</button>
+            <button type="submit" class="btn btn-primary">Devam: Ozellikler &rarr;</button>
         </div>
     </div>
 </form>
+
+@* ── Brand Add Modal ── *@
+<div class="modal modal-blur fade" id="brand-add-modal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Marka Bulunamadi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>"<strong id="brand-add-name"></strong>" markasi bulunamadi. Eklemek ister misiniz?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Hayir</button>
+                <button type="button" class="btn btn-primary" id="brand-add-confirm">Evet, Ekle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Brand Info Modal ── *@
+<div class="modal modal-blur fade" id="brand-info-modal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bilgi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bu marka yeni eklendigi icin eslestirilmemis olacak.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tamam</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+(function() {
+    var brandInput = document.getElementById('brand-input');
+    var brandId = document.getElementById('brand-id');
+    var brandDropdown = document.getElementById('brand-dropdown');
+    var catInput = document.getElementById('category-input');
+    var catId = document.getElementById('category-id');
+    var catDropdown = document.getElementById('category-dropdown');
+    var brandSelected = !!brandId.value && brandId.value !== '0';
+    var catSelected = !!catId.value && catId.value !== '0';
+    var brandTimer = null;
+    var catTimer = null;
+    var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
+
+    function clearChildren(el) {
+        while (el.firstChild) el.removeChild(el.firstChild);
+    }
+
+    function renderDropdown(dropdown, items, onSelect) {
+        clearChildren(dropdown);
+        if (items.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        items.forEach(function(it) {
+            var item = document.createElement('a');
+            item.className = 'dropdown-item';
+            item.href = '#';
+            item.setAttribute('data-id', it.id);
+            item.setAttribute('data-name', it.name);
+            item.textContent = it.name;
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                onSelect(it);
+                dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(item);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    // Brand search
+    brandInput.addEventListener('input', function() {
+        brandSelected = false;
+        brandId.value = '0';
+        clearTimeout(brandTimer);
+        var q = brandInput.value.trim();
+        if (q.length < 2) { brandDropdown.style.display = 'none'; return; }
+        brandTimer = setTimeout(function() {
+            fetch('/products/add/brand-search?q=' + encodeURIComponent(q))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    renderDropdown(brandDropdown, data, function(it) {
+                        brandInput.value = it.name;
+                        brandId.value = it.id;
+                        brandSelected = true;
+                    });
+                });
+        }, 300);
+    });
+
+    brandInput.addEventListener('blur', function() {
+        setTimeout(function() {
+            brandDropdown.style.display = 'none';
+            if (!brandSelected && brandInput.value.trim().length > 0) {
+                var nameEl = document.getElementById('brand-add-name');
+                nameEl.textContent = brandInput.value.trim();
+                var modal = new bootstrap.Modal(document.getElementById('brand-add-modal'));
+                modal.show();
+            }
+        }, 200);
+    });
+
+    // Brand quick-add
+    document.getElementById('brand-add-confirm').addEventListener('click', function() {
+        var name = brandInput.value.trim();
+        var body = new URLSearchParams();
+        body.append('brandName', name);
+        if (token) body.append('__RequestVerificationToken', token);
+        fetch('/products/add/brand-quick-add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var addModal = bootstrap.Modal.getInstance(document.getElementById('brand-add-modal'));
+            if (addModal) addModal.hide();
+            if (data.success) {
+                brandInput.value = data.name;
+                brandId.value = data.id;
+                brandSelected = true;
+                var infoModal = new bootstrap.Modal(document.getElementById('brand-info-modal'));
+                infoModal.show();
+            }
+        });
+    });
+
+    // Category search
+    catInput.addEventListener('input', function() {
+        catSelected = false;
+        catId.value = '0';
+        clearTimeout(catTimer);
+        var q = catInput.value.trim();
+        if (q.length < 2) { catDropdown.style.display = 'none'; return; }
+        catTimer = setTimeout(function() {
+            fetch('/products/add/category-search?q=' + encodeURIComponent(q))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    renderDropdown(catDropdown, data, function(it) {
+                        catInput.value = it.name;
+                        catId.value = it.id;
+                        catSelected = true;
+                    });
+                });
+        }, 300);
+    });
+
+    catInput.addEventListener('blur', function() {
+        setTimeout(function() {
+            catDropdown.style.display = 'none';
+        }, 200);
+    });
+})();
+</script>

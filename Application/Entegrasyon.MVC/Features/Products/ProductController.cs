@@ -26,7 +26,8 @@ public class ProductController(
     IProductSyncManager productSyncManager,
     ITrendyolProductService trendyolProductService,
     IMarketplaceOverrideManager marketplaceOverrideManager,
-    IProductVariantManager productVariantManager) : Controller
+    IProductVariantManager productVariantManager,
+    ICategoryAttributeManager categoryAttributeManager) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -150,8 +151,13 @@ public class ProductController(
 
         TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
 
+        // Load category attributes for Step 2
+        var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
+        var attrs = attrResult.Success ? attrResult.Data! : [];
+        ViewBag.NonVariantAttributes = attrs.Where(a => !a.IsVarianter && !a.IsSlicer).ToList();
+
         if (Request.IsHtmx())
-            return PartialView("Partials/_CreateStep2", vm);
+            return PartialView("Partials/_CreateStep2Attributes", vm);
 
         ViewData.SetPageTitle("Yeni Urun");
         ViewData.SetActiveNav("products");
@@ -629,6 +635,40 @@ public class ProductController(
             return RedirectToAction(nameof(Index));
         }
         return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"urunler-{DateTime.Now:yyyyMMdd}.xlsx");
+    }
+
+    // ── Search / Quick-Add ─────────────────────────────────────────
+
+    [HttpGet("/products/add/brand-search")]
+    public async Task<IActionResult> BrandSearch([FromQuery] string q)
+    {
+        var brands = await brandService.GetBrandListDetails();
+        var filtered = (brands.Data ?? [])
+            .Where(b => b.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Take(20)
+            .ToList();
+        return Json(filtered.Select(b => new { b.Id, b.Name }));
+    }
+
+    [HttpPost("/products/add/brand-quick-add")]
+    public async Task<IActionResult> BrandQuickAdd([FromForm] string brandName)
+    {
+        var result = await brandService.AddBrand(new Entity.Dtos.Brand.AddBrandDto { Name = brandName });
+        if (!result.Success)
+            return Json(new { success = false, message = result.Message });
+        var brand = ((Entity.Results.SuccessDataResult<Entity.Brands.Brand>)result).Data;
+        return Json(new { success = true, id = brand!.Id, name = brand.Name });
+    }
+
+    [HttpGet("/products/add/category-search")]
+    public async Task<IActionResult> CategorySearch([FromQuery] string q)
+    {
+        var categories = await categoryService.GetLeafCategoriesAsync();
+        var filtered = categories
+            .Where(c => c.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Take(20)
+            .ToList();
+        return Json(filtered.Select(c => new { c.Id, c.Name }));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
