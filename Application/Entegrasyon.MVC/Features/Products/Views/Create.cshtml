@@ -15,8 +15,11 @@
             <div class="card-body">
                 <div class="steps steps-counter mb-4" id="wizard-steps">
                     <a href="#" class="step-item active" data-step="1">Genel Bilgiler</a>
-                    <a href="#" class="step-item" data-step="2">Varyantlar</a>
-                    <a href="#" class="step-item" data-step="3">Onay</a>
+                    <a href="#" class="step-item" data-step="2">Ozellikler</a>
+                    <a href="#" class="step-item" data-step="3">Varyantlar</a>
+                    <a href="#" class="step-item" data-step="4">Gorseller</a>
+                    <a href="#" class="step-item" data-step="5">Onay</a>
+                    <a href="#" class="step-item" data-step="6">Sonuc</a>
                 </div>
             </div>
         </div>
@@ -28,20 +31,15 @@
 
 @section Scripts {
 <script>
-    // Update step indicators when HTMX swaps content
     document.body.addEventListener('htmx:afterSwap', function(evt) {
-        if (evt.detail.target.id === 'wizard-content') {
-            var content = evt.detail.target.innerHTML;
-            var steps = document.querySelectorAll('.step-item');
-            var currentStep = 1;
-            if (content.indexOf('step2') > -1 || content.indexOf('Varyant Bilgileri') > -1) currentStep = 2;
-            if (content.indexOf('step3') > -1 || content.indexOf('Onay') > -1) currentStep = 3;
-            steps.forEach(function(s) {
-                var step = parseInt(s.getAttribute('data-step'));
-                s.classList.remove('active');
-                if (step === currentStep) s.classList.add('active');
-            });
-        }
+        if (evt.detail.target.id !== 'wizard-content') return;
+        var stepEl = evt.detail.target.querySelector('[data-wizard-step]');
+        if (!stepEl) return;
+        var currentStep = parseInt(stepEl.getAttribute('data-wizard-step'));
+        document.querySelectorAll('.step-item').forEach(function(s) {
+            var step = parseInt(s.getAttribute('data-step'));
+            s.classList.toggle('active', step === currentStep);
+        });
     });
 </script>
 }
