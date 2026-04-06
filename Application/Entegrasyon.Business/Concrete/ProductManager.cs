@@ -51,6 +51,11 @@ public class ProductManager(
         if (stockCodeConflict)
             return new ErrorDataResult<Product>(null!, "Bu stok kodu zaten kullanılıyor. Lütfen farklı bir stok kodu girin.");
 
+        // Leaf category check: category must have no children
+        var hasChildren = await dbContext.Categories.AnyAsync(c => c.SuperCategoryId == dto.CategoryId && !c.IsDeleted);
+        if (hasChildren)
+            return new ErrorDataResult<Product>(null!, "Sadece alt kategorisi olmayan (yaprak) kategoriler secilebilir.");
+
         var check = LogicRunner.Run(
             officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
         );

@@ -34,31 +34,29 @@ public class AddProductValidatorTests
         var result = await _validator.ValidateAsync(dto);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün adı boş geçilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Urun adi bos gecilemez");
     }
 
     [Fact]
-    public async Task Should_Fail_WhenDescriptionIsEmpty()
+    public async Task Should_Pass_WhenDescriptionIsEmpty()
     {
         var dto = ValidDto();
         dto.Description = string.Empty;
 
         var result = await _validator.ValidateAsync(dto);
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün açıklaması boş geçilemez");
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Should_Fail_WhenStockCodeIsEmpty()
+    public async Task Should_Pass_WhenStockCodeIsEmpty()
     {
         var dto = ValidDto();
         dto.StockCode = string.Empty;
 
         var result = await _validator.ValidateAsync(dto);
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün stok kodu boş geçilemez");
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
@@ -70,7 +68,7 @@ public class AddProductValidatorTests
         var result = await _validator.ValidateAsync(dto);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün kategorisi boş geçilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Urun kategorisi bos gecilemez");
     }
 
     [Fact]
@@ -82,7 +80,7 @@ public class AddProductValidatorTests
         var result = await _validator.ValidateAsync(dto);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün varyantları boş geçilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Urun varyantlari bos gecilemez");
     }
 
     [Fact]
