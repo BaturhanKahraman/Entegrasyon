@@ -1,0 +1,73 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+@using Entegrasyon.Entity.Dtos.Category
+
+@{
+    var attrs = ViewBag.NonVariantAttributes as List<CategoryAttributeDto> ?? [];
+}
+
+<div data-wizard-step="2">
+<form hx-post="/products/add/step2" hx-target="#wizard-content" hx-swap="innerHTML">
+    <input type="hidden" name="Title" value="@Model.Title" />
+    <input type="hidden" name="Description" value="@Model.Description" />
+    <input type="hidden" name="StockCode" value="@Model.StockCode" />
+    <input type="hidden" name="Season" value="@Model.Season" />
+    <input type="hidden" name="Year" value="@Model.Year" />
+    <input type="hidden" name="BrandId" value="@Model.BrandId" />
+    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+    <input type="hidden" name="BrandName" value="@Model.BrandName" />
+    <input type="hidden" name="CategoryName" value="@Model.CategoryName" />
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Kategori Ozellikleri</h3>
+            <span class="card-subtitle">@Model.CategoryName</span>
+        </div>
+        <div class="card-body">
+            @if (attrs.Count == 0)
+            {
+                <div class="alert alert-info">Bu kategorinin ek ozelligi bulunmamaktadir.</div>
+            }
+            else
+            {
+                <div class="row">
+                    @for (int i = 0; i < attrs.Count; i++)
+                    {
+                        var attr = attrs[i];
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label @(attr.IsRequired ? "required" : "")">
+                                @attr.CategoriyAttributeHumanized
+                            </label>
+                            <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@attr.Id" />
+                            <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
+                            <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@attr.IsRequired" />
+                            <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@attr.AllowCustom" />
+
+                            @if (attr.AllowCustom)
+                            {
+                                <input type="text" name="CategoryAttributes[@i].CustomValue"
+                                       class="form-control" placeholder="Deger girin..."
+                                       @(attr.IsRequired ? "required" : "") />
+                            }
+                            else
+                            {
+                                <select name="CategoryAttributes[@i].ValueId" class="form-select"
+                                        @(attr.IsRequired ? "required" : "")>
+                                    <option value="">Secin...</option>
+                                    @foreach (var val in attr.CategoryAttributeValues)
+                                    {
+                                        <option value="@val.Id">@val.Name</option>
+                                    }
+                                </select>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+            <button type="submit" class="btn btn-primary">Devam: Varyantlar &rarr;</button>
+        </div>
+    </div>
+</form>
+</div>

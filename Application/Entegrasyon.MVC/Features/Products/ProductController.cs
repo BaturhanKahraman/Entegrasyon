@@ -165,12 +165,36 @@ public class ProductController(
     }
 
     [HttpPost("/products/add/step2")]
-    public IActionResult CreateStep2(CreateProductVm vm)
+    public async Task<IActionResult> CreateStep2(CreateProductVm vm)
     {
+        // Validate required category attributes
+        var missing = vm.CategoryAttributes
+            .Where(a => a.IsRequired && (a.ValueId is null or 0) && string.IsNullOrWhiteSpace(a.CustomValue))
+            .ToList();
+
+        if (missing.Count > 0)
+        {
+            var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
+            var attrs = attrResult.Success ? attrResult.Data! : [];
+            ViewBag.NonVariantAttributes = attrs.Where(a => !a.IsVarianter && !a.IsSlicer).ToList();
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_CreateStep2Attributes", vm);
+
+            ViewData.SetPageTitle("Yeni Urun");
+            ViewData.SetActiveNav("products");
+            return View(nameof(Create), vm);
+        }
+
         TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
 
+        // Load varianter/slicer attributes for Step 3
+        var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
+        ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])
+            .Where(a => a.IsVarianter || a.IsSlicer).ToList();
+
         if (Request.IsHtmx())
-            return PartialView("Partials/_CreateStep3Review", vm);
+            return PartialView("Partials/_CreateStep3Variants", vm);
 
         ViewData.SetPageTitle("Yeni Urun");
         ViewData.SetActiveNav("products");
