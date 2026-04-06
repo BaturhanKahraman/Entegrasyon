@@ -1,0 +1,37 @@
+@model IList<Entegrasyon.Entity.Dtos.MasterCatalog.MasterBrandDto>
+
+@if (Model.Count == 0)
+{
+    <div class="p-3 text-center text-secondary">
+        <small>Sonuc bulunamadi. Farkli bir arama deneyin.</small>
+    </div>
+}
+else
+{
+    foreach (var brand in Model)
+    {
+        var trendyolIdAttr = brand.TrendyolBrandId.HasValue ? brand.TrendyolBrandId.Value.ToString() : "null";
+        <div class="list-group-item d-flex align-items-center">
+            <div class="flex-fill">
+                <span class="fw-medium">@brand.Name</span>
+            </div>
+            @if (brand.TrendyolBrandId.HasValue)
+            {
+                <span class="badge bg-orange-lt me-2" title="Trendyol Brand ID">
+                    <i class="ti ti-shopping-cart me-1"></i>@brand.TrendyolBrandId
+                </span>
+            }
+            <button type="button" class="btn btn-outline-primary btn-sm"
+                    data-brand-add="@brand.Id"
+                    onclick="addBrand(@brand.Id, '@Html.Raw(brand.Name.Replace("'", "\\'").Replace("\"", "&quot;"))', @trendyolIdAttr)">
+                <i class="ti ti-plus"></i>
+            </button>
+        </div>
+    }
+    @if (Model.Count >= 50)
+    {
+        <div class="p-2 text-center text-secondary">
+            <small>Ilk 50 sonuc gosteriliyor. Daha spesifik arama yapin.</small>
+        </div>
+    }
+}

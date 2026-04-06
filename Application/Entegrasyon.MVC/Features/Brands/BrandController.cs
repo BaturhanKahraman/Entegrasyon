@@ -4,13 +4,18 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Requests;
+using Entegrasyon.MVC.Features.Brands.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Brands;
 
 [Authorize]
-public class BrandController(IBrandService brandService, IBrandMatchService brandMatchService) : HtmxController
+public class BrandController(
+    IBrandService brandService,
+    IBrandMatchService brandMatchService,
+    IMasterCatalogImportService masterCatalogImportService,
+    ITenantContext tenantContext) : HtmxController
 {
     [HttpGet("/brands")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -62,5 +67,70 @@ public class BrandController(IBrandService brandService, IBrandMatchService bran
         var result = await brandService.DeleteBrand(id);
 
         return HtmxMutationResult(result, "Marka silindi.", "Silinemedi.");
+    }
+
+    // ── Master Import ────────────────────────────────────────────────
+
+    [HttpGet("/brands/master-import")]
+    public IActionResult MasterImport()
+    {
+        ViewData.SetPageTitle("Master Katalogdan Marka Aktarma");
+        ViewData.SetActiveNav("brands");
+        ViewData.SetBreadcrumb(("Markalar", "/brands"), ("Master Import", null));
+
+        return View();
+    }
+
+    [HttpGet("/brands/master-import/search")]
+    public async Task<IActionResult> MasterImportSearch([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            return PartialView("Partials/_BrandSearchResults", Array.Empty<Entity.Dtos.MasterCatalog.MasterBrandDto>());
+
+        var brands = await masterCatalogImportService.SearchMasterBrandsAsync(q.Trim());
+        return PartialView("Partials/_BrandSearchResults", brands);
+    }
+
+    [HttpPost("/brands/master-import")]
+    public async Task<IActionResult> MasterImportExecute([FromForm] int[] selectedBrandIds)
+    {
+        if (selectedBrandIds.Length == 0)
+        {
+            TempData.SetError("Lutfen en az bir marka secin.");
+            return RedirectToAction(nameof(MasterImport));
+        }
+
+        try
+        {
+            var result = await masterCatalogImportService.ImportBrandsFromMasterAsync(
+                tenantContext.TenantId, selectedBrandIds);
+
+            var resultVm = new BrandMasterImportResultVm
+            {
+                Success = true,
+                BrandsImported = result.BrandsImported,
+                BrandsSkipped = result.BrandsSkipped
+            };
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_BrandMasterImportResult", resultVm);
+
+            TempData.SetSuccess($"{result.BrandsImported} marka basariyla aktarildi.");
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            if (Request.IsHtmx())
+            {
+                return PartialView("Partials/_BrandMasterImportResult", new BrandMasterImportResultVm
+                {
+                    Success = false,
+                    ErrorMessage = "Import sirasinda bir hata olustu: " + ex.Message
+                });
+            }
+
+            TempData.SetError("Import sirasinda bir hata olustu.");
+            return RedirectToAction(nameof(MasterImport));
+        }
     }
 }

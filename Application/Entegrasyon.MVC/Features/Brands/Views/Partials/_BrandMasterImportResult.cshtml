@@ -1,0 +1,53 @@
+@model Entegrasyon.MVC.Features.Brands.ViewModels.BrandMasterImportResultVm
+
+@if (!Model.Success)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center">
+            <i class="ti ti-alert-circle me-2" style="font-size: 1.5rem;"></i>
+            <div>
+                <h4 class="alert-title mb-1">Import Basarisiz</h4>
+                <div class="text-secondary">@Model.ErrorMessage</div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-success">
+        <div class="card-header bg-success-lt">
+            <h3 class="card-title text-success">
+                <i class="ti ti-check me-1"></i> Import Tamamlandi
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 text-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <h3 class="mb-0 text-primary">@Model.BrandsImported</h3>
+                            <small class="text-secondary">Marka Eklendi</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <h3 class="mb-0 text-secondary">@Model.BrandsSkipped</h3>
+                            <small class="text-secondary">Atlandi (Zaten Mevcut)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <a href="/brands" class="btn btn-primary">
+                    <i class="ti ti-list me-1"></i> Markalara Git
+                </a>
+                <a href="/brands/master-import" class="btn btn-outline-secondary">
+                    <i class="ti ti-refresh me-1"></i> Tekrar Import
+                </a>
+            </div>
+        </div>
+    </div>
+}

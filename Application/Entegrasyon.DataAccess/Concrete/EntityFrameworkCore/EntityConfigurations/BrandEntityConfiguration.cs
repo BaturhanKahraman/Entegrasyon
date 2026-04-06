@@ -16,6 +16,7 @@ public class BrandEntityConfiguration:IEntityTypeConfiguration<Brand>
         builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder.HasIndex(x => x.SeoSlug).IsUnique().HasFilter("\"SeoSlug\" IS NOT NULL");
+        builder.HasIndex(x => x.Name).IsUnique().HasFilter("\"IsDeleted\" = false");
 
         //Brand[] brands = new Brand[]
         //{

@@ -1,0 +1,221 @@
+@{
+    ViewData["Title"] = "Master Katalogdan Marka Aktarma";
+}
+
+<div class="container-xl">
+    <div class="page-header mb-3">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <h2 class="page-title">Master Katalogdan Marka Aktarma</h2>
+                <div class="text-secondary mt-1">
+                    Marka arayarak secim yapin, ardindan iceri aktarin.
+                </div>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="/brands" class="btn btn-outline-secondary">
+                    <i class="ti ti-arrow-left"></i> Markalara Don
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sol: Arama -->
+        <div class="col-lg-7">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="ti ti-search me-1"></i> Marka Ara</h3>
+                </div>
+                <div class="card-body">
+                    <input type="text" id="brandSearch" class="form-control"
+                           placeholder="Marka adi yazin (en az 2 karakter)..."
+                           hx-get="/brands/master-import/search"
+                           hx-trigger="keyup changed delay:400ms"
+                           hx-target="#search-results"
+                           hx-swap="innerHTML"
+                           hx-indicator="#search-spinner"
+                           name="q" />
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" id="search-spinner"></span>
+                </div>
+                <div id="search-results" class="list-group list-group-flush" style="max-height: 500px; overflow-y: auto;">
+                    <div class="p-4 text-center text-secondary">
+                        <i class="ti ti-search" style="font-size: 2rem;"></i>
+                        <p class="mt-2">Yukardaki arama kutusuna marka adi yazarak baslayabilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sag: Secilen Markalar + Import -->
+        <div class="col-lg-5">
+            <form id="masterImportForm" method="post" action="/brands/master-import"
+                  hx-post="/brands/master-import"
+                  hx-target="#import-result-area"
+                  hx-swap="innerHTML"
+                  hx-indicator="#import-spinner">
+
+                @Html.AntiForgeryToken()
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="ti ti-shopping-cart me-1"></i> Secilen Markalar</h3>
+                        <div class="card-actions">
+                            <span class="badge bg-primary" id="selectionCount">0</span>
+                        </div>
+                    </div>
+                    <div id="selected-brands" class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                        <div class="p-3 text-center text-secondary" id="empty-selection">
+                            <small>Soldan marka arayip ekleyin</small>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="button" class="btn btn-ghost-danger btn-sm" onclick="clearSelection()" id="clearBtn" style="display:none;">
+                                <i class="ti ti-trash me-1"></i> Temizle
+                            </button>
+                            <button type="submit" class="btn btn-primary ms-auto" id="importBtn" disabled>
+                                <span class="spinner-border spinner-border-sm me-1 d-none" id="import-spinner"></span>
+                                <i class="ti ti-download me-1"></i>
+                                Iceri Aktar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div id="import-result-area"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var selectedBrands = {};
+
+    function addBrand(id, name, trendyolId) {
+        if (selectedBrands[id]) return;
+        selectedBrands[id] = { name: name, trendyolId: trendyolId };
+        renderSelectedBrands();
+
+        var addBtn = document.querySelector('[data-brand-add="' + id + '"]');
+        if (addBtn) {
+            addBtn.disabled = true;
+            addBtn.textContent = 'Eklendi';
+        }
+    }
+
+    function removeBrand(id) {
+        delete selectedBrands[id];
+        renderSelectedBrands();
+
+        var addBtn = document.querySelector('[data-brand-add="' + id + '"]');
+        if (addBtn) {
+            addBtn.disabled = false;
+            var icon = document.createElement('i');
+            icon.className = 'ti ti-plus';
+            addBtn.textContent = '';
+            addBtn.appendChild(icon);
+        }
+    }
+
+    function clearSelection() {
+        selectedBrands = {};
+        renderSelectedBrands();
+        document.querySelectorAll('[data-brand-add]').forEach(function(btn) {
+            btn.disabled = false;
+            var icon = document.createElement('i');
+            icon.className = 'ti ti-plus';
+            btn.textContent = '';
+            btn.appendChild(icon);
+        });
+    }
+
+    function renderSelectedBrands() {
+        var container = document.getElementById('selected-brands');
+        var keys = Object.keys(selectedBrands);
+        var count = keys.length;
+
+        document.getElementById('selectionCount').textContent = count;
+        document.getElementById('importBtn').disabled = count === 0;
+        document.getElementById('clearBtn').style.display = count > 0 ? '' : 'none';
+
+        while (container.firstChild) container.removeChild(container.firstChild);
+
+        if (count === 0) {
+            var emptyDiv = document.createElement('div');
+            emptyDiv.className = 'p-3 text-center text-secondary';
+            emptyDiv.id = 'empty-selection';
+            var small = document.createElement('small');
+            small.textContent = 'Soldan marka arayip ekleyin';
+            emptyDiv.appendChild(small);
+            container.appendChild(emptyDiv);
+            return;
+        }
+
+        keys.forEach(function(id) {
+            var brand = selectedBrands[id];
+            var row = document.createElement('div');
+            row.className = 'list-group-item d-flex align-items-center';
+            row.id = 'selected-' + id;
+
+            var hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'selectedBrandIds';
+            hidden.value = id;
+            row.appendChild(hidden);
+
+            var nameSpan = document.createElement('span');
+            nameSpan.className = 'fw-medium flex-fill';
+            nameSpan.textContent = brand.name;
+            row.appendChild(nameSpan);
+
+            if (brand.trendyolId) {
+                var badge = document.createElement('span');
+                badge.className = 'badge bg-orange-lt me-2';
+                var cartIcon = document.createElement('i');
+                cartIcon.className = 'ti ti-shopping-cart me-1';
+                badge.appendChild(cartIcon);
+                badge.appendChild(document.createTextNode(brand.trendyolId));
+                row.appendChild(badge);
+            }
+
+            var removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-ghost-danger btn-sm';
+            removeBtn.setAttribute('onclick', 'removeBrand(' + id + ')');
+            var xIcon = document.createElement('i');
+            xIcon.className = 'ti ti-x';
+            removeBtn.appendChild(xIcon);
+            row.appendChild(removeBtn);
+
+            container.appendChild(row);
+        });
+    }
+
+    // Arama sonuclari yuklendiginde secili markalarin butonlarini guncelle
+    document.body.addEventListener('htmx:afterSwap', function(e) {
+        if (e.detail.target.id === 'search-results') {
+            Object.keys(selectedBrands).forEach(function(id) {
+                var addBtn = document.querySelector('[data-brand-add="' + id + '"]');
+                if (addBtn) {
+                    addBtn.disabled = true;
+                    addBtn.textContent = 'Eklendi';
+                }
+            });
+        }
+    });
+
+    // Import form spinner
+    document.body.addEventListener('htmx:beforeRequest', function(e) {
+        if (e.detail.elt.id === 'masterImportForm') {
+            document.getElementById('import-spinner').classList.remove('d-none');
+            document.getElementById('importBtn').disabled = true;
+        }
+    });
+    document.body.addEventListener('htmx:afterRequest', function(e) {
+        if (e.detail.elt.id === 'masterImportForm') {
+            document.getElementById('import-spinner').classList.add('d-none');
+        }
+    });
+</script>
+}

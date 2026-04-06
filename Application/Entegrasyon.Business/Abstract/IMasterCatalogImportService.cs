@@ -35,4 +35,7 @@ public interface IMasterCatalogImportService
 
     /// <summary>Tüm aktif master markaları getirir (UI'da seçim için).</summary>
     Task<IList<MasterBrandDto>> GetMasterBrandsAsync(CancellationToken ct = default);
+
+    /// <summary>Master markaları isme göre arar (sayfalı, UI arama için).</summary>
+    Task<IList<MasterBrandDto>> SearchMasterBrandsAsync(string query, int limit = 50, CancellationToken ct = default);
 }
