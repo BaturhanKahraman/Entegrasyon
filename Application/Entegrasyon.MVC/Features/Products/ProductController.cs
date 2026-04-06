@@ -265,6 +265,15 @@ public class ProductController(
 
         var vm = JsonSerializer.Deserialize<CreateProductVm>(json)!;
 
+        var attributeKeyValues = vm.CategoryAttributes
+            .Where(a => a.ValueId > 0 || !string.IsNullOrWhiteSpace(a.CustomValue))
+            .Select(a => new Entity.Categories.AttributeKeyValue
+            {
+                CategoryAttributeId = a.CategoryAttributeId,
+                AttributeValueId = a.ValueId > 0 ? a.ValueId : null,
+                CustomValue = a.CustomValue
+            }).ToList();
+
         var dto = new AddProductDto
         {
             Title = vm.Title,
@@ -274,6 +283,7 @@ public class ProductController(
             Year = vm.Year,
             BrandId = vm.BrandId,
             CategoryId = vm.CategoryId,
+            AttributeKeyValues = attributeKeyValues,
             ProductVariants = vm.Variants.Select(v => new AddProductVariantDto
             {
                 Barcode = v.Barcode,
@@ -283,15 +293,68 @@ public class ProductController(
                 VatRate = v.VatRate,
                 DimensionalWeight = v.DimensionalWeight,
                 CurrencyType = "TRY",
+                ProductVariantAttributes = v.VariantAttributes.Select(va =>
+                    new Entity.Products.ProductVariantAttribute
+                    {
+                        CategoryAttributeValueId = va.ValueId,
+                        CategoryAttributeValue = va.ValueName,
+                        CustomValue = va.IsCustom ? va.ValueName : null,
+                        IsVarianter = va.IsVarianter,
+                        IsSlicer = va.IsSlicer
+                    }).ToList(),
                 BranchOfficeStocks = [new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = v.Stock }]
             }).ToList()
         };
 
         var result = await productService.AddProduct(dto);
+
         if (result.Success)
         {
+            var product = result.Data!;
+            var imageCount = 0;
+
+            foreach (var assignment in vm.ImageAssignments.Where(a => a.TempImageKeys.Count > 0))
+            {
+                if (assignment.VariantIndex >= product.ProductVariants.Count) continue;
+                var variant = product.ProductVariants.ElementAt(assignment.VariantIndex);
+                var streams = new List<VariantImageStream>();
+                var tempDir = Path.Combine(Path.GetTempPath(), "product-wizard-images");
+
+                for (int i = 0; i < assignment.TempImageKeys.Count; i++)
+                {
+                    var tempPath = Path.Combine(tempDir, assignment.TempImageKeys[i]);
+                    if (!System.IO.File.Exists(tempPath)) continue;
+                    var fs = new FileStream(tempPath, FileMode.Open, FileAccess.Read);
+                    streams.Add(new VariantImageStream(
+                        variant.Id, fs, assignment.TempImageKeys[i],
+                        IsMain: i == (assignment.MainImageIndex ?? 0)));
+                    imageCount++;
+                }
+
+                if (streams.Count > 0)
+                    await imageManager.AddProductImages(product.Id, streams);
+            }
+
+            // Cleanup temp files
+            var tempCleanDir = Path.Combine(Path.GetTempPath(), "product-wizard-images");
+            if (Directory.Exists(tempCleanDir))
+            {
+                foreach (var f in Directory.GetFiles(tempCleanDir))
+                    System.IO.File.Delete(f);
+            }
+
+            TempData.Remove("CreateProduct");
+
+            ViewBag.ProductId = product.Id;
+            ViewBag.ProductTitle = vm.Title;
+            ViewBag.VariantCount = vm.Variants.Count;
+            ViewBag.ImageCount = imageCount;
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_CreateStep6Success");
+
             TempData.SetSuccess($"'{vm.Title}' basariyla eklendi.");
-            return RedirectToAction(nameof(Detail), new { id = result.Data!.Id });
+            return RedirectToAction(nameof(Detail), new { id = product.Id });
         }
 
         TempData.SetError(result.Message ?? "Urun eklenemedi.");

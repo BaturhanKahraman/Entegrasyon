@@ -1,0 +1,127 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
+<div data-wizard-step="5">
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Ozet ve Onay</h3>
+    </div>
+    <div class="card-body">
+        <!-- General Info -->
+        <div class="datagrid mb-4">
+            <div class="datagrid-item">
+                <div class="datagrid-title">Urun Adi</div>
+                <div class="datagrid-content">@Model.Title</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Stok Kodu</div>
+                <div class="datagrid-content">@(string.IsNullOrWhiteSpace(Model.StockCode) ? "-" : Model.StockCode)</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Marka</div>
+                <div class="datagrid-content">@Model.BrandName</div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Kategori</div>
+                <div class="datagrid-content">@Model.CategoryName</div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Season))
+            {
+                <div class="datagrid-item">
+                    <div class="datagrid-title">Sezon</div>
+                    <div class="datagrid-content">@Model.Season</div>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Year))
+            {
+                <div class="datagrid-item">
+                    <div class="datagrid-title">Yil</div>
+                    <div class="datagrid-content">@Model.Year</div>
+                </div>
+            }
+        </div>
+
+        <!-- Category Attributes -->
+        @{
+            var filledAttrs = Model.CategoryAttributes
+                .Where(a => (a.ValueId.HasValue && a.ValueId > 0) || !string.IsNullOrWhiteSpace(a.CustomValue))
+                .ToList();
+        }
+        @if (filledAttrs.Count > 0)
+        {
+            <h4 class="mb-2">Kategori Ozellikleri</h4>
+            <div class="datagrid mb-4">
+                @foreach (var attr in filledAttrs)
+                {
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">@attr.AttributeName</div>
+                        <div class="datagrid-content">@(!string.IsNullOrWhiteSpace(attr.CustomValue) ? attr.CustomValue : attr.ValueId?.ToString())</div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Description -->
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <h4 class="mb-2">Aciklama</h4>
+            <div class="mb-4 text-secondary">@Model.Description</div>
+        }
+
+        <!-- Variants Table -->
+        <h4 class="mb-2">Varyantlar (@Model.Variants.Count)</h4>
+        <div class="table-responsive mb-4">
+            <table class="table table-vcenter">
+                <thead>
+                    <tr>
+                        @if (Model.Variants.Count > 0 && Model.Variants[0].VariantAttributes.Count > 0)
+                        {
+                            @foreach (var attr in Model.Variants[0].VariantAttributes)
+                            {
+                                <th>@attr.AttributeName</th>
+                            }
+                        }
+                        <th>Barkod</th>
+                        <th>Fiyat</th>
+                        <th>KDV</th>
+                        <th>Stok</th>
+                        <th>Gorsel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Variants.Count; i++)
+                    {
+                        var variant = Model.Variants[i];
+                        var assignment = Model.ImageAssignments.FirstOrDefault(a => a.VariantIndex == i);
+                        var imgCount = assignment?.TempImageKeys.Count ?? 0;
+                        <tr>
+                            @foreach (var attr in variant.VariantAttributes)
+                            {
+                                <td><span class="badge bg-azure-lt">@attr.ValueName</span></td>
+                            }
+                            <td>@(string.IsNullOrWhiteSpace(variant.Barcode) ? "Otomatik" : variant.Barcode)</td>
+                            <td>
+                                <span class="text-secondary">@variant.ListPrice.ToString("N2") TL</span>
+                                <br />
+                                <strong>@variant.SalePrice.ToString("N2") TL</strong>
+                            </td>
+                            <td>%@variant.VatRate</td>
+                            <td>@variant.Stock</td>
+                            <td>@imgCount gorsel</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <a href="/products/add" class="btn btn-outline-secondary">Bastan Baslat</a>
+        <form hx-post="/products/add/save" hx-target="#wizard-content" hx-swap="innerHTML">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 12l5 5l10 -10" /></svg>
+                Urunu Kaydet
+            </button>
+        </form>
+    </div>
+</div>
+</div>
