@@ -13,8 +13,66 @@ public class CreateProductVm
     public string? BrandName { get; set; }
     public string? CategoryName { get; set; }
 
-    // Step 2: Variants
-    public List<CreateVariantVm> Variants { get; set; } = [new()];
+    // Step 2: Category Attributes (non-varianter, non-slicer)
+    public List<AttributeValueVm> CategoryAttributes { get; set; } = [];
+
+    // Step 3: Variant Generation
+    public List<VariantAttributeSelectionVm> VariantAttributeSelections { get; set; } = [];
+    public DefaultVariantValuesVm DefaultValues { get; set; } = new();
+    public List<CreateVariantVm> Variants { get; set; } = [];
+
+    // Step 4: Image assignments (temp file keys from upload)
+    public List<VariantImageAssignmentVm> ImageAssignments { get; set; } = [];
+
+    public static List<CreateVariantVm> GenerateVariants(
+        List<VariantAttributeSelectionVm> selections,
+        DefaultVariantValuesVm defaults)
+    {
+        var nonEmpty = selections.Where(s => s.SelectedValues.Count > 0).ToList();
+        if (nonEmpty.Count == 0) return [];
+
+        IEnumerable<List<VariantAttributeValueVm>> combos = nonEmpty[0].SelectedValues
+            .Select(v => new List<VariantAttributeValueVm>
+            {
+                new()
+                {
+                    CategoryAttributeId = nonEmpty[0].CategoryAttributeId,
+                    AttributeName = nonEmpty[0].AttributeName,
+                    ValueId = v.ValueId,
+                    ValueName = v.ValueName,
+                    IsCustom = v.IsCustom,
+                    IsVarianter = nonEmpty[0].IsVarianter,
+                    IsSlicer = nonEmpty[0].IsSlicer
+                }
+            });
+
+        for (int i = 1; i < nonEmpty.Count; i++)
+        {
+            var attr = nonEmpty[i];
+            combos = combos.SelectMany(existing =>
+                attr.SelectedValues.Select(v =>
+                    existing.Concat([new VariantAttributeValueVm
+                    {
+                        CategoryAttributeId = attr.CategoryAttributeId,
+                        AttributeName = attr.AttributeName,
+                        ValueId = v.ValueId,
+                        ValueName = v.ValueName,
+                        IsCustom = v.IsCustom,
+                        IsVarianter = attr.IsVarianter,
+                        IsSlicer = attr.IsSlicer
+                    }]).ToList()));
+        }
+
+        return combos.Select(attrs => new CreateVariantVm
+        {
+            VariantAttributes = attrs,
+            ListPrice = defaults.ListPrice,
+            SalePrice = defaults.SalePrice,
+            CostPrice = defaults.CostPrice,
+            VatRate = defaults.VatRate,
+            Stock = defaults.Stock
+        }).ToList();
+    }
 }
 
 public class CreateVariantVm
@@ -26,4 +84,59 @@ public class CreateVariantVm
     public decimal VatRate { get; set; } = 20;
     public decimal DimensionalWeight { get; set; }
     public int Stock { get; set; }
+    public List<VariantAttributeValueVm> VariantAttributes { get; set; } = [];
+}
+
+public class VariantAttributeValueVm
+{
+    public int CategoryAttributeId { get; set; }
+    public string AttributeName { get; set; } = "";
+    public int? ValueId { get; set; }
+    public string ValueName { get; set; } = "";
+    public bool IsCustom { get; set; }
+    public bool IsVarianter { get; set; }
+    public bool IsSlicer { get; set; }
+}
+
+public class VariantAttributeSelectionVm
+{
+    public int CategoryAttributeId { get; set; }
+    public string AttributeName { get; set; } = "";
+    public bool IsVarianter { get; set; }
+    public bool IsSlicer { get; set; }
+    public bool AllowCustom { get; set; }
+    public List<SelectedAttributeValueVm> SelectedValues { get; set; } = [];
+}
+
+public class SelectedAttributeValueVm
+{
+    public int? ValueId { get; set; }
+    public string ValueName { get; set; } = "";
+    public bool IsCustom { get; set; }
+}
+
+public class DefaultVariantValuesVm
+{
+    public decimal ListPrice { get; set; }
+    public decimal SalePrice { get; set; }
+    public decimal CostPrice { get; set; }
+    public decimal VatRate { get; set; } = 20;
+    public int Stock { get; set; }
+}
+
+public class AttributeValueVm
+{
+    public int CategoryAttributeId { get; set; }
+    public string AttributeName { get; set; } = "";
+    public int? ValueId { get; set; }
+    public string? CustomValue { get; set; }
+    public bool IsRequired { get; set; }
+    public bool AllowCustom { get; set; }
+}
+
+public class VariantImageAssignmentVm
+{
+    public int VariantIndex { get; set; }
+    public List<string> TempImageKeys { get; set; } = [];
+    public int? MainImageIndex { get; set; }
 }
