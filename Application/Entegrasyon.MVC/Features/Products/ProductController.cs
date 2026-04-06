@@ -11,6 +11,7 @@ using Entegrasyon.Entity.Dtos.Product.Discount;
 using Entegrasyon.Entity.Dtos.BulkOperations;
 using Entegrasyon.Entity.Dtos.Product.Marketplace;
 using Entegrasyon.MVC.Infrastructure.Extensions;
+using Entegrasyon.MVC.Infrastructure.Filters;
 
 namespace Entegrasyon.MVC.Features.Products;
 
@@ -127,6 +128,7 @@ public class ProductController(
         return View(new CreateProductVm());
     }
 
+    [SkipAutoValidation]
     [HttpPost("/products/add/step1")]
     public async Task<IActionResult> CreateStep1(CreateProductVm vm)
     {
@@ -164,6 +166,7 @@ public class ProductController(
         return View(nameof(Create), vm);
     }
 
+    [SkipAutoValidation]
     [HttpPost("/products/add/step2")]
     public async Task<IActionResult> CreateStep2(CreateProductVm vm)
     {
@@ -208,6 +211,7 @@ public class ProductController(
         return PartialView("Partials/_VariantTable", vm);
     }
 
+    [SkipAutoValidation]
     [HttpPost("/products/add/step3")]
     public async Task<IActionResult> CreateStep3(CreateProductVm vm)
     {
@@ -244,6 +248,7 @@ public class ProductController(
         return Json(new { success = true, tempKey, fileName = file.FileName });
     }
 
+    [SkipAutoValidation]
     [HttpPost("/products/add/step4")]
     public IActionResult CreateStep4(CreateProductVm vm)
     {
@@ -257,6 +262,7 @@ public class ProductController(
         return View(nameof(Create), vm);
     }
 
+    [SkipAutoValidation]
     [HttpPost("/products/add/save")]
     public async Task<IActionResult> CreateSave()
     {
