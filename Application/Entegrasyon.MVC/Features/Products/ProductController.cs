@@ -204,6 +204,7 @@ public class ProductController(
         return View(nameof(Create), vm);
     }
 
+    [SkipAutoValidation]
     [HttpPost("/products/add/generate-variants")]
     public IActionResult GenerateVariants([FromForm] CreateProductVm vm)
     {
