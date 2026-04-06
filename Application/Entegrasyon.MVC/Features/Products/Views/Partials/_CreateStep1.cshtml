@@ -1,4 +1,10 @@
 @model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+@using Entegrasyon.Entity.Dtos.Brand
+
+@{
+    var brands = ViewBag.Brands as List<BrandListDetailDto> ?? [];
+    var categories = ViewBag.Categories as List<Entegrasyon.Entity.Categories.Category> ?? [];
+}
 
 <div data-wizard-step="1">
 <form hx-post="/products/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
@@ -16,26 +22,44 @@
                     <input name="StockCode" value="@Model.StockCode" class="form-control" />
                 </div>
 
-                @* ── Brand (searchable + quick-add) ── *@
+                @* -- Brand (searchable select + quick-add) -- *@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Marka</label>
-                    <div class="position-relative">
-                        <input type="text" id="brand-input" class="form-control" autocomplete="off"
-                               placeholder="Marka ara..." value="@Model.BrandName" required />
-                        <input type="hidden" name="BrandId" id="brand-id" value="@Model.BrandId" />
-                        <div id="brand-dropdown" class="dropdown-menu w-100" style="display:none;"></div>
-                    </div>
+                    <input type="text" id="brand-filter" class="form-control mb-1" placeholder="Marka ara..." autocomplete="off" />
+                    <select name="BrandId" id="brand-select" class="form-select" required>
+                        <option value="">Secin...</option>
+                        @foreach (var b in brands)
+                        {
+                            if (Model.BrandId == b.Id)
+                            {
+                                <option value="@b.Id" selected>@b.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@b.Id">@b.Name</option>
+                            }
+                        }
+                    </select>
                 </div>
 
-                @* ── Category (searchable) ── *@
+                @* -- Category (searchable select) -- *@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Kategori</label>
-                    <div class="position-relative">
-                        <input type="text" id="category-input" class="form-control" autocomplete="off"
-                               placeholder="Kategori ara..." value="@Model.CategoryName" required />
-                        <input type="hidden" name="CategoryId" id="category-id" value="@Model.CategoryId" />
-                        <div id="category-dropdown" class="dropdown-menu w-100" style="display:none;"></div>
-                    </div>
+                    <input type="text" id="category-filter" class="form-control mb-1" placeholder="Kategori ara..." autocomplete="off" />
+                    <select name="CategoryId" id="category-select" class="form-select" required>
+                        <option value="">Secin...</option>
+                        @foreach (var c in categories)
+                        {
+                            if (Model.CategoryId == c.Id)
+                            {
+                                <option value="@c.Id" selected>@c.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@c.Id">@c.Name</option>
+                            }
+                        }
+                    </select>
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -59,7 +83,7 @@
     </div>
 </form>
 
-@* ── Brand Add Modal ── *@
+@* -- Brand Add Modal -- *@
 <div class="modal modal-blur fade" id="brand-add-modal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -78,7 +102,7 @@
     </div>
 </div>
 
-@* ── Brand Info Modal ── *@
+@* -- Brand Info Modal -- *@
 <div class="modal modal-blur fade" id="brand-info-modal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -99,80 +123,54 @@
 
 <script>
 (function() {
-    var brandInput = document.getElementById('brand-input');
-    var brandId = document.getElementById('brand-id');
-    var brandDropdown = document.getElementById('brand-dropdown');
-    var catInput = document.getElementById('category-input');
-    var catId = document.getElementById('category-id');
-    var catDropdown = document.getElementById('category-dropdown');
-    var brandSelected = !!brandId.value && brandId.value !== '0';
-    var catSelected = !!catId.value && catId.value !== '0';
-    var brandTimer = null;
-    var catTimer = null;
+    var brandFilter = document.getElementById('brand-filter');
+    var brandSelect = document.getElementById('brand-select');
+    var catFilter = document.getElementById('category-filter');
+    var catSelect = document.getElementById('category-select');
     var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
 
-    function clearChildren(el) {
-        while (el.firstChild) el.removeChild(el.firstChild);
-    }
-
-    function renderDropdown(dropdown, items, onSelect) {
-        clearChildren(dropdown);
-        if (items.length === 0) {
-            dropdown.style.display = 'none';
-            return;
-        }
-        items.forEach(function(it) {
-            var item = document.createElement('a');
-            item.className = 'dropdown-item';
-            item.href = '#';
-            item.setAttribute('data-id', it.id);
-            item.setAttribute('data-name', it.name);
-            item.textContent = it.name;
-            item.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                onSelect(it);
-                dropdown.style.display = 'none';
-            });
-            dropdown.appendChild(item);
+    // -- Filter select options by text input (case-insensitive) --
+    function filterSelect(input, select) {
+        input.addEventListener('input', function() {
+            var q = input.value.toLowerCase();
+            var options = select.options;
+            for (var i = 1; i < options.length; i++) {
+                var text = options[i].textContent.toLowerCase();
+                options[i].hidden = q.length > 0 && text.indexOf(q) === -1;
+            }
         });
-        dropdown.style.display = 'block';
     }
 
-    // Brand search
-    brandInput.addEventListener('input', function() {
-        brandSelected = false;
-        brandId.value = '0';
-        clearTimeout(brandTimer);
-        var q = brandInput.value.trim();
-        if (q.length < 2) { brandDropdown.style.display = 'none'; return; }
-        brandTimer = setTimeout(function() {
-            fetch('/products/add/brand-search?q=' + encodeURIComponent(q))
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    renderDropdown(brandDropdown, data, function(it) {
-                        brandInput.value = it.name;
-                        brandId.value = it.id;
-                        brandSelected = true;
-                    });
-                });
-        }, 300);
-    });
+    filterSelect(brandFilter, brandSelect);
+    filterSelect(catFilter, catSelect);
 
-    brandInput.addEventListener('blur', function() {
+    // -- Brand quick-add: on blur of filter input, check if typed text matches any option --
+    brandFilter.addEventListener('blur', function() {
         setTimeout(function() {
-            brandDropdown.style.display = 'none';
-            if (!brandSelected && brandInput.value.trim().length > 0) {
+            var typed = brandFilter.value.trim();
+            if (typed.length === 0) return;
+            // Check if any option matches the typed text
+            var found = false;
+            var options = brandSelect.options;
+            for (var i = 1; i < options.length; i++) {
+                if (options[i].textContent.toLowerCase() === typed.toLowerCase()) {
+                    found = true;
+                    options[i].selected = true;
+                    break;
+                }
+            }
+            if (!found) {
                 var nameEl = document.getElementById('brand-add-name');
-                nameEl.textContent = brandInput.value.trim();
+                nameEl.textContent = typed;
                 var modal = new bootstrap.Modal(document.getElementById('brand-add-modal'));
                 modal.show();
             }
         }, 200);
     });
 
-    // Brand quick-add
+    // -- Brand quick-add confirm --
     document.getElementById('brand-add-confirm').addEventListener('click', function() {
-        var name = brandInput.value.trim();
+        var name = brandFilter.value.trim();
         var body = new URLSearchParams();
         body.append('brandName', name);
         if (token) body.append('__RequestVerificationToken', token);
@@ -186,39 +184,17 @@
             var addModal = bootstrap.Modal.getInstance(document.getElementById('brand-add-modal'));
             if (addModal) addModal.hide();
             if (data.success) {
-                brandInput.value = data.name;
-                brandId.value = data.id;
-                brandSelected = true;
+                // Add new option to select and select it
+                var opt = document.createElement('option');
+                opt.value = data.id;
+                opt.textContent = data.name;
+                opt.selected = true;
+                brandSelect.appendChild(opt);
+                brandFilter.value = '';
                 var infoModal = new bootstrap.Modal(document.getElementById('brand-info-modal'));
                 infoModal.show();
             }
         });
-    });
-
-    // Category search
-    catInput.addEventListener('input', function() {
-        catSelected = false;
-        catId.value = '0';
-        clearTimeout(catTimer);
-        var q = catInput.value.trim();
-        if (q.length < 2) { catDropdown.style.display = 'none'; return; }
-        catTimer = setTimeout(function() {
-            fetch('/products/add/category-search?q=' + encodeURIComponent(q))
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    renderDropdown(catDropdown, data, function(it) {
-                        catInput.value = it.name;
-                        catId.value = it.id;
-                        catSelected = true;
-                    });
-                });
-        }, 300);
-    });
-
-    catInput.addEventListener('blur', function() {
-        setTimeout(function() {
-            catDropdown.style.display = 'none';
-        }, 200);
     });
 })();
 </script>

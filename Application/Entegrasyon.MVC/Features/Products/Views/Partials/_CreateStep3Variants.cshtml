@@ -78,21 +78,15 @@
                             }
                             else
                             {
-                                <!-- Checkbox list for predefined values -->
-                                <div class="variant-checkbox-list" data-attr-index="@i">
-                                    <div class="d-flex flex-wrap gap-2" id="checkbox-list-@i">
+                                <!-- Multi-select for predefined values -->
+                                <div class="variant-multiselect" data-attr-index="@i">
+                                    <select multiple class="form-select variant-value-select" data-attr-index="@i" size="5">
                                         @foreach (var val in attr.CategoryAttributeValues)
                                         {
-                                            <label class="form-check form-check-inline">
-                                                <input type="checkbox" class="form-check-input variant-value-checkbox"
-                                                       data-attr-index="@i"
-                                                       data-value-id="@val.Id"
-                                                       data-value-name="@val.Name" />
-                                                <span class="form-check-label">@val.Name</span>
-                                            </label>
+                                            <option value="@val.Id" data-name="@val.Name">@val.Name</option>
                                         }
-                                    </div>
-                                    <div class="checkbox-hidden-fields" data-attr-index="@i"></div>
+                                    </select>
+                                    <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
                                 </div>
                             }
                         </div>
@@ -234,37 +228,37 @@
         }
     });
 
-    // --- Checkbox Sync ---
-    document.querySelectorAll('.variant-value-checkbox').forEach(function (cb) {
-        cb.addEventListener('change', function () {
-            var attrIndex = cb.getAttribute('data-attr-index');
-            syncCheckboxHiddenFields(attrIndex);
+    // --- Multi-select Sync ---
+    document.querySelectorAll('.variant-value-select').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+            var attrIndex = sel.getAttribute('data-attr-index');
+            syncMultiselectHiddenFields(attrIndex);
         });
     });
 
-    function syncCheckboxHiddenFields(attrIndex) {
-        var container = document.querySelector('.checkbox-hidden-fields[data-attr-index="' + attrIndex + '"]');
+    function syncMultiselectHiddenFields(attrIndex) {
+        var container = document.querySelector('.multiselect-hidden-fields[data-attr-index="' + attrIndex + '"]');
         while (container.firstChild) {
             container.removeChild(container.firstChild);
         }
 
-        var checkboxes = document.querySelectorAll('.variant-value-checkbox[data-attr-index="' + attrIndex + '"]:checked');
-        var idx = 0;
-        checkboxes.forEach(function (cb) {
+        var sel = document.querySelector('.variant-value-select[data-attr-index="' + attrIndex + '"]');
+        var selected = sel.selectedOptions;
+        for (var idx = 0; idx < selected.length; idx++) {
+            var opt = selected[idx];
+
             var valueIdField = document.createElement('input');
             valueIdField.type = 'hidden';
             valueIdField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueId';
-            valueIdField.value = cb.getAttribute('data-value-id');
+            valueIdField.value = opt.value;
             container.appendChild(valueIdField);
 
             var valueNameField = document.createElement('input');
             valueNameField.type = 'hidden';
             valueNameField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueName';
-            valueNameField.value = cb.getAttribute('data-value-name');
+            valueNameField.value = opt.getAttribute('data-name');
             container.appendChild(valueNameField);
-
-            idx++;
-        });
+        }
     }
 
     // --- Generate Variants ---
