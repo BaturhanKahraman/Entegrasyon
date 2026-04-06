@@ -1,0 +1,73 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
+@if (Model.Variants.Count == 0)
+{
+    <div class="alert alert-warning">Varyant olusturmak icin en az bir ozellik degeri secin.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-vcenter">
+            <thead>
+                <tr>
+                    <th>Ozellikler</th>
+                    <th>Barkod</th>
+                    <th>Liste Fiyat</th>
+                    <th>Satis Fiyat</th>
+                    <th>Maliyet</th>
+                    <th>KDV %</th>
+                    <th>Stok</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Variants.Count; i++)
+                {
+                    var variant = Model.Variants[i];
+                    <tr>
+                        <td>
+                            @for (int j = 0; j < variant.VariantAttributes.Count; j++)
+                            {
+                                var attr = variant.VariantAttributes[j];
+                                <span class="badge bg-azure-lt me-1">@attr.AttributeName: @attr.ValueName</span>
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].CategoryAttributeId" value="@attr.CategoryAttributeId" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].AttributeName" value="@attr.AttributeName" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueId" value="@attr.ValueId" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueName" value="@attr.ValueName" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsCustom" value="@attr.IsCustom" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsVarianter" value="@attr.IsVarianter" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsSlicer" value="@attr.IsSlicer" />
+                            }
+                        </td>
+                        <td>
+                            <input type="text" name="Variants[@i].Barcode" value="@variant.Barcode"
+                                   class="form-control form-control-sm" placeholder="Otomatik" style="width:140px" />
+                        </td>
+                        <td>
+                            <input type="number" name="Variants[@i].ListPrice" value="@variant.ListPrice"
+                                   class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
+                        </td>
+                        <td>
+                            <input type="number" name="Variants[@i].SalePrice" value="@variant.SalePrice"
+                                   class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
+                        </td>
+                        <td>
+                            <input type="number" name="Variants[@i].CostPrice" value="@variant.CostPrice"
+                                   class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
+                        </td>
+                        <td>
+                            <input type="number" name="Variants[@i].VatRate" value="@variant.VatRate"
+                                   class="form-control form-control-sm" step="1" min="0" max="100" style="width:80px" />
+                        </td>
+                        <td>
+                            <input type="number" name="Variants[@i].Stock" value="@variant.Stock"
+                                   class="form-control form-control-sm" step="1" min="0" style="width:80px" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="text-muted small mt-2">
+        @Model.Variants.Count varyant olusturuldu. Barkod bos birakilirsa otomatik olusturulur.
+    </div>
+}

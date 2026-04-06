@@ -201,6 +201,32 @@ public class ProductController(
         return View(nameof(Create), vm);
     }
 
+    [HttpPost("/products/add/generate-variants")]
+    public IActionResult GenerateVariants([FromForm] CreateProductVm vm)
+    {
+        vm.Variants = CreateProductVm.GenerateVariants(vm.VariantAttributeSelections, vm.DefaultValues);
+        return PartialView("Partials/_VariantTable", vm);
+    }
+
+    [HttpPost("/products/add/step3")]
+    public async Task<IActionResult> CreateStep3(CreateProductVm vm)
+    {
+        if (vm.Variants.Count == 0)
+        {
+            TempData.SetError("En az bir varyant olusturulmalidir.");
+            return RedirectToAction(nameof(Create));
+        }
+
+        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep4Images", vm);
+
+        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), vm);
+    }
+
     [HttpPost("/products/add/save")]
     public async Task<IActionResult> CreateSave()
     {

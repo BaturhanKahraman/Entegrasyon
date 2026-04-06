@@ -1,0 +1,301 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+@using Entegrasyon.Entity.Dtos.Category
+
+@{
+    var variantAttrs = ViewBag.VariantAttributes as List<CategoryAttributeDto> ?? [];
+}
+
+<div data-wizard-step="3">
+<form id="step3-form" hx-post="/products/add/step3" hx-target="#wizard-content" hx-swap="innerHTML">
+    @Html.AntiForgeryToken()
+
+    <!-- Step 1 hidden fields -->
+    <input type="hidden" name="Title" value="@Model.Title" />
+    <input type="hidden" name="Description" value="@Model.Description" />
+    <input type="hidden" name="StockCode" value="@Model.StockCode" />
+    <input type="hidden" name="Season" value="@Model.Season" />
+    <input type="hidden" name="Year" value="@Model.Year" />
+    <input type="hidden" name="BrandId" value="@Model.BrandId" />
+    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+    <input type="hidden" name="BrandName" value="@Model.BrandName" />
+    <input type="hidden" name="CategoryName" value="@Model.CategoryName" />
+
+    <!-- Step 2 hidden fields -->
+    @for (int i = 0; i < Model.CategoryAttributes.Count; i++)
+    {
+        <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@Model.CategoryAttributes[i].CategoryAttributeId" />
+        <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@Model.CategoryAttributes[i].AttributeName" />
+        <input type="hidden" name="CategoryAttributes[@i].ValueId" value="@Model.CategoryAttributes[i].ValueId" />
+        <input type="hidden" name="CategoryAttributes[@i].CustomValue" value="@Model.CategoryAttributes[i].CustomValue" />
+        <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired" />
+        <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@Model.CategoryAttributes[i].AllowCustom" />
+    }
+
+    <!-- Variant Attribute Selectors -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Varyant Ozellikleri</h3>
+            <span class="card-subtitle">@Model.CategoryName</span>
+        </div>
+        <div class="card-body">
+            @if (variantAttrs.Count == 0)
+            {
+                <div class="alert alert-info">Bu kategoride varyant ozelligi bulunmamaktadir.</div>
+            }
+            else
+            {
+                <div class="row">
+                    @for (int i = 0; i < variantAttrs.Count; i++)
+                    {
+                        var attr = variantAttrs[i];
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                @attr.CategoriyAttributeHumanized
+                                @if (attr.IsVarianter)
+                                {
+                                    <span class="badge bg-red-lt ms-1">Varyanter</span>
+                                }
+                                @if (attr.IsSlicer)
+                                {
+                                    <span class="badge bg-yellow-lt ms-1">Dilimleyici</span>
+                                }
+                            </label>
+                            <input type="hidden" name="VariantAttributeSelections[@i].CategoryAttributeId" value="@attr.Id" />
+                            <input type="hidden" name="VariantAttributeSelections[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
+                            <input type="hidden" name="VariantAttributeSelections[@i].IsVarianter" value="@attr.IsVarianter" />
+                            <input type="hidden" name="VariantAttributeSelections[@i].IsSlicer" value="@attr.IsSlicer" />
+                            <input type="hidden" name="VariantAttributeSelections[@i].AllowCustom" value="@attr.AllowCustom" />
+
+                            @if (attr.AllowCustom)
+                            {
+                                <!-- Tag input for custom values -->
+                                <div class="variant-tag-input" data-attr-index="@i">
+                                    <div class="d-flex flex-wrap gap-1 p-2 border rounded tags-container" style="min-height:38px; cursor:text;">
+                                    </div>
+                                    <input type="text" class="form-control mt-1 tag-text-input"
+                                           placeholder="Deger yazin, Enter veya virgul ile ekleyin" />
+                                </div>
+                            }
+                            else
+                            {
+                                <!-- Checkbox list for predefined values -->
+                                <div class="variant-checkbox-list" data-attr-index="@i">
+                                    <div class="d-flex flex-wrap gap-2" id="checkbox-list-@i">
+                                        @foreach (var val in attr.CategoryAttributeValues)
+                                        {
+                                            <label class="form-check form-check-inline">
+                                                <input type="checkbox" class="form-check-input variant-value-checkbox"
+                                                       data-attr-index="@i"
+                                                       data-value-id="@val.Id"
+                                                       data-value-name="@val.Name" />
+                                                <span class="form-check-label">@val.Name</span>
+                                            </label>
+                                        }
+                                    </div>
+                                    <div class="checkbox-hidden-fields" data-attr-index="@i"></div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Bulk Defaults -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Varsayilan Degerler</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Liste Fiyat</label>
+                    <input type="number" name="DefaultValues.ListPrice" value="@Model.DefaultValues.ListPrice"
+                           class="form-control" step="0.01" min="0" />
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Satis Fiyat</label>
+                    <input type="number" name="DefaultValues.SalePrice" value="@Model.DefaultValues.SalePrice"
+                           class="form-control" step="0.01" min="0" />
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Maliyet</label>
+                    <input type="number" name="DefaultValues.CostPrice" value="@Model.DefaultValues.CostPrice"
+                           class="form-control" step="0.01" min="0" />
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">KDV %</label>
+                    <input type="number" name="DefaultValues.VatRate" value="@(Model.DefaultValues.VatRate == 0 ? 20 : Model.DefaultValues.VatRate)"
+                           class="form-control" step="1" min="0" max="100" />
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Stok</label>
+                    <input type="number" name="DefaultValues.Stock" value="@Model.DefaultValues.Stock"
+                           class="form-control" step="1" min="0" />
+                </div>
+                <div class="col-md-2 mb-3 d-flex align-items-end">
+                    <button type="button" id="btn-generate-variants" class="btn btn-primary w-100">
+                        Varyantlari Olustur
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generated Variant Table -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Olusturulan Varyantlar</h3>
+        </div>
+        <div class="card-body">
+            <div id="variant-table-container">
+                <div class="text-muted">Varyant olusturmak icin yukaridaki ozellik degerlerini secin ve "Varyantlari Olustur" butonuna tiklayin.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="d-flex justify-content-between">
+        <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+        <button type="submit" id="btn-step3-next" class="btn btn-primary" disabled>
+            Devam: Gorseller &rarr;
+        </button>
+    </div>
+</form>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    // --- Tag Input ---
+    document.querySelectorAll('.variant-tag-input').forEach(function (container) {
+        var attrIndex = container.getAttribute('data-attr-index');
+        var input = container.querySelector('.tag-text-input');
+        var tagsContainer = container.querySelector('.tags-container');
+        var tagCount = 0;
+
+        tagsContainer.addEventListener('click', function () { input.focus(); });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                var val = input.value.replace(/,/g, '').trim();
+                if (!val) return;
+                addTag(val);
+                input.value = '';
+            }
+        });
+
+        function addTag(value) {
+            tagCount++;
+
+            var badge = document.createElement('span');
+            badge.className = 'badge bg-blue-lt me-1 mb-1 d-inline-flex align-items-center';
+            badge.textContent = value;
+
+            var closeBtn = document.createElement('a');
+            closeBtn.href = '#';
+            closeBtn.className = 'btn-close btn-close-sm ms-1';
+            closeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                badge.remove();
+                rebuildHiddenFields();
+            });
+            badge.appendChild(closeBtn);
+
+            tagsContainer.appendChild(badge);
+
+            rebuildHiddenFields();
+        }
+
+        function rebuildHiddenFields() {
+            // Remove existing hidden fields for this tag input
+            container.querySelectorAll('input[type="hidden"]').forEach(function (h) { h.remove(); });
+
+            var badges = tagsContainer.querySelectorAll('.badge');
+            badges.forEach(function (b, idx) {
+                // Get text content excluding the close button text
+                var text = b.childNodes[0].textContent.trim();
+
+                var nameField = document.createElement('input');
+                nameField.type = 'hidden';
+                nameField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueName';
+                nameField.value = text;
+                container.appendChild(nameField);
+
+                var customField = document.createElement('input');
+                customField.type = 'hidden';
+                customField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].IsCustom';
+                customField.value = 'true';
+                container.appendChild(customField);
+            });
+        }
+    });
+
+    // --- Checkbox Sync ---
+    document.querySelectorAll('.variant-value-checkbox').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            var attrIndex = cb.getAttribute('data-attr-index');
+            syncCheckboxHiddenFields(attrIndex);
+        });
+    });
+
+    function syncCheckboxHiddenFields(attrIndex) {
+        var container = document.querySelector('.checkbox-hidden-fields[data-attr-index="' + attrIndex + '"]');
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+
+        var checkboxes = document.querySelectorAll('.variant-value-checkbox[data-attr-index="' + attrIndex + '"]:checked');
+        var idx = 0;
+        checkboxes.forEach(function (cb) {
+            var valueIdField = document.createElement('input');
+            valueIdField.type = 'hidden';
+            valueIdField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueId';
+            valueIdField.value = cb.getAttribute('data-value-id');
+            container.appendChild(valueIdField);
+
+            var valueNameField = document.createElement('input');
+            valueNameField.type = 'hidden';
+            valueNameField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueName';
+            valueNameField.value = cb.getAttribute('data-value-name');
+            container.appendChild(valueNameField);
+
+            idx++;
+        });
+    }
+
+    // --- Generate Variants ---
+    var generateBtn = document.getElementById('btn-generate-variants');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', function () {
+            var form = document.getElementById('step3-form');
+            var formData = new FormData(form);
+
+            fetch('/products/add/generate-variants', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function (res) { return res.text(); })
+            .then(function (html) {
+                var container = document.getElementById('variant-table-container');
+                // Clear existing content safely
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild);
+                }
+                // Insert trusted server-rendered partial view HTML
+                var range = document.createRange();
+                range.selectNode(container);
+                var fragment = range.createContextualFragment(html);
+                container.appendChild(fragment);
+
+                var nextBtn = document.getElementById('btn-step3-next');
+                var hasVariants = container.querySelector('table') !== null;
+                nextBtn.disabled = !hasVariants;
+            });
+        });
+    }
+})();
+</script>
