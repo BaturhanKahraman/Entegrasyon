@@ -15,7 +15,7 @@ public class AttributeSyncController(
     private const string ViewBase = "~/Features/MarketplaceSync/Views/AttributeSync";
 
     [HttpGet("/marketplace/sync/attributes")]
-    public async Task<IActionResult> Index(int mp = 1)
+    public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null)
     {
         ViewData.SetPageTitle("Ozellik Eslemesi");
         ViewData.SetActiveNav("marketplace-sync");
@@ -32,6 +32,8 @@ public class AttributeSyncController(
         {
             SelectedMarketPlaceId = mp,
             MarketPlaces = marketPlaces.Data ?? [],
+            SearchTerm = search,
+            ReturnUrl = returnUrl,
             Attributes = attributes.Select(a => new AttributeListItemVm
             {
                 Id = a.Id,
@@ -49,7 +51,7 @@ public class AttributeSyncController(
     }
 
     [HttpGet("/marketplace/sync/attributes/{attributeId:int}/detail")]
-    public async Task<IActionResult> Detail(int attributeId, int mp = 1)
+    public async Task<IActionResult> Detail(int attributeId, int mp = 1, string? returnUrl = null)
     {
         var attrResult = await categoryAttributeManager.GetCategoryAttributeById(attributeId);
         if (!attrResult.Success || attrResult.Data is null)
@@ -72,6 +74,7 @@ public class AttributeSyncController(
             AttributeHumanized = attr.CategoryAttributeHumanized,
             MarketPlaceId = mp,
             AttributeMatch = attrMatch,
+            ReturnUrl = returnUrl,
             ValueMatches = attr.CategoryAttributeValues.Select(v => new AttributeValueMatchItemVm
             {
                 ValueId = v.Id,
@@ -86,7 +89,7 @@ public class AttributeSyncController(
     }
 
     [HttpPost("/marketplace/sync/attributes/{attributeId:int}/map")]
-    public async Task<IActionResult> SaveAttributeMatch(int attributeId, int mp, int mpAttributeId, string? externalId)
+    public async Task<IActionResult> SaveAttributeMatch(int attributeId, int mp, int mpAttributeId, string? externalId, string? returnUrl)
     {
         var result = await attributeMatchManager.SaveAttributeMatchAsync(attributeId, mp, mpAttributeId, externalId);
 
@@ -94,6 +97,14 @@ public class AttributeSyncController(
         {
             if (result.Success)
             {
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    Response.HtmxTriggerWithData("showToast",
+                        new { message = "Ozellik eslesmesi kaydedildi. Yonlendiriliyorsunuz...", type = "success" });
+                    Response.Headers["HX-Redirect"] = returnUrl;
+                    return Content("");
+                }
+
                 Response.HtmxTriggerWithData("showToast",
                     new { message = "Ozellik eslesmesi kaydedildi.", type = "success" });
                 Response.HtmxTrigger("refreshList");
@@ -104,6 +115,9 @@ public class AttributeSyncController(
                 new { message = result.Message ?? "Eslestirme kaydedilemedi.", type = "danger" });
             return StatusCode(422);
         }
+
+        if (result.Success && !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
 
         return RedirectToAction(nameof(Index), new { mp });
     }

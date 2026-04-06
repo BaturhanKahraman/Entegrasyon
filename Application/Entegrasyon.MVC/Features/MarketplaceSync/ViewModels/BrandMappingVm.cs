@@ -10,6 +10,8 @@ public class BrandMappingVm
     public BrandMappingSummaryDto Summary { get; set; } = new();
     public List<BrandMarketPlaceMatchDto> Mappings { get; set; } = [];
     public List<BrandDto> UnmappedBrands { get; set; } = [];
+    public string? SearchTerm { get; set; }
+    public string? ReturnUrl { get; set; }
 }
 
 public class BrandDetailVm
@@ -19,4 +21,5 @@ public class BrandDetailVm
     public int MarketPlaceId { get; set; }
     public bool IsMapped { get; set; }
     public BrandMarketPlaceMatchDto? Mapping { get; set; }
+    public string? ReturnUrl { get; set; }
 }

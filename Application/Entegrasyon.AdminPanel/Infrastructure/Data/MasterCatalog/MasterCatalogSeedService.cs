@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog;
 
@@ -34,6 +35,611 @@ public class MasterCatalogSeedService(
             await dbContext.MasterCategories.CountAsync(),
             await dbContext.MasterAttributes.CountAsync(),
             await dbContext.MasterAttributeValues.CountAsync());
+    }
+
+    /// <summary>
+    /// Mevcut master catalog verilerini temizler ve snapshot'tan yeniden yükler.
+    /// </summary>
+    public async Task ReseedFromSnapshotAsync(string snapshotFilePath)
+    {
+        logger.LogInformation("Master catalog verileri temizleniyor...");
+        await ClearMasterCatalogAsync();
+
+        var snapshot = LoadSnapshot(snapshotFilePath);
+        await SeedFromSnapshotAsync(snapshot);
+
+        logger.LogInformation(
+            "Master catalog reseed tamamlandı: {Categories} kategori.",
+            await dbContext.MasterCategories.CountAsync());
+    }
+
+    /// <summary>
+    /// attributes-snapshot.json dosyasından attribute + value verilerini yükler.
+    /// Kategori ↔ attribute bağlantılarını kurar.
+    /// </summary>
+    public async Task SeedAttributesFromSnapshotAsync(string snapshotFilePath)
+    {
+        logger.LogInformation("Attribute snapshot'tan yükleniyor: {Path}", snapshotFilePath);
+
+        var json = await File.ReadAllTextAsync(snapshotFilePath);
+        var snapshot = JsonSerializer.Deserialize<Dictionary<string, List<SnapshotAttribute>>>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (snapshot is null || snapshot.Count == 0)
+        {
+            logger.LogWarning("Attribute snapshot boş.");
+            return;
+        }
+
+        // MasterCategory ExternalId → Id map
+        var categoryMap = await dbContext.MasterCategories
+            .Where(c => c.OriginalExternalId != null)
+            .ToDictionaryAsync(c => c.OriginalExternalId!, c => c.Id);
+
+        var attributeCache = new Dictionary<int, MasterAttribute>(); // Trendyol attributeId → MasterAttribute
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            foreach (var (categoryExternalId, attributes) in snapshot)
+            {
+                if (!categoryMap.TryGetValue(categoryExternalId, out var masterCategoryId))
+                    continue;
+
+                foreach (var attr in attributes)
+                {
+                    if (attr.AttributeId == 0) continue;
+
+                    // Attribute oluştur veya cache'ten al
+                    if (!attributeCache.TryGetValue(attr.AttributeId, out var masterAttr))
+                    {
+                        masterAttr = new MasterAttribute
+                        {
+                            Key = attr.AttributeName,
+                            HumanizedName = attr.AttributeName,
+                            AllowCustom = attr.AllowCustom,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        await dbContext.MasterAttributes.AddAsync(masterAttr);
+                        await dbContext.SaveChangesAsync();
+
+                        // Trendyol marketplace mapping
+                        await dbContext.MasterAttributeMarketplaceMappings.AddAsync(new MasterAttributeMarketplaceMapping
+                        {
+                            MasterAttributeId = masterAttr.Id,
+                            MarketplaceId = TrendyolMarketplaceId,
+                            ExternalAttributeId = attr.AttributeId.ToString(),
+                            ExternalAttributeName = attr.AttributeName
+                        });
+
+                        // Değerler
+                        if (attr.Values is { Count: > 0 })
+                        {
+                            foreach (var val in attr.Values)
+                            {
+                                if (string.IsNullOrEmpty(val.Name)) continue;
+
+                                var masterVal = new MasterAttributeValue
+                                {
+                                    MasterAttributeId = masterAttr.Id,
+                                    Name = val.Name,
+                                    IsActive = true,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
+                                await dbContext.MasterAttributeValues.AddAsync(masterVal);
+
+                                await dbContext.MasterValueMarketplaceMappings.AddAsync(new MasterValueMarketplaceMapping
+                                {
+                                    MasterAttributeValue = masterVal,
+                                    MarketplaceId = TrendyolMarketplaceId,
+                                    ExternalValueId = val.Id.ToString(),
+                                    ExternalValueName = val.Name
+                                });
+                            }
+                        }
+
+                        await dbContext.SaveChangesAsync();
+                        attributeCache[attr.AttributeId] = masterAttr;
+                    }
+
+                    // Kategori ↔ Attribute junction
+                    await dbContext.MasterCategoryAttributes.AddAsync(new MasterCategoryAttribute
+                    {
+                        MasterCategoryId = masterCategoryId,
+                        MasterAttributeId = masterAttr.Id,
+                        IsRequired = attr.Required,
+                        IsVarianter = attr.Varianter,
+                        IsSlicer = attr.Slicer
+                    });
+                }
+            }
+
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            logger.LogInformation(
+                "Attribute snapshot yüklendi: {Attrs} attribute, {Vals} değer.",
+                await dbContext.MasterAttributes.CountAsync(),
+                await dbContext.MasterAttributeValues.CountAsync());
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// brands-snapshot.json dosyasından marka verilerini yükler.
+    /// </summary>
+    public async Task SeedBrandsFromSnapshotAsync(string snapshotFilePath)
+    {
+        logger.LogInformation("Marka snapshot'tan yükleniyor: {Path}", snapshotFilePath);
+
+        var json = await File.ReadAllTextAsync(snapshotFilePath);
+        var data = JsonSerializer.Deserialize<TrendyolBrandPageResponse>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (data?.Brands is not { Count: > 0 })
+        {
+            logger.LogWarning("Marka snapshot boş.");
+            return;
+        }
+
+        logger.LogInformation("{Count} marka yüklenecek.", data.Brands.Count);
+
+        var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            var batch = new List<(MasterBrand Brand, int ExtId)>();
+
+            foreach (var brandDto in data.Brands)
+            {
+                if (string.IsNullOrWhiteSpace(brandDto.Name)) continue;
+                var name = brandDto.Name.Trim();
+                if (!seenNames.Add(name)) continue;
+
+                var masterBrand = new MasterBrand
+                {
+                    Name = name,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                batch.Add((masterBrand, brandDto.Id));
+            }
+
+            // Batch insert
+            await dbContext.MasterBrands.AddRangeAsync(batch.Select(b => b.Brand));
+
+            var mappings = batch.Select(b => new MasterBrandMarketplaceMapping
+            {
+                MasterBrand = b.Brand,
+                MarketplaceId = TrendyolMarketplaceId,
+                ExternalBrandId = b.ExtId,
+                ExternalBrandName = b.Brand.Name
+            }).ToList();
+
+            await dbContext.MasterBrandMarketplaceMappings.AddRangeAsync(mappings);
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            logger.LogInformation("Marka snapshot yüklendi: {Count} marka.", batch.Count);
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// IntegrationDb'den Trendyol ile eşleştirilmiş attribute'ları okur ve master catalog'a yazar.
+    /// Snapshot'taki kategoriler ile IntegrationDb'deki kategorileri ExternalCategoryId üzerinden eşleştirir.
+    /// </summary>
+    public async Task ImportAttributesFromMainDbAsync(string mainDbConnectionString)
+    {
+        logger.LogInformation("IntegrationDb'den attribute verileri import ediliyor...");
+
+        await using var conn = new NpgsqlConnection(mainDbConnectionString);
+        await conn.OpenAsync();
+
+        // 1. IntegrationDb'deki Trendyol eşleşmeli kategorileri oku
+        var integrationCategories = new Dictionary<string, int>(); // ExternalCategoryId → IntegrationDb CategoryId
+        await using (var cmd = new NpgsqlCommand("""
+            SELECT "Id", "ExternalCategoryId"
+            FROM "Categories"
+            WHERE "ExternalCategoryId" IS NOT NULL
+              AND "IsDeleted" = false
+              AND "ImportSource" = 100
+        """, conn))
+        {
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var id = reader.GetInt32(0);
+                var extId = reader.GetString(1);
+                integrationCategories[extId] = id;
+            }
+        }
+
+        logger.LogInformation("IntegrationDb'de {Count} Trendyol eşleşmeli kategori bulundu.", integrationCategories.Count);
+
+        if (integrationCategories.Count == 0)
+        {
+            logger.LogWarning("IntegrationDb'de Trendyol eşleşmeli kategori bulunamadı, attribute import atlanıyor.");
+            return;
+        }
+
+        // 2. MasterCategory'leri ExternalCategoryId ile eşleştir
+        var masterCategories = await dbContext.MasterCategories
+            .Where(c => c.OriginalExternalId != null && c.OriginalMarketplaceId == TrendyolMarketplaceId)
+            .ToDictionaryAsync(c => c.OriginalExternalId!, c => c.Id);
+
+        // 3. IntegrationDb'deki attribute'ları oku (CategoryAttributeCategory junction üzerinden)
+        var attributeCache = new Dictionary<int, MasterAttribute>(); // IntegrationDb AttributeId → MasterAttribute
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            foreach (var (externalCatId, integrationCatId) in integrationCategories)
+            {
+                if (!masterCategories.TryGetValue(externalCatId, out var masterCatId))
+                    continue;
+
+                // Kategorinin attribute'larını oku
+                await using var attrCmd = new NpgsqlCommand("""
+                    SELECT ca."Id", ca."CategoryAttributeKey", ca."CategoryAttributeHumanized",
+                           ca."AllowCustom", ca."ImportId",
+                           cac."IsRequired", cac."IsVarianter", cac."IsSlicer"
+                    FROM "CategoryAttributeCategories" cac
+                    JOIN "CategoryAttributes" ca ON ca."Id" = cac."CategoryAttributeId"
+                    WHERE cac."CategoryId" = @catId
+                """, conn);
+                attrCmd.Parameters.AddWithValue("catId", integrationCatId);
+
+                var categoryAttrs = new List<(int AttrId, string Key, string Humanized, bool AllowCustom, int ImportId, bool Required, bool Varianter, bool Slicer)>();
+
+                await using (var reader = await attrCmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        categoryAttrs.Add((
+                            reader.GetInt32(0),
+                            reader.IsDBNull(1) ? "" : reader.GetString(1),
+                            reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            reader.GetBoolean(3),
+                            reader.GetInt32(4),
+                            reader.GetBoolean(5),
+                            reader.GetBoolean(6),
+                            reader.GetBoolean(7)
+                        ));
+                    }
+                }
+
+                foreach (var attr in categoryAttrs)
+                {
+                    var masterAttr = await GetOrCreateAttributeFromIntegrationAsync(
+                        attr.AttrId, attr.Key, attr.Humanized, attr.AllowCustom, attr.ImportId,
+                        conn, attributeCache);
+
+                    // Junction kaydı oluştur
+                    var existingJunction = await dbContext.MasterCategoryAttributes
+                        .AnyAsync(ca => ca.MasterCategoryId == masterCatId && ca.MasterAttributeId == masterAttr.Id);
+
+                    if (!existingJunction)
+                    {
+                        await dbContext.MasterCategoryAttributes.AddAsync(new MasterCategoryAttribute
+                        {
+                            MasterCategoryId = masterCatId,
+                            MasterAttributeId = masterAttr.Id,
+                            IsRequired = attr.Required,
+                            IsVarianter = attr.Varianter,
+                            IsSlicer = attr.Slicer
+                        });
+                    }
+                }
+            }
+
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            logger.LogInformation(
+                "Attribute import tamamlandı: {Attributes} özellik, {Values} değer.",
+                await dbContext.MasterAttributes.CountAsync(),
+                await dbContext.MasterAttributeValues.CountAsync());
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    private async Task<MasterAttribute> GetOrCreateAttributeFromIntegrationAsync(
+        int integrationAttrId, string key, string humanized, bool allowCustom, int importId,
+        NpgsqlConnection conn, Dictionary<int, MasterAttribute> cache)
+    {
+        if (cache.TryGetValue(integrationAttrId, out var existing))
+            return existing;
+
+        var masterAttr = new MasterAttribute
+        {
+            Key = key,
+            HumanizedName = string.IsNullOrEmpty(humanized) ? key : humanized,
+            AllowCustom = allowCustom,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await dbContext.MasterAttributes.AddAsync(masterAttr);
+        await dbContext.SaveChangesAsync(); // ID almak için
+
+        // Trendyol marketplace mapping
+        await dbContext.MasterAttributeMarketplaceMappings.AddAsync(new MasterAttributeMarketplaceMapping
+        {
+            MasterAttributeId = masterAttr.Id,
+            MarketplaceId = TrendyolMarketplaceId,
+            ExternalAttributeId = importId.ToString(),
+            ExternalAttributeName = string.IsNullOrEmpty(humanized) ? key : humanized
+        });
+
+        // IntegrationDb'deki marketplace match'i de oku
+        await using var matchCmd = new NpgsqlCommand("""
+            SELECT "MarketPlaceCategoryAttributeId", "MarketPlaceCategoryAttributeExternalId"
+            FROM "CategoryAttributeMarketPlaceMatches"
+            WHERE "ApplicationCategoryAttributeId" = @attrId AND "MarketPlaceId" = 1
+        """, conn);
+        matchCmd.Parameters.AddWithValue("attrId", integrationAttrId);
+
+        await using (var matchReader = await matchCmd.ExecuteReaderAsync())
+        {
+            // Match verisini zaten Trendyol mapping olarak eklediğimiz için burada sadece doğrulama
+            // ImportId zaten Trendyol'un attribute ID'si
+        }
+
+        // Attribute değerlerini oku
+        await using var valCmd = new NpgsqlCommand("""
+            SELECT cav."Id", cav."Name"
+            FROM "CategoryAttributeValues" cav
+            WHERE cav."CategoryAttributeId" = @attrId
+        """, conn);
+        valCmd.Parameters.AddWithValue("attrId", integrationAttrId);
+
+        var values = new List<(int Id, string Name)>();
+        await using (var valReader = await valCmd.ExecuteReaderAsync())
+        {
+            while (await valReader.ReadAsync())
+            {
+                values.Add((valReader.GetInt32(0), valReader.IsDBNull(1) ? "" : valReader.GetString(1)));
+            }
+        }
+
+        foreach (var (valId, valName) in values)
+        {
+            if (string.IsNullOrEmpty(valName)) continue;
+
+            var masterVal = new MasterAttributeValue
+            {
+                MasterAttributeId = masterAttr.Id,
+                Name = valName,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await dbContext.MasterAttributeValues.AddAsync(masterVal);
+            await dbContext.SaveChangesAsync();
+
+            // Değerin Trendyol marketplace match'ini oku
+            await using var valMatchCmd = new NpgsqlCommand("""
+                SELECT "MarketPlaceCategoryAttributeValueId", "MarketPlaceCategoryAttributeValueExternalId"
+                FROM "CategoryAttributeValueMarketPlaceMatches"
+                WHERE "ApplicationCategoryAttributeValueId" = @valId AND "MarketPlaceId" = 1
+            """, conn);
+            valMatchCmd.Parameters.AddWithValue("valId", valId);
+
+            await using var valMatchReader = await valMatchCmd.ExecuteReaderAsync();
+            if (await valMatchReader.ReadAsync())
+            {
+                var extValId = valMatchReader.GetInt32(0);
+                var extValExtId = valMatchReader.IsDBNull(1) ? null : valMatchReader.GetString(1);
+
+                await dbContext.MasterValueMarketplaceMappings.AddAsync(new MasterValueMarketplaceMapping
+                {
+                    MasterAttributeValueId = masterVal.Id,
+                    MarketplaceId = TrendyolMarketplaceId,
+                    ExternalValueId = extValExtId ?? extValId.ToString(),
+                    ExternalValueName = valName
+                });
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+        cache[integrationAttrId] = masterAttr;
+        return masterAttr;
+    }
+
+    /// <summary>
+    /// Trendyol API'den tüm yaprak kategorilerin attribute ve değerlerini çeker, master DB'ye yazar.
+    /// </summary>
+    public async Task ImportAttributesFromTrendyolApiAsync()
+    {
+        var leafCategories = await dbContext.MasterCategories
+            .Where(c => c.IsLeaf && c.OriginalMarketplaceId == TrendyolMarketplaceId && c.OriginalExternalId != null)
+            .Select(c => new { c.Id, c.OriginalExternalId, c.Name })
+            .ToListAsync();
+
+        logger.LogInformation("Trendyol API'den {Count} yaprak kategori için attribute çekilecek.", leafCategories.Count);
+
+        using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "Entegrasyon/1.0");
+
+        var attributeCache = new Dictionary<int, MasterAttribute>(); // Trendyol attributeId → MasterAttribute
+        int processed = 0;
+        int failed = 0;
+
+        foreach (var cat in leafCategories)
+        {
+            try
+            {
+                var url = $"https://apigw.trendyol.com/integration/product/categories/{cat.OriginalExternalId}/attributes";
+                var response = await httpClient.GetFromJsonAsync<TrendyolCategoryAttributeResponse>(url,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (response?.CategoryAttributes is { Count: > 0 })
+                {
+                    foreach (var catAttr in response.CategoryAttributes)
+                    {
+                        if (catAttr.Attribute is null) continue;
+
+                        var masterAttr = await GetOrCreateTrendyolAttributeAsync(
+                            catAttr.Attribute.Id, catAttr.Attribute.Name, catAttr.AllowCustom,
+                            cat.OriginalExternalId!, catAttr.Attribute.Id,
+                            httpClient, attributeCache);
+
+                        // Junction kaydı
+                        var exists = await dbContext.MasterCategoryAttributes
+                            .AnyAsync(ca => ca.MasterCategoryId == cat.Id && ca.MasterAttributeId == masterAttr.Id);
+
+                        if (!exists)
+                        {
+                            await dbContext.MasterCategoryAttributes.AddAsync(new MasterCategoryAttribute
+                            {
+                                MasterCategoryId = cat.Id,
+                                MasterAttributeId = masterAttr.Id,
+                                IsRequired = catAttr.Required,
+                                IsVarianter = catAttr.Varianter,
+                                IsSlicer = catAttr.Slicer
+                            });
+                        }
+                    }
+
+                    await dbContext.SaveChangesAsync();
+                }
+
+                processed++;
+                if (processed % 100 == 0)
+                {
+                    logger.LogInformation("Trendyol attribute import: {Processed}/{Total} kategori işlendi.",
+                        processed, leafCategories.Count);
+                }
+
+                // Rate limiting — Trendyol API'yi yormamak için
+                await Task.Delay(50);
+            }
+            catch (Exception ex)
+            {
+                failed++;
+                logger.LogWarning(ex, "Kategori {CatId} ({CatName}) için attribute çekilemedi.", cat.OriginalExternalId, cat.Name);
+            }
+        }
+
+        logger.LogInformation(
+            "Trendyol attribute import tamamlandı: {Processed} başarılı, {Failed} başarısız, {Attributes} özellik, {Values} değer.",
+            processed, failed,
+            await dbContext.MasterAttributes.CountAsync(),
+            await dbContext.MasterAttributeValues.CountAsync());
+    }
+
+    private async Task<MasterAttribute> GetOrCreateTrendyolAttributeAsync(
+        int trendyolAttrId, string name, bool allowCustom,
+        string categoryExternalId, int attributeId,
+        HttpClient httpClient, Dictionary<int, MasterAttribute> cache)
+    {
+        if (cache.TryGetValue(trendyolAttrId, out var existing))
+            return existing;
+
+        var masterAttr = new MasterAttribute
+        {
+            Key = name,
+            HumanizedName = name,
+            AllowCustom = allowCustom,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await dbContext.MasterAttributes.AddAsync(masterAttr);
+        await dbContext.SaveChangesAsync();
+
+        // Trendyol marketplace mapping
+        await dbContext.MasterAttributeMarketplaceMappings.AddAsync(new MasterAttributeMarketplaceMapping
+        {
+            MasterAttributeId = masterAttr.Id,
+            MarketplaceId = TrendyolMarketplaceId,
+            ExternalAttributeId = trendyolAttrId.ToString(),
+            ExternalAttributeName = name
+        });
+
+        // Değerleri API'den çek
+        try
+        {
+            var valUrl = $"https://apigw.trendyol.com/integration/product/categories/{categoryExternalId}/attributes/{attributeId}/values?size=1000";
+            var valResponse = await httpClient.GetFromJsonAsync<TrendyolAttributeValueResponse>(valUrl,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (valResponse?.Content is { Count: > 0 })
+            {
+                foreach (var val in valResponse.Content)
+                {
+                    if (string.IsNullOrEmpty(val.AttributeValue)) continue;
+
+                    var masterVal = new MasterAttributeValue
+                    {
+                        MasterAttributeId = masterAttr.Id,
+                        Name = val.AttributeValue,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    await dbContext.MasterAttributeValues.AddAsync(masterVal);
+                    await dbContext.SaveChangesAsync();
+
+                    await dbContext.MasterValueMarketplaceMappings.AddAsync(new MasterValueMarketplaceMapping
+                    {
+                        MasterAttributeValueId = masterVal.Id,
+                        MarketplaceId = TrendyolMarketplaceId,
+                        ExternalValueId = val.AttributeValueId.ToString(),
+                        ExternalValueName = val.AttributeValue
+                    });
+                }
+
+                await dbContext.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Attribute {AttrId} ({Name}) değerleri çekilemedi.", trendyolAttrId, name);
+        }
+
+        cache[trendyolAttrId] = masterAttr;
+        return masterAttr;
+    }
+
+    private async Task ClearMasterCatalogAsync()
+    {
+        // Sıralama önemli — FK constraint'leri yüzünden child'lardan başla
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterValueMarketplaceMappings" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterAttributeMarketplaceMappings" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterCategoryMarketplaceMappings" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterBrandMarketplaceMappings" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterCategoryAttributes" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "SectorPackageCategories" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterAttributeValues" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterAttributes" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MarketplaceReferences" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "SectorPackages" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterBrands" CASCADE""");
+        await dbContext.Database.ExecuteSqlRawAsync("""TRUNCATE TABLE "MasterCategories" CASCADE""");
+        logger.LogInformation("Master catalog tabloları temizlendi.");
     }
 
     private CatalogSnapshot LoadSnapshot(string? filePath)
@@ -228,7 +834,7 @@ public class MasterCatalogSeedService(
 
         logger.LogInformation("Trendyol marka verisi çekiliyor...");
 
-        using var httpClient = new HttpClient();
+        using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         httpClient.DefaultRequestHeaders.Add("User-Agent", "Entegrasyon/1.0");
 
         var allBrands = new List<TrendyolBrandDto>();
@@ -730,4 +1336,42 @@ public class TrendyolBrandDto
 
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
+}
+
+// ── Trendyol Category Attribute API DTO'ları ──────────────────────────────
+
+public class TrendyolCategoryAttributeResponse
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public List<TrendyolCategoryAttribute> CategoryAttributes { get; set; } = [];
+}
+
+public class TrendyolCategoryAttribute
+{
+    public bool AllowCustom { get; set; }
+    public TrendyolAttributeRef? Attribute { get; set; }
+    public int CategoryId { get; set; }
+    public bool Required { get; set; }
+    public bool Varianter { get; set; }
+    public bool Slicer { get; set; }
+}
+
+public class TrendyolAttributeRef
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
+
+public class TrendyolAttributeValueResponse
+{
+    public List<TrendyolAttributeValueDto> Content { get; set; } = [];
+    public int TotalElements { get; set; }
+    public int TotalPages { get; set; }
+}
+
+public class TrendyolAttributeValueDto
+{
+    public int AttributeValueId { get; set; }
+    public string AttributeValue { get; set; } = string.Empty;
 }

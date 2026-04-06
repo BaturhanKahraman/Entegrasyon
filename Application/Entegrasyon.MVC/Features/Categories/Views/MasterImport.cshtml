@@ -1,0 +1,221 @@
+@model Entegrasyon.MVC.Features.Categories.ViewModels.MasterImportVm
+@{
+    ViewData["Title"] = "Master Katalog Import";
+}
+
+<div class="container-xl">
+    <div class="page-header mb-3">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <h2 class="page-title">Master Katalogdan Kategori Aktarma</h2>
+                <div class="text-secondary mt-1">
+                    @Model.TotalCategoryCount kategori, @Model.LeafCategoryCount yaprak kategori
+                </div>
+            </div>
+            <div class="col-auto ms-auto">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="ti ti-arrow-left"></i> Kategorilere Don
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.SectorPackages.Count > 0)
+    {
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-package me-1"></i> Sektor Paketleri</h3>
+                <div class="card-actions">
+                    <span class="text-secondary small">Hazir kategori gruplari — tiklayin, otomatik secilsin</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    @foreach (var pkg in Model.SectorPackages)
+                    {
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary sector-package-btn"
+                                    data-package-ids="@string.Join(",", pkg.MasterCategoryIds)"
+                                    onclick="toggleSectorPackage(this)">
+                                <i class="ti ti-box me-1"></i>
+                                @pkg.Name
+                                <span class="badge bg-primary-lt ms-1">@pkg.CategoryCount</span>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <form id="masterImportForm" method="post" asp-action="MasterImportExecute"
+          hx-post="/categories/master-import"
+          hx-target="#import-result-area"
+          hx-swap="innerHTML"
+          hx-indicator="#import-spinner">
+
+        @Html.AntiForgeryToken()
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="row align-items-center w-100">
+                    <div class="col">
+                        <h3 class="card-title"><i class="ti ti-category me-1"></i> Kategoriler</h3>
+                    </div>
+                    <div class="col-auto">
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="text" id="categorySearch" class="form-control form-control-sm"
+                                   placeholder="Kategori ara..." style="width: 250px;"
+                                   oninput="filterMasterCategories(this.value)" />
+                            <label class="form-check mb-0">
+                                <input type="checkbox" class="form-check-input" id="selectAllLeafs"
+                                       onchange="toggleAllLeafs(this.checked)" />
+                                <span class="form-check-label">Tumu</span>
+                            </label>
+                            <span class="badge bg-primary" id="selectionCount">0 secili</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                <div class="list-group list-group-flush" id="masterCategoryTree">
+                    @foreach (var cat in Model.Categories)
+                    {
+                        @await Html.PartialAsync("Partials/_MasterCategoryNode", cat, new ViewDataDictionary(ViewData) { ["Depth"] = 0 })
+                    }
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary" id="selectionSummary">Henuz kategori secilmedi</span>
+                    <button type="submit" class="btn btn-primary" id="importBtn" disabled>
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="import-spinner"></span>
+                        <i class="ti ti-download me-1"></i>
+                        Iceri Aktar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div id="import-result-area"></div>
+</div>
+
+@section Scripts {
+<script>
+    // Secim sayacini guncelle
+    function updateSelectionCount() {
+        var checked = document.querySelectorAll('.master-cat-check:checked');
+        var count = checked.length;
+        document.getElementById('selectionCount').textContent = count + ' secili';
+        document.getElementById('importBtn').disabled = count === 0;
+        document.getElementById('selectionSummary').textContent =
+            count === 0 ? 'Henuz kategori secilmedi' : count + ' yaprak kategori secildi';
+    }
+
+    // Collapse/Expand toggle
+    function toggleMasterNode(el) {
+        var targetSelector = el.getAttribute('data-target');
+        var target = document.querySelector(targetSelector);
+        if (!target) return;
+        var isHidden = target.style.display === 'none';
+        target.style.display = isHidden ? 'block' : 'none';
+        el.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+
+    // Parent checkbox -> children toggle
+    function toggleChildCheckboxes(parentCheckbox, nodeId) {
+        var container = document.getElementById(nodeId);
+        if (!container) return;
+        var isChecked = parentCheckbox.checked;
+        // Tum alt checkbox'lari sec (hem leaf hem ara parent)
+        var allChecks = container.querySelectorAll('input[type="checkbox"]');
+        allChecks.forEach(function(cb) { cb.checked = isChecked; });
+        // Tum alt container'lari ac/kapat
+        if (isChecked) {
+            container.style.display = 'block';
+            container.querySelectorAll('.master-cat-children').forEach(function(child) {
+                child.style.display = 'block';
+            });
+            container.querySelectorAll('.toggle-master').forEach(function(t) {
+                t.style.transform = 'rotate(90deg)';
+            });
+            var toggle = parentCheckbox.closest('.master-cat-node').querySelector('.toggle-master');
+            if (toggle) toggle.style.transform = 'rotate(90deg)';
+        }
+        updateSelectionCount();
+    }
+
+    // Tumu sec/kaldir
+    function toggleAllLeafs(checked) {
+        document.querySelectorAll('.master-cat-check').forEach(function(cb) {
+            cb.checked = checked;
+        });
+        updateSelectionCount();
+    }
+
+    // Arama
+    function filterMasterCategories(query) {
+        query = query.toLowerCase();
+        var nodes = document.querySelectorAll('.master-cat-wrapper');
+        nodes.forEach(function(node) {
+            var name = node.getAttribute('data-name').toLowerCase();
+            if (query === '' || name.includes(query)) {
+                node.style.display = '';
+                // Ust konteynerlari da ac
+                var parent = node.parentElement;
+                while (parent && parent.classList.contains('master-cat-children')) {
+                    parent.style.display = 'block';
+                    parent = parent.parentElement?.closest('.master-cat-children');
+                }
+            } else {
+                node.style.display = 'none';
+            }
+        });
+    }
+
+    // Sektor paketi toggle
+    function toggleSectorPackage(btn) {
+        var ids = btn.getAttribute('data-package-ids').split(',').map(Number);
+        var isActive = btn.classList.contains('active');
+
+        if (isActive) {
+            btn.classList.remove('active', 'btn-primary');
+            btn.classList.add('btn-outline-primary');
+            ids.forEach(function(id) {
+                var cb = document.querySelector('.master-cat-check[value="' + id + '"]');
+                if (cb) cb.checked = false;
+            });
+        } else {
+            btn.classList.add('active', 'btn-primary');
+            btn.classList.remove('btn-outline-primary');
+            ids.forEach(function(id) {
+                var cb = document.querySelector('.master-cat-check[value="' + id + '"]');
+                if (cb) {
+                    cb.checked = true;
+                    // Parent container'lari ac
+                    var parent = cb.closest('.master-cat-children');
+                    while (parent) {
+                        parent.style.display = 'block';
+                        parent = parent.parentElement?.closest('.master-cat-children');
+                    }
+                }
+            });
+        }
+        updateSelectionCount();
+    }
+
+    // HTMX spinner
+    document.body.addEventListener('htmx:beforeRequest', function(e) {
+        if (e.detail.elt.id === 'masterImportForm') {
+            document.getElementById('import-spinner').classList.remove('d-none');
+            document.getElementById('importBtn').disabled = true;
+        }
+    });
+    document.body.addEventListener('htmx:afterRequest', function(e) {
+        if (e.detail.elt.id === 'masterImportForm') {
+            document.getElementById('import-spinner').classList.add('d-none');
+        }
+    });
+</script>
+}

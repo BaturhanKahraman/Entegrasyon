@@ -1,5 +1,6 @@
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
     var displayName = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? User.Identity?.Name ?? "";
 }
 <!DOCTYPE html>
@@ -189,6 +190,22 @@
                 <a class="nav-link @(currentController == "AiCredits" ? "active" : "")"
                    asp-controller="AiCredits" asp-action="Index">
                     <i class="bi bi-robot"></i> AI Kredileri
+                </a>
+
+                <div class="px-3 mt-3 mb-1">
+                    <small class="text-uppercase fw-bold" style="font-size:0.7rem; color:#6e7681;">Katalog</small>
+                </div>
+                <a class="nav-link @(currentController == "MasterCatalog" && (currentAction == "Categories" || currentAction == "CategoryDetails") ? "active" : "")"
+                   asp-controller="MasterCatalog" asp-action="Categories">
+                    <i class="bi bi-diagram-3"></i> Kategoriler
+                </a>
+                <a class="nav-link @(currentController == "MasterCatalog" && currentAction == "Brands" ? "active" : "")"
+                   asp-controller="MasterCatalog" asp-action="Brands">
+                    <i class="bi bi-tags"></i> Markalar
+                </a>
+                <a class="nav-link @(currentController == "MasterCatalog" && (currentAction == "Attributes" || currentAction == "AttributeDetails") ? "active" : "")"
+                   asp-controller="MasterCatalog" asp-action="Attributes">
+                    <i class="bi bi-list-check"></i> Ozellikler
                 </a>
             </nav>
             <div class="sidebar-footer">

@@ -1,0 +1,142 @@
+@model BrandsIndexVm
+@{
+    ViewData["Title"] = "Markalar";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Markalar</h2>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <h4 class="mb-0">@Model.TotalCount</h4>
+                <small class="text-muted">Toplam Marka</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <h4 class="mb-0">@Model.MappedCount</h4>
+                <small class="text-muted">Eslesmis Marka</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" asp-action="Brands" class="row g-2 mb-3">
+            <div class="col-auto flex-grow-1">
+                <input type="text" name="search" value="@Model.Search"
+                       class="form-control" placeholder="Marka adi ara..." />
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-secondary">Ara</button>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Search))
+            {
+                <div class="col-auto">
+                    <a asp-action="Brands" class="btn btn-outline-danger">Temizle</a>
+                </div>
+            }
+        </form>
+
+        @if (!string.IsNullOrEmpty(Model.Search))
+        {
+            <div class="alert alert-info py-2 small mb-3">
+                <i class="bi bi-search me-1"></i>
+                <strong>"@Model.Search"</strong> icin @Model.TotalCount sonuc bulundu.
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Marka Adi</th>
+                        <th>Durum</th>
+                        <th>Marketplace Eslesmeleri</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Brands.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">
+                                Marka bulunamadi.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var brand in Model.Brands)
+                    {
+                        <tr>
+                            <td><strong>@brand.Name</strong></td>
+                            <td>
+                                @if (brand.IsActive)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                @if (brand.Mappings.Count == 0)
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                                else
+                                {
+                                    @foreach (var mp in brand.Mappings)
+                                    {
+                                        <span class="badge bg-primary me-1" title="ID: @mp.ExternalId">
+                                            @mp.MarketplaceName
+                                        </span>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Brands"
+                           asp-route-search="@Model.Search" asp-route-page="@(Model.Page - 1)">
+                            &laquo;
+                        </a>
+                    </li>
+                    @{
+                        int start = Math.Max(1, Model.Page - 2);
+                        int end = Math.Min(Model.TotalPages, Model.Page + 2);
+                    }
+                    @for (int i = start; i <= end; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Brands"
+                               asp-route-search="@Model.Search" asp-route-page="@i">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Brands"
+                           asp-route-search="@Model.Search" asp-route-page="@(Model.Page + 1)">
+                            &raquo;
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="text-center text-muted small mt-1">
+                @Model.TotalCount marka, sayfa @Model.Page / @Model.TotalPages
+            </div>
+        }
+    </div>
+</div>

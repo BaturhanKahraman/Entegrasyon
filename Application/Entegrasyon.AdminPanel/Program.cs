@@ -32,7 +32,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AdminPanelDbContext>();
     db.Database.Migrate();
     var mainConnStr = builder.Configuration.GetConnectionString("TemplateDb");
-    SeedData.Initialize(db, mainConnStr);
+    var snapshotDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "docs", "trendyol");
+    SeedData.Initialize(db, mainConnStr, Directory.Exists(snapshotDir) ? snapshotDir : null);
 }
 
 if (!app.Environment.IsDevelopment())

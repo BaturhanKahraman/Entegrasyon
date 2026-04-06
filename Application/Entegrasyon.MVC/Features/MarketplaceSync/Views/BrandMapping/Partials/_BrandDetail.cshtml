@@ -45,6 +45,10 @@
                   hx-on::after-request="if(event.detail.successful) { htmx.ajax('GET', '/marketplace/sync/brands/@Model.BrandId/detail?mp=@Model.MarketPlaceId', {target:'#brand-detail-panel'}); }"
                   class="row g-3 align-items-end">
                 <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
+                @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+                {
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                }
                 <div class="col-md-6">
                     <label class="form-label">Pazaryeri Marka ID</label>
                     <input type="number" class="form-control" name="externalBrandId" required

@@ -29,7 +29,7 @@
             {
                 <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center brand-item"
                    href="#"
-                   hx-get="/marketplace/sync/brands/@brand.Id/detail?mp=@Model.SelectedMarketPlaceId"
+                   hx-get="/marketplace/sync/brands/@brand.Id/detail?mp=@Model.SelectedMarketPlaceId@(!string.IsNullOrEmpty(Model.ReturnUrl) ? $"&returnUrl={Uri.EscapeDataString(Model.ReturnUrl)}" : "")"
                    hx-target="#brand-detail-panel"
                    hx-swap="innerHTML">
                     <span class="brand-name">@brand.Name</span>
@@ -63,4 +63,21 @@
             item.style.display = name.includes(lower) ? '' : 'none';
         });
     }
+
+    // Auto-search and auto-open detail on page load
+    (function() {
+        var searchTerm = '@Html.Raw((Model.SearchTerm ?? "").Replace("\\", "\\\\").Replace("'", "\\'"))';
+        if (searchTerm) {
+            var input = document.querySelector('#brand-list')?.closest('.card')?.querySelector('input[placeholder]');
+            if (input) {
+                input.value = searchTerm;
+                filterBrandList(searchTerm);
+            }
+            // Auto-click the first visible brand to open detail panel
+            setTimeout(function() {
+                var firstVisible = document.querySelector('#brand-list .brand-item[style=""], #brand-list .brand-item:not([style])');
+                if (firstVisible) firstVisible.click();
+            }, 100);
+        }
+    })();
 </script>

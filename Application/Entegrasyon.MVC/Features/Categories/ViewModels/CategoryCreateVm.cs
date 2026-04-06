@@ -20,3 +20,10 @@ public class CategoryAttributeSelectionVm
     public bool IsSlicer { get; set; }
     public bool AllowCustom { get; set; }
 }
+
+public class CategoryCreateSuccessVm
+{
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; } = "";
+    public bool HasAttributes { get; set; }
+}

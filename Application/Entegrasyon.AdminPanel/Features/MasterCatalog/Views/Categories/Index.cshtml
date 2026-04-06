@@ -1,0 +1,193 @@
+@model CategoriesIndexVm
+@{
+    ViewData["Title"] = "Kategoriler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Kategoriler</h2>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <h4 class="mb-0">@Model.TotalCount</h4>
+                <small class="text-muted">Toplam Kategori</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <h4 class="mb-0">@Model.LeafCount</h4>
+                <small class="text-muted">Yaprak Kategori</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body py-3">
+                <h4 class="mb-0">@Model.MappedCount</h4>
+                <small class="text-muted">Eslesmis Kategori</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Breadcrumbs.Count > 0 || Model.ParentId.HasValue)
+{
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Categories">
+                    <i class="bi bi-house"></i> Kok
+                </a>
+            </li>
+            @foreach (var crumb in Model.Breadcrumbs)
+            {
+                @if (crumb.Id == Model.ParentId)
+                {
+                    <li class="breadcrumb-item active">@crumb.Name</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item">
+                        <a asp-action="Categories" asp-route-parentId="@crumb.Id">@crumb.Name</a>
+                    </li>
+                }
+            }
+        </ol>
+    </nav>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" asp-action="Categories" class="row g-2 mb-3">
+            <div class="col-auto flex-grow-1">
+                <input type="text" name="search" value="@Model.Search"
+                       class="form-control" placeholder="Kategori adi ara..." />
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-secondary">Ara</button>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Search))
+            {
+                <div class="col-auto">
+                    <a asp-action="Categories" class="btn btn-outline-danger">Temizle</a>
+                </div>
+            }
+        </form>
+
+        @if (!string.IsNullOrEmpty(Model.Search))
+        {
+            <div class="alert alert-info py-2 small mb-3">
+                <i class="bi bi-search me-1"></i>
+                <strong>"@Model.Search"</strong> icin @Model.Categories.Count sonuc bulundu.
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kategori Adi</th>
+                        @if (!string.IsNullOrEmpty(Model.Search))
+                        {
+                            <th>Tam Yol</th>
+                        }
+                        <th class="text-center">Alt Kategori</th>
+                        <th class="text-center">Ozellik</th>
+                        <th>Marketplace</th>
+                        <th class="text-end">Islemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Categories.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                @if (!string.IsNullOrEmpty(Model.Search))
+                                {
+                                    <text>Arama kriterine uygun kategori bulunamadi.</text>
+                                }
+                                else
+                                {
+                                    <text>Bu seviyede kategori bulunamadi.</text>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <tr>
+                            <td>
+                                @if (cat.IsLeaf)
+                                {
+                                    <i class="bi bi-file-earmark text-success me-1"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-folder text-warning me-1"></i>
+                                }
+                                <strong>@cat.Name</strong>
+                                @if (!cat.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Pasif</span>
+                                }
+                            </td>
+                            @if (!string.IsNullOrEmpty(Model.Search) && Model.FullPaths.TryGetValue(cat.Id, out var path))
+                            {
+                                <td class="small text-muted">@path</td>
+                            }
+                            <td class="text-center">
+                                @if (!cat.IsLeaf)
+                                {
+                                    <span class="badge bg-primary">@cat.ChildCount</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (cat.AttributeCount > 0)
+                                {
+                                    <span class="badge bg-info">@cat.AttributeCount</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (cat.MappingCount > 0)
+                                {
+                                    <span class="badge bg-success">@cat.MappingCount MP</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    @if (!cat.IsLeaf)
+                                    {
+                                        <a asp-action="Categories" asp-route-parentId="@cat.Id"
+                                           class="btn btn-outline-primary" title="Alt kategorilere gir">
+                                            <i class="bi bi-arrow-right"></i> Gir
+                                        </a>
+                                    }
+                                    <a asp-action="CategoryDetails" asp-route-id="@cat.Id"
+                                       class="btn btn-outline-info">
+                                        <i class="bi bi-eye"></i> Detay
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -95,6 +95,10 @@
                         <strong id="modal-category-name"></strong> icin pazaryeri kategorisi secin.
                     </p>
                     <input type="hidden" name="mp" value="@Model.SelectedMarketPlaceId" />
+                    @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+                    {
+                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    }
                     <div class="mb-3">
                         <label class="form-label">Pazaryeri Kategori ID</label>
                         <input type="number" class="form-control" name="externalCategoryId" required />
@@ -133,4 +137,16 @@
     document.addEventListener('refreshTable', function () {
         htmx.ajax('GET', window.location.href, { target: '#mapping-content' });
     });
+
+    // Auto-search on page load when search parameter is provided
+    (function() {
+        var searchTerm = '@Html.Raw((Model.SearchTerm ?? "").Replace("\\", "\\\\").Replace("'", "\\'"))';
+        if (searchTerm) {
+            var input = document.getElementById('category-search');
+            if (input) {
+                input.value = searchTerm;
+                filterCategoryTable(searchTerm);
+            }
+        }
+    })();
 </script>

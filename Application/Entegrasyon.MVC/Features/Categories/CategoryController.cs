@@ -12,7 +12,9 @@ namespace Entegrasyon.MVC.Features.Categories;
 public class CategoryController(
     ICategoryService categoryService,
     ICategoryAttributeManager categoryAttributeManager,
-    IProductService productService) : Controller
+    IProductService productService,
+    IMasterCatalogImportService masterCatalogImportService,
+    ITenantContext tenantContext) : Controller
 {
     /// <summary>Split layout: tree on left, detail on right</summary>
     [HttpGet("/categories")]
@@ -76,9 +78,23 @@ public class CategoryController(
             vm.SuperCategoryName = parentDetail?.Name;
         }
 
+        // Root categories (no parent) can't have attributes — skip to review
+        if (!vm.SuperCategoryId.HasValue)
+        {
+            vm.Attributes = [];
+            TempData["CreateCategory"] = JsonSerializer.Serialize(vm);
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_CreateStep3Review", vm);
+
+            ViewData.SetPageTitle("Yeni Kategori");
+            ViewData.SetActiveNav("categories");
+            return View(nameof(Create), vm);
+        }
+
         TempData["CreateCategory"] = JsonSerializer.Serialize(vm);
 
-        // Load available attributes for Step 2
+        // Load available attributes for Step 2 (leaf categories only)
         var attrsResult = await categoryAttributeManager.GetCategoryAttributes();
         var allAttrs = attrsResult.Success ? attrsResult.Data! : [];
 
@@ -130,7 +146,7 @@ public class CategoryController(
     [HttpPost("/categories/add/save")]
     public async Task<IActionResult> CreateSave()
     {
-        var json = TempData.Peek("CreateCategory") as string;
+        var json = TempData["CreateCategory"] as string;
         if (json is null) return RedirectToAction(nameof(Create));
 
         var vm = JsonSerializer.Deserialize<CategoryCreateVm>(json)!;
@@ -155,6 +171,16 @@ public class CategoryController(
         var result = await categoryService.AddCategory(dto);
         if (result.Success)
         {
+            var successVm = new CategoryCreateSuccessVm
+            {
+                CategoryId = result.Data!.Id,
+                CategoryName = vm.Name,
+                HasAttributes = vm.Attributes.Count > 0
+            };
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_CreateSuccess", successVm);
+
             TempData.SetSuccess($"'{vm.Name}' kategorisi basariyla olusturuldu.");
             return RedirectToAction(nameof(Index));
         }
@@ -213,6 +239,93 @@ public class CategoryController(
     {
         TempData.SetSuccess($"{marketplace} kategori import'u baslatildi.");
         return RedirectToAction(nameof(Import));
+    }
+
+    // ── Master Catalog Import ────────────────────────────────────────
+
+    /// <summary>Master katalogdan kategori aktarma sayfasi</summary>
+    [HttpGet("/categories/master-import")]
+    public async Task<IActionResult> MasterImport()
+    {
+        ViewData.SetPageTitle("Master Katalog Import");
+        ViewData.SetActiveNav("categories");
+        ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Master Import", null));
+
+        var tree = await masterCatalogImportService.GetMasterCategoryTreeAsync();
+        var packages = await masterCatalogImportService.GetSectorPackagesAsync();
+
+        int CountAll(IList<Entity.Dtos.MasterCatalog.MasterCategoryTreeDto> cats)
+        {
+            int count = 0;
+            foreach (var c in cats) { count += 1 + CountAll(c.Children); }
+            return count;
+        }
+
+        int CountLeaf(IList<Entity.Dtos.MasterCatalog.MasterCategoryTreeDto> cats)
+        {
+            int count = 0;
+            foreach (var c in cats) { count += c.IsLeaf ? 1 : 0; count += CountLeaf(c.Children); }
+            return count;
+        }
+
+        var vm = new MasterImportVm
+        {
+            Categories = tree.ToList(),
+            SectorPackages = packages.ToList(),
+            TotalCategoryCount = CountAll(tree),
+            LeafCategoryCount = CountLeaf(tree)
+        };
+
+        return View(vm);
+    }
+
+    /// <summary>Secilen kategorileri master katalogdan import et</summary>
+    [HttpPost("/categories/master-import")]
+    public async Task<IActionResult> MasterImportExecute([FromForm] int[] selectedCategoryIds)
+    {
+        if (selectedCategoryIds.Length == 0)
+        {
+            TempData.SetError("Lutfen en az bir kategori secin.");
+            return RedirectToAction(nameof(MasterImport));
+        }
+
+        try
+        {
+            var result = await masterCatalogImportService.ImportFromMasterAsync(
+                tenantContext.TenantId, selectedCategoryIds);
+
+            var resultVm = new MasterImportResultVm
+            {
+                Success = true,
+                CategoriesImported = result.CategoriesImported,
+                AttributesImported = result.AttributesImported,
+                ValuesImported = result.ValuesImported,
+                MappingsImported = result.MappingsImported,
+                CategoriesSkipped = result.CategoriesSkipped,
+                AttributesSkipped = result.AttributesSkipped,
+                ValuesSkipped = result.ValuesSkipped
+            };
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_MasterImportResult", resultVm);
+
+            TempData.SetSuccess($"{result.CategoriesImported} kategori, {result.AttributesImported} ozellik basariyla aktarildi.");
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            if (Request.IsHtmx())
+            {
+                return PartialView("Partials/_MasterImportResult", new MasterImportResultVm
+                {
+                    Success = false,
+                    ErrorMessage = "Import sirasinda bir hata olustu: " + ex.Message
+                });
+            }
+
+            TempData.SetError("Import sirasinda bir hata olustu.");
+            return RedirectToAction(nameof(MasterImport));
+        }
     }
 
     // ── Delete ────────────────────────────────────────────────────────

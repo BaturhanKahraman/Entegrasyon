@@ -9,6 +9,20 @@
     var pct = totalCount > 0 ? (int)(mappedCount * 100.0 / totalCount) : 0;
 }
 
+        @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+        {
+            <div class="alert alert-info mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-info-circle icon me-2"></i>
+                    <div class="flex-fill">
+                        Eslestirmeyi tamamladiginizda otomatik olarak geri yonlendirileceksiniz.
+                    </div>
+                    <a href="@Model.ReturnUrl" class="btn btn-sm btn-outline-primary ms-2">
+                        <i class="ti ti-arrow-left me-1"></i>Geri Don
+                    </a>
+                </div>
+            </div>
+        }
 
         <!-- Marketplace Tabs -->
         <div class="card mb-3">

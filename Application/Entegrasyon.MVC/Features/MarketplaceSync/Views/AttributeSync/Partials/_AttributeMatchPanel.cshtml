@@ -38,6 +38,10 @@
                       hx-swap="none"
                       class="row g-2 align-items-end">
                     <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
+                    @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+                    {
+                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    }
                     <div class="col-auto">
                         <label class="form-label">Pazaryeri Ozellik ID</label>
                         <input type="number" class="form-control form-control-sm" name="mpAttributeId" required />

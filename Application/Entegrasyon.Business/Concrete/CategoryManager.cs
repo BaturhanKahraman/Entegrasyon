@@ -276,6 +276,7 @@ namespace Entegrasyon.Business.Concrete
         {
             await using var dbContext = await contextFactory.CreateDbContextAsync();
             return await dbContext.Categories
+                .AsNoTrackingWithIdentityResolution()
                 .AsSingleQuery()
                 .Include(c => c.CategoryAttributes).ThenInclude(ca => ca.CategoryAttribute)
                 .Include(c => c.MarketplaceLinks).ThenInclude(ml => ml.MarketPlace)

@@ -1,0 +1,16 @@
+-Product adding-
+Products are core thing for our software.
+Existing product adding seems okay for now but we need to add some parts.
+We need some functionality for adding page. Here we need to normally select brand and category.
+The brand selectbox will be writable selectbox. in that section once user writes it, the user easily find what he looking for. If there is an unexist brand was written and user press enter or leaves the selectbox with unexisting brand we are going to open a popup/modal and ask that : " x markası bulunamamıştır. Eklemek ister misiniz?" If user presses yes we are going to add that brand quickly(checking the business rules sure. we can use brandservice for it).
+After that another popup gonna come and say "Bu marka yeni eklendiği için eşleştirilmemiş olacak. Sonradan pazaryerleriyle eşleştirebilirsiniz".
+
+After selecting category we need to add its attributes which are not slicer and varianter dynamicly.
+User should add any necessarry for them. otherwise it is not allowed to go to the next step. once it is done the our second and most important step adding the varianters steps. user need to add here varianter and slicer attributes and calculate all the varianters.
+Here we have to assign each prices, each image and each individual property per varianter.
+in the next step With a nice UI and UX our user should check every varianter, after that he can accept and save.
+After saving the product user needed to be asked if he wants to go sync page for that product.
+After testing with chrome, we need to create e2e test which takes every step of this and verify.
+
+
+We are going to implement sync pages for each marketplace afterwards. Lets see how it is going to work.

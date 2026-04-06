@@ -1,0 +1,63 @@
+@model Entegrasyon.MVC.Features.Categories.ViewModels.CategoryCreateSuccessVm
+
+<!-- step-success marker for JS step detection -->
+<div class="card">
+    <div class="card-body text-center py-5">
+        <div class="mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-success" width="24" height="24"
+                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                <path d="M9 12l2 2l4 -4"/>
+            </svg>
+        </div>
+        <h2 class="mb-1">'@Model.CategoryName' basariyla olusturuldu</h2>
+        <p class="text-secondary">Simdi ne yapmak istersiniz?</p>
+    </div>
+    <div class="card-footer">
+        <div class="row g-2">
+            <div class="col-12 col-md-4">
+                <a href="/categories" class="btn btn-outline-secondary w-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M5 12l14 0"/>
+                        <path d="M5 12l6 6"/>
+                        <path d="M5 12l6 -6"/>
+                    </svg>
+                    Kategorilere Don
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="/marketplace/sync/categories" class="btn btn-primary w-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12"/>
+                    </svg>
+                    Marketplace Eslestirmesi
+                </a>
+            </div>
+            @if (Model.HasAttributes)
+            {
+                <div class="col-12 col-md-4">
+                    <a href="/marketplace/sync/attributes" class="btn btn-outline-primary w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/>
+                            <path d="M12 12l8 -4.5"/>
+                            <path d="M12 12l0 9"/>
+                            <path d="M12 12l-8 -4.5"/>
+                        </svg>
+                        Ozellik Eslestirmesi
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -16,7 +16,7 @@ public class BrandMappingController(
     private const string ViewBase = "~/Features/MarketplaceSync/Views/BrandMapping";
 
     [HttpGet("/marketplace/sync/brands")]
-    public async Task<IActionResult> Index(int mp = 1)
+    public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null)
     {
         ViewData.SetPageTitle("Marka Eslemesi");
         ViewData.SetActiveNav("marketplace-sync");
@@ -32,7 +32,9 @@ public class BrandMappingController(
             MarketPlaces = marketPlaces.Data ?? [],
             Summary = summary,
             Mappings = mappings,
-            UnmappedBrands = unmappedBrands
+            UnmappedBrands = unmappedBrands,
+            SearchTerm = search,
+            ReturnUrl = returnUrl
         };
 
         if (Request.IsHtmx() && Request.HtmxTarget() == "brand-list-container")
@@ -42,7 +44,7 @@ public class BrandMappingController(
     }
 
     [HttpGet("/marketplace/sync/brands/{brandId:int}/detail")]
-    public async Task<IActionResult> Detail(int brandId, int mp = 1)
+    public async Task<IActionResult> Detail(int brandId, int mp = 1, string? returnUrl = null)
     {
         var brandResult = await brandService.GetBrandById(brandId);
         if (!brandResult.Success || brandResult.Data is null)
@@ -58,14 +60,15 @@ public class BrandMappingController(
             BrandName = brand.Name ?? string.Empty,
             MarketPlaceId = mp,
             IsMapped = mapping is not null,
-            Mapping = mapping
+            Mapping = mapping,
+            ReturnUrl = returnUrl
         };
 
         return PartialView($"{ViewBase}/Partials/_BrandDetail.cshtml", vm);
     }
 
     [HttpPost("/marketplace/sync/brands/{brandId:int}/map")]
-    public async Task<IActionResult> CreateMapping(int brandId, int mp, int externalBrandId)
+    public async Task<IActionResult> CreateMapping(int brandId, int mp, int externalBrandId, string? returnUrl)
     {
         var dto = new CreateBrandMarketPlaceMatchDto
         {
@@ -80,6 +83,14 @@ public class BrandMappingController(
         {
             if (result.Success)
             {
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    Response.HtmxTriggerWithData("showToast",
+                        new { message = "Marka eslesmesi olusturuldu. Yonlendiriliyorsunuz...", type = "success" });
+                    Response.Headers["HX-Redirect"] = returnUrl;
+                    return Content("");
+                }
+
                 Response.HtmxTriggerWithData("showToast",
                     new { message = "Marka eslesmesi olusturuldu.", type = "success" });
                 Response.HtmxTrigger("refreshList");
@@ -95,6 +106,9 @@ public class BrandMappingController(
             TempData.SetSuccess("Marka eslesmesi olusturuldu.");
         else
             TempData.SetError(result.Message ?? "Eslestirme olusturulamadi.");
+
+        if (result.Success && !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
 
         return RedirectToAction(nameof(Index), new { mp });
     }

@@ -1,0 +1,170 @@
+@model AttributeDetailsVm
+@{
+    ViewData["Title"] = Model.HumanizedName;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-list-check text-info me-2"></i>
+        @Model.HumanizedName
+    </h2>
+    <a asp-action="Attributes" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">Ozellik Bilgileri</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Anahtar</dt>
+                    <dd class="col-sm-8"><code>@Model.Key</code></dd>
+                    <dt class="col-sm-4">Gorunen Ad</dt>
+                    <dd class="col-sm-8">@Model.HumanizedName</dd>
+                    <dt class="col-sm-4">Durum</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Aktif</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Pasif</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-4">Ozel Deger</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.AllowCustom)
+                        {
+                            <span class="badge bg-success">Izin Verilir</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Hayir</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">Marketplace Eslesmeleri</div>
+            <div class="card-body">
+                @if (Model.MarketplaceMappings.Count == 0)
+                {
+                    <p class="text-muted mb-0">Henuz eslestirme yapilmamis.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Marketplace</th>
+                                <th>Harici ID</th>
+                                <th>Harici Ad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mp in Model.MarketplaceMappings)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-primary">@mp.MarketplaceName</span></td>
+                                    <td><code>@mp.ExternalId</code></td>
+                                    <td>@mp.ExternalName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header fw-bold">
+        <i class="bi bi-collection me-1"></i> Degerler
+        <span class="badge bg-secondary ms-1">@Model.Values.Count</span>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Values.Count == 0)
+        {
+            <div class="text-center text-muted py-4">
+                Bu ozellik icin tanimlanmis deger bulunamadi.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Deger Adi</th>
+                            <th>Durum</th>
+                            <th>Marketplace Eslesmeleri</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var val in Model.Values)
+                        {
+                            <tr>
+                                <td><strong>@val.Name</strong></td>
+                                <td>
+                                    @if (val.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Pasif</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (val.Mappings.Count == 0)
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var mp in val.Mappings)
+                                        {
+                                            <span class="badge bg-primary me-1"
+                                                  title="@mp.ExternalName (ID: @mp.ExternalId)">
+                                                @mp.MarketplaceName
+                                            </span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model.LinkedCategories.Count > 0)
+{
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            <i class="bi bi-diagram-3 me-1"></i> Bagli Kategoriler
+            <span class="badge bg-info ms-1">@Model.LinkedCategories.Count</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                @foreach (var cat in Model.LinkedCategories)
+                {
+                    <a asp-action="CategoryDetails" asp-route-id="@cat.Id"
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-file-earmark text-success me-1"></i>
+                        @cat.Name
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}

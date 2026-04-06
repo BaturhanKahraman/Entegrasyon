@@ -67,8 +67,7 @@
     </div>
     <div class="card-footer d-flex justify-content-between">
         <a href="/categories/add" class="btn btn-ghost-secondary">&larr; Bastan Baslat</a>
-        <form method="post" action="/categories/add/save">
-            @Html.AntiForgeryToken()
+        <form hx-post="/categories/add/save" hx-target="#wizard-content" hx-swap="innerHTML">
             <button type="submit" class="btn btn-success">Kategoriyi Olustur</button>
         </form>
     </div>

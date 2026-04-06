@@ -7,7 +7,11 @@
     var hasCategories = Model.Any(c => c.SuperCategoryId == null);
 }
 
-<div class="d-flex justify-content-end mb-3">
+<div class="d-flex justify-content-end mb-3 gap-2">
+    <a href="/categories/master-import" class="btn btn-outline-primary">
+        <i class="ti ti-database-import icon"></i>
+        Master Katalogdan Ice Aktar
+    </a>
     <a href="/categories/add" class="btn btn-primary">
         <i class="ti ti-plus icon"></i>
         Yeni Kategori

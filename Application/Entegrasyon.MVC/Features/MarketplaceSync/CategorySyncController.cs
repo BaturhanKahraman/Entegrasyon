@@ -16,7 +16,7 @@ public class CategorySyncController(
     private const string ViewBase = "~/Features/MarketplaceSync/Views/CategorySync";
 
     [HttpGet("/marketplace/sync/categories")]
-    public async Task<IActionResult> Index(int mp = 1)
+    public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null)
     {
         ViewData.SetPageTitle("Kategori Eslemesi");
         ViewData.SetActiveNav("marketplace-sync");
@@ -34,6 +34,8 @@ public class CategorySyncController(
             MarketPlaces = marketPlaces.Data ?? [],
             Summary = summary,
             Mappings = mappings,
+            SearchTerm = search,
+            ReturnUrl = returnUrl,
             AllCategories = allCategories.Select(c => new CategoryListItemVm
             {
                 Id = c.Id,
@@ -51,7 +53,7 @@ public class CategorySyncController(
     }
 
     [HttpPost("/marketplace/sync/categories/{categoryId:int}/map")]
-    public async Task<IActionResult> CreateMapping(int categoryId, int mp, int externalCategoryId, string? externalCategoryName)
+    public async Task<IActionResult> CreateMapping(int categoryId, int mp, int externalCategoryId, string? externalCategoryName, string? returnUrl)
     {
         var dto = new CreateCategoryMarketplaceMatchDto
         {
@@ -67,6 +69,14 @@ public class CategorySyncController(
         {
             if (result.Success)
             {
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    Response.HtmxTriggerWithData("showToast",
+                        new { message = "Kategori eslesmesi olusturuldu. Yonlendiriliyorsunuz...", type = "success" });
+                    Response.Headers["HX-Redirect"] = returnUrl;
+                    return Content("");
+                }
+
                 Response.HtmxTriggerWithData("showToast",
                     new { message = "Kategori eslesmesi olusturuldu.", type = "success" });
                 Response.HtmxTrigger("refreshTable");
@@ -82,6 +92,9 @@ public class CategorySyncController(
             TempData.SetSuccess("Kategori eslesmesi olusturuldu.");
         else
             TempData.SetError(result.Message ?? "Eslestirme olusturulamadi.");
+
+        if (result.Success && !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
 
         return RedirectToAction(nameof(Index), new { mp });
     }

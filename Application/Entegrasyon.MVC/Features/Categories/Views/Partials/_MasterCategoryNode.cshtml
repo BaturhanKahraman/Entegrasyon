@@ -1,0 +1,66 @@
+@model Entegrasyon.Entity.Dtos.MasterCatalog.MasterCategoryTreeDto
+@{
+    var depth = (int)(ViewData["Depth"] ?? 0);
+    var hasChildren = Model.Children.Count > 0;
+    var nodeId = $"master-children-{Model.Id}";
+}
+
+<div class="master-cat-wrapper" data-category-id="@Model.Id" data-name="@Model.Name" data-leaf="@Model.IsLeaf.ToString().ToLower()">
+    <div class="d-flex align-items-center py-1 master-cat-node"
+         style="padding-left: @(depth * 24 + 12)px; padding-right: 12px;">
+
+        @if (hasChildren)
+        {
+            <span class="me-1 text-secondary toggle-master"
+                  data-target="#@nodeId"
+                  onclick="toggleMasterNode(this)"
+                  style="cursor: pointer; display: inline-flex; transition: transform 0.15s;">
+                <i class="ti ti-chevron-right" style="font-size:1rem;"></i>
+            </span>
+        }
+        else
+        {
+            <span class="me-1" style="width: 16px; display: inline-block;"></span>
+        }
+
+        <label class="form-check mb-0 d-flex align-items-center gap-2 flex-fill" style="cursor: pointer;">
+            @if (Model.IsLeaf)
+            {
+                <input type="checkbox" class="form-check-input master-cat-check"
+                       name="selectedCategoryIds" value="@Model.Id"
+                       onchange="updateSelectionCount()" />
+            }
+            else if (hasChildren)
+            {
+                <input type="checkbox" class="form-check-input"
+                       onchange="toggleChildCheckboxes(this, '@nodeId')" />
+            }
+
+            @if (Model.IsLeaf)
+            {
+                <i class="ti ti-file text-success" style="font-size:0.9rem;"></i>
+            }
+            else
+            {
+                <i class="ti ti-folder text-warning" style="font-size:0.9rem;"></i>
+            }
+
+            <span class="text-truncate">@Model.Name</span>
+        </label>
+
+        @if (hasChildren)
+        {
+            <span class="badge bg-secondary-lt ms-1">@Model.Children.Count</span>
+        }
+    </div>
+
+    @if (hasChildren)
+    {
+        <div id="@nodeId" class="master-cat-children" style="display: none;">
+            @foreach (var child in Model.Children)
+            {
+                @await Html.PartialAsync("Partials/_MasterCategoryNode", child, new ViewDataDictionary(ViewData) { ["Depth"] = depth + 1 })
+            }
+        </div>
+    }
+</div>

@@ -19,7 +19,7 @@
             {
                 <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center attribute-item"
                    href="#"
-                   hx-get="/marketplace/sync/attributes/@attr.Id/detail?mp=@Model.SelectedMarketPlaceId"
+                   hx-get="/marketplace/sync/attributes/@attr.Id/detail?mp=@Model.SelectedMarketPlaceId@(!string.IsNullOrEmpty(Model.ReturnUrl) ? $"&returnUrl={Uri.EscapeDataString(Model.ReturnUrl)}" : "")"
                    hx-target="#attribute-detail-panel"
                    hx-swap="innerHTML">
                     <div>
@@ -59,4 +59,21 @@
             item.style.display = name.includes(lower) ? '' : 'none';
         });
     }
+
+    // Auto-search and auto-open detail on page load
+    (function() {
+        var searchTerm = '@Html.Raw((Model.SearchTerm ?? "").Replace("\\", "\\\\").Replace("'", "\\'"))';
+        if (searchTerm) {
+            var input = document.querySelector('#attribute-list')?.closest('.card')?.querySelector('input[placeholder]');
+            if (input) {
+                input.value = searchTerm;
+                filterAttributeList(searchTerm);
+            }
+            // Auto-click the first visible attribute to open detail panel
+            setTimeout(function() {
+                var firstVisible = document.querySelector('#attribute-list .attribute-item[style=""], #attribute-list .attribute-item:not([style])');
+                if (firstVisible) firstVisible.click();
+            }, 100);
+        }
+    })();
 </script>

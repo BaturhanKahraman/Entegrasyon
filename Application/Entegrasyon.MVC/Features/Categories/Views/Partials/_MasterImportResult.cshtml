@@ -1,0 +1,78 @@
+@model Entegrasyon.MVC.Features.Categories.ViewModels.MasterImportResultVm
+
+@if (!Model.Success)
+{
+    <div class="alert alert-danger">
+        <div class="d-flex align-items-center">
+            <i class="ti ti-alert-circle me-2" style="font-size: 1.5rem;"></i>
+            <div>
+                <h4 class="alert-title mb-1">Import Basarisiz</h4>
+                <div class="text-secondary">@Model.ErrorMessage</div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card border-success">
+        <div class="card-header bg-success-lt">
+            <h3 class="card-title text-success">
+                <i class="ti ti-check me-1"></i> Import Tamamlandi
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 text-center">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <h3 class="mb-0 text-primary">@Model.CategoriesImported</h3>
+                            <small class="text-secondary">Kategori Eklendi</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <h3 class="mb-0 text-info">@Model.AttributesImported</h3>
+                            <small class="text-secondary">Ozellik Eklendi</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <h3 class="mb-0 text-cyan">@Model.ValuesImported</h3>
+                            <small class="text-secondary">Deger Eklendi</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body py-3">
+                            <h3 class="mb-0 text-green">@Model.MappingsImported</h3>
+                            <small class="text-secondary">Eslestirme Eklendi</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.CategoriesSkipped > 0 || Model.AttributesSkipped > 0 || Model.ValuesSkipped > 0)
+            {
+                <div class="mt-3 text-secondary small">
+                    <i class="ti ti-info-circle me-1"></i>
+                    Atlanan: @Model.CategoriesSkipped kategori, @Model.AttributesSkipped ozellik, @Model.ValuesSkipped deger
+                    <span class="text-muted">(zaten mevcut)</span>
+                </div>
+            }
+
+            <div class="mt-3 d-flex gap-2">
+                <a asp-controller="Category" asp-action="Index" class="btn btn-primary">
+                    <i class="ti ti-list me-1"></i> Kategorilere Git
+                </a>
+                <a asp-controller="Category" asp-action="MasterImport" class="btn btn-outline-secondary">
+                    <i class="ti ti-refresh me-1"></i> Tekrar Import
+                </a>
+            </div>
+        </div>
+    </div>
+}

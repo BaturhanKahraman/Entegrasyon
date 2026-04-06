@@ -1,0 +1,9 @@
+1- In brands page the user can click the button "içe aktar". This button should provide our master-db brands we already imported from trendyol before. User will have a list for brand. a list of checkboxes maybe. Afterwards The user can select the brands which is going to be imported. once user clicks the import button importing is going to start from our master db to user's main db with trendyol matchings.
+Once it is dont I expect user to be able to see the brands and their matchings in the sync pages.
+It should be idomtend(or smt like that),
+Business rule We cant have the same name brands. it should be checked.
+Under http://localhost:5100/marketplace/sync link with the marketplaces we also should see brands button for each mp. As we do in category side, we can examine brands over there and we can match them with an external brand.
+
+
+
+

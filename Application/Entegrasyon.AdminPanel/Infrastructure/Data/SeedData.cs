@@ -7,15 +7,33 @@ namespace Entegrasyon.AdminPanel.Infrastructure.Data;
 public static class SeedData
 {
     public static void Initialize(AdminPanelDbContext context, string? mainConnectionString = null,
-        string? catalogSnapshotPath = null)
+        string? catalogSnapshotDir = null)
     {
         SeedAdminUser(context);
         SeedFeaturePackages(context);
         SeedDevelopmentTenant(context, mainConnectionString);
 
-        // Master catalog seed (async — sync wrapper kullanıyoruz startup sırasında)
-        var catalogSeedService = new MasterCatalogSeedService(context, NullLogger<MasterCatalogSeedService>.Instance);
-        catalogSeedService.SeedAsync(catalogSnapshotPath).GetAwaiter().GetResult();
+        // Master catalog seed — sadece DB boşsa snapshot'lardan yükle, API çağrısı yok
+        if (!context.MasterCategories.Any() && catalogSnapshotDir != null)
+        {
+            var catalogSeedService = new MasterCatalogSeedService(context, NullLogger<MasterCatalogSeedService>.Instance);
+
+            var categoryFile = Path.Combine(catalogSnapshotDir, "categories-snapshot.json");
+            var attributeFile = Path.Combine(catalogSnapshotDir, "attributes-snapshot.json");
+            var brandFile = Path.Combine(catalogSnapshotDir, "brands-snapshot.json");
+
+            // 1. Kategoriler
+            if (File.Exists(categoryFile))
+                catalogSeedService.SeedAsync(categoryFile).GetAwaiter().GetResult();
+
+            // 2. Attribute + Value (snapshot'tan)
+            if (File.Exists(attributeFile))
+                catalogSeedService.SeedAttributesFromSnapshotAsync(attributeFile).GetAwaiter().GetResult();
+
+            // 3. Markalar (snapshot'tan)
+            if (File.Exists(brandFile))
+                catalogSeedService.SeedBrandsFromSnapshotAsync(brandFile).GetAwaiter().GetResult();
+        }
     }
 
     private static void SeedAdminUser(AdminPanelDbContext context)

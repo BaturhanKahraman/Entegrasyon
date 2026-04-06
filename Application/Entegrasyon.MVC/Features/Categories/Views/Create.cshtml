@@ -32,12 +32,30 @@
         if (evt.detail.target.id === 'wizard-content') {
             var content = evt.detail.target.innerHTML;
             var steps = document.querySelectorAll('.step-item');
+            var stepCard = document.getElementById('wizard-steps').closest('.card');
+
+            // Success state — hide step indicator entirely
+            if (content.indexOf('step-success') > -1) {
+                stepCard.style.display = 'none';
+                return;
+            }
+            stepCard.style.display = '';
+
             var currentStep = 1;
-            if (content.indexOf('step2-attributes') > -1 || content.indexOf('Ozellik Secimi') > -1) currentStep = 2;
-            if (content.indexOf('step3-review') > -1 || content.indexOf('Onay') > -1) currentStep = 3;
+            var skippedStep2 = false;
+            if (content.indexOf('step3-review') > -1) {
+                currentStep = 3;
+                skippedStep2 = content.indexOf('step2-attributes') === -1;
+            }
+            else if (content.indexOf('step2-attributes') > -1) currentStep = 2;
             steps.forEach(function(s) {
                 var step = parseInt(s.getAttribute('data-step'));
                 s.classList.remove('active');
+                if (step === 2 && skippedStep2) {
+                    s.style.display = 'none';
+                } else {
+                    s.style.display = '';
+                }
                 if (step === currentStep) s.classList.add('active');
             });
         }

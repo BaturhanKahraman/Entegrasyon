@@ -40,6 +40,7 @@
                                                value="@Model.Attributes[i].AttributeName" />
                                         <input type="hidden" name="Attributes[@i].AllowCustom"
                                                value="@Model.Attributes[i].AllowCustom" />
+                                        <input type="hidden" name="Attributes[@i].Selected" value="false" />
                                         <input type="checkbox" class="form-check-input"
                                                name="Attributes[@i].Selected" value="true" />
                                     </td>
@@ -51,14 +52,17 @@
                                         }
                                     </td>
                                     <td class="text-center">
+                                        <input type="hidden" name="Attributes[@i].IsRequired" value="false" />
                                         <input type="checkbox" class="form-check-input"
                                                name="Attributes[@i].IsRequired" value="true" />
                                     </td>
                                     <td class="text-center">
+                                        <input type="hidden" name="Attributes[@i].IsVarianter" value="false" />
                                         <input type="checkbox" class="form-check-input"
                                                name="Attributes[@i].IsVarianter" value="true" />
                                     </td>
                                     <td class="text-center">
+                                        <input type="hidden" name="Attributes[@i].IsSlicer" value="false" />
                                         <input type="checkbox" class="form-check-input"
                                                name="Attributes[@i].IsSlicer" value="true" />
                                     </td>

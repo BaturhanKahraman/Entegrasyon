@@ -9,6 +9,8 @@ public class AttributeSyncVm
     public int SelectedMarketPlaceId { get; set; } = 1;
     public List<MarketPlace> MarketPlaces { get; set; } = [];
     public List<AttributeListItemVm> Attributes { get; set; } = [];
+    public string? SearchTerm { get; set; }
+    public string? ReturnUrl { get; set; }
 }
 
 public class AttributeListItemVm
@@ -28,6 +30,7 @@ public class AttributeMatchPanelVm
     public int MarketPlaceId { get; set; }
     public CategoryAttributeMarketPlaceMatch? AttributeMatch { get; set; }
     public List<AttributeValueMatchItemVm> ValueMatches { get; set; } = [];
+    public string? ReturnUrl { get; set; }
 }
 
 public class AttributeValueMatchItemVm

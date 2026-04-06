@@ -1,0 +1,234 @@
+@model CategoryDetailsVm
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Categories"><i class="bi bi-house"></i> Kok</a>
+        </li>
+        @for (int i = 0; i < Model.Breadcrumbs.Count; i++)
+        {
+            var crumb = Model.Breadcrumbs[i];
+            @if (i == Model.Breadcrumbs.Count - 1)
+            {
+                <li class="breadcrumb-item active">@crumb.Name</li>
+            }
+            else
+            {
+                <li class="breadcrumb-item">
+                    <a asp-action="Categories" asp-route-parentId="@crumb.Id">@crumb.Name</a>
+                </li>
+            }
+        }
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        @if (Model.IsLeaf)
+        {
+            <i class="bi bi-file-earmark text-success me-2"></i>
+        }
+        else
+        {
+            <i class="bi bi-folder text-warning me-2"></i>
+        }
+        @Model.Name
+    </h2>
+    <a asp-action="Categories" asp-route-parentId="@Model.Breadcrumbs.LastOrDefault()?.Id"
+       class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">Kategori Bilgileri</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Durum</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Aktif</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Pasif</span>
+                        }
+                    </dd>
+                    <dt class="col-sm-4">Tip</dt>
+                    <dd class="col-sm-8">
+                        @(Model.IsLeaf ? "Yaprak Kategori" : "Ana Kategori")
+                    </dd>
+                    @if (Model.OriginalMarketplaceName is not null)
+                    {
+                        <dt class="col-sm-4">Kaynak</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-warning text-dark">@Model.OriginalMarketplaceName</span>
+                        </dd>
+                        <dt class="col-sm-4">Harici ID</dt>
+                        <dd class="col-sm-8"><code>@Model.OriginalExternalId</code></dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">Marketplace Eslesmeleri</div>
+            <div class="card-body">
+                @if (Model.MarketplaceMappings.Count == 0)
+                {
+                    <p class="text-muted mb-0">Henuz eslestirme yapilmamis.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Marketplace</th>
+                                <th>Harici ID</th>
+                                <th>Harici Ad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mp in Model.MarketplaceMappings)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-primary">@mp.MarketplaceName</span></td>
+                                    <td><code>@mp.ExternalId</code></td>
+                                    <td>@mp.ExternalName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Children.Count > 0)
+{
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            <i class="bi bi-diagram-3 me-1"></i> Alt Kategoriler
+            <span class="badge bg-primary ms-1">@Model.Children.Count</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                @foreach (var child in Model.Children)
+                {
+                    <a asp-action="@(child.IsLeaf ? "CategoryDetails" : "Categories")"
+                       asp-route-id="@(child.IsLeaf ? child.Id : (int?)null)"
+                       asp-route-parentId="@(!child.IsLeaf ? child.Id : (int?)null)"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <span>
+                            @if (child.IsLeaf)
+                            {
+                                <i class="bi bi-file-earmark text-success me-1"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-folder text-warning me-1"></i>
+                            }
+                            @child.Name
+                        </span>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Attributes.Count > 0)
+{
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            <i class="bi bi-list-check me-1"></i> Ozellikler
+            <span class="badge bg-info ms-1">@Model.Attributes.Count</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ozellik Adi</th>
+                            <th class="text-center">Zorunlu</th>
+                            <th class="text-center">Varyanter</th>
+                            <th class="text-center">Slicer</th>
+                            <th class="text-center">Ozel Deger</th>
+                            <th class="text-center">Deger Sayisi</th>
+                            <th class="text-end">Islemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attr in Model.Attributes)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@attr.HumanizedName</strong>
+                                    <br><small class="text-muted">@attr.Key</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (attr.IsRequired)
+                                    {
+                                        <span class="badge bg-danger">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (attr.IsVarianter)
+                                    {
+                                        <span class="badge bg-purple" style="background-color:#7c3aed">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (attr.IsSlicer)
+                                    {
+                                        <span class="badge bg-warning text-dark">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (attr.AllowCustom)
+                                    {
+                                        <span class="badge bg-success">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">@attr.ValueCount</span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="AttributeDetails" asp-route-id="@attr.AttributeId"
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

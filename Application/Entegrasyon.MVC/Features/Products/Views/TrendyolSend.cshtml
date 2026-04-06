@@ -25,27 +25,39 @@
                         }
                         else
                         {
+                            var returnUrl = Uri.EscapeDataString($"/products/{Model.ProductId}/sync/trendyol/send");
+                            var categoryFixUrl = !string.IsNullOrEmpty(Model.Preflight.ProductCategoryName)
+                                ? $"/marketplace/sync/categories?mp=1&search={Uri.EscapeDataString(Model.Preflight.ProductCategoryName)}&returnUrl={returnUrl}"
+                                : $"/marketplace/sync/categories?mp=1&returnUrl={returnUrl}";
+                            var brandFixUrl = !string.IsNullOrEmpty(Model.Preflight.ProductBrandName)
+                                ? $"/marketplace/sync/brands?mp=1&search={Uri.EscapeDataString(Model.Preflight.ProductBrandName)}&returnUrl={returnUrl}"
+                                : $"/marketplace/sync/brands?mp=1&returnUrl={returnUrl}";
+                            var firstMissingAttr = Model.Preflight.MissingAttributes.FirstOrDefault() ?? "";
+                            var attrFixUrl = !string.IsNullOrEmpty(firstMissingAttr)
+                                ? $"/marketplace/sync/attributes?mp=1&search={Uri.EscapeDataString(firstMissingAttr)}&returnUrl={returnUrl}"
+                                : $"/marketplace/sync/attributes?mp=1&returnUrl={returnUrl}";
+
                             <div class="list-group list-group-flush">
                                 @{ RenderCheck(Model.Preflight.CategoryMatched,
                                     "Kategori Eslestirmesi",
                                     Model.Preflight.CategoryMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedCategoryName}"
-                                        : "Trendyol kategori eslestirmesi bulunamadi",
-                                    Model.Preflight.CategoryMatched ? null : "/marketplace/matching?tab=categories"); }
+                                        : $"Trendyol kategori eslestirmesi bulunamadi ({Model.Preflight.ProductCategoryName})",
+                                    Model.Preflight.CategoryMatched ? null : categoryFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.BrandMatched,
                                     "Marka Eslestirmesi",
                                     Model.Preflight.BrandMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedBrandName}"
-                                        : "Trendyol marka eslestirmesi bulunamadi",
-                                    Model.Preflight.BrandMatched ? null : "/marketplace/matching?tab=brands"); }
+                                        : $"Trendyol marka eslestirmesi bulunamadi ({Model.Preflight.ProductBrandName})",
+                                    Model.Preflight.BrandMatched ? null : brandFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
                                     "Zorunlu Ozellikler",
                                     Model.Preflight.RequiredAttributesMatched
                                         ? "Tum zorunlu ozellikler eslesti"
                                         : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}",
-                                    Model.Preflight.RequiredAttributesMatched ? null : "/marketplace/matching?tab=attributes"); }
+                                    Model.Preflight.RequiredAttributesMatched ? null : attrFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.HasVariants,
                                     "Varyant Durumu",

@@ -31,5 +31,17 @@ public sealed record ProductSendPreflightDto(
     bool AllVariantsHaveBarcodes,
 
     /// <summary>True if all five preflight checks pass.</summary>
-    bool AllPassed
+    bool AllPassed,
+
+    /// <summary>Application category ID for constructing fix URLs.</summary>
+    int ProductCategoryId = 0,
+
+    /// <summary>Application category name for constructing fix URLs.</summary>
+    string? ProductCategoryName = null,
+
+    /// <summary>Application brand ID for constructing fix URLs.</summary>
+    int? ProductBrandId = null,
+
+    /// <summary>Application brand name for constructing fix URLs.</summary>
+    string? ProductBrandName = null
 );

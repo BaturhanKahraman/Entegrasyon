@@ -433,7 +433,11 @@ public sealed class ProductSyncManager(
             missingAttributes,
             hasVariants,
             allVariantsHaveBarcodes,
-            allPassed
+            allPassed,
+            ProductCategoryId: product.CategoryId,
+            ProductCategoryName: product.Category?.Name,
+            ProductBrandId: product.BrandId,
+            ProductBrandName: product.Brand?.Name
         );
 
         return new SuccessDataResult<ProductSendPreflightDto>(preflight);

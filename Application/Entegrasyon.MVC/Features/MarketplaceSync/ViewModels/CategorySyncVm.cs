@@ -10,6 +10,8 @@ public class CategorySyncVm
     public CategoryMatchSummaryDto Summary { get; set; } = new();
     public List<CategoryMarketplaceMappingDto> Mappings { get; set; } = [];
     public List<CategoryListItemVm> AllCategories { get; set; } = [];
+    public string? SearchTerm { get; set; }
+    public string? ReturnUrl { get; set; }
 }
 
 public class CategoryListItemVm
