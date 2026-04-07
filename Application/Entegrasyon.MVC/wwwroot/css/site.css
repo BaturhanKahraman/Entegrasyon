@@ -108,3 +108,22 @@
     background: var(--tblr-success);
     color: #fff;
 }
+
+/* Tom Select — fix dropdown z-index and background for Tabler UI */
+.ts-dropdown {
+    z-index: 1050 !important;
+    background: var(--tblr-bg-surface, #fff) !important;
+    border: 1px solid var(--tblr-border-color, #e6e7e9) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+[data-bs-theme="dark"] .ts-dropdown {
+    background: var(--tblr-bg-surface, #1b2434) !important;
+    border-color: var(--tblr-border-color, #2c3e50) !important;
+}
+.ts-dropdown .option {
+    padding: 6px 12px;
+}
+.ts-dropdown .option.active {
+    background: var(--tblr-primary, #206bc4);
+    color: #fff;
+}
