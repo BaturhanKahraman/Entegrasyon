@@ -74,7 +74,7 @@
     </div>
 </form>
 
-@* -- Brand Add Modal -- *@
+@* -- Brand Quick Add Modal -- *@
 <div class="modal modal-blur fade" id="brand-add-modal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -83,29 +83,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>"<strong id="brand-add-name"></strong>" markasini eklemek ister misiniz?</p>
+                <div class="mb-3">
+                    <label class="form-label">Marka Adi</label>
+                    <input type="text" id="brand-add-input" class="form-control" placeholder="Marka adini girin..." />
+                </div>
+                <div id="brand-add-error" class="alert alert-danger d-none"></div>
+                <div id="brand-add-success" class="alert alert-info d-none">
+                    Marka eklendi. Bu marka yeni eklendigi icin pazaryerleriyle eslestirilmemis olacak.
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Hayir</button>
-                <button type="button" class="btn btn-primary" id="brand-add-confirm">Evet, Ekle</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* -- Brand Info Modal -- *@
-<div class="modal modal-blur fade" id="brand-info-modal" tabindex="-1">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bilgi</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bu marka yeni eklendigi icin eslestirilmemis olacak.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tamam</button>
+                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="brand-add-confirm">Ekle</button>
             </div>
         </div>
     </div>
@@ -136,17 +125,30 @@ function initStep1() {
     });
 
     // -- Brand quick-add: + button opens modal --
+    var brandAddInput = document.getElementById('brand-add-input');
+    var brandAddError = document.getElementById('brand-add-error');
+    var brandAddSuccess = document.getElementById('brand-add-success');
+    var brandAddConfirm = document.getElementById('brand-add-confirm');
+
     document.getElementById('brand-add-btn').addEventListener('click', function() {
-        var typed = brandTs.wrapper.querySelector('.ts-control input')?.value?.trim() || '';
-        var nameEl = document.getElementById('brand-add-name');
-        nameEl.textContent = typed || 'Yeni Marka';
+        brandAddInput.value = '';
+        brandAddError.classList.add('d-none');
+        brandAddSuccess.classList.add('d-none');
+        brandAddConfirm.disabled = false;
         var modal = new bootstrap.Modal(document.getElementById('brand-add-modal'));
         modal.show();
+        setTimeout(function() { brandAddInput.focus(); }, 300);
     });
 
     // -- Brand quick-add confirm --
-    document.getElementById('brand-add-confirm').addEventListener('click', function() {
-        var name = document.getElementById('brand-add-name').textContent;
+    brandAddConfirm.addEventListener('click', function() {
+        var name = brandAddInput.value.trim();
+        if (!name) { brandAddInput.focus(); return; }
+
+        brandAddConfirm.disabled = true;
+        brandAddError.classList.add('d-none');
+        brandAddSuccess.classList.add('d-none');
+
         var body = new URLSearchParams();
         body.append('brandName', name);
         if (token) body.append('__RequestVerificationToken', token);
@@ -157,16 +159,22 @@ function initStep1() {
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var addModal = bootstrap.Modal.getInstance(document.getElementById('brand-add-modal'));
-            if (addModal) addModal.hide();
             if (data.success) {
-                // Add new option via Tom Select API and select it
                 brandTs.addOption({ value: data.id.toString(), text: data.name });
                 brandTs.setValue(data.id.toString());
-                var infoModal = new bootstrap.Modal(document.getElementById('brand-info-modal'));
-                infoModal.show();
+                brandAddSuccess.classList.remove('d-none');
+                brandAddInput.value = '';
+            } else {
+                brandAddError.textContent = data.message || 'Marka eklenemedi.';
+                brandAddError.classList.remove('d-none');
+                brandAddConfirm.disabled = false;
             }
         });
+    });
+
+    // Enter key in brand input triggers confirm
+    brandAddInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); brandAddConfirm.click(); }
     });
 }
 initStep1();
