@@ -13,6 +13,10 @@ public sealed class AddProductDto
     public string? Year { get; set; }
     public int BrandId { get; set; }
     public int CategoryId { get; set; }
+    public string? SeoTitle { get; set; }
+    public string? SeoDescription { get; set; }
+    public string? SeoSlug { get; set; }
+    public string? SeoKeywords { get; set; }
     public IEnumerable<AttributeKeyValue> AttributeKeyValues { get; set; } = [];
 
     public IEnumerable<AddProductVariantDto> ProductVariants { get; set; } = [];

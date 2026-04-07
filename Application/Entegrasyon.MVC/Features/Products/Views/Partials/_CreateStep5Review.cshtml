@@ -118,11 +118,11 @@
     </div>
     <div class="card-footer d-flex justify-content-between">
         <a href="/products/add" class="btn btn-outline-secondary">Bastan Baslat</a>
-        <form hx-post="/products/add/save" hx-target="#wizard-content" hx-swap="innerHTML">
+        <form hx-post="/products/add/step5" hx-target="#wizard-content" hx-swap="innerHTML">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success" id="btn-save-product">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 12l5 5l10 -10" /></svg>
-                Urunu Kaydet
+                Devam: Yayinla &rarr;
             </button>
         </form>
     </div>
@@ -163,7 +163,7 @@
             path.setAttribute('d', 'M5 12l5 5l10 -10');
             icon.appendChild(path);
             saveBtn.appendChild(icon);
-            saveBtn.appendChild(document.createTextNode(' Urunu Kaydet'));
+            saveBtn.appendChild(document.createTextNode(' Devam: Yayinla'));
         }
     });
 })();

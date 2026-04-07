@@ -273,6 +273,28 @@ public class ProductController(
     }
 
     [SkipAutoValidation]
+    [HttpPost("/products/add/step5")]
+    public IActionResult CreateStep5(CreateProductVm vm)
+    {
+        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep6Publish", vm);
+
+        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), vm);
+    }
+
+    [SkipAutoValidation]
+    [HttpPost("/products/add/step6")]
+    public async Task<IActionResult> CreateStep6(CreateProductVm vm)
+    {
+        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+        return await CreateSave();
+    }
+
+    [SkipAutoValidation]
     [HttpPost("/products/add/save")]
     public async Task<IActionResult> CreateSave()
     {
@@ -299,6 +321,10 @@ public class ProductController(
             Year = vm.Year,
             BrandId = vm.BrandId,
             CategoryId = vm.CategoryId,
+            SeoTitle = vm.SeoTitle,
+            SeoDescription = vm.SeoDescription,
+            SeoSlug = vm.SeoSlug,
+            SeoKeywords = vm.SeoKeywords,
             AttributeKeyValues = attributeKeyValues,
             ProductVariants = vm.Variants.Select(v => new AddProductVariantDto
             {
@@ -308,6 +334,7 @@ public class ProductController(
                 CostPrice = v.CostPrice,
                 VatRate = v.VatRate,
                 DimensionalWeight = v.DimensionalWeight,
+                ECommercePrice = v.ECommercePrice,
                 CurrencyType = "TRY",
                 ProductVariantAttributes = v.VariantAttributes.Select(va =>
                     new Entity.Products.ProductVariantAttribute
@@ -372,7 +399,7 @@ public class ProductController(
             ViewBag.ImageCount = imageCount;
 
             if (Request.IsHtmx())
-                return PartialView("Partials/_CreateStep6Success");
+                return PartialView("Partials/_CreateStep7Success");
 
             TempData.SetSuccess($"'{vm.Title}' basariyla eklendi.");
             return RedirectToAction(nameof(Detail), new { id = product.Id });

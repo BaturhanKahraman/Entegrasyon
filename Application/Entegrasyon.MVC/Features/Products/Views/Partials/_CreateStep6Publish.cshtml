@@ -1,0 +1,149 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
+
+<div data-wizard-step="6">
+<form hx-post="/products/add/step6" hx-target="#wizard-content" hx-swap="innerHTML">
+    @Html.AntiForgeryToken()
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Magaza Yayinlama</h3>
+            <span class="card-subtitle">Urunu kendi magazanizda yayinlamak icin SEO ve fiyat bilgilerini ayarlayin. Bu adimi atlayabilirsiniz.</span>
+        </div>
+        <div class="card-body">
+            <h4 class="mb-3">SEO Bilgileri</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">SEO Baslik</label>
+                    <input type="text" name="SeoTitle" value="@Model.SeoTitle" class="form-control"
+                           placeholder="@Model.Title" maxlength="70" />
+                    <small class="text-muted">Bos birakilirsa urun adi kullanilir (maks. 70 karakter)</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">SEO URL (Slug)</label>
+                    <input type="text" name="SeoSlug" value="@Model.SeoSlug" class="form-control"
+                           placeholder="ornek-urun-adi" />
+                    <small class="text-muted">Bos birakilirsa otomatik olusturulur</small>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">SEO Aciklama</label>
+                    <textarea name="SeoDescription" class="form-control" rows="2" maxlength="160"
+                              placeholder="Arama motorlarinda gorunecek kisa aciklama...">@Model.SeoDescription</textarea>
+                    <small class="text-muted">Maks. 160 karakter</small>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">SEO Anahtar Kelimeler</label>
+                    <input type="text" name="SeoKeywords" value="@Model.SeoKeywords" class="form-control"
+                           placeholder="anahtar, kelime, virgul, ile" />
+                </div>
+            </div>
+
+            @if (Model.Variants.Count > 0)
+            {
+                <h4 class="mb-3 mt-4">Magaza Fiyatlari</h4>
+                <p class="text-muted small mb-3">Her varyant icin magazada gorunecek fiyati belirleyin. Bos birakilirsa satis fiyati kullanilir.</p>
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm">
+                        <thead>
+                            <tr>
+                                <th>Varyant</th>
+                                <th>Satis Fiyati</th>
+                                <th>Magaza Fiyati</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Variants.Count; i++)
+                            {
+                                var v = Model.Variants[i];
+                                var label = string.Join(" - ", v.VariantAttributes.Select(a => a.ValueName));
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold">@(string.IsNullOrEmpty(label) ? "Varyant " + (i + 1) : label)</span>
+                                    </td>
+                                    <td class="text-muted">@v.SalePrice.ToString("N2") TL</td>
+                                    <td>
+                                        <input type="number" name="Variants[@i].ECommercePrice"
+                                               value="@(v.ECommercePrice > 0 ? v.ECommercePrice : v.SalePrice)"
+                                               class="form-control form-control-sm" step="0.01" min="0" style="width:140px" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Carry forward ALL previous data as hidden fields *@
+    <input type="hidden" name="Title" value="@Model.Title" />
+    <input type="hidden" name="Description" value="@Model.Description" />
+    <input type="hidden" name="StockCode" value="@Model.StockCode" />
+    <input type="hidden" name="Season" value="@Model.Season" />
+    <input type="hidden" name="Year" value="@Model.Year" />
+    <input type="hidden" name="BrandId" value="@Model.BrandId" />
+    <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+    <input type="hidden" name="BrandName" value="@Model.BrandName" />
+    <input type="hidden" name="CategoryName" value="@Model.CategoryName" />
+
+    @for (int i = 0; i < Model.CategoryAttributes.Count; i++)
+    {
+        <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@Model.CategoryAttributes[i].CategoryAttributeId" />
+        <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@Model.CategoryAttributes[i].AttributeName" />
+        <input type="hidden" name="CategoryAttributes[@i].ValueId" value="@Model.CategoryAttributes[i].ValueId" />
+        <input type="hidden" name="CategoryAttributes[@i].CustomValue" value="@Model.CategoryAttributes[i].CustomValue" />
+        <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired" />
+        <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@Model.CategoryAttributes[i].AllowCustom" />
+    }
+
+    @for (int i = 0; i < Model.Variants.Count; i++)
+    {
+        var v = Model.Variants[i];
+        <input type="hidden" name="Variants[@i].ListPrice" value="@v.ListPrice" />
+        <input type="hidden" name="Variants[@i].SalePrice" value="@v.SalePrice" />
+        <input type="hidden" name="Variants[@i].CostPrice" value="@v.CostPrice" />
+        <input type="hidden" name="Variants[@i].VatRate" value="@v.VatRate" />
+        <input type="hidden" name="Variants[@i].DimensionalWeight" value="@v.DimensionalWeight" />
+        @for (int j = 0; j < v.VariantAttributes.Count; j++)
+        {
+            var va = v.VariantAttributes[j];
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].CategoryAttributeId" value="@va.CategoryAttributeId" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].AttributeName" value="@va.AttributeName" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueId" value="@va.ValueId" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueName" value="@va.ValueName" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsCustom" value="@va.IsCustom" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsVarianter" value="@va.IsVarianter" />
+            <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsSlicer" value="@va.IsSlicer" />
+        }
+        @for (int b = 0; b < v.BranchOfficeStocks.Count; b++)
+        {
+            <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeId" value="@v.BranchOfficeStocks[b].BranchOfficeId" />
+            <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeName" value="@v.BranchOfficeStocks[b].BranchOfficeName" />
+            <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].Stock" value="@v.BranchOfficeStocks[b].Stock" />
+        }
+    }
+
+    @for (int i = 0; i < Model.ImageAssignments.Count; i++)
+    {
+        <input type="hidden" name="ImageAssignments[@i].VariantIndex" value="@Model.ImageAssignments[i].VariantIndex" />
+        <input type="hidden" name="ImageAssignments[@i].MainImageIndex" value="@Model.ImageAssignments[i].MainImageIndex" />
+        @for (int k = 0; k < Model.ImageAssignments[i].TempImageKeys.Count; k++)
+        {
+            <input type="hidden" name="ImageAssignments[@i].TempImageKeys[@k]" value="@Model.ImageAssignments[i].TempImageKeys[k]" />
+        }
+    }
+
+    <div class="d-flex justify-content-between">
+        <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" id="btn-skip-publish"
+                    hx-post="/products/add/save" hx-target="#wizard-content" hx-swap="innerHTML"
+                    hx-include="closest form">
+                Atla, Kaydet
+            </button>
+            <button type="submit" class="btn btn-primary">
+                Yayinla ve Kaydet
+            </button>
+        </div>
+    </div>
+</form>
+</div>

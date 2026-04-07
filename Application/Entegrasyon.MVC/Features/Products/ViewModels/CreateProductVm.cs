@@ -24,6 +24,12 @@ public class CreateProductVm
     // Step 4: Image assignments (temp file keys from upload)
     public List<VariantImageAssignmentVm> ImageAssignments { get; set; } = [];
 
+    // Step 6: Storefront Publish (optional)
+    public string? SeoTitle { get; set; }
+    public string? SeoDescription { get; set; }
+    public string? SeoSlug { get; set; }
+    public string? SeoKeywords { get; set; }
+
     public static List<CreateVariantVm> GenerateVariants(
         List<VariantAttributeSelectionVm> selections,
         DefaultVariantValuesVm defaults)
@@ -82,6 +88,7 @@ public class CreateVariantVm
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; } = 20;
     public decimal DimensionalWeight { get; set; }
+    public decimal ECommercePrice { get; set; }
     public List<BranchOfficeStockVm> BranchOfficeStocks { get; set; } = [];
     public List<VariantAttributeValueVm> VariantAttributes { get; set; } = [];
 }
