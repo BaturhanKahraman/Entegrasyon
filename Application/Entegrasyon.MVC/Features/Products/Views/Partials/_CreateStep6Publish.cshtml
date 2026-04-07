@@ -135,12 +135,10 @@
     <div class="d-flex justify-content-between">
         <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary" id="btn-skip-publish"
-                    hx-post="/products/add/save" hx-target="#wizard-content" hx-swap="innerHTML"
-                    hx-include="closest form">
+            <button type="submit" class="btn btn-outline-secondary">
                 Atla, Kaydet
             </button>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" name="publishToStorefront" value="true">
                 Yayinla ve Kaydet
             </button>
         </div>

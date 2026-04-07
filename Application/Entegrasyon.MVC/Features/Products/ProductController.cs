@@ -312,6 +312,9 @@ public class ProductController(
     {
         if (string.IsNullOrWhiteSpace(vm.Title) || vm.CategoryId == 0)
         {
+            if (Request.IsHtmx())
+                return Content("<div class=\"alert alert-danger\">Urun bilgileri eksik. Lutfen <a href=\"/products/add\">bastan baslatın</a>.</div>", "text/html");
+
             TempData.SetError("Urun bilgileri eksik. Lutfen bastan baslatin.");
             return RedirectToAction(nameof(Create));
         }
@@ -417,6 +420,9 @@ public class ProductController(
             TempData.SetSuccess($"'{vm.Title}' basariyla eklendi.");
             return RedirectToAction(nameof(Detail), new { id = product.Id });
         }
+
+        if (Request.IsHtmx())
+            return Content("<div class=\"alert alert-danger\">" + (result.Message ?? "Urun eklenemedi.") + " <a href=\"/products/add\">Bastan baslatın</a></div>", "text/html");
 
         TempData.SetError(result.Message ?? "Urun eklenemedi.");
         return RedirectToAction(nameof(Create));
