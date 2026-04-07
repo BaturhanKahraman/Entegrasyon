@@ -260,8 +260,12 @@ public class ProductController(
 
     [SkipAutoValidation]
     [HttpPost("/products/add/step4")]
-    public IActionResult CreateStep4(CreateProductVm vm)
+    public IActionResult CreateStep4(CreateProductVm formVm)
     {
+        // Read full state from session, merge image assignments from form
+        var json = HttpContext.Session.GetString("CreateProduct");
+        var vm = json is not null ? JsonSerializer.Deserialize<CreateProductVm>(json)! : formVm;
+        vm.ImageAssignments = formVm.ImageAssignments;
         HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         if (Request.IsHtmx())
@@ -274,8 +278,11 @@ public class ProductController(
 
     [SkipAutoValidation]
     [HttpPost("/products/add/step5")]
-    public IActionResult CreateStep5(CreateProductVm vm)
+    public IActionResult CreateStep5(CreateProductVm formVm)
     {
+        // Read from session — don't overwrite with empty form VM
+        var json = HttpContext.Session.GetString("CreateProduct");
+        var vm = json is not null ? JsonSerializer.Deserialize<CreateProductVm>(json)! : formVm;
         HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         if (Request.IsHtmx())
