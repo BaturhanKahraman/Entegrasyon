@@ -288,23 +288,43 @@ public class ProductController(
 
     [SkipAutoValidation]
     [HttpPost("/products/add/step6")]
-    public async Task<IActionResult> CreateStep6(CreateProductVm vm)
+    public async Task<IActionResult> CreateStep6(CreateProductVm formVm)
     {
+        // Read full product data from TempData (set by CreateStep5)
+        var json = TempData.Peek("CreateProduct") as string;
+        if (json is null)
+            return await DoSave(formVm);
+
+        var vm = JsonSerializer.Deserialize<CreateProductVm>(json)!;
+
+        // Merge SEO fields and ECommercePrice from form
+        vm.SeoTitle = formVm.SeoTitle;
+        vm.SeoDescription = formVm.SeoDescription;
+        vm.SeoSlug = formVm.SeoSlug;
+        vm.SeoKeywords = formVm.SeoKeywords;
+
+        // Merge ECommercePrice per variant
+        for (int i = 0; i < vm.Variants.Count && i < formVm.Variants.Count; i++)
+            vm.Variants[i].ECommercePrice = formVm.Variants[i].ECommercePrice;
+
         return await DoSave(vm);
     }
 
     [SkipAutoValidation]
     [HttpPost("/products/add/save")]
-    public async Task<IActionResult> CreateSave(CreateProductVm vm)
+    public async Task<IActionResult> CreateSave()
     {
-        // Try form-bound VM first, fallback to TempData
-        if (string.IsNullOrWhiteSpace(vm.Title) || vm.CategoryId == 0)
+        // Read from TempData (set by previous steps)
+        var json = TempData.Peek("CreateProduct") as string;
+        if (json is null)
         {
-            var json = TempData.Peek("CreateProduct") as string;
-            if (json is not null)
-                vm = JsonSerializer.Deserialize<CreateProductVm>(json)!;
+            if (Request.IsHtmx())
+                return Content("<div class=\"alert alert-danger\">Urun bilgileri eksik. Lutfen <a href=\"/products/add\">bastan baslatin</a>.</div>", "text/html");
+            TempData.SetError("Urun bilgileri eksik.");
+            return RedirectToAction(nameof(Create));
         }
 
+        var vm = JsonSerializer.Deserialize<CreateProductVm>(json)!;
         return await DoSave(vm);
     }
 
