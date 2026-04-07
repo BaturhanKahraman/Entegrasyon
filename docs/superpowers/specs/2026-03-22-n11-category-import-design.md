@@ -15,7 +15,7 @@ N11 pazaryerine urun publish edebilmek icin once N11 kategori agacinin ve attrib
 
 - Urun publish (Sprint 3)
 - Stok/fiyat sync (Sprint 4)
-- Siparis/iade (gelecek faz)
+- Sipariş/iade (gelecek faz)
 
 ---
 

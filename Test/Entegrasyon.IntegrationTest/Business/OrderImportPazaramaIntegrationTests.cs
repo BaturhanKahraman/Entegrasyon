@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Entegrasyon.IntegrationTest.Business;
 
 /// <summary>
-/// Pazarama siparis import integration testleri — gercek DB ile Pazarama siparis import akisi.
+/// Pazarama Sipariş import integration testleri — gercek DB ile Pazarama Sipariş import akisi.
 /// Advisory lock (key=2005), deduplication, barcode eslestirme, stok dusme ve musteri adi ayrıstırma dogrulanir.
 /// </summary>
 [Trait("Category", "Integration")]

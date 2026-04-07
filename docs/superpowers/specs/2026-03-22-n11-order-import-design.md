@@ -1,8 +1,8 @@
-# N11 Siparis Cekme + Import — Sprint 6 Design Spec
+# N11 Sipariş Cekme + Import — Sprint 6 Design Spec
 
 ## Problem
 
-N11 pazaryerinden siparisleri periyodik olarak cekip local DB'ye import etmek. Trendyol icin bu altyapi mevcut (TrendyolOrderPollingService + OrderManager). N11 icin ayni pipeline'in SOAP/XML versiyonu.
+N11 pazaryerinden Siparişleri periyodik olarak cekip local DB'ye import etmek. Trendyol icin bu altyapi mevcut (TrendyolOrderPollingService + OrderManager). N11 icin ayni pipeline'in SOAP/XML versiyonu.
 
 ## Scope
 
@@ -16,7 +16,7 @@ N11 pazaryerinden siparisleri periyodik olarak cekip local DB'ye import etmek. T
 
 ## Out of Scope
 
-- Siparis aksiyonlari (Accept, Reject, Ship — Sprint 7)
+- Sipariş aksiyonlari (Accept, Reject, Ship — Sprint 7)
 - Iptal/iade/degisim (Sprint 8)
 
 ---

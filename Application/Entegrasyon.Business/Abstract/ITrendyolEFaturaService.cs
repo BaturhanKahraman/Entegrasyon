@@ -16,7 +16,7 @@ public interface ITrendyolEFaturaService
     Task<IDataResult<bool>> CheckTaxPayerAsync(string taxId, CancellationToken ct = default);
 
     /// <summary>
-    /// Siparis icin e-fatura veya e-arsiv olustur.
+    /// Sipariş icin e-fatura veya e-arsiv olustur.
     /// Alicinin mukellef durumuna gore otomatik karar verir.
     /// </summary>
     Task<IDataResult<EFaturaRecord>> CreateInvoiceForOrderAsync(Guid orderId, CancellationToken ct = default);

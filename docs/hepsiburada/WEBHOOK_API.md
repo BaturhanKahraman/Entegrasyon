@@ -1,8 +1,8 @@
-# Hepsiburada Webhook API — Siparis Webhook Modeli
+# Hepsiburada Webhook API — Sipariş Webhook Modeli
 
 ## Genel Bilgiler
 
-Webhook modeli ile calisacak firmalar kendi **BaseURL**'lerini olusturur ve Hepsiburada'ya iletir. HB, siparis yasam dongusundeki event'leri bu URL'lere **push** eder (POST/PUT).
+Webhook modeli ile calisacak firmalar kendi **BaseURL**'lerini olusturur ve Hepsiburada'ya iletir. HB, Sipariş yasam dongusundeki event'leri bu URL'lere **push** eder (POST/PUT).
 
 > **Guvenlik:** Tum webhook istekleri **Basic Auth** ile dogrulanir.
 
@@ -20,7 +20,7 @@ Webhook modeli ile calisacak firmalar kendi **BaseURL**'lerini olusturur ve Heps
 
 **POST** `{baseUrl}/orders`
 
-HB yeni siparis olusturuldugunda bu endpoint'e siparis bilgilerini push eder.
+HB yeni Sipariş olusturuldugunda bu endpoint'e Sipariş bilgilerini push eder.
 
 ### Response — `201 Created`
 
@@ -30,10 +30,10 @@ HB yeni siparis olusturuldugunda bu endpoint'e siparis bilgilerini push eder.
 |------|-----|----------|
 | dueDate | string | Son islem tarihi |
 | lastStatusUpdateDate | string | Son durum guncelleme tarihi |
-| id | string | Siparis kalem ID |
+| id | string | Sipariş kalem ID |
 | sku | string | HB SKU |
-| orderNumber | string | Siparis numarasi |
-| orderDate | string | Siparis tarihi |
+| orderNumber | string | Sipariş numarasi |
+| orderDate | string | Sipariş tarihi |
 | quantity | int | Adet |
 | merchantId | UUID | Satici ID |
 | totalPrice | decimal | Toplam fiyat |
@@ -76,7 +76,7 @@ HB yeni siparis olusturuldugunda bu endpoint'e siparis bilgilerini push eder.
 
 | Deger | Aciklama |
 |-------|----------|
-| OrderCreated | Yeni siparis |
+| OrderCreated | Yeni Sipariş |
 | OrderLineTransferred | Kalem transferi |
 | OrderLineResend | Kalem tekrar gonderimi |
 | ClaimChangeAccepted | Degisim talebi kabul |
@@ -169,7 +169,7 @@ Otomatik veya panel uzerinden paketleme islemi sonrasi paket bilgileri push edil
 | status | string | Paket durumu |
 | customerId | string | Musteri ID |
 | customerName | string | Musteri adi |
-| orderDate | string | Siparis tarihi |
+| orderDate | string | Sipariş tarihi |
 | dueDate | string | Son islem tarihi |
 | barcode | string | Barkod |
 | packageNumber | string | Paket numarasi |
@@ -193,7 +193,7 @@ Otomatik veya panel uzerinden paketleme islemi sonrasi paket bilgileri push edil
 
 | Alan | Tip | Aciklama |
 |------|-----|----------|
-| lineItemId | string | Siparis kalemi ID |
+| lineItemId | string | Sipariş kalemi ID |
 | listingId | string | Listeleme ID |
 | hbSku | string | HB SKU |
 | merchantSku | string | Satici SKU |
@@ -209,7 +209,7 @@ Otomatik veya panel uzerinden paketleme islemi sonrasi paket bilgileri push edil
 | cargoPaymentInfo | object | Kargo odeme bilgisi |
 | properties | object | Urun ozellikleri |
 | productName | string | Urun adi |
-| orderNumber | string | Siparis numarasi |
+| orderNumber | string | Sipariş numarasi |
 | deliveryType | string | Teslimat tipi |
 | weight | decimal | Agirlik |
 | gtip | string | GTIP kodu |
@@ -349,7 +349,7 @@ Paket teslim edilemedigi durumda push edilir.
 
 **PUT** `{baseUrl}/lineitems/{lineitemid}/cancel`
 
-Siparis iptal edildiginde push edilir.
+Sipariş iptal edildiginde push edilir.
 
 ### Response — `204 Success`
 
@@ -363,7 +363,7 @@ Siparis iptal edildiginde push edilir.
 | quantity | int | Iptal edilen adet |
 | cancelledBy | string | Iptal eden (`Merchant`, `Customer`, `Fraud`) |
 | cancelReasonCode | string | Iptal neden kodu |
-| orderNumber | string | Siparis numarasi |
+| orderNumber | string | Sipariş numarasi |
 | isUnpackedLine | bool | Paketli kalem iptali durumunda `true` |
 
 ---
@@ -383,7 +383,7 @@ Paket bozuldugunda (split/unpack) push edilir.
 | unpackedDate | string | Paket bozulma tarihi |
 | packageNumber | string | Paket numarasi |
 | merchantId | UUID | Satici ID |
-| orderNumbers | string[] | Ilgili siparis numaralari |
+| orderNumbers | string[] | Ilgili Sipariş numaralari |
 
 ---
 
@@ -399,7 +399,7 @@ Teslimat adresi degistiginde push edilir.
 
 | Alan | Tip | Aciklama |
 |------|-----|----------|
-| orderNumber | string | Siparis numarasi |
+| orderNumber | string | Sipariş numarasi |
 | addressId | string | Adres ID |
 | address | string | Adres detayi |
 | name | string | Alici adi |

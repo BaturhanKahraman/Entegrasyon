@@ -17,7 +17,7 @@ public class TrackingController(
         return RedirectToAction("Result", new { orderNumber });
     }
 
-    [HttpGet("/siparis-takip/sonuc")]
+    [HttpGet("/Sipariş-takip/sonuc")]
     public async Task<IActionResult> Result(string orderNumber)
     {
         if (string.IsNullOrWhiteSpace(orderNumber))
@@ -26,7 +26,7 @@ public class TrackingController(
         var result = await orderManager.GetOrderByNumberAsync(orderNumber.Trim());
         if (!result.Success)
         {
-            ViewBag.Error = "Siparis bulunamadi. Lutfen siparis numaranizi kontrol edin.";
+            ViewBag.Error = "Sipariş bulunamadi. Lutfen Sipariş numaranizi kontrol edin.";
             ViewBag.SearchedNumber = orderNumber;
             return View("Index");
         }

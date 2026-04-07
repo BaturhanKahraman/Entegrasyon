@@ -8,7 +8,7 @@ namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 2 dakikada Trendyol getShipmentPackages endpoint'ini poll eder,
-/// yeni siparisleri import eder. Tum aktif tenant'lar icin calisir.
+/// yeni Siparişleri import eder. Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class TrendyolOrderPollingService(
     IServiceScopeFactory scopeFactory,

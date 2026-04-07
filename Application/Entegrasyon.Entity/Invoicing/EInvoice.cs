@@ -48,7 +48,7 @@ public sealed class EInvoice : BaseEntity
     public Guid? SaleId { get; set; }
     public Sale? Sale { get; set; }
 
-    /// <summary>Pazaryeri siparis kaydina FK (opsiyonel)</summary>
+    /// <summary>Pazaryeri Sipariş kaydina FK (opsiyonel)</summary>
     public Guid? MarketplaceOrderId { get; set; }
 
     public IntegratorProvider IntegratorProvider { get; set; }

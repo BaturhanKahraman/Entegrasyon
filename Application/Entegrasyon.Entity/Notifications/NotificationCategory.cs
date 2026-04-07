@@ -4,6 +4,6 @@ public enum NotificationCategory
 {
     Sistem,
     Pazaryeri,
-    Siparis,
+    Sipariş,
     Stok
 }

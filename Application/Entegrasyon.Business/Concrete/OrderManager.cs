@@ -602,10 +602,10 @@ public class OrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorDataResult<Order>(null!, "Siparis bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadi.");
 
         if (order.CustomerId != customerId)
-            return new ErrorDataResult<Order>(null!, "Bu siparise erisim yetkiniz yok.");
+            return new ErrorDataResult<Order>(null!, "Bu Siparişe erisim yetkiniz yok.");
 
         return new SuccessDataResult<Order>(order);
     }
@@ -618,13 +618,13 @@ public class OrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Siparis bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadi.");
 
         if (order.CustomerId != customerId)
-            return new ErrorResult("Bu siparise erisim yetkiniz yok.");
+            return new ErrorResult("Bu Siparişe erisim yetkiniz yok.");
 
         if (order.StorefrontOrderStatus != Entity.Storefront.OrderStatus.Received)
-            return new ErrorResult("Sadece 'Alindi' durumundaki siparisler iptal edilebilir.");
+            return new ErrorResult("Sadece 'Alindi' durumundaki Siparişler iptal edilebilir.");
 
         order.StorefrontOrderStatus = Entity.Storefront.OrderStatus.Cancelled;
         order.StorefrontPaymentStatus = Entity.Storefront.PaymentStatus.Refunded;
@@ -643,7 +643,7 @@ public class OrderManager(
 
         await dbContext.SaveChangesAsync();
         logger.LogInformation("Storefront order cancelled: {OrderId} by customer {CustomerId}", orderId, customerId);
-        return new SuccessResult("Siparis basariyla iptal edildi.");
+        return new SuccessResult("Sipariş basariyla iptal edildi.");
     }
 
     public async Task<IDataResult<Order>> GetOrderByNumberAsync(string orderNumber)
@@ -654,7 +654,7 @@ public class OrderManager(
             .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
 
         if (order is null)
-            return new ErrorDataResult<Order>(null!, "Siparis bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadi.");
 
         return new SuccessDataResult<Order>(order);
     }

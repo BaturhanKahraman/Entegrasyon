@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Entegrasyon.IntegrationTest.Business;
 
 /// <summary>
-/// N11 siparis import integration testleri — gercek DB ile N11 siparis import akisi.
+/// N11 Sipariş import integration testleri — gercek DB ile N11 Sipariş import akisi.
 /// Advisory lock (key=2002), deduplication, barcode eslestirme ve stok dusme dogrulanir.
 /// </summary>
 [Trait("Category", "Integration")]
@@ -247,7 +247,7 @@ public class OrderImportN11IntegrationTests : IntegrationTestBase
         // Act
         var result = await orderManager.ImportN11OrdersAsync(orders);
 
-        // Assert — siparis olusur ama ProductId null olur
+        // Assert — Sipariş olusur ama ProductId null olur
         result.Success.Should().BeTrue(result.Message);
 
         using var dbContext = CreateDbContext();

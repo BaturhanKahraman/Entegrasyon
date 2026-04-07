@@ -36,7 +36,7 @@
         {
             <button class="btn btn-outline-danger"
                     hx-post="/orders/@Model.Id/mark-unsupplied"
-                    hx-confirm="Bu siparisi tedarik edilemez olarak isaretlemek istediginize emin misiniz?"
+                    hx-confirm="Bu Siparişi tedarik edilemez olarak isaretlemek istediginize emin misiniz?"
                     hx-swap="none">
                 <i class="ti ti-package-off icon"></i>
                 Tedarik Edilemez
@@ -53,7 +53,7 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Siparis Bilgileri</h3>
+                        <h3 class="card-title">Sipariş Bilgileri</h3>
                         <div class="card-actions">
                             <span class="badge @StatusBadge(Model.MarketplaceOrderStatus) fs-6">
                                 @StatusText(Model.MarketplaceOrderStatus)
@@ -63,11 +63,11 @@
                     <div class="card-body">
                         <div class="datagrid">
                             <div class="datagrid-item">
-                                <div class="datagrid-title">Siparis No</div>
+                                <div class="datagrid-title">Sipariş No</div>
                                 <div class="datagrid-content">@(Model.OrderNumber ?? "-")</div>
                             </div>
                             <div class="datagrid-item">
-                                <div class="datagrid-title">Siparis Tarihi</div>
+                                <div class="datagrid-title">Sipariş Tarihi</div>
                                 <div class="datagrid-content">
                                     @(Model.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
                                 </div>
@@ -96,7 +96,7 @@
                             @if (!string.IsNullOrWhiteSpace(Model.OrderNote))
                             {
                                 <div class="datagrid-item">
-                                    <div class="datagrid-title">Siparis Notu</div>
+                                    <div class="datagrid-title">Sipariş Notu</div>
                                     <div class="datagrid-content">@Model.OrderNote</div>
                                 </div>
                             }
@@ -107,7 +107,7 @@
                 <!-- Order Items -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h3 class="card-title">Siparis Kalemleri</h3>
+                        <h3 class="card-title">Sipariş Kalemleri</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-vcenter card-table table-hover">

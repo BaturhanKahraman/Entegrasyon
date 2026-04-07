@@ -9,7 +9,7 @@ namespace Entegrasyon.Test.Hepsiburada;
 
 /// <summary>
 /// HepsiburadaOrderService unit testleri.
-/// Siparis listeleme, detay, paketleme, iptal, fatura islemleri test edilir.
+/// Sipariş listeleme, detay, paketleme, iptal, fatura islemleri test edilir.
 /// </summary>
 public class HepsiburadaOrderServiceTests : Entegrasyon.UnitTest.BaseTest
 {

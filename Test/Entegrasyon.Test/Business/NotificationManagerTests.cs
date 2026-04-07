@@ -132,7 +132,7 @@ public class NotificationManagerTests : BaseTest
         var userIds = new List<Guid> { _userId1 };
 
         // Act
-        await _sut.SendNotification("Header", "Content", NotificationSeverity.Warning, NotificationCategory.Siparis, userIds, "/orders/123");
+        await _sut.SendNotification("Header", "Content", NotificationSeverity.Warning, NotificationCategory.Sipariş, userIds, "/orders/123");
 
         // Assert
         _eventChannel.Reader.TryRead(out var evt).Should().BeTrue();
@@ -140,7 +140,7 @@ public class NotificationManagerTests : BaseTest
         evt!.Header.Should().Be("Header");
         evt.Content.Should().Be("Content");
         evt.Severity.Should().Be(NotificationSeverity.Warning);
-        evt.Category.Should().Be(NotificationCategory.Siparis);
+        evt.Category.Should().Be(NotificationCategory.Sipariş);
         evt.ActionUrl.Should().Be("/orders/123");
         evt.TenantId.Should().Be(1);
     }

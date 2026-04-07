@@ -1,4 +1,4 @@
-# PttAVM API — Siparis Entegrasyonu
+# PttAVM API — Sipariş Entegrasyonu
 
 Base URL: `https://integration-api.pttavm.com`
 
@@ -82,7 +82,7 @@ Base URL: `https://integration-api.pttavm.com`
 
 ---
 
-## 3. Siparis Detay
+## 3. Sipariş Detay
 
 **GET** `/api/v1/orders/{orderId}`
 
@@ -90,17 +90,17 @@ Base URL: `https://integration-api.pttavm.com`
 
 | Parametre | Tur | Aciklama |
 |-----------|-----|----------|
-| SiparisNo | string | Siparis numarasi |
-| SiparisDurumu | string | Durum (currentState degerleri) |
+| SiparişNo | string | Sipariş numarasi |
+| SiparişDurumu | string | Durum (currentState degerleri) |
 | KdvDahilToplamTutar | decimal | KDV'li toplam |
 | KargoTutari | decimal | Kargo bedeli |
-| siparisUrunler | array | Urun listesi |
+| SiparişUrunler | array | Urun listesi |
 | FaturaMusteriAdi | string | Fatura sahibi adi |
 | FaturaMusteriSoyadi | string | Fatura sahibi soyadi |
 
 ---
 
-## 4. Siparis Kontrol V2 (Arama)
+## 4. Sipariş Kontrol V2 (Arama)
 
 **GET** `/api/v1/orders/search`
 
@@ -119,7 +119,7 @@ Base URL: `https://integration-api.pttavm.com`
 
 ### Response
 
-JSON dizisi olarak siparis detaylari doner (musteri bilgisi, urun kirilimi, fatura, kargo barkodlari).
+JSON dizisi olarak Sipariş detaylari doner (musteri bilgisi, urun kirilimi, fatura, kargo barkodlari).
 
 ---
 
@@ -139,7 +139,7 @@ JSON dizisi olarak siparis detaylari doner (musteri bilgisi, urun kirilimi, fatu
 
 | Parametre | Tur | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
-| lineItemId | int[] | Evet | Siparis urun ID'leri |
+| lineItemId | int[] | Evet | Sipariş urun ID'leri |
 | content | string | Opsiyonel | PDF Base64 |
 | url | string | Opsiyonel | PDF URL |
 

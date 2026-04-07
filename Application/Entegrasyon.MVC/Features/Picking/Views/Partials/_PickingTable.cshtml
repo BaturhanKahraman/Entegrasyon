@@ -7,9 +7,9 @@
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Siparis No</th>
+                        <th>Sipariş No</th>
                         <th>Musteri</th>
-                        <th>Siparis Tarihi</th>
+                        <th>Sipariş Tarihi</th>
                         <th>Urun Adedi</th>
                         <th>Toplam</th>
                         <th>Pazaryeri</th>
@@ -45,7 +45,7 @@
                                         hx-post="/picking/@order.Id/pack"
                                         hx-target="#picking-row-@order.Id"
                                         hx-swap="outerHTML swap:300ms"
-                                        hx-confirm="Bu siparis hazirlaniyor olarak isaretlensin mi?">
+                                        hx-confirm="Bu Sipariş hazirlaniyor olarak isaretlensin mi?">
                                     <i class="ti ti-package icon"></i>
                                     Paketle
                                 </button>
@@ -73,8 +73,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Hazirlama bekleyen siparis yok",
-                         Subtitle = "Tum siparisler isleme alindi veya henuz yeni siparis gelmedi."
+                         Title = "Hazirlama bekleyen Sipariş yok",
+                         Subtitle = "Tum Siparişler isleme alindi veya henuz yeni Sipariş gelmedi."
                      }'/>
         </div>
     }

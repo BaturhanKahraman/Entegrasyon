@@ -44,7 +44,7 @@ Mevcut permission kontrolleri:
   - Roller: `AuthorizeView Policy=AppPermissions.Roles.View`
 
 Permission kontrolu OLMAYAN menu ogerleri (toplam ~35 oge):
-- Kategoriler, Ozellikler, Markalar, POS Terminal, Satis Gecmisi, Satislar ve Siparisler
+- Kategoriler, Ozellikler, Markalar, POS Terminal, Satis Gecmisi, Satislar ve Siparişler
 - Kargo Takip, Toplu Islem
 - Tum Pazaryeri alt menuleri
 - Faturalar, E-Fatura
@@ -167,7 +167,7 @@ Her sayfa icin uygun `AppPermissions` policy'si eklenecek:
 | Ozellikler | Categories.View | `/attributes` (kategori ozelliklerini yonetiyor) |
 | POS | Sales.Create | `/pos` |
 | Satis Gecmisi | Sales.View | `/sales` |
-| Siparisler | Orders.View | `/orders`, `/marketplace/orders`, `/marketplace/orders/*` |
+| Siparişler | Orders.View | `/orders`, `/marketplace/orders`, `/marketplace/orders/*` |
 | Kargo | Cargo.View | `/shipping` |
 | Toplu Islem | Products.Edit | `/bulk-operations` |
 | Faturalar | Orders.View | `/invoices`, `/invoicing` |

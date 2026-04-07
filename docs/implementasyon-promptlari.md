@@ -45,7 +45,7 @@
 > - `Features/Invoicing/InvoicesPage.razor` + `.razor.cs` — fatura listesi (MudDataGrid, filtreleme: tarih araligi, durum, tip)
 > - `Features/Invoicing/InvoiceDetailDialog.razor` + `.razor.cs` — fatura detay/onizleme
 > - `Features/Invoicing/CreateInvoiceDialog.razor` + `.razor.cs` — tek fatura olusturma
-> - `Features/Invoicing/BulkInvoiceDialog.razor` + `.razor.cs` — toplu fatura kesimi (secilen siparislerden)
+> - `Features/Invoicing/BulkInvoiceDialog.razor` + `.razor.cs` — toplu fatura kesimi (secilen Siparişlerden)
 > - `Features/Invoicing/InvoiceSettingsPanel.razor` + `.razor.cs` — entegrator ayarlari (IntegrationSettings sayfasina tab olarak eklenebilir)
 > - NavMenu'ye "E-Fatura" linki ekle (`Components/Shared/NavMenu.razor`)
 >
@@ -535,7 +535,7 @@
 > **Blazor:**
 > - `Features/Forecasting/ForecastDashboard.razor` + `.razor.cs` — tahmin ozet kartlari: stok tukenmesi riski olan urunler, satin alma onerileri, model dogrulugu
 > - `Features/Forecasting/ProductForecastChart.razor` + `.razor.cs` — urun bazli tahmin grafigi (MudChart: gecmis satis + tahmin cizgisi + guven araligi)
-> - `Features/Forecasting/PurchaseRecommendations.razor` + `.razor.cs` — satin alma onerileri listesi (MudDataGrid: urun, mevcut stok, tahmini tuketim, onerilen siparis miktari)
+> - `Features/Forecasting/PurchaseRecommendations.razor` + `.razor.cs` — satin alma onerileri listesi (MudDataGrid: urun, mevcut stok, tahmini tuketim, onerilen Sipariş miktari)
 > - NavMenu guncelleme
 >
 > **Testler:**
@@ -656,30 +656,30 @@
 
 > **Gorev:** Tedarikci urunlerini kendi stogunuz gibi pazaryerlerinde satmanizi saglayan bir dropship otomasyon modulu olustur.
 >
-> **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `OrderManager` (bkz: `Business/Concrete/OrderManager.cs`) siparis islemlerini yonetir.
+> **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `OrderManager` (bkz: `Business/Concrete/OrderManager.cs`) Sipariş islemlerini yonetir.
 >
 > **Ne Yapilacak:**
 >
 > **Entity Katmani:**
 > - `Dropship/Supplier.cs`: Name, ContactName, Email, Phone, ApiUrl (nullable), ApiKey (nullable), LeadTimeDays (int — teslim suresi gun), IsActive, PaymentTerms (string)
 > - `Dropship/SupplierProduct.cs`: SupplierId (FK), ProductVariantId (FK), SupplierSku, SupplierPrice (decimal — alis fiyati), SupplierStock (int), LastStockUpdate, IsActive
-> - `Dropship/DropshipOrder.cs`: OrderId (FK — pazaryeri siparisi), SupplierId (FK), SupplierOrderId (string — tedarikciye iletilen siparis numarasi), Status (enum: Pending, SentToSupplier, Confirmed, Shipped, Delivered, Cancelled), SupplierTrackingNumber, CreatedAt, SentAt, ConfirmedAt
+> - `Dropship/DropshipOrder.cs`: OrderId (FK — pazaryeri Siparişi), SupplierId (FK), SupplierOrderId (string — tedarikciye iletilen Sipariş numarasi), Status (enum: Pending, SentToSupplier, Confirmed, Shipped, Delivered, Cancelled), SupplierTrackingNumber, CreatedAt, SentAt, ConfirmedAt
 > - DTO'lar: `SupplierDto`, `SupplierProductDto`, `DropshipOrderDto`, `DropshipSummaryDto`
 >
 > **Business Katmani:**
 > - `Abstract/IDropshipManager.cs`: AddSupplier, GetSuppliers, AddSupplierProduct, GetSupplierProducts, CreateDropshipOrder(orderId), GetDropshipOrders, UpdateDropshipOrderStatus, SyncSupplierStock, GetDropshipSummary
-> - `Concrete/Dropship/DropshipManager.cs` — pipeline pattern. Siparis gelince: (1) urun dropship mi kontrol et, (2) tedarikciye siparis olustur, (3) durumu takip et
+> - `Concrete/Dropship/DropshipManager.cs` — pipeline pattern. Sipariş gelince: (1) urun dropship mi kontrol et, (2) tedarikciye Sipariş olustur, (3) durumu takip et
 > - `BackgroundServices/DropshipStockSyncService.cs` — periyodik tedarikci stok guncelleme (API olan tedarikciler icin)
 > - Validator'lar
 >
 > **Blazor:**
 > - `Features/Dropship/SuppliersPage.razor` + `.razor.cs` — tedarikci listesi ve CRUD
 > - `Features/Dropship/SupplierProductsPage.razor` + `.razor.cs` — tedarikci urun eslesmeleri (MudDataGrid)
-> - `Features/Dropship/DropshipOrdersPage.razor` + `.razor.cs` — dropship siparisleri ve durumlari
+> - `Features/Dropship/DropshipOrdersPage.razor` + `.razor.cs` — dropship Siparişleri ve durumlari
 > - NavMenu guncelleme
 >
 > **Testler:**
-> - `Dropship/DropshipManagerTests.cs` — en az 6 test: tedarikci ekleme, urun esleme, dropship siparis olusturma, durum guncelleme, stok senkronizasyonu, tedarikci urun fiyat degisikligi
+> - `Dropship/DropshipManagerTests.cs` — en az 6 test: tedarikci ekleme, urun esleme, dropship Sipariş olusturma, durum guncelleme, stok senkronizasyonu, tedarikci urun fiyat degisikligi
 
 ### Beklenen Cikti
 - 3 entity + 4 DTO

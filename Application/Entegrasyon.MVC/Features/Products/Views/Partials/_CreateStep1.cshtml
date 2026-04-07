@@ -22,47 +22,33 @@
                     <input name="StockCode" value="@Model.StockCode" class="form-control" />
                 </div>
 
-                @* -- Brand (searchable select + quick-add) -- *@
+                @* -- Brand (Tom Select + quick-add) -- *@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Marka</label>
-                    <div class="input-group mb-1">
-                        <input type="text" id="brand-filter" class="form-control" placeholder="Marka ara..." autocomplete="off" />
-                        <button type="button" class="btn btn-outline-primary" id="brand-add-btn" title="Yeni marka ekle">
+                    <div class="d-flex gap-2">
+                        <div class="flex-grow-1">
+                            <select name="BrandId" id="brand-select" required>
+                                <option value="">Marka secin...</option>
+                                @foreach (var b in brands)
+                                {
+                                    <option value="@b.Id" selected="@(Model.BrandId == b.Id)">@b.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" id="brand-add-btn" title="Yeni marka ekle" style="height:38px">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
                         </button>
                     </div>
-                    <select name="BrandId" id="brand-select" class="form-select" required>
-                        <option value="">Secin...</option>
-                        @foreach (var b in brands)
-                        {
-                            if (Model.BrandId == b.Id)
-                            {
-                                <option value="@b.Id" selected>@b.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@b.Id">@b.Name</option>
-                            }
-                        }
-                    </select>
                 </div>
 
-                @* -- Category (searchable select) -- *@
+                @* -- Category (Tom Select) -- *@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Kategori</label>
-                    <input type="text" id="category-filter" class="form-control mb-1" placeholder="Kategori ara..." autocomplete="off" />
-                    <select name="CategoryId" id="category-select" class="form-select" required>
-                        <option value="">Secin...</option>
+                    <select name="CategoryId" id="category-select" required>
+                        <option value="">Kategori secin...</option>
                         @foreach (var c in categories)
                         {
-                            if (Model.CategoryId == c.Id)
-                            {
-                                <option value="@c.Id" selected>@c.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@c.Id">@c.Name</option>
-                            }
+                            <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
                         }
                     </select>
                 </div>
@@ -128,30 +114,25 @@
 
 <script>
 (function() {
-    var brandFilter = document.getElementById('brand-filter');
-    var brandSelect = document.getElementById('brand-select');
-    var catFilter = document.getElementById('category-filter');
-    var catSelect = document.getElementById('category-select');
     var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
 
-    // -- Filter select options by text input (case-insensitive) --
-    function filterSelect(input, select) {
-        input.addEventListener('input', function() {
-            var q = input.value.toLowerCase();
-            var options = select.options;
-            for (var i = 1; i < options.length; i++) {
-                var text = options[i].textContent.toLowerCase();
-                options[i].hidden = q.length > 0 && text.indexOf(q) === -1;
-            }
-        });
-    }
+    // -- Tom Select for Brand --
+    var brandTs = new TomSelect('#brand-select', {
+        maxOptions: null,
+        allowEmptyOption: true,
+        placeholder: 'Marka secin...'
+    });
 
-    filterSelect(brandFilter, brandSelect);
-    filterSelect(catFilter, catSelect);
+    // -- Tom Select for Category --
+    var catTs = new TomSelect('#category-select', {
+        maxOptions: null,
+        allowEmptyOption: true,
+        placeholder: 'Kategori secin...'
+    });
 
-    // -- Brand quick-add: + button opens modal with filter text pre-filled --
+    // -- Brand quick-add: + button opens modal --
     document.getElementById('brand-add-btn').addEventListener('click', function() {
-        var typed = brandFilter.value.trim();
+        var typed = brandTs.wrapper.querySelector('.ts-control input')?.value?.trim() || '';
         var nameEl = document.getElementById('brand-add-name');
         nameEl.textContent = typed || 'Yeni Marka';
         var modal = new bootstrap.Modal(document.getElementById('brand-add-modal'));
@@ -160,7 +141,7 @@
 
     // -- Brand quick-add confirm --
     document.getElementById('brand-add-confirm').addEventListener('click', function() {
-        var name = brandFilter.value.trim() || document.getElementById('brand-add-name').textContent;
+        var name = document.getElementById('brand-add-name').textContent;
         var body = new URLSearchParams();
         body.append('brandName', name);
         if (token) body.append('__RequestVerificationToken', token);
@@ -174,13 +155,9 @@
             var addModal = bootstrap.Modal.getInstance(document.getElementById('brand-add-modal'));
             if (addModal) addModal.hide();
             if (data.success) {
-                // Add new option to select and select it
-                var opt = document.createElement('option');
-                opt.value = data.id;
-                opt.textContent = data.name;
-                opt.selected = true;
-                brandSelect.appendChild(opt);
-                brandFilter.value = '';
+                // Add new option via Tom Select API and select it
+                brandTs.addOption({ value: data.id.toString(), text: data.name });
+                brandTs.setValue(data.id.toString());
                 var infoModal = new bootstrap.Modal(document.getElementById('brand-info-modal'));
                 infoModal.show();
             }

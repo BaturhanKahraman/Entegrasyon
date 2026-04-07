@@ -38,7 +38,7 @@ Temu'nun kargo modeli bolgeye gore degisir:
 TBD - Kargo takip numarasi ve firma bilgisi guncelleme endpoint'i API dokumanlarindan incelenecek.
 
 Beklenen parametreler:
-- Siparis numarasi
+- Sipariş numarasi
 - Kargo firma kodu
 - Takip numarasi (tracking number)
 

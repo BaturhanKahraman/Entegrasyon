@@ -11,18 +11,18 @@
                 <div class="h2 mb-0">@Model.Summary.TotalRevenue.ToString("N2") TL</div>
             </div>
             <div class="col-auto">
-                <div class="subheader">Toplam Satis</div>
+                <div class="subheader">Toplam Satış</div>
                 <div class="h2 mb-0">@Model.Summary.TotalSales</div>
             </div>
             <div class="col-auto">
-                <div class="subheader">Ortalama Siparis</div>
+                <div class="subheader">Ortalama Sipariş</div>
                 <div class="h2 mb-0">@Model.Summary.AverageOrderValue.ToString("N2") TL</div>
             </div>
         </div>
 
         @if (Model.DailySales == null || Model.DailySales.Count == 0)
         {
-            <div class="text-center text-secondary py-4">Henuz satis verisi yok.</div>
+            <div class="text-center text-secondary py-4">Henüz satış verisi yok.</div>
         }
         else
         {

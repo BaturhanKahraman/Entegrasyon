@@ -1,6 +1,6 @@
 @model Entegrasyon.Entity.Dtos.Category.CategoryEditPageDto
 @{
-    ViewData.SetPageTitle("Kategori Duzenle");
+    ViewData.SetPageTitle("Kategori Düzenle");
     ViewData.SetActiveNav("categories");
     ViewData.SetBreadcrumb(
         ("Kategoriler", "/categories"),
@@ -9,7 +9,7 @@
 
 <div class="d-flex justify-content-end mb-3">
     <a href="/categories" class="btn btn-outline-secondary">
-        Geri Don
+        Geri Dön
     </a>
 </div>
 
@@ -21,7 +21,7 @@
                     </li>
                     <li class="nav-item">
                         <a href="#tab-attributes" class="nav-link" data-bs-toggle="tab">
-                            Ozellikler
+                            Özellikler
                             <span class="badge bg-secondary-lt ms-1">@Model.CategoryAttributes.Count</span>
                         </a>
                     </li>
@@ -40,15 +40,15 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label required">Kategori Adi</label>
+                                    <label class="form-label required">Kategori Adı</label>
                                     <input type="text" name="Name" class="form-control"
                                            value="@Model.Category.Name" required />
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Ust Kategori</label>
+                                    <label class="form-label">Üst Kategori</label>
                                     <select name="SuperCategoryId" class="form-select">
-                                        <option value="">— Ust kategori yok —</option>
+                                        <option value="">— Üst kategori yok —</option>
                                         @foreach (var parent in Model.ValidParentCandidates.OrderBy(p => p.Name))
                                         {
                                             <option value="@parent.Id"
@@ -62,7 +62,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Varsayilan KDV Orani (%)</label>
+                                    <label class="form-label">Varsayılan KDV Oranı (%)</label>
                                     <input type="number" name="DefaultVatRate" class="form-control"
                                            step="0.01" min="0" max="100"
                                            value="@Model.Category.DefaultVatRate" />
@@ -80,12 +80,12 @@
                             @if (Model.HasProducts)
                             {
                                 <div class="alert alert-warning">
-                                    Bu kategoride urun bulunmaktadir. Degisiklikler mevcut urunleri etkileyebilir.
+                                    Bu kategoride ürün bulunmaktadir. Degisiklikler mevcut ürünleri etkileyebilir.
                                 </div>
                             }
 
                             <div class="text-end">
-                                <a href="/categories" class="btn btn-link me-2">Iptal</a>
+                                <a href="/categories" class="btn btn-link me-2">İptal</a>
                                 <button type="submit" class="btn btn-primary">Kaydet</button>
                             </div>
                         </form>
@@ -159,9 +159,9 @@
                     <!-- Marketplace Tab -->
                     <div class="tab-pane" id="tab-marketplace">
                         <div class="empty py-4">
-                            <p class="empty-title">Pazaryeri Eslestirmeleri</p>
+                            <p class="empty-title">Pazaryeri eşleştirmeleri</p>
                             <p class="empty-subtitle text-secondary">
-                                Pazaryeri kategori eslestirmeleri yakin zamanda eklenecektir.
+                                Pazaryeri kategori eşleştirmeleri yakın zamanda eklenecektir.
                             </p>
                         </div>
                     </div>

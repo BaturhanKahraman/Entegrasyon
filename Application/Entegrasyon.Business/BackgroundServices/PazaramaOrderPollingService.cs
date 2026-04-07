@@ -41,7 +41,7 @@ public class PazaramaOrderPollingService(
 
         if (!result.Success)
         {
-            logger.LogWarning("Pazarama siparis fetch basarisiz for tenant {TenantId}: {Message}",
+            logger.LogWarning("Pazarama Sipariş fetch basarisiz for tenant {TenantId}: {Message}",
                 tenantId, result.Message);
             return;
         }
@@ -49,7 +49,7 @@ public class PazaramaOrderPollingService(
         if (result.Data.Count > 0)
         {
             await orderManager.ImportPazaramaOrdersAsync(result.Data);
-            logger.LogInformation("Tenant {TenantId}: Pazarama: {Count} siparis import edildi",
+            logger.LogInformation("Tenant {TenantId}: Pazarama: {Count} Sipariş import edildi",
                 tenantId, result.Data.Count);
         }
     }

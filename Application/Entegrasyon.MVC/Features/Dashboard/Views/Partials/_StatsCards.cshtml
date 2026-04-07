@@ -12,7 +12,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <div class="subheader">TOPLAM URUN</div>
+                        <div class="subheader">TOPLAM ÜRÜN</div>
                         <div class="h1 mb-0">@Model.TotalProducts.ToString("N0")</div>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <div class="subheader">BUGUNKU SATIS</div>
+                        <div class="subheader">BUGÜNKÜ SATIŞ</div>
                         <div class="h1 mb-0">@Model.TodaySales</div>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <div class="subheader">BEKLEYEN SIPARIS</div>
+                        <div class="subheader">BEKLEYEN SİPARİŞ</div>
                         <div class="h1 mb-0 @(Model.PendingOrders > 0 ? "text-warning" : "")">@Model.PendingOrders</div>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                         </span>
                     </div>
                     <div class="col">
-                        <div class="subheader">DUSUK STOK</div>
+                        <div class="subheader">DÜŞÜK STOK</div>
                         <div class="h1 mb-0 @(Model.LowStockProducts > 0 ? "text-danger" : "")">@Model.LowStockProducts</div>
                     </div>
                 </div>

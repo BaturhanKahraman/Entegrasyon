@@ -491,7 +491,7 @@ Dashboard → Raporlar → SEO Performansı
 | **Profilim** | Ad, soyad, email, telefon, şifre değiştir |
 | **Bildirim Tercihleri** | ☑ Sipariş güncellemeleri, ☑ Kampanyalar, ☑ Stok bildirimleri |
 
-### 4.8 Sipariş Takip (`/siparis-takip`)
+### 4.8 Sipariş Takip (`/Sipariş-takip`)
 - Sipariş no veya kargo takip no ile sorgulama (giriş gerektirmez)
 - Durum timeline: Sipariş Alındı → Hazırlanıyor → Kargoya Verildi → Yolda → Teslim Edildi
 - Kargo firması + takip linki
@@ -553,7 +553,7 @@ Dashboard → Raporlar → SEO Performansı
 /indirimli-urunler                   → İndirimli ürünler
 /sepet                               → Sepet
 /odeme                               → Ödeme
-/siparis-takip                       → Sipariş takip
+/Sipariş-takip                       → Sipariş takip
 /hesabim/*                           → Müşteri paneli
 /{yasal-slug}                        → Yasal sayfalar
 /robots.txt                          → Dinamik robots
@@ -1151,7 +1151,7 @@ Status (enum: Pending/Sent/Opened/Clicked/Converted/Unsubscribed)
 ### 19.1 Müşteri Tarafından İptal
 
 ```
-/hesabim/siparislerim → Sipariş Detay → [Siparişi İptal Et]
+/hesabim/Siparişlerim → Sipariş Detay → [Siparişi İptal Et]
 ```
 
 **İptal kuralları:**
@@ -1201,7 +1201,7 @@ Dashboard → Siparişler → Sipariş Detay → [Siparişi İptal Et]
 - **Format:** PDF (QuestPDF veya iTextSharp ile oluşturulur)
 
 ### 20.2 Fatura Erişimi
-- **Müşteri:** `/hesabim/siparislerim/{id}` → "Fatura İndir" butonu
+- **Müşteri:** `/hesabim/Siparişlerim/{id}` → "Fatura İndir" butonu
 - **Dashboard:** Sipariş detay → "Fatura İndir" / "Fatura Gönder" (email)
 - **MinIO'da saklanır:** `invoices/{tenantId}/{year}/{invoiceNo}.pdf`
 
@@ -1802,7 +1802,7 @@ Her faz:
 **Amazon'un en güçlü özelliği.** Sık alışveriş yapan müşteriler aynı ürünleri defalarca alır.
 
 ```
-/hesabim/siparislerim → her siparişte [🔄 Tekrar Sipariş Ver] butonu
+/hesabim/Siparişlerim → her siparişte [🔄 Tekrar Sipariş Ver] butonu
   → Siparişteki tüm ürünleri (mevcut fiyat + stokla) sepete ekler
   → Stokta olmayanlar: uyarı gösterilir, eklenmez
 

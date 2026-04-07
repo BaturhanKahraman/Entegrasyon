@@ -39,7 +39,7 @@ public class N11OrderPollingService(
 
         if (!result.Success)
         {
-            logger.LogWarning("N11 siparis fetch basarisiz for tenant {TenantId}: {Message}",
+            logger.LogWarning("N11 Sipariş fetch basarisiz for tenant {TenantId}: {Message}",
                 tenantId, result.Message);
             return;
         }
@@ -47,7 +47,7 @@ public class N11OrderPollingService(
         if (result.Data.Count > 0)
         {
             await orderManager.ImportN11OrdersAsync(result.Data);
-            logger.LogInformation("Tenant {TenantId}: N11: {Count} siparis import edildi",
+            logger.LogInformation("Tenant {TenantId}: N11: {Count} Sipariş import edildi",
                 tenantId, result.Data.Count);
         }
     }

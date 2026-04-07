@@ -5,7 +5,7 @@
 
 ## Ozet
 
-Surat Kargo, marketplace'den bagimsiz bir kargo entegrasyonudur. SOAP tabanli web servisini kullanarak gonderi olusturma, kargo takip, gonderi iptal ve etiket yazdirma islemlerini destekler. Tum marketplace siparisleri (Trendyol, Hepsiburada, N11, Pazarama, PttAVM, Ciceksepeti) icin ortak kullanilabilir.
+Surat Kargo, marketplace'den bagimsiz bir kargo entegrasyonudur. SOAP tabanli web servisini kullanarak gonderi olusturma, kargo takip, gonderi iptal ve etiket yazdirma islemlerini destekler. Tum marketplace Siparişleri (Trendyol, Hepsiburada, N11, Pazarama, PttAVM, Ciceksepeti) icin ortak kullanilabilir.
 
 ## Kararlar
 

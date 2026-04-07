@@ -33,7 +33,7 @@ public class CheckoutManager(
             return new ErrorDataResult<Order>(null!, "Sepet bulunamadi.");
 
         if (!cart.Items.Any())
-            return new ErrorDataResult<Order>(null!, "Sepet bos. Siparis olusturulamaz.");
+            return new ErrorDataResult<Order>(null!, "Sepet bos. Sipariş olusturulamaz.");
 
         // Stock verification
         foreach (var item in cart.Items)
@@ -131,7 +131,7 @@ public class CheckoutManager(
 
         await dbContext.SaveChangesAsync();
 
-        return new SuccessDataResult<Order>(order, "Siparis basariyla olusturuldu.");
+        return new SuccessDataResult<Order>(order, "Sipariş basariyla olusturuldu.");
     }
 
     public async Task<IResult> CompleteOrderPaymentAsync(Guid orderId, string transactionId, decimal paidAmount)
@@ -140,7 +140,7 @@ public class CheckoutManager(
 
         var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
         if (order is null)
-            return new ErrorResult("Siparis bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadi.");
 
         order.StorefrontPaymentStatus = PaymentStatus.Paid;
         order.PaymentTransactionId = transactionId;
@@ -161,7 +161,7 @@ public class CheckoutManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Siparis bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadi.");
 
         order.StorefrontPaymentStatus = PaymentStatus.Failed;
         order.OrderNote = string.IsNullOrEmpty(order.OrderNote)
@@ -184,6 +184,6 @@ public class CheckoutManager(
 
         await dbContext.SaveChangesAsync();
 
-        return new SuccessResult("Siparis odeme hatasi islendi.");
+        return new SuccessResult("Sipariş odeme hatasi islendi.");
     }
 }

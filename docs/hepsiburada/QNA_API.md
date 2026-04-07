@@ -77,8 +77,8 @@ Olusturulan sorularin numaralarini icerir (array).
 
 | Deger | Aciklama |
 |-------|----------|
-| 1 | Siparise ilgili degil |
-| 2 | Siparise ilgili |
+| 1 | Siparişe ilgili degil |
+| 2 | Siparişe ilgili |
 
 ### SortBy Degerleri
 
@@ -172,8 +172,8 @@ Belirli bir sorunun detayini getirir.
 | createdAt | datetime | Olusturulma tarihi |
 | issueNumber | string | Soru numarasi |
 | customerId | string | Musteri ID |
-| orderNumber | string | Siparis numarasi (varsa) |
-| lineItemId | string | Siparis kalemi ID (varsa) |
+| orderNumber | string | Sipariş numarasi (varsa) |
+| lineItemId | string | Sipariş kalemi ID (varsa) |
 | status | string | WaitingForAnswer / Answered / Rejected / AutoClosed |
 | subject | object | Konu bilgisi (id, description) |
 | lastContent | string | Son mesaj icerigi |

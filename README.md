@@ -1,6 +1,6 @@
 # Entegrasyon
 
-Turkiye pazaryeri entegrasyon ve e-ticaret yonetim platformu. Trendyol, Hepsiburada, Amazon, N11, Pazarama, PttAVM, Ciceksepeti ve Temu gibi pazaryerlerini tek bir panelden yonetmeye olanak tanir. Urun, siparis, stok, fiyat, fatura, kargo ve musteri islemlerini merkezi olarak yurutur. Ayrica musteri odakli bir Storefront (e-ticaret vitrini) ve cok saticilik (multi-vendor / marketplace) altyapisi icerir.
+Turkiye pazaryeri entegrasyon ve e-ticaret yonetim platformu. Trendyol, Hepsiburada, Amazon, N11, Pazarama, PttAVM, Ciceksepeti ve Temu gibi pazaryerlerini tek bir panelden yonetmeye olanak tanir. Urun, Sipariş, stok, fiyat, fatura, kargo ve musteri islemlerini merkezi olarak yurutur. Ayrica musteri odakli bir Storefront (e-ticaret vitrini) ve cok saticilik (multi-vendor / marketplace) altyapisi icerir.
 
 ---
 
@@ -155,8 +155,8 @@ Entegrasyon/
 |   |   |   |-- Trendyol/                    #     Trendyol REST API, mapper, import, e-Fatura
 |   |   |   |-- Hepsiburada/                 #     Hepsiburada REST API, listing, claim, Q&A
 |   |   |   |-- Amazon/                      #     Amazon SP-API, OAuth, Feeds, Listings
-|   |   |   |-- N11/                         #     N11 SOAP istemcisi, urun, siparis, iade
-|   |   |   |-- Pazarama/                    #     Pazarama REST + OAuth2, marka, siparis, iade
+|   |   |   |-- N11/                         #     N11 SOAP istemcisi, urun, Sipariş, iade
+|   |   |   |-- Pazarama/                    #     Pazarama REST + OAuth2, marka, Sipariş, iade
 |   |   |   |-- Pttavm/                      #     PttAVM iki API istemcisi (Catalog + Shipment)
 |   |   |   |-- Ciceksepeti/                 #     Ciceksepeti REST + API Key, fatura, Q&A
 |   |   |   |-- Temu/                        #     Temu API istemcisi, kategori import
@@ -196,7 +196,7 @@ Entegrasyon/
 |   |   |   |-- MarketplaceSync/             #     Marketplace senkronizasyon
 |   |   |   |-- MatchedEntityImport/         #     Eslestirilmis entity import
 |   |   |   |-- Notifications/               #     Bildirim yonetimi
-|   |   |   |-- Orders/                      #     Siparis yonetimi
+|   |   |   |-- Orders/                      #     Sipariş yonetimi
 |   |   |   |-- POS/                         #     POS satis noktasi
 |   |   |   |-- Printing/                    #     Etiket/fis yazdirma
 |   |   |   |-- Products/                    #     Urun yonetimi (cok adimli ekleme)
@@ -545,13 +545,13 @@ Her pazaryeri icin `UseMock` konfigurasyonu mevcuttur. Gelistirme ortaminda vars
 
 | Pazaryeri | MarketPlaceId | Protokol | Ozellikler | Durum |
 |---|---|---|---|---|
-| **Trendyol** | 1 | REST | Urun CRUD, stok/fiyat sync, siparis polling, batch status, e-Fatura (27 endpoint), kategori/marka import | Tam |
-| **N11** | 2 | SOAP (WSDL) | Urun, stok/fiyat sync, siparis polling, iade | Tam |
-| **Hepsiburada** | 3 | REST | Urun, listing, stok/fiyat sync, siparis, iade/claim, soru-cevap | Tam |
-| **Amazon** | 4 | REST (SP-API) | OAuth2 token, catalog, listings, feeds, siparis, stok/fiyat sync (FBM, TR+EU) | Tam |
-| **Pazarama** | 5 | REST + OAuth2 | Urun, stok/fiyat sync, siparis, iade, batch status, kategori/marka import | Tam |
-| **PttAVM** | 7 | REST + Token | Urun, stok/fiyat sync, siparis, kargo, fatura (iki ayri API: Catalog + Shipment) | Tam |
-| **Ciceksepeti** | 8 | REST + API Key | Urun, stok/fiyat sync, siparis, fatura, iade, soru-cevap, kategori import | Tam |
+| **Trendyol** | 1 | REST | Urun CRUD, stok/fiyat sync, Sipariş polling, batch status, e-Fatura (27 endpoint), kategori/marka import | Tam |
+| **N11** | 2 | SOAP (WSDL) | Urun, stok/fiyat sync, Sipariş polling, iade | Tam |
+| **Hepsiburada** | 3 | REST | Urun, listing, stok/fiyat sync, Sipariş, iade/claim, soru-cevap | Tam |
+| **Amazon** | 4 | REST (SP-API) | OAuth2 token, catalog, listings, feeds, Sipariş, stok/fiyat sync (FBM, TR+EU) | Tam |
+| **Pazarama** | 5 | REST + OAuth2 | Urun, stok/fiyat sync, Sipariş, iade, batch status, kategori/marka import | Tam |
+| **PttAVM** | 7 | REST + Token | Urun, stok/fiyat sync, Sipariş, kargo, fatura (iki ayri API: Catalog + Shipment) | Tam |
+| **Ciceksepeti** | 8 | REST + API Key | Urun, stok/fiyat sync, Sipariş, fatura, iade, soru-cevap, kategori import | Tam |
 | **Temu** | - | REST | API istemcisi, kategori import | Baslangic |
 
 ### Her Pazaryeri Icin Ortak Bilesenler
@@ -562,7 +562,7 @@ Her pazaryeri icin `UseMock` konfigurasyonu mevcuttur. Gelistirme ortaminda vars
 | `XxxProductMapper` | Ic urun modeli <-> marketplace modeli donusumu |
 | `XxxProductService` | Urun CRUD islemleri |
 | `XxxStockPriceService` | Stok ve fiyat senkronizasyonu |
-| `XxxOrderService` | Siparis cekme ve durum guncelleme |
+| `XxxOrderService` | Sipariş cekme ve durum guncelleme |
 | `XxxMappingValidator` | Marketplace'e gonderilmeden once veri dogrulama |
 | `XxxCategoryImporter` | Marketplace kategori agacini import etme |
 | `MockXxx...` | Gercek API olmadan gelistirme icin mock implementasyon |
@@ -574,7 +574,7 @@ Her pazaryeri icin `UseMock` konfigurasyonu mevcuttur. Gelistirme ortaminda vars
 | Kategori | Servisler |
 |---|---|
 | **Stok & Fiyat Sync** | Trendyol, Hepsiburada, N11, Amazon, Pazarama, PttAVM, Ciceksepeti (7 servis) |
-| **Siparis Polling** | Her pazaryeri icin bir adet (7 servis) |
+| **Sipariş Polling** | Her pazaryeri icin bir adet (7 servis) |
 | **Batch Status Polling** | Trendyol, Hepsiburada, Ciceksepeti, Pazarama, Amazon (listing + feed) |
 | **Urun Publish** | `TrendyolProductPublishBackgroundService` |
 | **Kategori Import** | `CategoryImportBackgroundService` |
@@ -619,7 +619,7 @@ EventChannel<CategoryUpdatedEvent>
 | Controller | Sorumluluk |
 |---|---|
 | `AuthController` | Giris, kayit, sifre sifirlama |
-| `AccountController` | Profil, adres, siparis gecmisi, KVKK export |
+| `AccountController` | Profil, adres, Sipariş gecmisi, KVKK export |
 | `CatalogController` | Kategori listeleme, filtreleme |
 | `ProductController` | Urun detay, varyant secimi |
 | `CartController` | Sepet yonetimi |
@@ -629,7 +629,7 @@ EventChannel<CategoryUpdatedEvent>
 | `ContactController` | Iletisim formu |
 | `NewsletterController` | Newsletter abonelik |
 | `GiftCardController` | Hediye karti kullanimi |
-| `TrackingController` | Siparis takibi |
+| `TrackingController` | Sipariş takibi |
 | `PushController` | Push notification abonelik |
 | `StockNotificationController` | Stok bildirimi |
 | `SellerController` | Satici profil ve kayit |
@@ -669,11 +669,11 @@ EventChannel<CategoryUpdatedEvent>
 - Tekrar satin al (buy again)
 - Terk edilmis sepet e-postalari (abandoned cart, background service ile)
 
-**Siparis Yonetimi**
-- Siparis gecmisi ve detay goruntuleme
-- Siparis takibi (kargo entegrasyonu)
+**Sipariş Yonetimi**
+- Sipariş gecmisi ve detay goruntuleme
+- Sipariş takibi (kargo entegrasyonu)
 - Fatura goruntuleme
-- Siparis iptali
+- Sipariş iptali
 - Iade talepleri
 
 **Musteri Deneyimi**
@@ -690,7 +690,7 @@ EventChannel<CategoryUpdatedEvent>
 **Multi-Vendor / Marketplace Altyapisi**
 - Satici kayit ve profil yonetimi
 - Satici urun yonetimi
-- Satici siparis yonetimi
+- Satici Sipariş yonetimi
 - Komisyon hesaplama (SellerCommission)
 - Odeme/payout yonetimi (PayoutRequest)
 - Satici bakiye ve islem takibi (SellerBalance, SellerTransaction)
@@ -710,7 +710,7 @@ EventChannel<CategoryUpdatedEvent>
 - SMTP transactional e-postalar
 - E-posta dogrulama
 - Sifre sifirlama e-postasi
-- Siparis onay e-postasi
+- Sipariş onay e-postasi
 - Terk edilmis sepet hatirlatma e-postasi
 - Kampanya e-postalari
 

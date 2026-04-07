@@ -14,7 +14,7 @@ public class OrderController(
     [HttpGet("/orders")]
     public async Task<IActionResult> Index(string? search = null, string? status = null, int page = 1)
     {
-        ViewData.SetPageTitle("Siparisler");
+        ViewData.SetPageTitle("Siparişler");
         ViewData.SetActiveNav("orders");
 
         var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
@@ -37,7 +37,7 @@ public class OrderController(
     [HttpGet("/marketplace/orders")]
     public async Task<IActionResult> MarketplaceOrders(int mp = 1, int page = 1)
     {
-        ViewData.SetPageTitle("Pazaryeri Siparisleri");
+        ViewData.SetPageTitle("Pazaryeri Siparişleri");
         ViewData.SetActiveNav("orders");
 
         var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
@@ -61,16 +61,16 @@ public class OrderController(
         var result = await orderManager.GetOrderByIdAsync(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Siparis bulunamadi.");
+            TempData.SetError(result.Message ?? "Sipariş bulunamadi.");
             return RedirectToAction(nameof(Index));
         }
 
         var order = result.Data!;
         var title = order.OrderNumber ?? order.Id.ToString()[..8];
 
-        ViewData.SetPageTitle($"Siparis #{title}");
+        ViewData.SetPageTitle($"Sipariş #{title}");
         ViewData.SetActiveNav("orders");
-        ViewData.SetBreadcrumb(("Siparisler", "/orders"), ($"#{title}", null));
+        ViewData.SetBreadcrumb(("Siparişler", "/orders"), ($"#{title}", null));
 
         return View("~/Features/Orders/Views/OrderDetail.cshtml", order);
     }
@@ -81,7 +81,7 @@ public class OrderController(
         var result = await orderManager.GetOrderByIdAsync(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Siparis bulunamadi.");
+            TempData.SetError(result.Message ?? "Sipariş bulunamadi.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -94,16 +94,16 @@ public class OrderController(
         var result = await orderManager.GetOrderByIdAsync(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Siparis bulunamadi.");
+            TempData.SetError(result.Message ?? "Sipariş bulunamadi.");
             return RedirectToAction(nameof(Index));
         }
 
         var order = result.Data!;
         var title = order.OrderNumber ?? order.Id.ToString()[..8];
 
-        ViewData.SetPageTitle($"Siparis #{title}");
+        ViewData.SetPageTitle($"Sipariş #{title}");
         ViewData.SetActiveNav("orders");
-        ViewData.SetBreadcrumb(("Siparisler", "/orders"), ($"#{title}", null));
+        ViewData.SetBreadcrumb(("Siparişler", "/orders"), ($"#{title}", null));
 
         return View("~/Features/Orders/Views/Detail.cshtml", order);
     }
@@ -118,7 +118,7 @@ public class OrderController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Siparis durumu guncellendi.", type = "success" });
+                    new { message = "Sipariş durumu guncellendi.", type = "success" });
                 Response.HtmxRefresh();
                 return Content("");
             }
@@ -129,9 +129,9 @@ public class OrderController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Siparis durumu basariyla guncellendi.");
+            TempData.SetSuccess("Sipariş durumu basariyla guncellendi.");
         else
-            TempData.SetError(result.Message ?? "Siparis durumu guncellenemedi.");
+            TempData.SetError(result.Message ?? "Sipariş durumu guncellenemedi.");
 
         return RedirectToAction(nameof(Detail), new { id });
     }
@@ -145,11 +145,11 @@ public class OrderController(
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Siparis bulunamadi.", type = "danger" });
+                    new { message = "Sipariş bulunamadi.", type = "danger" });
                 return StatusCode(404);
             }
 
-            TempData.SetError("Siparis bulunamadi.");
+            TempData.SetError("Sipariş bulunamadi.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -160,11 +160,11 @@ public class OrderController(
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Bu islem sadece Trendyol siparisleri icin gecerlidir.", type = "danger" });
+                    new { message = "Bu islem sadece Trendyol Siparişleri icin gecerlidir.", type = "danger" });
                 return StatusCode(422);
             }
 
-            TempData.SetError("Bu islem sadece Trendyol siparisleri icin gecerlidir.");
+            TempData.SetError("Bu islem sadece Trendyol Siparişleri icin gecerlidir.");
             return RedirectToAction(nameof(Detail), new { id });
         }
 
@@ -178,11 +178,11 @@ public class OrderController(
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Siparis kalemlerinde satir ID bulunamadi.", type = "danger" });
+                    new { message = "Sipariş kalemlerinde satir ID bulunamadi.", type = "danger" });
                 return StatusCode(422);
             }
 
-            TempData.SetError("Siparis kalemlerinde satir ID bulunamadi.");
+            TempData.SetError("Sipariş kalemlerinde satir ID bulunamadi.");
             return RedirectToAction(nameof(Detail), new { id });
         }
 
@@ -194,7 +194,7 @@ public class OrderController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Siparis tedarik edilemez olarak isaretlendi.", type = "success" });
+                    new { message = "Sipariş tedarik edilemez olarak isaretlendi.", type = "success" });
                 Response.HtmxRefresh();
                 return Content("");
             }
@@ -205,9 +205,9 @@ public class OrderController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Siparis tedarik edilemez olarak isaretlendi.");
+            TempData.SetSuccess("Sipariş tedarik edilemez olarak isaretlendi.");
         else
-            TempData.SetError(result.Message ?? "Siparis tedarik edilemez olarak isaretlenemedi.");
+            TempData.SetError(result.Message ?? "Sipariş tedarik edilemez olarak isaretlenemedi.");
 
         return RedirectToAction(nameof(Detail), new { id });
     }

@@ -2,15 +2,15 @@ using System.Text.Json.Serialization;
 
 namespace Entegrasyon.Business.Concrete.Pttavm;
 
-// --- Siparis ---
+// --- Sipariş ---
 
 public sealed record PttavmOrder(
-    [property: JsonPropertyName("siparisNo")] string? SiparisNo,
-    [property: JsonPropertyName("siparisDurumu")] string? SiparisDurumu,
+    [property: JsonPropertyName("SiparişNo")] string? SiparişNo,
+    [property: JsonPropertyName("SiparişDurumu")] string? SiparişDurumu,
     [property: JsonPropertyName("kdvDahilToplamTutar")] decimal KdvDahilToplamTutar,
     [property: JsonPropertyName("kargoTutari")] decimal KargoTutari,
-    [property: JsonPropertyName("siparisTarihi")] DateTime? SiparisTarihi,
-    [property: JsonPropertyName("siparisUrunler")] List<PttavmOrderItem>? SiparisUrunler,
+    [property: JsonPropertyName("SiparişTarihi")] DateTime? SiparişTarihi,
+    [property: JsonPropertyName("SiparişUrunler")] List<PttavmOrderItem>? SiparişUrunler,
     [property: JsonPropertyName("faturaMusteriAdi")] string? FaturaMusteriAdi,
     [property: JsonPropertyName("faturaMusteriSoyadi")] string? FaturaMusteriSoyadi);
 
@@ -24,12 +24,12 @@ public sealed record PttavmOrderItem(
     [property: JsonPropertyName("lineItemId")] int LineItemId);
 
 public sealed record PttavmOrderDetail(
-    [property: JsonPropertyName("siparisNo")] string? SiparisNo,
-    [property: JsonPropertyName("siparisDurumu")] string? SiparisDurumu,
+    [property: JsonPropertyName("SiparişNo")] string? SiparişNo,
+    [property: JsonPropertyName("SiparişDurumu")] string? SiparişDurumu,
     [property: JsonPropertyName("kdvDahilToplamTutar")] decimal KdvDahilToplamTutar,
     [property: JsonPropertyName("kargoTutari")] decimal KargoTutari,
-    [property: JsonPropertyName("siparisTarihi")] DateTime? SiparisTarihi,
-    [property: JsonPropertyName("siparisUrunler")] List<PttavmOrderItem>? SiparisUrunler,
+    [property: JsonPropertyName("SiparişTarihi")] DateTime? SiparişTarihi,
+    [property: JsonPropertyName("SiparişUrunler")] List<PttavmOrderItem>? SiparişUrunler,
     [property: JsonPropertyName("faturaMusteriAdi")] string? FaturaMusteriAdi,
     [property: JsonPropertyName("faturaMusteriSoyadi")] string? FaturaMusteriSoyadi,
     [property: JsonPropertyName("faturaAdresi")] string? FaturaAdresi,

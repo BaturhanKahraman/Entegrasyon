@@ -188,7 +188,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
-    /// MarketPlaceWarehouse kaydı seed eder. Siparis import stok dusme icin gerekli.
+    /// MarketPlaceWarehouse kaydı seed eder. Sipariş import stok dusme icin gerekli.
     /// </summary>
     protected async Task SeedMarketPlaceWarehouseAsync(int marketPlaceId, int branchOfficeId)
     {

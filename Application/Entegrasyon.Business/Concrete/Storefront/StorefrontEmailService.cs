@@ -50,17 +50,17 @@ public class StorefrontEmailService(
 
     public async Task<IResult> SendOrderConfirmationAsync(string toEmail, string customerName, string orderNumber, decimal total, string storeName, string domain)
     {
-        var orderUrl = $"https://{domain}/hesabim/siparisler";
-        var subject = $"Siparis Onayiniz #{orderNumber} - {storeName}";
+        var orderUrl = $"https://{domain}/hesabim/Siparişler";
+        var subject = $"Sipariş Onayiniz #{orderNumber} - {storeName}";
         var body = BuildTemplate(storeName, $@"
             <h2>Merhaba {Encode(customerName)},</h2>
             <p>Sipaarisiniz basariyla alindi!</p>
             <table style='width:100%;border-collapse:collapse;margin:20px 0;'>
-                <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>Siparis No:</td><td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>#{Encode(orderNumber)}</td></tr>
+                <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>Sipariş No:</td><td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>#{Encode(orderNumber)}</td></tr>
                 <tr><td style='padding:8px;border-bottom:1px solid #eee;color:#666;'>Toplam:</td><td style='padding:8px;border-bottom:1px solid #eee;font-weight:bold;'>{total:N2} TL</td></tr>
             </table>
             <p style='text-align:center;margin:30px 0;'>
-                <a href='{orderUrl}' style='background-color:#2563EB;color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-weight:bold;'>Siparislerimi Gor</a>
+                <a href='{orderUrl}' style='background-color:#2563EB;color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-weight:bold;'>Siparişlerimi Gor</a>
             </p>");
         return await SendAsync(toEmail, subject, body);
     }

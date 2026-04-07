@@ -22,16 +22,16 @@ public class StorefrontReturnManager(
             .FirstOrDefaultAsync(o => o.Id == orderId && o.CustomerId == customerId);
 
         if (order is null)
-            return new ErrorResult("Siparis bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadi.");
 
         if (order.StorefrontOrderStatus != OrderStatus.Delivered)
-            return new ErrorResult("Sadece teslim edilmis siparisler icin iade talebi olusturulabilir.");
+            return new ErrorResult("Sadece teslim edilmis Siparişler icin iade talebi olusturulabilir.");
 
         var alreadyRequested = await dbContext.StorefrontReturnRequests
             .AnyAsync(r => r.TenantId == tenantId && r.OrderId == orderId && r.CustomerId == customerId);
 
         if (alreadyRequested)
-            return new ErrorResult("Bu siparis icin zaten bir iade talebi bulunmaktadir.");
+            return new ErrorResult("Bu Sipariş icin zaten bir iade talebi bulunmaktadir.");
 
         var returnRequest = new StorefrontReturnRequest
         {

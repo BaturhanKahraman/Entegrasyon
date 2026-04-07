@@ -120,9 +120,9 @@
 - Gelir-gider takibi
 - Stok ve coklu depo yonetimi
 - Nakit akim yonetimi
-- Teklif ve siparis yonetimi
+- Teklif ve Sipariş yonetimi
 - Banka entegrasyonu (otomatik mutabakat)
-- E-ticaret entegrasyonu (pazaryeri siparisleri -> otomatik faturalastirma)
+- E-ticaret entegrasyonu (pazaryeri Siparişleri -> otomatik faturalastirma)
 
 #### Pazaryeri Entegrasyonlari
 - Trendyol, Hepsiburada, N11, Amazon, Ciceksepeti, PttAVM
@@ -175,7 +175,7 @@
 
 - Turkiye'nin en eski e-ticaret altyapilarindan
 - Orta-buyuk olcekli markalar icin
-- Pazaryeri entegrasyonu (stok, fiyat, siparis senkronizasyonu)
+- Pazaryeri entegrasyonu (stok, fiyat, Sipariş senkronizasyonu)
 - Muhasebe programi entegrasyonu
 - E-ihracat altyapisi (coklu dil, doviz, ETGB, mikro ihracat)
 - Kurumsal teklif modeli (fiyatlar yuksek, bazi moduller ekstra ucretli)
@@ -233,14 +233,14 @@
 ### 2.1 Linnworks (UK)
 
 **Web:** linnworks.com
-**Sahibi:** Bagimsiz | **Tip:** Cok kanalli siparis ve envanter yonetimi
+**Sahibi:** Bagimsiz | **Tip:** Cok kanalli Sipariş ve envanter yonetimi
 
 #### Temel Ozellikler
 - Envanter yonetimi (coklu depo, gercek zamanli senkronizasyon)
-- Siparis yonetimi ve fulfillment otomasyonu
-- Otomatik siparis yonlendirme (order routing)
+- Sipariş yonetimi ve fulfillment otomasyonu
+- Otomatik Sipariş yonlendirme (order routing)
 - Depo yonetimi (WMS)
-- Satin alma siparisi yonetimi (purchase orders)
+- Satin alma Siparişi yonetimi (purchase orders)
 - Kitting ve bundling
 - Gonderim yonetimi (coklu kargo firmasiyla entegrasyon)
 - Raporlama ve analitik
@@ -250,18 +250,18 @@
 Amazon, eBay, Shopify, TikTok Shop, Walmart, Etsy, BigCommerce, WooCommerce ve 100+ diger platform. Entegrasyonlar sinirrsiz ve genellikle ucretsiz.
 
 #### Fiyatlandirma
-- Siparis hacmine gore fiyatlandirma (gelir yuzdesI YOK)
+- Sipariş hacmine gore fiyatlandirma (gelir yuzdesI YOK)
 - Baslangic: $449/ay
 - Ek moduller: Sadece kullandigin icin ode
 - Her pakete ozel onboarding plani ve uzman dahil
 
 #### Kullanici Yorumlari
-- **Olumlu:** Guclu otomasyon, genis entegrasyon agi, siparis yonlendirme
+- **Olumlu:** Guclu otomasyon, genis entegrasyon agi, Sipariş yonlendirme
 - **Olumsuz:** Yuksek fiyat, kurulum zorlugu, performans sorunlari, ozellestirme sinirlamalari, buyuyen isletmeler icin esneklik yetersizligi
 
 #### Benzersiz Ozellikler
-- **Otomatik siparis yonlendirme** (kurallara gore en uygun depodan gonderim)
-- **Purchase order yonetimi** (tedarikci siparis sureci)
+- **Otomatik Sipariş yonlendirme** (kurallara gore en uygun depodan gonderim)
+- **Purchase order yonetimi** (tedarikci Sipariş sureci)
 - **Kitting/bundling** (set urun yonetimi)
 
 ---
@@ -274,7 +274,7 @@ Amazon, eBay, Shopify, TikTok Shop, Walmart, Etsy, BigCommerce, WooCommerce ve 1
 #### Temel Ozellikler
 - Urun listeleme yonetimi (tum kanallarda)
 - Envanter ve fiyat senkronizasyonu
-- Siparis isleme ve fulfillment koordinasyonu
+- Sipariş isleme ve fulfillment koordinasyonu
 - **Otomatik yeniden fiyatlandirma (repricing):** Makine ogrenmesi ile pazaryeri trendlerine gore dinamik fiyat ayarlama
 - **Talep tahmini (demand forecasting):** ML tabanli envanter planlama
 - Gonderim yonetimi (coklu tasiyici, dinamik oran karsilastirma, iade destegi)
@@ -315,13 +315,13 @@ Amazon, eBay, Shopify, TikTok Shop, Walmart, Etsy, BigCommerce, WooCommerce ve 1
 - Toplu listeleme ve sablon destegi
 - Listing kurallari ve ozel sablonlar
 - Mevcut listelemeler icin guncelleme/bitirme/yeniden listeleme
-- Siparis yonetimi
+- Sipariş yonetimi
 
 #### Pazaryeri Entegrasyonlari
 Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce, WooCommerce
 
 #### Fiyatlandirma
-| Plan | Fiyat | Siparis Limiti |
+| Plan | Fiyat | Sipariş Limiti |
 |------|-------|----------------|
 | Starter | $29/ay | Sinirli |
 | Standard | $49/ay | Orta |
@@ -337,7 +337,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce, WooCommerce
 #### Benzersiz Ozellikler
 - GoDaddy ekosistemi ile entegrasyon (domain + hosting + e-ticaret + pazaryeri)
 - En dusuk giris fiyati ($19/ay)
-- %115 siparis artisi (GoDaddy entegrasyonu sonrasi ortalama)
+- %115 Sipariş artisi (GoDaddy entegrasyonu sonrasi ortalama)
 
 ---
 
@@ -347,14 +347,14 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce, WooCommerce
 **Sahibi:** Sage (2022'de satin alindi) | **Tip:** Perakende isletme sistemi (Retail Operating System)
 
 #### Temel Ozellikler
-- Siparis yonetimi ve otomasyon
+- Sipariş yonetimi ve otomasyon
 - Envanter planlama (talep tahmini)
 - Depo yonetimi (WMS)
 - Muhasebe (entegre, ayri yazilim gerektirmez)
 - Iade yonetimi
 - CRM
-- Satin alma siparisi yonetimi
-- B2B siparis portali
+- Satin alma Siparişi yonetimi
+- B2B Sipariş portali
 - POS entegrasyonu (fiziksel magaza)
 - Dropship otomasyonu
 - Gercek zamanli muhasebe guncellemeleri
@@ -376,7 +376,7 @@ Shopify, Magento, Amazon, eBay, BigCommerce + genis ucuncu taraf entegrasyon mar
 - **Entegre muhasebe** (ayri yazilim gerektirmez)
 - **Talep tahmini ve envanter planlama** (veri odakli satin alma onerileri)
 - **Sinirsiz kullanici** (tum planlarda)
-- **B2B siparis portali** (toptan satis)
+- **B2B Sipariş portali** (toptan satis)
 - **%20-30 idari maliyet azaltimi** (firma iddiasi)
 
 ---
@@ -384,17 +384,17 @@ Shopify, Magento, Amazon, eBay, BigCommerce + genis ucuncu taraf entegrasyon mar
 ### 2.5 Cin7 (NZ/Global)
 
 **Web:** cin7.com
-**Tip:** Omnichannel envanter ve siparis yonetimi + ERP
+**Tip:** Omnichannel envanter ve Sipariş yonetimi + ERP
 
 #### Temel Ozellikler
 - Envanter yonetimi (sinirsiz lokasyon)
-- Siparis yonetimi (omnichannel)
+- Sipariş yonetimi (omnichannel)
 - Entegre POS (fiziksel magaza)
 - Depo yonetimi
-- Satin alma siparisi yonetimi
+- Satin alma Siparişi yonetimi
 - Uretim yonetimi (BOM - Bill of Materials)
 - Kitting ve bundling
-- B2B siparis portali
+- B2B Sipariş portali
 - EDI entegrasyonu
 - Coklu is birimi yonetimi (multi-entity)
 - Otomasyon isakislari (workflow builder)
@@ -409,7 +409,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce + POS + 3PL + kargo + 700+ ent
 | Cin7 Core | Kucuk isletmeler |
 | Cin7 Omni | Buyuk/karmasik operasyonlar |
 
-- Siparis hacmine ve modullere gore fiyatlandirma
+- Sipariş hacmine ve modullere gore fiyatlandirma
 - Sik ve onemli fiyat artislari (kullanici sikayeti)
 
 #### Kullanici Yorumlari
@@ -448,7 +448,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce + POS + 3PL + kargo + 700+ ent
 |---------|-----------|----------------|-----------|-------------|------|
 | Pazaryeri sayisi | 100+ | 420+ | 7-8 | 10+ | 700+ entg. |
 | Envanter yonetimi | Gelismis | Gelismis | Temel | Gelismis | Gelismis |
-| Siparis yonlendirme | Var | Var | Yok | Var | Var |
+| Sipariş yonlendirme | Var | Var | Yok | Var | Var |
 | Depo yonetimi (WMS) | Var | Yok | Yok | Var | Var |
 | Muhasebe | Entegrasyon | Yok | Yok | Entegre | Entegre |
 | Repricing (AI) | Yok | Var (ML) | Yok | Yok | Yok |
@@ -462,7 +462,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce + POS + 3PL + kargo + 700+ ent
 
 ## 4. Bizde Olmayan Ozellikler
 
-Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/PttAVM/Ciceksepeti/Temu entegrasyonlari, urun/siparis/stok yonetimi, kategori eslestirme, multi-tenant hazirlik, kargo entegrasyonlari (Aras, Surat, Yurtici).
+Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/PttAVM/Ciceksepeti/Temu entegrasyonlari, urun/Sipariş/stok yonetimi, kategori eslestirme, multi-tenant hazirlik, kargo entegrasyonlari (Aras, Surat, Yurtici).
 
 ### Kritik Eksikler (Yuksek Oncelik)
 
@@ -499,7 +499,7 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
 
 ### Onemli Eksikler (Orta Oncelik)
 
-6. **Otomatik Siparis Yonlendirme (Order Routing)**
+6. **Otomatik Sipariş Yonlendirme (Order Routing)**
    - Birden fazla depo/magaza varsa en uygun noktadan gonderim
    - Stok durumu + mesafe + maliyet bazli karar
    - Linnworks'un en guclu ozelligi
@@ -515,8 +515,8 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
    - Otomatik stok dusumu (parcalarina gore)
    - Cin7 ve Linnworks'ta standart
 
-9. **Satin Alma Siparisi (Purchase Order) Yonetimi**
-   - Tedarikci siparisleri olusturma ve takip
+9. **Satin Alma Siparişi (Purchase Order) Yonetimi**
+   - Tedarikci Siparişleri olusturma ve takip
    - Minimum stok uyarilari
    - Otomatik satin alma onerileri
    - Tedarikci performans takibi
@@ -535,10 +535,10 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
     - Talep tahmini
     - Otomatik kategori eslestirme onerileri
 
-12. **B2B Siparis Portali**
+12. **B2B Sipariş Portali**
     - Toptan musteriler icin ozel giris
     - Ozel fiyat listeleri
-    - Minimum siparis miktarlari
+    - Minimum Sipariş miktarlari
 
 13. **Marketplace Reklam Yonetimi**
     - Trendyol/HB/Amazon reklam kampanyasi yonetimi
@@ -563,8 +563,8 @@ Turkiye pazarinda henuz yaygin olmayan, yurtdisi yazilimlardan alinabilecek fiki
 
 ### 5.2 Gorsel Workflow/Otomasyon Builder (Cin7)
 - Surukle-birak ile is kurali olusturma
-- "Stok 5'in altina duserse -> bildirim gonder -> tedarikciye siparis olustur"
-- "Siparis gelince -> en yakin depodan ata -> kargo fisi olustur"
+- "Stok 5'in altina duserse -> bildirim gonder -> tedarikciye Sipariş olustur"
+- "Sipariş gelince -> en yakin depodan ata -> kargo fisi olustur"
 - **Turkiye'de sadece statik kurallar var, gorsel builder yok.**
 
 ### 5.3 Entegre Muhasebe (Brightpearl, Cin7)
@@ -574,17 +574,17 @@ Turkiye pazarinda henuz yaygin olmayan, yurtdisi yazilimlardan alinabilecek fiki
 
 ### 5.4 Omnichannel / POS Birlestirme (Cin7, Brightpearl)
 - Online + offline satislari tek stok havuzunda yonetme
-- "Online siparis, magazadan teslim" (BOPIS)
+- "Online Sipariş, magazadan teslim" (BOPIS)
 - **Turkiye'de Nebim/Logo/Mikro ayri, pazaryeri ayri. Birlestiren yok.**
 
 ### 5.5 Dropship Otomasyon (ChannelAdvisor, Brightpearl)
 - Tedarikci urunlerini kendi stogunuz gibi satma
-- Siparis gelince otomatik tedarikciye iletme
+- Sipariş gelince otomatik tedarikciye iletme
 - **Turkiye'de dropship yapan cok ama otomasyon sunan entegrator yok.**
 
 ### 5.6 EDI Entegrasyonu (Cin7)
 - Buyuk perakendecilerle (Migros, A101, BIM) elektronik veri degisimi
-- Siparis, fatura, sevk irsaliyesi otomasyonu
+- Sipariş, fatura, sevk irsaliyesi otomasyonu
 - **Turkiye'de bu alan tamamen manuel.**
 
 ### 5.7 Brand Analytics / Marka Koruma (ChannelAdvisor)
@@ -618,7 +618,7 @@ Rakiplerin zayifligi: Yuksek fiyatlar + paket kisitlamalari + gizli ucretler.
 
 **Onerimiz:**
 - **Tek paket, sinirsiz pazaryeri** (Entegra modeli)
-- **Siparis hacmine gore fiyatlandirma** (Linnworks modeli)
+- **Sipariş hacmine gore fiyatlandirma** (Linnworks modeli)
 - **Gelir yuzdesi almama** garantisi
 - **Baslangic icin dusuK giris noktasi**, buyudukce yukseltme
 
@@ -652,7 +652,7 @@ Asagidaki siralama, deger/maliyet orani ve rekabet etkisine gore yapilmistir.
 | 1 | **E-Fatura Entegrasyonu** | Turkiye'de zorunlu, entegrasyon seciminde #1 kriter | Parasut API, GIB |
 | 2 | **Raporlama Dashboard** | Musteri karar mekanizmasi, upsell | Tum rakipler |
 | 3 | **Toplu Islem Araclari** | Operasyonel verimlilik, gunluk kullanim | Entegra, Ticimax |
-| 4 | **Iade Yonetimi** | Siparis dongusunun tamamlanmasi | Tum rakipler |
+| 4 | **Iade Yonetimi** | Sipariş dongusunun tamamlanmasi | Tum rakipler |
 
 ### Faz 2: Rekabet Avantaji (3-6 Ay)
 

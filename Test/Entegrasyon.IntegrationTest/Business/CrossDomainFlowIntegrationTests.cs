@@ -199,7 +199,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
 
         var variantId = addResult.Data!.ProductVariants.First().Id;
 
-        // Act — Trendyol siparis import et (barkod eslesmeli)
+        // Act — Trendyol Sipariş import et (barkod eslesmeli)
         var (orderManager, scope2) = GetScopedService<IOrderManager>();
         using var _2 = scope2;
         var packages = new List<TrendyolShipmentPackage>
@@ -217,7 +217,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
         stock!.SoldQuantity.Should().Be(3);
         stock.CurrentStock.Should().Be(17); // 20 - 3
 
-        // Siparis DB'de olmali
+        // Sipariş DB'de olmali
         var order = await dbContext.Orders
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.ShipmentPackageId == 80001);
@@ -275,7 +275,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
         var saleResult = await saleManager.MakeSale(saleDto);
         saleResult.Success.Should().BeTrue(saleResult.Message);
 
-        // Act 2 — siparis import (3 adet), stok=1 < 3 → ForceDecrease
+        // Act 2 — Sipariş import (3 adet), stok=1 < 3 → ForceDecrease
         var (orderManager, scope3) = GetScopedService<IOrderManager>();
         using var _3 = scope3;
         var packages = new List<TrendyolShipmentPackage>
@@ -290,7 +290,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
         var stock = await dbContext.BranchOfficeStocks
             .FirstOrDefaultAsync(s => s.ProductVariantId == variantId && s.BranchOfficeId == 1);
         stock.Should().NotBeNull();
-        stock!.SoldQuantity.Should().Be(7); // 4 (satis) + 3 (siparis)
+        stock!.SoldQuantity.Should().Be(7); // 4 (satis) + 3 (Sipariş)
         stock.CurrentStock.Should().Be(-2); // 5 - 7
 
         // StockMovement kayitlari kontrol
@@ -333,7 +333,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task SoftDelete_Product_ShouldNotOrphanOrderItems()
     {
-        // Arrange — urun ekle + siparis import et
+        // Arrange — urun ekle + Sipariş import et
         var (productService, scope1) = GetScopedService<IProductService>();
         using var _1 = scope1;
         var dto = BuildProductDto("CD-DEL-001", "8880000000005", stock: 10);
@@ -343,7 +343,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
         var productId = addResult.Data!.Id;
         var variantId = addResult.Data.ProductVariants.First().Id;
 
-        // Siparis import et
+        // Sipariş import et
         var (orderManager, scope2) = GetScopedService<IOrderManager>();
         using var _2 = scope2;
         await orderManager.ImportTrendyolOrdersAsync([

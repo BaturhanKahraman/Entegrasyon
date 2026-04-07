@@ -2,7 +2,7 @@
 @inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 
 @section Head {
-    <seo-meta title="Siparis Detayi | @Tenant.Settings.StoreName" />
+    <seo-meta title="Sipariş Detayi | @Tenant.Settings.StoreName" />
 }
 
 @{
@@ -14,7 +14,7 @@
         <nav class="bg-white rounded-lg shadow p-4 space-y-1">
             <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
             <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Siparislerim</a>
+            <a href="/hesabim/Orders" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Siparişlerim</a>
             <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Iadelerim</a>
             <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
             <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
@@ -34,7 +34,7 @@
         @if (order is null)
         {
             <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-gray-500">Siparis bilgisi bulunamadi.</p>
+                <p class="text-gray-500">Sipariş bilgisi bulunamadi.</p>
             </div>
         }
         else
@@ -43,8 +43,8 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div>
-                        <a href="/hesabim/Orders" class="text-sm text-gray-500 hover:text-gray-700 no-underline">&larr; Siparislere Don</a>
-                        <h1 class="text-xl font-bold text-gray-900 mt-1">Siparis #@order.OrderNumber</h1>
+                        <a href="/hesabim/Orders" class="text-sm text-gray-500 hover:text-gray-700 no-underline">&larr; Siparişlere Don</a>
+                        <h1 class="text-xl font-bold text-gray-900 mt-1">Sipariş #@order.OrderNumber</h1>
                         <p class="text-sm text-gray-500">@order.OrderDate.ToString("dd MMMM yyyy, HH:mm")</p>
                     </div>
                     <div class="flex items-center gap-3">
@@ -134,7 +134,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Order Summary -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Siparis Ozeti</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Sipariş Ozeti</h2>
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-gray-600">Ara Toplam</span>
@@ -201,7 +201,7 @@
                         @if (!string.IsNullOrEmpty(order.OrderNote))
                         {
                             <div>
-                                <span class="text-gray-500">Siparis Notu:</span>
+                                <span class="text-gray-500">Sipariş Notu:</span>
                                 <p class="text-gray-900">@order.OrderNote</p>
                             </div>
                         }
@@ -211,7 +211,7 @@
 
             <!-- Actions -->
             <div class="bg-white rounded-lg shadow p-6 flex flex-wrap gap-3">
-                <a href="/hesabim/siparis/@order.Id/fatura" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 no-underline text-sm">
+                <a href="/hesabim/Sipariş/@order.Id/fatura" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 no-underline text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -219,13 +219,13 @@
                 </a>
                 @if (order.Status == "Alindi")
                 {
-                    <form method="post" action="/hesabim/siparis/@order.Id/iptal" class="inline" onsubmit="return confirm('Siparisi iptal etmek istediginize emin misiniz?')">
+                    <form method="post" action="/hesabim/Sipariş/@order.Id/iptal" class="inline" onsubmit="return confirm('Siparişi iptal etmek istediginize emin misiniz?')">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm cursor-pointer border-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            Siparisi Iptal Et
+                            Siparişi Iptal Et
                         </button>
                     </form>
                 }

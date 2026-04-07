@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete.Pttavm;
 
 /// <summary>
-/// PttAVM siparis yonetim servisi.
-/// Siparis arama, detay, kargo bilgi ve kargo profilleri.
+/// PttAVM Sipariş yonetim servisi.
+/// Sipariş arama, detay, kargo bilgi ve kargo profilleri.
 /// integration-api.pttavm.com uzerinde calisir (CatalogApiClient kullanir).
 /// </summary>
 public sealed class PttavmOrderService(

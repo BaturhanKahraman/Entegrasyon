@@ -17,54 +17,54 @@
                     <div class="card-body">
                         <div class="subheader">Toplam Harcama</div>
                         <div class="h1 mb-3">@totalSpend.ToString("N2") ₺</div>
-                        <div class="text-muted">Tum siparislerden</div>
+                        <div class="text-muted">Tüm siparişlerden</div>
                     </div>
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
-                        <div class="subheader">Siparis Sayisi</div>
+                        <div class="subheader">Sipariş Sayısı</div>
                         <div class="h1 mb-3">@orderCount</div>
-                        <div class="text-muted">Toplam siparis</div>
+                        <div class="text-muted">Toplam sipariş</div>
                     </div>
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
-                        <div class="subheader">Son Siparis Tarihi</div>
+                        <div class="subheader">Son Sipariş Tarihi</div>
                         <div class="h1 mb-3">
                             @(lastOrderDate.HasValue ? lastOrderDate.Value.ToString("dd.MM.yyyy") : "-")
                         </div>
-                        <div class="text-muted">En son siparis</div>
+                        <div class="text-muted">En son sipariş</div>
                     </div>
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
-                        <div class="subheader">Ortalama Siparis</div>
+                        <div class="subheader">Ortalama Sipariş</div>
                         <div class="h1 mb-3">@averageOrder.ToString("N2") ₺</div>
-                        <div class="text-muted">Siparis basina ortalama</div>
+                        <div class="text-muted">Sipariş başına ortalama</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="row row-deck row-cards">
-            @* Son Siparisler *@
+            @* Son Siparişler *@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Son Siparisler</h3>
+                        <h3 class="card-title">Son Siparişler</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-vcenter card-table table-hover">
                             <thead>
                                 <tr>
                                     <th>Tarih</th>
-                                    <th>Siparis No</th>
+                                    <th>Sipariş No</th>
                                     <th>Durum</th>
                                     <th>Tutar</th>
                                 </tr>
@@ -74,7 +74,7 @@
                                 {
                                     <tr>
                                         <td colspan="4" class="text-center text-muted py-4">
-                                            Henuz siparis bulunmuyor.
+                                            Henüz sipariş bulunmuyor.
                                         </td>
                                     </tr>
                                 }
@@ -128,7 +128,7 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Musteri Bilgileri</h3>
+                        <h3 class="card-title">Müşteri Bilgileri</h3>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
@@ -138,7 +138,7 @@
                         @if (!string.IsNullOrEmpty(Model.CorporateName))
                         {
                             <div class="mb-3">
-                                <div class="text-muted small mb-1">Firma Adi</div>
+                                <div class="text-muted small mb-1">Firma Adı</div>
                                 <div>@Model.CorporateName</div>
                             </div>
                         }
@@ -147,7 +147,7 @@
                             <div>@(Model.PhoneNumber ?? "-")</div>
                         </div>
                         <div class="mb-3">
-                            <div class="text-muted small mb-1">Musteri Tipi</div>
+                            <div class="text-muted small mb-1">Müşteri Tipi</div>
                             <div>
                                 @if (Model.CustomerType == "Corporate")
                                 {
@@ -168,7 +168,7 @@
                             <div>@(Model.Address ?? "-")</div>
                         </div>
                         <div class="mb-3">
-                            <div class="text-muted small mb-1">Kayit Tarihi</div>
+                            <div class="text-muted small mb-1">Kayıt Tarihi</div>
                             <div>@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
                         </div>
                     </div>
@@ -180,7 +180,7 @@
                                 <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
                                 <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
                             </svg>
-                            Duzenle
+                            Düzenle
                         </a>
                         <a href="/customers/@Model.Id" class="btn btn-outline-primary btn-sm ms-2">
                             Detay

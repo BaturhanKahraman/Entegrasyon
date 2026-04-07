@@ -2,7 +2,7 @@
 
 ## Genel Bakis
 
-Temu, PDD Holdings (Pinduoduo) bunyesindeki global e-ticaret platformudur. Partner Platform API uzerinden ucuncu parti uygulamalar, satis operasyonlarini (urun, siparis, stok, kargo, iade) otomatize edebilir.
+Temu, PDD Holdings (Pinduoduo) bunyesindeki global e-ticaret platformudur. Partner Platform API uzerinden ucuncu parti uygulamalar, satis operasyonlarini (urun, Sipariş, stok, kargo, iade) otomatize edebilir.
 
 **API Stili:** REST-like, tek router endpoint uzerinden method-based routing (Pinduoduo/Temu pattern)
 **Request Format:** JSON (POST)
@@ -111,7 +111,7 @@ Temu API method'lari `bg.` prefix'i ile baslar ve domain'e gore gruplanir:
 | `bg.open.*` | Yetkilendirme (access token create/refresh) |
 | `bg.goods.*` | Urun yonetimi |
 | `bg.local.goods.*` | Lokal urun yonetimi (fiyat, stok) |
-| `bg.order.*` | Siparis yonetimi |
+| `bg.order.*` | Sipariş yonetimi |
 | `bg.logistics.*` | Kargo/lojistik |
 | `bg.aftersale.*` | Iade/iptal islemleri |
 

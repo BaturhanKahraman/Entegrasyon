@@ -464,4 +464,4 @@ Dashboard'dan degisiklik -> EventChannel<StorefrontSettingsUpdatedEvent> -> Stor
 SP-1 tamamlandiktan sonra siradaki alt projeler:
 - **SP-2:** Urun Vitrin & Katalog (ana sayfa icerik, kategori listeleme, urun detay, arama, filtreler)
 - **SP-3:** Uyelik & Auth (kayit, giris, email dogrulama, Google OAuth, hesap paneli)
-- **SP-4:** Sepet & Odeme (sepet, checkout, iyzico 3D Secure, siparis)
+- **SP-4:** Sepet & Odeme (sepet, checkout, iyzico 3D Secure, Sipariş)

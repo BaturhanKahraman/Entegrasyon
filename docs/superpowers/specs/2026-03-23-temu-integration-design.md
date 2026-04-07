@@ -22,7 +22,7 @@ Entegrasyon projesine 7. pazaryeri olarak Temu ekleniyor. REST-like API + App Ke
 
 **Auth:** App Key + App Secret + Access Token + MD5 Sign (detay: `docs/temu/BASE_KNOWLEDGE.md`)
 
-**Kapsam:** Urun yonetimi (CRUD, kategori), stok/fiyat guncelleme, siparis listeleme, kargo surecleri, iade yonetimi.
+**Kapsam:** Urun yonetimi (CRUD, kategori), stok/fiyat guncelleme, Sipariş listeleme, kargo surecleri, iade yonetimi.
 
 > **UYARI:** Temu API dokumantasyonu diger pazaryerlerine gore sinirlidir. Bircok endpoint detayi "TBD" olarak isaretlenmistir ve resmi Partner Platform dokumantasyonundan dogrulanmalidir.
 
@@ -56,7 +56,7 @@ Business/Concrete/Temu/
 ├── TemuProductMapper.cs            # Product entity → Temu DTO
 ├── TemuMappingValidator.cs         # Marketplace mapping kontrolu
 ├── TemuStockPriceService.cs        # Stok/fiyat guncelleme
-├── TemuOrderService.cs             # Siparis yonetimi
+├── TemuOrderService.cs             # Sipariş yonetimi
 ├── TemuShippingService.cs          # Kargo islemleri
 ├── TemuReturnService.cs            # Iade/iptal yonetimi
 ├── TemuResponseModels.cs           # API response DTO'lari
@@ -172,12 +172,12 @@ Business/Concrete/Import/
 
 ---
 
-## 6. Siparis & Kargo
+## 6. Sipariş & Kargo
 
 ### TemuOrderService
 - `GetOrdersAsync(filters)` → type: `bg.order.list.v2.get` (dogrulanmis)
 - `DecryptShippingInfoAsync(orderSn)` → type: `bg.order.decryptshippinginfo.get` (dogrulanmis)
-- TBD - Siparis durumu guncelleme endpoint'i incelenecek
+- TBD - Sipariş durumu guncelleme endpoint'i incelenecek
 
 ### TemuShippingService
 - `UpdateTrackingAsync(orderSn, trackingNo, carrierCode)` → TBD - endpoint incelenecek
@@ -198,7 +198,7 @@ Business/Concrete/Import/
 ## 8. Background Services
 
 ### TemuOrderPollingService
-- Periyodik yeni siparis cekme → DB'ye kaydet
+- Periyodik yeni Sipariş cekme → DB'ye kaydet
 - `ConcurrentDictionary<int, DateTime>` last poll timestamp (multi-tenant)
 - Poll interval: konfigurasyon ile ayarlanabilir (default 60 sn)
 
@@ -285,7 +285,7 @@ MarketPlace tablosuna: `Id=9, Name="Temu", BaseUrl="https://openapi-b-eu.temu.co
 
 ### E2E Tests
 - Sandbox API'ye gercek HTTP request'ler (sandbox ortami varsa)
-- Kategori listeleme, urun CRUD, siparis listeleme akislari
+- Kategori listeleme, urun CRUD, Sipariş listeleme akislari
 
 ---
 
@@ -297,7 +297,7 @@ MarketPlace tablosuna: `Id=9, Name="Temu", BaseUrl="https://openapi-b-eu.temu.co
 | 1 | Altyapi: ApiClient (MD5 sign), Models, Constants, DI, Seed | Faz 0 |
 | 2 | Kategori & Ozellik Import | Faz 1 |
 | 3 | Urun: Mapper, Validator, ProductService, StockPriceService | Faz 2 |
-| 4 | Siparis: OrderService, ShippingService | Faz 1 |
+| 4 | Sipariş: OrderService, ShippingService | Faz 1 |
 | 5 | Iade: ReturnService | Faz 1 |
 | 6 | Background Services (Order Polling, StockPrice Sync) | Faz 3, 4 |
 | 7 | UI Tab (Blazor) | Faz 1-6 |
@@ -314,7 +314,7 @@ Detayli API dokumanlari: `docs/temu/`
 |-------|--------|
 | BASE_KNOWLEDGE.md | Auth (MD5 sign), URL'ler, rate limits, genel mimari |
 | PRODUCT_API.md | Urun CRUD, kategori, marka |
-| ORDER_API.md | Siparis yonetimi |
+| ORDER_API.md | Sipariş yonetimi |
 | STOCK_PRICE_API.md | Stok/fiyat guncelleme |
 | SHIPPING_API.md | Kargo/lojistik |
 | RETURNS_API.md | Iade/iptal |

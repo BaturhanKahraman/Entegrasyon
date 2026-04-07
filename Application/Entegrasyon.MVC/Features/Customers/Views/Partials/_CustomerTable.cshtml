@@ -8,10 +8,10 @@
                 <thead>
                     <tr>
                         <th>Ad Soyad / Firma</th>
-                        <th>Tur</th>
+                        <th>Tür</th>
                         <th>Telefon</th>
                         <th>TC / Vergi No</th>
-                        <th>Satis Sayisi</th>
+                        <th>Satış Sayısı</th>
                         <th class="w-1"></th>
                     </tr>
                 </thead>
@@ -48,7 +48,7 @@
                                             hx-post="/customers/@customer.Id/delete"
                                             hx-target="closest tr"
                                             hx-swap="outerHTML swap:300ms"
-                                            hx-confirm="Bu musteriyi silmek istediginize emin misiniz?">
+                                            hx-confirm="Bu müşteriyi silmek istediğinize emin misiniz?">
                                         Sil
                                     </button>
                                 </div>
@@ -78,8 +78,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Musteri bulunamadi",
-                         Subtitle = "Henuz musteri eklenmemis veya arama kriterinize uygun musteri yok."
+                         Title = "Müşteri bulunamadı",
+                         Subtitle = "Henüz müşteri eklenmemiş veya arama kriterinize uygun müşteri yok."
                      }'/>
         </div>
     }

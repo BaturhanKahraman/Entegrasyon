@@ -378,7 +378,7 @@ Replace the entire content of `_Sidebar.cshtml` with:
                     <li class="nav-item">
                         <a class="nav-link @(activeNav == "orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/orders">
                             <span class="nav-link-icon"><i class="ti ti-shopping-cart"></i></span>
-                            <span class="nav-link-title">Satislar ve Siparisler</span>
+                            <span class="nav-link-title">Satislar ve Siparişler</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -431,7 +431,7 @@ Replace the entire content of `_Sidebar.cshtml` with:
                     <li class="nav-item">
                         <a class="nav-link @(activeNav == "marketplace-orders" ? "active" : "")" require-permission="Permissions.Orders.View" href="/marketplace/orders">
                             <span class="nav-link-icon"><i class="ti ti-clipboard-list"></i></span>
-                            <span class="nav-link-title">Siparisler</span>
+                            <span class="nav-link-title">Siparişler</span>
                         </a>
                     </li>
                 }

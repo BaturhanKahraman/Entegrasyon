@@ -54,7 +54,7 @@ public sealed class TrendyolEFaturaService(
             .FirstOrDefaultAsync(o => o.Id == orderId, ct);
 
         if (order is null)
-            return new ErrorDataResult<EFaturaRecord>(null!, "Siparis bulunamadi.");
+            return new ErrorDataResult<EFaturaRecord>(null!, "Sipariş bulunamadi.");
 
         // Token cache'den companyId ve userId al
         var tokenInfo = TrendyolEFaturaApiClient.GetCachedTokenInfo(TrendyolMarketPlaceId);

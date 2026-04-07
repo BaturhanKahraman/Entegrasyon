@@ -146,11 +146,11 @@ app.MapControllerRoute("pushSubscribe", "/api/push/subscribe",
     new { controller = "Push", action = "Subscribe" });
 app.MapControllerRoute("pushUnsubscribe", "/api/push/unsubscribe",
     new { controller = "Push", action = "Unsubscribe" });
-app.MapControllerRoute("orderDetail", "/hesabim/siparis/{id}",
+app.MapControllerRoute("orderDetail", "/hesabim/Sipariş/{id}",
     new { controller = "Account", action = "OrderDetail" });
-app.MapControllerRoute("orderCancel", "/hesabim/siparis/{id}/iptal",
+app.MapControllerRoute("orderCancel", "/hesabim/Sipariş/{id}/iptal",
     new { controller = "Account", action = "CancelOrder" });
-app.MapControllerRoute("orderInvoice", "/hesabim/siparis/{id}/fatura",
+app.MapControllerRoute("orderInvoice", "/hesabim/Sipariş/{id}/fatura",
     new { controller = "Account", action = "DownloadInvoice" });
 app.MapControllerRoute("accountReturns", "/hesabim/iadelerim",
     new { controller = "Account", action = "Returns" });
@@ -168,9 +168,9 @@ app.MapControllerRoute("accountReferral", "/hesabim/arkadasini-getir",
     new { controller = "Account", action = "Referral" });
 app.MapControllerRoute("account", "/hesabim/{action=Index}",
     new { controller = "Account" });
-app.MapControllerRoute("tracking", "/siparis-takip",
+app.MapControllerRoute("tracking", "/Sipariş-takip",
     new { controller = "Tracking", action = "Index" });
-app.MapControllerRoute("trackingResult", "/siparis-takip/sonuc",
+app.MapControllerRoute("trackingResult", "/Sipariş-takip/sonuc",
     new { controller = "Tracking", action = "Result" });
 app.MapControllerRoute("cart", "/sepet",
     new { controller = "Cart", action = "Index" });
@@ -210,9 +210,9 @@ app.MapControllerRoute("sellerRegister", "/satici/kayit",
     new { controller = "Seller", action = "Register" });
 app.MapControllerRoute("sellerPanel", "/satici/{action=Panel}",
     new { controller = "Seller" });
-app.MapControllerRoute("sellerOrders", "/satici/siparislerim",
+app.MapControllerRoute("sellerOrders", "/satici/Siparişlerim",
     new { controller = "Seller", action = "Orders" });
-app.MapControllerRoute("sellerOrderDetail", "/satici/siparis/{id}",
+app.MapControllerRoute("sellerOrderDetail", "/satici/Sipariş/{id}",
     new { controller = "Seller", action = "OrderDetail" });
 app.MapControllerRoute("sellerBalance", "/satici/bakiye",
     new { controller = "Seller", action = "Balance" });

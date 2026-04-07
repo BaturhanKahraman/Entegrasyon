@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Entegrasyon.IntegrationTest.Business;
 
 /// <summary>
-/// Siparis import integration testleri — gercek DB ile Trendyol siparis import akisi.
+/// Sipariş import integration testleri — gercek DB ile Trendyol Sipariş import akisi.
 /// </summary>
 [Trait("Category", "Integration")]
 public class OrderImportIntegrationTests : IntegrationTestBase
@@ -82,7 +82,7 @@ public class OrderImportIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task ImportTrendyolOrders_ShouldBe_Idempotent()
     {
-        // Arrange — ayni siparisi iki kez import et
+        // Arrange — ayni Siparişi iki kez import et
         var (orderManager1, scope1) = GetScopedService<IOrderManager>();
         using var _1 = scope1;
 
@@ -110,7 +110,7 @@ public class OrderImportIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task GetOrdersAsync_ShouldReturnImportedOrders()
     {
-        // Arrange — siparis import et
+        // Arrange — Sipariş import et
         var (orderManager, scope) = GetScopedService<IOrderManager>();
         using var _ = scope;
 
@@ -135,7 +135,7 @@ public class OrderImportIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task UpdateOrderStatusAsync_ShouldUpdateStatus()
     {
-        // Arrange — siparis import et
+        // Arrange — Sipariş import et
         var (orderManager, scope) = GetScopedService<IOrderManager>();
         using var _ = scope;
 

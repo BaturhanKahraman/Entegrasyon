@@ -10,7 +10,7 @@ using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
-/// Gercek Trendyol siparis API cagrilari.
+/// Gercek Trendyol Sipariş API cagrilari.
 /// </summary>
 public sealed class TrendyolOrderService(
     IDbContextFactory<IntegrationDbContext> contextFactory,
@@ -65,7 +65,7 @@ public sealed class TrendyolOrderService(
             return new ErrorResult($"Trendyol API hatasi: {response.StatusCode}");
         }
 
-        return new SuccessResult("Siparis tedarik edilemez olarak isaretlendi.");
+        return new SuccessResult("Sipariş tedarik edilemez olarak isaretlendi.");
     }
 
     public async Task<IResult> UpdateTrackingNumberAsync(long shipmentPackageId, string trackingNumber)

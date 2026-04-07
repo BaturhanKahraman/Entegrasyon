@@ -22,13 +22,13 @@ Trendyol e-Faturam, GIB'e (Gelir Idaresi Baskanligi) dogrudan baglanmadan e-fatu
 
 | Senaryo | Fatura Turu | Tetikleme |
 |---------|-------------|-----------|
-| Siparis kargoya verildiginde | e-Arsiv veya e-Fatura | Otomatik (background service) |
+| Sipariş kargoya verildiginde | e-Arsiv veya e-Fatura | Otomatik (background service) |
 | Alici e-fatura mukellefiyse | Giden e-Fatura (TEMELFATURA/TICARIFATURA) | Otomatik — VKN ile mukellef sorgula |
 | Alici e-fatura mukellifi degilse | e-Arsiv (EARSIVFATURA) | Otomatik |
 | Iade durumunda | Iade faturasi (invoiceTypeCode: IADE) | Otomatik veya manuel |
 | Manuel tetikleme | Herhangi biri | UI uzerinden |
 
-**Karar:** Siparis `Shipped` durumuna gectiginde (kargoya verildiginde) otomatik olarak tetiklenir. Background servis ile poll edilir.
+**Karar:** Sipariş `Shipped` durumuna gectiginde (kargoya verildiginde) otomatik olarak tetiklenir. Background servis ile poll edilir.
 
 ---
 
@@ -176,7 +176,7 @@ public interface ITrendyolEFaturaService
     /// VKN ile mukellef sorgula — e-fatura mukellefiyse true
     Task<IDataResult<bool>> CheckTaxPayerAsync(string taxId, CancellationToken ct = default);
 
-    /// Siparis icin e-fatura/e-arsiv olustur
+    /// Sipariş icin e-fatura/e-arsiv olustur
     Task<IDataResult<EFaturaRecord>> CreateInvoiceForOrderAsync(Guid orderId, CancellationToken ct = default);
 
     /// Fatura durumunu sorgula
@@ -231,8 +231,8 @@ public enum EFaturaStatus { Pending, Processing, Created, Sent, Approved, Cancel
 ### 4.4. Fatura Olusturma Akisi
 
 ```
-1. Siparis "Shipped" durumuna gecer (TrendyolOrderPollingService tespiti)
-2. TrendyolEFaturaStatusPollingService: Shipped + faturasi olmayan siparisleri bul
+1. Sipariş "Shipped" durumuna gecer (TrendyolOrderPollingService tespiti)
+2. TrendyolEFaturaStatusPollingService: Shipped + faturasi olmayan Siparişleri bul
 3. Alicinin VKN/TCKN'si ile mukellef sorgula (CheckTaxPayerAsync)
    → aliasType == INVOICE → e-Fatura mukellefiyse
    → Bulunamadi → e-Arsiv kullan
@@ -255,13 +255,13 @@ Order entity'sinden e-fatura request body'si olusturur:
 - `recipientInfo` (fatura adresi + musteri bilgileri)
 - `paymentInfo` (marketplace satisi → CREDIT_CARD, purchaseUrl)
 - `deliveryInfo` (kargo bilgisi)
-- `orderInfo` (siparis numarasi + tarih)
+- `orderInfo` (Sipariş numarasi + tarih)
 
 ### 4.6. Background Service: TrendyolEFaturaStatusPollingService
 
 ```
 Her 5 dakikada:
-1. "Shipped" durumunda + EFaturaRecord'u olmayan siparisleri bul → fatura olustur
+1. "Shipped" durumunda + EFaturaRecord'u olmayan Siparişleri bul → fatura olustur
 2. Status = Processing/Created/Sent olan kayitlari poll et → status guncelle
 3. Status = Approved olan + InvoiceLinkSentToMarketplace = false → PDF URL al + marketplace'e gonder
 ```
@@ -276,11 +276,11 @@ Bu servis **marketplace** tarafindaki fatura link/dosya gonderme islemleri icind
 
 ### 5.2. TrendyolOrderPollingService
 
-Mevcut siparis polling servisi degismez. Siparisleri import etmeye devam eder. e-Fatura servisi, import edilen siparislerin durumunu takip eder.
+Mevcut Sipariş polling servisi degismez. Siparişleri import etmeye devam eder. e-Fatura servisi, import edilen Siparişlerin durumunu takip eder.
 
 ### 5.3. OrderManager
 
-Degisiklik gerekmez. Siparis import akisi aynen devam eder.
+Degisiklik gerekmez. Sipariş import akisi aynen devam eder.
 
 ---
 
@@ -372,7 +372,7 @@ Ilk implementasyonda sadece core servisler + builder + temel testler:
 
 ## 9. UI Gereksinimleri (Faz 2 — Bu Spec Disinda)
 
-Siparis detay sayfasinda:
+Sipariş detay sayfasinda:
 - Fatura durumu gosterimi
 - Manuel fatura olusturma butonu
 - Fatura PDF indirme linki

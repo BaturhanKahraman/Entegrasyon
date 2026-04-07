@@ -5,20 +5,20 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-import" type="button" role="tab">
                     <i class="ti ti-file-import icon me-1"></i>
-                    Import
+                    Dışa Aktar
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-export" type="button" role="tab">
                     <i class="ti ti-file-export icon me-1"></i>
-                    Export
+                    İçe Aktar
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history" type="button" role="tab"
                         hx-get="/bulk-operations/history" hx-target="#history-content" hx-trigger="click once" hx-swap="innerHTML">
                     <i class="ti ti-history icon me-1"></i>
-                    Gecmis
+                    Geçmiş
                 </button>
             </li>
         </ul>
@@ -28,7 +28,7 @@
             <div class="tab-pane active show" id="tab-import" role="tabpanel">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Dosya Yukle ve Dogrula</h3>
+                        <h3 class="card-title">Dosya Yükle ve Doğrula</h3>
                     </div>
                     <div class="card-body">
                         <form id="import-form"
@@ -39,21 +39,21 @@
                               hx-indicator="#validate-spinner">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label">Islem Turu</label>
+                                    <label class="form-label">İşlem Türü</label>
                                     <select class="form-select" name="type" id="import-type" required>
-                                        <option value="1">Urun Import</option>
+                                        <option value="1">Ürün Import</option>
                                         <option value="2">Fiyat Import</option>
                                         <option value="3">Stok Import</option>
                                     </select>
                                 </div>
                                 <div class="col-md-5 mb-3">
-                                    <label class="form-label">Excel Dosyasi</label>
+                                    <label class="form-label">Excel Dosyası</label>
                                     <input type="file" class="form-control" name="file" id="import-file" accept=".xlsx,.xls" required />
                                 </div>
                                 <div class="col-md-3 mb-3 d-flex align-items-end">
                                     <button type="submit" class="btn btn-primary w-100">
                                         <span class="spinner-border spinner-border-sm me-1 htmx-indicator" id="validate-spinner"></span>
-                                        Dogrula ve Onizle
+                                        Doğrula ve Önizle
                                     </button>
                                 </div>
                             </div>
@@ -63,11 +63,11 @@
                         <div id="validation-preview"></div>
 
                         <hr class="my-3" />
-                        <h4 class="mb-2">Sablon Indir</h4>
+                        <h4 class="mb-2">Şablon İndir</h4>
                         <div class="btn-list">
-                            <a href="/bulk-operations/template?type=1" class="btn btn-outline-secondary btn-sm">Urun Sablonu</a>
-                            <a href="/bulk-operations/template?type=2" class="btn btn-outline-secondary btn-sm">Fiyat Sablonu</a>
-                            <a href="/bulk-operations/template?type=3" class="btn btn-outline-secondary btn-sm">Stok Sablonu</a>
+                            <a href="/bulk-operations/template?type=1" class="btn btn-outline-secondary btn-sm">Ürün Şablonu</a>
+                            <a href="/bulk-operations/template?type=2" class="btn btn-outline-secondary btn-sm">Fiyat Şablonu</a>
+                            <a href="/bulk-operations/template?type=3" class="btn btn-outline-secondary btn-sm">Stok Şablonu</a>
                         </div>
                     </div>
                 </div>
@@ -77,14 +77,14 @@
             <div class="tab-pane" id="tab-export" role="tabpanel">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Veri Disari Aktar</h3>
+                        <h3 class="card-title">Veri Dışarı Aktar</h3>
                     </div>
                     <div class="card-body">
-                        <p class="text-secondary mb-3">Export turunu secin, kolon secimi yaparak istediginiz alanlari indirebilirsiniz.</p>
+                        <p class="text-secondary mb-3">Export türünü seçin, kolon seçimi yaparak istediğiniz alanları indirebilirsiniz.</p>
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Export Turu</label>
+                                <label class="form-label">Export Türü</label>
                                 <select class="form-select" id="export-type-select"
                                         hx-get="/bulk-operations/export-columns"
                                         hx-target="#export-column-selector"
@@ -92,8 +92,8 @@
                                         hx-trigger="change"
                                         hx-indicator="#export-col-spinner"
                                         name="type">
-                                    <option value="">Tur secin...</option>
-                                    <option value="4">Urunler</option>
+                                    <option value="">ür seçin...</option>
+                                    <option value="4">Ürünler</option>
                                     <option value="5">Fiyatlar</option>
                                     <option value="6">Stoklar</option>
                                 </select>
@@ -106,11 +106,11 @@
                         <div id="export-column-selector"></div>
 
                         <hr class="my-3" />
-                        <h4 class="mb-2">Hizli Export (Tum Kolonlar)</h4>
+                        <h4 class="mb-2">Hızlı Export (Tüm Kolonlar)</h4>
                         <div class="btn-list">
-                            <a href="/bulk-operations/export?type=4" class="btn btn-outline-primary">Urunleri Indir</a>
-                            <a href="/bulk-operations/export?type=5" class="btn btn-outline-primary">Fiyatlari Indir</a>
-                            <a href="/bulk-operations/export?type=6" class="btn btn-outline-primary">Stoklari Indir</a>
+                            <a href="/bulk-operations/export?type=4" class="btn btn-outline-primary">Ürünleri İndir</a>
+                            <a href="/bulk-operations/export?type=5" class="btn btn-outline-primary">Fiyatları İndir</a>
+                            <a href="/bulk-operations/export?type=6" class="btn btn-outline-primary">Stokları İndir</a>
                         </div>
                     </div>
                 </div>
@@ -128,8 +128,8 @@
                         <div class="card">
                             <div class="card-body">
                                 <div class="empty">
-                                    <p class="empty-title">Henuz islem yapilmamis</p>
-                                    <p class="empty-subtitle text-secondary">Import veya export islemleri burada gorunecektir.</p>
+                                    <p class="empty-title">Henüz işlem yapılmamış</p>
+                                    <p class="empty-subtitle text-secondary">İçe veya dışa aktarma işlemleri burada görünecektir.</p>
                                 </div>
                             </div>
                         </div>

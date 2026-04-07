@@ -37,7 +37,7 @@ Test Claim Base URL: `https://claim-stub-external-sit.hepsiburada.com`
 | Alan | Tip | Zorunlu | Aciklama |
 |------|-----|---------|----------|
 | newSKU | string | Evet | Urun SKU |
-| orderNumber | string | Evet | Siparis numarasi |
+| orderNumber | string | Evet | Sipariş numarasi |
 | type | enum | Evet | `change`, `missingitem`, `missingpart`, `missinginvoice`, `extraproduct`, `return`, `renewproduct` |
 | reason | enum | Evet | `ProductIsBroken`, `ProductIsDamaged`, `WrongProductSentByMerchant` |
 
@@ -239,11 +239,11 @@ Bolum 2 ile ayni format ve pagination header'lari.
 | refundAmount | decimal | Iade tutari |
 | refundCurrency | string | Para birimi |
 | refundDate | datetime | Iade tarihi |
-| orderNumber | string | Siparis numarasi |
-| orderDate | datetime | Siparis tarihi |
+| orderNumber | string | Sipariş numarasi |
+| orderDate | datetime | Sipariş tarihi |
 | customerName | string | Musteri adi |
 | merchantRejectionStatement | string | Satici red aciklamasi |
-| lineItemId | string | Siparis kalemi ID |
+| lineItemId | string | Sipariş kalemi ID |
 | sku | string | Hepsiburada SKU |
 | merchantSku | string | Satici SKU |
 | priceAmount | decimal | Birim fiyat |

@@ -95,7 +95,7 @@ public class StorefrontWalletManagerTests : BaseTest
         mockIntegrationDbContext.Setup(c => c.StorefrontWalletTransactions).ReturnsDbSet(transactions);
 
         // Act
-        var result = await _sut.DebitAsync(1, 10, 50, WalletTransactionType.OrderPayment, null, "Siparis");
+        var result = await _sut.DebitAsync(1, 10, 50, WalletTransactionType.OrderPayment, null, "Sipariş");
 
         // Assert
         result.Success.Should().BeTrue();

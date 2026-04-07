@@ -117,7 +117,7 @@ public class PttavmOrderServiceTests : Entegrasyon.UnitTest.BaseTest
 
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
-        result.Data!.SiparisNo.Should().Be("ORD-001");
+        result.Data!.SiparişNo.Should().Be("ORD-001");
     }
 
     // ── GetCargoInfos Tests ─────────────────────────────────────────────────

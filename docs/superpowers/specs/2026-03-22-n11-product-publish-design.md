@@ -17,7 +17,7 @@ N11 pazaryerine urun publish etmek icin urun verilerini N11 SaveProduct SOAP for
 ## Out of Scope
 
 - Stok/fiyat sync (Sprint 4 — ayri servis)
-- Siparis/iade (gelecek faz)
+- Sipariş/iade (gelecek faz)
 - UI degisiklikleri (mevcut MarketplacePublishStep.razor zaten marketplace-agnostik)
 
 ---

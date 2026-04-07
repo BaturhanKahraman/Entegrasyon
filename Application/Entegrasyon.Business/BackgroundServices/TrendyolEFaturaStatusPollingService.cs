@@ -12,7 +12,7 @@ namespace Entegrasyon.Business.BackgroundServices;
 /// <summary>
 /// Trendyol e-Fatura durum takip servisi.
 /// Her 5 dakikada:
-/// 1. "Shipped" durumunda + faturasi olmayan siparisler icin fatura olustur
+/// 1. "Shipped" durumunda + faturasi olmayan Siparişler icin fatura olustur
 /// 2. Processing/Created/Sent durumundaki fatura kayitlarinin durumunu sorgula
 /// 3. Onaylanmis + marketplace'e gonderilmemis faturalarin PDF URL'ini al ve marketplace'e gonder
 /// Tum aktif tenant'lar icin calisir.

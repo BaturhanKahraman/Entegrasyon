@@ -25,7 +25,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Siparis #@title</title>
+    <title>Sipariş #@title</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -180,10 +180,10 @@
     <div class="print-header">
         <div>
             <div class="company-name">Entegrasyon</div>
-            <div class="company-sub">Siparis / Fatura Dokümani</div>
+            <div class="company-sub">Sipariş / Fatura Dokümani</div>
         </div>
         <div class="order-title">
-            <h2>Siparis #@title</h2>
+            <h2>Sipariş #@title</h2>
             <div class="status">
                 Tarih: @(Model.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
             </div>
@@ -238,7 +238,7 @@
 
     <!-- Order Items -->
     <div class="section">
-        <div class="section-title">Siparis Kalemleri</div>
+        <div class="section-title">Sipariş Kalemleri</div>
         <table>
             <thead>
                 <tr>
@@ -334,7 +334,7 @@
     @if (!string.IsNullOrWhiteSpace(Model.OrderNote))
     {
         <div class="section">
-            <div class="section-title">Siparis Notu</div>
+            <div class="section-title">Sipariş Notu</div>
             <div>@Model.OrderNote</div>
         </div>
     }

@@ -9,7 +9,7 @@ namespace Entegrasyon.Business.Concrete.Kargo;
 
 /// <summary>
 /// Yurtici Kargo SOAP API uzerinden kargo olusturma, sorgulama ve iptal islemleri.
-/// Tum marketplace siparisleri icin genel kargo servisi.
+/// Tum marketplace Siparişleri icin genel kargo servisi.
 /// </summary>
 public sealed class YurticiKargoService(
     IYurticiKargoClient client,

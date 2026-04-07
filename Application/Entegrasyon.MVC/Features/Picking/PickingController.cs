@@ -13,7 +13,7 @@ public class PickingController(IOrderManager orderManager) : HtmxController
     [HttpGet("/picking")]
     public async Task<IActionResult> Index(int page = 1)
     {
-        ViewData.SetPageTitle("Siparis Hazirlama");
+        ViewData.SetPageTitle("Sipariş Hazirlama");
         ViewData.SetActiveNav("picking");
 
         var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
@@ -39,7 +39,7 @@ public class PickingController(IOrderManager orderManager) : HtmxController
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Siparis hazirlama baslatildi.", type = "success" });
+                    new { message = "Sipariş hazirlama baslatildi.", type = "success" });
                 return Content("");
             }
 
@@ -49,9 +49,9 @@ public class PickingController(IOrderManager orderManager) : HtmxController
         }
 
         if (result.Success)
-            TempData.SetSuccess("Siparis hazirlama baslatildi.");
+            TempData.SetSuccess("Sipariş hazirlama baslatildi.");
         else
-            TempData.SetError(result.Message ?? "Siparis durumu guncellenemedi.");
+            TempData.SetError(result.Message ?? "Sipariş durumu guncellenemedi.");
 
         return RedirectToAction(nameof(Index));
     }

@@ -31,7 +31,7 @@ public class StorefrontContactManagerTests
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        var result = await _sut.SubmitMessageAsync(1, "Ali Veli", "ali@test.com", "555-1234", "Siparis", "Siparisim hakkinda bilgi istiyorum.");
+        var result = await _sut.SubmitMessageAsync(1, "Ali Veli", "ali@test.com", "555-1234", "Sipariş", "Siparişim hakkinda bilgi istiyorum.");
 
         // Assert
         result.Success.Should().BeTrue();

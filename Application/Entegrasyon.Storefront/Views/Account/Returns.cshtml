@@ -14,7 +14,7 @@
         <nav class="bg-white rounded-lg shadow p-4 space-y-1">
             <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
             <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparislerim</a>
+            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparişlerim</a>
             <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Iadelerim</a>
             <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
             <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
@@ -62,7 +62,7 @@
                         <div class="border border-gray-200 rounded-lg p-4">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                                 <div>
-                                    <p class="text-sm text-gray-500">Siparis: <a href="/hesabim/siparis/@ret.OrderId" class="text-primary hover:underline no-underline">@ret.OrderId.ToString()[..8]...</a></p>
+                                    <p class="text-sm text-gray-500">Sipariş: <a href="/hesabim/Sipariş/@ret.OrderId" class="text-primary hover:underline no-underline">@ret.OrderId.ToString()[..8]...</a></p>
                                     <p class="text-sm text-gray-500">Tarih: @ret.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
                                 </div>
                                 <span class="inline-block px-3 py-1 rounded-full text-sm font-medium @statusBadge">@statusText</span>

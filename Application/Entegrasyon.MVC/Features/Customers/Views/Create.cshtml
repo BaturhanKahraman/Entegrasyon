@@ -9,7 +9,7 @@
                 <form method="post" action="/customers/create">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Musteri Tipi</label>
+                            <label class="form-label">Müşteri Tipi</label>
                             <select name="CustomerType" class="form-select" required>
                                 <option value="Retail">Bireysel</option>
                                 <option value="Corporate">Kurumsal</option>
@@ -32,7 +32,7 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Firma Adi</label>
+                            <label class="form-label">Firma Adı</label>
                             <input type="text" name="CorporateName" class="form-control"
                                    value="@(Model?.CorporateName)" />
                         </div>
@@ -58,7 +58,7 @@
                     </div>
 
                     <div class="text-end">
-                        <a href="/customers" class="btn btn-link me-2">Iptal</a>
+                        <a href="/customers" class="btn btn-link me-2">İptal</a>
                         <button type="submit" class="btn btn-primary">Kaydet</button>
                     </div>
                 </form>

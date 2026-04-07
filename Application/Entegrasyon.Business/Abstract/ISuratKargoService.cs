@@ -6,7 +6,7 @@ namespace Entegrasyon.Business.Abstract;
 /// <summary>
 /// Surat Kargo entegrasyon servisi.
 /// Gonderi olusturma, takip, iptal, barkod ve etiket islemleri.
-/// Marketplace'den bagimsiz, tum siparisler icin kullanilabilir.
+/// Marketplace'den bagimsiz, tum Siparişler icin kullanilabilir.
 /// </summary>
 public interface ISuratKargoService
 {

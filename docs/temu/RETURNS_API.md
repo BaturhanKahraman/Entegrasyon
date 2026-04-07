@@ -33,7 +33,7 @@ Diger pazaryeri entegrasyonlarindan turetilmistir:
 
 ## Iptal Islemleri
 
-TBD - Siparis iptal endpoint'leri ve is kurallari API dokumanlarindan incelenecek.
+TBD - Sipariş iptal endpoint'leri ve is kurallari API dokumanlarindan incelenecek.
 
 Beklenen durumlar:
 - Kargoya verilmeden once iptal

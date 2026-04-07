@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete.Pttavm;
 
 /// <summary>
-/// Mock PttAVM siparis servisi — development ve test ortamlari icin.
+/// Mock PttAVM Sipariş servisi — development ve test ortamlari icin.
 /// </summary>
 public sealed class MockPttavmOrderService(
     ILogger<MockPttavmOrderService> logger) : IPttavmOrderService

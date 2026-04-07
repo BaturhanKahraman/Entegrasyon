@@ -2,7 +2,7 @@
 @inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 
 @section Head {
-    <seo-meta title="Siparis Takip Sonucu | @Tenant.Settings.StoreName" />
+    <seo-meta title="Sipariş Takip Sonucu | @Tenant.Settings.StoreName" />
 }
 
 @{
@@ -12,8 +12,8 @@
 <div class="max-w-3xl mx-auto px-4 py-12">
     <!-- Search again -->
     <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <form method="get" action="/siparis-takip/sonuc" class="flex flex-col sm:flex-row gap-3">
-            <input type="text" name="orderNumber" placeholder="Siparis numarasi"
+        <form method="get" action="/Sipariş-takip/sonuc" class="flex flex-col sm:flex-row gap-3">
+            <input type="text" name="orderNumber" placeholder="Sipariş numarasi"
                    value="@order?.OrderNumber"
                    required
                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" />
@@ -29,7 +29,7 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <div>
-                    <h1 class="text-xl font-bold text-gray-900">Siparis #@order.OrderNumber</h1>
+                    <h1 class="text-xl font-bold text-gray-900">Sipariş #@order.OrderNumber</h1>
                     <p class="text-sm text-gray-500">@order.OrderDate.ToString("dd MMMM yyyy, HH:mm")</p>
                 </div>
                 @{
@@ -117,7 +117,7 @@
 
         <!-- Items -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Siparis Icerigi</h2>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Sipariş Icerigi</h2>
             <div class="divide-y divide-gray-100">
                 @foreach (var item in order.Items)
                 {

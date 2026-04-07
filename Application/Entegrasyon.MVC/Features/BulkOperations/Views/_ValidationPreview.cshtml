@@ -2,7 +2,7 @@
 
 <div class="card mt-3 border-info">
     <div class="card-header">
-        <h3 class="card-title">Dogrulama Sonucu</h3>
+        <h3 class="card-title">Doğrulama Sonucu</h3>
     </div>
     <div class="card-body">
         <div class="row mb-3">
@@ -12,7 +12,7 @@
                         <div class="d-flex align-items-center">
                             <span class="bg-blue-lt text-blue avatar me-3">@Model.TotalRows</span>
                             <div>
-                                <div class="font-weight-medium">Toplam Satir</div>
+                                <div class="font-weight-medium">Toplam Satır</div>
                             </div>
                         </div>
                     </div>
@@ -24,7 +24,7 @@
                         <div class="d-flex align-items-center">
                             <span class="bg-green-lt text-green avatar me-3">@Model.ValidRows</span>
                             <div>
-                                <div class="font-weight-medium">Gecerli</div>
+                                <div class="font-weight-medium">Geçerli</div>
                             </div>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
                         <div class="d-flex align-items-center">
                             <span class="bg-red-lt text-red avatar me-3">@Model.InvalidRows</span>
                             <div>
-                                <div class="font-weight-medium">Hatali</div>
+                                <div class="font-weight-medium">Hatalı</div>
                             </div>
                         </div>
                     </div>
@@ -50,7 +50,7 @@
                 <table class="table table-vcenter card-table table-sm table-hover">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">Satir</th>
+                            <th style="width: 80px;">Satır</th>
                             <th style="width: 150px;">Barkod</th>
                             <th>Hata</th>
                         </tr>
@@ -88,15 +88,15 @@
                         hx-include="#import-form"
                         hx-encoding="multipart/form-data"
                         hx-swap="none"
-                        hx-confirm="@Model.ValidRows gecerli satir import edilecek. Devam etmek istiyor musunuz?">
-                    @Model.ValidRows Satiri Import Et
+                        hx-confirm="@Model.ValidRows geçerli satır import edilecek. Devam etmek istiyor musunuz?">
+                    @Model.ValidRows Satırı Import Et
                 </button>
             </div>
         }
         else
         {
             <div class="alert alert-danger mt-3 mb-0">
-                Gecerli satir bulunamadi. Dosyayi duzeltip tekrar deneyin.
+                Geçerli satır bulunamadı. Dosyayı düzeltip tekrar deneyin.
             </div>
         }
     </div>

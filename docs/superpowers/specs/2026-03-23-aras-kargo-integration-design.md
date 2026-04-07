@@ -1,7 +1,7 @@
 # Aras Kargo Entegrasyon Tasarim Dokumani
 
 **Tarih:** 2026-03-23
-**Kapsam:** Genel kargo entegrasyonu - tum marketplace siparisleri icin Aras Kargo SOAP API entegrasyonu
+**Kapsam:** Genel kargo entegrasyonu - tum marketplace Siparişleri icin Aras Kargo SOAP API entegrasyonu
 
 ---
 
@@ -29,7 +29,7 @@ IArasKargoService (Abstract)
 
 - `CargoCompany` entity'si uzerinden kargo firmasi secimi yapilir
 - `ICargoCompaniesManager` ile kargo firmalari yonetilir
-- Marketplace siparisleri (Trendyol, Hepsiburada, N11 vb.) icin kargo gonderim islemleri bu servis uzerinden yapilir
+- Marketplace Siparişleri (Trendyol, Hepsiburada, N11 vb.) icin kargo gonderim islemleri bu servis uzerinden yapilir
 
 ## 3. Dosya Yapisi
 

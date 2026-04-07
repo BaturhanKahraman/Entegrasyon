@@ -350,10 +350,10 @@
                 else
                 {
                     <div class="text-gray-700 space-y-2">
-                        <p>Siparisleriniz en gec @Tenant.Settings.EstimatedDeliveryDays is gununde kargoya teslim edilir.</p>
+                        <p>Siparişleriniz en gec @Tenant.Settings.EstimatedDeliveryDays is gununde kargoya teslim edilir.</p>
                         @if (Tenant.Settings.FreeShippingThreshold > 0)
                         {
-                            <p>@Tenant.Settings.FreeShippingThreshold.ToString("N2") TL ve uzerindeki siparislerde kargo ucretsuizdir.</p>
+                            <p>@Tenant.Settings.FreeShippingThreshold.ToString("N2") TL ve uzerindeki Siparişlerde kargo ucretsuizdir.</p>
                         }
                         @if (Tenant.Settings.FlatShippingRate > 0)
                         {

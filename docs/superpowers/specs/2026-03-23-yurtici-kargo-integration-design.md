@@ -1,13 +1,13 @@
 # Yurtici Kargo Entegrasyonu — Design Spec
 
 **Tarih:** 2026-03-23
-**Yaklasim:** Genel kargo entegrasyonu (tum marketplace siparisleri icin)
+**Yaklasim:** Genel kargo entegrasyonu (tum marketplace Siparişleri icin)
 
 ---
 
 ## 1. Genel Bakis
 
-Entegrasyon projesine Yurtici Kargo entegrasyonu ekleniyor. SOAP web servisleri uzerinden kargo olusturma, takip, iptal islemleri yapilir. Bu, marketplace-spesifik bir entegrasyon degil; tum marketplace siparislerinin kargo sureclerini yonetecek genel bir kargo servisidir.
+Entegrasyon projesine Yurtici Kargo entegrasyonu ekleniyor. SOAP web servisleri uzerinden kargo olusturma, takip, iptal islemleri yapilir. Bu, marketplace-spesifik bir entegrasyon degil; tum marketplace Siparişlerinin kargo sureclerini yonetecek genel bir kargo servisidir.
 
 **WSDL Endpoint'leri:**
 - Production: `http://webservices.yurticikargo.com:8080/KOPSWebServices/ShippingOrderDispatcherServices?wsdl`
@@ -188,7 +188,7 @@ public sealed class MockYurticiKargoService : IYurticiKargoService
 
 Mevcut `CargoCompany` entity'si ile iliskili:
 - CargoCompany tablosunda "Yurtici Kargo" kaydi bulunur
-- Siparis kargo atamasinda CargoCompanyId uzerinden Yurtici Kargo secilir
+- Sipariş kargo atamasinda CargoCompanyId uzerinden Yurtici Kargo secilir
 - `IYurticiKargoService` dogrudan inject edilir (CargoCompany ile loose coupling)
 
 ---

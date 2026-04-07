@@ -2,11 +2,11 @@
 
 ## Ozet
 
-Storefront sepet ve odeme sistemi: session-based sepet (giris yapilmissa DB-backed), checkout akisi, iyzico 3D Secure odeme, siparis olusturma (MarketPlaceId=10), atomik stok dusme.
+Storefront sepet ve odeme sistemi: session-based sepet (giris yapilmissa DB-backed), checkout akisi, iyzico 3D Secure odeme, Sipariş olusturma (MarketPlaceId=10), atomik stok dusme.
 
 ## Kapsam
 
-**Dahil:** Cart + CartItem entity, sepet islemleri (ekle/sil/guncelle), checkout akisi, iyzico Checkout Form entegrasyonu (3D Secure), siparis olusturma (Order + OrderItem, MarketPlaceId=10), stok dusme (DecreaseStockAtomicAsync), siparis basarili sayfasi, header sepet badge, kupon kodu (mevcut DiscountVoucher), teslimat adresi
+**Dahil:** Cart + CartItem entity, sepet islemleri (ekle/sil/guncelle), checkout akisi, iyzico Checkout Form entegrasyonu (3D Secure), Sipariş olusturma (Order + OrderItem, MarketPlaceId=10), stok dusme (DecreaseStockAtomicAsync), Sipariş basarili sayfasi, header sepet badge, kupon kodu (mevcut DiscountVoucher), teslimat adresi
 
 **Haric:** PayTR (Faz 2), havale/EFT (Faz 2), kapida odeme (Faz 2), fatura PDF (SP-7), kargo API (SP-7), email bildirimi (SP-5)
 
@@ -27,7 +27,7 @@ Id (Guid), TenantId (int), CustomerId (int? FK->Customer — giris yapilmissa), 
 Id (int), CartId (Guid FK->Cart), ProductVariantId (Guid FK->ProductVariant), Quantity (int), UnitPrice (decimal — ekleme anindaki fiyat), AddedAt (DateTimeOffset)
 
 ### Order entity'sine eklenen alanlar:
-- CustomerId (int? FK->Customer) — B2C siparisler icin
+- CustomerId (int? FK->Customer) — B2C Siparişler icin
 - PaymentMethod (string? — "CreditCard", "CashOnDelivery")
 - PaymentTransactionId (string? — iyzico transaction id)
 - PaymentStatus (PaymentStatus enum: Pending, Paid, Failed, Refunded)
@@ -109,17 +109,17 @@ GET /sepet — Cart page (full page)
 GET /api/sepet/ozet — CartSummary (JSON, header badge icin)
 
 ### CheckoutController [Authorize]
-GET /odeme — Checkout page (adres secimi, odeme yontemi, siparis ozeti)
+GET /odeme — Checkout page (adres secimi, odeme yontemi, Sipariş ozeti)
 POST /odeme/onayla — ValidateCheckout + InitiatePayment -> redirect iyzico
 GET /odeme/callback — iyzico callback handler
-GET /odeme/basarili — Siparis basarili sayfasi
+GET /odeme/basarili — Sipariş basarili sayfasi
 GET /odeme/basarisiz — Odeme basarisiz sayfasi
 
 ## 6. Views
 
 Cart/Index.cshtml — sepet sayfasi (urun listesi, miktar, toplam, kupon, checkout butonu)
-Checkout/Index.cshtml — adres, odeme, siparis ozeti
-Checkout/Success.cshtml — siparis onay
+Checkout/Index.cshtml — adres, odeme, Sipariş ozeti
+Checkout/Success.cshtml — Sipariş onay
 Checkout/Failed.cshtml — hata
 
 Header guncelleme: sepet badge (item count)
@@ -142,7 +142,7 @@ Sepet sayfasi -> miktar guncelle / sil (AJAX)
 GET /odeme -> CheckoutController.Index
   -> Cart'i getir + validate (bos mu? stoklar yeterli mi?)
   -> Adres secimi goster (SP-3'ten StorefrontCustomerAuth -> Customer -> Addresses)
-  -> Siparis ozeti hesapla (SubTotal + Shipping + Discount + Tax = GrandTotal)
+  -> Sipariş ozeti hesapla (SubTotal + Shipping + Discount + Tax = GrandTotal)
 
 POST /odeme/onayla -> CheckoutController.Confirm
   1. ValidateCheckoutAsync (son stok kontrolu)

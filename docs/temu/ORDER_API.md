@@ -1,8 +1,8 @@
-# Temu API - Siparis Yonetimi (Order API)
+# Temu API - Sipariş Yonetimi (Order API)
 
 ## Genel Bakis
 
-Temu API uzerinden siparis listeleme, siparis detayi sorgulama ve siparis durumu guncelleme islemleri yapilabilir. Tum cagrilar `POST /openapi/router` endpoint'ine `type` parametresi ile yonlendirilir.
+Temu API uzerinden Sipariş listeleme, Sipariş detayi sorgulama ve Sipariş durumu guncelleme islemleri yapilabilir. Tum cagrilar `POST /openapi/router` endpoint'ine `type` parametresi ile yonlendirilir.
 
 ---
 
@@ -10,14 +10,14 @@ Temu API uzerinden siparis listeleme, siparis detayi sorgulama ve siparis durumu
 
 | Method (type) | Aciklama | Durum |
 |----------------|----------|-------|
-| `bg.order.list.v2.get` | Siparis listesi sorgulama | Dogrulanmis (web arastirmasi) |
+| `bg.order.list.v2.get` | Sipariş listesi sorgulama | Dogrulanmis (web arastirmasi) |
 | `bg.order.decryptshippinginfo.get` | Sifrelenmis kargo bilgisi cozme | Dogrulanmis (web arastirmasi) |
-| TBD | Siparis detayi | TBD - API dokumanlarindan incelenecek |
-| TBD | Siparis durumu guncelleme | TBD |
+| TBD | Sipariş detayi | TBD - API dokumanlarindan incelenecek |
+| TBD | Sipariş durumu guncelleme | TBD |
 
 ---
 
-## Siparis Listeleme
+## Sipariş Listeleme
 
 ```
 POST /openapi/router
@@ -26,7 +26,7 @@ type: bg.order.list.v2.get
 
 **Bilinen Parametreler:**
 - Tarih araligina gore filtreleme
-- Siparis durumuna gore filtreleme
+- Sipariş durumuna gore filtreleme
 - Sayfalama (page/pageSize)
 
 **Beklenen Response:**
@@ -73,9 +73,9 @@ Temu, musteri kisisel verilerini (adres, telefon) sifrelenmis olarak saklar. Bu 
 
 ---
 
-## Siparis Durumlari
+## Sipariş Durumlari
 
-TBD - Tam siparis durum listesi API dokumanlarindan incelenecek.
+TBD - Tam Sipariş durum listesi API dokumanlarindan incelenecek.
 
 Beklenen durumlar (marketplace genel pattern):
 - Odenme Bekliyor
@@ -89,9 +89,9 @@ Beklenen durumlar (marketplace genel pattern):
 
 ## Acik Sorular
 
-1. Siparis listeleme tarih araligi siniri nedir? (ornek: Ciceksepeti max 2 hafta)
+1. Sipariş listeleme tarih araligi siniri nedir? (ornek: Ciceksepeti max 2 hafta)
 2. Sayfalama 0-based mi, 1-based mi?
-3. Siparis icindeki alt kalemlerin (sub-order) yapisi nasil?
+3. Sipariş icindeki alt kalemlerin (sub-order) yapisi nasil?
 4. Kargo bilgisi her zaman sifreli mi donuyor?
-5. Siparis durumu webhook/callback ile bildirilir mi?
-6. Fatura bilgileri siparis icerisinde mi ayri endpoint'te mi?
+5. Sipariş durumu webhook/callback ile bildirilir mi?
+6. Fatura bilgileri Sipariş icerisinde mi ayri endpoint'te mi?

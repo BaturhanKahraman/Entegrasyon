@@ -36,7 +36,7 @@ Yeni bir kargo gonderisi olusturur ve takip numarasi doner.
 | `receiverPhone3` | string | Hayir | Alici telefon (ucuncu) |
 | `receiverCityName` | string | Evet | Alici il adi |
 | `receiverTownName` | string | Evet | Alici ilce adi |
-| `referenceNo` | string | Hayir | Gondericinin referans numarasi (siparis no) |
+| `referenceNo` | string | Hayir | Gondericinin referans numarasi (Sipariş no) |
 | `pieceCount` | int | Evet | Parca sayisi |
 | `weight` | decimal | Hayir | Agirlik (kg) |
 | `volume` | decimal | Hayir | Hacim (desi) |
@@ -56,7 +56,7 @@ Yeni bir kargo gonderisi olusturur ve takip numarasi doner.
 |------|-----|----------|
 | `resultCode` | int | Sonuc kodu (0=Basarili) |
 | `resultMessage` | string | Sonuc mesaji |
-| `shippingOrderNo` | string | Kargo siparis numarasi (tracking number) |
+| `shippingOrderNo` | string | Kargo Sipariş numarasi (tracking number) |
 | `barcodeNo` | string | Barkod numarasi |
 
 ### Ornek Request
@@ -96,7 +96,7 @@ Tracking number veya referans numarasi ile gonderi durumunu sorgular.
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
 | `password` | string | Evet | API sifresi |
-| `shippingOrderNo` | string | Kosullu | Kargo siparis no (tracking) |
+| `shippingOrderNo` | string | Kosullu | Kargo Sipariş no (tracking) |
 | `referenceNo` | string | Kosullu | Referans numarasi |
 
 En az biri (`shippingOrderNo` veya `referenceNo`) verilmelidir.
@@ -136,7 +136,7 @@ Henuz kargoya verilmemis bir gonderiyi iptal eder.
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
 | `password` | string | Evet | API sifresi |
-| `shippingOrderNo` | string | Evet | Kargo siparis numarasi |
+| `shippingOrderNo` | string | Evet | Kargo Sipariş numarasi |
 
 ### Response
 
@@ -198,7 +198,7 @@ Gonderi etiketi alir (yazici icin formatlari destekler).
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
 | `password` | string | Evet | API sifresi |
-| `shippingOrderNo` | string | Evet | Kargo siparis numarasi |
+| `shippingOrderNo` | string | Evet | Kargo Sipariş numarasi |
 | `labelFormat` | string | Hayir | Etiket formati (ZPL, PDF, vb.) |
 
 ### Response

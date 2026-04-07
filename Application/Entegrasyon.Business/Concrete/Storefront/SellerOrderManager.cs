@@ -32,11 +32,11 @@ public class SellerOrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorDataResult<Order>(null!, "Siparis bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadi.");
 
         var hasSellerItems = order.OrderItems.Any(oi => oi.SellerId == sellerId);
         if (!hasSellerItems)
-            return new ErrorDataResult<Order>(null!, "Bu siparis size ait degil.");
+            return new ErrorDataResult<Order>(null!, "Bu Sipariş size ait degil.");
 
         return new SuccessDataResult<Order>(order);
     }
@@ -50,19 +50,19 @@ public class SellerOrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Siparis bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadi.");
 
         var sellerItems = order.OrderItems.Where(oi => oi.SellerId == sellerId).ToList();
         if (!sellerItems.Any())
-            return new ErrorResult("Bu siparis size ait degil.");
+            return new ErrorResult("Bu Sipariş size ait degil.");
 
         if (!Enum.TryParse<OrderStatus>(newStatus, true, out var status))
-            return new ErrorResult("Gecersiz siparis durumu.");
+            return new ErrorResult("Gecersiz Sipariş durumu.");
 
         order.StorefrontOrderStatus = status;
         dbContext.Orders.Update(order);
         await dbContext.SaveChangesAsync();
 
-        return new SuccessResult("Siparis durumu guncellendi.");
+        return new SuccessResult("Sipariş durumu guncellendi.");
     }
 }

@@ -150,7 +150,7 @@ public class CheckoutController(
     public async Task<IActionResult> Basarili(Guid id)
     {
         ViewBag.OrderId = id;
-        ViewBag.SeoTitle = $"Siparis Onaylandi | {tenant.Settings.StoreName}";
+        ViewBag.SeoTitle = $"Sipariş Onaylandi | {tenant.Settings.StoreName}";
         ViewBag.EstimatedDeliveryDays = tenant.Settings.EstimatedDeliveryDays;
         return View();
     }

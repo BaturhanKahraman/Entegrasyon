@@ -4,7 +4,7 @@ namespace Entegrasyon.Entity.Invoices;
 
 /// <summary>
 /// Trendyol e-Faturam platformu uzerinden kesilen fatura kaydi.
-/// Order ile 1-N iliskisi vardir (bir siparise birden fazla fatura kesilebilir — iptal + yeni).
+/// Order ile 1-N iliskisi vardir (bir Siparişe birden fazla fatura kesilebilir — iptal + yeni).
 /// </summary>
 public sealed class EFaturaRecord : BaseEntity
 {

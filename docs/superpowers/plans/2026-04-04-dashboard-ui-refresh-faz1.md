@@ -126,7 +126,7 @@ Replace the entire content of `Application/Entegrasyon.MVC/Features/Dashboard/Vi
                         </span>
                     </div>
                     <div class="col">
-                        <div class="subheader">BEKLEYEN SIPARIS</div>
+                        <div class="subheader">BEKLEYEN Sipariş</div>
                         <div class="h1 mb-0 @(Model.PendingOrders > 0 ? "text-warning" : "")">@Model.PendingOrders</div>
                     </div>
                 </div>
@@ -290,7 +290,7 @@ Replace the entire content of `Application/Entegrasyon.MVC/Features/Dashboard/Vi
                 <div class="h2 mb-0">@Model.Summary.TotalSales</div>
             </div>
             <div class="col-auto">
-                <div class="subheader">Ortalama Siparis</div>
+                <div class="subheader">Ortalama Sipariş</div>
                 <div class="h2 mb-0">@Model.Summary.AverageOrderValue.ToString("N2") TL</div>
             </div>
         </div>

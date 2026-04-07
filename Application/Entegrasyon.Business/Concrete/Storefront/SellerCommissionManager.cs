@@ -48,7 +48,7 @@ public class SellerCommissionManager(
             OrderId = orderId,
             Amount = saleAmount,
             TransactionType = "Sale",
-            Description = $"Siparis satisi",
+            Description = $"Sipariş satisi",
             BalanceAfter = balance.CurrentBalance + netAmount
         };
 
@@ -83,7 +83,7 @@ public class SellerCommissionManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Siparis bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadi.");
 
         var sellerItems = order.OrderItems.Where(oi => oi.SellerId.HasValue).ToList();
         if (!sellerItems.Any())
@@ -128,7 +128,7 @@ public class SellerCommissionManager(
                 OrderId = orderId,
                 Amount = saleAmount,
                 TransactionType = "Sale",
-                Description = $"Siparis satisi",
+                Description = $"Sipariş satisi",
                 BalanceAfter = balance.CurrentBalance + netAmount
             };
 

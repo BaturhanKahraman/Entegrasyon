@@ -88,7 +88,7 @@ public class AccountController(
         return View();
     }
 
-    [HttpGet("/hesabim/siparis/{id:guid}")]
+    [HttpGet("/hesabim/Sipariş/{id:guid}")]
     public async Task<IActionResult> OrderDetail(Guid id)
     {
         var result = await orderManager.GetOrderDetailAsync(id, GetCustomerId());
@@ -136,7 +136,7 @@ public class AccountController(
         return View();
     }
 
-    [HttpPost("/hesabim/siparis/{id:guid}/iptal")]
+    [HttpPost("/hesabim/Sipariş/{id:guid}/iptal")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CancelOrder(Guid id)
     {
@@ -145,7 +145,7 @@ public class AccountController(
         return RedirectToAction("OrderDetail", new { id });
     }
 
-    [HttpGet("/hesabim/siparis/{id:guid}/fatura")]
+    [HttpGet("/hesabim/Sipariş/{id:guid}/fatura")]
     public async Task<IActionResult> DownloadInvoice(Guid id)
     {
         var result = await orderManager.GetOrderDetailAsync(id, GetCustomerId());
@@ -228,7 +228,7 @@ public class AccountController(
         }
 
         // We need cart access — redirect with items info
-        TempData["Success"] = "Siparisteki urunler sepete eklendi.";
+        TempData["Success"] = "Siparişteki urunler sepete eklendi.";
         return Redirect("/sepet");
     }
 
@@ -425,7 +425,7 @@ public class AccountController(
             $"<p>Vergi Dairesi: {settings.CompanyTaxOffice} | VKN: {settings.CompanyTaxNumber}</p>" +
             "</div><div style=\"text-align:right\">" +
             "<h2>FATURA</h2>" +
-            $"<p>Siparis No: {o.OrderNumber}</p>" +
+            $"<p>Sipariş No: {o.OrderNumber}</p>" +
             $"<p>Tarih: {orderDate}</p>" +
             "</div></div>" +
             "<div class=\"info\">" +

@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
-/// Her 5 dakikada PttAVM siparis API'sini poll eder,
-/// son 24 saatlik siparis penceresi kullanilir.
+/// Her 5 dakikada PttAVM Sipariş API'sini poll eder,
+/// son 24 saatlik Sipariş penceresi kullanilir.
 /// Tum aktif tenant'lar icin calisir.
 /// </summary>
 public class PttavmOrderPollingService(

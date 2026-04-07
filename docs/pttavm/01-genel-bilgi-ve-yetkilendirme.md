@@ -6,14 +6,14 @@ PttAVM entegrasyonu iki ayri API uzerinden calisir:
 
 | API | Base URL | Auth |
 |-----|----------|------|
-| Katalog / Listeleme / Siparis | `https://integration-api.pttavm.com` | Api-Key + Access-Token |
+| Katalog / Listeleme / Sipariş | `https://integration-api.pttavm.com` | Api-Key + Access-Token |
 | Kargo | `https://shipment.pttavm.com` | Basic Auth |
 
 Tum endpointler REST + JSON tabanlidir.
 
 ## Yetkilendirme
 
-### Katalog / Listeleme / Siparis API
+### Katalog / Listeleme / Sipariş API
 
 Her istekte asagidaki headerlar zorunludur:
 
@@ -36,5 +36,5 @@ SOAP servisleri ile ilgili erisime ihtiyac icin: `entegrasyon@pttavm.com`
 
 - Katalog: https://developers.pttavm.com/tr/katalog-entegrasyonu
 - Listeleme: https://developers.pttavm.com/tr/listeleme-entegrasyonu
-- Siparis: https://developers.pttavm.com/tr/siparis-entegrasyonu
+- Sipariş: https://developers.pttavm.com/tr/Sipariş-entegrasyonu
 - Kargo: https://developers.pttavm.com/tr/kargo-entegrasyonu

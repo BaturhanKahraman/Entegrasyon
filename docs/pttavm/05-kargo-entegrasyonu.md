@@ -3,7 +3,7 @@
 Base URL: `https://shipment.pttavm.com`
 Auth: Basic Auth
 
-> **Not:** Kargo API'si katalog/siparis API'sinden farkli bir base URL ve farkli auth mekanizmasi kullanir.
+> **Not:** Kargo API'si katalog/Sipariş API'sinden farkli bir base URL ve farkli auth mekanizmasi kullanir.
 
 ## 1. Depo Listeleme
 
@@ -54,7 +54,7 @@ Magazaya ait depo verilerini dondurur.
 
 | Parametre | Tur | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
-| order_id | string | Evet | Siparis numarasi |
+| order_id | string | Evet | Sipariş numarasi |
 | warehouse_id | integer | Evet | Depo ID |
 
 ### Response
@@ -72,7 +72,7 @@ Magazaya ait depo verilerini dondurur.
 
 ### Kurallar
 
-- Ayni siparis numarasi farkli depo numaralariyla gonderilemez
+- Ayni Sipariş numarasi farkli depo numaralariyla gonderilemez
 - Toplu islem icin orders dizisinde birden fazla nesne eklenebilir
 - Donen `tracking_id` sonraki sorgulama islemlerinde kullanilir
 
@@ -138,7 +138,7 @@ Magazaya ait depo verilerini dondurur.
 | Parametre | Tur | Aciklama |
 |-----------|-----|----------|
 | barcode | string | Barkod numarasi |
-| order_id | string | Siparis ID |
+| order_id | string | Sipariş ID |
 | type | string | `"zpl"` = Zebra yazici formati, `null` = HTML ciktisi |
 
 ### Response
@@ -156,7 +156,7 @@ Magazaya ait depo verilerini dondurur.
 
 **POST** `/api/v1/update-no-shipping-order`
 
-Kargosuz siparisleri (dijital urunler) "teslim edildi" durumuna gecirir.
+Kargosuz Siparişleri (dijital urunler) "teslim edildi" durumuna gecirir.
 
 ### Request
 
@@ -186,8 +186,8 @@ Kargosuz siparisleri (dijital urunler) "teslim edildi" durumuna gecirir.
 
 ### Kisitlamalar
 
-- Yalnizca dijital urun kategorisindeki siparisler icin
-- Hazirlik veya gonderilmis asamasindaki siparisler icin gecerli
+- Yalnizca dijital urun kategorisindeki Siparişler icin
+- Hazirlik veya gonderilmis asamasindaki Siparişler icin gecerli
 
 ---
 

@@ -8,7 +8,7 @@ Storefront musteri uyelik sistemi: kayit, giris, email dogrulama, sifre sifirlam
 
 **Dahil:** StorefrontCustomerAuth entity + migration, kayit (RetailCustomer + auth), giris (email+sifre cookie-based), sifre sifirlama (token), email dogrulama (token + endpoint), hesap paneli (/hesabim profil/sifre), brute force korumasi, KVKK onay, Google OAuth 2.0
 
-**Haric:** Gercek email gonderimi (SP-5), siparis gecmisi icerigi (SP-4 sonrasi), 2FA (Faz 2), adres CRUD detayi (SP-4)
+**Haric:** Gercek email gonderimi (SP-5), Sipariş gecmisi icerigi (SP-4 sonrasi), 2FA (Faz 2), adres CRUD detayi (SP-4)
 
 ---
 
@@ -52,7 +52,7 @@ AccountController [Authorize]: Index, Profile(GET/POST), ChangePassword(GET/POST
 
 ## 6. Routes
 
-/giris, /kayit, /cikis, /sifremi-unuttum, /sifre-sifirla, /email-dogrula, /signin-google, /hesabim, /hesabim/profil, /hesabim/sifre-degistir, /hesabim/siparislerim, /hesabim/adreslerim
+/giris, /kayit, /cikis, /sifremi-unuttum, /sifre-sifirla, /email-dogrula, /signin-google, /hesabim, /hesabim/profil, /hesabim/sifre-degistir, /hesabim/Siparişlerim, /hesabim/adreslerim
 
 ## 7. Views
 

@@ -75,4 +75,4 @@ Ayrica operasyonlarin kendi response'lari icinde de `resultCode` ve `resultMessa
 
 ## Entegrasyondaki Yerimiz
 
-Bu kargo entegrasyonu marketplace'lerden bagimsizdir. Tum marketplace siparisleri (Trendyol, Hepsiburada, N11, Pazarama, PttAVM, Ciceksepeti vb.) icin ortak kullanilabilir. `CargoCompany` entity'si uzerinden baglanti yapilir.
+Bu kargo entegrasyonu marketplace'lerden bagimsizdir. Tum marketplace Siparişleri (Trendyol, Hepsiburada, N11, Pazarama, PttAVM, Ciceksepeti vb.) icin ortak kullanilabilir. `CargoCompany` entity'si uzerinden baglanti yapilir.

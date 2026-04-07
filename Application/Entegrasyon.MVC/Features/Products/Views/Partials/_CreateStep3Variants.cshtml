@@ -78,24 +78,15 @@
                             }
                             else
                             {
-                                <!-- Checkbox dropdown for predefined values -->
-                                <div class="dropdown variant-checkbox-dropdown" data-attr-index="@i">
-                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                            data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                        <span class="dropdown-label">Secin...</span>
-                                    </button>
-                                    <div class="dropdown-menu w-100 p-2" style="max-height:250px; overflow-y:auto;">
-                                        @foreach (var val in attr.CategoryAttributeValues)
-                                        {
-                                            <label class="dropdown-item d-flex align-items-center gap-2 py-1">
-                                                <input type="checkbox" class="form-check-input m-0 variant-attr-checkbox"
-                                                       value="@val.Id" data-name="@val.Name" data-attr-index="@i" />
-                                                @val.Name
-                                            </label>
-                                        }
-                                    </div>
-                                    <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
-                                </div>
+                                <!-- Searchable multi-select (Tom Select) -->
+                                <select multiple class="form-select variant-tomselect" data-attr-index="@i"
+                                        data-placeholder="Ara ve sec...">
+                                    @foreach (var val in attr.CategoryAttributeValues)
+                                    {
+                                        <option value="@val.Id" data-name="@val.Name">@val.Name</option>
+                                    }
+                                </select>
+                                <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
                             }
                         </div>
                     }
@@ -236,41 +227,42 @@
         }
     });
 
-    // --- Checkbox Dropdown Sync ---
-    document.addEventListener('change', function(e) {
-        var cb = e.target.closest('.variant-attr-checkbox');
-        if (!cb) return;
-        var attrIndex = cb.getAttribute('data-attr-index');
-        syncCheckboxHiddenFields(attrIndex);
+    // --- Tom Select Multi-Select Init ---
+    document.querySelectorAll('.variant-tomselect').forEach(function(sel) {
+        var attrIndex = sel.getAttribute('data-attr-index');
+        var ts = new TomSelect(sel, {
+            plugins: ['checkbox_options', 'remove_button'],
+            maxOptions: null,
+            placeholder: sel.getAttribute('data-placeholder') || 'Ara ve sec...',
+            onChange: function() {
+                syncTomSelectHiddenFields(attrIndex);
+            }
+        });
     });
 
-    function syncCheckboxHiddenFields(attrIndex) {
+    function syncTomSelectHiddenFields(attrIndex) {
         var container = document.querySelector('.multiselect-hidden-fields[data-attr-index="' + attrIndex + '"]');
         while (container.firstChild) container.removeChild(container.firstChild);
 
-        var checkboxes = document.querySelectorAll('.variant-attr-checkbox[data-attr-index="' + attrIndex + '"]:checked');
-        var count = 0;
-        checkboxes.forEach(function(cb, idx) {
+        var sel = document.querySelector('.variant-tomselect[data-attr-index="' + attrIndex + '"]');
+        var tomInstance = sel.tomselect;
+        var selectedItems = tomInstance.items;
+
+        selectedItems.forEach(function(valueId, idx) {
+            var option = tomInstance.options[valueId];
+
             var valueIdField = document.createElement('input');
             valueIdField.type = 'hidden';
             valueIdField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueId';
-            valueIdField.value = cb.value;
+            valueIdField.value = valueId;
             container.appendChild(valueIdField);
 
             var valueNameField = document.createElement('input');
             valueNameField.type = 'hidden';
             valueNameField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueName';
-            valueNameField.value = cb.getAttribute('data-name');
+            valueNameField.value = option ? option.text : '';
             container.appendChild(valueNameField);
-            count++;
         });
-
-        // Update button label
-        var dropdown = document.querySelector('.variant-checkbox-dropdown[data-attr-index="' + attrIndex + '"]');
-        if (dropdown) {
-            var label = dropdown.querySelector('.dropdown-label');
-            label.textContent = count > 0 ? count + ' secildi' : 'Secin...';
-        }
     }
 
     // --- Generate Variants ---

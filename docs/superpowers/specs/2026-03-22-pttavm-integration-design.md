@@ -6,7 +6,7 @@
 
 ## Ozet
 
-PttAVM pazaryeri entegrasyonu, 3 faz halinde gerceklestirilecektir. REST + JSON tabanli API, iki ayri base URL ve iki farkli auth mekanizmasi (ApiKey+Token ve BasicAuth) kullanir. Toplam ~22 endpoint, 4 modul (Katalog, Listeleme, Siparis, Kargo) icerir.
+PttAVM pazaryeri entegrasyonu, 3 faz halinde gerceklestirilecektir. REST + JSON tabanli API, iki ayri base URL ve iki farkli auth mekanizmasi (ApiKey+Token ve BasicAuth) kullanir. Toplam ~22 endpoint, 4 modul (Katalog, Listeleme, Sipariş, Kargo) icerir.
 
 ## Kararlar
 
@@ -25,7 +25,7 @@ PttAVM pazaryeri entegrasyonu, 3 faz halinde gerceklestirilecektir. REST + JSON 
 |-------|----------------|----------|------|
 | Katalog | 9 | integration-api.pttavm.com | ApiKey + AccessToken |
 | Listeleme | 3 | integration-api.pttavm.com | ApiKey + AccessToken |
-| Siparis | 5 | integration-api.pttavm.com | ApiKey + AccessToken |
+| Sipariş | 5 | integration-api.pttavm.com | ApiKey + AccessToken |
 | Kargo | 5 | shipment.pttavm.com | Basic Auth |
 
 Detayli API dokumantasyonu: `docs/pttavm/` (5 dosya)
@@ -262,14 +262,14 @@ services.AddHostedService<PttavmStockPriceSyncService>();
 
 PttAVM API'si urun guncelleme sirasinda varyant gonderilmezse mevcut varyantlari **siler**. Bu veri kaybina yol acabilir. `PttavmProductMapper` her zaman mevcut varyantlari dahil etmeli — varyantli urunlerde bos varyant dizisi gonderilmemelidir. `PttavmMappingValidator` bu durumu kontrol etmelidir.
 
-## Faz 3 — Siparis + Kargo
+## Faz 3 — Sipariş + Kargo
 
 ### Scope
 
 - PttavmShipmentApiClient (BasicAuth, shipment.pttavm.com)
 - MockPttavmShipmentApiClient
-- IPttavmOrderService — siparis sorgulama
-- PttavmOrderPollingService (background) — yeni siparis polling
+- IPttavmOrderService — Sipariş sorgulama
+- PttavmOrderPollingService (background) — yeni Sipariş polling
 - IPttavmShippingService — kargo barkod olusturma, etiket, durum guncelleme
 - IPttavmInvoiceService — fatura gonderme
 
@@ -308,7 +308,7 @@ public interface IPttavmOrderService
 
 > **Not:** `SearchOrdersAsync`, `GetOrderDetailAsync`, `GetCargoInfosAsync` ve `GetCargoProfilesAsync` hepsi `integration-api.pttavm.com` uzerinde calisir, dolayisiyla **PttavmCatalogApiClient** kullanir (ShipmentApiClient degil). `IPttavmOrderService` constructor'inda `IPttavmCatalogApiClient` inject edilir.
 
-API kisitlamasi: Siparis arama tarih araligi maks 40 gun.
+API kisitlamasi: Sipariş arama tarih araligi maks 40 gun.
 
 ### IPttavmShippingService
 
@@ -336,15 +336,15 @@ public interface IPttavmInvoiceService
 
 - Her 5 dakika (configurable)
 - SearchOrders(son 24 saat, isActiveOrders=false)
-- Yeni siparisleri DB'ye kaydet
+- Yeni Siparişleri DB'ye kaydet
 - Durum degisikliklerini guncelle
 - Multi-tenant: ConcurrentDictionary<int, DateTime> ile tenant basina lastPollTime
-- Bildirim: yeni siparis → SignalR ile UI'a push
+- Bildirim: yeni Sipariş → SignalR ile UI'a push
 
 ### Kargo Akisi
 
 ```
-Siparis geldi
+Sipariş geldi
   → GetWarehouses() → depo sec
   → CreateBarcodes(orderId, warehouseId) → trackingId
   → CheckBarcodeStatus(trackingId) → barkod numarasi al
@@ -352,7 +352,7 @@ Siparis geldi
   → (Dijital urun ise) UpdateNoShippingOrder(orderId)
 ```
 
-### Siparis Durumlari
+### Sipariş Durumlari
 
 | Durum | Aciklama |
 |-------|----------|
@@ -389,7 +389,7 @@ Business/
 ### DI Kayit (Faz 3)
 
 ```csharp
-// PttAVM — Siparis + Kargo
+// PttAVM — Sipariş + Kargo
 var usePttavmMock = configuration.GetValue<bool>("Pttavm:UseMock", true);
 if (usePttavmMock)
 {
@@ -428,7 +428,7 @@ TDD-first, her faz icin:
 - PttavmMappingValidatorTests — zorunlu alan, KDV, stok araligi, batch limiti
 
 **Faz 3:**
-- PttavmOrderServiceTests — siparis arama, detay, tarih araligi kontrolu
+- PttavmOrderServiceTests — Sipariş arama, detay, tarih araligi kontrolu
 - PttavmShippingServiceTests — barkod olusturma akisi, depo listeleme
 - PttavmInvoiceServiceTests — fatura gonderme, PDF format
 
@@ -455,7 +455,7 @@ TDD-first, her faz icin:
 | Duplicate istek suresi | 5 dakika |
 | Stok araligi | 0-9999 |
 | Indirim araligi | 0-70 |
-| Siparis arama tarih araligi | Maks 40 gun |
+| Sipariş arama tarih araligi | Maks 40 gun |
 | Hatali gorsel barkod/istek | Maks 10.000 |
 | Hatali gorsel pageSize | Maks 10.000 |
 | Garanti suresi | 0-24 ay |
