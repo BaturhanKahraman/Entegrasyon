@@ -113,7 +113,12 @@
 </div>
 
 <script>
-(function() {
+function initStep1() {
+    if (typeof TomSelect === 'undefined') {
+        setTimeout(initStep1, 50);
+        return;
+    }
+
     var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
 
     // -- Tom Select for Brand --
@@ -163,5 +168,6 @@
             }
         });
     });
-})();
+}
+initStep1();
 </script>
