@@ -28,7 +28,8 @@ public class ProductController(
     ITrendyolProductService trendyolProductService,
     IMarketplaceOverrideManager marketplaceOverrideManager,
     IProductVariantManager productVariantManager,
-    ICategoryAttributeManager categoryAttributeManager) : Controller
+    ICategoryAttributeManager categoryAttributeManager,
+    IBranchOfficeManager branchOfficeManager) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -196,6 +197,9 @@ public class ProductController(
         ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])
             .Where(a => a.IsVarianter || a.IsSlicer).ToList();
 
+        var branches = await branchOfficeManager.GetBranchList();
+        ViewBag.BranchOffices = branches.Data ?? [];
+
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep3Variants", vm);
 
@@ -206,9 +210,14 @@ public class ProductController(
 
     [SkipAutoValidation]
     [HttpPost("/products/add/generate-variants")]
-    public IActionResult GenerateVariants([FromForm] CreateProductVm vm)
+    public async Task<IActionResult> GenerateVariants([FromForm] CreateProductVm vm)
     {
         vm.Variants = CreateProductVm.GenerateVariants(vm.VariantAttributeSelections, vm.DefaultValues);
+
+        // Load branch offices for stock inputs
+        var branches = await branchOfficeManager.GetBranchList();
+        ViewBag.BranchOffices = branches.Data ?? [];
+
         return PartialView("Partials/_VariantTable", vm);
     }
 
@@ -309,7 +318,12 @@ public class ProductController(
                         IsVarianter = va.IsVarianter,
                         IsSlicer = va.IsSlicer
                     }).ToList(),
-                BranchOfficeStocks = [new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = v.Stock }]
+                BranchOfficeStocks = v.BranchOfficeStocks.Count > 0
+                    ? v.BranchOfficeStocks
+                        .Where(s => s.Stock > 0)
+                        .Select(s => new AddBranchOfficeStockDto { BranchOfficeId = s.BranchOfficeId, FirstTotalStock = s.Stock })
+                        .ToList()
+                    : []
             }).ToList()
         };
 

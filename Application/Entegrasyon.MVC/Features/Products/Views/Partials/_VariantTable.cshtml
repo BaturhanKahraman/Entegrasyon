@@ -1,5 +1,9 @@
 @model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
 
+@{
+    var branches = ViewBag.BranchOffices as List<Entegrasyon.Entity.BranchOffice> ?? [];
+}
+
 @if (Model.Variants.Count == 0)
 {
     <div class="alert alert-warning">Varyant olusturmak icin en az bir ozellik degeri secin.</div>
@@ -11,12 +15,14 @@ else
             <thead>
                 <tr>
                     <th>Ozellikler</th>
-                    <th>Barkod</th>
                     <th>Liste Fiyat</th>
                     <th>Satis Fiyat</th>
                     <th>Maliyet</th>
                     <th>KDV %</th>
-                    <th>Stok</th>
+                    @for (int b = 0; b < branches.Count; b++)
+                    {
+                        <th>@branches[b].Name</th>
+                    }
                     <th class="w-1"></th>
                 </tr>
             </thead>
@@ -40,10 +46,6 @@ else
                             }
                         </td>
                         <td>
-                            <input type="text" name="Variants[@i].Barcode" value="@variant.Barcode"
-                                   class="form-control form-control-sm" placeholder="Otomatik" style="width:140px" />
-                        </td>
-                        <td>
                             <input type="number" name="Variants[@i].ListPrice" value="@variant.ListPrice"
                                    class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
                         </td>
@@ -59,10 +61,15 @@ else
                             <input type="number" name="Variants[@i].VatRate" value="@variant.VatRate"
                                    class="form-control form-control-sm" step="1" min="0" max="100" style="width:80px" />
                         </td>
-                        <td>
-                            <input type="number" name="Variants[@i].Stock" value="@variant.Stock"
-                                   class="form-control form-control-sm" step="1" min="0" style="width:80px" />
-                        </td>
+                        @for (int b = 0; b < branches.Count; b++)
+                        {
+                            <td>
+                                <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeId" value="@branches[b].Id" />
+                                <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeName" value="@branches[b].Name" />
+                                <input type="number" name="Variants[@i].BranchOfficeStocks[@b].Stock" value="0"
+                                       class="form-control form-control-sm" step="1" min="0" style="width:80px" />
+                            </td>
+                        }
                         <td>
                             <button type="button" class="btn btn-sm btn-ghost-danger btn-remove-variant p-1" title="Varyanti kaldir">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -74,7 +81,7 @@ else
         </table>
     </div>
     <div class="text-muted small mt-2">
-        <span id="variant-count">@Model.Variants.Count varyant</span> olusturuldu. Barkod bos birakilirsa otomatik olusturulur.
+        <span id="variant-count">@Model.Variants.Count varyant</span> olusturuldu. Barkod otomatik olusturulur.
     </div>
 
     <script>

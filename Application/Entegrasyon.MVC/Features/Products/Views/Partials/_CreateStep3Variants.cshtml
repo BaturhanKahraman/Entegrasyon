@@ -78,14 +78,22 @@
                             }
                             else
                             {
-                                <!-- Multi-select for predefined values -->
-                                <div class="variant-multiselect" data-attr-index="@i">
-                                    <select multiple class="form-select variant-value-select" data-attr-index="@i" size="5">
+                                <!-- Checkbox dropdown for predefined values -->
+                                <div class="dropdown variant-checkbox-dropdown" data-attr-index="@i">
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                            data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                        <span class="dropdown-label">Secin...</span>
+                                    </button>
+                                    <div class="dropdown-menu w-100 p-2" style="max-height:250px; overflow-y:auto;">
                                         @foreach (var val in attr.CategoryAttributeValues)
                                         {
-                                            <option value="@val.Id" data-name="@val.Name">@val.Name</option>
+                                            <label class="dropdown-item d-flex align-items-center gap-2 py-1">
+                                                <input type="checkbox" class="form-check-input m-0 variant-attr-checkbox"
+                                                       value="@val.Id" data-name="@val.Name" data-attr-index="@i" />
+                                                @val.Name
+                                            </label>
                                         }
-                                    </select>
+                                    </div>
                                     <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
                                 </div>
                             }
@@ -124,8 +132,8 @@
                            class="form-control" step="1" min="0" max="100" />
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label class="form-label">Stok</label>
-                    <input type="number" name="DefaultValues.Stock" value="@Model.DefaultValues.Stock"
+                    <label class="form-label">Varsayilan Stok</label>
+                    <input type="number" name="DefaultValues.DefaultStock" value="@Model.DefaultValues.DefaultStock"
                            class="form-control" step="1" min="0" />
                 </div>
                 <div class="col-md-2 mb-3 d-flex align-items-end">
@@ -228,36 +236,40 @@
         }
     });
 
-    // --- Multi-select Sync ---
-    document.querySelectorAll('.variant-value-select').forEach(function (sel) {
-        sel.addEventListener('change', function () {
-            var attrIndex = sel.getAttribute('data-attr-index');
-            syncMultiselectHiddenFields(attrIndex);
-        });
+    // --- Checkbox Dropdown Sync ---
+    document.addEventListener('change', function(e) {
+        var cb = e.target.closest('.variant-attr-checkbox');
+        if (!cb) return;
+        var attrIndex = cb.getAttribute('data-attr-index');
+        syncCheckboxHiddenFields(attrIndex);
     });
 
-    function syncMultiselectHiddenFields(attrIndex) {
+    function syncCheckboxHiddenFields(attrIndex) {
         var container = document.querySelector('.multiselect-hidden-fields[data-attr-index="' + attrIndex + '"]');
-        while (container.firstChild) {
-            container.removeChild(container.firstChild);
-        }
+        while (container.firstChild) container.removeChild(container.firstChild);
 
-        var sel = document.querySelector('.variant-value-select[data-attr-index="' + attrIndex + '"]');
-        var selected = sel.selectedOptions;
-        for (var idx = 0; idx < selected.length; idx++) {
-            var opt = selected[idx];
-
+        var checkboxes = document.querySelectorAll('.variant-attr-checkbox[data-attr-index="' + attrIndex + '"]:checked');
+        var count = 0;
+        checkboxes.forEach(function(cb, idx) {
             var valueIdField = document.createElement('input');
             valueIdField.type = 'hidden';
             valueIdField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueId';
-            valueIdField.value = opt.value;
+            valueIdField.value = cb.value;
             container.appendChild(valueIdField);
 
             var valueNameField = document.createElement('input');
             valueNameField.type = 'hidden';
             valueNameField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueName';
-            valueNameField.value = opt.getAttribute('data-name');
+            valueNameField.value = cb.getAttribute('data-name');
             container.appendChild(valueNameField);
+            count++;
+        });
+
+        // Update button label
+        var dropdown = document.querySelector('.variant-checkbox-dropdown[data-attr-index="' + attrIndex + '"]');
+        if (dropdown) {
+            var label = dropdown.querySelector('.dropdown-label');
+            label.textContent = count > 0 ? count + ' secildi' : 'Secin...';
         }
     }
 

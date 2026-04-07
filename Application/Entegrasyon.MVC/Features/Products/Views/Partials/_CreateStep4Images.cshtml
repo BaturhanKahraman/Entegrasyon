@@ -29,13 +29,17 @@
     <!-- Step 3 hidden fields -->
     @for (int i = 0; i < Model.Variants.Count; i++)
     {
-        <input type="hidden" name="Variants[@i].Barcode" value="@Model.Variants[i].Barcode" />
         <input type="hidden" name="Variants[@i].ListPrice" value="@Model.Variants[i].ListPrice" />
         <input type="hidden" name="Variants[@i].SalePrice" value="@Model.Variants[i].SalePrice" />
         <input type="hidden" name="Variants[@i].CostPrice" value="@Model.Variants[i].CostPrice" />
         <input type="hidden" name="Variants[@i].VatRate" value="@Model.Variants[i].VatRate" />
         <input type="hidden" name="Variants[@i].DimensionalWeight" value="@Model.Variants[i].DimensionalWeight" />
-        <input type="hidden" name="Variants[@i].Stock" value="@Model.Variants[i].Stock" />
+        @for (int b = 0; b < Model.Variants[i].BranchOfficeStocks.Count; b++)
+        {
+            <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeId" value="@Model.Variants[i].BranchOfficeStocks[b].BranchOfficeId" />
+            <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeName" value="@Model.Variants[i].BranchOfficeStocks[b].BranchOfficeName" />
+            <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].Stock" value="@Model.Variants[i].BranchOfficeStocks[b].Stock" />
+        }
         @for (int j = 0; j < Model.Variants[i].VariantAttributes.Count; j++)
         {
             <input type="hidden" name="Variants[@i].VariantAttributes[@j].CategoryAttributeId" value="@Model.Variants[i].VariantAttributes[j].CategoryAttributeId" />

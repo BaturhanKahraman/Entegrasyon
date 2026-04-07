@@ -69,8 +69,7 @@ public class CreateProductVm
             ListPrice = defaults.ListPrice,
             SalePrice = defaults.SalePrice,
             CostPrice = defaults.CostPrice,
-            VatRate = defaults.VatRate,
-            Stock = defaults.Stock
+            VatRate = defaults.VatRate
         }).ToList();
     }
 }
@@ -83,8 +82,15 @@ public class CreateVariantVm
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; } = 20;
     public decimal DimensionalWeight { get; set; }
-    public int Stock { get; set; }
+    public List<BranchOfficeStockVm> BranchOfficeStocks { get; set; } = [];
     public List<VariantAttributeValueVm> VariantAttributes { get; set; } = [];
+}
+
+public class BranchOfficeStockVm
+{
+    public int BranchOfficeId { get; set; }
+    public string BranchOfficeName { get; set; } = "";
+    public int Stock { get; set; }
 }
 
 public class VariantAttributeValueVm
@@ -121,7 +127,7 @@ public class DefaultVariantValuesVm
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; } = 20;
-    public int Stock { get; set; }
+    public int DefaultStock { get; set; }
 }
 
 public class AttributeValueVm

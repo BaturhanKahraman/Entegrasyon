@@ -35,14 +35,14 @@ public class ProductWizardViewModelTests
         };
 
         var defaults = new DefaultVariantValuesVm
-        { ListPrice = 299.90m, SalePrice = 249.90m, CostPrice = 120m, VatRate = 20, Stock = 50 };
+        { ListPrice = 299.90m, SalePrice = 249.90m, CostPrice = 120m, VatRate = 20, DefaultStock = 50 };
 
         var variants = CreateProductVm.GenerateVariants(selections, defaults);
 
         variants.Should().HaveCount(6);
         variants[0].VariantAttributes.Should().HaveCount(2);
         variants[0].ListPrice.Should().Be(299.90m);
-        variants[0].Stock.Should().Be(50);
+        variants[0].BranchOfficeStocks.Should().BeEmpty();
         var combos = variants.Select(v => string.Join("-", v.VariantAttributes.Select(a => a.ValueName))).ToList();
         combos.Should().Contain("S-Kirmizi");
         combos.Should().Contain("M-Mavi");
@@ -66,7 +66,7 @@ public class ProductWizardViewModelTests
             }
         };
 
-        var defaults = new DefaultVariantValuesVm { ListPrice = 100, SalePrice = 90, CostPrice = 50, VatRate = 20, Stock = 10 };
+        var defaults = new DefaultVariantValuesVm { ListPrice = 100, SalePrice = 90, CostPrice = 50, VatRate = 20, DefaultStock = 10 };
         var variants = CreateProductVm.GenerateVariants(selections, defaults);
 
         variants.Should().HaveCount(2);
