@@ -17,6 +17,7 @@ else
                     <th>Maliyet</th>
                     <th>KDV %</th>
                     <th>Stok</th>
+                    <th class="w-1"></th>
                 </tr>
             </thead>
             <tbody>
@@ -62,12 +63,38 @@ else
                             <input type="number" name="Variants[@i].Stock" value="@variant.Stock"
                                    class="form-control form-control-sm" step="1" min="0" style="width:80px" />
                         </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-ghost-danger btn-remove-variant p-1" title="Varyanti kaldir">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
     <div class="text-muted small mt-2">
-        @Model.Variants.Count varyant olusturuldu. Barkod bos birakilirsa otomatik olusturulur.
+        <span id="variant-count">@Model.Variants.Count varyant</span> olusturuldu. Barkod bos birakilirsa otomatik olusturulur.
     </div>
+
+    <script>
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-remove-variant');
+        if (!btn) return;
+        btn.closest('tr').remove();
+        // Re-index all remaining rows
+        var rows = document.querySelectorAll('#variant-table-container tbody tr');
+        rows.forEach(function(row, idx) {
+            row.querySelectorAll('input[name], select[name]').forEach(function(input) {
+                input.name = input.name.replace(/Variants\[\d+\]/, 'Variants[' + idx + ']');
+            });
+        });
+        // Update count
+        var countEl = document.querySelector('#variant-count');
+        if (countEl) countEl.textContent = rows.length + ' varyant';
+        // Update next button state
+        var nextBtn = document.getElementById('btn-step3-next');
+        if (nextBtn) nextBtn.disabled = rows.length === 0;
+    });
+    </script>
 }

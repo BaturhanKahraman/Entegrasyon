@@ -117,7 +117,7 @@
         <a href="/products/add" class="btn btn-outline-secondary">Bastan Baslat</a>
         <form hx-post="/products/add/save" hx-target="#wizard-content" hx-swap="innerHTML">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-success" id="btn-save-product">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 12l5 5l10 -10" /></svg>
                 Urunu Kaydet
             </button>
@@ -125,3 +125,43 @@
     </div>
 </div>
 </div>
+
+<script>
+(function() {
+    var saveForm = document.querySelector('[data-wizard-step="5"] form[hx-post]');
+    if (!saveForm) return;
+    var saveBtn = saveForm.querySelector('button[type="submit"]');
+    if (!saveBtn) return;
+
+    saveForm.addEventListener('htmx:beforeRequest', function() {
+        saveBtn.disabled = true;
+        while (saveBtn.firstChild) saveBtn.removeChild(saveBtn.firstChild);
+        var spinner = document.createElement('span');
+        spinner.className = 'spinner-border spinner-border-sm me-2';
+        spinner.setAttribute('role', 'status');
+        saveBtn.appendChild(spinner);
+        var text = document.createTextNode('Kaydediliyor...');
+        saveBtn.appendChild(text);
+    });
+
+    saveForm.addEventListener('htmx:afterRequest', function(evt) {
+        if (!evt.detail.successful) {
+            saveBtn.disabled = false;
+            while (saveBtn.firstChild) saveBtn.removeChild(saveBtn.firstChild);
+            var icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            icon.setAttribute('class', 'icon');
+            icon.setAttribute('width', '24');
+            icon.setAttribute('height', '24');
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.setAttribute('stroke-width', '2');
+            icon.setAttribute('stroke', 'currentColor');
+            icon.setAttribute('fill', 'none');
+            var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M5 12l5 5l10 -10');
+            icon.appendChild(path);
+            saveBtn.appendChild(icon);
+            saveBtn.appendChild(document.createTextNode(' Urunu Kaydet'));
+        }
+    });
+})();
+</script>

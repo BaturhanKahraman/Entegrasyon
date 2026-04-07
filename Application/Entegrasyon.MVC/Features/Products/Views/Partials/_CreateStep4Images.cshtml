@@ -134,6 +134,26 @@
         </div>
     </div>
 
+    <!-- Image Picker Modal -->
+    <div class="modal modal-blur fade" id="image-picker-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Gorsel Sec</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-2">Gorsellere tiklayarak secin. Ilk secilen gorsel ana gorsel olur.</p>
+                    <div id="picker-grid" class="d-flex flex-wrap gap-2"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                    <button type="button" class="btn btn-primary" id="picker-confirm">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <div class="d-flex justify-content-between">
         <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
@@ -312,28 +332,124 @@
         });
     }
 
+    var currentPickerVariantIndex = -1;
+    var pickerModal = null;
+
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.btn-assign-images');
         if (!btn) return;
 
-        var variantIndex = parseInt(btn.getAttribute('data-variant-index'), 10);
-        var input = prompt(
-            'Gorsel numaralarini virgul ile girin (ornek: 1,3). Ilk numara ana gorsel olur.\n' +
-            'Toplam ' + uploadedImages.length + ' gorsel yuklendi.'
-        );
+        currentPickerVariantIndex = parseInt(btn.getAttribute('data-variant-index'), 10);
 
-        if (input === null || input.trim() === '') return;
+        // Build picker grid
+        var grid = document.getElementById('picker-grid');
+        while (grid.firstChild) grid.removeChild(grid.firstChild);
 
-        var numbers = input.split(',')
-            .map(function (s) { return parseInt(s.trim(), 10); })
-            .filter(function (n) { return !isNaN(n) && n >= 1 && n <= uploadedImages.length; });
+        // Get currently assigned image indices for this variant
+        var assignedContainer = document.querySelector('.variant-assigned-images[data-variant-index="' + currentPickerVariantIndex + '"]');
+        var assignedUrls = [];
+        if (assignedContainer) {
+            var assignedImgs = assignedContainer.querySelectorAll('img');
+            for (var ai = 0; ai < assignedImgs.length; ai++) {
+                assignedUrls.push(assignedImgs[ai].src);
+            }
+        }
 
-        if (numbers.length === 0) return;
+        for (var pi = 0; pi < uploadedImages.length; pi++) {
+            var item = uploadedImages[pi];
+            var pickerItem = document.createElement('div');
+            pickerItem.style.width = '80px';
+            pickerItem.style.height = '80px';
+            pickerItem.style.cursor = 'pointer';
+            pickerItem.style.position = 'relative';
+            pickerItem.style.borderRadius = '4px';
+            pickerItem.style.overflow = 'hidden';
+            pickerItem.setAttribute('data-img-index', pi.toString());
 
-        // Convert to zero-based indices
-        var indices = numbers.map(function (n) { return n - 1; });
+            // Pre-select if already assigned
+            var isPreSelected = assignedUrls.indexOf(item.objectUrl) !== -1;
+            pickerItem.className = 'picker-thumb border-2 border rounded' + (isPreSelected ? ' border-primary selected' : '');
 
-        assignImagesToVariant(variantIndex, indices);
+            var pImg = document.createElement('img');
+            pImg.src = item.objectUrl;
+            pImg.alt = item.fileName;
+            pImg.style.width = '100%';
+            pImg.style.height = '100%';
+            pImg.style.objectFit = 'cover';
+            pImg.style.display = 'block';
+            pickerItem.appendChild(pImg);
+
+            var pBadge = document.createElement('span');
+            pBadge.className = 'badge bg-dark position-absolute top-0 start-0';
+            pBadge.style.fontSize = '10px';
+            pBadge.textContent = (pi + 1).toString();
+            pickerItem.appendChild(pBadge);
+
+            pickerItem.addEventListener('click', function () {
+                this.classList.toggle('selected');
+                if (this.classList.contains('selected')) {
+                    this.classList.add('border-primary');
+                } else {
+                    this.classList.remove('border-primary');
+                }
+                updatePickerStarBadges();
+            });
+
+            grid.appendChild(pickerItem);
+        }
+
+        updatePickerStarBadges();
+
+        // Show modal
+        var modalEl = document.getElementById('image-picker-modal');
+        if (!pickerModal) {
+            pickerModal = new bootstrap.Modal(modalEl);
+        }
+        pickerModal.show();
+    });
+
+    function updatePickerStarBadges() {
+        var grid = document.getElementById('picker-grid');
+        var items = grid.querySelectorAll('.picker-thumb');
+        var firstSelected = true;
+        items.forEach(function (item) {
+            var existing = item.querySelector('.star-badge');
+            if (existing) existing.remove();
+            if (item.classList.contains('selected') && firstSelected) {
+                var star = document.createElement('span');
+                star.className = 'star-badge badge bg-warning position-absolute';
+                star.style.fontSize = '10px';
+                star.style.top = '0';
+                star.style.right = '0';
+                star.textContent = '\u2605';
+                item.appendChild(star);
+                firstSelected = false;
+            }
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        if (e.target.id !== 'picker-confirm') return;
+
+        var grid = document.getElementById('picker-grid');
+        var selected = grid.querySelectorAll('.picker-thumb.selected');
+        var indices = [];
+        selected.forEach(function (el) {
+            indices.push(parseInt(el.getAttribute('data-img-index'), 10));
+        });
+
+        if (indices.length > 0) {
+            assignImagesToVariant(currentPickerVariantIndex, indices);
+        } else {
+            // Clear assignment if nothing selected
+            var container = document.querySelector('.variant-assigned-images[data-variant-index="' + currentPickerVariantIndex + '"]');
+            if (container) {
+                while (container.firstChild) container.removeChild(container.firstChild);
+            }
+            rebuildAssignmentHiddenFields();
+        }
+
+        if (pickerModal) pickerModal.hide();
     });
 
     function assignImagesToVariant(variantIndex, imageIndices) {
