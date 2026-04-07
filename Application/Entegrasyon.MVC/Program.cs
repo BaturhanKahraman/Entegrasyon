@@ -31,7 +31,8 @@ builder.Services.AddControllersWithViews(options =>
     // Custom filters
     options.Filters.Add<TenantActionFilter>();
     options.Filters.Add<AutoValidationFilter>();
-});
+})
+.AddSessionStateTempDataProvider();
 
 builder.Services.Configure<RazorViewEngineOptions>(options =>
 {
