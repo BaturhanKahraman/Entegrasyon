@@ -290,18 +290,31 @@ public class ProductController(
     [HttpPost("/products/add/step6")]
     public async Task<IActionResult> CreateStep6(CreateProductVm vm)
     {
-        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
-        return await CreateSave();
+        return await DoSave(vm);
     }
 
     [SkipAutoValidation]
     [HttpPost("/products/add/save")]
-    public async Task<IActionResult> CreateSave()
+    public async Task<IActionResult> CreateSave(CreateProductVm vm)
     {
-        var json = TempData.Peek("CreateProduct") as string;
-        if (json is null) return RedirectToAction(nameof(Create));
+        // Try form-bound VM first, fallback to TempData
+        if (string.IsNullOrWhiteSpace(vm.Title) || vm.CategoryId == 0)
+        {
+            var json = TempData.Peek("CreateProduct") as string;
+            if (json is not null)
+                vm = JsonSerializer.Deserialize<CreateProductVm>(json)!;
+        }
 
-        var vm = JsonSerializer.Deserialize<CreateProductVm>(json)!;
+        return await DoSave(vm);
+    }
+
+    private async Task<IActionResult> DoSave(CreateProductVm vm)
+    {
+        if (string.IsNullOrWhiteSpace(vm.Title) || vm.CategoryId == 0)
+        {
+            TempData.SetError("Urun bilgileri eksik. Lutfen bastan baslatin.");
+            return RedirectToAction(nameof(Create));
+        }
 
         var attributeKeyValues = vm.CategoryAttributes
             .Where(a => a.ValueId > 0 || !string.IsNullOrWhiteSpace(a.CustomValue))
