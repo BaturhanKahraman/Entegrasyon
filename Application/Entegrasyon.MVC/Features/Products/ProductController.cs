@@ -152,7 +152,7 @@ public class ProductController(
         var categories = await categoryService.GetLeafCategoriesAsync();
         vm.CategoryName = categories.FirstOrDefault(c => c.Id == vm.CategoryId)?.Name;
 
-        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         // Load category attributes for Step 2
         var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
@@ -190,7 +190,7 @@ public class ProductController(
             return View(nameof(Create), vm);
         }
 
-        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         // Load varianter/slicer attributes for Step 3
         var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
@@ -231,7 +231,7 @@ public class ProductController(
             return RedirectToAction(nameof(Create));
         }
 
-        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep4Images", vm);
@@ -262,7 +262,7 @@ public class ProductController(
     [HttpPost("/products/add/step4")]
     public IActionResult CreateStep4(CreateProductVm vm)
     {
-        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep5Review", vm);
@@ -276,7 +276,7 @@ public class ProductController(
     [HttpPost("/products/add/step5")]
     public IActionResult CreateStep5(CreateProductVm vm)
     {
-        TempData["CreateProduct"] = JsonSerializer.Serialize(vm);
+        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
 
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep6Publish", vm);
@@ -291,7 +291,7 @@ public class ProductController(
     public async Task<IActionResult> CreateStep6(CreateProductVm formVm)
     {
         // Read full product data from TempData (set by CreateStep5)
-        var json = TempData.Peek("CreateProduct") as string;
+        var json = HttpContext.Session.GetString("CreateProduct");
         if (json is null)
             return await DoSave(formVm);
 
@@ -315,7 +315,7 @@ public class ProductController(
     public async Task<IActionResult> CreateSave()
     {
         // Read from TempData (set by previous steps)
-        var json = TempData.Peek("CreateProduct") as string;
+        var json = HttpContext.Session.GetString("CreateProduct");
         if (json is null)
         {
             if (Request.IsHtmx())
@@ -427,7 +427,7 @@ public class ProductController(
                     System.IO.File.Delete(f);
             }
 
-            TempData.Remove("CreateProduct");
+            HttpContext.Session.Remove("CreateProduct");
 
             ViewBag.ProductId = product.Id;
             ViewBag.ProductTitle = vm.Title;
