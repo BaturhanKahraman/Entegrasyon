@@ -1,0 +1,159 @@
+@using Entegrasyon.Entity.Dtos.Branches
+@model StockTransferRequestDetailDto
+
+@{
+    var isPending = Model.Status == 0;
+}
+
+<div class="d-flex align-items-center mb-3">
+    <h2 class="page-title mb-0">Stok Transfer Talebi #@Model.Id</h2>
+    @{
+        var badgeClass = Model.Status switch
+        {
+            0 => "bg-warning",
+            1 => "bg-success",
+            2 => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    <span class="badge @badgeClass ms-3">@Model.StatusText</span>
+    <div class="ms-auto">
+        <a href="/stock-transfer-requests" class="btn btn-outline-secondary">Listeye Dön</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card mb-3">
+            <div class="card-header"><h3 class="card-title">Talep Bilgileri</h3></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Kaynak Şube</dt>
+                    <dd class="col-sm-7">@Model.SourceBranchOfficeName</dd>
+
+                    <dt class="col-sm-5">Hedef Şube</dt>
+                    <dd class="col-sm-7">@Model.TargetBranchOfficeName</dd>
+
+                    <dt class="col-sm-5">Talep Eden</dt>
+                    <dd class="col-sm-7">@Model.RequestedByUserName</dd>
+
+                    <dt class="col-sm-5">Talep Tarihi</dt>
+                    <dd class="col-sm-7">@Model.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+
+                    @if (Model.ReviewedAt.HasValue)
+                    {
+                        <dt class="col-sm-5">İşlem Tarihi</dt>
+                        <dd class="col-sm-7">@Model.ReviewedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-5">İşlem Yapan</dt>
+                        <dd class="col-sm-7">@(Model.ApprovedByUserName ?? "-")</dd>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                    {
+                        <dt class="col-sm-5">Red Gerekçesi</dt>
+                        <dd class="col-sm-7 text-danger">@Model.RejectionReason</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card mb-3">
+            <div class="card-header"><h3 class="card-title">Ürünler</h3></div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Barkod</th>
+                            <th class="text-end">Talep Edilen</th>
+                            <th class="text-end">Kaynak Stok</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            var insufficient = isPending && item.CurrentSourceStock < item.Quantity;
+                            <tr class="@(insufficient ? "table-danger" : "")">
+                                <td>@item.ProductTitle</td>
+                                <td><code>@item.Barcode</code></td>
+                                <td class="text-end">@item.Quantity</td>
+                                <td class="text-end">
+                                    @item.CurrentSourceStock
+                                    @if (insufficient)
+                                    {
+                                        <span class="badge bg-danger ms-1">Yetersiz</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-active fw-bold">
+                            <td colspan="2">Toplam</td>
+                            <td class="text-end">@Model.Items.Sum(i => i.Quantity)</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isPending)
+{
+    <div require-permission="Permissions.Stock.Transfer.Approve" class="card">
+        <div class="card-header"><h3 class="card-title">İşlem</h3></div>
+        <div class="card-body">
+            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.RequestedByUserId.ToString())
+            {
+                <div class="alert alert-info">
+                    Bu talep size aittir. Uygun yetkiniz varsa kendi onayınızı verebilirsiniz.
+                </div>
+            }
+
+            @{
+                var anyInsufficient = Model.Items.Any(i => i.CurrentSourceStock < i.Quantity);
+            }
+            @if (anyInsufficient)
+            {
+                <div class="alert alert-warning">
+                    <strong>Uyarı:</strong> Bazı ürünlerin kaynak stoğu yetersiz görünüyor.
+                    Onay anında transfer başarısız olursa talep beklemede kalır ve stoğu düzelttikten sonra tekrar onaylayabilirsiniz.
+                </div>
+            }
+
+            <form method="post" action="/stock-transfer-requests/@Model.Id/approve" class="d-inline-block me-2">
+                <button type="submit" class="btn btn-success">Onayla ve Transferi Gerçekleştir</button>
+            </form>
+
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                Reddet
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="post" action="/stock-transfer-requests/@Model.Id/reject" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Talebi Reddet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="rejectReason" class="form-label required">Red Gerekçesi</label>
+                    <textarea id="rejectReason" name="reason" class="form-control" rows="4"
+                              required maxlength="500"
+                              placeholder="Lütfen red gerekçesini yazın (zorunlu)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Reddet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

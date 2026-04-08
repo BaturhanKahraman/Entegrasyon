@@ -5,13 +5,13 @@
             <div class="card-header">
                 <div class="row w-100 g-2">
                     <div class="col-auto">
-                        <select class="form-select"
+                        <select class="form-select log-filter"
                                 name="logType"
                                 hx-get="/logs"
                                 hx-trigger="change"
                                 hx-target="#log-table"
                                 hx-swap="outerHTML"
-                                hx-include="[name='logAction']">
+                                hx-include=".log-filter">
                             <option value="">Tum Kategoriler</option>
                             @foreach (LogType lt in Enum.GetValues<LogType>())
                             {
@@ -20,13 +20,13 @@
                         </select>
                     </div>
                     <div class="col-auto">
-                        <select class="form-select"
+                        <select class="form-select log-filter"
                                 name="logAction"
                                 hx-get="/logs"
                                 hx-trigger="change"
                                 hx-target="#log-table"
                                 hx-swap="outerHTML"
-                                hx-include="[name='logType']">
+                                hx-include=".log-filter">
                             <option value="">Tum Islemler</option>
                             @foreach (LogAction la in Enum.GetValues<LogAction>())
                             {
@@ -34,6 +34,38 @@
                             }
                         </select>
                     </div>
+                    <div class="col-auto">
+                        <input type="text"
+                               class="form-control log-filter"
+                               name="entityType"
+                               value="@(ViewBag.EntityType ?? "")"
+                               placeholder="Varlık Türü (örn: BranchOffice)"
+                               hx-get="/logs"
+                               hx-trigger="keyup changed delay:500ms"
+                               hx-target="#log-table"
+                               hx-swap="outerHTML"
+                               hx-include=".log-filter" />
+                    </div>
+                    <div class="col-auto">
+                        <input type="text"
+                               class="form-control log-filter"
+                               name="entityId"
+                               value="@(ViewBag.EntityId ?? "")"
+                               placeholder="Varlık Kimliği"
+                               hx-get="/logs"
+                               hx-trigger="keyup changed delay:500ms"
+                               hx-target="#log-table"
+                               hx-swap="outerHTML"
+                               hx-include=".log-filter" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewBag.EntityType as string) || !string.IsNullOrEmpty(ViewBag.EntityId as string))
+                    {
+                        <div class="col-auto">
+                            <a href="/logs" class="btn btn-outline-secondary" title="Varlık filtrelerini temizle">
+                                Filtreyi Temizle
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
             <partial name="~/Features/Logs/Views/Partials/_LogTable.cshtml" model="Model"/>

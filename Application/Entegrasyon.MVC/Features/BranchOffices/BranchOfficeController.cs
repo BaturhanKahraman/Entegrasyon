@@ -105,7 +105,7 @@ public class BranchOfficeController(
         if (!ModelState.IsValid)
             return View(model);
 
-        var result = await branchOfficeManager.AddBranch(new BranchOfficeAddDto(model.Name));
+        var result = await branchOfficeManager.AddBranch(new BranchOfficeAddDto(model.Name, model.Address));
 
         if (!result.Success)
         {
@@ -127,11 +127,19 @@ public class BranchOfficeController(
             return RedirectToAction(nameof(Index));
         }
 
+        // Address'i ayrı çek — GetBranchDetailById DTO'su Address içermiyor
+        var entity = await branchOfficeManager.GetBranchById(id);
+
         ViewData.SetPageTitle($"{result.Data!.Name} - Duzenle");
         ViewData.SetActiveNav("branch-offices");
         ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (result.Data.Name, $"/branch-offices/{id}"), ("Duzenle", null));
 
-        var vm = new BranchOfficeEditVm { Id = id, Name = result.Data.Name };
+        var vm = new BranchOfficeEditVm
+        {
+            Id = id,
+            Name = result.Data.Name,
+            Address = entity?.Address
+        };
         return View(vm);
     }
 
@@ -148,7 +156,7 @@ public class BranchOfficeController(
             return View(model);
         }
 
-        var result = await branchOfficeManager.Update(new BranchOfficeEditDto(id, model.Name));
+        var result = await branchOfficeManager.Update(new BranchOfficeEditDto(id, model.Name, model.Address));
 
         if (!result.Success)
         {

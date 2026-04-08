@@ -1,0 +1,128 @@
+@model Entegrasyon.MVC.Features.Stock.Transfers.ViewModels.StockTransferRequestCreateVm
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="/stock-transfer-requests" class="btn btn-outline-secondary">Listeye Dön</a>
+</div>
+
+<form method="post" action="/stock-transfer-requests/create" id="transferForm">
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title">Şube Seçimi</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SourceBranchOfficeId" class="form-label required">Kaynak Şube</label>
+                    <select asp-for="SourceBranchOfficeId" class="form-select" required>
+                        <option value="">-- Seçiniz --</option>
+                        @foreach (var b in Model.AvailableBranches)
+                        {
+                            <option value="@b.Id">@b.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SourceBranchOfficeId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="TargetBranchOfficeId" class="form-label required">Hedef Şube</label>
+                    <select asp-for="TargetBranchOfficeId" class="form-select" required>
+                        <option value="">-- Seçiniz --</option>
+                        @foreach (var b in Model.AvailableBranches)
+                        {
+                            <option value="@b.Id">@b.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="TargetBranchOfficeId" class="text-danger"></span>
+                </div>
+            </div>
+            <small class="form-hint">
+                Kaynak ve hedef şube farklı olmalıdır. Onay anında stok yeterliliği yeniden kontrol edilecektir.
+            </small>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header d-flex align-items-center">
+            <h3 class="card-title mb-0">Aktarılacak Ürünler</h3>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="addItemBtn">
+                    + Ürün Satırı Ekle
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table card-table" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>Ürün Varyant ID (GUID)</th>
+                        <th class="text-end" style="width: 150px;">Adet</th>
+                        <th style="width: 60px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <tr data-row-index="0">
+                        <td><input type="text" name="Items[0].ProductVariantId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" /></td>
+                        <td><input type="number" name="Items[0].Quantity" class="form-control text-end" min="1" value="1" /></td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-row">Sil</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted">
+            <small>Şimdilik ProductVariantId GUID olarak elle giriliyor. İleride ürün arama widget'ı eklenecek.</small>
+        </div>
+    </div>
+
+    <!-- Template element: cloneNode ile yeni satır oluşturmak için. innerHTML kullanılmıyor (XSS-safe) -->
+    <template id="itemRowTemplate">
+        <tr>
+            <td><input type="text" data-field="ProductVariantId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" /></td>
+            <td><input type="number" data-field="Quantity" class="form-control text-end" min="1" value="1" /></td>
+            <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-row">Sil</button>
+            </td>
+        </tr>
+    </template>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a href="/stock-transfer-requests" class="btn btn-ghost-secondary">İptal</a>
+        <button type="submit" class="btn btn-primary">Talep Oluştur</button>
+    </div>
+</form>
+
+<script>
+(function () {
+    let rowIndex = 1;
+    const body = document.getElementById('itemsBody');
+    const template = document.getElementById('itemRowTemplate');
+
+    document.getElementById('addItemBtn').addEventListener('click', function () {
+        // <template>.content.cloneNode(true) — HTML parse edilmez, DOM clone'lanır (XSS-safe)
+        const clone = template.content.cloneNode(true);
+        const tr = clone.querySelector('tr');
+        tr.dataset.rowIndex = String(rowIndex);
+
+        // Input name'lerini ASP.NET MVC list binding formatına göre ayarla: Items[i].PropertyName
+        const variantInput = clone.querySelector('input[data-field="ProductVariantId"]');
+        const quantityInput = clone.querySelector('input[data-field="Quantity"]');
+        variantInput.name = 'Items[' + rowIndex + '].ProductVariantId';
+        quantityInput.name = 'Items[' + rowIndex + '].Quantity';
+
+        body.appendChild(clone);
+        rowIndex++;
+    });
+
+    body.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-row')) {
+            const row = e.target.closest('tr');
+            // En az bir satır kalsın
+            if (body.querySelectorAll('tr').length > 1) {
+                row.remove();
+            } else {
+                alert('En az bir ürün satırı bulunmalıdır.');
+            }
+        }
+    });
+})();
+</script>

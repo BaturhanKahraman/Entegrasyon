@@ -1,0 +1,180 @@
+@using Entegrasyon.Entity.Dtos.Branches
+@model BranchOfficeDeletionRequestDetailDto
+
+@{
+    var isPending = Model.Status == 0;
+    var snapshotSum = Model.SnapshotItems.Sum(i => i.Quantity);
+    var liveSum = Model.LiveItems.Sum(i => i.Quantity);
+    var stockChanged = snapshotSum != liveSum;
+}
+
+<div class="d-flex align-items-center mb-3">
+    <h2 class="page-title mb-0">Silme Talebi #@Model.Id</h2>
+    @{
+        var badgeClass = Model.Status switch
+        {
+            0 => "bg-warning",
+            1 => "bg-success",
+            2 => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    <span class="badge @badgeClass ms-3">@Model.StatusText</span>
+    <div class="ms-auto">
+        <a href="/branch-office-deletion-requests" class="btn btn-outline-secondary">Listeye Dön</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-3">
+            <div class="card-header"><h3 class="card-title">Talep Bilgileri</h3></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Silinecek Şube</dt>
+                    <dd class="col-sm-8">@Model.BranchOfficeName</dd>
+
+                    <dt class="col-sm-4">Talep Eden</dt>
+                    <dd class="col-sm-8">@Model.RequestedByUserName</dd>
+
+                    <dt class="col-sm-4">Talep Tarihi</dt>
+                    <dd class="col-sm-8">@Model.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4">Stok Transferi</dt>
+                    <dd class="col-sm-8">@(Model.HasStockTransfer ? "Evet" : "Hayır (stok yok)")</dd>
+
+                    @if (Model.HasStockTransfer)
+                    {
+                        <dt class="col-sm-4">Hedef Şube</dt>
+                        <dd class="col-sm-8">@Model.TransferTargetBranchOfficeName</dd>
+                    }
+
+                    @if (Model.ReviewedAt.HasValue)
+                    {
+                        <dt class="col-sm-4">İşlem Tarihi</dt>
+                        <dd class="col-sm-8">@Model.ReviewedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-4">İşlem Yapan</dt>
+                        <dd class="col-sm-8">@(Model.ApprovedByUserName ?? "-")</dd>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                    {
+                        <dt class="col-sm-4">Red Gerekçesi</dt>
+                        <dd class="col-sm-8 text-danger">@Model.RejectionReason</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.HasStockTransfer)
+    {
+        <div class="col-lg-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Stok Karşılaştırma</h3>
+                </div>
+                @if (stockChanged && isPending)
+                {
+                    <div class="alert alert-warning mb-0 rounded-0">
+                        <strong>Uyarı:</strong> Talep açıldıktan sonra stok değişti.
+                        Onaylarsanız güncel stok (<strong>@liveSum adet</strong>) aktarılacaktır.
+                    </div>
+                }
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ürün</th>
+                                <th class="text-end">Talep Anı</th>
+                                <th class="text-end">Canlı Stok</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var allVariantIds = Model.SnapshotItems.Select(i => i.ProductVariantId)
+                                    .Union(Model.LiveItems.Select(i => i.ProductVariantId))
+                                    .Distinct();
+                            }
+                            @foreach (var vid in allVariantIds)
+                            {
+                                var snap = Model.SnapshotItems.FirstOrDefault(i => i.ProductVariantId == vid);
+                                var live = Model.LiveItems.FirstOrDefault(i => i.ProductVariantId == vid);
+                                var title = snap?.ProductTitle ?? live?.ProductTitle ?? "";
+                                <tr>
+                                    <td>@title</td>
+                                    <td class="text-end">@(snap?.Quantity.ToString() ?? "-")</td>
+                                    <td class="text-end">@(live?.Quantity.ToString() ?? "0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-active fw-bold">
+                                <td>Toplam</td>
+                                <td class="text-end">@snapshotSum</td>
+                                <td class="text-end">@liveSum</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (isPending)
+{
+    <div require-permission="Permissions.StockOffice.Delete.Approve" class="card">
+        <div class="card-header">
+            <h3 class="card-title">İşlem</h3>
+        </div>
+        <div class="card-body">
+            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.RequestedByUserId.ToString())
+            {
+                <div class="alert alert-info">
+                    Bu talep size aittir. Uygun yetkiniz varsa kendi onayınızı verebilirsiniz.
+                </div>
+            }
+
+            <form method="post" action="/branch-office-deletion-requests/@Model.Id/approve" class="d-inline-block me-2">
+                @if (Model.HasStockTransfer)
+                {
+                    <div class="form-check mb-2">
+                        <input type="checkbox" id="confirmLiveStock" class="form-check-input" required>
+                        <label for="confirmLiveStock" class="form-check-label">
+                            Güncel stoku (<strong>@liveSum adet</strong>) kontrol ettim ve onaylıyorum.
+                        </label>
+                    </div>
+                }
+                <button type="submit" class="btn btn-success">Onayla</button>
+            </form>
+
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                Reddet
+            </button>
+        </div>
+    </div>
+
+    <!-- Reject modal -->
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="post" action="/branch-office-deletion-requests/@Model.Id/reject" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Talebi Reddet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="rejectReason" class="form-label required">Red Gerekçesi</label>
+                    <textarea id="rejectReason" name="reason" class="form-control" rows="4"
+                              required maxlength="500"
+                              placeholder="Lütfen red gerekçesini yazın (zorunlu)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Reddet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

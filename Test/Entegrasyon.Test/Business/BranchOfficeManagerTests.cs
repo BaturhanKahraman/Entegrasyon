@@ -1,9 +1,12 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Mappers;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.POS;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace Entegrasyon.UnitTest.Business;
@@ -14,10 +17,17 @@ public class BranchOfficeManagerTests : BaseTest
 
     public BranchOfficeManagerTests()
     {
+        // Faz 3: validator'lar injection oldu. Delete testleri validator'ları kullanmaz,
+        // Mock default (no-op) davranışı yeterli.
+        var mockAddValidator = new Mock<IValidator<BranchOfficeAddDto>>();
+        var mockEditValidator = new Mock<IValidator<BranchOfficeEditDto>>();
+
         _sut = new BranchOfficeManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
-            new BranchOfficeMapper());
+            new BranchOfficeMapper(),
+            mockAddValidator.Object,
+            mockEditValidator.Object);
     }
 
     // ---- Soft Delete ----

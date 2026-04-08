@@ -12,6 +12,12 @@ public interface IBranchOfficeManager
     Task<IDataResult<BranchDetailDto>> GetBranchDetailById(int branchId);
     Task<IDataResult<BranchOffice>> Update(BranchOfficeEditDto dto);
     Task<IResult> Delete(int id);
+
+    /// <summary>
+    /// Kullanıcının atanmış olduğu tüm aktif şube ofislerini döner (junction üzerinden).
+    /// DefaultBranchOfficeId her zaman junction'da bir satır olarak bulunur (migration backfill garantili).
+    /// </summary>
+    Task<IDataResult<List<BranchOffice>>> GetBranchesForUserAsync(Guid userId, CancellationToken token = default);
     Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds);
     Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(int pageIndex = 0, int pageSize = 50);
     Task<IDataResult<Pageable<BranchListDetailDto>>> GetPageableBranchOffices(BranchPaginatedRequest request);

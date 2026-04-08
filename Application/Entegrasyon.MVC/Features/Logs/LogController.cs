@@ -10,15 +10,31 @@ namespace Entegrasyon.MVC.Features.Logs;
 public class LogController(IApplicationLogManager applicationLogManager) : Controller
 {
     [HttpGet("/logs")]
-    public async Task<IActionResult> Index(LogType? logType = null, LogAction? logAction = null, int page = 1)
+    public async Task<IActionResult> Index(
+        LogType? logType = null,
+        LogAction? logAction = null,
+        string? entityType = null,
+        string? entityId = null,
+        int page = 1)
     {
         ViewData.SetPageTitle("Sistem Loglari");
         ViewData.SetActiveNav("logs");
 
         ViewBag.LogType = logType;
         ViewBag.LogAction = logAction;
+        ViewBag.EntityType = entityType;
+        ViewBag.EntityId = entityId;
 
-        var result = await applicationLogManager.GetPaginatedLogs(page - 1, 50, logType, logAction);
+        // Boş string parametreler null'a normalize edilir (HTML form temiz input için "" gönderir)
+        var normalizedEntityType = string.IsNullOrWhiteSpace(entityType) ? null : entityType.Trim();
+        var normalizedEntityId = string.IsNullOrWhiteSpace(entityId) ? null : entityId.Trim();
+
+        var result = await applicationLogManager.GetPaginatedLogs(
+            page - 1, 50,
+            logType,
+            logAction,
+            normalizedEntityType,
+            normalizedEntityId);
 
         if (Request.IsHtmx())
             return PartialView("~/Features/Logs/Views/Partials/_LogTable.cshtml", result.Data);

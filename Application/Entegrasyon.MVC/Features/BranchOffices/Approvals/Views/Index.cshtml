@@ -1,0 +1,81 @@
+@using Entegrasyon.Entity
+@using Entegrasyon.Entity.Dtos.Branches
+@model Pageable<BranchOfficeDeletionRequestListDto>
+
+<div class="d-flex align-items-center mb-3">
+    <h2 class="page-title me-2 mb-0">Şube Silme Talepleri</h2>
+    @if (ViewBag.PendingCount is int pc && pc > 0)
+    {
+        <span class="badge bg-warning text-dark">@pc beklemede</span>
+    }
+    <div class="ms-auto">
+        <a href="/branch-offices" class="btn btn-outline-secondary">Şube Listesine Dön</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select" style="max-width: 200px;" onchange="this.form.submit()">
+                <option value="">Tüm Durumlar</option>
+                <option value="@((int)BranchOfficeDeletionRequestStatus.Pending)"
+                        selected="@(ViewBag.Status is BranchOfficeDeletionRequestStatus.Pending)">Beklemede</option>
+                <option value="@((int)BranchOfficeDeletionRequestStatus.Approved)"
+                        selected="@(ViewBag.Status is BranchOfficeDeletionRequestStatus.Approved)">Onaylandı</option>
+                <option value="@((int)BranchOfficeDeletionRequestStatus.Rejected)"
+                        selected="@(ViewBag.Status is BranchOfficeDeletionRequestStatus.Rejected)">Reddedildi</option>
+            </select>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Şube</th>
+                    <th>Durum</th>
+                    <th>Talep Eden</th>
+                    <th>Talep Tarihi</th>
+                    <th>Stok Transferi</th>
+                    <th>Hedef Şube</th>
+                    <th class="text-end">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model is null || Model.Items.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted">Kayıt bulunamadı.</td></tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.BranchOfficeName</td>
+                            <td>
+                                @{
+                                    var badgeClass = item.Status switch
+                                    {
+                                        0 => "bg-warning",
+                                        1 => "bg-success",
+                                        2 => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@item.StatusText</span>
+                            </td>
+                            <td>@item.RequestedByUserName</td>
+                            <td>@item.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@(item.HasStockTransfer ? "Evet" : "Hayır")</td>
+                            <td>@(item.TransferTargetBranchOfficeName ?? "-")</td>
+                            <td class="text-end">
+                                <a href="/branch-office-deletion-requests/@item.Id" class="btn btn-sm btn-outline-primary">Detay</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,5 +1,6 @@
 ﻿using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utility.Constants;
+using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Business.Mappers;
@@ -8,6 +9,7 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.POS;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
@@ -17,7 +19,9 @@ namespace Entegrasyon.Business.Concrete;
 public class BranchOfficeManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IApplicationLogManager applicationLogManager,
-    BranchOfficeMapper mapper)
+    BranchOfficeMapper mapper,
+    IValidator<BranchOfficeAddDto> addValidator,
+    IValidator<BranchOfficeEditDto> editValidator)
     : IBranchOfficeManager
 {
     public async Task<IDataResult<List<BranchOffice>>> GetBranchList(CancellationToken token=default)
@@ -28,17 +32,60 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<BranchOffice>> AddBranch(BranchOfficeAddDto officeDto)
     {
+        // 1. Validation
+        var validationResult = await addValidator.ValidateAsync(officeDto);
+        if (!validationResult.IsValid)
+            return new ErrorDataResult<BranchOffice>(null!,
+                string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage)));
+
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        //VALİDATE
-        await applicationLogManager.AddLog("Ofis ekleme işlemi yapılmakta.",LogType.Branch,LogAction.Add);
-        var result = LogicRunner.Run(await CheckIfTheSameNameExists(dbContext, officeDto.Name, 0));
-        if (result!=null)
-            return new ErrorDataResult<BranchOffice>(null!, result.Message!);
+
+        // Normalized name için Türkçe-safe dönüşüm
+        var normalized = BranchNameNormalizer.Normalize(officeDto.Name);
+
+        // 2. Business rules
+        var rule = LogicRunner.Run(
+            await CheckIfNormalizedNameExistsAsync(dbContext, normalized, excludedId: 0));
+        if (rule != null)
+            return new ErrorDataResult<BranchOffice>(null!, rule.Message!);
+
+        // 3. Execution
+        await applicationLogManager.AddLog("Şube ekleme işlemi yapılmakta.", LogType.Branch, LogAction.Add);
+
         var office = mapper.MapToEntity(officeDto);
+        office.NormalizedName = normalized;
+        office.Address = officeDto.Address;
+
         await dbContext.BranchOffices.AddAsync(office);
         await dbContext.SaveChangesAsync();
-        await applicationLogManager.AddLog($"Ofis ekleme işlemi başarıyla tamamlandı. {office.Name}",LogType.Branch,LogAction.Add);
-        return new SuccessDataResult<BranchOffice>(office,Messages.BranchAdded);
+
+        // Kullanıcı ataması: explicit verildiyse o kullanıcılar, verilmediyse HQ'ya atama yapılmaz
+        // (yeni şubeye kimse atanmadan kalır, kullanıcılar sonradan atanabilir)
+        if (officeDto.AssignedUserIds is { Count: > 0 })
+        {
+            var now = DateTimeOffset.UtcNow;
+            foreach (var userId in officeDto.AssignedUserIds.Distinct())
+            {
+                dbContext.UserBranchOffices.Add(new UserBranchOffice
+                {
+                    UserId = userId,
+                    BranchOfficeId = office.Id,
+                    AssignedAt = now
+                });
+
+                // Kullanıcının DefaultBranchOfficeId'si hâlâ null ise bu yeni şubeyi primary yap
+                var user = await dbContext.Users.AsTracking()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                if (user is not null && user.DefaultBranchOfficeId is null)
+                    user.DefaultBranchOfficeId = office.Id;
+            }
+            await dbContext.SaveChangesAsync();
+        }
+
+        await applicationLogManager.AddLog(
+            $"Şube başarıyla eklendi: {office.Name}", LogType.Branch, LogAction.Add);
+
+        return new SuccessDataResult<BranchOffice>(office, Messages.BranchAdded);
     }
 
     public async Task<IDataResult<BranchDetailDto>> GetBranchDetailById(int branchId)
@@ -52,18 +99,89 @@ public class BranchOfficeManager(
 
     public async Task<IDataResult<BranchOffice>> Update(BranchOfficeEditDto dto)
     {
+        // 1. Validation
+        var validationResult = await editValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+            return new ErrorDataResult<BranchOffice>(null!,
+                string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage)));
+
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        //validate
-        //TODO update için rowversion ekle
-        await applicationLogManager.AddLog("Ofis düzenleme işlemi yapılmakta.",LogType.Branch,LogAction.Update,dto);
-        var result = LogicRunner.Run(await CheckIfTheSameNameExists(dbContext, dto.Name, dto.Id));
-        if (result != null)
-            return new ErrorDataResult<BranchOffice>(null!, result.Message!);
-        var dbOffice = (await dbContext.BranchOffices.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id))!;
+
+        var normalized = BranchNameNormalizer.Normalize(dto.Name);
+
+        // 2. Business rules
+        var rule = LogicRunner.Run(
+            await CheckIfNormalizedNameExistsAsync(dbContext, normalized, excludedId: dto.Id));
+        if (rule != null)
+            return new ErrorDataResult<BranchOffice>(null!, rule.Message!);
+
+        // 3. Execution
+        await applicationLogManager.AddLog("Şube düzenleme işlemi yapılmakta.", LogType.Branch, LogAction.Update, dto);
+
+        var dbOffice = await dbContext.BranchOffices.AsTracking()
+            .FirstOrDefaultAsync(x => x.Id == dto.Id);
+        if (dbOffice is null)
+            return new ErrorDataResult<BranchOffice>(null!, "Şube bulunamadı.");
+
         dbOffice.Name = dto.Name;
+        dbOffice.NormalizedName = normalized;
+        dbOffice.Address = dto.Address;
+        // IsHeadquarters DTO'da yok — DB'de immutable, asla yazılmaz
+
+        // Junction reconciliation: eklenen/kaldırılan kullanıcıları hesapla
+        if (dto.AssignedUserIds is not null)
+        {
+            var existing = await dbContext.UserBranchOffices
+                .Where(j => j.BranchOfficeId == dto.Id)
+                .Select(j => j.UserId)
+                .ToListAsync();
+
+            var desired = dto.AssignedUserIds.Distinct().ToHashSet();
+            var existingSet = existing.ToHashSet();
+
+            var toAdd = desired.Except(existingSet).ToList();
+            var toRemove = existingSet.Except(desired).ToList();
+
+            var now = DateTimeOffset.UtcNow;
+            foreach (var userId in toAdd)
+            {
+                dbContext.UserBranchOffices.Add(new UserBranchOffice
+                {
+                    UserId = userId,
+                    BranchOfficeId = dto.Id,
+                    AssignedAt = now
+                });
+            }
+
+            if (toRemove.Count > 0)
+            {
+                await dbContext.UserBranchOffices
+                    .Where(j => j.BranchOfficeId == dto.Id && toRemove.Contains(j.UserId))
+                    .ExecuteDeleteAsync();
+            }
+        }
+
         await dbContext.SaveChangesAsync();
-        await applicationLogManager.AddLog("Ofis düzenleme işlemi başarıyla tamamlandı. ",LogType.Branch,LogAction.Update);
+
+        await applicationLogManager.AddLog(
+            $"Şube düzenleme işlemi başarıyla tamamlandı: {dbOffice.Name}",
+            LogType.Branch, LogAction.Update);
+
         return new SuccessDataResult<BranchOffice>(dbOffice);
+    }
+
+    public async Task<IDataResult<List<BranchOffice>>> GetBranchesForUserAsync(Guid userId, CancellationToken token = default)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync(token);
+        var branches = await dbContext.UserBranchOffices
+            .Where(j => j.UserId == userId)
+            .Join(dbContext.BranchOffices.Where(b => !b.IsDeleted),
+                  j => j.BranchOfficeId,
+                  b => b.Id,
+                  (j, b) => b)
+            .OrderBy(b => b.Name)
+            .ToListAsync(token);
+        return new SuccessDataResult<List<BranchOffice>>(branches);
     }
     public async Task<IResult> Delete(int id)
     {
@@ -105,6 +223,18 @@ public class BranchOfficeManager(
     {
         bool exits = await dbContext.BranchOffices.AnyAsync(b => string.Equals(name, b.Name) && b.Id != id);
         return exits ? new ErrorResult(Messages.OfficeNameAlreadyExists) : new SuccessResult();
+    }
+
+    /// <summary>
+    /// Türkçe-safe normalized name çakışması kontrolü. Sadece aktif (non-deleted) ofisler arasında.
+    /// Soft-deleted ofis ismi yeniden kullanılabilir (filtered unique index sayesinde).
+    /// </summary>
+    private static async Task<IResult> CheckIfNormalizedNameExistsAsync(
+        IntegrationDbContext dbContext, string normalizedName, int excludedId)
+    {
+        var exists = await dbContext.BranchOffices
+            .AnyAsync(b => b.NormalizedName == normalizedName && b.Id != excludedId);
+        return exists ? new ErrorResult(Messages.OfficeNameAlreadyExists) : new SuccessResult();
     }
 
     public async Task<bool> CheckIfOfficesExits(IEnumerable<int> officeIds)

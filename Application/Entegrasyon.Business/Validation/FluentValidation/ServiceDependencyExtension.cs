@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Dtos.Users;
+﻿using Entegrasyon.Entity.Dtos.Branches;
+using Entegrasyon.Entity.Dtos.Users;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Category;
@@ -29,6 +30,12 @@ public static class ServiceDependencyExtension
     public static IServiceCollection AddValidators(this IServiceCollection services)
     {
         services.AddScoped<IValidator<BranchOffice>,BranchValidator>();
+        services.AddScoped<IValidator<BranchOfficeAddDto>, BranchOfficeAddDtoValidator>();
+        services.AddScoped<IValidator<BranchOfficeEditDto>, BranchOfficeEditDtoValidator>();
+        services.AddScoped<IValidator<RequestDeleteDto>, RequestDeleteDtoValidator>();
+        services.AddScoped<IValidator<RejectDeletionRequestDto>, RejectDeletionRequestDtoValidator>();
+        services.AddScoped<IValidator<CreateStockTransferRequestDto>, CreateStockTransferRequestDtoValidator>();
+        services.AddScoped<IValidator<RejectStockTransferRequestDto>, RejectStockTransferRequestDtoValidator>();
         services.AddScoped<IValidator<AddRoleDto>,AddRoleDtoValidator>();
         services.AddScoped<IValidator<EditRoleDto>,EditRoleDtoValidator>();
         services.AddScoped<IValidator<AddUserDto>,AddUserDtoValidator>();
