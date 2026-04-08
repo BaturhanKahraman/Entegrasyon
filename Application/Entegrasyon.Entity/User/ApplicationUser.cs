@@ -32,8 +32,29 @@ public class ApplicationUser : BaseEntity
     public ICollection<UsersClaims> MyProperty { get; set; } = new List<UsersClaims>();
     public ICollection<NotificationsUsers> NotificationsUsers { get; set; } = new List<NotificationsUsers>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    /// <summary>
+    /// Kullanıcının birincil/atanmış şube ofisi. Login sonrası aktif ofis fallback sıralamasında
+    /// LastSelected (Remember me) → DefaultBranchOffice → HQ olarak kullanılır.
+    /// Many-to-many ilişkinin bir alt kümesi; asıl atama listesi UserBranchOffices junction'ında.
+    /// </summary>
     public int? DefaultBranchOfficeId { get; set; }
     public BranchOffice? DefaultBranchOffice { get; set; }
+
+    /// <summary>
+    /// "Beni hatırla" ile kaydedilen son seçili aktif şube (persist edilmiş).
+    /// Sadece RememberLastBranchOffice=true ise fallback'te kullanılır.
+    /// Ofis silindiğinde Stage B tarafından temizlenir.
+    /// </summary>
+    public int? LastSelectedBranchOfficeId { get; set; }
+    public BranchOffice? LastSelectedBranchOffice { get; set; }
+
+    /// <summary>
+    /// Kullanıcı "Beni hatırla" kutusunu işaretlediyse true; LastSelectedBranchOfficeId fallback'te kullanılır.
+    /// </summary>
+    public bool RememberLastBranchOffice { get; set; }
+
+    /// <summary>Kullanıcının atanmış olduğu tüm şube ofisleri (many-to-many junction).</summary>
+    public ICollection<UserBranchOffice> UserBranchOffices { get; set; } = new List<UserBranchOffice>();
 
     // Account Lockout
     public int FailedLoginCount { get; set; }

@@ -18,6 +18,8 @@ public enum LogType
     StockSync,
     Invoice,
     Settings,
+    StockTransfer = 17,
+    BranchDeletion = 18,
 
     Error = 999
 }

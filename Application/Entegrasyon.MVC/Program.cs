@@ -15,6 +15,7 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 using Entegrasyon.MVC.Infrastructure.ExceptionHandlers;
 using Entegrasyon.MVC.Infrastructure.Filters;
 using Entegrasyon.MVC.Infrastructure.Middleware;
+using Entegrasyon.MVC.Infrastructure.BranchOffices;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -295,6 +296,9 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
 
+// ── Active Branch Office (session + middleware) ─────────────────────────
+builder.Services.AddScoped<IActiveBranchOfficeAccessor, ActiveBranchOfficeAccessor>();
+
 // =====================================================================
 var app = builder.Build();
 // =====================================================================
@@ -344,6 +348,11 @@ app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 app.UseAuthorization();
 app.UseOutputCache();
 app.UseSession();
+
+// Active branch office validation — her authenticated request'te stale check
+// UseAuthentication + UseSession sonrası, endpoint'lerden önce
+app.UseMiddleware<ActiveBranchOfficeMiddleware>();
+
 app.UseAntiforgery();
 
 // ── Endpoints ────────────────────────────────────────────────────────────

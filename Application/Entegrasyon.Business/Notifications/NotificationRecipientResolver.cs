@@ -33,4 +33,30 @@ public class NotificationRecipientResolver(IDbContextFactory<IntegrationDbContex
             .Select(u => u.Id)
             .ToListAsync();
     }
+
+    public async Task<List<Guid>> ResolveByPermissionAsync(string permission, CancellationToken ct = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(ct);
+
+        // (a) Kullanıcının bir rolü var, o rolün de bu permission'ı var
+        var viaRoles = await context.Users
+            .Where(u => u.IsActive && !u.IsDeleted)
+            .Where(u => context.Set<UsersRoles>().Any(ur =>
+                ur.ApplicationUserId == u.Id &&
+                context.Set<RolesClaims>().Any(rc =>
+                    rc.RoleId == ur.RoleId && rc.Permission == permission)))
+            .Select(u => u.Id)
+            .ToListAsync(ct);
+
+        // (b) Kullanıcıya doğrudan claim atanmış
+        var viaDirect = await context.Users
+            .Where(u => u.IsActive && !u.IsDeleted)
+            .Where(u => context.Set<UsersClaims>().Any(uc =>
+                uc.ApplicationUserId == u.Id && uc.Permission == permission))
+            .Select(u => u.Id)
+            .ToListAsync(ct);
+
+        // Union + distinct (Guid için HashSet otomatik distinct garanti eder)
+        return viaRoles.Union(viaDirect).ToList();
+    }
 }

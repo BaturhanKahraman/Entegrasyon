@@ -126,6 +126,25 @@ public static class AppPermissions
         public const string Manage = "Permissions.Notifications.Manage";
     }
 
+    /// <summary>
+    /// Şube ofisi onay-gerektiren silme iş akışı için claim.
+    /// BranchOffices.Delete → talep açabilir; StockOffice.DeleteApprove → onaylayabilir (self-approval dahil).
+    /// </summary>
+    public static class StockOffice
+    {
+        public const string DeleteApprove = "Permissions.StockOffice.Delete.Approve";
+    }
+
+    /// <summary>
+    /// Standalone stok transfer iş akışı için claim'ler.
+    /// Stock.Transfer → talep açabilir; Stock.TransferApprove → onaylayabilir (self-approval dahil).
+    /// </summary>
+    public static class Stock
+    {
+        public const string Transfer = "Permissions.Stock.Transfer";
+        public const string TransferApprove = "Permissions.Stock.Transfer.Approve";
+    }
+
     public static List<string> GetAllPermissions()
     {
         var permissions = new List<string>();
@@ -145,6 +164,8 @@ public static class AppPermissions
         permissions.AddRange([Settings.View, Settings.Edit]);
         permissions.AddRange([Marketplace.View, Marketplace.Create, Marketplace.Edit, Marketplace.Delete]);
         permissions.AddRange([Notifications.View, Notifications.Create, Notifications.Manage]);
+        permissions.AddRange([StockOffice.DeleteApprove]);
+        permissions.AddRange([Stock.Transfer, Stock.TransferApprove]);
         return permissions;
     }
 }

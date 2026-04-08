@@ -99,6 +99,11 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<Sale> Sales { get; set; }
     public virtual DbSet<SaleItem> SaleItems { get; set; }
     public virtual DbSet<BranchOffice> BranchOffices { get; set; }
+    public virtual DbSet<UserBranchOffice> UserBranchOffices { get; set; }
+    public virtual DbSet<BranchOfficeDeletionRequest> BranchOfficeDeletionRequests { get; set; }
+    public virtual DbSet<BranchOfficeDeletionRequestItem> BranchOfficeDeletionRequestItems { get; set; }
+    public virtual DbSet<StockTransferRequest> StockTransferRequests { get; set; }
+    public virtual DbSet<StockTransferRequestItem> StockTransferRequestItems { get; set; }
     public virtual DbSet<Image> Images { get; set; }
     public virtual DbSet<MarketPlace> MarketPlaces { get; set; }
     public virtual DbSet<Notification> Notifications { get; set; }

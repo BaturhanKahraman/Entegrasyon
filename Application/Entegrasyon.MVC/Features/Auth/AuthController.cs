@@ -7,6 +7,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.MVC.Features.Auth.ViewModels;
+using Entegrasyon.MVC.Infrastructure.BranchOffices;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Auth;
@@ -14,7 +15,8 @@ namespace Entegrasyon.MVC.Features.Auth;
 [AllowAnonymous]
 public class AuthController(
     IAuthService authService,
-    ITenantContext tenantContext) : Controller
+    ITenantContext tenantContext,
+    IActiveBranchOfficeAccessor activeBranchOfficeAccessor) : Controller
 {
     [HttpGet("/auth/login")]
     public IActionResult Login(string? returnUrl = null)
@@ -94,6 +96,11 @@ public class AuthController(
                 IsPersistent = vm.RememberMe,
                 ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
             });
+
+        // Aktif şube ofisini Session'a yerleştir.
+        // Öncelik: RememberLastBranchOffice → DefaultBranchOfficeId → HQ.
+        // user.Id kullanıyoruz çünkü current request'te HttpContext.User hâlâ anonymous (sign-in bir sonraki request'te aktif olur).
+        await activeBranchOfficeAccessor.ResolveAndStoreAsync(user.Id);
 
         return Redirect(vm.ReturnUrl ?? "/");
     }

@@ -10,5 +10,9 @@ public enum LogAction
     Sync,
     Import,
     Publish,
-    Retry
+    Retry,
+    RequestOpen = 9,
+    RequestApprove = 10,
+    RequestReject = 11,
+    Transfer = 12
 }

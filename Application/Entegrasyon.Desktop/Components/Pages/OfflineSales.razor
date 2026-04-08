@@ -9,12 +9,12 @@
     <MudItem xs="12" md="8">
         <MudPaper Class="pa-4 mb-4">
             <MudTextField @bind-Value="_barcodeSearch"
-                          Label="Barkod Okut veya Urun Ara"
+                          Label="Barkod Okut veya Ürün Ara"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.QrCodeScanner"
                           OnKeyDown="HandleBarcodeSearch"
                           Immediate="true"
-                          Placeholder="Barkod okutun veya urun adi girin..." />
+                          Placeholder="Barkod okutun veya ürün adı girin..." />
         </MudPaper>
 
         <MudPaper Class="pa-4">
@@ -24,16 +24,16 @@
             {
                 <MudTable Items="@_cartItems" Hover="true" Dense="true">
                     <HeaderContent>
-                        <MudTh>Urun</MudTh>
+                        <MudTh>Ürün</MudTh>
                         <MudTh>Beden</MudTh>
                         <MudTh>Adet</MudTh>
                         <MudTh>Birim Fiyat</MudTh>
-                        <MudTh>Indirim</MudTh>
+                        <MudTh>İndirim</MudTh>
                         <MudTh>Toplam</MudTh>
                         <MudTh></MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd DataLabel="Urun">@context.ProductName</MudTd>
+                        <MudTd DataLabel="Ürün">@context.ProductName</MudTd>
                         <MudTd DataLabel="Beden">@context.Size</MudTd>
                         <MudTd DataLabel="Adet">
                             <MudNumericField @bind-Value="context.Quantity"
@@ -43,7 +43,7 @@
                                              Style="width: 80px;" />
                         </MudTd>
                         <MudTd DataLabel="Birim Fiyat">@context.UnitPrice.ToString("C", _trCulture)</MudTd>
-                        <MudTd DataLabel="Indirim">
+                        <MudTd DataLabel="İndirim">
                             <MudNumericField @bind-Value="context.DiscountPercent"
                                              Min="0"
                                              Max="100"
@@ -68,7 +68,7 @@
                 <MudText Align="Align.Center" Color="Color.Secondary" Class="py-8">
                     <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Class="mb-2" />
                     <br />
-                    Sepet bos. Urun eklemek icin barkod okutun.
+                    Sepet boş. Ürün eklemek için barkod okutun.
                 </MudText>
             }
         </MudPaper>
@@ -77,7 +77,7 @@
     <!-- Right Panel: Summary & Payment -->
     <MudItem xs="12" md="4">
         <MudPaper Class="pa-4 mb-4">
-            <MudText Typo="Typo.h6" Class="mb-4">Odeme Ozeti</MudText>
+            <MudText Typo="Typo.h6" Class="mb-4">Ödeme Özeti</MudText>
 
             <MudList T="string" Dense="true">
                 <MudListItem T="string">
@@ -91,7 +91,7 @@
                 {
                     <MudListItem T="string">
                         <div class="d-flex justify-space-between" style="width: 100%">
-                            <MudText Color="Color.Success">Indirim:</MudText>
+                            <MudText Color="Color.Success">İndirim:</MudText>
                             <MudText Color="Color.Success">-@TotalDiscount.ToString("C", _trCulture)</MudText>
                         </div>
                     </MudListItem>

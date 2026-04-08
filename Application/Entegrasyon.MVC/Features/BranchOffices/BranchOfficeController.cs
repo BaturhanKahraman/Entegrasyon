@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.MVC.Features.BranchOffices.ViewModels;
+using Entegrasyon.MVC.Infrastructure.BranchOffices;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.BranchOffices;
@@ -10,8 +12,48 @@ namespace Entegrasyon.MVC.Features.BranchOffices;
 [Authorize]
 public class BranchOfficeController(
     IBranchOfficeManager branchOfficeManager,
-    IOfficeStockManager officeStockManager) : Controller
+    IOfficeStockManager officeStockManager,
+    IActiveBranchOfficeAccessor activeBranchOfficeAccessor) : Controller
 {
+    /// <summary>
+    /// Kullanıcının aktif şube ofisini değiştirir.
+    /// Session'a yazar, remember=true ise User.LastSelectedBranchOfficeId + RememberLastBranchOffice'e de yazar.
+    /// HTMX çağrısında "HX-Refresh: true" header'ı ile sayfa yenilenir.
+    /// </summary>
+    [HttpPost("/branch-offices/switch")]
+    public async Task<IActionResult> Switch(int branchOfficeId, bool remember = false)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            TempData.SetError("Oturum bilgisi okunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var result = await activeBranchOfficeAccessor.SwitchAsync(userId, branchOfficeId, remember);
+
+        if (!result.Success)
+        {
+            if (Request.Headers.ContainsKey("HX-Request"))
+            {
+                Response.StatusCode = 400;
+                return Content(result.Message ?? "Şube değiştirilemedi.");
+            }
+            TempData.SetError(result.Message ?? "Şube değiştirilemedi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (Request.Headers.ContainsKey("HX-Request"))
+        {
+            Response.Headers.Append("HX-Refresh", "true");
+            return Content(result.Message ?? "Aktif şube değiştirildi.");
+        }
+
+        TempData.SetSuccess(result.Message ?? "Aktif şube değiştirildi.");
+        return RedirectToAction(nameof(Index));
+    }
+
+
     [HttpGet("/branch-offices")]
     public async Task<IActionResult> Index()
     {
