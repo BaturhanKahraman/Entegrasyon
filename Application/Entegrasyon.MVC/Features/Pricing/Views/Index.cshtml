@@ -90,10 +90,14 @@
                                         }
                                     </td>
                                     <td class="text-end">
-                                        <a href="/products/@product.Id" class="btn btn-sm btn-outline-primary">
-                                            <i class="ti ti-edit"></i>
-                                            Fiyat Duzenle
-                                        </a>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                hx-get="/pricing/@product.Id/variants"
+                                                hx-target="closest tr"
+                                                hx-swap="afterend"
+                                                title="Varyant fiyatlarini goster">
+                                            <i class="ti ti-currency-lira"></i>
+                                            Fiyatlar
+                                        </button>
                                     </td>
                                 </tr>
                             }

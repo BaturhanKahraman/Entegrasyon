@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Storefront;
 using Entegrasyon.MVC.Features.GiftCards.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
@@ -8,17 +9,25 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 namespace Entegrasyon.MVC.Features.GiftCards;
 
 [Authorize]
-public class GiftCardController(IStorefrontGiftCardManager giftCardManager) : HtmxController
+public class GiftCardController(
+    IStorefrontGiftCardManager giftCardManager,
+    ITenantContext tenantContext) : HtmxController
 {
-    private const int DefaultTenantId = 1;
+    private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
 
     [HttpGet("/gift-cards")]
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(string? status = null, int page = 1)
     {
         ViewData.SetPageTitle("Hediye Kartlari");
         ViewData.SetActiveNav("gift-cards");
 
-        var result = await giftCardManager.GetGiftCardsAsync(DefaultTenantId, page - 1, 20);
+        GiftCardStatus? statusFilter = null;
+        if (Enum.TryParse<GiftCardStatus>(status, out var parsed))
+            statusFilter = parsed;
+
+        var result = await giftCardManager.GetGiftCardsFilteredAsync(TenantId, statusFilter, page - 1, 20);
+
+        ViewBag.Status = status;
 
         if (Request.IsHtmx())
             return PartialView("Partials/_GiftCardTable", result.Data);
@@ -31,7 +40,7 @@ public class GiftCardController(IStorefrontGiftCardManager giftCardManager) : Ht
     {
         ViewData.SetPageTitle("Yeni Hediye Karti");
         ViewData.SetActiveNav("gift-cards");
-        ViewData.SetBreadcrumb(("Hediye Kartlari", "/gift-cards"), ("Yeni Karti", null));
+        ViewData.SetBreadcrumb(("Hediye Kartlari", "/gift-cards"), ("Yeni Kart", null));
         return View(new GiftCardCreateVm());
     }
 
@@ -42,7 +51,7 @@ public class GiftCardController(IStorefrontGiftCardManager giftCardManager) : Ht
             return View(vm);
 
         var result = await giftCardManager.CreateGiftCardAsync(
-            DefaultTenantId,
+            TenantId,
             vm.Amount,
             purchasedByCustomerId: null,
             vm.RecipientEmail,
@@ -62,7 +71,7 @@ public class GiftCardController(IStorefrontGiftCardManager giftCardManager) : Ht
     [HttpGet("/gift-cards/{id:int}")]
     public async Task<IActionResult> Detail(int id)
     {
-        var cardResult = await giftCardManager.GetByIdAsync(DefaultTenantId, id);
+        var cardResult = await giftCardManager.GetByIdAsync(TenantId, id);
 
         if (!cardResult.Success)
         {
@@ -78,5 +87,21 @@ public class GiftCardController(IStorefrontGiftCardManager giftCardManager) : Ht
 
         ViewBag.Transactions = transactionsResult.Data ?? [];
         return View(cardResult.Data);
+    }
+
+    [HttpPost("/gift-cards/{id:int}/cancel")]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var result = await giftCardManager.CancelGiftCardAsync(TenantId, id);
+        return HtmxMutationResult(result, "Hediye karti iptal edildi.", refreshEvent: "giftCardChanged");
+    }
+
+    [HttpPost("/gift-cards/{id:int}/topup")]
+    public async Task<IActionResult> TopUp(int id, [FromForm] decimal amount)
+    {
+        var result = await giftCardManager.TopUpGiftCardAsync(TenantId, id, amount);
+        if (result.Success)
+            return HtmxMutationResult(result, $"Bakiye yuklendi. Yeni bakiye: {result.Data:C2}", refreshEvent: "giftCardChanged");
+        return HtmxMutationResult(result, result.Message ?? "Bakiye yuklenemedi.", refreshEvent: "giftCardChanged");
     }
 }

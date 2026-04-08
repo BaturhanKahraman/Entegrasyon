@@ -18,6 +18,8 @@
         "Purchase" => "Satin Alma",
         "Use" => "Kullanim",
         "Refund" => "Iade",
+        "Cancel" => "Iptal",
+        "TopUp" => "Bakiye Yukleme",
         _ => type
     };
 }
@@ -94,6 +96,40 @@
                             <div class="text-secondary small">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                         </div>
                     </div>
+                    @if (Model.Status == GiftCardStatus.Active)
+                    {
+                        <div class="card-footer">
+                            <div class="row align-items-end">
+                                <div class="col-auto">
+                                    <form class="d-flex gap-2 align-items-end">
+                                        <div>
+                                            <label class="form-label small">Bakiye Yukle</label>
+                                            <div class="input-group input-group-sm" style="width:160px;">
+                                                <input type="number" name="amount" class="form-control"
+                                                       step="0.01" min="1" placeholder="0.00" required id="topup-amount"/>
+                                                <span class="input-group-text">TL</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-success"
+                                                hx-post="/gift-cards/@Model.Id/topup"
+                                                hx-include="#topup-amount"
+                                                hx-swap="none"
+                                                hx-confirm="Bakiye yuklemek istediginize emin misiniz?">
+                                            <i class="ti ti-plus"></i> Yukle
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-auto ms-auto">
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            hx-post="/gift-cards/@Model.Id/cancel"
+                                            hx-swap="none"
+                                            hx-confirm="Bu hediye kartini iptal etmek istediginize emin misiniz? Bu islem geri alinamaz.">
+                                        <i class="ti ti-x"></i> Iptal Et
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
 

@@ -1,22 +1,16 @@
-﻿namespace Entegrasyon.Entity.Dtos.DiscountVouchers;
+using Entegrasyon.Entity.DiscountVouchers;
+
+namespace Entegrasyon.Entity.Dtos.DiscountVouchers;
 
 public record DiscountVoucherDto(
     int Id,
     string Code,
+    DiscountType DiscountType,
     double Percentage,
     decimal Amount,
     DateTimeOffset? ExpiringDate,
-    string CustomerFullName,
-    string PhoneNumber,
-    string CustomerType,
-    string IdentityNumber,
-    string TaxNumber
-    );
-/*
- *d.Id, d.Code, d.Percentage, d.Amount, d.ExpiringDate.Value, d.Customer.FullName,
-                d.Customer.PhoneNumber,
-                d.Customer.CustomerType,
-                (d.Customer as RetailCustomer).NationalIdentity,
-                (d.Customer as CorporateCustomer).TaxNumber
- * 
- */
+    bool IsActive,
+    int? MaxUsageCount,
+    int CurrentUsageCount,
+    decimal? MinimumCartAmount,
+    string? CustomerFullName);

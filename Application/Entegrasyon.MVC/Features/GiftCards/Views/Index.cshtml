@@ -5,12 +5,23 @@
                 <div class="col">
                     <h3 class="card-title">Hediye Kartlari</h3>
                 </div>
-                <div class="col-auto">
+                <div class="col-auto d-flex gap-2">
+                    <select class="form-select form-select-sm" style="width:auto;"
+                            hx-get="/gift-cards" hx-target="#gift-card-table" hx-swap="innerHTML"
+                            name="status">
+                        <option value="">Tum Durumlar</option>
+                        <option value="Active" selected="@(ViewBag.Status == "Active")">Aktif</option>
+                        <option value="Used" selected="@(ViewBag.Status == "Used")">Kullanildi</option>
+                        <option value="Expired" selected="@(ViewBag.Status == "Expired")">Suresi Doldu</option>
+                        <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Iptal</option>
+                    </select>
                     <a href="/gift-cards/create" class="btn btn-primary">
                         <i class="ti ti-plus icon"></i>
                         Yeni Hediye Karti
                     </a>
                 </div>
             </div>
-            <partial name="Partials/_GiftCardTable" model="Model"/>
+            <div id="gift-card-table" hx-trigger="giftCardChanged from:body" hx-get="/gift-cards" hx-target="#gift-card-table" hx-swap="innerHTML">
+                <partial name="Partials/_GiftCardTable" model="Model"/>
+            </div>
         </div>

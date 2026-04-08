@@ -1,0 +1,44 @@
+@model List<Entegrasyon.Entity.Webhooks.WebhookDeliveryLog>
+
+<td colspan="6" class="p-3 bg-light">
+    @if (Model.Count > 0)
+    {
+        <strong class="d-block mb-2">Son @Model.Count Teslimat Logu</strong>
+        <table class="table table-sm table-borderless mb-0">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Event</th>
+                    <th>Durum</th>
+                    <th>HTTP Kodu</th>
+                    <th>Deneme</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td class="text-secondary">@log.CreatedAt.ToLocalTime().ToString("dd.MM HH:mm:ss")</td>
+                        <td><span class="badge bg-azure-lt">@log.EventType</span></td>
+                        <td>
+                            @if (log.Success)
+                            {
+                                <span class="badge bg-green-lt">Basarili</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-red-lt">Basarisiz</span>
+                            }
+                        </td>
+                        <td class="text-secondary">@(log.ResponseCode?.ToString() ?? "-")</td>
+                        <td class="text-secondary">@log.RetryCount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <span class="text-secondary">Henuz teslimat logu yok.</span>
+    }
+</td>

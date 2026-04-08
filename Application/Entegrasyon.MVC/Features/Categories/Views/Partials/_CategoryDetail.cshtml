@@ -11,7 +11,7 @@
         <div class="card-actions">
             <a href="/categories/@Model.Id/edit" class="btn btn-outline-primary btn-sm">
                 <i class="ti ti-pencil icon"></i>
-                Duzenle
+                Düzenle
             </a>
             <button class="btn btn-outline-danger btn-sm ms-1"
                     hx-post="/categories/@Model.Id/delete"
@@ -20,12 +20,13 @@
                 <i class="ti ti-trash icon"></i>
                 Sil
             </button>
+        ["Brand"] = "Brands",
         </div>
     </div>
     <div class="card-body">
         <div class="datagrid">
             <div class="datagrid-item">
-                <div class="datagrid-title">Ust Kategori</div>
+                <div class="datagrid-title">Üst Kategori</div>
                 <div class="datagrid-content">
                     @(Model.SuperCategory?.Name ?? "—")
                 </div>
@@ -35,11 +36,11 @@
                 <div class="datagrid-content">@subCount</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Urun Sayisi</div>
+                <div class="datagrid-title">Ürün Sayısı</div>
                 <div class="datagrid-content">@productCount</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Ozellik Sayisi</div>
+                <div class="datagrid-title">Özellik Sayısı</div>
                 <div class="datagrid-content">@attributes.Count</div>
             </div>
             <div class="datagrid-item">
@@ -51,12 +52,12 @@
                     }
                     else
                     {
-                        <span class="text-secondary">Hayir</span>
+                        <span class="text-secondary">Hayır</span>
                     }
                 </div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Varsayilan KDV</div>
+                <div class="datagrid-title">Varsayılan KDV</div>
                 <div class="datagrid-content">
                     @(Model.DefaultVatRate.HasValue ? $"%{Model.DefaultVatRate.Value}" : "—")
                 </div>
@@ -65,12 +66,12 @@
 
         @if (attributes.Any())
         {
-            <h4 class="mt-4 mb-2">Ozellikler</h4>
+            <h4 class="mt-4 mb-2">Özellikler</h4>
             <div class="table-responsive">
                 <table class="table table-vcenter card-table table-hover">
                     <thead>
                         <tr>
-                            <th>Ozellik</th>
+                            <th>Özellik</th>
                             <th>Zorunlu</th>
                             <th>Varyanter</th>
                             <th>Dilimleyici</th>

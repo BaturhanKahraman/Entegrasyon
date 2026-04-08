@@ -1,6 +1,6 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.DiscountVouchers.DiscountVoucherDto>
 
-<div id="voucher-table">
+<div id="voucher-table" hx-trigger="voucherToggled from:body" hx-get="/discounts" hx-target="#voucher-table" hx-swap="innerHTML">
     @if (Model != null && Model.HasItem)
     {
         <div class="table-responsive">
@@ -8,8 +8,9 @@
                 <thead>
                     <tr>
                         <th>Kod</th>
-                        <th>Tutar</th>
+                        <th>Tip / Deger</th>
                         <th>Son Kullanim</th>
+                        <th>Kullanim</th>
                         <th>Musteri</th>
                         <th>Durum</th>
                         <th class="w-1"></th>
@@ -18,26 +19,49 @@
                 <tbody>
                     @foreach (var voucher in Model.Items)
                     {
+                        var isExpired = voucher.ExpiringDate.HasValue && voucher.ExpiringDate.Value < DateTimeOffset.UtcNow;
+                        var isUsedUp = voucher.MaxUsageCount.HasValue && voucher.CurrentUsageCount >= voucher.MaxUsageCount.Value;
                         <tr>
                             <td>
                                 <span class="fw-bold font-monospace">@voucher.Code</span>
+                                @if (voucher.MinimumCartAmount.HasValue)
+                                {
+                                    <br/><small class="text-secondary">Min. @voucher.MinimumCartAmount.Value.ToString("C0", new System.Globalization.CultureInfo("tr-TR"))</small>
+                                }
                             </td>
-                            <td>@voucher.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
+                            <td>
+                                @if (voucher.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.Percentage)
+                                {
+                                    <span class="badge bg-purple-lt">%@voucher.Percentage.ToString("F0")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-blue-lt">@voucher.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                }
+                            </td>
                             <td class="text-secondary">
                                 @(voucher.ExpiringDate.HasValue
                                     ? voucher.ExpiringDate.Value.ToString("dd.MM.yyyy")
-                                    : "-")
+                                    : "Suressiz")
                             </td>
                             <td class="text-secondary">
-                                @(string.IsNullOrEmpty(voucher.CustomerFullName) ? "-" : voucher.CustomerFullName)
+                                @voucher.CurrentUsageCount / @(voucher.MaxUsageCount.HasValue ? voucher.MaxUsageCount.Value.ToString() : "∞")
+                            </td>
+                            <td class="text-secondary">
+                                @(string.IsNullOrEmpty(voucher.CustomerFullName) ? "Herkes" : voucher.CustomerFullName)
                             </td>
                             <td>
-                                @{
-                                    var isExpired = voucher.ExpiringDate.HasValue && voucher.ExpiringDate.Value < DateTimeOffset.UtcNow;
-                                }
                                 @if (isExpired)
                                 {
                                     <span class="badge bg-red-lt">Suresi Doldu</span>
+                                }
+                                else if (!voucher.IsActive)
+                                {
+                                    <span class="badge bg-secondary-lt">Pasif</span>
+                                }
+                                else if (isUsedUp)
+                                {
+                                    <span class="badge bg-orange-lt">Limit Doldu</span>
                                 }
                                 else
                                 {
@@ -46,35 +70,31 @@
                             </td>
                             <td>
                                 <div class="btn-list flex-nowrap">
-                                    @if (!isExpired)
+                                    @if (voucher.IsActive && !isExpired)
                                     {
-                                        <form method="post" action="/discounts/@voucher.Id/toggle">
-                                            <input type="hidden" name="activate" value="false"/>
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-warning"
-                                                    hx-post="/discounts/@voucher.Id/toggle"
-                                                    hx-vals='{"activate":"false"}'
-                                                    hx-target="closest tr"
-                                                    hx-swap="none"
-                                                    hx-confirm="Bu kodu pasife almak istediginize emin misiniz?">
-                                                Pasife Al
-                                            </button>
-                                        </form>
+                                        <button class="btn btn-sm btn-outline-warning"
+                                                hx-post="/discounts/@voucher.Id/toggle"
+                                                hx-vals='{"activate":"false"}'
+                                                hx-swap="none"
+                                                hx-confirm="Bu kodu pasife almak istediginize emin misiniz?">
+                                            Pasife Al
+                                        </button>
                                     }
-                                    else
+                                    else if (!voucher.IsActive)
                                     {
-                                        <form method="post" action="/discounts/@voucher.Id/toggle">
-                                            <input type="hidden" name="activate" value="true"/>
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-success"
-                                                    hx-post="/discounts/@voucher.Id/toggle"
-                                                    hx-vals='{"activate":"true"}'
-                                                    hx-target="closest tr"
-                                                    hx-swap="none">
-                                                Aktif Et
-                                            </button>
-                                        </form>
+                                        <button class="btn btn-sm btn-outline-success"
+                                                hx-post="/discounts/@voucher.Id/toggle"
+                                                hx-vals='{"activate":"true"}'
+                                                hx-swap="none">
+                                            Aktif Et
+                                        </button>
                                     }
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            hx-post="/discounts/@voucher.Id/delete"
+                                            hx-swap="none"
+                                            hx-confirm="Bu indirim kodunu silmek istediginize emin misiniz?">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>

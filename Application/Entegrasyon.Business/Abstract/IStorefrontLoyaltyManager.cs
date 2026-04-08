@@ -1,3 +1,4 @@
+using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Storefront;
 
@@ -9,4 +10,5 @@ public interface IStorefrontLoyaltyManager
     Task<IResult> EarnPointsAsync(int tenantId, int customerId, int points, string type, string? referenceId, string? description);
     Task<IResult> RedeemPointsAsync(int tenantId, int customerId, int points, string? referenceId);
     Task<IDataResult<List<StorefrontLoyaltyTransaction>>> GetTransactionsAsync(int tenantId, int customerId, int count = 20);
+    Task<LoyaltyDashboardDto> GetDashboardAsync(int tenantId);
 }

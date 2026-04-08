@@ -316,8 +316,8 @@ namespace Entegrasyon.Business.Concrete
             await using var dbContext = await contextFactory.CreateDbContextAsync();
             return await dbContext.Categories
                 .AsNoTracking()
-                .Where(c => !c.CategoryAttributes.Any())
-                .Where(c => !c.MarketplaceLinks.Any(m => m.IsActive))
+                .Where(c => c.SubCategories.Any()
+                         || (!c.CategoryAttributes.Any() && !c.MarketplaceLinks.Any(m => m.IsActive)))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -335,8 +335,8 @@ namespace Entegrasyon.Business.Concrete
             return await dbContext.Categories
                 .AsNoTracking()
                 .Where(c => !descendantIds.Contains(c.Id))
-                .Where(c => !c.CategoryAttributes.Any())
-                .Where(c => !c.MarketplaceLinks.Any(m => m.IsActive))
+                .Where(c => c.SubCategories.Any()
+                         || (!c.CategoryAttributes.Any() && !c.MarketplaceLinks.Any(m => m.IsActive)))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -390,10 +390,18 @@ namespace Entegrasyon.Business.Concrete
                 .ToListAsync())
                 .ToHashSet();
 
-            // validParents — full entity gerekli çünkü DTO'ya Category nesnesi veriliyor
+            // validParents — alt kategorisi olan (parent) veya henüz leaf olmamış kategoriler
+            var categoriesWithChildren = (await dbContext.Categories
+                .Where(c => c.SuperCategoryId != null && !c.IsDeleted)
+                .Select(c => c.SuperCategoryId!.Value)
+                .Distinct()
+                .ToListAsync())
+                .ToHashSet();
+
             var validParents = await dbContext.Categories
                 .Where(c => !descendantIds.Contains(c.Id))
-                .Where(c => !categoriesWithAttributesSet.Contains(c.Id))
+                .Where(c => categoriesWithChildren.Contains(c.Id)
+                         || !categoriesWithAttributesSet.Contains(c.Id))
                 .OrderBy(c => c.Name)
                 .ToListAsync();
 

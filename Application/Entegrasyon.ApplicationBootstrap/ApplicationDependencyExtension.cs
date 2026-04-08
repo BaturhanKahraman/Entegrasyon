@@ -429,6 +429,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 x.BaseAddress = new Uri("http://localhost:11434/");
                 x.Timeout = TimeSpan.FromSeconds(120);
             });
+            services.AddHttpClient("webhook", x =>
+            {
+                x.Timeout = TimeSpan.FromSeconds(10);
+            });
             return services;
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)

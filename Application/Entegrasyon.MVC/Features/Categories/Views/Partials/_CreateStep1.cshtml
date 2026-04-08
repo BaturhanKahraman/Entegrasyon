@@ -11,14 +11,14 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label required">Kategori Adi</label>
+                    <label class="form-label required">Kategori Adı</label>
                     <input name="Name" value="@Model.Name" class="form-control" required
-                           placeholder="Kategori adini girin" />
+                           placeholder="Kategori adını girin" />
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Ust Kategori</label>
-                    <select name="SuperCategoryId" class="form-select">
-                        <option value="">— Ust kategori yok (Kok kategori) —</option>
+                    <label class="form-label">Üst Kategori</label>
+                    <select id="parent-category-select" name="SuperCategoryId" class="form-select">
+                        <option value="">— Üst kategori yok (kök kategori) —</option>
                         @foreach (var parent in parents.OrderBy(p => p.Name))
                         {
                             <option value="@parent.Id"
@@ -29,11 +29,11 @@
                     </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Varsayilan KDV Orani (%)</label>
+                    <label class="form-label">Varsayılan KDV Oranı (%)</label>
                     <input type="number" name="DefaultVatRate" class="form-control"
                            step="0.01" min="0" max="100"
                            value="@Model.DefaultVatRate"
-                           placeholder="orn. 20" />
+                           placeholder="örn. 20" />
                 </div>
                 <div class="col-md-6 mb-3 d-flex align-items-end">
                     <label class="form-check form-switch">
@@ -46,8 +46,18 @@
             </div>
         </div>
         <div class="card-footer text-end">
-            <a href="/categories" class="btn btn-ghost-secondary me-2">Iptal</a>
-            <button type="submit" class="btn btn-primary">Devam: Ozellikler &rarr;</button>
+            <a href="/categories" class="btn btn-ghost-secondary me-2">İptal</a>
+            <button type="submit" class="btn btn-primary">Devam: Özellikler &rarr;</button>
         </div>
     </div>
 </form>
+
+<script>
+(function initParentCategorySelect() {
+    if (typeof TomSelect === 'undefined') { setTimeout(initParentCategorySelect, 50); return; }
+    var el = document.getElementById('parent-category-select');
+    if (el && !el.tomselect) {
+        new TomSelect(el, { maxOptions: null, allowEmptyOption: true, placeholder: 'Üst kategori seçin...' });
+    }
+})();
+</script>

@@ -55,9 +55,9 @@ public class UserController(
         var result = await userManager.AddUser(dto);
 
         if (result.Success)
-            TempData.SetSuccess("Kullanici basariyla eklendi.");
+            TempData.SetSuccess("Kullanıcı başarıyla eklendi.");
         else
-            TempData.SetError(result.Message ?? "Kullanici eklenirken bir hata olustu.");
+            TempData.SetError(result.Message ?? "Kullanıcı eklenirken bir hata oluştu.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -68,13 +68,13 @@ public class UserController(
         var result = await userManager.GetUserEditDetail(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Kullanici bulunamadi.");
+            TempData.SetError(result.Message ?? "Kullanıcı bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData.SetPageTitle("Kullanici Duzenle");
+        ViewData.SetPageTitle("Kullanıcı Düzenle");
         ViewData.SetActiveNav("users");
-        ViewData.SetBreadcrumb(("Kullanicilar", "/users"), ("Duzenle", null));
+        ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Düzenle", null));
 
         var roles = await roleService.GetRolesSelectList();
         ViewBag.Roles = roles;
@@ -86,9 +86,9 @@ public class UserController(
     {
         if (!ModelState.IsValid)
         {
-            ViewData.SetPageTitle("Kullanici Duzenle");
+            ViewData.SetPageTitle("Kullanıcı Düzenle");
             ViewData.SetActiveNav("users");
-            ViewData.SetBreadcrumb(("Kullanicilar", "/users"), ("Duzenle", null));
+            ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Düzenle", null));
 
             var roles = await roleService.GetRolesSelectList();
             ViewBag.Roles = roles;
@@ -100,9 +100,9 @@ public class UserController(
         var result = await userManager.EditUser(dto);
 
         if (result.Success)
-            TempData.SetSuccess("Kullanici basariyla guncellendi.");
+            TempData.SetSuccess("Kullanıcı başarıyla güncellendi.");
         else
-            TempData.SetError(result.Message ?? "Kullanici guncellenirken bir hata olustu.");
+            TempData.SetError(result.Message ?? "Kullanıcı güncellenirken bir hata oluştu.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -117,7 +117,7 @@ public class UserController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Kullanici silindi.", type = "success" });
+                    new { message = "Kullanıcı silindi.", type = "success" });
                 return Content("");
             }
 
@@ -127,9 +127,9 @@ public class UserController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Kullanici basariyla silindi.");
+            TempData.SetSuccess("Kullanıcı başarıyla silindi.");
         else
-            TempData.SetError(result.Message ?? "Kullanici silinemedi.");
+            TempData.SetError(result.Message ?? "Kullanıcı silinemedi.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -144,13 +144,13 @@ public class UserController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Kullanici durumu degistirildi.", type = "success" });
+                    new { message = "Kullanıcı durumu değiştirildi.", type = "success" });
                 Response.HtmxRefresh();
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Islem basarisiz.", type = "danger" });
+                new { message = result.Message ?? "İşlem başarısız.", type = "danger" });
             return StatusCode(422);
         }
 

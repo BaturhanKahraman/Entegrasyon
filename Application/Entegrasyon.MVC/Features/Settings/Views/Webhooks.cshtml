@@ -1,117 +1,183 @@
+@model List<Entegrasyon.Entity.Webhooks.WebhookSubscription>
+
         <div class="row">
             <div class="col-md-3">
                 <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
             </div>
             <div class="col-md-9">
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h3 class="card-title">Webhook Listesi</h3>
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addWebhookModal">
                             <i class="ti ti-plus me-1"></i>Webhook Ekle
                         </button>
                     </div>
-                    <div class="card-body">
-                        <div class="empty py-5">
-                            <div class="empty-img">
-                                <i class="ti ti-webhook" style="font-size:3rem;color:var(--tblr-secondary)"></i>
-                            </div>
-                            <p class="empty-title mt-3">Henuz webhook tanimlanmamis</p>
-                            <p class="empty-subtitle text-secondary">
-                                Webhooklar, sisteminizde gerceklesen olaylar hakkinda dis servislere
-                                otomatik bildirim gondermenizi saglar.
-                            </p>
-                            <div class="empty-action">
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWebhookModal">
-                                    <i class="ti ti-plus me-1"></i>Ilk Webhook'u Ekle
-                                </button>
+                    @if (Model.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>URL</th>
+                                        <th>Event'ler</th>
+                                        <th>Basarisiz</th>
+                                        <th>Son Tetikleme</th>
+                                        <th>Durum</th>
+                                        <th class="w-1"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var wh in Model)
+                                    {
+                                        var events = System.Text.Json.JsonSerializer.Deserialize<string[]>(wh.EventTypes) ?? [];
+                                        var isDisabledByFailure = wh.FailureCount >= 5;
+                                        <tr>
+                                            <td>
+                                                <code class="text-truncate d-inline-block" style="max-width:200px;" title="@wh.Url">@wh.Url</code>
+                                                @if (!string.IsNullOrEmpty(wh.Secret))
+                                                {
+                                                    <i class="ti ti-lock ms-1 text-success" title="HMAC imzali"></i>
+                                                }
+                                                <br/>
+                                                <button class="btn btn-ghost-secondary btn-sm mt-1"
+                                                        hx-get="/settings/webhooks/@wh.Id/logs"
+                                                        hx-target="#webhook-logs-@wh.Id"
+                                                        hx-swap="innerHTML">
+                                                    <i class="ti ti-list-details"></i> Loglar
+                                                </button>
+                                            </td>
+                                            <td>
+                                                @foreach (var evt in events)
+                                                {
+                                                    <span class="badge bg-azure-lt mb-1">@evt</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (wh.FailureCount > 0)
+                                                {
+                                                    <span class="badge bg-red-lt">@wh.FailureCount</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-secondary">0</span>
+                                                }
+                                            </td>
+                                            <td class="text-secondary">
+                                                @(wh.LastTriggeredAt.HasValue ? wh.LastTriggeredAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm") : "Hic")
+                                            </td>
+                                            <td>
+                                                @if (isDisabledByFailure)
+                                                {
+                                                    <span class="badge bg-red-lt">Otomatik Devre Disi</span>
+                                                }
+                                                else if (wh.IsActive)
+                                                {
+                                                    <span class="badge bg-green-lt">Aktif</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary-lt">Pasif</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-list flex-nowrap">
+                                                    <form method="post" action="/settings/webhooks/@wh.Id/toggle" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm @(wh.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                                title="@(wh.IsActive ? "Pasife Al" : "Aktif Et")">
+                                                            <i class="ti @(wh.IsActive ? "ti-player-pause" : "ti-player-play")"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" action="/settings/webhooks/@wh.Id/delete" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                onclick="return confirm('Bu webhook\'u silmek istediginize emin misiniz?')">
+                                                            <i class="ti ti-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr id="webhook-logs-@wh.Id" style="display:none;"></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            <div class="empty py-3">
+                                <div class="empty-icon"><i class="ti ti-webhook" style="font-size:2.5rem;"></i></div>
+                                <p class="empty-title">Henuz webhook yok</p>
+                                <p class="empty-subtitle text-secondary">Dis sistemlere otomatik bildirim gondermek icin webhook ekleyin.</p>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-footer text-secondary small">
-                        <i class="ti ti-info-circle me-1"></i>
-                        Webhook yonetimi demo amaclidir. Gercek entegrasyon yakin zamanda aktif olacak.
-                    </div>
+                    }
                 </div>
 
-                <!-- Desteklenen Olaylar -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h3 class="card-title">Desteklenen Olaylar</h3>
-                    </div>
+                <!-- Desteklenen Event'ler -->
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Desteklenen Event'ler</h3></div>
                     <div class="card-body">
-                        <div class="row g-2">
-                            @foreach (var eventType in new[] {
-                                ("order.created", "Sipariş Olusturuldu", "ti-shopping-cart"),
-                                ("order.status_changed", "Sipariş Durumu Degisti", "ti-refresh"),
-                                ("product.stock_updated", "Stok Guncellendi", "ti-package"),
-                                ("product.price_updated", "Fiyat Guncellendi", "ti-tag"),
-                                ("return.created", "Iade Olusturuldu", "ti-arrow-back-up"),
-                                ("invoice.created", "Fatura Olusturuldu", "ti-file-invoice")
-                            })
-                            {
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center p-2 border rounded">
-                                        <i class="ti @eventType.Item3 me-2 text-secondary"></i>
-                                        <div>
-                                            <div class="fw-bold small">@eventType.Item1</div>
-                                            <div class="text-secondary small">@eventType.Item2</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
+                        <div class="datagrid">
+                            <div class="datagrid-item"><div class="datagrid-title">order.created</div><div class="datagrid-content">Yeni siparis</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">order.status_changed</div><div class="datagrid-content">Siparis durumu degisti</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">product.stock_updated</div><div class="datagrid-content">Stok guncellendi</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">product.price_updated</div><div class="datagrid-content">Fiyat degisti</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">return.created</div><div class="datagrid-content">Iade talebi</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">invoice.created</div><div class="datagrid-content">Fatura kesildi</div></div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+<!-- Add Webhook Modal -->
+<div class="modal modal-blur fade" id="addWebhookModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="/settings/webhooks/create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Webhook Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Webhook URL</label>
+                        <input type="url" name="url" class="form-control" required placeholder="https://example.com/webhook"/>
+                        <small class="form-hint">HTTPS zorunludur.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Secret (HMAC-SHA256)</label>
+                        <input type="text" name="secret" class="form-control" placeholder="Opsiyonel imzalama anahtari"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Event Tipleri</label>
+                        @foreach (var evt in new[] { "order.created", "order.status_changed", "product.stock_updated", "product.price_updated", "return.created", "invoice.created" })
+                        {
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="eventTypes" value="@evt"/>
+                                <span class="form-check-label">@evt</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary">Olustur</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Add Webhook Modal -->
-<div class="modal modal-blur fade" id="addWebhookModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Webhook Ekle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label required">Webhook URL</label>
-                    <input type="url" class="form-control" placeholder="https://orneksite.com/webhook" />
-                    <small class="text-secondary">HTTPS ile baslayan bir URL girin.</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label required">Olay Turu</label>
-                    <select class="form-select">
-                        <option value="">Olay secin...</option>
-                        <option value="order.created">order.created — Sipariş Olusturuldu</option>
-                        <option value="order.status_changed">order.status_changed — Sipariş Durumu Degisti</option>
-                        <option value="product.stock_updated">product.stock_updated — Stok Guncellendi</option>
-                        <option value="product.price_updated">product.price_updated — Fiyat Guncellendi</option>
-                        <option value="return.created">return.created — Iade Olusturuldu</option>
-                        <option value="invoice.created">invoice.created — Fatura Olusturuldu</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Gizli Anahtar (Secret)</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Webhook dogrulama anahtari (opsiyonel)" />
-                        <button class="btn btn-outline-secondary" type="button">
-                            <i class="ti ti-refresh"></i>
-                        </button>
-                    </div>
-                    <small class="text-secondary">HMAC-SHA256 imzalama icin kullanilacak gizli anahtar.</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" checked />
-                        <span class="form-check-label">Webhook aktif</span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Kaydet (Demo)</button>
-            </div>
-        </div>
+<script>
+// Show/hide log rows when HTMX loads them
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id.startsWith('webhook-logs-')) {
+        evt.detail.target.style.display = '';
+    }
+});
+</script>

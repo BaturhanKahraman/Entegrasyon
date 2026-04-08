@@ -1,6 +1,22 @@
+@using Entegrasyon.Entity.Pricing
+@model List<Entegrasyon.Entity.Dtos.Pricing.PricingRuleDto>
+
+<div id="rules-container" hx-trigger="ruleChanged from:body" hx-get="/pricing/rules" hx-target="#rules-container" hx-swap="innerHTML" hx-select="#rules-container">
 
         <div class="row mb-3">
-            <div class="col-auto ms-auto">
+            <div class="col">
+                <div class="alert alert-info mb-0">
+                    <div class="d-flex">
+                        <i class="ti ti-info-circle me-2" style="font-size: 1.25rem;"></i>
+                        <div>
+                            <strong>Fiyatlandirma Kurallari:</strong>
+                            Urun satis fiyatlarinizi pazaryerlerine gore otomatik hesaplamak icin kullanilir.
+                            Oncelik: Urun > Kategori > Marka > Platform Geneli > Varsayilan.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-auto">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRuleModal">
                     <i class="ti ti-plus"></i>
                     Kural Ekle
@@ -8,159 +24,203 @@
             </div>
         </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <div class="d-flex">
-                        <i class="ti ti-info-circle me-2" style="font-size: 1.25rem;"></i>
-                        <div>
-                            <strong>Fiyatlandirma Kurallari Hakkinda:</strong>
-                            Asagidaki kurallar, urun satis fiyatlarinizi pazaryerlerine gore otomatik olarak hesaplamak icin kullanilir.
-                            Her kural, temel satis fiyatina ek bir oran veya sabit tutar uygular.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-3">
-            @{
-                var rules = new[]
-                {
-                    new { Platform = "Trendyol", Icon = "ti-brand-trendyol", Color = "bg-orange", Type = "Oran", Value = "+5%", Formula = "Satis Fiyati × 1.05", Active = true },
-                    new { Platform = "Hepsiburada", Icon = "ti-shopping-bag", Color = "bg-red", Type = "Oran", Value = "+3%", Formula = "Satis Fiyati × 1.03", Active = true },
-                    new { Platform = "N11", Icon = "ti-storefront", Color = "bg-purple", Type = "Oran", Value = "+4%", Formula = "Satis Fiyati × 1.04", Active = true },
-                    new { Platform = "Pazarama", Icon = "ti-building-store", Color = "bg-blue", Type = "Oran", Value = "+2%", Formula = "Satis Fiyati × 1.02", Active = false },
-                    new { Platform = "Magaza (Direkt)", Icon = "ti-home", Color = "bg-green", Type = "Sabit", Value = "0%", Formula = "Satis Fiyati (degistirilmez)", Active = true },
-                };
-            }
-            @foreach (var rule in rules)
-            {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card @(rule.Active ? "" : "opacity-50")">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="avatar @rule.Color me-3">
-                                    <i class="ti @rule.Icon"></i>
-                                </span>
-                                <div class="flex-fill">
-                                    <h4 class="card-title mb-0">@rule.Platform</h4>
-                                    <div class="text-secondary small">@rule.Type uygulama</div>
-                                </div>
-                                <div>
-                                    @if (rule.Active)
+        @if (Model.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Kural Adi</th>
+                            <th>Pazaryeri</th>
+                            <th>Tip</th>
+                            <th>Deger</th>
+                            <th>Kapsam</th>
+                            <th>Oncelik</th>
+                            <th>Durum</th>
+                            <th class="w-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rule in Model)
+                        {
+                            var scopeText = rule.Scope switch
+                            {
+                                PricingScope.AllProducts => "Tum Urunler",
+                                PricingScope.Category => $"Kategori: {rule.ScopeEntityName ?? rule.ScopeEntityId?.ToString()}",
+                                PricingScope.Brand => $"Marka: {rule.ScopeEntityName ?? rule.ScopeEntityId?.ToString()}",
+                                _ => "-"
+                            };
+                            var dirIcon = rule.Direction == PricingDirection.Increase ? "↑" : "↓";
+                            var dirColor = rule.Direction == PricingDirection.Increase ? "text-danger" : "text-success";
+                            <tr>
+                                <td class="fw-bold">@rule.Name</td>
+                                <td>
+                                    @if (rule.MarketPlaceName is not null)
                                     {
-                                        <span class="badge bg-success">Aktif</span>
+                                        <span class="badge bg-blue-lt">@rule.MarketPlaceName</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">Pasif</span>
+                                        <span class="text-secondary">Tum Platformlar</span>
                                     }
-                                </div>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-secondary small">Uygulanan Oran</div>
-                                    <div class="fw-bold fs-4 text-primary">@rule.Value</div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-secondary small">Formul</div>
-                                    <div class="text-monospace small mt-1">@rule.Formula</div>
-                                </div>
-                            </div>
-                            <div class="mt-3 d-flex gap-2">
-                                <button class="btn btn-sm btn-outline-primary flex-fill" disabled>
-                                    <i class="ti ti-edit me-1"></i>Duzenle
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" disabled>
-                                    @if (rule.Active)
+                                </td>
+                                <td>
+                                    @(rule.RuleType == PricingRuleType.Percentage ? "Yuzde" : "Sabit Tutar")
+                                </td>
+                                <td>
+                                    <span class="@dirColor fw-bold">
+                                        @dirIcon
+                                        @if (rule.RuleType == PricingRuleType.Percentage)
+                                        {
+                                            @($"%{rule.Value:F1}")
+                                        }
+                                        else
+                                        {
+                                            @($"{rule.Value:C2}")
+                                        }
+                                    </span>
+                                </td>
+                                <td class="text-secondary">@scopeText</td>
+                                <td>
+                                    <span class="badge bg-secondary-lt">@rule.Priority</span>
+                                </td>
+                                <td>
+                                    @if (rule.IsActive)
                                     {
-                                        <i class="ti ti-toggle-left"></i>
+                                        <span class="badge bg-green-lt">Aktif</span>
                                     }
                                     else
                                     {
-                                        <i class="ti ti-toggle-right"></i>
+                                        <span class="badge bg-secondary-lt">Pasif</span>
                                     }
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Kural Oncelik Sirasi</h3>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-secondary">
-                            Birden fazla kural ayni urun icin eslestiginde, asagidaki oncelik sirasiyla uygulanir:
-                        </p>
-                        <ol class="list-group list-group-numbered">
-                            <li class="list-group-item">Urun bazli ozel fiyat (en yuksek oncelik)</li>
-                            <li class="list-group-item">Kategori bazli fiyat kurali</li>
-                            <li class="list-group-item">Platform genel fiyat kurali</li>
-                            <li class="list-group-item">Varsayilan satis fiyati (kural yoksa)</li>
-                        </ol>
+                                </td>
+                                <td>
+                                    <div class="btn-list flex-nowrap">
+                                        <button class="btn btn-sm btn-outline-info"
+                                                hx-get="/pricing/rules/@rule.Id/preview"
+                                                hx-target="#preview-panel"
+                                                hx-swap="innerHTML"
+                                                title="Onizle">
+                                            <i class="ti ti-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm @(rule.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                hx-post="/pricing/rules/@rule.Id/toggle"
+                                                hx-swap="none"
+                                                title="@(rule.IsActive ? "Pasife Al" : "Aktif Et")">
+                                            <i class="ti @(rule.IsActive ? "ti-player-pause" : "ti-player-play")"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                hx-post="/pricing/rules/@rule.Id/delete"
+                                                hx-swap="none"
+                                                hx-confirm="Bu kurali silmek istediginize emin misiniz?"
+                                                title="Sil">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty py-4">
+                        <div class="empty-icon"><i class="ti ti-percentage" style="font-size:2.5rem;"></i></div>
+                        <p class="empty-title">Henuz fiyatlandirma kurali yok</p>
+                        <p class="empty-subtitle text-secondary">Pazaryeri bazli otomatik fiyat hesaplamasi icin kural ekleyin.</p>
                     </div>
                 </div>
             </div>
-        </div>
+        }
 
+        <div id="preview-panel" class="mt-3"></div>
+
+</div>
+
+<!-- Add Rule Modal -->
+<div class="modal modal-blur fade" id="addRuleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form hx-post="/pricing/rules/create" hx-swap="none">
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Fiyatlandirma Kurali</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Kural Adi</label>
+                        <input type="text" name="Name" class="form-control" required placeholder="orn. Trendyol +%5"/>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Pazaryeri</label>
+                            <select name="MarketPlaceId" class="form-select">
+                                <option value="">Tum Platformlar</option>
+                                <option value="1">Trendyol</option>
+                                <option value="2">N11</option>
+                                <option value="3">Hepsiburada</option>
+                                <option value="4">Amazon</option>
+                                <option value="5">Pazarama</option>
+                                <option value="8">Ciceksepeti</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Kural Tipi</label>
+                            <select name="RuleType" class="form-select">
+                                <option value="0">Yuzde (%)</option>
+                                <option value="1">Sabit Tutar (TL)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Deger</label>
+                            <input type="number" name="Value" class="form-control" step="0.01" min="0.01" required placeholder="5.00"/>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Yon</label>
+                            <select name="Direction" class="form-select">
+                                <option value="0">Artis (+)</option>
+                                <option value="1">Azalis (-)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Kapsam</label>
+                            <select name="Scope" class="form-select" id="scopeSelect" onchange="toggleScopeEntity()">
+                                <option value="0">Tum Urunler</option>
+                                <option value="1">Kategori</option>
+                                <option value="2">Marka</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3" id="scopeEntityField" style="display:none;">
+                            <label class="form-label">Hedef ID</label>
+                            <input type="number" name="ScopeEntityId" class="form-control" placeholder="Kategori/Marka/Urun ID"/>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Oncelik</label>
+                        <input type="number" name="Priority" class="form-control" value="10" min="1" max="100"/>
+                        <div class="form-text">Dusuk deger = yuksek oncelik. Eslesme durumunda en dusuk oncelikli kural uygulanir.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Olustur</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- Kural Ekle Modal (demo) -->
-<div class="modal modal-blur fade" id="addRuleModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Yeni Fiyatlandirma Kurali</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label required">Platform</label>
-                    <select class="form-select">
-                        <option>Trendyol</option>
-                        <option>Hepsiburada</option>
-                        <option>N11</option>
-                        <option>Pazarama</option>
-                        <option>PttAVM</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label required">Kural Tipi</label>
-                    <select class="form-select">
-                        <option>Yuzdeli Artirim</option>
-                        <option>Sabit Tutar Ekleme</option>
-                        <option>Sabit Fiyat</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label required">Deger</label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" placeholder="5" min="0" step="0.1" />
-                        <span class="input-group-text">%</span>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Kapsam</label>
-                    <select class="form-select">
-                        <option>Tum Urunler</option>
-                        <option>Belirli Kategoriler</option>
-                        <option>Belirli Urunler</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link text-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>
-                    <i class="ti ti-check me-1"></i>
-                    Kaydet (Demo)
-                </button>
-            </div>
-        </div>
+<script>
+function toggleScopeEntity() {
+    var scope = document.getElementById('scopeSelect').value;
+    document.getElementById('scopeEntityField').style.display = scope === '0' ? 'none' : '';
+}
+</script>

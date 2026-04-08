@@ -4,16 +4,16 @@
 <form hx-post="/categories/add/step2" hx-target="#wizard-content" hx-swap="innerHTML">
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Ozellik Secimi</h3>
+            <h3 class="card-title">Özellik Seçimi</h3>
             <div class="card-actions">
-                <span class="text-secondary">@Model.Attributes.Count ozellik mevcut</span>
+                <span class="text-secondary">@Model.Attributes.Count özellik mevcut</span>
             </div>
         </div>
         <div class="card-body">
             @if (Model.Attributes.Count == 0)
             {
                 <div class="alert alert-info">
-                    Henuz tanimli ozellik bulunmuyor. Kategori olusturulduktan sonra ozellik ekleyebilirsiniz.
+                    Henüz tanımlı özellik bulunmuyor. Kategori oluşturulduktan sonra özellik ekleyebilirsiniz.
                 </div>
             }
             else
@@ -22,8 +22,8 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th style="width:40px">Sec</th>
-                                <th>Ozellik</th>
+                                <th style="width:40px">Seç</th>
+                                <th>Özellik</th>
                                 <th style="width:100px" class="text-center">Zorunlu</th>
                                 <th style="width:100px" class="text-center">Varyanter</th>
                                 <th style="width:100px" class="text-center">Dilimleyici</th>
@@ -48,7 +48,7 @@
                                         @Model.Attributes[i].AttributeName
                                         @if (Model.Attributes[i].AllowCustom)
                                         {
-                                            <span class="badge bg-cyan-lt ms-1">Ozel deger</span>
+                                            <span class="badge bg-cyan-lt ms-1">Özel değer</span>
                                         }
                                     </td>
                                     <td class="text-center">

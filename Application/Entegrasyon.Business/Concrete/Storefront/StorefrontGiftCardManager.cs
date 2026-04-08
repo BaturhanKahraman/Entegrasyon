@@ -195,6 +195,91 @@ public class StorefrontGiftCardManager(
         return new SuccessDataResult<List<StorefrontGiftCardTransaction>>(transactions);
     }
 
+    public async Task<IResult> CancelGiftCardAsync(int tenantId, int id)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var card = await dbContext.StorefrontGiftCards
+            .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId && !g.IsDeleted);
+
+        if (card is null)
+            return new ErrorResult("Hediye karti bulunamadi.");
+        if (card.Status == GiftCardStatus.Cancelled)
+            return new ErrorResult("Bu kart zaten iptal edilmis.");
+
+        var balanceBefore = card.RemainingAmount;
+        card.Status = GiftCardStatus.Cancelled;
+        card.RemainingAmount = 0;
+
+        if (balanceBefore > 0)
+        {
+            dbContext.StorefrontGiftCardTransactions.Add(new StorefrontGiftCardTransaction
+            {
+                GiftCardId = card.Id,
+                Amount = -balanceBefore,
+                TransactionType = "Cancel",
+                BalanceBefore = balanceBefore,
+                BalanceAfter = 0
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Hediye karti iptal edildi.");
+    }
+
+    public async Task<IDataResult<decimal>> TopUpGiftCardAsync(int tenantId, int id, decimal amount)
+    {
+        if (amount <= 0)
+            return new ErrorDataResult<decimal>(0, "Yukleme tutari sifirdan buyuk olmalidir.");
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var card = await dbContext.StorefrontGiftCards
+            .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId && !g.IsDeleted);
+
+        if (card is null)
+            return new ErrorDataResult<decimal>(0, "Hediye karti bulunamadi.");
+        if (card.Status != GiftCardStatus.Active)
+            return new ErrorDataResult<decimal>(0, "Sadece aktif kartlara bakiye yuklenebilir.");
+
+        var balanceBefore = card.RemainingAmount;
+        card.RemainingAmount += amount;
+
+        dbContext.StorefrontGiftCardTransactions.Add(new StorefrontGiftCardTransaction
+        {
+            GiftCardId = card.Id,
+            Amount = amount,
+            TransactionType = "TopUp",
+            BalanceBefore = balanceBefore,
+            BalanceAfter = card.RemainingAmount
+        });
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessDataResult<decimal>(card.RemainingAmount, "Bakiye basariyla yuklendi.");
+    }
+
+    public async Task<IDataResult<Pageable<StorefrontGiftCard>>> GetGiftCardsFilteredAsync(
+        int tenantId, GiftCardStatus? status, int pageIndex = 0, int pageSize = 20)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var query = dbContext.StorefrontGiftCards
+            .AsNoTracking()
+            .Where(g => g.TenantId == tenantId && !g.IsDeleted);
+
+        if (status.HasValue)
+            query = query.Where(g => g.Status == status.Value);
+
+        query = query.OrderByDescending(g => g.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .Skip(pageIndex * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new SuccessDataResult<Pageable<StorefrontGiftCard>>(
+            new Pageable<StorefrontGiftCard>(items, pageIndex, pageSize, totalCount));
+    }
+
     private static async Task<string> GenerateUniqueCodeAsync(IntegrationDbContext dbContext, int tenantId)
     {
         string code;

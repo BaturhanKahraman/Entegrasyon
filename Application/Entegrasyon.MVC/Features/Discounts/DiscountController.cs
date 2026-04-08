@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.DiscountVouchers;
+using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.MVC.Features.Discounts.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
@@ -42,7 +43,15 @@ public class DiscountController(IDiscountVoucherManager discountVoucherManager) 
         if (!ModelState.IsValid)
             return View(vm);
 
-        var dto = new CreateDiscountVoucherDto(vm.Amount, vm.ExpiringDate, vm.CustomerId);
+        var dto = new CreateDiscountVoucherDto(
+            vm.DiscountType,
+            vm.Amount,
+            vm.Percentage,
+            vm.ExpiringDate,
+            vm.CustomerId,
+            vm.MaxUsageCount,
+            vm.MinimumCartAmount);
+
         var result = await discountVoucherManager.CreateDiscountVoucher(dto);
 
         if (result.Success)
@@ -68,5 +77,12 @@ public class DiscountController(IDiscountVoucherManager discountVoucherManager) 
             activate ? "İndirim kodu aktif edildi." : "İndirim kodu pasife alindi.",
             activate ? "İndirim kodu aktif edilemedi." : "İndirim kodu pasife alinamadi.",
             refreshEvent: "voucherToggled");
+    }
+
+    [HttpPost("/discounts/{id:int}/delete")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await discountVoucherManager.DeleteVoucher(id);
+        return HtmxMutationResult(result, "İndirim kodu silindi.", refreshEvent: "voucherToggled");
     }
 }

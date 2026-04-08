@@ -17,9 +17,15 @@
     <link rel="stylesheet" href="~/lib/tabler/css/tabler.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/tabler/css/tabler-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/tom-select/tom-select.bootstrap5.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/flatpickr/flatpickr.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/notyf/notyf.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/glightbox/glightbox.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    @* ── HTMX Progress Bar ── *@
+    <div id="htmx-progress" style="position:fixed;top:0;left:0;height:3px;width:0;background:var(--tblr-primary);z-index:9999;opacity:0;pointer-events:none;"></div>
+
     <div class="page">
         @* ── Sol Sidebar (vertical navbar — .page'in doğrudan çocuğu) ── *@
         <partial name="~/Shared/Views/_Sidebar.cshtml" />
@@ -30,15 +36,53 @@
 
             <div class="page-body">
                 <div class="container-xl">
-                    @* ── Sayfa Başlığı ── *@
+                    @* ── Sayfa Başlığı + Breadcrumb ── *@
                     <div class="page-header d-print-none mb-3">
                         <div class="row align-items-center">
                             <div class="col-auto">
                                 <h2 class="page-title">@ViewData.GetPageTitle()</h2>
+                                @{
+                                    var crumbs = ViewData.GetBreadcrumb();
+                                }
+                                @if (crumbs.Length > 0)
+                                {
+                                    <ol class="breadcrumb breadcrumb-arrows" aria-label="breadcrumbs">
+                                        @foreach (var (text, url) in crumbs)
+                                        {
+                                            @if (url is not null)
+                                            {
+                                                <li class="breadcrumb-item"><a href="@url">@text</a></li>
+                                            }
+                                            else
+                                            {
+                                                <li class="breadcrumb-item active" aria-current="page">@text</li>
+                                            }
+                                        }
+                                    </ol>
+                                }
                             </div>
                         </div>
                     </div>
 
+                    <div id="page-banner">
+                        @foreach (var banner in ViewData.GetBanners())
+                        {
+                            var iconMap = new Dictionary<string, string>
+                            {
+                                ["info"] = "ti-info-circle", ["success"] = "ti-check",
+                                ["warning"] = "ti-alert-triangle", ["danger"] = "ti-alert-circle"
+                            };
+                            var icon = iconMap.GetValueOrDefault(banner.Type, "ti-info-circle");
+                            <div class="alert alert-@banner.Type alert-dismissible mb-3" role="alert"
+                                 @(banner.Id != null ? $"data-banner-id=\"{banner.Id}\"" : "")>
+                                <div class="d-flex align-items-center">
+                                    <i class="ti @icon me-2" style="font-size:1.25rem;"></i>
+                                    <div>@banner.Message</div>
+                                </div>
+                                <a class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></a>
+                            </div>
+                        }
+                    </div>
                     <div id="toast-container"></div>
                     <partial name="~/Shared/Views/Partials/_Toast.cshtml" />
                     <div id="modal-container"></div>
@@ -48,10 +92,20 @@
         </div>
     </div>
 
+    @* ── Global Modals ── *@
+    <partial name="~/Shared/Views/Partials/_CommandPalette.cshtml" />
+    <partial name="~/Shared/Views/Partials/_ShortcutHelp.cshtml" />
+
     <script src="~/lib/tabler/js/tabler.min.js" asp-append-version="true"></script>
     <script src="~/lib/htmx/htmx.min.js" asp-append-version="true"></script>
     <script src="~/lib/apexcharts/apexcharts.min.js" asp-append-version="true"></script>
     <script src="~/lib/tom-select/tom-select.min.js" asp-append-version="true"></script>
+    <script src="~/lib/flatpickr/flatpickr.min.js" asp-append-version="true"></script>
+    <script src="~/lib/flatpickr/tr.js" asp-append-version="true"></script>
+    <script src="~/lib/imask/imask.min.js" asp-append-version="true"></script>
+    <script src="~/lib/notyf/notyf.min.js" asp-append-version="true"></script>
+    <script src="~/lib/sortablejs/sortable.min.js" asp-append-version="true"></script>
+    <script src="~/lib/glightbox/glightbox.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @* SignalR sadece Chat sayfasında yüklenir *@
     @await RenderSectionAsync("Scripts", required: false)

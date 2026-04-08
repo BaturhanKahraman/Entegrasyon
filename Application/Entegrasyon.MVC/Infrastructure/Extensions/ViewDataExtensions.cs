@@ -8,6 +8,7 @@ public static class ViewDataExtensions
     private const string ActiveNavKey = "ActiveNav";
     private const string ActiveNavGroupKey = "ActiveNavGroup";
     private const string BreadcrumbKey = "Breadcrumb";
+    private const string BannersKey = "PageBanners";
 
     public static void SetPageTitle(this ViewDataDictionary viewData, string title)
         => viewData[TitleKey] = title;
@@ -33,4 +34,17 @@ public static class ViewDataExtensions
 
     public static (string Text, string? Url)[] GetBreadcrumb(this ViewDataDictionary viewData)
         => viewData[BreadcrumbKey] as (string, string?)[] ?? [];
+
+    /// <summary>Sayfa ustunde kalici banner gosterir. type: info | success | warning | danger</summary>
+    public static void AddBanner(this ViewDataDictionary viewData, string type, string message, string? id = null)
+    {
+        var banners = viewData.GetBanners();
+        banners.Add(new PageBanner(type, message, id));
+        viewData[BannersKey] = banners;
+    }
+
+    public static List<PageBanner> GetBanners(this ViewDataDictionary viewData)
+        => viewData[BannersKey] as List<PageBanner> ?? [];
 }
+
+public record PageBanner(string Type, string Message, string? Id = null);

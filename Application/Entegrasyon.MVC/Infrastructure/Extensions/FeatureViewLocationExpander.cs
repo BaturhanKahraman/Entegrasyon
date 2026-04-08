@@ -32,6 +32,8 @@ public class FeatureViewLocationExpander : IViewLocationExpander
         ["BulkMatch"] = "MarketplaceSync",
         ["CommissionRates"] = "MarketplaceSync",
         ["StockMovement"] = "StockMovements",
+        ["Discount"] = "Discounts",
+        ["GiftCard"] = "GiftCards",
     };
 
     public IEnumerable<string> ExpandViewLocations(

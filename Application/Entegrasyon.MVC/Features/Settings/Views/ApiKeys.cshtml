@@ -1,150 +1,194 @@
+@model List<Entegrasyon.Entity.ApiKeys.ApiKey>
+@{
+    var newKey = TempData["NewApiKey"] as string;
+}
+
         <div class="row">
             <div class="col-md-3">
                 <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
             </div>
             <div class="col-md-9">
-                <div class="card">
+
+                @if (newKey is not null)
+                {
+                    <div class="alert alert-success alert-important mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="ti ti-key me-2" style="font-size:1.5rem;"></i>
+                            <div>
+                                <strong>API anahtariniz olusturuldu!</strong>
+                                <p class="mb-1">Bu anahtari simdi kopyalayin. Sayfa yenilendiginde tekrar gosterilemez.</p>
+                                <code class="fs-5 user-select-all">@newKey</code>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="card mb-3">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h3 class="card-title">API Anahtarlari</h3>
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addApiKeyModal">
                             <i class="ti ti-plus me-1"></i>Yeni Anahtar
                         </button>
                     </div>
-                    <div class="card-body">
-                        <div class="empty py-5">
-                            <div class="empty-img">
-                                <i class="ti ti-key" style="font-size:3rem;color:var(--tblr-secondary)"></i>
-                            </div>
-                            <p class="empty-title mt-3">Henuz API anahtari olusturulmamis</p>
-                            <p class="empty-subtitle text-secondary">
-                                API anahtarlari, sisteminizi dis uygulamalar ve servislerle entegre
-                                etmenizi saglar. Her anahtar belirli izinlerle sinirlanabilir.
-                            </p>
-                            <div class="empty-action">
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addApiKeyModal">
-                                    <i class="ti ti-plus me-1"></i>Ilk API Anahtarini Olustur
-                                </button>
+                    @if (Model.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ad</th>
+                                        <th>Prefix</th>
+                                        <th>Scope'lar</th>
+                                        <th>Son Kullanim</th>
+                                        <th>Son Tarih</th>
+                                        <th>Durum</th>
+                                        <th class="w-1"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var key in Model)
+                                    {
+                                        var isExpired = key.ExpiresAt.HasValue && key.ExpiresAt.Value < DateTimeOffset.UtcNow;
+                                        var scopes = System.Text.Json.JsonSerializer.Deserialize<string[]>(key.Scopes) ?? [];
+                                        <tr>
+                                            <td class="fw-bold">@key.Name</td>
+                                            <td><code>@key.KeyPrefix****</code></td>
+                                            <td>
+                                                @foreach (var scope in scopes)
+                                                {
+                                                    <span class="badge bg-azure-lt me-1">@scope</span>
+                                                }
+                                            </td>
+                                            <td class="text-secondary">
+                                                @(key.LastUsedAt.HasValue ? key.LastUsedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm") : "Hic")
+                                            </td>
+                                            <td class="text-secondary">
+                                                @(key.ExpiresAt.HasValue ? key.ExpiresAt.Value.ToLocalTime().ToString("dd.MM.yyyy") : "Suressiz")
+                                            </td>
+                                            <td>
+                                                @if (!key.IsActive)
+                                                {
+                                                    <span class="badge bg-red-lt">Iptal</span>
+                                                }
+                                                else if (isExpired)
+                                                {
+                                                    <span class="badge bg-orange-lt">Suresi Doldu</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-green-lt">Aktif</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (key.IsActive && !isExpired)
+                                                {
+                                                    <form method="post" action="/settings/api-keys/@key.Id/revoke">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                onclick="return confirm('Bu API anahtarini iptal etmek istediginize emin misiniz?')">
+                                                            Iptal Et
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            <div class="empty py-3">
+                                <div class="empty-icon"><i class="ti ti-key" style="font-size:2.5rem;"></i></div>
+                                <p class="empty-title">Henuz API anahtari yok</p>
+                                <p class="empty-subtitle text-secondary">Dis sistemlerle entegrasyon icin API anahtari olusturun.</p>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-footer text-secondary small">
-                        <i class="ti ti-info-circle me-1"></i>
-                        API anahtar yonetimi demo amaclidir. Gercek entegrasyon yakin zamanda aktif olacak.
-                    </div>
+                    }
                 </div>
 
                 <!-- Kullanim Rehberi -->
-                <div class="card mt-3">
+                <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Kullanim Rehberi</h3>
                     </div>
                     <div class="card-body">
-                        <p class="text-secondary mb-3">
-                            API anahtarini HTTP isteklerinizin basliginda asagidaki gibi gonderin:
-                        </p>
-                        <div class="bg-dark text-light p-3 rounded mb-3">
-                            <code class="text-light">Authorization: Bearer &lt;API_ANAHTARINIZ&gt;</code>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="card card-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="ti ti-shield-check text-green me-2"></i>
-                                            <strong>Guvenli Saklama</strong>
-                                        </div>
-                                        <p class="text-secondary small mb-0">
-                                            API anahtarlarinizi kaynak kodda saklamayin. Ortam degiskenleri kullanin.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card card-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="ti ti-lock text-blue me-2"></i>
-                                            <strong>Minimum Izin</strong>
-                                        </div>
-                                        <p class="text-secondary small mb-0">
-                                            Her anahtar icin yalnizca gerekli olan izinleri verin.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card card-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="ti ti-calendar-off text-orange me-2"></i>
-                                            <strong>Son Kullanma</strong>
-                                        </div>
-                                        <p class="text-secondary small mb-0">
-                                            Uzun vadeli anahtarlar icin son kullanma tarihi belirleyin.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <p>API isteklerinizde <code>Authorization</code> header'ini kullanin:</p>
+                        <pre class="p-3 bg-dark text-light rounded"><code>Authorization: Bearer ent_xxxxxxxxxxxx</code></pre>
                     </div>
                 </div>
             </div>
+        </div>
+
+<!-- Add API Key Modal -->
+<div class="modal modal-blur fade" id="addApiKeyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="/settings/api-keys/create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni API Anahtari</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Anahtar Adi</label>
+                        <input type="text" name="name" class="form-control" required placeholder="orn. Mobil Uygulama"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Yetkiler (Scope)</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="scopes" value="products:read"/>
+                                    <span class="form-check-label">products:read</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="scopes" value="products:write"/>
+                                    <span class="form-check-label">products:write</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="scopes" value="orders:read"/>
+                                    <span class="form-check-label">orders:read</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="scopes" value="orders:write"/>
+                                    <span class="form-check-label">orders:write</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="scopes" value="inventory:read"/>
+                                    <span class="form-check-label">inventory:read</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="scopes" value="inventory:write"/>
+                                    <span class="form-check-label">inventory:write</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Son Kullanim Tarihi</label>
+                        <input type="date" name="expiresAt" class="form-control"/>
+                        <small class="form-hint">Bos birakilirsa anahtar suressiz olur.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                    <button type="submit" class="btn btn-primary">Olustur</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-<!-- Add API Key Modal -->
-<div class="modal modal-blur fade" id="addApiKeyModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Yeni API Anahtari Olustur</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label required">Anahtar Adi</label>
-                    <input type="text" class="form-control" placeholder="Ornegin: Mobil Uygulama, ERP Entegrasyonu" />
-                    <small class="text-secondary">Bu anahtari kolayca tanimlamanizi saglayan bir isim.</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label required">Kapsam (Scope)</label>
-                    <div class="row g-2">
-                        @foreach (var scope in new[] {
-                            ("products:read", "Urunleri Okuma"),
-                            ("products:write", "Urun Yazma/Guncelleme"),
-                            ("orders:read", "Siparişleri Okuma"),
-                            ("orders:write", "Sipariş Islemleri"),
-                            ("inventory:read", "Stok Okuma"),
-                            ("inventory:write", "Stok Guncelleme")
-                        })
-                        {
-                            <div class="col-6">
-                                <label class="form-check">
-                                    <input class="form-check-input" type="checkbox" />
-                                    <span class="form-check-label">
-                                        <code class="small">@scope.Item1</code><br/>
-                                        <span class="text-secondary small">@scope.Item2</span>
-                                    </span>
-                                </label>
-                            </div>
-                        }
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Son Kullanma Tarihi</label>
-                    <input type="date" class="form-control" />
-                    <small class="text-secondary">Bos birakilirsa anahtar suresi dolmaz.</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" checked />
-                        <span class="form-check-label">Anahtar aktif</span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Olustur (Demo)</button>
-            </div>
-        </div>

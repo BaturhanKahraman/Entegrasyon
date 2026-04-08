@@ -60,7 +60,11 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → MVC:
 
 **Tech Stack:** ASP.NET Core 8 MVC + HTMX + Tabler UI + Cookie Auth
 **Klasör yapısı:** Feature Folders (`Features/{FeatureName}/Controller + ViewModels + Views`)
-**Frontend:** Vanilla JS (~100 satır), npm/bundler/TypeScript yok
+**Frontend:** Vanilla JS, npm/bundler/TypeScript yok
+
+**Frontend Kütüphaneleri (wwwroot/lib/):** Tom Select (aranabilir dropdown), Flatpickr (tarih secici, TR locale), IMask (input maskeleme), Notyf (toast), SortableJS (surukle-birak), GLightbox (gorsel lightbox)
+
+**Tabler UI Referans:** https://tabler.io/docs/getting-started — Tabler'ın tüm bileşenleri (card, alert, badge, avatar, progress, ribbon, steps, timeline, datagrid, placeholder, empty, status-dot, dropdown, modal, offcanvas, accordion, tabs) kullanılabilir. Yeni UI geliştirirken önce Tabler'ın hazır bileşenlerini kontrol et.
 
 MVC-specific pattern'ler için bkz: `~/.claude/skills/aspnet-mvc-htmx/` skill dosyaları.
 

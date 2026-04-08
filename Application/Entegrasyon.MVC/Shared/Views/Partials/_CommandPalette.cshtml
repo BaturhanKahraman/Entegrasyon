@@ -1,0 +1,128 @@
+@* Command Palette — Ctrl+K ile acilir *@
+<div class="modal modal-blur fade" id="command-palette" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <div class="input-icon p-3 border-bottom">
+                    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                    <input type="text" id="cmd-search" class="form-control form-control-lg border-0 shadow-none"
+                           placeholder="Sayfa, urun, kategori ara..." autocomplete="off" />
+                    <span class="input-icon-addon" style="right:0;">
+                        <kbd class="text-muted">Esc</kbd>
+                    </span>
+                </div>
+                <div id="cmd-results" class="list-group list-group-flush" style="max-height:360px;overflow-y:auto;">
+                    @* Varsayilan hizli erisim linkleri *@
+                    <div class="cmd-defaults">
+                        <div class="px-3 py-2 text-muted small">Hizli Erisim</div>
+                        <a href="/" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-dashboard me-2"></i>Dashboard
+                            <kbd class="ms-auto text-muted">Alt+D</kbd>
+                        </a>
+                        <a href="/products/add" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-plus me-2"></i>Yeni Urun Ekle
+                            <kbd class="ms-auto text-muted">Alt+N</kbd>
+                        </a>
+                        <a href="/pos" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-device-desktop me-2"></i>Satis Yap (POS)
+                            <kbd class="ms-auto text-muted">Alt+S</kbd>
+                        </a>
+                        <a href="/products" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-package me-2"></i>Urunler
+                        </a>
+                        <a href="/categories" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-category me-2"></i>Kategoriler
+                        </a>
+                        <a href="/orders" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-shopping-cart me-2"></i>Siparisler
+                        </a>
+                        <a href="/customers" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-users me-2"></i>Musteriler
+                        </a>
+                        <a href="/reports/sales" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-chart-bar me-2"></i>Satis Raporu
+                        </a>
+                        <a href="/settings/general" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-settings me-2"></i>Ayarlar
+                        </a>
+                        <a href="/marketplace/sync" class="list-group-item list-group-item-action cmd-item">
+                            <i class="ti ti-refresh me-2"></i>Senkronizasyon
+                        </a>
+                    </div>
+                    @* Server-side arama sonuclari buraya HTMX ile gelecek *@
+                    <div id="cmd-server-results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var palette = document.getElementById('command-palette');
+    var searchInput = document.getElementById('cmd-search');
+    var resultsContainer = document.getElementById('cmd-results');
+    var defaults = resultsContainer ? resultsContainer.querySelector('.cmd-defaults') : null;
+    if (!palette || !searchInput) return;
+
+    // Modal acildiginda input'a focus ver
+    palette.addEventListener('shown.bs.modal', function () {
+        searchInput.value = '';
+        searchInput.focus();
+        if (defaults) defaults.style.display = '';
+        var sr = document.getElementById('cmd-server-results');
+        if (sr) sr.textContent = '';
+        resetHighlight();
+    });
+
+    // Client-side filtreleme (hizli erisim linkleri)
+    var items = resultsContainer ? resultsContainer.querySelectorAll('.cmd-item') : [];
+    var highlighted = -1;
+
+    function resetHighlight() {
+        highlighted = -1;
+        items.forEach(function (el) { el.classList.remove('active'); });
+    }
+
+    function getVisibleItems() {
+        var result = [];
+        items.forEach(function (el) {
+            if (el.offsetParent !== null) result.push(el);
+        });
+        return result;
+    }
+
+    searchInput.addEventListener('input', function () {
+        var query = this.value.toLowerCase().trim();
+        if (!query) {
+            items.forEach(function (el) { el.style.display = ''; });
+            if (defaults) defaults.style.display = '';
+            resetHighlight();
+            return;
+        }
+        items.forEach(function (el) {
+            var text = el.textContent.toLowerCase();
+            el.style.display = text.indexOf(query) >= 0 ? '' : 'none';
+        });
+        resetHighlight();
+    });
+
+    searchInput.addEventListener('keydown', function (event) {
+        var visible = getVisibleItems();
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            highlighted = Math.min(highlighted + 1, visible.length - 1);
+            visible.forEach(function (el, i) { el.classList.toggle('active', i === highlighted); });
+            if (visible[highlighted]) visible[highlighted].scrollIntoView({ block: 'nearest' });
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            highlighted = Math.max(highlighted - 1, 0);
+            visible.forEach(function (el, i) { el.classList.toggle('active', i === highlighted); });
+            if (visible[highlighted]) visible[highlighted].scrollIntoView({ block: 'nearest' });
+        } else if (event.key === 'Enter' && highlighted >= 0 && visible[highlighted]) {
+            event.preventDefault();
+            visible[highlighted].click();
+        }
+    });
+})();
+</script>

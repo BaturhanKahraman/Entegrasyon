@@ -12,12 +12,15 @@ using System.Reflection;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
+using Entegrasyon.Entity.ApiKeys;
+using Entegrasyon.Entity.Webhooks;
+using Entegrasyon.Entity.Pricing;
+using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Chat;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Invoices;
 using Entegrasyon.Entity.Invoicing;
 using Entegrasyon.Entity.Labels;
-using Entegrasyon.Entity.Settings;
 using Entegrasyon.Entity.Marketplace;
 using Entegrasyon.Entity.Shipping;
 using Entegrasyon.Entity.POS;
@@ -87,6 +90,11 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<BranchOfficeStock> BranchOfficeStocks { get; set; }
     public virtual DbSet<ChangeProduct> ChangeProducts { get; set; }
     public virtual DbSet<DiscountVoucher> DiscountVouchers { get; set; }
+    public virtual DbSet<PricingRule> PricingRules { get; set; }
+    public virtual DbSet<VatRate> VatRates { get; set; }
+    public virtual DbSet<ApiKey> ApiKeys { get; set; }
+    public virtual DbSet<WebhookSubscription> WebhookSubscriptions { get; set; }
+    public virtual DbSet<WebhookDeliveryLog> WebhookDeliveryLogs { get; set; }
     public virtual DbSet<ReturnProduct> ReturnProducts { get; set; }
     public virtual DbSet<Sale> Sales { get; set; }
     public virtual DbSet<SaleItem> SaleItems { get; set; }

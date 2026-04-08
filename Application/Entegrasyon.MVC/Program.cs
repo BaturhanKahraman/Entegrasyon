@@ -340,6 +340,7 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseRouting();
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 app.UseAuthorization();
 app.UseOutputCache();
 app.UseSession();

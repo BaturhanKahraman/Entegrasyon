@@ -1,0 +1,42 @@
+@model List<Entegrasyon.Entity.Dtos.Pricing.PriceImpactDto>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Kural Onizleme — Etkilenen Urunler</h3>
+    </div>
+    @if (Model.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-sm">
+                <thead>
+                    <tr>
+                        <th>Stok Kodu</th>
+                        <th>Urun</th>
+                        <th class="text-end">Mevcut Fiyat</th>
+                        <th class="text-end">Yeni Fiyat</th>
+                        <th class="text-end">Fark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var diffColor = item.Difference > 0 ? "text-danger" : item.Difference < 0 ? "text-success" : "";
+                        <tr>
+                            <td class="text-secondary font-monospace">@(item.StockCode ?? "-")</td>
+                            <td>@item.ProductTitle</td>
+                            <td class="text-end">@item.CurrentPrice.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
+                            <td class="text-end fw-bold">@item.NewPrice.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
+                            <td class="text-end @diffColor">
+                                @(item.Difference > 0 ? "+" : "")@item.Difference.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="card-body text-secondary">Bu kural hicbir urunu etkilemiyor.</div>
+    }
+</div>

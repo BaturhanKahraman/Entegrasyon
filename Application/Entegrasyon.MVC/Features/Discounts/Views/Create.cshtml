@@ -9,10 +9,20 @@
                 <form method="post" action="/discounts/create">
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="form-label required">İndirim Tipi</label>
+                            <select name="DiscountType" id="discountType" class="form-select"
+                                    onchange="toggleDiscountFields()">
+                                <option value="0" selected="@(Model.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.FixedAmount)">Sabit Tutar (TL)</option>
+                                <option value="1" selected="@(Model.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.Percentage)">Yuzde (%)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3" id="amountField">
                             <label class="form-label required">Tutar</label>
                             <div class="input-group">
                                 <input type="number"
                                        name="Amount"
+                                       id="amountInput"
                                        class="form-control @(ViewData.ModelState["Amount"]?.Errors.Any() == true ? "is-invalid" : "")"
                                        step="0.01"
                                        min="0.01"
@@ -28,6 +38,30 @@
                             </div>
                         </div>
 
+                        <div class="col-md-6 mb-3" id="percentageField" style="display:none;">
+                            <label class="form-label required">Yuzde</label>
+                            <div class="input-group">
+                                <input type="number"
+                                       name="Percentage"
+                                       id="percentageInput"
+                                       class="form-control @(ViewData.ModelState["Percentage"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                       step="0.01"
+                                       min="0.01"
+                                       max="100"
+                                       value="@(Model?.Percentage > 0 ? Model.Percentage.ToString("F2") : "")"
+                                       placeholder="0.00"/>
+                                <span class="input-group-text">%</span>
+                                @if (ViewData.ModelState["Percentage"]?.Errors.Any() == true)
+                                {
+                                    <div class="invalid-feedback">
+                                        @ViewData.ModelState["Percentage"]!.Errors.First().ErrorMessage
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Son Kullanim Tarihi</label>
                             <input type="date"
@@ -36,9 +70,7 @@
                                    value="@(Model?.ExpiringDate.HasValue == true ? Model.ExpiringDate.Value.ToString("yyyy-MM-dd") : "")"/>
                             <div class="form-text">Bos birakilirsa kod suressiz olur.</div>
                         </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Musteri ID (Opsiyonel)</label>
                             <input type="number"
@@ -50,6 +82,34 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kullanim Limiti</label>
+                            <input type="number"
+                                   name="MaxUsageCount"
+                                   class="form-control"
+                                   min="1"
+                                   value="@Model?.MaxUsageCount"
+                                   placeholder="Sinirsiz"/>
+                            <div class="form-text">Bos birakilirsa sinirsiz kullanim.</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Minimum Sepet Tutari</label>
+                            <div class="input-group">
+                                <input type="number"
+                                       name="MinimumCartAmount"
+                                       class="form-control"
+                                       step="0.01"
+                                       min="0.01"
+                                       value="@(Model?.MinimumCartAmount.HasValue == true ? Model.MinimumCartAmount.Value.ToString("F2") : "")"
+                                       placeholder="Yok"/>
+                                <span class="input-group-text">TL</span>
+                            </div>
+                            <div class="form-text">Bos birakilirsa minimum tutar siniri yok.</div>
+                        </div>
+                    </div>
+
                     <div class="text-end">
                         <a href="/discounts" class="btn btn-link me-2">Iptal</a>
                         <button type="submit" class="btn btn-primary">Olustur</button>
@@ -57,3 +117,23 @@
                 </form>
             </div>
         </div>
+
+<script>
+function toggleDiscountFields() {
+    var type = document.getElementById('discountType').value;
+    var amountField = document.getElementById('amountField');
+    var percentageField = document.getElementById('percentageField');
+
+    if (type === '1') {
+        amountField.style.display = 'none';
+        percentageField.style.display = '';
+        document.getElementById('amountInput').value = '';
+    } else {
+        amountField.style.display = '';
+        percentageField.style.display = 'none';
+        document.getElementById('percentageInput').value = '';
+    }
+}
+// Init on page load
+document.addEventListener('DOMContentLoaded', toggleDiscountFields);
+</script>

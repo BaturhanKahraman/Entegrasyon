@@ -6,15 +6,15 @@
     <div class="card-body">
         <div class="datagrid">
             <div class="datagrid-item">
-                <div class="datagrid-title">Kategori Adi</div>
+                <div class="datagrid-title">Kategori Adı</div>
                 <div class="datagrid-content">@Model.Name</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Ust Kategori</div>
-                <div class="datagrid-content">@(Model.SuperCategoryName ?? "Yok (Kok kategori)")</div>
+                <div class="datagrid-title">Üst Kategori</div>
+                <div class="datagrid-content">@(Model.SuperCategoryName ?? "Yok (kök kategori)")</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">KDV Orani</div>
+                <div class="datagrid-title">KDV Oranı</div>
                 <div class="datagrid-content">
                     @(Model.DefaultVatRate.HasValue ? $"%{Model.DefaultVatRate.Value}" : "Belirtilmedi")
                 </div>
@@ -22,19 +22,19 @@
             <div class="datagrid-item">
                 <div class="datagrid-title">Favori</div>
                 <div class="datagrid-content">
-                    @(Model.IsFavorite ? "Evet" : "Hayir")
+                    @(Model.IsFavorite ? "Evet" : "Hayır")
                 </div>
             </div>
         </div>
 
         @if (Model.Attributes.Any())
         {
-            <h4 class="mt-4">Secilen Ozellikler (@Model.Attributes.Count adet)</h4>
+            <h4 class="mt-4">Seçilen Özellikler (@Model.Attributes.Count adet)</h4>
             <div class="table-responsive">
                 <table class="table table-vcenter card-table table-hover">
                     <thead>
                         <tr>
-                            <th>Ozellik</th>
+                            <th>Özellik</th>
                             <th class="text-center">Zorunlu</th>
                             <th class="text-center">Varyanter</th>
                             <th class="text-center">Dilimleyici</th>
@@ -62,13 +62,13 @@
         }
         else
         {
-            <p class="text-secondary mt-3">Ozellik secilmedi.</p>
+            <p class="text-secondary mt-3">Özellik seçilmedi.</p>
         }
     </div>
     <div class="card-footer d-flex justify-content-between">
-        <a href="/categories/add" class="btn btn-ghost-secondary">&larr; Bastan Baslat</a>
+        <a href="/categories/add" class="btn btn-ghost-secondary">&larr; Baştan Başlat</a>
         <form hx-post="/categories/add/save" hx-target="#wizard-content" hx-swap="innerHTML">
-            <button type="submit" class="btn btn-success">Kategoriyi Olustur</button>
+            <button type="submit" class="btn btn-success">Kategoriyi Oluştur</button>
         </form>
     </div>
 </div>

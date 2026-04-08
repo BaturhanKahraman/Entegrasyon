@@ -8,11 +8,11 @@
                 <thead>
                     <tr>
                         <th>Ad Soyad</th>
-                        <th>Kullanici Adi</th>
+                        <th>Kullanıcı Adı</th>
                         <th>Roller</th>
-                        <th>Sube</th>
+                        <th>Şube</th>
                         <th>Durum</th>
-                        <th>Kayit Tarihi</th>
+                        <th>Kayıt Tarihi</th>
                         <th class="w-1"></th>
                     </tr>
                 </thead>
@@ -29,7 +29,7 @@
                                     {
                                         <span class="badge bg-blue-lt me-1">@role</span>
                                     }
-                                }
+                                }   
                             </td>
                             <td class="text-secondary">@user.DefaultOfficeName</td>
                             <td>
@@ -46,18 +46,18 @@
                             <td>
                                 <div class="btn-list flex-nowrap">
                                     <a href="/users/@user.Id/edit" class="btn btn-sm btn-outline-primary">
-                                        Duzenle
+                                        Düzenle
                                     </a>
                                     <button class="btn btn-sm btn-outline-warning"
                                             hx-post="/users/@user.Id/toggle-active"
-                                            hx-confirm="Kullanici durumunu degistirmek istediginize emin misiniz?">
+                                            hx-confirm="Kullanıcı durumunu değiştirmek istediğinize emin misiniz?">
                                         @(user.IsActive ? "Pasif Yap" : "Aktif Yap")
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger"
                                             hx-post="/users/@user.Id/delete"
                                             hx-target="closest tr"
                                             hx-swap="outerHTML swap:300ms"
-                                            hx-confirm="Bu kullaniciyi silmek istediginize emin misiniz?">
+                                            hx-confirm="Bu kullanıcıyı silmek istediğinize emin misiniz?">
                                         Sil
                                     </button>
                                 </div>
@@ -87,10 +87,10 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Kullanici bulunamadi",
-                         Subtitle = "Henuz kullanici eklenmemis.",
+                         Title = "Kullanıcı bulunamadı",
+                         Subtitle = "Henüz kullanıcı eklenmemiş.",
                          ActionUrl = "/users/create",
-                         ActionText = "Yeni Kullanici Ekle"
+                         ActionText = "Yeni Kullanıcı Ekle"
                      }'/>
         </div>
     }

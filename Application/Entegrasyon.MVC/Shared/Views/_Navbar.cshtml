@@ -1,13 +1,14 @@
 <header class="navbar navbar-expand-md d-print-none">
     <div class="container-xl">
-        @* ── Sol: Global Arama ── *@
+        @* ── Sol: Global Arama (Command Palette tetikleyici) ── *@
         <div class="d-none d-md-flex">
-            <div class="input-icon">
+            <a href="#" class="input-icon" data-bs-toggle="modal" data-bs-target="#command-palette" style="text-decoration:none;">
                 <span class="input-icon-addon">
                     <i class="ti ti-search"></i>
                 </span>
-                <input type="text" class="form-control" placeholder="Ara..." aria-label="Global Arama" style="min-width: 280px;" />
-            </div>
+                <input type="text" class="form-control" placeholder="Ara...  Ctrl+K" aria-label="Global Arama"
+                       style="min-width: 280px; pointer-events: none;" readonly tabindex="-1" />
+            </a>
         </div>
 
         @* ── Sag: Utility Items ── *@

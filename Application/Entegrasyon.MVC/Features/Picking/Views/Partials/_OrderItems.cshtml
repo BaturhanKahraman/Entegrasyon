@@ -1,0 +1,35 @@
+@model Entegrasyon.Entity.Orders.Order
+
+<tr class="bg-light">
+    <td colspan="7" class="p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>Siparis Kalemleri — @(Model.OrderNumber ?? Model.Id.ToString()[..8])</strong>
+            <span class="badge bg-secondary-lt">@Model.OrderItems.Count kalem</span>
+        </div>
+        <table class="table table-sm table-borderless mb-0">
+            <thead>
+                <tr>
+                    <th>Barkod / SKU</th>
+                    <th>Renk</th>
+                    <th>Beden</th>
+                    <th class="text-center">Adet</th>
+                    <th class="text-end">Birim Fiyat</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td>
+                            <span class="font-monospace">@(item.Barcode ?? item.MerchantSku ?? "-")</span>
+                        </td>
+                        <td class="text-secondary">@(item.ProductColor ?? "-")</td>
+                        <td class="text-secondary">@(item.ProductSize ?? "-")</td>
+                        <td class="text-center fw-bold">@item.Quantity</td>
+                        <td class="text-end">@item.UnitPrice.ToString("N2") TL</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </td>
+</tr>

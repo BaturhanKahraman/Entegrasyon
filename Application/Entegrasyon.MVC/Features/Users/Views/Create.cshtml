@@ -10,7 +10,7 @@
         <form method="post" action="/users/create">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Kullanici Bilgileri</h3>
+                    <h3 class="card-title">Kullanıcı Bilgileri</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -27,7 +27,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Kullanici Adi</label>
+                            <label class="form-label required">Kullanıcı Adı</label>
                             <input type="text" class="form-control" name="UserName" value="@Model?.UserName"/>
                             <span asp-validation-for="UserName" class="text-danger"></span>
                         </div>
@@ -38,14 +38,14 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Gecici Sifre</label>
+                            <label class="form-label required">Geçici Şifre</label>
                             <input type="password" class="form-control" name="TemporaryPassword"/>
                             <span asp-validation-for="TemporaryPassword" class="text-danger"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Rol</label>
                             <select class="form-select" name="RoleId">
-                                <option value="">Rol Secin</option>
+                                <option value="">Rol Seçin</option>
                                 @foreach (var role in roles)
                                 {
                                     <option value="@role.Id">@role.Name</option>
@@ -56,12 +56,12 @@
                     <div class="mb-3">
                         <label class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="IsTwoFactorEnabled" value="true"/>
-                            <span class="form-check-label">Iki faktorlu dogrulama</span>
+                            <span class="form-check-label">İki faktörlü doğrulama</span>
                         </label>
                     </div>
                 </div>
                 <div class="card-footer text-end">
-                    <a href="/users" class="btn btn-ghost-secondary me-2">Iptal</a>
+                    <a href="/users" class="btn btn-ghost-secondary me-2">İptal</a>
                     <button type="submit" class="btn btn-primary">Kaydet</button>
                 </div>
             </div>

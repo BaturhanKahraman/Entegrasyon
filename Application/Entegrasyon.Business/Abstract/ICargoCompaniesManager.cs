@@ -11,4 +11,5 @@ public interface ICargoCompaniesManager
     Task<IResult> AddCargoCompany(AddCargoCompanyDto cargoCompanyDto);
     Task<IResult> UpdateCargoCompany(CargoCompany cargoCompany);
     Task<IResult> DeleteCargoCompany(CargoCompany cargoCompany);
+    Task<IResult> SetDefaultCargoCompany(int companyId, string? customerCode, string? apiKey, string? secretKey);
 }

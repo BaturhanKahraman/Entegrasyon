@@ -35,9 +35,9 @@
                     <tr>
                         <th>Tarih</th>
                         <th>Musteri ID</th>
-                        <th>Sipariş ID</th>
+                        <th>Siparis ID</th>
                         <th>Sebep</th>
-                        <th>Aciklama</th>
+                        <th>Iade Tutari</th>
                         <th>Durum</th>
                         <th class="w-1"></th>
                     </tr>
@@ -49,40 +49,56 @@
                             <td class="text-secondary">
                                 @ret.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
                             </td>
-                            <td class="text-secondary">
-                                #@ret.CustomerId
-                            </td>
+                            <td class="text-secondary">#@ret.CustomerId</td>
                             <td class="text-secondary text-truncate" style="max-width:120px;" title="@ret.OrderId">
                                 @ret.OrderId.ToString()[..8]
                             </td>
-                            <td>@ret.Reason</td>
-                            <td class="text-secondary">@(ret.Description ?? "-")</td>
                             <td>
-                                <span class="badge @StatusBadge(ret.Status)">
-                                    @StatusText(ret.Status)
-                                </span>
+                                @ret.Reason
+                                @if (!string.IsNullOrEmpty(ret.Description))
+                                {
+                                    <br/><small class="text-secondary">@ret.Description</small>
+                                }
+                                @if (!string.IsNullOrEmpty(ret.ReviewNote))
+                                {
+                                    <br/><small class="text-info"><i class="ti ti-note"></i> @ret.ReviewNote</small>
+                                }
+                            </td>
+                            <td>
+                                @if (ret.RefundAmount.HasValue)
+                                {
+                                    <span class="fw-bold">@ret.RefundAmount.Value.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @StatusBadge(ret.Status)">@StatusText(ret.Status)</span>
                             </td>
                             <td>
                                 @if (ret.Status == Entegrasyon.Entity.Storefront.ReturnStatus.Pending)
                                 {
                                     <div class="btn-group btn-group-sm">
-                                        <button type="button"
-                                                class="btn btn-success"
-                                                hx-post="/returns/@ret.Id/approve"
-                                                hx-swap="none"
-                                                hx-confirm="Bu iade talebini onaylamak istiyor musunuz?">
-                                            <i class="ti ti-check icon"></i>
-                                            Onayla
+                                        <button type="button" class="btn btn-success"
+                                                data-bs-toggle="modal" data-bs-target="#approveModal-@ret.Id">
+                                            <i class="ti ti-check icon"></i> Onayla
                                         </button>
-                                        <button type="button"
-                                                class="btn btn-danger"
-                                                hx-post="/returns/@ret.Id/reject"
-                                                hx-swap="none"
-                                                hx-confirm="Bu iade talebini reddetmek istiyor musunuz?">
-                                            <i class="ti ti-x icon"></i>
-                                            Reddet
+                                        <button type="button" class="btn btn-danger"
+                                                data-bs-toggle="modal" data-bs-target="#rejectModal-@ret.Id">
+                                            <i class="ti ti-x icon"></i> Reddet
                                         </button>
                                     </div>
+                                }
+                                else if (ret.Status == Entegrasyon.Entity.Storefront.ReturnStatus.Approved)
+                                {
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            hx-post="/returns/@ret.Id/complete"
+                                            hx-swap="none"
+                                            hx-confirm="Iade islemini tamamlamak istiyor musunuz?">
+                                        <i class="ti ti-check-circle icon"></i> Tamamla
+                                    </button>
                                 }
                                 else
                                 {
@@ -107,3 +123,69 @@
         </div>
     }
 </div>
+
+<!-- Approve/Reject Modals -->
+@foreach (var ret in Model.Where(r => r.Status == Entegrasyon.Entity.Storefront.ReturnStatus.Pending))
+{
+    <!-- Approve Modal -->
+    <div class="modal modal-blur fade" id="approveModal-@ret.Id" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <form hx-post="/returns/@ret.Id/approve" hx-swap="none">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Iade Onayla</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Sebep: <strong>@ret.Reason</strong></label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Iade Tutari (TL)</label>
+                            <input type="number" name="refundAmount" class="form-control" step="0.01" min="0.01"
+                                   placeholder="Siparis tutarini girin"/>
+                            <small class="form-hint">Kismi iade icin tutari duzenleyebilirsiniz.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Inceleme Notu</label>
+                            <textarea name="reviewNote" class="form-control" rows="2"
+                                      placeholder="Opsiyonel not..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                        <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Onayla</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal modal-blur fade" id="rejectModal-@ret.Id" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <form hx-post="/returns/@ret.Id/reject" hx-swap="none">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Iade Reddet</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Sebep: <strong>@ret.Reason</strong></label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">Red Nedeni</label>
+                            <textarea name="reviewNote" class="form-control" rows="2" required
+                                      placeholder="Red nedenini belirtin..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
+                        <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Reddet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

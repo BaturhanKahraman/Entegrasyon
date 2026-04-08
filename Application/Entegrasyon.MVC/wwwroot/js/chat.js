@@ -46,6 +46,48 @@
         console.warn('ChatHub connection failed:', err);
     });
 
+    // ── Reply State ─────────────────────────────────────────────────
+
+    var replyToMessageId = null;
+
+    window.setReply = function (messageId, senderName, content) {
+        replyToMessageId = messageId;
+        var preview = document.getElementById('reply-preview');
+        if (preview) {
+            preview.textContent = '';
+            var row = document.createElement('div');
+            row.className = 'd-flex align-items-center justify-content-between bg-light rounded p-2 mb-2';
+            var info = document.createElement('div');
+            info.className = 'text-truncate';
+            var strong = document.createElement('strong');
+            strong.className = 'small';
+            strong.textContent = senderName;
+            var br = document.createElement('br');
+            var span = document.createElement('span');
+            span.className = 'small text-secondary';
+            span.textContent = content.substring(0, 60);
+            info.appendChild(strong);
+            info.appendChild(br);
+            info.appendChild(span);
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'btn-close btn-close-sm ms-2';
+            closeBtn.addEventListener('click', function () { clearReply(); });
+            row.appendChild(info);
+            row.appendChild(closeBtn);
+            preview.appendChild(row);
+            preview.style.display = '';
+        }
+        var input = document.getElementById('chat-input');
+        if (input) input.focus();
+    };
+
+    window.clearReply = function () {
+        replyToMessageId = null;
+        var preview = document.getElementById('reply-preview');
+        if (preview) { preview.textContent = ''; preview.style.display = 'none'; }
+    };
+
     // ── Send Message ─────────────────────────────────────────────────
 
     var form = document.getElementById('chat-form');
@@ -57,16 +99,21 @@
             var content = input.value.trim();
             if (!content || !conversationId) return;
 
+            var payload = {
+                conversationId: parseInt(conversationId),
+                content: content
+            };
+            if (replyToMessageId) {
+                payload.replyToMessageId = replyToMessageId;
+            }
+
             fetch('/chat/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': csrfToken ? csrfToken.content : ''
                 },
-                body: JSON.stringify({
-                    conversationId: parseInt(conversationId),
-                    content: content
-                })
+                body: JSON.stringify(payload)
             }).then(function (response) {
                 if (!response.ok) {
                     console.error('Failed to send message:', response.status);
@@ -74,6 +121,7 @@
             });
 
             input.value = '';
+            clearReply();
         });
 
         // Typing indicator: notify others when typing
@@ -165,12 +213,12 @@
 
     // ── DOM Helpers ──────────────────────────────────────────────────
 
-    function appendMessage(area, senderName, content, isOwn) {
+    function appendMessage(area, senderName, content, isOwn, messageId) {
         var wrapper = document.createElement('div');
         wrapper.className = 'd-flex mb-3 ' + (isOwn ? 'justify-content-end' : 'justify-content-start');
 
         var bubble = document.createElement('div');
-        bubble.className = (isOwn ? 'bg-primary text-white' : 'bg-light') + ' rounded-3 p-2 px-3';
+        bubble.className = (isOwn ? 'bg-primary text-white' : 'bg-light') + ' rounded-3 p-2 px-3 position-relative chat-bubble';
         bubble.style.maxWidth = '70%';
 
         if (!isOwn && senderName) {
@@ -190,6 +238,26 @@
         timeEl.className = (isOwn ? 'text-white-50' : 'text-secondary') + ' small text-end mt-1';
         timeEl.textContent = timeStr;
         bubble.appendChild(timeEl);
+
+        // Reply button (show on hover)
+        if (messageId) {
+            var replyBtn = document.createElement('button');
+            replyBtn.className = 'btn btn-sm btn-ghost-secondary chat-reply-btn';
+            replyBtn.title = 'Yanitla';
+            replyBtn.style.cssText = 'position:absolute;top:2px;' + (isOwn ? 'left:-30px' : 'right:-30px') + ';display:none;';
+            var icon = document.createElement('i');
+            icon.className = 'ti ti-arrow-back-up';
+            replyBtn.appendChild(icon);
+            var capturedName = senderName || 'Sen';
+            var capturedContent = content;
+            var capturedId = messageId;
+            replyBtn.addEventListener('click', function () {
+                setReply(capturedId, capturedName, capturedContent);
+            });
+            bubble.appendChild(replyBtn);
+            bubble.addEventListener('mouseenter', function () { replyBtn.style.display = ''; });
+            bubble.addEventListener('mouseleave', function () { replyBtn.style.display = 'none'; });
+        }
 
         wrapper.appendChild(bubble);
         area.appendChild(wrapper);

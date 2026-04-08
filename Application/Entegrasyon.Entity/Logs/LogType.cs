@@ -17,6 +17,7 @@ public enum LogType
     Marketplace,
     StockSync,
     Invoice,
+    Settings,
 
     Error = 999
 }

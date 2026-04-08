@@ -47,7 +47,7 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Üst Kategori</label>
-                                    <select name="SuperCategoryId" class="form-select">
+                                    <select id="parent-category-select" name="SuperCategoryId" class="form-select">
                                         <option value="">— Üst kategori yok —</option>
                                         @foreach (var parent in Model.ValidParentCandidates.OrderBy(p => p.Name))
                                         {
@@ -80,7 +80,7 @@
                             @if (Model.HasProducts)
                             {
                                 <div class="alert alert-warning">
-                                    Bu kategoride ürün bulunmaktadir. Degisiklikler mevcut ürünleri etkileyebilir.
+                                    Bu kategoride ürün bulunmaktadır. Değişiklikler mevcut ürünleri etkileyebilir.
                                 </div>
                             }
 
@@ -99,10 +99,10 @@
                                 <table class="table table-vcenter card-table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Ozellik</th>
+                                            <th>Özellik</th>
                                             <th>Anahtar</th>
-                                            <th>Degerler</th>
-                                            <th>Ozellikler</th>
+                                            <th>Değerler</th>
+                                            <th>Özellikler</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -114,7 +114,7 @@
                                                 <td>
                                                     @if (attr.CategoryAttributeValues.Any())
                                                     {
-                                                        <span class="text-secondary">@attr.CategoryAttributeValues.Count deger</span>
+                                                        <span class="text-secondary">@attr.CategoryAttributeValues.Count değer</span>
                                                     }
                                                     else
                                                     {
@@ -136,7 +136,7 @@
                                                     }
                                                     @if (attr.AllowCustom)
                                                     {
-                                                        <span class="badge bg-cyan-lt">Ozel Deger</span>
+                                                        <span class="badge bg-cyan-lt">Özel Değer</span>
                                                     }
                                                 </td>
                                             </tr>
@@ -148,9 +148,9 @@
                         else
                         {
                             <div class="empty py-4">
-                                <p class="empty-title">Henuz ozellik atanmamis</p>
+                                <p class="empty-title">Henüz özellik atanmamış</p>
                                 <p class="empty-subtitle text-secondary">
-                                    Bu kategoriye ozellik eklemek icin ozellikler sayfasini kullanin.
+                                    Bu kategoriye özellik eklemek için özellikler sayfasını kullanın.
                                 </p>
                             </div>
                         }
@@ -168,3 +168,13 @@
                 </div>
             </div>
         </div>
+
+<script>
+(function initParentCategorySelect() {
+    if (typeof TomSelect === 'undefined') { setTimeout(initParentCategorySelect, 50); return; }
+    var el = document.getElementById('parent-category-select');
+    if (el && !el.tomselect) {
+        new TomSelect(el, { maxOptions: null, allowEmptyOption: true, placeholder: 'Üst kategori seçin...' });
+    }
+})();
+</script>

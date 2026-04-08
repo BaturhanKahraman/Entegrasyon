@@ -1,5 +1,4 @@
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
@@ -44,15 +43,19 @@ public class DiscountVoucherManager : IDiscountVoucherManager
 
         var discountVoucher = new DiscountVoucher
         {
-            Amount = dto.Amount,
+            DiscountType = dto.DiscountType,
+            Amount = dto.DiscountType == DiscountType.FixedAmount ? dto.Amount : 0,
+            Percentage = dto.DiscountType == DiscountType.Percentage ? dto.Percentage : 0,
             ExpiringDate = dto.ExpiringDay,
-            CustomerId = dto.CustomerId
+            CustomerId = dto.CustomerId,
+            MaxUsageCount = dto.MaxUsageCount,
+            MinimumCartAmount = dto.MinimumCartAmount,
+            IsActive = true
         };
         string code = _randomGenerator.GetRandomCode(CodeLength, true, true, false);
         while (await CodeExits(code))
             code = _randomGenerator.GetRandomCode(CodeLength, true, true, false);
         discountVoucher.Code = code;
-        discountVoucher.CustomerId = dto.CustomerId;
         dbContext.DiscountVouchers.Add(discountVoucher);
         await dbContext.SaveChangesAsync();
         await _applicationLogManager.AddLog($"İndirim kodu başarı ile oluşturuldu. {code}", LogType.DiscountVoucher, LogAction.Add);
@@ -94,10 +97,10 @@ public class DiscountVoucherManager : IDiscountVoucherManager
             .Skip(pageIndex * pagesize)
             .Take(pagesize)
             .Select(d => new DiscountVoucherDto(
-                d.Id, d.Code!, d.Percentage, d.Amount, d.ExpiringDate!.Value, d.Customer!.FullName!,
-                d.Customer.PhoneNumber!, d.Customer.CustomerType!,
-                (d.Customer as RetailCustomer)!.NationalIdentity!,
-                (d.Customer as CorporateCustomer)!.TaxNumber!))
+                d.Id, d.Code!, d.DiscountType, d.Percentage, d.Amount,
+                d.ExpiringDate, d.IsActive,
+                d.MaxUsageCount, d.CurrentUsageCount, d.MinimumCartAmount,
+                d.Customer != null ? d.Customer.FullName : null))
             .ToListAsync();
 
         return new SuccessDataResult<Pageable<DiscountVoucherDto>>(new Pageable<DiscountVoucherDto>(items, pageIndex, pagesize, total));
@@ -109,8 +112,28 @@ public class DiscountVoucherManager : IDiscountVoucherManager
         var discountVoucher = await dbContext.DiscountVouchers.FirstOrDefaultAsync(x => x.Code == code);
         if (discountVoucher == null)
             return new ErrorResult($"{code} kodunda herhangi bir kupon bulunamamıştır.");
-        if (discountVoucher.ExpiringDate.HasValue && discountVoucher.ExpiringDate.Value.Day < DateTimeOffset.Now.Day)
+        if (!discountVoucher.IsActive)
+            return new ErrorResult($"{code} kodundaki kupon pasif durumdadır.");
+        if (discountVoucher.ExpiringDate.HasValue && discountVoucher.ExpiringDate.Value < DateTimeOffset.UtcNow)
             return new ErrorResult($"{code} kodundaki kuponun tarihi geçmiştir. Son tarih: {discountVoucher.ExpiringDate.Value:dd-MM-yyyy}");
+        if (discountVoucher.MaxUsageCount.HasValue && discountVoucher.CurrentUsageCount >= discountVoucher.MaxUsageCount.Value)
+            return new ErrorResult($"{code} kodundaki kuponun kullanım limiti dolmuştur. ({discountVoucher.MaxUsageCount} kullanım)");
         return new SuccessResult();
+    }
+
+    public async Task<IResult> DeleteVoucher(int id)
+    {
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
+        var voucher = await dbContext.DiscountVouchers.AsTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (voucher is null)
+            return new ErrorResult("Kupon bulunamadı.");
+        if (voucher.CurrentUsageCount > 0)
+            return new ErrorResult("Kullanılmış kupon silinemez.");
+
+        voucher.IsDeleted = true;
+        voucher.DeletedAt = DateTimeOffset.UtcNow;
+        await dbContext.SaveChangesAsync();
+        await _applicationLogManager.AddLog($"İndirim kodu silindi: {voucher.Code}", LogType.DiscountVoucher, LogAction.Delete);
+        return new SuccessResult("İndirim kodu silindi.");
     }
 }

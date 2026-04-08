@@ -11,6 +11,7 @@ namespace Entegrasyon.MVC.Features.Profile;
 [Authorize]
 public class ProfileController(
     IAuthService authService,
+    IApplicationUserManager userManager,
     IApplicationLogManager applicationLogManager) : Controller
 {
     [HttpGet("/profile")]
@@ -19,11 +20,37 @@ public class ProfileController(
         ViewData.SetPageTitle("Profil");
         ViewData.SetActiveNav("profile");
 
+        var fullName = User.FindFirstValue(ClaimTypes.GivenName) ?? "";
+        var parts = fullName.Split(' ', 2);
+
         ViewBag.UserName = User.Identity?.Name ?? "";
         ViewBag.Email = User.FindFirstValue(ClaimTypes.Email) ?? "";
-        ViewBag.FullName = User.FindFirstValue(ClaimTypes.GivenName) ?? "";
+        ViewBag.Name = parts.Length > 0 ? parts[0] : "";
+        ViewBag.Surname = parts.Length > 1 ? parts[1] : "";
 
         return View();
+    }
+
+    [HttpPost("/profile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProfile(string name, string surname)
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdStr, out var userId))
+        {
+            TempData.SetError("Kullanici kimlik bilgisi alinamadi.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var dto = new UpdateProfileDto { Name = name, Surname = surname };
+        var result = await userManager.UpdateOwnProfile(userId, dto);
+
+        if (result.Success)
+            TempData.SetSuccess("Profil bilgileriniz guncellendi.");
+        else
+            TempData.SetError(result.Message ?? "Profil guncellenemedi.");
+
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("/profile/change-password")]

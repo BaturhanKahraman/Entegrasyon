@@ -13,4 +13,7 @@ public interface IStorefrontGiftCardManager
     Task<IDataResult<Pageable<StorefrontGiftCard>>> GetGiftCardsAsync(int tenantId, int pageIndex = 0, int pageSize = 20);
     Task<IDataResult<StorefrontGiftCard>> GetByIdAsync(int tenantId, int id);
     Task<IDataResult<List<StorefrontGiftCardTransaction>>> GetTransactionsAsync(int giftCardId);
+    Task<IResult> CancelGiftCardAsync(int tenantId, int id);
+    Task<IDataResult<decimal>> TopUpGiftCardAsync(int tenantId, int id, decimal amount);
+    Task<IDataResult<Pageable<StorefrontGiftCard>>> GetGiftCardsFilteredAsync(int tenantId, GiftCardStatus? status, int pageIndex = 0, int pageSize = 20);
 }

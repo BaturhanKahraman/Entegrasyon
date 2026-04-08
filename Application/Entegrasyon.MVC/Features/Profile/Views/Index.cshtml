@@ -6,20 +6,30 @@
                         <h3 class="card-title">Kisisel Bilgiler</h3>
                     </div>
                     <div class="card-body">
-                        <form>
+                        <form method="post" action="/profile">
+                            @Html.AntiForgeryToken()
                             <div class="mb-3">
                                 <label class="form-label">Kullanici Adi</label>
                                 <input type="text" class="form-control" value="@ViewBag.UserName" readonly />
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Ad Soyad</label>
-                                <input type="text" class="form-control" value="@ViewBag.FullName" placeholder="Adinizi girin" />
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required">Ad</label>
+                                    <input type="text" name="name" class="form-control" value="@ViewBag.Name"
+                                           placeholder="Adinizi girin" required />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required">Soyad</label>
+                                    <input type="text" name="surname" class="form-control" value="@ViewBag.Surname"
+                                           placeholder="Soyadinizi girin" required />
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">E-posta</label>
-                                <input type="email" class="form-control" value="@ViewBag.Email" placeholder="E-posta adresiniz" />
+                                <input type="email" class="form-control" value="@ViewBag.Email" readonly />
+                                <small class="form-hint">E-posta degisikligi icin yoneticinize basvurun.</small>
                             </div>
-                            <button type="submit" class="btn btn-primary" disabled>Kaydet (yakin zamanda aktif olacak)</button>
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
                         </form>
                     </div>
                 </div>
@@ -30,21 +40,8 @@
                         <h3 class="card-title">Sifre Degistir</h3>
                     </div>
                     <div class="card-body">
-                        <form>
-                            <div class="mb-3">
-                                <label class="form-label">Mevcut Sifre</label>
-                                <input type="password" class="form-control" placeholder="Mevcut sifreniz" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Yeni Sifre</label>
-                                <input type="password" class="form-control" placeholder="Yeni sifreniz" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Yeni Sifre (Tekrar)</label>
-                                <input type="password" class="form-control" placeholder="Yeni sifrenizi tekrar girin" />
-                            </div>
-                            <button type="submit" class="btn btn-warning" disabled>Sifre Degistir (yakin zamanda aktif olacak)</button>
-                        </form>
+                        <p class="text-secondary">Sifrenizi degistirmek icin asagidaki baglantiya tiklayin.</p>
+                        <a href="/profile/change-password" class="btn btn-warning">Sifre Degistir</a>
                     </div>
                 </div>
             </div>

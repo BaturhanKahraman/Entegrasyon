@@ -102,6 +102,32 @@ public class CargoCompaniesManager(
         return new SuccessResult();
     }
 
+    public async Task<IResult> SetDefaultCargoCompany(int companyId, string? customerCode, string? apiKey, string? secretKey)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Mevcut default'u kaldır
+        await dbContext.CargoCompanies
+            .Where(c => c.IsDefault)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.IsDefault, false));
+
+        var company = await dbContext.CargoCompanies.FindAsync(companyId);
+        if (company is null)
+            return new ErrorResult("Kargo firmasi bulunamadi.");
+
+        company.IsDefault = true;
+        company.CustomerCode = customerCode;
+        company.ApiKey = apiKey;
+        company.SecretKey = secretKey;
+        company.IsIntegrated = !string.IsNullOrWhiteSpace(apiKey);
+
+        await dbContext.SaveChangesAsync();
+        InvalidateCache();
+
+        await applicationLogManager.AddLog($"Varsayilan kargo firmasi ayarlandi: {company.Name}", LogType.Settings, LogAction.Update);
+        return new SuccessResult("Varsayilan kargo firmasi ayarlandi.");
+    }
+
     private async Task<IResult> CheckIfTheSameNameExits(string name)
     {
         var all = await GetCargoCompanies();

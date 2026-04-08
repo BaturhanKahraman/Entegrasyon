@@ -1,15 +1,27 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Orders.Order>
 
-<div id="picking-table">
+<div id="picking-table" hx-trigger="pickingChanged from:body" hx-get="/picking" hx-target="#picking-table" hx-swap="innerHTML">
     @if (Model.HasItem)
     {
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+            <span class="text-secondary">@Model.TotalItemCount siparis bekliyor</span>
+            <button class="btn btn-sm btn-primary" id="batchPackBtn" style="display:none;"
+                    onclick="batchPack()">
+                <i class="ti ti-packages icon"></i> Secilenleri Paketle
+            </button>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Sipariş No</th>
+                        <th class="w-1">
+                            <input type="checkbox" class="form-check-input"
+                                   onchange="toggleAllCheckboxes(this)"/>
+                        </th>
+                        <th>Siparis No</th>
                         <th>Musteri</th>
-                        <th>Sipariş Tarihi</th>
+                        <th>Siparis Tarihi</th>
                         <th>Urun Adedi</th>
                         <th>Toplam</th>
                         <th>Pazaryeri</th>
@@ -21,9 +33,20 @@
                     {
                         <tr id="picking-row-@order.Id">
                             <td>
+                                <input type="checkbox" class="form-check-input picking-check"
+                                       value="@order.Id" onchange="updateBatchBtn()"/>
+                            </td>
+                            <td>
                                 <a href="/marketplace/orders/@order.Id" class="text-reset fw-bold" target="_blank">
                                     @(order.OrderNumber ?? order.Id.ToString()[..8])
                                 </a>
+                                <button class="btn btn-ghost-secondary btn-sm ms-1"
+                                        hx-get="/picking/@order.Id/items"
+                                        hx-target="#picking-row-@order.Id"
+                                        hx-swap="afterend"
+                                        title="Kalemleri goster">
+                                    <i class="ti ti-list-details"></i>
+                                </button>
                             </td>
                             <td class="text-secondary">
                                 @order.CustomerFirstName @order.CustomerLastName
@@ -43,9 +66,8 @@
                             <td>
                                 <button class="btn btn-sm btn-primary"
                                         hx-post="/picking/@order.Id/pack"
-                                        hx-target="#picking-row-@order.Id"
-                                        hx-swap="outerHTML swap:300ms"
-                                        hx-confirm="Bu Sipariş hazirlaniyor olarak isaretlensin mi?">
+                                        hx-swap="none"
+                                        hx-confirm="Bu siparis hazirlaniyor olarak isaretlensin mi?">
                                     <i class="ti ti-package icon"></i>
                                     Paketle
                                 </button>
@@ -73,9 +95,32 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Hazirlama bekleyen Sipariş yok",
-                         Subtitle = "Tum Siparişler isleme alindi veya henuz yeni Sipariş gelmedi."
+                         Title = "Hazirlama bekleyen siparis yok",
+                         Subtitle = "Tum siparisler isleme alindi veya henuz yeni siparis gelmedi."
                      }'/>
         </div>
     }
 </div>
+
+<script>
+function toggleAllCheckboxes(el) {
+    document.querySelectorAll('.picking-check').forEach(cb => cb.checked = el.checked);
+    updateBatchBtn();
+}
+function updateBatchBtn() {
+    var checked = document.querySelectorAll('.picking-check:checked').length;
+    var btn = document.getElementById('batchPackBtn');
+    if (btn) btn.style.display = checked > 0 ? '' : 'none';
+}
+function batchPack() {
+    var ids = Array.from(document.querySelectorAll('.picking-check:checked')).map(cb => cb.value);
+    if (ids.length === 0) return;
+    if (!confirm(ids.length + ' siparisi paketlemek istediginize emin misiniz?')) return;
+
+    var formData = new FormData();
+    ids.forEach(id => formData.append('orderIds', id));
+
+    fetch('/picking/batch-pack', { method: 'POST', body: formData })
+        .then(r => { htmx.trigger(document.body, 'pickingChanged'); });
+}
+</script>
