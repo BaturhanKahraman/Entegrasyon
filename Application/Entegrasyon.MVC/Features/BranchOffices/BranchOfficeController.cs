@@ -171,32 +171,10 @@ public class BranchOfficeController(
         return RedirectToAction(nameof(Detail), new { id });
     }
 
-    [HttpPost("/branch-offices/{id:int}/delete")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var result = await branchOfficeManager.Delete(id);
-
-        if (Request.IsHtmx())
-        {
-            if (result.Success)
-            {
-                Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sube silindi.", type = "success" });
-                return Content("");
-            }
-
-            Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Silinemedi.", type = "danger" });
-            return StatusCode(422);
-        }
-
-        if (result.Success)
-            TempData.SetSuccess("Sube basariyla silindi.");
-        else
-            TempData.SetError(result.Message ?? "Sube silinemedi.");
-
-        return RedirectToAction(nameof(Index));
-    }
+    // NOT: Eski tek-adımlı Delete endpoint'i Faz 7 cleanup ile kaldırıldı.
+    // Yeni iki-aşamalı silme akışı için POST /branch-offices/{id}/request-delete kullanılır
+    // (bkz. BranchOfficeDeletionRequestController). Manager.Delete(int) metodu ve unit testleri
+    // şimdilik geri dönüş güvenliği için duruyor; yeni akış stage'de doğrulandıktan sonra silinecek.
 
     [HttpGet("/branch-offices/{id:int}/transfer")]
     public async Task<IActionResult> TransferDialog(int id)

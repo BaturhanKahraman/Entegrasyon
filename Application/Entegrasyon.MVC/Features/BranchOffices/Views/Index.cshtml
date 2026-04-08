@@ -39,13 +39,17 @@
                                     <td>
                                         <div class="btn-list flex-nowrap">
                                             <a href="/branch-offices/@branch.Id" class="btn btn-sm btn-outline-primary">Detay</a>
-                                            <button class="btn btn-sm btn-outline-danger"
-                                                    hx-post="/branch-offices/@branch.Id/delete"
-                                                    hx-target="closest tr"
-                                                    hx-swap="outerHTML swap:300ms"
-                                                    hx-confirm="Bu subeyi silmek istediginize emin misiniz?">
-                                                Sil
-                                            </button>
+                                            @if (!branch.IsHeadquarters)
+                                            {
+                                                <form method="post"
+                                                      action="/branch-offices/@branch.Id/request-delete"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('Bu şube için silme talebi açılacak. Devam etmek istiyor musunuz?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        Silme Talebi Aç
+                                                    </button>
+                                                </form>
+                                            }
                                         </div>
                                     </td>
                                 </tr>

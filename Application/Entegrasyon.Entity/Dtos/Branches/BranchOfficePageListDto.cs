@@ -7,7 +7,8 @@ public record BranchOfficePageListDto(
     int TotalStock,
     int MarketPlaceCount,
     DateTimeOffset CreatedAt,
-    bool IsDefaultMarketPlaceStock)
+    bool IsDefaultMarketPlaceStock,
+    bool IsHeadquarters)
 {
     // Client-side populated after query
     public List<string> MarketPlaceNames { get; init; } = [];

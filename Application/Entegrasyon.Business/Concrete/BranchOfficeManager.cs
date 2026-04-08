@@ -294,7 +294,8 @@ public class BranchOfficeManager(
                     .Sum(s => (int?)(s.FirstTotalStock - s.SoldQuantity)) ?? 0),
                 dbContext.MarketPlaceWarehouses.Count(w => w.BranchOfficeId == b.Id && !w.IsDeleted),
                 b.CreatedAt,
-                b.IsDefaultMarketPlaceStock))
+                b.IsDefaultMarketPlaceStock,
+                b.IsHeadquarters))
             .ToListAsync();
 
         // Marketplace isimlerini ayrı çek (IEnumerable<string> EF projection'da translate edilemiyor)
