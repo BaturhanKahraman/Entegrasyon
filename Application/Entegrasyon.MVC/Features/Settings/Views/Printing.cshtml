@@ -56,7 +56,7 @@
                             else
                             {
                                 <div class="alert alert-info mb-0">
-                                    <h4 class="alert-title">Yazici ayarlari henuz tanimlanmamis</h4>
+                                    <h4 class="alert-title">Yazici ayarlari henüz tanimlanmamis</h4>
                                     <p class="text-secondary">
                                         Yazici baglanti ayarlari (IP, Port, Dil) admin panelinden "Printer" grubunda tanimlanabilir.
                                         Asagidaki tipik ayarlari kullanabilirsiniz:
@@ -140,7 +140,7 @@
                                             <td class="fw-bold">@template.Name</td>
                                             <td>
                                                 <span class="badge @(template.Type == Entegrasyon.Entity.Labels.LabelType.ProductBarcode ? "bg-blue-lt" : "bg-green-lt")">
-                                                    @(template.Type == Entegrasyon.Entity.Labels.LabelType.ProductBarcode ? "Urun Barkodu" : "Raf Etiketi")
+                                                    @(template.Type == Entegrasyon.Entity.Labels.LabelType.ProductBarcode ? "Ürün Barkodu" : "Raf Etiketi")
                                                 </span>
                                             </td>
                                             <td>@template.WidthMm x @template.HeightMm</td>
@@ -179,9 +179,9 @@
                     {
                         <div class="card-body">
                             <div class="empty py-3">
-                                <p class="empty-title">Henuz etiket sablonu yok</p>
+                                <p class="empty-title">Henüz etiket sablonu yok</p>
                                 <p class="empty-subtitle text-secondary">
-                                    Urun barkodu veya raf etiketi icin sablon olusturun.
+                                    Ürün barkodu veya raf etiketi için sablon olusturun.
                                 </p>
                             </div>
                         </div>
@@ -212,7 +212,7 @@
                     <div class="mb-3">
                         <label class="form-label required">Etiket Turu</label>
                         <select name="type" class="form-select" required>
-                            <option value="1">Urun Barkodu</option>
+                            <option value="1">Ürün Barkodu</option>
                             <option value="2">Raf Etiketi</option>
                         </select>
                     </div>

@@ -2,20 +2,20 @@
 
 <div class="d-flex justify-content-end mb-3 d-print-none">
     <a href="/sales" class="btn btn-outline-secondary">
-        Satislara Don
+        Satışlara Don
     </a>
 </div>
 
         <div class="row g-3">
             <!-- Sol Panel: Arama + Sepet -->
             <div class="col-lg-8">
-                <!-- Urun Arama -->
+                <!-- Ürün Arama -->
                 <div class="card mb-3">
                     <div class="card-body py-2">
                         <div class="position-relative">
                             <input type="text" class="form-control form-control-lg"
                                    id="saleSearchInput"
-                                   placeholder="Barkod okutun veya urun adi yazin..."
+                                   placeholder="Barkod okutun veya ürün adi yazin..."
                                    autocomplete="off"
                                    hx-get="/sales/search-product"
                                    hx-trigger="keyup changed delay:300ms"
@@ -52,12 +52,12 @@
                 </div>
             </div>
 
-            <!-- Sag Panel: Musteri + Ozet + Tamamla -->
+            <!-- Sag Panel: Müşteri + Ozet + Tamamla -->
             <div class="col-lg-4">
-                <!-- Musteri Secimi -->
+                <!-- Müşteri Secimi -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h3 class="card-title">Musteri</h3>
+                        <h3 class="card-title">Müşteri</h3>
                     </div>
                     <div class="card-body">
                         <div id="customer-badge">
@@ -66,7 +66,7 @@
                         <div class="position-relative mt-2">
                             <input type="text" class="form-control"
                                    id="customerSearchInput"
-                                   placeholder="Musteri ara..."
+                                   placeholder="Müşteri ara..."
                                    autocomplete="off"
                                    hx-get="/sales/search-customer"
                                    hx-trigger="keyup changed delay:300ms"
@@ -81,15 +81,15 @@
                     </div>
                 </div>
 
-                <!-- Satis Tamamla -->
+                <!-- Satış Tamamla -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Satis Ozeti</h3>
+                        <h3 class="card-title">Satış Ozeti</h3>
                     </div>
                     <div class="card-body" id="sale-summary">
                         <div class="datagrid">
                             <div class="datagrid-item">
-                                <div class="datagrid-title">Urun Adedi</div>
+                                <div class="datagrid-title">Ürün Adedi</div>
                                 <div class="datagrid-content" id="summaryItemCount">@Model.TotalItems</div>
                             </div>
                             <div class="datagrid-item">
@@ -110,7 +110,7 @@
                         <form method="post" action="/sales/complete">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-success w-100 btn-lg">
-                                Satisi Tamamla
+                                Satışı Tamamla
                             </button>
                         </form>
                     </div>
@@ -122,7 +122,7 @@
     <script>
         document.getElementById('saleSearchInput')?.focus();
 
-        // Urun ekleme — arama sonuclari tikladiginda
+        // Ürün ekleme — arama sonuclari tikladiginda
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('[data-add-sale-product]');
             if (!btn) return;
@@ -139,7 +139,7 @@
             document.getElementById('saleSearchInput').focus();
         });
 
-        // Musteri secimi — arama sonuclari tikladiginda
+        // Müşteri secimi — arama sonuclari tikladiginda
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('[data-select-customer]');
             if (!btn) return;

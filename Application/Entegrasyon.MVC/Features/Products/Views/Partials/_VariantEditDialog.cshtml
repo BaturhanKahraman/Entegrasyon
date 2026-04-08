@@ -9,7 +9,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Varyant Duzenle &mdash; <code>@variant.Barcode</code></h5>
+                <h5 class="modal-title">Varyant Düzenle &mdash; <code>@variant.Barcode</code></h5>
                 <button type="button" class="btn-close" onclick="closeVariantModal()"></button>
             </div>
             <form method="post" action="/products/@productId/variants/@variant.Id/edit"
@@ -26,7 +26,7 @@
                                    value="@variant.ListPrice" min="0.01" step="0.01" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Satis Fiyati</label>
+                            <label class="form-label required">Satış Fiyati</label>
                             <input type="number" name="SalePrice" class="form-control"
                                    value="@variant.SalePrice" min="0.01" step="0.01" required />
                         </div>
@@ -45,7 +45,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">KDV Orani (%)</label>
+                            <label class="form-label">KDV Oranı (%)</label>
                             <input type="number" name="VatRate" class="form-control"
                                    value="@variant.VatRate" min="0" max="100" step="0.01" />
                         </div>
@@ -58,16 +58,16 @@
 
                     <hr class="my-3" />
 
-                    <!-- Mevcut Gorseller -->
+                    <!-- Mevcut Görseller -->
                     @if (variant.UploadedImages.Any())
                     {
-                        <h4 class="mb-2">Mevcut Gorseller</h4>
+                        <h4 class="mb-2">Mevcut Görseller</h4>
                         <div class="row g-2 mb-3">
                             @foreach (var img in variant.UploadedImages)
                             {
                                 <div class="col-4 col-sm-3">
                                     <div class="card card-sm">
-                                        <img src="@img.Src" class="card-img-top" alt="Gorsel"
+                                        <img src="@img.Src" class="card-img-top" alt="Görsel"
                                              style="height:80px;object-fit:cover;" />
                                         <div class="card-body p-1 text-center">
                                             @if (img.IsMain)
@@ -85,11 +85,11 @@
                         </div>
                     }
 
-                    <!-- Yeni Gorsel Yukle -->
-                    <h4 class="mb-2">Gorsel Yukle</h4>
+                    <!-- Yeni Görsel Yükle -->
+                    <h4 class="mb-2">Görsel Yükle</h4>
                     <div class="mb-3">
                         <input type="file" name="files" class="form-control" multiple accept="image/*" />
-                        <small class="form-hint">Birden fazla gorsel secebilirsiniz.</small>
+                        <small class="form-hint">Birden fazla görsel secebilirsiniz.</small>
                     </div>
 
                     <!-- Diger Varyantlardan Sec -->
@@ -109,7 +109,7 @@
                                             <input type="checkbox" name="existingImageIds" value="@img.Id"
                                                    class="form-imagecheck-input" />
                                             <span class="form-imagecheck-figure">
-                                                <img src="@img.Src" alt="Gorsel"
+                                                <img src="@img.Src" alt="Görsel"
                                                      class="form-imagecheck-image"
                                                      style="height:70px;object-fit:cover;width:100%;border-radius:4px;" />
                                             </span>

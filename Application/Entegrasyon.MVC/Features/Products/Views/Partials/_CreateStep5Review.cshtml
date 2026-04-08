@@ -9,7 +9,7 @@
         <!-- General Info -->
         <div class="datagrid mb-4">
             <div class="datagrid-item">
-                <div class="datagrid-title">Urun Adi</div>
+                <div class="datagrid-title">Ürün Adi</div>
                 <div class="datagrid-content">@Model.Title</div>
             </div>
             <div class="datagrid-item">
@@ -48,7 +48,7 @@
         }
         @if (filledAttrs.Count > 0)
         {
-            <h4 class="mb-2">Kategori Ozellikleri</h4>
+            <h4 class="mb-2">Kategori Özellikleri</h4>
             <div class="datagrid mb-4">
                 @foreach (var attr in filledAttrs)
                 {
@@ -63,7 +63,7 @@
         <!-- Description -->
         @if (!string.IsNullOrWhiteSpace(Model.Description))
         {
-            <h4 class="mb-2">Aciklama</h4>
+            <h4 class="mb-2">Açıklama</h4>
             <div class="mb-4 text-secondary">@Model.Description</div>
         }
 
@@ -83,7 +83,7 @@
                         <th>Fiyat</th>
                         <th>KDV</th>
                         <th>Stok</th>
-                        <th>Gorsel</th>
+                        <th>Görsel</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,7 +109,7 @@
                                     <span class="badge bg-green-lt me-1">@stock.BranchOfficeName: @stock.Stock</span>
                                 }
                             </td>
-                            <td>@imgCount gorsel</td>
+                            <td>@imgCount görsel</td>
                         </tr>
                     }
                 </tbody>

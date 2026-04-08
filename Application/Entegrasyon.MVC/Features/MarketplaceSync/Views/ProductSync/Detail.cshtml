@@ -13,12 +13,12 @@
         <!-- Product Info Card -->
         <div class="card mb-3">
             <div class="card-header">
-                <h3 class="card-title">Urun Bilgileri</h3>
+                <h3 class="card-title">Ürün Bilgileri</h3>
             </div>
             <div class="card-body">
                 <div class="datagrid">
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Urun Adi</div>
+                        <div class="datagrid-title">Ürün Adi</div>
                         <div class="datagrid-content">@Model.Product.Title</div>
                     </div>
                     <div class="datagrid-item">
@@ -40,7 +40,7 @@
                     @if (!string.IsNullOrWhiteSpace(Model.Product.Description))
                     {
                         <div class="datagrid-item">
-                            <div class="datagrid-title">Aciklama</div>
+                            <div class="datagrid-title">Açıklama</div>
                             <div class="datagrid-content">@Model.Product.Description</div>
                         </div>
                     }
@@ -93,7 +93,7 @@
                                 {
                                     <div class="alert alert-warning">
                                         <i class="ti ti-alert-triangle alert-icon"></i>
-                                        API kimlik bilgileri yapilandirilmamis. Senkronizasyon icin marketplace ayarlarindan API anahtarlarini yapilandirin.
+                                        API kimlik bilgileri yapilandirilmamis. Senkronizasyon için marketplace ayarlarindan API anahtarlarini yapilandirin.
                                     </div>
                                 }
 
@@ -127,14 +127,14 @@
                                                     }
                                                     else
                                                     {
-                                                        <span class="text-secondary">Henuz senkronize edilmedi</span>
+                                                        <span class="text-secondary">Henüz senkronize edilmedi</span>
                                                     }
                                                 </div>
                                             </div>
                                             @if (!string.IsNullOrWhiteSpace(mp.ExternalProductId))
                                             {
                                                 <div class="datagrid-item">
-                                                    <div class="datagrid-title">Dis Urun ID</div>
+                                                    <div class="datagrid-title">Dis Ürün ID</div>
                                                     <div class="datagrid-content"><code>@mp.ExternalProductId</code></div>
                                                 </div>
                                             }
@@ -214,7 +214,7 @@
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
                                  Title = "Pazaryeri durumu bulunamadi",
-                                 Subtitle = "Bu urun icin pazaryeri senkronizasyon bilgisi mevcut degil."
+                                 Subtitle = "Bu ürün için pazaryeri senkronizasyon bilgisi mevcut degil."
                              }'/>
                 </div>
             </div>
@@ -232,9 +232,9 @@
                         <div class="empty-icon">
                             <i class="ti ti-clock" style="font-size:2.5rem;"></i>
                         </div>
-                        <p class="empty-title">Henuz aktivite yok</p>
+                        <p class="empty-title">Henüz aktivite yok</p>
                         <p class="empty-subtitle text-secondary">
-                            Urun senkronize edildiginde aktivite gecmisi burada gorunecektir.
+                            Ürün senkronize edildiginde aktivite gecmisi burada gorunecektir.
                         </p>
                     </div>
                 }

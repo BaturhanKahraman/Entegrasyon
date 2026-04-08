@@ -66,15 +66,15 @@
             </div>
         </div>
 
-        @* ── Iade Talepleri Tablosu ─────────────────────────────── *@
+        @* ── İade Talepleri Tablosu ─────────────────────────────── *@
         <div class="card" hx-get="/storefront/returns" hx-trigger="returnsUpdated from:body" hx-select=".card .table-responsive" hx-target=".table-responsive" hx-swap="outerHTML">
             <div class="card-header">
-                <h3 class="card-title">Iade Talepleri</h3>
+                <h3 class="card-title">İade Talepleri</h3>
             </div>
             @if (Model.Count == 0)
             {
                 <div class="card-body text-center py-5">
-                    <p class="text-secondary">Henuz iade talebi yok.</p>
+                    <p class="text-secondary">Henüz iade talebi yok.</p>
                 </div>
             }
             else
@@ -85,10 +85,10 @@
                             <tr>
                                 <th>#</th>
                                 <th>Sipariş</th>
-                                <th>Musteri</th>
+                                <th>Müşteri</th>
                                 <th>Sebep</th>
                                 <th>Durum</th>
-                                <th>Iade Tutari</th>
+                                <th>İade Tutari</th>
                                 <th>Tarih</th>
                                 <th class="w-1">Islem</th>
                             </tr>
@@ -107,7 +107,7 @@
                                 var statusText = ret.Status switch
                                 {
                                     ReturnStatus.Pending => "Beklemede",
-                                    ReturnStatus.Approved => "Onaylandi",
+                                    ReturnStatus.Approved => "Onaylandı",
                                     ReturnStatus.Rejected => "Reddedildi",
                                     ReturnStatus.Completed => "Tamamlandi",
                                     _ => "Bilinmiyor"
@@ -190,7 +190,7 @@
                                                            placeholder="Inceleme notu..." />
                                                 </div>
                                                 <div>
-                                                    <label class="form-label small">Iade Tutari (TL)</label>
+                                                    <label class="form-label small">İade Tutari (TL)</label>
                                                     <input type="number" step="0.01" name="refundAmount" class="form-control form-control-sm"
                                                            placeholder="0.00" />
                                                 </div>

@@ -18,7 +18,7 @@
                         <input type="text"
                                class="form-control"
                                name="search"
-                               placeholder="Fatura no veya musteri ara..."
+                               placeholder="Fatura no veya müşteri ara..."
                                value="@ViewBag.Search"
                                hx-get="/invoicing"
                                hx-trigger="keyup changed delay:300ms"
@@ -37,7 +37,7 @@
                             <option value="">Tum Durumlar</option>
                             <option value="@((int)EInvoiceStatus.Draft)">Taslak</option>
                             <option value="@((int)EInvoiceStatus.Sent)">Gonderildi</option>
-                            <option value="@((int)EInvoiceStatus.Accepted)">Onaylandi</option>
+                            <option value="@((int)EInvoiceStatus.Accepted)">Onaylandı</option>
                             <option value="@((int)EInvoiceStatus.Rejected)">Reddedildi</option>
                             <option value="@((int)EInvoiceStatus.Cancelled)">Iptal</option>
                         </select>

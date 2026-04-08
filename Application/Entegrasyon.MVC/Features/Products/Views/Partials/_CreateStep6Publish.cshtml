@@ -7,7 +7,7 @@
     <div class="card mb-3">
         <div class="card-header">
             <h3 class="card-title">Magaza Yayinlama</h3>
-            <span class="card-subtitle">Urunu kendi magazanizda yayinlamak icin SEO ve fiyat bilgilerini ayarlayin. Bu adimi atlayabilirsiniz.</span>
+            <span class="card-subtitle">Ürünü kendi magazanizda yayinlamak için SEO ve fiyat bilgilerini ayarlayin. Bu adimi atlayabilirsiniz.</span>
         </div>
         <div class="card-body">
             <h4 class="mb-3">SEO Bilgileri</h4>
@@ -16,18 +16,18 @@
                     <label class="form-label">SEO Baslik</label>
                     <input type="text" name="SeoTitle" value="@Model.SeoTitle" class="form-control"
                            placeholder="@Model.Title" maxlength="70" />
-                    <small class="text-muted">Bos birakilirsa urun adi kullanilir (maks. 70 karakter)</small>
+                    <small class="text-muted">Bos birakilirsa ürün adi kullanilir (maks. 70 karakter)</small>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">SEO URL (Slug)</label>
                     <input type="text" name="SeoSlug" value="@Model.SeoSlug" class="form-control"
-                           placeholder="ornek-urun-adi" />
+                           placeholder="ornek-ürün-adi" />
                     <small class="text-muted">Bos birakilirsa otomatik olusturulur</small>
                 </div>
                 <div class="col-12 mb-3">
-                    <label class="form-label">SEO Aciklama</label>
+                    <label class="form-label">SEO Açıklama</label>
                     <textarea name="SeoDescription" class="form-control" rows="2" maxlength="160"
-                              placeholder="Arama motorlarinda gorunecek kisa aciklama...">@Model.SeoDescription</textarea>
+                              placeholder="Arama motorlarinda gorunecek kisa açıklama...">@Model.SeoDescription</textarea>
                     <small class="text-muted">Maks. 160 karakter</small>
                 </div>
                 <div class="col-12 mb-3">
@@ -40,13 +40,13 @@
             @if (Model.Variants.Count > 0)
             {
                 <h4 class="mb-3 mt-4">Magaza Fiyatlari</h4>
-                <p class="text-muted small mb-3">Her varyant icin magazada gorunecek fiyati belirleyin. Bos birakilirsa satis fiyati kullanilir.</p>
+                <p class="text-muted small mb-3">Her varyant için magazada gorunecek fiyati belirleyin. Bos birakilirsa satış fiyati kullanilir.</p>
                 <div class="table-responsive">
                     <table class="table table-vcenter table-sm">
                         <thead>
                             <tr>
                                 <th>Varyant</th>
-                                <th>Satis Fiyati</th>
+                                <th>Satış Fiyati</th>
                                 <th>Magaza Fiyati</th>
                             </tr>
                         </thead>

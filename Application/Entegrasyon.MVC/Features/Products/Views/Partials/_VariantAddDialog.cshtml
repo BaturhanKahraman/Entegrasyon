@@ -25,7 +25,7 @@
                                    min="0.01" step="0.01" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Satis Fiyati</label>
+                            <label class="form-label required">Satış Fiyati</label>
                             <input type="number" name="SalePrice" class="form-control"
                                    min="0.01" step="0.01" required />
                         </div>
@@ -37,7 +37,7 @@
                                    min="0" step="0.01" value="0" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">KDV Orani (%)</label>
+                            <label class="form-label">KDV Oranı (%)</label>
                             <input type="number" name="VatRate" class="form-control"
                                    min="0" max="100" step="0.01" value="20" />
                         </div>
@@ -58,17 +58,17 @@
 
                     <hr class="my-3" />
 
-                    <!-- Gorsel Yukle -->
-                    <h4 class="mb-2">Gorsel Yukle</h4>
+                    <!-- Görsel Yükle -->
+                    <h4 class="mb-2">Görsel Yükle</h4>
                     <div class="mb-3">
                         <input type="file" name="files" class="form-control" multiple accept="image/*" />
-                        <small class="form-hint">Birden fazla gorsel secebilirsiniz.</small>
+                        <small class="form-hint">Birden fazla görsel secebilirsiniz.</small>
                     </div>
 
                     <!-- Diger Varyantlardan Sec -->
                     @if (Model.OtherVariantImages.Any())
                     {
-                        <h4 class="mb-2">Mevcut Gorsellerden Sec</h4>
+                        <h4 class="mb-2">Mevcut Görsellerden Sec</h4>
                         @foreach (var group in Model.OtherVariantImages)
                         {
                             <p class="mb-1 text-secondary" style="font-size:0.8rem">
@@ -82,7 +82,7 @@
                                             <input type="checkbox" name="existingImageIds" value="@img.Id"
                                                    class="form-imagecheck-input" />
                                             <span class="form-imagecheck-figure">
-                                                <img src="@img.Src" alt="Gorsel"
+                                                <img src="@img.Src" alt="Görsel"
                                                      class="form-imagecheck-image"
                                                      style="height:70px;object-fit:cover;width:100%;border-radius:4px;" />
                                             </span>

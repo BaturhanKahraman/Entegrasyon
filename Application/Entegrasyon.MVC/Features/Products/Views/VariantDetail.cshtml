@@ -7,7 +7,7 @@
                 hx-get="/products/@Model.ProductId/variants/@Model.VariantId/edit"
                 hx-target="#modal-container">
             <i class="ti ti-edit icon"></i>
-            Duzenle
+            Düzenle
         </button>
         <a href="/products/@Model.ProductId/variants" class="btn btn-outline-secondary">
             Varyantlara Don
@@ -26,7 +26,7 @@
             <div class="card-body">
                 <div class="datagrid">
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Urun</div>
+                        <div class="datagrid-title">Ürün</div>
                         <div class="datagrid-content">
                             <a href="/products/@Model.ProductId">@Model.ProductTitle</a>
                         </div>
@@ -63,7 +63,7 @@
                         <div class="datagrid-content fw-bold">@Model.ListPrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Satis Fiyati</div>
+                        <div class="datagrid-title">Satış Fiyati</div>
                         <div class="datagrid-content fw-bold text-primary">@Model.SalePrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
@@ -75,7 +75,7 @@
                         <div class="datagrid-content">@Model.ECommercePrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">KDV Orani</div>
+                        <div class="datagrid-title">KDV Oranı</div>
                         <div class="datagrid-content">%@Model.VatRate</div>
                     </div>
                     <div class="datagrid-item">
@@ -123,12 +123,12 @@
             </div>
         }
 
-        <!-- Ozellikler -->
+        <!-- Özellikler -->
         @if (Model.Attributes.Any())
         {
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">Ozellikler</h3>
+                    <h3 class="card-title">Özellikler</h3>
                 </div>
                 <div class="card-body">
                     <div class="datagrid">
@@ -198,7 +198,7 @@
                                                 }
                                                 @if (mp.SalePriceOverride.HasValue)
                                                 {
-                                                    <span class="ms-1">Satis: @mp.SalePriceOverride.Value.ToString("N2")</span>
+                                                    <span class="ms-1">Satış: @mp.SalePriceOverride.Value.ToString("N2")</span>
                                                 }
                                             </div>
                                         }
@@ -218,13 +218,13 @@
         }
     </div>
 
-    <!-- Sag Kolon: Gorseller -->
+    <!-- Sag Kolon: Görseller -->
     <div class="col-lg-4">
         <div class="card mb-3">
             <div class="card-header">
-                <h3 class="card-title">Gorseller</h3>
+                <h3 class="card-title">Görseller</h3>
                 <div class="card-actions">
-                    <span class="badge bg-blue">@Model.Images.Count gorsel</span>
+                    <span class="badge bg-blue">@Model.Images.Count görsel</span>
                 </div>
             </div>
             <div class="card-body">
@@ -235,12 +235,12 @@
                         {
                             <div class="col-6">
                                 <div class="card card-sm">
-                                    <img src="@img.Src" class="card-img-top" alt="Gorsel"
+                                    <img src="@img.Src" class="card-img-top" alt="Görsel"
                                          style="height:120px;object-fit:cover;" />
                                     @if (img.IsMain)
                                     {
                                         <div class="card-body p-1 text-center">
-                                            <span class="badge bg-blue badge-sm">Ana Gorsel</span>
+                                            <span class="badge bg-blue badge-sm">Ana Görsel</span>
                                         </div>
                                     }
                                 </div>
@@ -250,7 +250,7 @@
                 }
                 else
                 {
-                    <p class="text-secondary">Henuz gorsel yuklenmemis.</p>
+                    <p class="text-secondary">Henüz görsel yüklenmemiş.</p>
                 }
             </div>
         </div>

@@ -10,13 +10,13 @@
     </div>
     <div class="card-body">
         <!-- Attribute Match -->
-        <h4 class="mb-3">Ozellik Eslesmesi</h4>
+        <h4 class="mb-3">Özellik Eslesmesi</h4>
         @if (Model.AttributeMatch is not null)
         {
             <div class="alert alert-success">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>Eslendi:</strong> Pazaryeri Ozellik ID: @Model.AttributeMatch.MarketPlaceCategoryAttributeId
+                        <strong>Eslendi:</strong> Pazaryeri Özellik ID: @Model.AttributeMatch.MarketPlaceCategoryAttributeId
                         @if (!string.IsNullOrEmpty(Model.AttributeMatch.MarketPlaceCategoryAttributeExternalId))
                         {
                             <span class="text-muted ms-1">(External: @Model.AttributeMatch.MarketPlaceCategoryAttributeExternalId)</span>
@@ -24,7 +24,7 @@
                     </div>
                     <button class="btn btn-outline-danger btn-sm"
                             hx-post="/marketplace/sync/attributes/@Model.AttributeId/unmap?mp=@Model.MarketPlaceId"
-                            hx-confirm="Ozellik eslemesini kaldirmak istediginize emin misiniz?"
+                            hx-confirm="Özellik eslemesini kaldirmak istediginize emin misiniz?"
                             hx-swap="none">
                         Kaldir
                     </button>
@@ -43,7 +43,7 @@
                         <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
                     }
                     <div class="col-auto">
-                        <label class="form-label">Pazaryeri Ozellik ID</label>
+                        <label class="form-label">Pazaryeri Özellik ID</label>
                         <input type="number" class="form-control form-control-sm" name="mpAttributeId" required />
                     </div>
                     <div class="col-auto">
@@ -60,13 +60,13 @@
         <!-- Value Matches -->
         @if (Model.ValueMatches.Any())
         {
-            <h4 class="mt-4 mb-3">Deger Eslesmeleri</h4>
+            <h4 class="mt-4 mb-3">Değer Eslesmeleri</h4>
             <div class="table-responsive">
                 <table class="table table-vcenter table-hover card-table table-sm">
                     <thead>
                         <tr>
-                            <th>Deger</th>
-                            <th>Pazaryeri Degeri</th>
+                            <th>Değer</th>
+                            <th>Pazaryeri Değeri</th>
                             <th>Durum</th>
                             <th class="w-1">Islem</th>
                         </tr>
@@ -105,7 +105,7 @@
                                     {
                                         <button class="btn btn-outline-danger btn-sm"
                                                 hx-post="/marketplace/sync/attributes/values/@val.ValueId/unmap?mp=@Model.MarketPlaceId"
-                                                hx-confirm="Deger eslemesini kaldirmak istediginize emin misiniz?"
+                                                hx-confirm="Değer eslemesini kaldirmak istediginize emin misiniz?"
                                                 hx-target="closest tr"
                                                 hx-swap="outerHTML"
                                                 hx-on::after-request="htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'})">
@@ -140,18 +140,18 @@
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Deger Esle</h5>
+                <h5 class="modal-title">Değer Esle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="mapValueForm" method="post" hx-swap="none"
                   hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('mapValueModal')).hide(); htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'}); }">
                 <div class="modal-body">
                     <p class="text-secondary mb-3">
-                        <strong id="modal-value-name"></strong> icin pazaryeri degeri girin.
+                        <strong id="modal-value-name"></strong> için pazaryeri degeri girin.
                     </p>
                     <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
                     <div class="mb-3">
-                        <label class="form-label">Pazaryeri Deger ID</label>
+                        <label class="form-label">Pazaryeri Değer ID</label>
                         <input type="number" class="form-control" name="mpValueId" required />
                     </div>
                     <div class="mb-3">

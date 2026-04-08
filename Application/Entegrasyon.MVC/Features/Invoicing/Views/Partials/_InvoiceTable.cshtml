@@ -16,7 +16,7 @@
     {
         EInvoiceStatus.Draft => "Taslak",
         EInvoiceStatus.Sent => "Gonderildi",
-        EInvoiceStatus.Accepted => "Onaylandi",
+        EInvoiceStatus.Accepted => "Onaylandı",
         EInvoiceStatus.Rejected => "Reddedildi",
         EInvoiceStatus.Cancelled => "Iptal",
         _ => status.ToString()
@@ -39,7 +39,7 @@
                     <tr>
                         <th>Fatura No</th>
                         <th>Tip</th>
-                        <th>Musteri</th>
+                        <th>Müşteri</th>
                         <th>Tarih</th>
                         <th>Tutar</th>
                         <th>Durum</th>
@@ -99,7 +99,7 @@
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
                          Title = "Fatura bulunamadi",
-                         Subtitle = "Henuz fatura bulunmuyor veya arama kriterinize uygun fatura yok.",
+                         Subtitle = "Henüz fatura bulunmuyor veya arama kriterinize uygun fatura yok.",
                          ActionUrl = "/invoicing/create",
                          ActionText = "Yeni Fatura Olustur"
                      }'/>

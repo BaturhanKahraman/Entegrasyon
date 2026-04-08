@@ -31,10 +31,10 @@
                                 @{
                                     var typeLabel = op.OperationType switch
                                     {
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationType.ProductImport => "Urun Import",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationType.ProductImport => "Ürün Import",
                                         Entegrasyon.Entity.BulkOperations.BulkOperationType.PriceImport => "Fiyat Import",
                                         Entegrasyon.Entity.BulkOperations.BulkOperationType.StockImport => "Stok Import",
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationType.ProductExport => "Urun Export",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationType.ProductExport => "Ürün Export",
                                         Entegrasyon.Entity.BulkOperations.BulkOperationType.PriceExport => "Fiyat Export",
                                         Entegrasyon.Entity.BulkOperations.BulkOperationType.StockExport => "Stok Export",
                                         _ => op.OperationType.ToString()

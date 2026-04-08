@@ -19,7 +19,7 @@
                                 <tr>
                                     <th>Oran (%)</th>
                                     <th>Ad</th>
-                                    <th>Aciklama</th>
+                                    <th>Açıklama</th>
                                     <th>Varsayilan</th>
                                     <th class="w-1"></th>
                                 </tr>
@@ -50,7 +50,7 @@
                                             <div class="btn-list flex-nowrap">
                                                 <button class="btn btn-ghost-secondary btn-sm"
                                                         data-bs-toggle="modal" data-bs-target="#editTaxModal-@rate.Id"
-                                                        title="Duzenle">
+                                                        title="Düzenle">
                                                     <i class="ti ti-edit"></i>
                                                 </button>
                                                 @if (!rate.IsDefault)
@@ -58,7 +58,7 @@
                                                     <form method="post" action="/settings/tax/@rate.Id/delete" class="d-inline">
                                                         @Html.AntiForgeryToken()
                                                         <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                                                onclick="return confirm('Bu KDV oranini silmek istediginize emin misiniz?')"
+                                                                onclick="return confirm('Bu KDV oranıni silmek istediginize emin misiniz?')"
                                                                 title="Sil">
                                                             <i class="ti ti-trash"></i>
                                                         </button>
@@ -81,8 +81,8 @@
                     <div class="card-body">
                         <div class="text-secondary">
                             <i class="ti ti-info-circle me-1"></i>
-                            Kategorilere ozgu KDV orani atamak icin <a href="/categories">Kategori Yonetimi</a> sayfasindan
-                            ilgili kategoriyi duzenleyin ve "Varsayilan KDV Orani" alanini ayarlayin.
+                            Kategorilere ozgu KDV oranı atamak için <a href="/categories">Kategori Yönetimi</a> sayfasindan
+                            ilgili kategoriyi duzenleyin ve "Varsayilan KDV Oranı" alanini ayarlayin.
                         </div>
                     </div>
                 </div>
@@ -96,12 +96,12 @@
             <form method="post" action="/settings/tax/create">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title">KDV Orani Ekle</h5>
+                    <h5 class="modal-title">KDV Oranı Ekle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label required">KDV Orani (%)</label>
+                        <label class="form-label required">KDV Oranı (%)</label>
                         <input type="number" name="rate" class="form-control" step="0.01" min="0" max="100" required placeholder="orn. 20"/>
                     </div>
                     <div class="mb-3">
@@ -109,7 +109,7 @@
                         <input type="text" name="name" class="form-control" required placeholder="orn. Standart KDV"/>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Aciklama</label>
+                        <label class="form-label">Açıklama</label>
                         <input type="text" name="description" class="form-control" placeholder="orn. Genel mal ve hizmetler"/>
                     </div>
                 </div>
@@ -131,12 +131,12 @@
                 <form method="post" action="/settings/tax/@rate.Id/update">
                     @Html.AntiForgeryToken()
                     <div class="modal-header">
-                        <h5 class="modal-title">KDV Orani Duzenle</h5>
+                        <h5 class="modal-title">KDV Oranı Düzenle</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label required">KDV Orani (%)</label>
+                            <label class="form-label required">KDV Oranı (%)</label>
                             <input type="number" name="rate" class="form-control" step="0.01" min="0" max="100" value="@rate.Rate" required/>
                         </div>
                         <div class="mb-3">
@@ -144,7 +144,7 @@
                             <input type="text" name="name" class="form-control" value="@rate.Name" required/>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Aciklama</label>
+                            <label class="form-label">Açıklama</label>
                             <input type="text" name="description" class="form-control" value="@rate.Description"/>
                         </div>
                     </div>

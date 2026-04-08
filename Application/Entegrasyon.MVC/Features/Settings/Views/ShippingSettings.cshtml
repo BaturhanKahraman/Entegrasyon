@@ -73,10 +73,10 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Musteri Kodu</label>
+                                    <label class="form-label">Müşteri Kodu</label>
                                     <input type="text" name="customerCode" class="form-control"
                                            value="@defaultCompany?.CustomerCode"
-                                           placeholder="Kargo musteri kodu"/>
+                                           placeholder="Kargo müşteri kodu"/>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">API Anahtari</label>
@@ -94,7 +94,7 @@
                             else
                             {
                                 <p class="text-secondary">
-                                    Henuz kargo firmasi tanimlanmamis.
+                                    Henüz kargo firmasi tanimlanmamis.
                                     <a href="/shipping/companies">Kargo firmalari sayfasindan</a> ekleyebilirsiniz.
                                 </p>
                             }
@@ -134,7 +134,7 @@
                                         <input type="number" name="fee" class="form-control" step="0.01" min="0"
                                                value="@(Model.FirstOrDefault(s => s.Key == "DefaultShippingFee")?.Value ?? "0")"
                                                placeholder="orn. 25"/>
-                                        <small class="form-hint">Esigi asmayan siparisler icin uygulanacak ucret.</small>
+                                        <small class="form-hint">Esigi asmayan siparisler için uygulanacak ucret.</small>
                                     </div>
                                 </div>
                             </div>

@@ -14,7 +14,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label required">Urun Adi</label>
+                    <label class="form-label required">Ürün Adi</label>
                     <input name="Title" value="@Model.Title" class="form-control" required />
                 </div>
                 <div class="col-md-6 mb-3">
@@ -28,7 +28,7 @@
                     <div class="d-flex gap-2">
                         <div class="flex-grow-1">
                             <select name="BrandId" id="brand-select" required>
-                                <option value="">Marka secin...</option>
+                                <option value="">Marka seçin...</option>
                                 @foreach (var b in brands)
                                 {
                                     <option value="@b.Id" selected="@(Model.BrandId == b.Id)">@b.Name</option>
@@ -45,7 +45,7 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label required">Kategori</label>
                     <select name="CategoryId" id="category-select" required>
-                        <option value="">Kategori secin...</option>
+                        <option value="">Kategori seçin...</option>
                         @foreach (var c in categories)
                         {
                             <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
@@ -62,14 +62,14 @@
                     <input name="Year" value="@Model.Year" class="form-control" />
                 </div>
                 <div class="col-12 mb-3">
-                    <label class="form-label">Aciklama</label>
+                    <label class="form-label">Açıklama</label>
                     <textarea name="Description" class="form-control" rows="3">@Model.Description</textarea>
                 </div>
             </div>
         </div>
         <div class="card-footer text-end">
             <a href="/products" class="btn btn-ghost-secondary me-2">Iptal</a>
-            <button type="submit" class="btn btn-primary">Devam: Ozellikler &rarr;</button>
+            <button type="submit" class="btn btn-primary">Devam: Özellikler &rarr;</button>
         </div>
     </div>
 </form>
@@ -89,7 +89,7 @@
                 </div>
                 <div id="brand-add-error" class="alert alert-danger d-none"></div>
                 <div id="brand-add-success" class="alert alert-info d-none">
-                    Marka eklendi. Bu marka yeni eklendigi icin pazaryerleriyle eslestirilmemis olacak.
+                    Marka eklendi. Bu marka yeni eklendigi için pazaryerleriyle eslestirilmemis olacak.
                 </div>
             </div>
             <div class="modal-footer">
@@ -114,14 +114,14 @@ function initStep1() {
     var brandTs = new TomSelect('#brand-select', {
         maxOptions: null,
         allowEmptyOption: true,
-        placeholder: 'Marka secin...'
+        placeholder: 'Marka seçin...'
     });
 
     // -- Tom Select for Category --
     var catTs = new TomSelect('#category-select', {
         maxOptions: null,
         allowEmptyOption: true,
-        placeholder: 'Kategori secin...'
+        placeholder: 'Kategori seçin...'
     });
 
     // -- Brand quick-add: + button opens modal --

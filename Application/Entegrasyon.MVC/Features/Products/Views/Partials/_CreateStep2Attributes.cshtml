@@ -21,7 +21,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Kategori Ozellikleri</h3>
+            <h3 class="card-title">Kategori Özellikleri</h3>
             <span class="card-subtitle">@Model.CategoryName</span>
         </div>
         <div class="card-body">
@@ -47,7 +47,7 @@
                             @if (attr.AllowCustom)
                             {
                                 <input type="text" name="CategoryAttributes[@i].CustomValue"
-                                       class="form-control" placeholder="Deger girin..."
+                                       class="form-control" placeholder="Değer girin..."
                                        @(attr.IsRequired ? "required" : "") />
                             }
                             else

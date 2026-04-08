@@ -14,7 +14,7 @@
                     <div class="mb-3">
                         <i class="ti ti-speakerphone icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Henuz kampanya olusturulmamis</h3>
+                    <h3 class="text-secondary">Henüz kampanya olusturulmamis</h3>
                     <p class="text-secondary">Yeni bir e-posta kampanyasi olusturarak musterilerinize ulasin.</p>
                 </div>
             }
@@ -43,8 +43,8 @@
                                         @(c.Target switch
                                         {
                                             CampaignTarget.AllSubscribers => "Tum Aboneler",
-                                            CampaignTarget.AllCustomers => "Tum Musteriler",
-                                            CampaignTarget.ActiveCustomers => "Aktif Musteriler",
+                                            CampaignTarget.AllCustomers => "Tum Müşteriler",
+                                            CampaignTarget.ActiveCustomers => "Aktif Müşteriler",
                                             _ => c.Target.ToString()
                                         })
                                     </td>
@@ -148,8 +148,8 @@
                         <label class="form-label required">Hedef Kitle</label>
                         <select name="Target" class="form-select">
                             <option value="0">Tum Aboneler</option>
-                            <option value="1">Tum Musteriler</option>
-                            <option value="2">Aktif Musteriler</option>
+                            <option value="1">Tum Müşteriler</option>
+                            <option value="2">Aktif Müşteriler</option>
                         </select>
                     </div>
                     <div class="mb-3">

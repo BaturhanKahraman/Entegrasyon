@@ -58,8 +58,8 @@
     <!-- Upload Area -->
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="card-title">Gorsel Yukle</h3>
-            <span class="card-subtitle">Gorseller istege baglidir, yuklemeden de devam edebilirsiniz.</span>
+            <h3 class="card-title">Görsel Yükle</h3>
+            <span class="card-subtitle">Görseller istege baglidir, yuklemeden de devam edebilirsiniz.</span>
         </div>
         <div class="card-body">
             <div id="drop-zone" class="border border-2 border-dashed rounded p-4 text-center"
@@ -74,7 +74,7 @@
                         <line x1="12" y1="4" x2="12" y2="16"/>
                     </svg>
                 </div>
-                <p class="text-muted mb-1">Gorselleri surukleyip birakin veya tiklayin</p>
+                <p class="text-muted mb-1">Görselleri surukleyip birakin veya tıklayın</p>
                 <p class="text-muted small">PNG, JPG, WEBP - Birden fazla dosya secebilirsiniz</p>
                 <input type="file" id="file-input" multiple accept="image/*" class="d-none" />
             </div>
@@ -95,8 +95,8 @@
     <!-- Variant Image Assignment -->
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="card-title">Varyant Gorsel Atamasi</h3>
-            <span class="card-subtitle">Her varyanta gorsel atayabilirsiniz (istege bagli)</span>
+            <h3 class="card-title">Varyant Görsel Atamasi</h3>
+            <span class="card-subtitle">Her varyanta görsel atayabilirsiniz (istege bagli)</span>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -104,7 +104,7 @@
                     <thead>
                         <tr>
                             <th>Varyant</th>
-                            <th>Atanan Gorseller</th>
+                            <th>Atanan Görseller</th>
                             <th class="w-1"></th>
                         </tr>
                     </thead>
@@ -127,7 +127,7 @@
                                 <td>
                                     <button type="button" class="btn btn-sm btn-outline-primary btn-assign-images"
                                             data-variant-index="@i" disabled>
-                                        Gorsel Ata
+                                        Görsel Ata
                                     </button>
                                 </td>
                             </tr>
@@ -143,11 +143,11 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Gorsel Sec</h5>
+                    <h5 class="modal-title">Görsel Sec</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small mb-2">Gorsellere tiklayarak secin. Ilk secilen gorsel ana gorsel olur.</p>
+                    <p class="text-muted small mb-2">Görsellere tıklayarak seçin. Ilk secilen görsel ana görsel olur.</p>
                     <div id="picker-grid" class="d-flex flex-wrap gap-2"></div>
                 </div>
                 <div class="modal-footer">
@@ -476,7 +476,7 @@
             thumb.style.objectFit = 'cover';
             if (pos === 0) {
                 thumb.style.border = '2px solid #206bc4';
-                thumb.title = 'Ana gorsel';
+                thumb.title = 'Ana görsel';
             }
             container.appendChild(thumb);
         });

@@ -16,7 +16,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(Model.ActiveTab == "qna" ? "active" : "")"
                            href="/storefront/messages?tab=qna">
-                            Urun Sorulari
+                            Ürün Sorulari
                             @if (Model.UnansweredQuestions.Count > 0)
                             {
                                 <span class="badge bg-blue ms-1">@Model.UnansweredQuestions.Count</span>
@@ -31,8 +31,8 @@
                 @if (Model.ContactMessages.Count == 0)
                 {
                     <div class="card-body text-center py-5">
-                        <h3 class="text-secondary">Henuz mesaj yok</h3>
-                        <p class="text-secondary">Musterilerden gelen iletisim mesajlari burada gorunecektir.</p>
+                        <h3 class="text-secondary">Henüz mesaj yok</h3>
+                        <p class="text-secondary">Müşterilerden gelen iletisim mesajlari burada gorunecektir.</p>
                     </div>
                 }
                 else
@@ -100,7 +100,7 @@
                 {
                     <div class="card-body text-center py-5">
                         <h3 class="text-secondary">Cevaplanmamis soru yok</h3>
-                        <p class="text-secondary">Tum urun sorulari yanitlanmis durumda.</p>
+                        <p class="text-secondary">Tum ürün sorulari yanitlanmis durumda.</p>
                     </div>
                 }
                 else
@@ -120,7 +120,7 @@
                                             <strong>Soru:</strong> @q.QuestionText
                                         </div>
                                         <div class="text-secondary small">
-                                            Musteri #@q.CustomerId &middot; @q.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                            Müşteri #@q.CustomerId &middot; @q.CreatedAt.ToString("dd.MM.yyyy HH:mm")
                                         </div>
                                     </div>
                                     <div class="col-auto">

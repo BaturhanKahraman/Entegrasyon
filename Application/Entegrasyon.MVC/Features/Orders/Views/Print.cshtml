@@ -12,7 +12,7 @@
         "Delivered" => "Teslim Edildi",
         "Cancelled" => "Iptal",
         "UnDelivered" => "Teslim Edilemedi",
-        "ReturnAccepted" => "Iade Onaylandi",
+        "ReturnAccepted" => "İade Onaylandı",
         _ => status ?? "-"
     };
 
@@ -201,7 +201,7 @@
     <!-- Customer + Shipping -->
     <div class="two-col">
         <div class="section">
-            <div class="section-title">Musteri Bilgileri</div>
+            <div class="section-title">Müşteri Bilgileri</div>
             <div>@(Model.CustomerFirstName) @(Model.CustomerLastName)</div>
             @if (!string.IsNullOrWhiteSpace(Model.CustomerEmail))
             {
@@ -242,7 +242,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Urun (SKU)</th>
+                    <th>Ürün (SKU)</th>
                     <th>Barkod</th>
                     <th>Renk / Beden</th>
                     <th class="text-right">Adet</th>

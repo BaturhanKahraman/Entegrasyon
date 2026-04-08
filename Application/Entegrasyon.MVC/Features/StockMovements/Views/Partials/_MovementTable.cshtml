@@ -16,9 +16,9 @@
     string TypeLabel(StockMovementType t) => t switch
     {
         StockMovementType.InitialStock => "Ilk Stok",
-        StockMovementType.Sale => "Satis",
-        StockMovementType.MarketplaceSale => "Pazaryeri Satisi",
-        StockMovementType.Return => "Iade",
+        StockMovementType.Sale => "Satış",
+        StockMovementType.MarketplaceSale => "Pazaryeri Satışı",
+        StockMovementType.Return => "İade",
         StockMovementType.ManualAdjustment => "Manuel Duzeltme",
         StockMovementType.Transfer => "Transfer",
         _ => "Bilinmiyor"
@@ -33,7 +33,7 @@
                 <thead>
                     <tr>
                         <th>Tarih</th>
-                        <th>Urun</th>
+                        <th>Ürün</th>
                         <th>Barkod</th>
                         <th>Tip</th>
                         <th>Miktar</th>

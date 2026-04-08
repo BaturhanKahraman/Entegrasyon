@@ -2,7 +2,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Ozellik Duzenle</h3>
+        <h3 class="card-title">Özellik Düzenle</h3>
         <div class="card-actions">
             <button class="btn btn-outline-secondary btn-sm"
                     hx-get="/attributes/@Model.Id/detail"
@@ -32,18 +32,18 @@
                 <label class="form-check form-switch">
                     <input type="checkbox" class="form-check-input" name="AllowCustom"
                            value="true" @(Model.AllowCustom ? "checked" : "") />
-                    <span class="form-check-label">Ozel deger girisi izni</span>
+                    <span class="form-check-label">Ozel değer girisi izni</span>
                 </label>
             </div>
 
             @if (Model.ExistingValues.Any())
             {
-                <h4 class="mt-3 mb-2">Mevcut Degerler</h4>
+                <h4 class="mt-3 mb-2">Mevcut Değerler</h4>
                 <div class="table-responsive">
                     <table class="table table-vcenter table-sm">
                         <thead>
                             <tr>
-                                <th>Deger</th>
+                                <th>Değer</th>
                                 <th class="w-1">Kaldir</th>
                             </tr>
                         </thead>
@@ -72,10 +72,10 @@
             }
 
             <div class="mb-3 mt-3">
-                <label class="form-label">Yeni Degerler</label>
+                <label class="form-label">Yeni Değerler</label>
                 <input type="text" class="form-control" name="NewValues"
                        placeholder="Virgul ile ayirin: Kirmizi, Mavi, Yesil" />
-                <small class="form-hint">Birden fazla deger eklemek icin virgul ile ayirin.</small>
+                <small class="form-hint">Birden fazla değer eklemek için virgul ile ayirin.</small>
             </div>
         </div>
         <div class="card-footer text-end">

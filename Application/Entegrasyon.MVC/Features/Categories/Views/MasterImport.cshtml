@@ -72,7 +72,7 @@
                                        onchange="toggleAllLeafs(this.checked)" />
                                 <span class="form-check-label">Tumu</span>
                             </label>
-                            <span class="badge bg-primary" id="selectionCount">0 secili</span>
+                            <span class="badge bg-primary" id="selectionCount">0 seçili</span>
                         </div>
                     </div>
                 </div>
@@ -107,7 +107,7 @@
     function updateSelectionCount() {
         var checked = document.querySelectorAll('.master-cat-check:checked');
         var count = checked.length;
-        document.getElementById('selectionCount').textContent = count + ' secili';
+        document.getElementById('selectionCount').textContent = count + ' seçili';
         document.getElementById('importBtn').disabled = count === 0;
         document.getElementById('selectionSummary').textContent =
             count === 0 ? 'Henüz kategori seçilmedi' : count + ' yaprak kategori seçildi';

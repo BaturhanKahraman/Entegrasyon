@@ -74,15 +74,15 @@
             </div>
         </div>
 
-        @* ── Degerlendirme Listesi ──────────────────────────────── *@
+        @* ── Değerlendirme Listesi ──────────────────────────────── *@
         <div class="card" hx-get="/storefront/reviews" hx-trigger="reviewsUpdated from:body" hx-select=".card .table-responsive" hx-target=".table-responsive" hx-swap="outerHTML">
             <div class="card-header">
-                <h3 class="card-title">Degerlendirmeler</h3>
+                <h3 class="card-title">Değerlendirmeler</h3>
             </div>
             @if (Model.Count == 0)
             {
                 <div class="card-body text-center py-5">
-                    <p class="text-secondary">Henuz degerlendirme yok.</p>
+                    <p class="text-secondary">Henüz degerlendirme yok.</p>
                 </div>
             }
             else
@@ -91,7 +91,7 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th>Musteri</th>
+                                <th>Müşteri</th>
                                 <th>Puan</th>
                                 <th>Yorum</th>
                                 <th>Durum</th>

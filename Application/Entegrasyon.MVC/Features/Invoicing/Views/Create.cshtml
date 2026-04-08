@@ -25,7 +25,7 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Duzenleme Tarihi</label>
+                            <label class="form-label">Düzenleme Tarihi</label>
                             <input type="date" name="IssueDate" class="form-control"
                                    value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
@@ -33,11 +33,11 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Musteri Vergi / TC No</label>
+                            <label class="form-label">Müşteri Vergi / TC No</label>
                             <input type="text" name="CustomerTaxId" class="form-control" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Musteri Unvani</label>
+                            <label class="form-label">Müşteri Ünvanı</label>
                             <input type="text" name="CustomerTitle" class="form-control" required />
                         </div>
                     </div>
@@ -58,7 +58,7 @@
 
                     <div id="invoice-lines">
                         <div class="row g-2 mb-1 d-none d-md-flex text-muted small">
-                            <div class="col-md-4">Urun Adi</div>
+                            <div class="col-md-4">Ürün Adi</div>
                             <div class="col-md-2">Miktar</div>
                             <div class="col-md-2">Birim Fiyat</div>
                             <div class="col-md-2">KDV</div>
@@ -83,7 +83,7 @@
         const container = document.getElementById('invoice-lines');
         const html = `<div class="row g-2 mb-2 invoice-line">
             <div class="col-md-4">
-                <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Urun Adi" required>
+                <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Ürün Adi" required>
             </div>
             <div class="col-md-2">
                 <input name="Lines[${lineIndex}].Quantity" type="number" class="form-control form-control-sm" value="1" min="1" required>

@@ -1,6 +1,6 @@
 @{
     var productId = ViewBag.ProductId as Guid?;
-    var productTitle = ViewBag.ProductTitle as string ?? "Urun";
+    var productTitle = ViewBag.ProductTitle as string ?? "Ürün";
     var variantCount = ViewBag.VariantCount as int? ?? 0;
     var imageCount = ViewBag.ImageCount as int? ?? 0;
 }
@@ -12,11 +12,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-lg text-green" width="48" height="48" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M5 12l5 5l10 -10" /></svg>
         </div>
         <h2 class="text-green">"@productTitle" basariyla eklendi!</h2>
-        <p class="text-secondary">@variantCount varyant &middot; @imageCount gorsel</p>
+        <p class="text-secondary">@variantCount varyant &middot; @imageCount görsel</p>
         <div class="d-flex gap-3 justify-content-center mt-4">
             <a href="/products/@productId/sync" class="btn btn-primary">Senkronizasyona Git</a>
-            <a href="/products" class="btn btn-outline-secondary">Urun Listesine Don</a>
-            <a href="/products/add" class="btn btn-outline-secondary">Yeni Urun Ekle</a>
+            <a href="/products" class="btn btn-outline-secondary">Ürün Listesine Don</a>
+            <a href="/products/add" class="btn btn-outline-secondary">Yeni Ürün Ekle</a>
         </div>
     </div>
 </div>

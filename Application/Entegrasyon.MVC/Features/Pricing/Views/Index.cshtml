@@ -4,7 +4,7 @@
         <div class="row g-2 mb-3">
             <div class="col-auto">
                 <form method="get" action="/pricing" class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Urun ara..." value="@ViewBag.Search" />
+                    <input type="text" name="search" class="form-control" placeholder="Ürün ara..." value="@ViewBag.Search" />
                     <button class="btn btn-primary" type="submit">
                         <i class="ti ti-search"></i>
                     </button>
@@ -20,7 +20,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Urun Fiyatlari</h3>
+                <h3 class="card-title">Ürün Fiyatlari</h3>
                 @if (Model != null)
                 {
                     <div class="card-actions">
@@ -32,7 +32,7 @@
             {
                 <div class="card-body text-center py-5">
                     <i class="ti ti-currency-lira text-secondary" style="font-size: 2.5rem;"></i>
-                    <h3 class="text-secondary mt-2">Urun bulunamadi</h3>
+                    <h3 class="text-secondary mt-2">Ürün bulunamadi</h3>
                     <p class="text-secondary">Arama kriterlerinizi degistirerek tekrar deneyin.</p>
                 </div>
             }
@@ -43,7 +43,7 @@
                         <thead>
                             <tr>
                                 <th>Stok Kodu</th>
-                                <th>Urun Adi</th>
+                                <th>Ürün Adi</th>
                                 <th>Marka</th>
                                 <th>Kategori</th>
                                 <th>Varyant Sayisi</th>
@@ -108,7 +108,7 @@
                 {
                     <div class="card-footer d-flex align-items-center">
                         <p class="m-0 text-secondary">
-                            Toplam <strong>@Model.TotalItemCount</strong> urun, sayfa <strong>@(Model.CurrentPageIndex + 1)</strong> / <strong>@Model.TotalPageCount</strong>
+                            Toplam <strong>@Model.TotalItemCount</strong> ürün, sayfa <strong>@(Model.CurrentPageIndex + 1)</strong> / <strong>@Model.TotalPageCount</strong>
                         </p>
                         <ul class="pagination m-0 ms-auto">
                             @if (Model.CurrentPageIndex > 0)

@@ -10,8 +10,8 @@
                         <i class="ti ti-info-circle me-2" style="font-size: 1.25rem;"></i>
                         <div>
                             <strong>Fiyatlandirma Kurallari:</strong>
-                            Urun satis fiyatlarinizi pazaryerlerine gore otomatik hesaplamak icin kullanilir.
-                            Oncelik: Urun > Kategori > Marka > Platform Geneli > Varsayilan.
+                            Ürün satış fiyatlarinizi pazaryerlerine gore otomatik hesaplamak için kullanilir.
+                            Oncelik: Ürün > Kategori > Marka > Platform Geneli > Varsayilan.
                         </div>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
                             <th>Kural Adi</th>
                             <th>Pazaryeri</th>
                             <th>Tip</th>
-                            <th>Deger</th>
+                            <th>Değer</th>
                             <th>Kapsam</th>
                             <th>Oncelik</th>
                             <th>Durum</th>
@@ -45,7 +45,7 @@
                         {
                             var scopeText = rule.Scope switch
                             {
-                                PricingScope.AllProducts => "Tum Urunler",
+                                PricingScope.AllProducts => "Tum Ürünler",
                                 PricingScope.Category => $"Kategori: {rule.ScopeEntityName ?? rule.ScopeEntityId?.ToString()}",
                                 PricingScope.Brand => $"Marka: {rule.ScopeEntityName ?? rule.ScopeEntityId?.ToString()}",
                                 _ => "-"
@@ -130,8 +130,8 @@
                 <div class="card-body">
                     <div class="empty py-4">
                         <div class="empty-icon"><i class="ti ti-percentage" style="font-size:2.5rem;"></i></div>
-                        <p class="empty-title">Henuz fiyatlandirma kurali yok</p>
-                        <p class="empty-subtitle text-secondary">Pazaryeri bazli otomatik fiyat hesaplamasi icin kural ekleyin.</p>
+                        <p class="empty-title">Henüz fiyatlandirma kurali yok</p>
+                        <p class="empty-subtitle text-secondary">Pazaryeri bazli otomatik fiyat hesaplamasi için kural ekleyin.</p>
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Deger</label>
+                            <label class="form-label required">Değer</label>
                             <input type="number" name="Value" class="form-control" step="0.01" min="0.01" required placeholder="5.00"/>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -193,20 +193,20 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label required">Kapsam</label>
                             <select name="Scope" class="form-select" id="scopeSelect" onchange="toggleScopeEntity()">
-                                <option value="0">Tum Urunler</option>
+                                <option value="0">Tum Ürünler</option>
                                 <option value="1">Kategori</option>
                                 <option value="2">Marka</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3" id="scopeEntityField" style="display:none;">
                             <label class="form-label">Hedef ID</label>
-                            <input type="number" name="ScopeEntityId" class="form-control" placeholder="Kategori/Marka/Urun ID"/>
+                            <input type="number" name="ScopeEntityId" class="form-control" placeholder="Kategori/Marka/Ürün ID"/>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Oncelik</label>
                         <input type="number" name="Priority" class="form-control" value="10" min="1" max="100"/>
-                        <div class="form-text">Dusuk deger = yuksek oncelik. Eslesme durumunda en dusuk oncelikli kural uygulanir.</div>
+                        <div class="form-text">Dusuk değer = yuksek oncelik. Eslesme durumunda en dusuk oncelikli kural uygulanir.</div>
                     </div>
                 </div>
                 <div class="modal-footer">

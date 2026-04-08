@@ -13,7 +13,7 @@
     string StatusText(Entegrasyon.Entity.Storefront.ReturnStatus status) => status switch
     {
         Entegrasyon.Entity.Storefront.ReturnStatus.Pending => "Beklemede",
-        Entegrasyon.Entity.Storefront.ReturnStatus.Approved => "Onaylandi",
+        Entegrasyon.Entity.Storefront.ReturnStatus.Approved => "Onaylandı",
         Entegrasyon.Entity.Storefront.ReturnStatus.Rejected => "Reddedildi",
         Entegrasyon.Entity.Storefront.ReturnStatus.Completed => "Tamamlandi",
         _ => status.ToString()
@@ -34,10 +34,10 @@
                 <thead>
                     <tr>
                         <th>Tarih</th>
-                        <th>Musteri ID</th>
+                        <th>Müşteri ID</th>
                         <th>Siparis ID</th>
                         <th>Sebep</th>
-                        <th>Iade Tutari</th>
+                        <th>İade Tutari</th>
                         <th>Durum</th>
                         <th class="w-1"></th>
                     </tr>
@@ -96,7 +96,7 @@
                                     <button type="button" class="btn btn-sm btn-primary"
                                             hx-post="/returns/@ret.Id/complete"
                                             hx-swap="none"
-                                            hx-confirm="Iade islemini tamamlamak istiyor musunuz?">
+                                            hx-confirm="İade islemini tamamlamak istiyor musunuz?">
                                         <i class="ti ti-check-circle icon"></i> Tamamla
                                     </button>
                                 }
@@ -117,8 +117,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Iade talebi bulunamadi",
-                         Subtitle = "Henuz iade talebi bulunmuyor veya secili durumda talep yok."
+                         Title = "İade talebi bulunamadi",
+                         Subtitle = "Henüz iade talebi bulunmuyor veya seçili durumda talep yok."
                      }'/>
         </div>
     }
@@ -133,7 +133,7 @@
             <div class="modal-content">
                 <form hx-post="/returns/@ret.Id/approve" hx-swap="none">
                     <div class="modal-header">
-                        <h5 class="modal-title">Iade Onayla</h5>
+                        <h5 class="modal-title">İade Onayla</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -141,10 +141,10 @@
                             <label class="form-label">Sebep: <strong>@ret.Reason</strong></label>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Iade Tutari (TL)</label>
+                            <label class="form-label">İade Tutari (TL)</label>
                             <input type="number" name="refundAmount" class="form-control" step="0.01" min="0.01"
                                    placeholder="Siparis tutarini girin"/>
-                            <small class="form-hint">Kismi iade icin tutari duzenleyebilirsiniz.</small>
+                            <small class="form-hint">Kismi iade için tutari duzenleyebilirsiniz.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Inceleme Notu</label>
@@ -167,7 +167,7 @@
             <div class="modal-content">
                 <form hx-post="/returns/@ret.Id/reject" hx-swap="none">
                     <div class="modal-header">
-                        <h5 class="modal-title">Iade Reddet</h5>
+                        <h5 class="modal-title">İade Reddet</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">

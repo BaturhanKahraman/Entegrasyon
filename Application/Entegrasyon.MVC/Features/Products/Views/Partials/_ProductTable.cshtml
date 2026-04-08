@@ -7,7 +7,7 @@
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Urun Adi</th>
+                        <th>Ürün Adi</th>
                         <th>Stok Kodu</th>
                         <th>Marka</th>
                         <th>Kategori</th>
@@ -40,7 +40,7 @@
                                         Detay
                                     </a>
                                     <a href="/products/@product.Id/edit" class="btn btn-sm btn-outline-secondary">
-                                        Duzenle
+                                        Düzenle
                                     </a>
                                     <button class="btn btn-sm btn-outline-danger"
                                             hx-post="/products/@product.Id/delete"
@@ -76,10 +76,10 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Urun bulunamadi",
-                         Subtitle = "Henuz urun eklenmemis veya arama kriterinize uygun urun yok.",
+                         Title = "Ürün bulunamadi",
+                         Subtitle = "Henüz ürün eklenmemis veya arama kriterinize uygun ürün yok.",
                          ActionUrl = "/products/add",
-                         ActionText = "Yeni Urun Ekle"
+                         ActionText = "Yeni Ürün Ekle"
                      }'/>
         </div>
     }

@@ -15,7 +15,7 @@
                 <!-- Sepet Ozeti -->
                 <div class="alert alert-info py-2 mb-3">
                     <div class="d-flex justify-content-between">
-                        <span>@Model.ItemCount adet urun</span>
+                        <span>@Model.ItemCount adet ürün</span>
                         <span class="fw-bold">Ara Toplam: @Model.Subtotal.ToString("N2") TL</span>
                     </div>
                     <div class="d-flex justify-content-between">
@@ -169,7 +169,7 @@
         });
     }
 
-    // Form submit: karma odeme icin hidden degerler ekle
+    // Form submit: karma odeme için hidden degerler ekle
     form.addEventListener('submit', function(e) {
         var selected = document.querySelector('.pm-radio:checked').value;
         if (selected === '4') {

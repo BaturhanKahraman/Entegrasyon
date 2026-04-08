@@ -20,7 +20,7 @@
                         @if (Model.Preflight is null)
                         {
                             <div class="alert alert-warning">
-                                On-ucus kontrolleri yuklenemedi. Urunun kategori ve marka eslestirmelerini kontrol edin.
+                                On-ucus kontrolleri yuklenemedi. Ürünün kategori ve marka eslestirmelerini kontrol edin.
                             </div>
                         }
                         else
@@ -39,21 +39,21 @@
 
                             <div class="list-group list-group-flush">
                                 @{ RenderCheck(Model.Preflight.CategoryMatched,
-                                    "Kategori Eslestirmesi",
+                                    "Kategori Eşleştirmesi",
                                     Model.Preflight.CategoryMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedCategoryName}"
                                         : $"Trendyol kategori eslestirmesi bulunamadi ({Model.Preflight.ProductCategoryName})",
                                     Model.Preflight.CategoryMatched ? null : categoryFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.BrandMatched,
-                                    "Marka Eslestirmesi",
+                                    "Marka Eşleştirmesi",
                                     Model.Preflight.BrandMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedBrandName}"
                                         : $"Trendyol marka eslestirmesi bulunamadi ({Model.Preflight.ProductBrandName})",
                                     Model.Preflight.BrandMatched ? null : brandFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
-                                    "Zorunlu Ozellikler",
+                                    "Zorunlu Özellikler",
                                     Model.Preflight.RequiredAttributesMatched
                                         ? "Tum zorunlu ozellikler eslesti"
                                         : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}",
@@ -63,7 +63,7 @@
                                     "Varyant Durumu",
                                     Model.Preflight.HasVariants
                                         ? "En az bir varyant mevcut"
-                                        : "Urunun varyanti bulunmuyor",
+                                        : "Ürünün varyanti bulunmuyor",
                                     Model.Preflight.HasVariants ? null : $"/products/{Model.ProductId}/variants"); }
 
                                 @{ RenderCheck(Model.Preflight.AllVariantsHaveBarcodes,
@@ -81,7 +81,7 @@
                                         <div>
                                             <i class="ti ti-check icon alert-icon"></i>
                                         </div>
-                                        <div>Tum kontroller basarili. Urun gonderime hazir.</div>
+                                        <div>Tum kontroller basarili. Ürün gonderime hazir.</div>
                                     </div>
                                 </div>
                             }
@@ -113,16 +113,16 @@
                                 <label class="form-label">Baslik Override</label>
                                 <input type="text" class="form-control" name="TitleOverride"
                                        value="@Model.TitleOverride"
-                                       placeholder="Bos birakilirsa urun basligi kullanilir"
+                                       placeholder="Bos birakilirsa ürün basligi kullanilir"
                                        @(Model.PreflightPassed ? "" : "disabled")>
                                 <small class="form-hint">Trendyol'da gorunecek baslik. Bos birakirsaniz urunun mevcut basligi gonderilir.</small>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Aciklama Override</label>
+                                <label class="form-label">Açıklama Override</label>
                                 <textarea class="form-control" name="DescriptionOverride" rows="4"
-                                          placeholder="Bos birakilirsa urun aciklamasi kullanilir"
+                                          placeholder="Bos birakilirsa ürün aciklamasi kullanilir"
                                           @(Model.PreflightPassed ? "" : "disabled")>@Model.DescriptionOverride</textarea>
-                                <small class="form-hint">Trendyol'da gorunecek aciklama. Bos birakirsaniz urunun mevcut aciklamasi gonderilir.</small>
+                                <small class="form-hint">Trendyol'da gorunecek açıklama. Bos birakirsaniz urunun mevcut aciklamasi gonderilir.</small>
                             </div>
 
                             @if (Model.Variants.Any())
@@ -136,9 +136,9 @@
                                             <tr>
                                                 <th>Barkod</th>
                                                 <th class="text-end">Liste Fiyati</th>
-                                                <th class="text-end">Satis Fiyati</th>
+                                                <th class="text-end">Satış Fiyati</th>
                                                 <th>Trendyol Liste</th>
-                                                <th>Trendyol Satis</th>
+                                                <th>Trendyol Satış</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -220,7 +220,7 @@
                                         @if (!string.IsNullOrEmpty(Model.Preview.Description))
                                         {
                                             <div class="datagrid-item">
-                                                <div class="datagrid-title">Aciklama</div>
+                                                <div class="datagrid-title">Açıklama</div>
                                                 <div class="datagrid-content">@Model.Preview.Description</div>
                                             </div>
                                         }
@@ -229,7 +229,7 @@
                                 <div class="col-md-6">
                                     @if (Model.Preview.Attributes.Count > 0)
                                     {
-                                        <h4 class="subheader mb-2">Ozellikler</h4>
+                                        <h4 class="subheader mb-2">Özellikler</h4>
                                         <div class="datagrid">
                                             @foreach (var attr in Model.Preview.Attributes)
                                             {
@@ -251,9 +251,9 @@
                                         <thead>
                                             <tr>
                                                 <th>Barkod</th>
-                                                <th>Ozellikler</th>
+                                                <th>Özellikler</th>
                                                 <th class="text-end">Liste Fiyati</th>
-                                                <th class="text-end">Satis Fiyati</th>
+                                                <th class="text-end">Satış Fiyati</th>
                                                 <th class="text-end">Stok</th>
                                             </tr>
                                         </thead>

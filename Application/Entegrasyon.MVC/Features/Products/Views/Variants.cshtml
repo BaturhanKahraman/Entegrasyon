@@ -14,7 +14,7 @@
             Senkronizasyon
         </a>
         <a href="/products/@Model.Id" class="btn btn-outline-secondary">
-            Urune Don
+            Ürüne Don
         </a>
     </div>
 </div>
@@ -63,7 +63,7 @@
                                 <th>Barkod</th>
                                 <th>Stok Kodu</th>
                                 <th class="text-end">Liste Fiyati</th>
-                                <th class="text-end">Satis Fiyati</th>
+                                <th class="text-end">Satış Fiyati</th>
                                 <th class="text-end">Maliyet</th>
                                 <th class="text-center">KDV</th>
                                 <th class="text-center">Desi</th>
@@ -97,7 +97,7 @@
                                             <button class="btn btn-sm btn-outline-primary"
                                                     hx-get="/products/@Model.Id/variants/@variant.Id/edit"
                                                     hx-target="#modal-container">
-                                                Duzenle
+                                                Düzenle
                                             </button>
                                             <button class="btn btn-sm btn-outline-danger"
                                                     hx-post="/products/@Model.Id/variants/@variant.Id/delete"
@@ -122,7 +122,7 @@
                     <div class="empty py-5">
                         <p class="empty-title">Varyant bulunamadi</p>
                         <p class="empty-subtitle text-secondary">
-                            Bu urune henuz varyant eklenmemis.
+                            Bu urune henüz varyant eklenmemis.
                         </p>
                     </div>
                 </div>

@@ -16,7 +16,7 @@
     {
         EInvoiceStatus.Draft => "Taslak",
         EInvoiceStatus.Sent => "Gonderildi",
-        EInvoiceStatus.Accepted => "Onaylandi",
+        EInvoiceStatus.Accepted => "Onaylandı",
         EInvoiceStatus.Rejected => "Reddedildi",
         EInvoiceStatus.Cancelled => "Iptal",
         _ => status.ToString()
@@ -80,7 +80,7 @@
                         <div class="datagrid-content">@TypeText(Model.InvoiceType)</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Musteri</div>
+                        <div class="datagrid-title">Müşteri</div>
                         <div class="datagrid-content">@Model.CustomerTitle</div>
                     </div>
                     <div class="datagrid-item">
@@ -88,7 +88,7 @@
                         <div class="datagrid-content">@(Model.CustomerTaxId ?? "\u2014")</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Duzenleme Tarihi</div>
+                        <div class="datagrid-title">Düzenleme Tarihi</div>
                         <div class="datagrid-content">@Model.IssueDate.ToLocalTime().ToString("dd.MM.yyyy")</div>
                     </div>
                     <div class="datagrid-item">
@@ -146,10 +146,10 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th>Urun</th>
+                                <th>Ürün</th>
                                 <th>Adet</th>
                                 <th>Birim Fiyat</th>
-                                <th>KDV Orani</th>
+                                <th>KDV Oranı</th>
                                 <th>KDV Tutari</th>
                                 <th>Satir Toplami</th>
                             </tr>
@@ -194,7 +194,7 @@
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
                                  Title = "Kalem bulunamadi",
-                                 Subtitle = "Bu faturada henuz kalem yok."
+                                 Subtitle = "Bu faturada henüz kalem yok."
                              }'/>
                 </div>
             }
