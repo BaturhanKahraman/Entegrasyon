@@ -318,6 +318,12 @@ app.Lifetime.ApplicationStarted.Register(async () =>
     await using var serviceScope = app.Services.CreateAsyncScope();
     var lifeTimeHandler = serviceScope.ServiceProvider.GetRequiredService<ApplicationLifetimeManager>();
     await lifeTimeHandler.ApplyStartActions();
+
+    // Admin role permission drift'ini önle: AppPermissions.GetAllPermissions() listesine eklenen
+    // yeni claim'leri Admin role'e idempotent şekilde senkronize eder. Migration sonrası çalışır.
+    var adminPermissionSeeder = serviceScope.ServiceProvider
+        .GetRequiredService<Entegrasyon.ApplicationBootstrap.Security.AdminPermissionSeeder>();
+    await adminPermissionSeeder.EnsureAdminPermissionsAsync();
 });
 
 // ── Middleware Pipeline ──────────────────────────────────────────────────

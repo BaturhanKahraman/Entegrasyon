@@ -96,6 +96,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IFeatureService, FeatureService>();
 
             services.AddScoped<ApplicationLifetimeManager>();
+            services.AddScoped<Security.AdminPermissionSeeder>();
             //services.AddScoped<DbContext,IntegrationDbContext>();
 
             services.AddSingleton<IRandomGenerator, RandomGenerator>();

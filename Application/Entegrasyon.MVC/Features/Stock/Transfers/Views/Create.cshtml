@@ -5,6 +5,7 @@
 </div>
 
 <form method="post" action="/stock-transfer-requests/create" id="transferForm">
+    @Html.AntiForgeryToken()
     <div class="card mb-3">
         <div class="card-header">
             <h3 class="card-title">Şube Seçimi</h3>

@@ -127,6 +127,7 @@
             }
 
             <form method="post" action="/stock-transfer-requests/@Model.Id/approve" class="d-inline-block me-2">
+                @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-success">Onayla ve Transferi Gerçekleştir</button>
             </form>
 
@@ -139,6 +140,7 @@
     <div class="modal fade" id="rejectModal" tabindex="-1">
         <div class="modal-dialog">
             <form method="post" action="/stock-transfer-requests/@Model.Id/reject" class="modal-content">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title">Talebi Reddet</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

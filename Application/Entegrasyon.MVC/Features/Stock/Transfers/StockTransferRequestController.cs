@@ -36,7 +36,7 @@ public class StockTransferRequestController(
         ViewBag.Status = status;
         ViewBag.PendingCount = await manager.GetPendingCountAsync();
 
-        return View(result.Data);
+        return View("~/Features/Stock/Transfers/Views/Index.cshtml", result.Data);
     }
 
     [HttpGet("/stock-transfer-requests/{id:int}")]
@@ -57,7 +57,7 @@ public class StockTransferRequestController(
             ("Transfer Talepleri", "/stock-transfer-requests"),
             ($"#{id}", null));
 
-        return View(result.Data);
+        return View("~/Features/Stock/Transfers/Views/Detail.cshtml", result.Data);
     }
 
     [HttpGet("/stock-transfer-requests/create")]
@@ -76,7 +76,7 @@ public class StockTransferRequestController(
         {
             AvailableBranches = branches.Data?.Select(b => new BranchOption(b.Id, b.Name ?? "")).ToList() ?? []
         };
-        return View(vm);
+        return View("~/Features/Stock/Transfers/Views/Create.cshtml", vm);
     }
 
     [HttpPost("/stock-transfer-requests/create")]

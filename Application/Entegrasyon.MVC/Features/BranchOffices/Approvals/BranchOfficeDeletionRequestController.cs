@@ -32,7 +32,7 @@ public class BranchOfficeDeletionRequestController(
         ViewBag.Status = status;
         ViewBag.PendingCount = await manager.GetPendingCountAsync();
 
-        return View(result.Data);
+        return View("~/Features/BranchOffices/Approvals/Views/Index.cshtml", result.Data);
     }
 
     [HttpGet("/branch-office-deletion-requests/{id:int}")]
@@ -53,7 +53,7 @@ public class BranchOfficeDeletionRequestController(
             ("Silme Talepleri", "/branch-office-deletion-requests"),
             ($"#{id}", null));
 
-        return View(result.Data);
+        return View("~/Features/BranchOffices/Approvals/Views/Detail.cshtml", result.Data);
     }
 
     [HttpPost("/branch-offices/{id:int}/request-delete")]

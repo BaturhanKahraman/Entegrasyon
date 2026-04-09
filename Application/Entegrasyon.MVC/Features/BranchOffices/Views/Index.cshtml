@@ -45,6 +45,7 @@
                                                       action="/branch-offices/@branch.Id/request-delete"
                                                       class="d-inline"
                                                       onsubmit="return confirm('Bu şube için silme talebi açılacak. Devam etmek istiyor musunuz?');">
+                                                    @Html.AntiForgeryToken()
                                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                                         Silme Talebi Aç
                                                     </button>
