@@ -28,6 +28,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.5.0" />
 
     <!-- Roslyn / Code Analysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />

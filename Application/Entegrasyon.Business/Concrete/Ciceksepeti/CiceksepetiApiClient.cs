@@ -4,6 +4,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Utility.Constants;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Ciceksepeti;
@@ -66,7 +67,7 @@ public sealed class CiceksepetiApiClient(
         var baseUrl = credentials.BaseUrl.TrimEnd('/');
         var url = baseUrl + "/" + absolutePath.TrimStart('/');
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.CiceksepetiApi);
         client.DefaultRequestHeaders.Add("x-api-key", credentials.ApiKey);
 
         using var request = new HttpRequestMessage(method, url) { Content = content };
@@ -81,7 +82,7 @@ public sealed class CiceksepetiApiClient(
     {
         var credentials = await EnsureCredentialsAsync(ct);
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.CiceksepetiApi);
         client.DefaultRequestHeaders.Add("x-api-key", credentials.ApiKey);
 
         var baseUrl = credentials.BaseUrl.TrimEnd('/');

@@ -36,7 +36,7 @@ public sealed class PttavmShipmentApiClient(
     private async Task<HttpClient> CreateConfiguredClientAsync()
     {
         var credentials = await GetOrLoadCredentialsAsync();
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.PttavmShipmentApi);
         client.BaseAddress = new Uri(BaseUrl);
 
         var authValue = Convert.ToBase64String(

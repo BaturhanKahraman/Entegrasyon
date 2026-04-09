@@ -107,7 +107,7 @@ public sealed class AmazonTokenManager : IAmazonTokenManager, IDisposable
             ?? throw new InvalidOperationException($"Amazon client_secret (ApiSecret) tanımlı değil (MarketPlaceId={marketPlaceId}).");
         var tokenUrl = marketplace.TokenUrl ?? DefaultTokenUrl;
 
-        var client = _httpClientFactory.CreateClient();
+        var client = _httpClientFactory.CreateClient(StringConstants.AmazonApi);
         var requestBody = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["grant_type"] = "refresh_token",

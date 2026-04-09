@@ -412,28 +412,87 @@ namespace Entegrasyon.ApplicationBootstrap
         }
         public static IServiceCollection AddClients(this IServiceCollection services)
         {
+            // Marketplace HTTP clientlari — hepsi Polly resilience handler ile korunur.
+            // Base URL'ler runtime'da MarketPlace entity'sinden okunarak override edilir
+            // (client.BaseAddress = marketplace.BaseUrl). Burada sadece fallback URL'ler
+            // ve policy register ediliyor.
+            //
+            // Resilience defaults (AddStandardResilienceHandler custom):
+            //   - AttemptTimeout: 60s  (default 30s — Amazon Feed/N11 SOAP icin yetersizdi)
+            //   - TotalRequestTimeout: 120s (retry'lari kapsiyor)
+            //   - Retry: 2 attempt, exponential backoff (default 3 — POST idempotency riskini azalt)
+            //   - CircuitBreaker: failure ratio 0.5, sampling 30s
+            static void ConfigureMarketplacePolicy(
+                Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions o)
+            {
+                o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(60);
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(120);
+                o.Retry.MaxRetryAttempts = 2;
+                o.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
+                o.Retry.UseJitter = true;
+                o.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                o.CircuitBreaker.FailureRatio = 0.5;
+            }
 
             services.AddHttpClient(StringConstants.TrendyolApi, x =>
-            {
-                x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/");
-            });
+                    x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/"))
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.TrendyolEFaturaApi, x =>
+                    x.BaseAddress = new Uri("https://apigw.trendyol.com/integration/"))
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
             services.AddHttpClient(StringConstants.HepsiburadaApi, x =>
-            {
-                x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/");
-            });
-            services.AddHttpClient("N11Rest", x =>
-            {
-                x.BaseAddress = new Uri("https://api.n11.com/");
-            });
-            services.AddHttpClient("Ollama", x =>
+                    x.BaseAddress = new Uri("https://mpop.hepsiburada.com/product/"))
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.N11RestApi, x =>
+                    x.BaseAddress = new Uri("https://api.n11.com/"))
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.N11SoapApi, x =>
+                    x.BaseAddress = new Uri("https://api.n11.com/"))
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.PazaramaApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.AmazonApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.PttavmCatalogApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.PttavmShipmentApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.CiceksepetiApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            services.AddHttpClient(StringConstants.TemuApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            // Kargo clientlari — Polly ile korunur, base URL runtime'da set edilir.
+            services.AddHttpClient(StringConstants.SuratKargoApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+            services.AddHttpClient(StringConstants.YurticiKargoApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+            services.AddHttpClient(StringConstants.ArasKargoApi)
+                .AddStandardResilienceHandler(ConfigureMarketplacePolicy);
+
+            // Ollama — local LLM, uzun timeout, retry yok (local network, retry anlamsiz)
+            services.AddHttpClient(StringConstants.OllamaApi, x =>
             {
                 x.BaseAddress = new Uri("http://localhost:11434/");
                 x.Timeout = TimeSpan.FromSeconds(120);
             });
-            services.AddHttpClient("webhook", x =>
+
+            // Webhook — kisa timeout, retry yok (kullanici webhook'u yavassa beklemeyelim)
+            services.AddHttpClient(StringConstants.WebhookApi, x =>
             {
                 x.Timeout = TimeSpan.FromSeconds(10);
             });
+
             return services;
         }
         public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)

@@ -7,6 +7,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Utility.Constants;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Pazarama;
@@ -75,7 +76,7 @@ public sealed class PazaramaApiClient(
 
         var accessToken = await EnsureValidTokenAsync(marketplace.Id, clientId, clientSecret, tokenUrl);
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.PazaramaApi);
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -119,7 +120,7 @@ public sealed class PazaramaApiClient(
 
     private async Task<TokenResponse> FetchTokenAsync(string clientId, string clientSecret, string tokenUrl)
     {
-        var tokenClient = httpClientFactory.CreateClient();
+        var tokenClient = httpClientFactory.CreateClient(StringConstants.PazaramaApi);
 
         var credentials = Convert.ToBase64String(
             Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));

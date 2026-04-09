@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Xml.Linq;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utility.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -76,7 +77,7 @@ public sealed class SuratKargoClient(
 
         // HTTP SOAP istegi gonder
         var baseUrl = credentials.BaseUrl;
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.SuratKargoApi);
         var content = new StringContent(xmlString, Encoding.UTF8, "text/xml");
 
         using var request = new HttpRequestMessage(HttpMethod.Post, baseUrl) { Content = content };

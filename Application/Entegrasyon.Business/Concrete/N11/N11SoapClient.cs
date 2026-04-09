@@ -4,6 +4,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Utility.Constants;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.N11;
@@ -67,7 +68,7 @@ public sealed class N11SoapClient(
         var baseUrl = (marketplace.BaseUrl ?? DefaultBaseUrl).TrimEnd('/') + "/";
         var requestUrl = $"{baseUrl}{wsdlPath}";
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.N11SoapApi);
         var content = new StringContent(xmlString, Encoding.UTF8, "text/xml");
 
         using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = content };

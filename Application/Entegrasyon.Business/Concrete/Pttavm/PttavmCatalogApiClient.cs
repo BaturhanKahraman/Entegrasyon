@@ -45,7 +45,7 @@ public sealed class PttavmCatalogApiClient(
     private async Task<HttpClient> CreateConfiguredClientAsync()
     {
         var credentials = await GetOrLoadCredentialsAsync();
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.PttavmCatalogApi);
         client.BaseAddress = new Uri(credentials.BaseUrl);
         client.DefaultRequestHeaders.Add("Api-Key", credentials.ApiKey);
         client.DefaultRequestHeaders.Add("Access-Token", credentials.AccessToken);

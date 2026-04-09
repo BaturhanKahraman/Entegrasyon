@@ -6,6 +6,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Utility.Constants;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol.EFatura;
@@ -66,7 +67,7 @@ public sealed class TrendyolEFaturaApiClient(
             // Partner sign-in
             if (!string.IsNullOrEmpty(partnerEmail) && !string.IsNullOrEmpty(partnerPassword))
             {
-                var partnerClient = httpClientFactory.CreateClient();
+                var partnerClient = httpClientFactory.CreateClient(StringConstants.TrendyolEFaturaApi);
                 partnerClient.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
 
                 var partnerResponse = await partnerClient.PostAsJsonAsync("api/auth/signin",
@@ -116,7 +117,7 @@ public sealed class TrendyolEFaturaApiClient(
             }
         }
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.TrendyolEFaturaApi);
         client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
         if (!string.IsNullOrEmpty(cache.CustomerAccessToken))
         {

@@ -5,6 +5,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Utility.Constants;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Trendyol;
@@ -60,7 +61,7 @@ public sealed class TrendyolApiClient(
 
         var baseUrl = marketplace.BaseUrl ?? DefaultBaseUrl;
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
         client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
 
         // Basic Auth: base64(apiKey:apiSecret)

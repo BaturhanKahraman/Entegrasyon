@@ -77,7 +77,7 @@ public sealed class AmazonApiClient(
         string presignedUrl, byte[] content, string contentType, CancellationToken ct = default)
     {
         // Presigned URL'ye direct PUT — auth header gerekmez
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.AmazonApi);
         var byteContent = new ByteArrayContent(content);
         byteContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
 
@@ -115,7 +115,7 @@ public sealed class AmazonApiClient(
 
         var baseUrl = marketplace.BaseUrl ?? DefaultBaseUrl;
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.AmazonApi);
         client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
 
         // x-amz-access-token header

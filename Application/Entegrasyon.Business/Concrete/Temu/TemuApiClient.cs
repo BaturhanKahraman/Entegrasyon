@@ -7,6 +7,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Entegrasyon.Business.Utility.Constants;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.Concrete.Temu;
@@ -78,7 +79,7 @@ public sealed class TemuApiClient(
         var url = credentials.BaseUrl.TrimEnd('/') + RouterPath;
         logger.LogDebug("Temu API call: {Type} → {Url}", type, url);
 
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(StringConstants.TemuApi);
         var response = await client.PostAsJsonAsync(url, requestBody, ct);
         response.EnsureSuccessStatusCode();
 
