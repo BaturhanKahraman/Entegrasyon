@@ -118,12 +118,31 @@ public class ProductController(
 
     // ── Create Wizard ─────────────────────────────────────────────────
 
+    private const string CreateProductSessionKey = "CreateProduct";
+
+    private CreateProductVm GetWizardState()
+    {
+        var json = HttpContext.Session.GetString(CreateProductSessionKey);
+        return json is not null
+            ? JsonSerializer.Deserialize<CreateProductVm>(json) ?? new CreateProductVm()
+            : new CreateProductVm();
+    }
+
+    private void SaveWizardState(CreateProductVm vm)
+    {
+        HttpContext.Session.SetString(CreateProductSessionKey, JsonSerializer.Serialize(vm));
+    }
+
     [HttpGet("/products/add")]
     public async Task<IActionResult> Create()
     {
         ViewData.SetPageTitle("Yeni Urun");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(("Urunler", "/products"), ("Yeni Urun", null));
+
+        // Fresh wizard: eski session state'i temizle ki onceki denemeden kalan
+        // veri kullaniciyi sasirtmasin.
+        HttpContext.Session.Remove(CreateProductSessionKey);
 
         await LoadCreateDropdowns();
         return View(new CreateProductVm());
@@ -133,67 +152,105 @@ public class ProductController(
     [HttpPost("/products/add/step1")]
     public async Task<IActionResult> CreateStep1(CreateProductVm vm)
     {
-        if (string.IsNullOrWhiteSpace(vm.Title) || vm.BrandId == 0 || vm.CategoryId == 0)
+        // Session-first pattern: once mevcut state'i oku, form'dan sadece Step 1
+        // alanlarini merge et, HEMEN session'a yaz. Validation'dan once yazmak
+        // kritik — hata olsa bile kullanicinin girdigi veri kaybolmaz.
+        var state = GetWizardState();
+        state.Title = vm.Title;
+        state.Description = vm.Description;
+        state.StockCode = vm.StockCode;
+        state.Season = vm.Season;
+        state.Year = vm.Year;
+        state.BrandId = vm.BrandId;
+        state.CategoryId = vm.CategoryId;
+        SaveWizardState(state);
+
+        // Step 1 validation — basit alanlar
+        if (string.IsNullOrWhiteSpace(state.Title))
+            ModelState.AddModelError(nameof(state.Title), "Ürün adı zorunludur.");
+        if (state.BrandId == 0)
+            ModelState.AddModelError(nameof(state.BrandId), "Marka seçiniz.");
+        if (state.CategoryId == 0)
+            ModelState.AddModelError(nameof(state.CategoryId), "Kategori seçiniz.");
+
+        // Step 1 validation — stok kodu unique (fail-fast)
+        // Daha once bu kontrol sadece DoSave icindeydi, kullanici Step 6'ya kadar
+        // hata aldigini anlamiyordu. Simdi Step 1'de yakaliyoruz.
+        if (ModelState.IsValid && !string.IsNullOrWhiteSpace(state.StockCode))
+        {
+            var isAvailable = await productService.IsStockCodeAvailableAsync(state.StockCode);
+            if (!isAvailable)
+                ModelState.AddModelError(nameof(state.StockCode),
+                    "Bu stok kodu zaten kullanılıyor. Lütfen farklı bir stok kodu girin.");
+        }
+
+        if (!ModelState.IsValid)
         {
             await LoadCreateDropdowns();
-
             if (Request.IsHtmx())
-                return PartialView("Partials/_CreateStep1", vm);
+                return PartialView("Partials/_CreateStep1", state);
 
             ViewData.SetPageTitle("Yeni Urun");
             ViewData.SetActiveNav("products");
-            return View(nameof(Create), vm);
+            return View(nameof(Create), state);
         }
 
-        // Resolve brand/category names for the review step
-        var brand = await brandService.GetBrandById(vm.BrandId);
-        if (brand.Success) vm.BrandName = brand.Data!.Name;
+        // Basarili — brand/category isimlerini coz ve state'e yaz
+        var brand = await brandService.GetBrandById(state.BrandId);
+        if (brand.Success) state.BrandName = brand.Data!.Name;
 
         var categories = await categoryService.GetLeafCategoriesAsync();
-        vm.CategoryName = categories.FirstOrDefault(c => c.Id == vm.CategoryId)?.Name;
+        state.CategoryName = categories.FirstOrDefault(c => c.Id == state.CategoryId)?.Name;
 
-        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
+        SaveWizardState(state);
 
-        // Load category attributes for Step 2
-        var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
+        // Step 2 icin kategori attribute'larini yukle
+        var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
         var attrs = attrResult.Success ? attrResult.Data! : [];
         ViewBag.NonVariantAttributes = attrs.Where(a => !a.IsVarianter && !a.IsSlicer).ToList();
 
         if (Request.IsHtmx())
-            return PartialView("Partials/_CreateStep2Attributes", vm);
+            return PartialView("Partials/_CreateStep2Attributes", state);
 
         ViewData.SetPageTitle("Yeni Urun");
         ViewData.SetActiveNav("products");
-        return View(nameof(Create), vm);
+        return View(nameof(Create), state);
     }
 
     [SkipAutoValidation]
     [HttpPost("/products/add/step2")]
     public async Task<IActionResult> CreateStep2(CreateProductVm vm)
     {
-        // Validate required category attributes
-        var missing = vm.CategoryAttributes
+        // Session-first: mevcut state'i oku, form'dan sadece CategoryAttributes'u merge et
+        var state = GetWizardState();
+        state.CategoryAttributes = vm.CategoryAttributes ?? [];
+        SaveWizardState(state);
+
+        // Step 2 validation — zorunlu kategori ozelliklerini kontrol et
+        var missing = state.CategoryAttributes
             .Where(a => a.IsRequired && (a.ValueId is null or 0) && string.IsNullOrWhiteSpace(a.CustomValue))
             .ToList();
 
         if (missing.Count > 0)
         {
-            var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
+            foreach (var attr in missing)
+                ModelState.AddModelError($"CategoryAttributes[{state.CategoryAttributes.IndexOf(attr)}].ValueId",
+                    $"'{attr.AttributeName}' zorunlu alandir.");
+
+            var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
             var attrs = attrResult.Success ? attrResult.Data! : [];
             ViewBag.NonVariantAttributes = attrs.Where(a => !a.IsVarianter && !a.IsSlicer).ToList();
 
             if (Request.IsHtmx())
-                return PartialView("Partials/_CreateStep2Attributes", vm);
+                return PartialView("Partials/_CreateStep2Attributes", state);
 
             ViewData.SetPageTitle("Yeni Urun");
             ViewData.SetActiveNav("products");
-            return View(nameof(Create), vm);
+            return View(nameof(Create), state);
         }
 
-        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
-
-        // Load varianter/slicer attributes for Step 3
-        var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(vm.CategoryId);
+        // Step 3 icin varyanter/slicer attribute'lari yukle
+        var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
         ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])
             .Where(a => a.IsVarianter || a.IsSlicer).ToList();
 
@@ -201,11 +258,11 @@ public class ProductController(
         ViewBag.BranchOffices = branches.Data ?? [];
 
         if (Request.IsHtmx())
-            return PartialView("Partials/_CreateStep3Variants", vm);
+            return PartialView("Partials/_CreateStep3Variants", state);
 
         ViewData.SetPageTitle("Yeni Urun");
         ViewData.SetActiveNav("products");
-        return View(nameof(Create), vm);
+        return View(nameof(Create), state);
     }
 
     [SkipAutoValidation]
@@ -225,20 +282,38 @@ public class ProductController(
     [HttpPost("/products/add/step3")]
     public async Task<IActionResult> CreateStep3(CreateProductVm vm)
     {
-        if (vm.Variants.Count == 0)
+        // Session-first: mevcut state'i oku, form'dan Step 3 alanlarini (varyant secimleri,
+        // default fiyatlar, olusturulan varyantlar) merge et.
+        var state = GetWizardState();
+        state.VariantAttributeSelections = vm.VariantAttributeSelections ?? [];
+        state.DefaultValues = vm.DefaultValues ?? new DefaultVariantValuesVm();
+        state.Variants = vm.Variants ?? [];
+        SaveWizardState(state);
+
+        if (state.Variants.Count == 0)
         {
-            TempData.SetError("En az bir varyant olusturulmalidir.");
-            return RedirectToAction(nameof(Create));
+            ModelState.AddModelError(string.Empty, "En az bir varyant olusturulmalidir.");
+
+            var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
+            ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])
+                .Where(a => a.IsVarianter || a.IsSlicer).ToList();
+            var branches = await branchOfficeManager.GetBranchList();
+            ViewBag.BranchOffices = branches.Data ?? [];
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_CreateStep3Variants", state);
+
+            ViewData.SetPageTitle("Yeni Urun");
+            ViewData.SetActiveNav("products");
+            return View(nameof(Create), state);
         }
 
-        HttpContext.Session.SetString("CreateProduct", JsonSerializer.Serialize(vm));
-
         if (Request.IsHtmx())
-            return PartialView("Partials/_CreateStep4Images", vm);
+            return PartialView("Partials/_CreateStep4Images", state);
 
         ViewData.SetPageTitle("Yeni Urun");
         ViewData.SetActiveNav("products");
-        return View(nameof(Create), vm);
+        return View(nameof(Create), state);
     }
 
     [HttpPost("/products/add/upload-temp-image")]
@@ -434,7 +509,7 @@ public class ProductController(
                     System.IO.File.Delete(f);
             }
 
-            HttpContext.Session.Remove("CreateProduct");
+            HttpContext.Session.Remove(CreateProductSessionKey);
 
             ViewBag.ProductId = product.Id;
             ViewBag.ProductTitle = vm.Title;
@@ -448,10 +523,17 @@ public class ProductController(
             return RedirectToAction(nameof(Detail), new { id = product.Id });
         }
 
-        if (Request.IsHtmx())
-            return Content("<div class=\"alert alert-danger\">" + (result.Message ?? "Urun eklenemedi.") + " <a href=\"/products/add\">Bastan baslatın</a></div>", "text/html");
+        // Error path — wizard'i tamamen cokertmek yerine Step 5 review'a geri don
+        // ve ustte hata banner'i goster. Session'daki veri korunur, kullanici
+        // sorunu duzeltip (genelde baska bir tab'de stok kodunu degistirip) tekrar
+        // deneyebilir.
+        var errorMessage = result.Message ?? "Ürün eklenemedi. Lütfen bilgileri kontrol edin.";
+        ViewBag.WizardError = errorMessage;
 
-        TempData.SetError(result.Message ?? "Urun eklenemedi.");
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep5Review", vm);
+
+        TempData.SetError(errorMessage);
         return RedirectToAction(nameof(Create));
     }
 

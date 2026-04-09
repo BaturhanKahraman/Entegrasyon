@@ -29,6 +29,53 @@ if (typeof GLightbox !== 'undefined') {
     });
 }
 
+// ── Currency Input (IMask) ───────────────────────────────────────────
+// .currency-input class'li input'lara Turkce para formatlama uygular.
+// Backend'e submit edilmeden once deger normalize edilir: "1.234,56" -> "1234.56"
+
+function initCurrencyInputs(root) {
+    if (typeof IMask === 'undefined') return;
+    var scope = root || document;
+    var inputs = scope.querySelectorAll('.currency-input');
+    inputs.forEach(function (el) {
+        if (el.dataset.currencyMasked === '1') return;
+        IMask(el, {
+            mask: Number,
+            scale: 2,
+            signed: false,
+            thousandsSeparator: '.',
+            radix: ',',
+            mapToRadix: ['.'],
+            normalizeZeros: true,
+            padFractionalZeros: false
+        });
+        el.dataset.currencyMasked = '1';
+    });
+}
+
+// Ilk sayfa yuklendiginde calistir
+document.addEventListener('DOMContentLoaded', function () { initCurrencyInputs(); });
+// HTMX swap sonrasi yeni partial'a da uygula
+document.body.addEventListener('htmx:afterSwap', function (evt) {
+    initCurrencyInputs(evt.detail.target);
+});
+
+// Form submit edilmeden once currency input'larini normalize et ("1.234,56" -> "1234.56")
+// Capture phase kullaniyoruz ki HTMX'in submit yakalamasindan once calisalim
+document.addEventListener('submit', function (evt) {
+    var form = evt.target;
+    if (!form || typeof form.querySelectorAll !== 'function') return;
+    form.querySelectorAll('.currency-input').forEach(function (el) {
+        var val = el.value;
+        if (!val) return;
+        // "1.234,56" -> "1234.56"
+        var normalized = val.replace(/\./g, '').replace(',', '.');
+        // Geriye sadece rakam ve nokta birak (guvenlik)
+        normalized = normalized.replace(/[^\d.]/g, '');
+        el.value = normalized;
+    });
+}, true);
+
 // ── Theme Toggle ─────────────────────────────────────────────────────
 
 (function () {

@@ -1,5 +1,7 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
@@ -296,6 +298,21 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
 
+// ── Request Localization ────────────────────────────────────────────────
+// Model binder decimal/DateTime parse'inin host OS culture'indan bagimsiz
+// olmasi icin InvariantCulture'i zorluyoruz. Formlardan gelen "1234.56"
+// her ortamda ayni sekilde parse edilir. UI culture ise Turkce kalir
+// (view'lardaki ToString'ler icin — ancak bizim kod genelde explicit
+// InvariantCulture kullanir).
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var invariant = CultureInfo.InvariantCulture;
+    var turkish = new CultureInfo("tr-TR");
+    options.DefaultRequestCulture = new RequestCulture(culture: invariant, uiCulture: turkish);
+    options.SupportedCultures = [invariant];
+    options.SupportedUICultures = [turkish];
+});
+
 // ── Active Branch Office (session + middleware) ─────────────────────────
 builder.Services.AddScoped<IActiveBranchOfficeAccessor, ActiveBranchOfficeAccessor>();
 
@@ -346,6 +363,7 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
+app.UseRequestLocalization();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseRouting();
 app.UseRateLimiter();

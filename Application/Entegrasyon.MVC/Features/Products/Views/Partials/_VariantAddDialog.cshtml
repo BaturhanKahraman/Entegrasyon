@@ -21,20 +21,29 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label required">Liste Fiyati</label>
-                            <input type="number" name="ListPrice" class="form-control"
-                                   min="0.01" step="0.01" required />
+                            <div class="input-group">
+                                <span class="input-group-text">₺</span>
+                                <input type="text" name="ListPrice" class="form-control currency-input"
+                                       inputmode="decimal" autocomplete="off" required />
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label required">Satış Fiyati</label>
-                            <input type="number" name="SalePrice" class="form-control"
-                                   min="0.01" step="0.01" required />
+                            <div class="input-group">
+                                <span class="input-group-text">₺</span>
+                                <input type="text" name="SalePrice" class="form-control currency-input"
+                                       inputmode="decimal" autocomplete="off" required />
+                            </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Maliyet</label>
-                            <input type="number" name="CostPrice" class="form-control"
-                                   min="0" step="0.01" value="0" />
+                            <div class="input-group">
+                                <span class="input-group-text">₺</span>
+                                <input type="text" name="CostPrice" class="form-control currency-input"
+                                       inputmode="decimal" autocomplete="off" value="0" />
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">KDV Oranı (%)</label>

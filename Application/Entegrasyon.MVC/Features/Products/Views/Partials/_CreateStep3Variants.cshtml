@@ -104,18 +104,27 @@
             <div class="row">
                 <div class="col-md-2 mb-3">
                     <label class="form-label">Liste Fiyat</label>
-                    <input type="number" name="DefaultValues.ListPrice" value="@Model.DefaultValues.ListPrice"
-                           class="form-control" step="0.01" min="0" />
+                    <div class="input-group">
+                        <span class="input-group-text">₺</span>
+                        <input type="text" name="DefaultValues.ListPrice" value="@Model.DefaultValues.ListPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                               class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                    </div>
                 </div>
                 <div class="col-md-2 mb-3">
                     <label class="form-label">Satış Fiyat</label>
-                    <input type="number" name="DefaultValues.SalePrice" value="@Model.DefaultValues.SalePrice"
-                           class="form-control" step="0.01" min="0" />
+                    <div class="input-group">
+                        <span class="input-group-text">₺</span>
+                        <input type="text" name="DefaultValues.SalePrice" value="@Model.DefaultValues.SalePrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                               class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                    </div>
                 </div>
                 <div class="col-md-2 mb-3">
                     <label class="form-label">Maliyet</label>
-                    <input type="number" name="DefaultValues.CostPrice" value="@Model.DefaultValues.CostPrice"
-                           class="form-control" step="0.01" min="0" />
+                    <div class="input-group">
+                        <span class="input-group-text">₺</span>
+                        <input type="text" name="DefaultValues.CostPrice" value="@Model.DefaultValues.CostPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                               class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                    </div>
                 </div>
                 <div class="col-md-2 mb-3">
                     <label class="form-label">KDV %</label>
@@ -270,6 +279,12 @@
     if (generateBtn) {
         generateBtn.addEventListener('click', function () {
             var form = document.getElementById('step3-form');
+            // Currency input'larini normalize et ("1.234,56" -> "1234.56")
+            // Normal submit akisi disinda calistigimiz icin manuel yapiyoruz
+            form.querySelectorAll('.currency-input').forEach(function (el) {
+                if (!el.value) return;
+                el.value = el.value.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+            });
             var formData = new FormData(form);
 
             fetch('/products/add/generate-variants', {

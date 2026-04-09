@@ -13,6 +13,14 @@ public interface IProductService
     Task<IDataResult<Product>> AddProduct(AddProductDto dto);
     Task<IResult> GetProductByBarcode(string barcode);
 
+    /// <summary>
+    /// Stok kodunun bir ürün tarafından kullanılıp kullanılmadığını kontrol eder.
+    /// Wizard'da erken validation (Step 1) için kullanılır — kullanıcıya Step 6'ya kadar beklemeden hata gösterir.
+    /// </summary>
+    /// <param name="stockCode">Kontrol edilecek stok kodu. Boş/null ise her zaman true döner.</param>
+    /// <returns>Stok kodu kullanılabilir (unique) ise true, zaten kullanılıyorsa false.</returns>
+    Task<bool> IsStockCodeAvailableAsync(string? stockCode);
+
     // Edit
     Task<IDataResult<ProductEditPageDto>> GetProductEditPageData(Guid id);
     Task<IResult> UpdateProduct(EditProductDto dto);

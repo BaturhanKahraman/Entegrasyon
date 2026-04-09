@@ -46,16 +46,25 @@ else
                             }
                         </td>
                         <td>
-                            <input type="number" name="Variants[@i].ListPrice" value="@variant.ListPrice"
-                                   class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
+                            <div class="input-group input-group-sm" style="width:140px">
+                                <span class="input-group-text">₺</span>
+                                <input type="text" name="Variants[@i].ListPrice" value="@variant.ListPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                                       class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                            </div>
                         </td>
                         <td>
-                            <input type="number" name="Variants[@i].SalePrice" value="@variant.SalePrice"
-                                   class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
+                            <div class="input-group input-group-sm" style="width:140px">
+                                <span class="input-group-text">₺</span>
+                                <input type="text" name="Variants[@i].SalePrice" value="@variant.SalePrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                                       class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                            </div>
                         </td>
                         <td>
-                            <input type="number" name="Variants[@i].CostPrice" value="@variant.CostPrice"
-                                   class="form-control form-control-sm" step="0.01" min="0" style="width:110px" />
+                            <div class="input-group input-group-sm" style="width:140px">
+                                <span class="input-group-text">₺</span>
+                                <input type="text" name="Variants[@i].CostPrice" value="@variant.CostPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                                       class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                            </div>
                         </td>
                         <td>
                             <input type="number" name="Variants[@i].VatRate" value="@variant.VatRate"

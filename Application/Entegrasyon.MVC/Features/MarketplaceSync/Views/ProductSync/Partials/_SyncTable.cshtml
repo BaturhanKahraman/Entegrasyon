@@ -7,14 +7,14 @@
             <table class="table table-vcenter table-hover card-table">
                 <thead>
                     <tr>
-                        <th>Ürün Adi</th>
+                        <th>Ürün Adı</th>
                         <th>Stok Kodu</th>
                         <th>Marka</th>
                         <th>Kategori</th>
                         <th>Varyant</th>
                         <th>Durum</th>
                         <th>Son Senkron</th>
-                        <th class="w-1">Islem</th>
+                        <th class="w-1">İşlem</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,20 +41,20 @@
                                         <span class="badge bg-warning-lt">Bekleyen</span>
                                         break;
                                     case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Processing:
-                                        <span class="badge bg-info-lt">Isleniyor</span>
+                                        <span class="badge bg-info-lt">İşleniyor</span>
                                         break;
                                     case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.OutOfSync:
-                                        <span class="badge bg-orange-lt">Guncellenmemis</span>
+                                        <span class="badge bg-orange-lt">Güncellenmemiş</span>
                                         break;
                                     case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Failed:
-                                        <span class="badge bg-danger-lt">Hatali</span>
+                                        <span class="badge bg-danger-lt">Hatalı</span>
                                         break;
                                     case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.Rejected:
                                         <span class="badge bg-danger-lt">Reddedildi</span>
                                         break;
                                     case Entegrasyon.Entity.Dtos.Product.MarketplaceSyncState.NeverSynced:
                                     default:
-                                        <span class="badge bg-secondary-lt">Hic Senkronize Edilmemis</span>
+                                        <span class="badge bg-secondary-lt">Hiç Senkronize Edilmemiş</span>
                                         break;
                                 }
                             </td>
@@ -98,8 +98,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Ürün bulunamadi",
-                         Subtitle = "Secili filtrelere uygun ürün bulunmuyor."
+                         Title = "Ürün bulunamadı",
+                         Subtitle = "Seçili filtrelere uygun ürün bulunmuyor."
                      }'/>
         </div>
     }

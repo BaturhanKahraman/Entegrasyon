@@ -1,6 +1,19 @@
 @model Entegrasyon.MVC.Features.Products.ViewModels.CreateProductVm
 
 <div data-wizard-step="5">
+@if (ViewBag.WizardError is string wizardError && !string.IsNullOrEmpty(wizardError))
+{
+    <div class="alert alert-danger mb-3">
+        <div class="d-flex">
+            <div><i class="ti ti-alert-circle me-2"></i></div>
+            <div>
+                <strong>Ürün kaydedilemedi</strong>
+                <div class="small mt-1">@wizardError</div>
+                <div class="small mt-1 text-muted">Önceki adımlara dönüp bilgileri düzeltebilir veya tekrar kaydetmeyi deneyebilirsiniz.</div>
+            </div>
+        </div>
+    </div>
+}
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Ozet ve Onay</h3>
@@ -9,7 +22,7 @@
         <!-- General Info -->
         <div class="datagrid mb-4">
             <div class="datagrid-item">
-                <div class="datagrid-title">Ürün Adi</div>
+                <div class="datagrid-title">Ürün Adı</div>
                 <div class="datagrid-content">@Model.Title</div>
             </div>
             <div class="datagrid-item">
@@ -34,7 +47,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.Year))
             {
                 <div class="datagrid-item">
-                    <div class="datagrid-title">Yil</div>
+                    <div class="datagrid-title">Yıl</div>
                     <div class="datagrid-content">@Model.Year</div>
                 </div>
             }

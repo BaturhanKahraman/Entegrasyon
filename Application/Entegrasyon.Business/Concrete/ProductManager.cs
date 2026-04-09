@@ -92,6 +92,17 @@ public class ProductManager(
         return new SuccessDataResult<Product>(product, Messages.ProductAdded);
     }
 
+    public async Task<bool> IsStockCodeAvailableAsync(string? stockCode)
+    {
+        if (string.IsNullOrWhiteSpace(stockCode))
+            return true;
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var exists = await dbContext.MainProducts
+            .AnyAsync(p => p.StockCode == stockCode && !p.IsDeleted);
+        return !exists;
+    }
+
     public async Task<IResult> GetProductByBarcode(string barcode)
     {
         if (string.IsNullOrEmpty(barcode))
