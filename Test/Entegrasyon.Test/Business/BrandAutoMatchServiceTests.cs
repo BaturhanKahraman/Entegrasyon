@@ -3,28 +3,41 @@ using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Results;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
-using System.Net;
 using System.Text.Json;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 
 namespace Entegrasyon.UnitTest.Business;
 
+/// <summary>
+/// BrandAutoMatchService testleri — string matching + Ollama fallback.
+/// WireMock pattern: StubOllamaResponse/StubOllamaUnavailable helper'lari ile
+/// servis davranisini simule eder. Offline senaryosu factory'nin connection-refused
+/// URL'ine yonlendirilmesi ile.
+/// </summary>
+[Collection(WireMockCollection.Name)]
 public class BrandAutoMatchServiceTests : BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<IBrandMatchService> _brandMatchServiceMock = new();
     private readonly Mock<IMarketplaceSearchService> _searchServiceMock = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ILogger<BrandAutoMatchService>> _loggerMock = new();
-    private readonly MockHttpMessageHandler _ollamaHandler = new();
+
+    public BrandAutoMatchServiceTests(WireMockFixture wm)
+    {
+        _wm = wm;
+        _wm.ResetAll();
+
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient("Ollama"))
+            .Returns(() => new HttpClient { BaseAddress = new Uri(_wm.BaseUrl) });
+    }
 
     private BrandAutoMatchService CreateSut()
     {
-        var httpClient = new HttpClient(_ollamaHandler)
-        {
-            BaseAddress = new Uri("http://localhost:11434/")
-        };
-        _httpClientFactoryMock.Setup(f => f.CreateClient("Ollama")).Returns(httpClient);
-
         return new BrandAutoMatchService(
             _brandMatchServiceMock.Object,
             _searchServiceMock.Object,
@@ -43,7 +56,7 @@ public class BrandAutoMatchServiceTests : BaseTest
         SetupUnmappedBrands([new BrandDto { Id = 1, Name = "Nike" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(100, "NIKE")]);
         SetupCreateMapping(true);
-        DisableOllama();
+        StubOllamaUnavailable();
 
         var sut = CreateSut();
 
@@ -64,7 +77,7 @@ public class BrandAutoMatchServiceTests : BaseTest
         SetupUnmappedBrands([new BrandDto { Id = 2, Name = "Çiçeksepeti" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(200, "Ciceksepeti")]);
         SetupCreateMapping(true);
-        DisableOllama();
+        StubOllamaUnavailable();
 
         var sut = CreateSut();
 
@@ -83,7 +96,7 @@ public class BrandAutoMatchServiceTests : BaseTest
         SetupUnmappedBrands([new BrandDto { Id = 3, Name = "Nike" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(300, "Nike TR")]);
         SetupCreateMapping(true);
-        DisableOllama();
+        StubOllamaUnavailable();
 
         var sut = CreateSut();
 
@@ -100,7 +113,7 @@ public class BrandAutoMatchServiceTests : BaseTest
         // Arrange
         SetupUnmappedBrands([new BrandDto { Id = 4, Name = "Totally Unknown Brand" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(400, "Completely Different")]);
-        DisableOllama();
+        StubOllamaUnavailable();
 
         var sut = CreateSut();
 
@@ -137,7 +150,7 @@ public class BrandAutoMatchServiceTests : BaseTest
         SetupUnmappedBrands([new BrandDto { Id = 5, Name = "Mavi Giyim" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(500, "Mavi")]);
         SetupCreateMapping(true);
-        SetupOllamaResponse([new { appId = 5, mpId = 500, confidence = 0.9, reason = "Benzer marka" }]);
+        StubOllamaResponse([new { appId = 5, mpId = 500, confidence = 0.9, reason = "Benzer marka" }]);
 
         var sut = CreateSut();
 
@@ -155,7 +168,7 @@ public class BrandAutoMatchServiceTests : BaseTest
         // Arrange — Ollama returns confidence 0.6 (below 0.8 threshold)
         SetupUnmappedBrands([new BrandDto { Id = 6, Name = "ABC Tekstil" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(600, "ABC")]);
-        SetupOllamaResponse([new { appId = 6, mpId = 600, confidence = 0.6, reason = "Kismi esleme" }]);
+        StubOllamaResponse([new { appId = 6, mpId = 600, confidence = 0.6, reason = "Kismi esleme" }]);
 
         var sut = CreateSut();
 
@@ -173,10 +186,10 @@ public class BrandAutoMatchServiceTests : BaseTest
     [Fact]
     public async Task AutoMatch_OllamaUnavailable_GracefulDegradation()
     {
-        // Arrange — Ollama throws HttpRequestException
+        // Arrange — Ollama offline (connection refused)
         SetupUnmappedBrands([new BrandDto { Id = 7, Name = "Some Brand" }]);
         SetupMarketplaceBrands([new MarketplaceBrandSearchResult(700, "Different Brand")]);
-        _ollamaHandler.SetException(new HttpRequestException("Connection refused"));
+        SimulateOllamaOffline();
 
         var sut = CreateSut();
 
@@ -192,7 +205,11 @@ public class BrandAutoMatchServiceTests : BaseTest
     public async Task IsOllamaAvailableAsync_WhenOllamaOnline_ReturnsTrue()
     {
         // Arrange
-        _ollamaHandler.SetResponse(HttpStatusCode.OK, "Ollama is running");
+        _wm.Server
+            .Given(Request.Create().WithPath("/").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithBody("Ollama is running"));
         var sut = CreateSut();
 
         // Act
@@ -206,7 +223,7 @@ public class BrandAutoMatchServiceTests : BaseTest
     public async Task IsOllamaAvailableAsync_WhenOllamaOffline_ReturnsFalse()
     {
         // Arrange
-        _ollamaHandler.SetException(new HttpRequestException("Connection refused"));
+        SimulateOllamaOffline();
         var sut = CreateSut();
 
         // Act
@@ -239,51 +256,42 @@ public class BrandAutoMatchServiceTests : BaseTest
             .ReturnsAsync(success ? new SuccessResult() : new ErrorResult("Hata"));
     }
 
-    private void DisableOllama()
+    /// <summary>
+    /// Ollama 503 doner — SUT onu unavailable sayar ve Ollama fallback'ine gitmez
+    /// (yalnizca string matching kullanir).
+    /// </summary>
+    private void StubOllamaUnavailable()
     {
-        _ollamaHandler.SetResponse(HttpStatusCode.ServiceUnavailable, "");
+        _wm.Server
+            .Given(Request.Create().WithPath("/*").UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(503)
+                .WithBody(""));
     }
 
-    private void SetupOllamaResponse(IEnumerable<object> results)
+    /// <summary>
+    /// Ollama /api/generate endpoint'i saglanan result listesini wrap'li JSON olarak doner.
+    /// </summary>
+    private void StubOllamaResponse(IEnumerable<object> results)
     {
         var inner = JsonSerializer.Serialize(results);
         var outer = JsonSerializer.Serialize(new { response = inner });
-        _ollamaHandler.SetResponse(HttpStatusCode.OK, outer);
+
+        _wm.Server
+            .Given(Request.Create().WithPath("/api/generate").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(outer));
     }
 
-    // ─── Mock HTTP Handler ─────────────────────────────────────────────────
-
-    public class MockHttpMessageHandler : HttpMessageHandler
+    /// <summary>
+    /// Factory'ye kasitli connection-refused URL doner → offline Ollama senaryosu.
+    /// </summary>
+    private void SimulateOllamaOffline()
     {
-        private HttpStatusCode _statusCode = HttpStatusCode.OK;
-        private string _responseContent = "";
-        private Exception? _exception;
-        public int CallCount { get; private set; }
-
-        public void SetResponse(HttpStatusCode statusCode, string content)
-        {
-            _statusCode = statusCode;
-            _responseContent = content;
-            _exception = null;
-        }
-
-        public void SetException(Exception exception)
-        {
-            _exception = exception;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            CallCount++;
-
-            if (_exception is not null)
-                throw _exception;
-
-            return Task.FromResult(new HttpResponseMessage(_statusCode)
-            {
-                Content = new StringContent(_responseContent)
-            });
-        }
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient("Ollama"))
+            .Returns(() => new HttpClient { BaseAddress = new Uri("http://127.0.0.1:1/") });
     }
 }

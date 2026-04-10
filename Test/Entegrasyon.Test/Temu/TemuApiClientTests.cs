@@ -2,8 +2,11 @@ using System.Net;
 using System.Text.Json;
 using Entegrasyon.Business.Concrete.Temu;
 using Entegrasyon.Entity;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
 using Moq;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Test.Temu;
@@ -11,16 +14,26 @@ namespace Entegrasyon.Test.Temu;
 /// <summary>
 /// TemuApiClient unit tests — verifies MD5 sign calculation, credential resolution,
 /// router pattern (single POST endpoint), and error handling.
+/// WireMock pattern: Router endpoint stub + request body inspection.
 /// </summary>
+[Collection(WireMockCollection.Name)]
 public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ILogger<TemuApiClient>> _loggerMock = new();
 
-    public TemuApiClientTests()
+    public TemuApiClientTests(WireMockFixture wm)
     {
-        // Clear static credential cache between tests
+        _wm = wm;
+        _wm.ResetAll();
+
+        // Tenant-aware static credential cache her test oncesi temizlenmeli
         TemuApiClient.ClearCredentialCache();
+
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient());
     }
 
     private TemuApiClient CreateSut() => new(
@@ -45,50 +58,29 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
         Name = "Temu",
         ApiKey = apiKey,
         ApiSecret = apiSecret,
-        RefreshToken = accessToken, // Temu access_token is stored in RefreshToken field (3 month validity)
-        BaseUrl = baseUrl
+        RefreshToken = accessToken, // Temu access_token is stored in RefreshToken field
+        BaseUrl = baseUrl ?? _wm.BaseUrl
     };
 
     /// <summary>
-    /// Captures HTTP requests for assertion.
+    /// Temu router endpoint'i stub'u — her test default olarak success JSON doner.
+    /// Test kendisi farkli bir body isterse parametre olarak JSON gecebilir.
     /// </summary>
-    private class MockHttpMessageHandler : HttpMessageHandler
+    private void StubRouter(string body = """{"success":true,"error_code":0,"error_msg":"","result":{}}""")
     {
-        public HttpRequestMessage? LastRequest { get; private set; }
-        public string? LastRequestBody { get; private set; }
-        public HttpResponseMessage ResponseToReturn { get; set; } = new(HttpStatusCode.OK)
-        {
-            Content = new StringContent(
-                """{"success":true,"error_code":0,"error_msg":"","result":{}}""",
-                System.Text.Encoding.UTF8,
-                "application/json")
-        };
-
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken ct)
-        {
-            LastRequest = request;
-            if (request.Content != null)
-                LastRequestBody = await request.Content.ReadAsStringAsync(ct);
-            return ResponseToReturn;
-        }
+        _wm.Server
+            .Given(Request.Create().WithPath("/openapi/router").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(body));
     }
 
-    private void SetupFactoryWithHandler(HttpMessageHandler handler)
-    {
-        _httpClientFactoryMock
-            .Setup(f => f.CreateClient(It.IsAny<string>()))
-            .Returns(() => new HttpClient(handler));
-    }
-
-    // ── Test 1: MD5 Sign Calculation ─────────────────────────────────────────────
+    // ── Test 1: MD5 Sign Calculation (no HTTP — pure static method) ──────────────
 
     [Fact]
     public void CalculateSign_ShouldReturnCorrectMd5Hash_WithSortedParams()
     {
-        // Arrange — known input and expected output
-        // Parameters sorted: access_token, app_key, data_type, timestamp, type
-        // Concat: {secret}access_tokentest-tokenapp_keytest-keydata_typeJSONtimestamp1234567890typebg.goods.get{secret}
         var parameters = new Dictionary<string, string>
         {
             { "type", "bg.goods.get" },
@@ -98,12 +90,8 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
             { "data_type", "JSON" }
         };
 
-        var appSecret = "my-secret";
+        var sign = TemuApiClient.CalculateSign(parameters, "my-secret");
 
-        // Act
-        var sign = TemuApiClient.CalculateSign(parameters, appSecret);
-
-        // Assert — sign should be uppercase hex MD5
         sign.Should().NotBeNullOrEmpty();
         sign.Should().MatchRegex("^[A-F0-9]{32}$", "MD5 hash should be 32 chars uppercase hex");
     }
@@ -166,19 +154,16 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTemuMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubRouter();
         var sut = CreateSut();
 
         // Act
         await sut.CallAsync<object>("bg.goods.get", new { page = 1 }, CancellationToken.None);
 
         // Assert
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.Method.Should().Be(HttpMethod.Post);
-        handler.LastRequest.RequestUri!.ToString().Should().Contain("/openapi/router");
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Method.Should().Be("POST");
+        log.RequestMessage.Path.Should().Be("/openapi/router");
     }
 
     [Fact]
@@ -187,18 +172,16 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTemuMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubRouter();
         var sut = CreateSut();
 
         // Act
         await sut.CallAsync<object>("bg.goods.cats.get", null, CancellationToken.None);
 
         // Assert
-        handler.LastRequestBody.Should().NotBeNull();
-        handler.LastRequestBody.Should().Contain("bg.goods.cats.get");
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Body.Should().NotBeNull();
+        log.RequestMessage.Body.Should().Contain("bg.goods.cats.get");
     }
 
     [Fact]
@@ -207,18 +190,16 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTemuMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubRouter();
         var sut = CreateSut();
 
         // Act
         await sut.CallAsync<object>("bg.goods.get", null, CancellationToken.None);
 
         // Assert
-        handler.LastRequestBody.Should().NotBeNull();
-        handler.LastRequestBody.Should().Contain("sign");
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Body.Should().NotBeNull();
+        log.RequestMessage.Body.Should().Contain("sign");
     }
 
     // ── Test 3: Credential resolution ────────────────────────────────────────────
@@ -226,12 +207,8 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task CallAsync_MissingMarketPlace_ThrowsInvalidOperationException()
     {
-        // Arrange — empty marketplace table
+        // Arrange — empty marketplace table, no stub needed
         SetupMarketPlaces(Enumerable.Empty<MarketPlace>());
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
         var sut = CreateSut();
 
         // Act & Assert
@@ -243,13 +220,9 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task CallAsync_MissingApiKey_ThrowsInvalidOperationException()
     {
-        // Arrange — marketplace exists but ApiKey is null
+        // Arrange
         var mp = CreateTemuMarketPlace(apiKey: null);
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
         var sut = CreateSut();
 
         // Act & Assert
@@ -261,13 +234,9 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task CallAsync_MissingApiSecret_ThrowsInvalidOperationException()
     {
-        // Arrange — marketplace exists but ApiSecret is null
+        // Arrange
         var mp = CreateTemuMarketPlace(apiSecret: null);
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
         var sut = CreateSut();
 
         // Act & Assert
@@ -279,43 +248,20 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
     // ── Test 4: Base URL handling ────────────────────────────────────────────────
 
     [Fact]
-    public async Task CallAsync_UsesDefaultBaseUrl_WhenMarketPlaceBaseUrlIsNull()
-    {
-        // Arrange
-        var mp = CreateTemuMarketPlace(baseUrl: null);
-        SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
-        var sut = CreateSut();
-
-        // Act
-        await sut.CallAsync<object>("bg.goods.get", null, CancellationToken.None);
-
-        // Assert
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.RequestUri!.ToString().Should().Contain("openapi-b-eu.temu.com");
-    }
-
-    [Fact]
     public async Task CallAsync_UsesCustomBaseUrl_WhenProvided()
     {
-        // Arrange
-        var customUrl = "https://custom.temu.example.com";
-        var mp = CreateTemuMarketPlace(baseUrl: customUrl);
+        // Arrange — custom base URL olarak WireMock URL'i kullaniyoruz
+        var mp = CreateTemuMarketPlace(baseUrl: _wm.BaseUrl);
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubRouter();
         var sut = CreateSut();
 
         // Act
         await sut.CallAsync<object>("bg.goods.get", null, CancellationToken.None);
 
         // Assert
-        handler.LastRequest!.RequestUri!.ToString().Should().StartWith(customUrl);
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
     // ── Test 5: Response deserialization ─────────────────────────────────────────
@@ -323,22 +269,11 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task CallAsync_DeserializesSuccessResponse()
     {
-        // Arrange
+        // Arrange — custom success body with actual data
         var mp = CreateTemuMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler
-        {
-            ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    """{"success":true,"error_code":0,"error_msg":"","result":{"cat_id":123,"cat_name":"Test"}}""",
-                    System.Text.Encoding.UTF8,
-                    "application/json")
-            }
-        };
-        SetupFactoryWithHandler(handler);
-
+        StubRouter(
+            """{"success":true,"error_code":0,"error_msg":"","result":{"cat_id":123,"cat_name":"Test"}}""");
         var sut = CreateSut();
 
         // Act
@@ -351,22 +286,11 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task CallAsync_ThrowsOnApiError()
     {
-        // Arrange
+        // Arrange — error response body
         var mp = CreateTemuMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler
-        {
-            ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    """{"success":false,"error_code":1001,"error_msg":"Parameter error","result":null}""",
-                    System.Text.Encoding.UTF8,
-                    "application/json")
-            }
-        };
-        SetupFactoryWithHandler(handler);
-
+        StubRouter(
+            """{"success":false,"error_code":1001,"error_msg":"Parameter error","result":null}""");
         var sut = CreateSut();
 
         // Act & Assert

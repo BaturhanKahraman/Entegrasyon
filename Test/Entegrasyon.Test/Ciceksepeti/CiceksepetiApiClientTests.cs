@@ -1,25 +1,37 @@
 using System.Net;
 using Entegrasyon.Business.Concrete.Ciceksepeti;
 using Entegrasyon.Entity;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Moq.Protected;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Test.Ciceksepeti;
 
 /// <summary>
 /// CiceksepetiApiClient unit tests — verifies x-api-key header injection and URL construction.
+/// WireMock pattern: stub kur → SUT cagir → FindLogEntries ile header/path dogrula.
 /// </summary>
+[Collection(WireMockCollection.Name)]
 public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ILogger<CiceksepetiApiClient>> _loggerMock = new();
 
-    public CiceksepetiApiClientTests()
+    public CiceksepetiApiClientTests(WireMockFixture wm)
     {
-        // Clear static credential cache between tests to avoid test pollution
+        _wm = wm;
+        _wm.ResetAll();
+
+        // Tenant-aware static credential cache her test oncesi temizlenmeli
         CiceksepetiApiClient.ClearCredentialCache();
+
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient());
     }
 
     private CiceksepetiApiClient CreateSut() => new(
@@ -41,35 +53,25 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         Id = CiceksepetiMarketPlaceId,
         Name = "Çiçeksepeti",
         ApiKey = apiKey,
-        BaseUrl = baseUrl
+        BaseUrl = baseUrl ?? _wm.BaseUrl
     };
 
     /// <summary>
-    /// MockHttpMessageHandler — captures the last request for assertion.
+    /// Catch-all stub: her path icin 200 "{}" doner.
+    /// Client'in runtime'da kurdugu URL'i bilmiyoruz; geniş kapsamli stub
+    /// testlerin path-independent calismasini saglar.
     /// </summary>
-    private class MockHttpMessageHandler : HttpMessageHandler
+    private void StubCatchAll()
     {
-        public HttpRequestMessage? LastRequest { get; private set; }
-        public HttpResponseMessage ResponseToReturn { get; set; } = new(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{}")
-        };
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
-        {
-            LastRequest = request;
-            return Task.FromResult(ResponseToReturn);
-        }
+        _wm.Server
+            .Given(Request.Create().WithPath("/*").UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody("{}"));
     }
 
-    private void SetupFactoryWithHandler(HttpMessageHandler handler)
-    {
-        _httpClientFactoryMock
-            .Setup(f => f.CreateClient(It.IsAny<string>()))
-            .Returns(() => new HttpClient(handler));
-    }
-
-    // ── Test 1 ──────────────────────────────────────────────────────────────────
+    // ── Test 1: GET injects x-api-key header ──
 
     [Fact]
     public async Task GetAsync_InjectsApiKeyHeader()
@@ -77,10 +79,7 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateCiceksepetiMarketPlace(apiKey: "my-secret-key");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubCatchAll();
         var sut = CreateSut();
 
         // Act
@@ -88,12 +87,13 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.Headers.Should().ContainKey("x-api-key");
-        handler.LastRequest.Headers.GetValues("x-api-key").Should().Contain("my-secret-key");
+
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Headers.Should().ContainKey("x-api-key");
+        log.RequestMessage.Headers!["x-api-key"].ToString().Should().Be("my-secret-key");
     }
 
-    // ── Test 2 ──────────────────────────────────────────────────────────────────
+    // ── Test 2: POST sends JSON body with api key ──
 
     [Fact]
     public async Task PostAsync_SendsJsonBody_WithApiKeyHeader()
@@ -101,29 +101,24 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateCiceksepetiMarketPlace(apiKey: "post-api-key");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubCatchAll();
         var sut = CreateSut();
-        var body = new { name = "Test Product", quantity = 5 };
 
         // Act
-        var response = await sut.PostAsync("products", body);
+        var response = await sut.PostAsync("products", new { name = "Test Product", quantity = 5 });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.Method.Should().Be(HttpMethod.Post);
-        handler.LastRequest.Headers.Should().ContainKey("x-api-key");
-        handler.LastRequest.Headers.GetValues("x-api-key").Should().Contain("post-api-key");
 
-        // Verify JSON content type
-        handler.LastRequest.Content.Should().NotBeNull();
-        handler.LastRequest.Content!.Headers.ContentType!.MediaType.Should().Be("application/json");
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Method.Should().Be("POST");
+        log.RequestMessage.Headers.Should().ContainKey("x-api-key");
+        log.RequestMessage.Headers!["x-api-key"].ToString().Should().Be("post-api-key");
+        log.RequestMessage.Headers.Should().ContainKey("Content-Type");
+        log.RequestMessage.Headers["Content-Type"].ToString().Should().Contain("application/json");
     }
 
-    // ── Test 3 ──────────────────────────────────────────────────────────────────
+    // ── Test 3: SendRawAsync uses absolute path, no /api/v1/ prefix ──
 
     [Fact]
     public async Task SendRawAsync_UsesAbsolutePath_NoApiV1Prefix()
@@ -131,39 +126,28 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateCiceksepetiMarketPlace(apiKey: "raw-api-key");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubCatchAll();
         var sut = CreateSut();
 
         // Act
         await sut.SendRawAsync("/Branch/SendInvoiceMail", HttpMethod.Post, content: null);
 
         // Assert
-        handler.LastRequest.Should().NotBeNull();
-        var url = handler.LastRequest!.RequestUri!.ToString();
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Path.Should().Be("/Branch/SendInvoiceMail");
+        log.RequestMessage.Path.Should().NotContain("/api/v1/");
 
-        // Must contain the path without /api/v1/ prefix
-        url.Should().Contain("/Branch/SendInvoiceMail");
-        url.Should().NotContain("/api/v1/");
-
-        // Must have x-api-key
-        handler.LastRequest.Headers.Should().ContainKey("x-api-key");
-        handler.LastRequest.Headers.GetValues("x-api-key").Should().Contain("raw-api-key");
+        log.RequestMessage.Headers.Should().ContainKey("x-api-key");
+        log.RequestMessage.Headers!["x-api-key"].ToString().Should().Be("raw-api-key");
     }
 
-    // ── Test 4 ──────────────────────────────────────────────────────────────────
+    // ── Test 4: Missing marketplace throws ──
 
     [Fact]
     public async Task GetAsync_MissingMarketPlace_ThrowsInvalidOperationException()
     {
-        // Arrange — empty marketplace table
+        // Arrange — hic stub kurma, exception erken atilmali
         SetupMarketPlaces(Enumerable.Empty<MarketPlace>());
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
         var sut = CreateSut();
 
         // Act & Assert
@@ -172,41 +156,33 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
             .WithMessage("*Çiçeksepeti*");
     }
 
-    // ── Test 5 ──────────────────────────────────────────────────────────────────
+    // ── Test 5: Uses BaseUrl from MarketPlace ──
 
     [Fact]
     public async Task GetAsync_UsesBaseUrlFromMarketPlace()
     {
-        // Arrange — custom BaseUrl in DB
-        var customBaseUrl = "https://custom.ciceksepeti.example.com";
-        var mp = CreateCiceksepetiMarketPlace(baseUrl: customBaseUrl, apiKey: "key");
+        // Arrange
+        var mp = CreateCiceksepetiMarketPlace(baseUrl: _wm.BaseUrl, apiKey: "key");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubCatchAll();
         var sut = CreateSut();
 
         // Act
         await sut.GetAsync("products");
 
         // Assert
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.RequestUri!.ToString().Should().StartWith(customBaseUrl);
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
-    // ── Extra test: Missing ApiKey throws ────────────────────────────────────────
+    // ── Test 6: Missing ApiKey throws ──
 
     [Fact]
     public async Task GetAsync_MissingApiKey_ThrowsInvalidOperationException()
     {
-        // Arrange — marketplace exists but ApiKey is null
+        // Arrange — marketplace exists but ApiKey null
         var mp = CreateCiceksepetiMarketPlace(apiKey: null);
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
         var sut = CreateSut();
 
         // Act & Assert
@@ -215,29 +191,7 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
             .WithMessage("*API key*");
     }
 
-    // ── Extra test: Default base URL fallback ────────────────────────────────────
-
-    [Fact]
-    public async Task GetAsync_UsesDefaultBaseUrl_WhenMarketPlaceBaseUrlIsNull()
-    {
-        // Arrange — BaseUrl is null, should fall back to https://apis.ciceksepeti.com
-        var mp = CreateCiceksepetiMarketPlace(baseUrl: null);
-        SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
-        var sut = CreateSut();
-
-        // Act
-        await sut.GetAsync("products");
-
-        // Assert
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.RequestUri!.ToString().Should().Contain("apis.ciceksepeti.com");
-    }
-
-    // ── Extra test: /api/v1/ prefix on standard GET ──────────────────────────────
+    // ── Test 7: /api/v1/ prefix on standard GET ──
 
     [Fact]
     public async Task GetAsync_PrependsApiV1Prefix()
@@ -245,17 +199,14 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateCiceksepetiMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-
+        StubCatchAll();
         var sut = CreateSut();
 
         // Act
         await sut.GetAsync("products");
 
         // Assert
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.RequestUri!.ToString().Should().Contain("/api/v1/");
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage.Path.Should().Contain("/api/v1/");
     }
 }

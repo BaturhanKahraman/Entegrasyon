@@ -1,37 +1,74 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity.Dtos.Marketplace;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 
 namespace Entegrasyon.UnitTest.Business;
 
+/// <summary>
+/// AttributeAutoMatchService testleri — Ollama HTTP cagrilarini WireMock ile simule eder.
+/// CategoryAutoMatchService ile ayni pattern: StubOllama + SimulateOllamaOffline helper'lari.
+/// </summary>
+[Collection(WireMockCollection.Name)]
 public class AttributeAutoMatchServiceTests : BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
     private readonly Mock<ILogger<AttributeAutoMatchService>> _mockLogger;
     private readonly AttributeAutoMatchService _sut;
-    private readonly MockHttpMessageHandler _mockHandler;
 
-    public AttributeAutoMatchServiceTests()
+    public AttributeAutoMatchServiceTests(WireMockFixture wm)
     {
+        _wm = wm;
+        _wm.ResetAll();
+
         _mockHttpClientFactory = new Mock<IHttpClientFactory>();
         _mockLogger = new Mock<ILogger<AttributeAutoMatchService>>();
-        _mockHandler = new MockHttpMessageHandler();
-
-        var httpClient = new HttpClient(_mockHandler)
-        {
-            BaseAddress = new Uri("http://localhost:11434")
-        };
 
         _mockHttpClientFactory
             .Setup(f => f.CreateClient("Ollama"))
-            .Returns(httpClient);
+            .Returns(() => new HttpClient { BaseAddress = new Uri(_wm.BaseUrl) });
 
         _sut = new AttributeAutoMatchService(
             _mockHttpClientFactory.Object,
             _mockLogger.Object);
+    }
+
+    /// <summary>
+    /// Ollama /api/generate endpoint'ini stub'lar.
+    /// </summary>
+    private void StubOllama(string responseBody)
+    {
+        _wm.Server
+            .Given(Request.Create().WithPath("/api/generate").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(responseBody));
+    }
+
+    private void StubOllamaAvailable()
+    {
+        _wm.Server
+            .Given(Request.Create().WithPath("/").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithBody("Ollama is running"));
+    }
+
+    /// <summary>
+    /// Factory'ye kasitli connection-refused URL doner → offline Ollama senaryosu.
+    /// </summary>
+    private void SimulateOllamaOffline()
+    {
+        _mockHttpClientFactory
+            .Setup(f => f.CreateClient("Ollama"))
+            .Returns(() => new HttpClient { BaseAddress = new Uri("http://127.0.0.1:1/") });
     }
 
     [Fact]
@@ -43,13 +80,9 @@ public class AttributeAutoMatchServiceTests : BaseTest
             new { appId = 1, mpId = 101, confidence = 0.9 }
         });
         var ollamaResponse = new { response = ollamaInnerResponse };
-        _mockHandler.SetResponse(HttpStatusCode.OK, JsonSerializer.Serialize(ollamaResponse));
+        StubOllama(JsonSerializer.Serialize(ollamaResponse));
 
-        var appAttributes = new List<AppAttributeForMatchDto>
-        {
-            new(1, "Renk")
-        };
-
+        var appAttributes = new List<AppAttributeForMatchDto> { new(1, "Renk") };
         var marketplaceAttributes = new List<MarketplaceAttributeDto>
         {
             new(101, "Renk", true, false, []),
@@ -73,7 +106,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
     public async Task IsAvailableAsync_Should_Return_False_When_Ollama_Unavailable()
     {
         // Arrange
-        _mockHandler.SetException(new HttpRequestException("Connection refused"));
+        SimulateOllamaOffline();
 
         // Act
         var available = await _sut.IsAvailableAsync();
@@ -86,7 +119,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
     public async Task SuggestAttributeMatchesAsync_Should_Return_Empty_When_Ollama_Offline()
     {
         // Arrange
-        _mockHandler.SetException(new HttpRequestException("Connection refused"));
+        SimulateOllamaOffline();
 
         var appAttributes = new List<AppAttributeForMatchDto> { new(1, "Renk") };
         var marketplaceAttributes = new List<MarketplaceAttributeDto>
@@ -107,7 +140,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
     {
         // Arrange
         var ollamaResponse = new { response = "not valid json" };
-        _mockHandler.SetResponse(HttpStatusCode.OK, JsonSerializer.Serialize(ollamaResponse));
+        StubOllama(JsonSerializer.Serialize(ollamaResponse));
 
         var appAttributes = new List<AppAttributeForMatchDto> { new(1, "Renk") };
         var marketplaceAttributes = new List<MarketplaceAttributeDto>
@@ -132,13 +165,9 @@ public class AttributeAutoMatchServiceTests : BaseTest
             new { appId = 10, mpId = 200, confidence = 0.85 }
         });
         var ollamaResponse = new { response = ollamaInnerResponse };
-        _mockHandler.SetResponse(HttpStatusCode.OK, JsonSerializer.Serialize(ollamaResponse));
+        StubOllama(JsonSerializer.Serialize(ollamaResponse));
 
-        var appValues = new List<AppValueForMatchDto>
-        {
-            new(10, "Kırmızı")
-        };
-
+        var appValues = new List<AppValueForMatchDto> { new(10, "Kırmızı") };
         var marketplaceValues = new List<MarketplaceAttributeValueDto>
         {
             new(200, "Kırmızı"),
@@ -162,7 +191,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
     public async Task SuggestValueMatchesAsync_Should_Return_Empty_When_Ollama_Offline()
     {
         // Arrange
-        _mockHandler.SetException(new HttpRequestException("Connection refused"));
+        SimulateOllamaOffline();
 
         var appValues = new List<AppValueForMatchDto> { new(1, "Kırmızı") };
         var marketplaceValues = new List<MarketplaceAttributeValueDto> { new(200, "Kırmızı") };
@@ -179,7 +208,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
     public async Task IsAvailableAsync_Should_Return_True_When_Ollama_Online()
     {
         // Arrange
-        _mockHandler.SetResponse(HttpStatusCode.OK, "Ollama is running");
+        StubOllamaAvailable();
 
         // Act
         var available = await _sut.IsAvailableAsync();
@@ -191,7 +220,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
     [Fact]
     public async Task SuggestAttributeMatchesAsync_Should_Return_Empty_When_AppAttributes_Empty()
     {
-        // Arrange
+        // Arrange — no HTTP call expected
         var appAttributes = new List<AppAttributeForMatchDto>();
         var marketplaceAttributes = new List<MarketplaceAttributeDto>
         {
@@ -215,7 +244,7 @@ public class AttributeAutoMatchServiceTests : BaseTest
             new { appId = 999, mpId = 101, confidence = 0.9 }
         });
         var ollamaResponse = new { response = ollamaInnerResponse };
-        _mockHandler.SetResponse(HttpStatusCode.OK, JsonSerializer.Serialize(ollamaResponse));
+        StubOllama(JsonSerializer.Serialize(ollamaResponse));
 
         var appAttributes = new List<AppAttributeForMatchDto> { new(1, "Renk") };
         var marketplaceAttributes = new List<MarketplaceAttributeDto>
@@ -229,42 +258,5 @@ public class AttributeAutoMatchServiceTests : BaseTest
         // Assert
         result.Success.Should().BeTrue();
         result.Data.Should().BeEmpty(); // appId 999 not found → skipped
-    }
-
-    /// <summary>
-    /// Test helper: Mock HTTP message handler for simulating Ollama API responses.
-    /// </summary>
-    public class MockHttpMessageHandler : HttpMessageHandler
-    {
-        private HttpStatusCode _statusCode = HttpStatusCode.OK;
-        private string _responseContent = "";
-        private Exception? _exception;
-        public int CallCount { get; private set; }
-
-        public void SetResponse(HttpStatusCode statusCode, string content)
-        {
-            _statusCode = statusCode;
-            _responseContent = content;
-            _exception = null;
-        }
-
-        public void SetException(Exception exception)
-        {
-            _exception = exception;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            CallCount++;
-
-            if (_exception is not null)
-                throw _exception;
-
-            return Task.FromResult(new HttpResponseMessage(_statusCode)
-            {
-                Content = new StringContent(_responseContent)
-            });
-        }
     }
 }

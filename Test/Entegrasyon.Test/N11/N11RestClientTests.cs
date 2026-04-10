@@ -4,27 +4,35 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.N11;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.N11;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Test.N11;
 
 /// <summary>
 /// N11RestClient birim testleri.
-/// Credential header ekleme ve HTTP yanıt parse mantığını doğrular.
+/// Credential header ekleme ve HTTP yanit parse mantigini dogrular.
+/// WireMock pattern: her test kendi stub'ini kurar, LogEntries ile request'i dogrular.
 /// </summary>
+[Collection(WireMockCollection.Name)]
 public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ILogger<N11RestClient>> _loggerMock = new();
     private readonly Mock<ITenantContext> _tenantContextMock = new();
-    private readonly MockHttpMessageHandler _handler = new();
 
     private const string TestAppKey = "test-app-key";
     private const string TestAppSecret = "test-app-secret";
 
-    public N11RestClientTests()
+    public N11RestClientTests(WireMockFixture wm)
     {
+        _wm = wm;
+        _wm.ResetAll();
+
         _tenantContextMock.Setup(t => t.GetMarketPlaceId("N11")).Returns(N11MarketPlaceId);
 
         var marketPlaces = new List<MarketPlace>
@@ -36,14 +44,11 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
             .Setup(x => x.MarketPlaces)
             .ReturnsDbSet(marketPlaces);
 
-        var httpClient = new HttpClient(_handler)
-        {
-            BaseAddress = new Uri("https://api.n11.com/")
-        };
-
+        // Factory mock WireMock URL'ine yonlendirir — N11RestClient named client "N11Rest"
+        // kullaniyor, factory mock But It.IsAny<string>() match'ledigi icin degeri umursamaz.
         _httpClientFactoryMock
-            .Setup(f => f.CreateClient("N11Rest"))
-            .Returns(httpClient);
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient { BaseAddress = new Uri(_wm.BaseUrl) });
     }
 
     private N11RestClient CreateSut() => new(
@@ -51,6 +56,19 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
         _httpClientFactoryMock.Object,
         _loggerMock.Object,
         _tenantContextMock.Object);
+
+    /// <summary>
+    /// N11 REST endpoint stub'u — given path icin verilen body'yi doner.
+    /// </summary>
+    private void StubN11(string path, int statusCode = 200, string body = "[]")
+    {
+        _wm.Server
+            .Given(Request.Create().WithPath("/" + path.TrimStart('/')).UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(statusCode)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(body));
+    }
 
     // -----------------------------------------------------------------------
     // GetAsync
@@ -60,12 +78,12 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
     public async Task GetAsync_ShouldDeserializeResponse()
     {
         // Arrange
-        var sut = CreateSut();
         var expected = new List<N11CategoryTreeResponse>
         {
             new N11CategoryTreeResponse(42, "Test", null)
         };
-        _handler.SetResponse(HttpStatusCode.OK, JsonSerializer.Serialize(expected));
+        StubN11("cdn/categories", body: JsonSerializer.Serialize(expected));
+        var sut = CreateSut();
 
         // Act
         var result = await sut.GetAsync<List<N11CategoryTreeResponse>>("cdn/categories");
@@ -79,10 +97,10 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
     public async Task GetAsync_WhenHttpError_ShouldReturnNull()
     {
         // Arrange
+        StubN11("cdn/categories", statusCode: (int)HttpStatusCode.Unauthorized, body: "Unauthorized");
         var sut = CreateSut();
-        _handler.SetResponse(HttpStatusCode.Unauthorized, "Unauthorized");
 
-        // Act — kullan referans tipi döndüren bir overload (string list)
+        // Act
         var result = await sut.GetAsync<List<N11CategoryTreeResponse>>("cdn/categories");
 
         // Assert
@@ -97,12 +115,12 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
     public async Task PostAsync_ShouldDeserializeTaskResponse()
     {
         // Arrange
-        var sut = CreateSut();
         var responseJson = """{"id":1092,"type":"PRODUCT_CREATE","status":"IN_QUEUE","reasons":["1 sku işlenmeye alındı."]}""";
-        _handler.SetResponse(HttpStatusCode.OK, responseJson);
+        StubN11("ms/product/tasks/product-create", body: responseJson);
+        var sut = CreateSut();
 
         // Act
-        var result = await sut.PostAsync<object, Entegrasyon.Entity.Dtos.N11.N11TaskResponse>(
+        var result = await sut.PostAsync<object, N11TaskResponse>(
             "ms/product/tasks/product-create", new { });
 
         // Assert
@@ -116,11 +134,11 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
     public async Task PostAsync_WhenHttpError_ShouldReturnNull()
     {
         // Arrange
+        StubN11("ms/product/tasks/product-create", statusCode: (int)HttpStatusCode.BadRequest, body: "Bad Request");
         var sut = CreateSut();
-        _handler.SetResponse(HttpStatusCode.BadRequest, "Bad Request");
 
         // Act
-        var result = await sut.PostAsync<object, Entegrasyon.Entity.Dtos.N11.N11TaskResponse>(
+        var result = await sut.PostAsync<object, N11TaskResponse>(
             "ms/product/tasks/product-create", new { });
 
         // Assert
@@ -135,8 +153,9 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
     public async Task PutAsync_ShouldReturnParsedResult()
     {
         // Arrange
+        StubN11("rest/order/v1/update",
+            body: """{"id":1092,"type":"SKU_UPDATE","status":"IN_QUEUE","reasons":[]}""");
         var sut = CreateSut();
-        _handler.SetResponse(HttpStatusCode.OK, """{"id":1092,"type":"SKU_UPDATE","status":"IN_QUEUE","reasons":[]}""");
 
         // Act
         var result = await sut.PutAsync<object, N11TaskResponse>("rest/order/v1/update", new { });
@@ -154,13 +173,13 @@ public class N11RestClientTests : Entegrasyon.UnitTest.BaseTest
     public async Task GetAsync_ShouldUseCredentialsFromMarketPlaceTable()
     {
         // Arrange
+        StubN11("cdn/categories", body: "[]");
         var sut = CreateSut();
-        _handler.SetResponse(HttpStatusCode.OK, "[]");
 
         // Act
         await sut.GetAsync<List<N11CategoryTreeResponse>>("cdn/categories");
 
-        // Assert — tenantContext.GetMarketPlaceId çağrıldı ve credentials yüklendi
+        // Assert — tenantContext.GetMarketPlaceId cagrildi ve credentials yuklendi
         _tenantContextMock.Verify(t => t.GetMarketPlaceId("N11"), Times.Once);
     }
 }

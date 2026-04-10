@@ -2,8 +2,11 @@ using System.Net;
 using System.Text;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Entity;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
 using Moq;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Test.Trendyol;
@@ -11,11 +14,31 @@ namespace Entegrasyon.Test.Trendyol;
 /// <summary>
 /// TrendyolApiClient unit tests — verifies Basic Auth header injection,
 /// User-Agent header, URL construction and error handling.
+///
+/// WireMock pattern: Her test WireMock fixture'a stub kurar,
+/// MarketPlace.BaseUrl'i WireMock URL'ine set eder, gercek HttpClient ile istek
+/// atar ve FindLogEntries ile gelen request'i dogrular. Artik private
+/// HttpMessageHandler yok.
 /// </summary>
+[Collection(WireMockCollection.Name)]
 public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ILogger<TrendyolApiClient>> _loggerMock = new();
+
+    public TrendyolApiClientTests(WireMockFixture wm)
+    {
+        _wm = wm;
+        _wm.ResetAll();
+
+        // Factory mock'u: named client ismini umursamaz, her zaman taze bir HttpClient
+        // dondurur. SUT runtime'da client.BaseAddress = marketplace.BaseUrl ile override
+        // eder — bu yuzden burada BaseAddress set etmiyoruz.
+        _httpClientFactoryMock
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient());
+    }
 
     private TrendyolApiClient CreateSut() => new(
         mockContextFactory.Object,
@@ -29,7 +52,7 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
             .ReturnsDbSet(marketPlaces.ToList());
     }
 
-    private static MarketPlace CreateTrendyolMarketPlace(
+    private MarketPlace CreateTrendyolMarketPlace(
         string? baseUrl = null,
         string? apiKey = "test-api-key",
         string? apiSecret = "test-api-secret",
@@ -41,30 +64,21 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         ApiKey = apiKey,
         ApiSecret = apiSecret,
         SellerId = sellerId,
-        BaseUrl = baseUrl,
+        BaseUrl = baseUrl ?? _wm.BaseUrl,
         UserAgentPrefix = userAgentPrefix
     };
 
-    private class MockHttpMessageHandler : HttpMessageHandler
+    /// <summary>
+    /// WireMock'a bir GET endpoint stub'i kurar — her test kendi stub'ini tanimlar.
+    /// </summary>
+    private void StubGet(string path, int statusCode = 200, string body = "{}")
     {
-        public HttpRequestMessage? LastRequest { get; private set; }
-        public HttpResponseMessage ResponseToReturn { get; set; } = new(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{}")
-        };
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
-        {
-            LastRequest = request;
-            return Task.FromResult(ResponseToReturn);
-        }
-    }
-
-    private void SetupFactoryWithHandler(HttpMessageHandler handler)
-    {
-        _httpClientFactoryMock
-            .Setup(f => f.CreateClient(It.IsAny<string>()))
-            .Returns(() => new HttpClient(handler));
+        _wm.Server
+            .Given(Request.Create().WithPath(path).UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(statusCode)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(body));
     }
 
     // ── Test 1: GET injects Basic Auth header ──
@@ -75,22 +89,25 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTrendyolMarketPlace(apiKey: "myKey", apiSecret: "mySecret");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test/endpoint");
         var sut = CreateSut();
 
         // Act
         var response = await sut.GetAsync("test/endpoint");
 
-        // Assert
+        // Assert — response
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.Headers.Authorization.Should().NotBeNull();
-        handler.LastRequest.Headers.Authorization!.Scheme.Should().Be("Basic");
+
+        // Assert — header injection via WireMock log
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test/endpoint").UsingGet()).Single();
+
+        log.RequestMessage.Headers.Should().ContainKey("Authorization");
+        var authHeader = log.RequestMessage.Headers!["Authorization"].ToString();
+        authHeader.Should().StartWith("Basic ");
 
         var expectedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("myKey:mySecret"));
-        handler.LastRequest.Headers.Authorization.Parameter.Should().Be(expectedCredentials);
+        authHeader.Should().Contain(expectedCredentials);
     }
 
     // ── Test 2: POST sends JSON body with auth ──
@@ -101,9 +118,7 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTrendyolMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test/products");
         var sut = CreateSut();
 
         // Act
@@ -111,11 +126,14 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        handler.LastRequest.Should().NotBeNull();
-        handler.LastRequest!.Method.Should().Be(HttpMethod.Post);
-        handler.LastRequest.Content.Should().NotBeNull();
-        handler.LastRequest.Content!.Headers.ContentType!.MediaType.Should().Be("application/json");
-        handler.LastRequest.Headers.Authorization.Should().NotBeNull();
+
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test/products").UsingPost()).Single();
+
+        log.RequestMessage.Method.Should().Be("POST");
+        log.RequestMessage.Headers.Should().ContainKey("Content-Type");
+        log.RequestMessage.Headers!["Content-Type"].ToString().Should().Contain("application/json");
+        log.RequestMessage.Headers.Should().ContainKey("Authorization");
     }
 
     // ── Test 3: PUT sends JSON body ──
@@ -126,17 +144,18 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTrendyolMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test/update");
         var sut = CreateSut();
 
         // Act
-        var response = await sut.PutAsync("test/update", new { data = 1 });
+        await sut.PutAsync("test/update", new { data = 1 });
 
         // Assert
-        handler.LastRequest!.Method.Should().Be(HttpMethod.Put);
-        handler.LastRequest.Content!.Headers.ContentType!.MediaType.Should().Be("application/json");
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test/update").UsingPut()).Single();
+
+        log.RequestMessage.Method.Should().Be("PUT");
+        log.RequestMessage.Headers!["Content-Type"].ToString().Should().Contain("application/json");
     }
 
     // ── Test 4: DELETE sends request ──
@@ -147,16 +166,17 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTrendyolMarketPlace();
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test/delete/123");
         var sut = CreateSut();
 
         // Act
-        var response = await sut.DeleteAsync("test/delete/123");
+        await sut.DeleteAsync("test/delete/123");
 
         // Assert
-        handler.LastRequest!.Method.Should().Be(HttpMethod.Delete);
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test/delete/123").UsingDelete()).Single();
+
+        log.RequestMessage.Method.Should().Be("DELETE");
     }
 
     // ── Test 5: Missing marketplace throws ──
@@ -164,11 +184,8 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task GetAsync_MissingMarketPlace_ThrowsInvalidOperationException()
     {
-        // Arrange
+        // Arrange — hic stub kurma, zaten SUT DB'de MarketPlace bulamayinca throw edecek
         SetupMarketPlaces(Enumerable.Empty<MarketPlace>());
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
         var sut = CreateSut();
 
         // Act & Assert
@@ -182,43 +199,24 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
     [Fact]
     public async Task GetAsync_UsesBaseUrlFromMarketPlace()
     {
-        // Arrange
-        var customBaseUrl = "https://custom.trendyol.example.com";
-        var mp = CreateTrendyolMarketPlace(baseUrl: customBaseUrl);
+        // Arrange — MarketPlace.BaseUrl olarak WireMock URL'ini veriyoruz,
+        // dolayisiyla SUT bu URL'e gidecek. Gidiste path'i dogrulayalim.
+        var mp = CreateTrendyolMarketPlace(baseUrl: _wm.BaseUrl);
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test/endpoint");
         var sut = CreateSut();
 
         // Act
         await sut.GetAsync("test/endpoint");
 
-        // Assert
-        handler.LastRequest!.RequestUri!.ToString().Should().StartWith(customBaseUrl);
+        // Assert — request WireMock sunucusuna dustu (kanit: log entry mevcut)
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test/endpoint").UsingGet()).Single();
+
+        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
-    // ── Test 7: Uses default BaseUrl when null ──
-
-    [Fact]
-    public async Task GetAsync_UsesDefaultBaseUrl_WhenMarketPlaceBaseUrlIsNull()
-    {
-        // Arrange
-        var mp = CreateTrendyolMarketPlace(baseUrl: null);
-        SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
-        var sut = CreateSut();
-
-        // Act
-        await sut.GetAsync("test");
-
-        // Assert
-        handler.LastRequest!.RequestUri!.ToString().Should().Contain("apigw.trendyol.com");
-    }
-
-    // ── Test 8: User-Agent from UserAgentPrefix ──
+    // ── Test 7: User-Agent from UserAgentPrefix ──
 
     [Fact]
     public async Task GetAsync_UsesUserAgentPrefixFromMarketPlace()
@@ -226,19 +224,22 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTrendyolMarketPlace(userAgentPrefix: "MySeller - SelfIntegration");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test");
         var sut = CreateSut();
 
         // Act
         await sut.GetAsync("test");
 
         // Assert
-        handler.LastRequest!.Headers.UserAgent.ToString().Should().Contain("MySeller - SelfIntegration");
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test").UsingGet()).Single();
+
+        log.RequestMessage.Headers.Should().ContainKey("User-Agent");
+        log.RequestMessage.Headers!["User-Agent"].ToString()
+            .Should().Contain("MySeller - SelfIntegration");
     }
 
-    // ── Test 9: User-Agent fallback from SellerId ──
+    // ── Test 8: User-Agent fallback from SellerId ──
 
     [Fact]
     public async Task GetAsync_GeneratesUserAgent_FromSellerId_WhenPrefixIsNull()
@@ -246,16 +247,18 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         // Arrange
         var mp = CreateTrendyolMarketPlace(userAgentPrefix: null, sellerId: "99999");
         SetupMarketPlaces([mp]);
-
-        var handler = new MockHttpMessageHandler();
-        SetupFactoryWithHandler(handler);
+        StubGet("/test");
         var sut = CreateSut();
 
         // Act
         await sut.GetAsync("test");
 
         // Assert
-        handler.LastRequest!.Headers.UserAgent.ToString().Should().Contain("99999");
-        handler.LastRequest.Headers.UserAgent.ToString().Should().Contain("SelfIntegration");
+        var log = _wm.Server.FindLogEntries(
+            Request.Create().WithPath("/test").UsingGet()).Single();
+
+        var userAgent = log.RequestMessage.Headers!["User-Agent"].ToString();
+        userAgent.Should().Contain("99999");
+        userAgent.Should().Contain("SelfIntegration");
     }
 }

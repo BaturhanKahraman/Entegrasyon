@@ -6,31 +6,35 @@ using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Matches;
+using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
-using Moq;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 
 namespace Entegrasyon.Test.Trendyol;
 
 /// <summary>
 /// TrendyolMarketplaceSearchService unit tests — verifies category search (with flattening),
 /// brand search (Trendyol API + DB fallback), and attribute search.
+/// WireMock pattern: yalnizca brand search HTTP cagirdigi icin 2 test stub kurar;
+/// digerleri DB veya category importer mock'u kullanir.
 /// </summary>
+[Collection(WireMockCollection.Name)]
 public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTest
 {
+    private readonly WireMockFixture _wm;
     private readonly Mock<ITrendyolCategoryImportService> _categoryImportMock = new();
     private readonly Mock<ILogger<TrendyolMarketplaceSearchService>> _loggerMock = new();
-    private readonly MockHttpMessageHandler _brandHttpHandler = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
 
-    public TrendyolMarketplaceSearchServiceTests()
+    public TrendyolMarketplaceSearchServiceTests(WireMockFixture wm)
     {
-        var httpClient = new HttpClient(_brandHttpHandler)
-        {
-            BaseAddress = new Uri("https://apigw.trendyol.com/integration/")
-        };
+        _wm = wm;
+        _wm.ResetAll();
+
         _httpClientFactoryMock
             .Setup(f => f.CreateClient(StringConstants.TrendyolApi))
-            .Returns(httpClient);
+            .Returns(() => new HttpClient { BaseAddress = new Uri(_wm.BaseUrl) });
     }
 
     private TrendyolMarketplaceSearchService CreateSut() => new(
@@ -39,8 +43,21 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
         _httpClientFactoryMock.Object,
         _loggerMock.Object);
 
+    /// <summary>
+    /// Brand search endpoint stub'u — Trendyol API'nin brand search cevabini taklit eder.
+    /// </summary>
+    private void StubBrandSearch(int statusCode, string body)
+    {
+        _wm.Server
+            .Given(Request.Create().WithPath("/*").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(statusCode)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(body));
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
-    // SearchCategoriesAsync
+    // SearchCategoriesAsync — HTTP'siz, importer mock'u kullanir
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
@@ -187,7 +204,7 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SearchBrandsAsync — Trendyol API (real)
+    // SearchBrandsAsync — Trendyol API (WireMock stub)
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
@@ -198,8 +215,7 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
         {
             brands = new[] { new { id = 111, name = "Nike" } }
         };
-        _brandHttpHandler.SetResponse(HttpStatusCode.OK,
-            JsonSerializer.Serialize(trendyolResponse));
+        StubBrandSearch(200, JsonSerializer.Serialize(trendyolResponse));
 
         var sut = CreateSut();
 
@@ -217,7 +233,7 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     public async Task SearchBrandsAsync_WhenApiThrows_ReturnsError()
     {
         // Arrange
-        _brandHttpHandler.SetResponse(HttpStatusCode.InternalServerError, "");
+        StubBrandSearch((int)HttpStatusCode.InternalServerError, "");
 
         var sut = CreateSut();
 
