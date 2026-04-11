@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "GET", "urlPathPattern": ".*/order.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "pttavm/orders-page1.json"
+  }
+}

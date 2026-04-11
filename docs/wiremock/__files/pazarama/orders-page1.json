@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "data": {
+    "totalCount": 1,
+    "pageNumber": 1,
+    "pageSize": 20,
+    "items": [
+      {
+        "orderId": "PZR-MOCK-001",
+        "orderNumber": "PZR100001",
+        "orderStatus": "New",
+        "createdDate": "2026-04-11T10:00:00",
+        "totalAmount": 259.90,
+        "currencyCode": "TRY",
+        "customer": {
+          "firstName": "Test",
+          "lastName": "Kullanici",
+          "email": "test@pazarama.com"
+        },
+        "items": [
+          {
+            "productCode": "MOCK-PZR-001",
+            "productName": "Mock Pazarama Urun",
+            "quantity": 1,
+            "unitPrice": 259.90
+          }
+        ]
+      }
+    ]
+  }
+}

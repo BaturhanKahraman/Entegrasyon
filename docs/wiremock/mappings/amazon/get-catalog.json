@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "GET", "urlPathPattern": "/catalog/.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "amazon/catalog.json"
+  }
+}

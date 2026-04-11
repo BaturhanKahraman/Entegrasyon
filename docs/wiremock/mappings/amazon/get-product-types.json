@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "GET", "urlPathPattern": "/definitions/.*productTypes.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "amazon/product-type.json"
+  }
+}

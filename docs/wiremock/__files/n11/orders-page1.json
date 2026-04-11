@@ -1,0 +1,33 @@
+{
+  "data": {
+    "content": [
+      {
+        "id": 111111,
+        "orderNumber": "N11-MOCK-ORDER-001",
+        "status": "New",
+        "createdDate": "2026-04-11T10:00:00.000Z",
+        "totalAmount": 450.00,
+        "buyerFullName": "Test Alici",
+        "buyerEmail": "test@buyer.com",
+        "items": [
+          {
+            "id": 22222,
+            "productSellerCode": "MOCK-N11-001",
+            "productName": "Mock N11 Urun 1",
+            "quantity": 1,
+            "price": 450.00
+          }
+        ],
+        "shippingAddress": {
+          "fullName": "Test Alici",
+          "address": "Test Mah. No:1",
+          "city": "Istanbul",
+          "district": "Kadikoy"
+        }
+      }
+    ],
+    "totalCount": 1,
+    "totalPages": 1,
+    "currentPage": 0
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "access_token": "mock-pazarama-access-token-abcdef123456",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "read write"
+}

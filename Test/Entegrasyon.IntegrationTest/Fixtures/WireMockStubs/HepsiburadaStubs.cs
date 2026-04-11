@@ -1,55 +1,82 @@
+using WireMock.Matchers;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using WireMock.Server;
 
 namespace Entegrasyon.IntegrationTest.Fixtures.WireMockStubs;
 
 /// <summary>
-/// Hepsiburada API stub helper'lari. Integration testler ihtiyac duyduklari
-/// endpoint'leri bu sinif araciligi ile WireMock'a kaydeder.
-///
-/// NOT (Faz 3.2): Su an iskelet. Stub'lar Podman blokeri cozuldugunde
-/// doldurulacak. HepsiburadaProductService, HepsiburadaListingService,
-/// HepsiburadaOrderService, HepsiburadaClaimService ve HepsiburadaQnAService'in
-/// gercek HTTP call'lari oneri olarak asagidaki metod iskeletlerinde listelenmis.
+/// Hepsiburada API stub helper'lari. Fixture JSON dosyalari:
+/// docs/wiremock/__files/hepsiburada/*.json
 /// </summary>
 public static class HepsiburadaStubs
 {
-    /// <summary>
-    /// Stub: Listing servisi — urun listeleme (HepsiburadaListingService).
-    /// </summary>
     public static void RegisterListing(WireMockServer server)
     {
-        // TODO: Faz 3.2-sonrasi — Fixtures/Hepsiburada/listing.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/listings/*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/hepsiburada/listing.json"));
     }
 
-    /// <summary>
-    /// Stub: Order servisi — siparis import (HepsiburadaOrderService).
-    /// </summary>
     public static void RegisterOrderImport(WireMockServer server)
     {
-        // TODO: Faz 3.2-sonrasi — Fixtures/Hepsiburada/orders-page1.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/orders/merchantid/*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/hepsiburada/orders-page1.json"));
     }
 
-    /// <summary>
-    /// Stub: Product servisi — urun yonetimi (HepsiburadaProductService).
-    /// </summary>
     public static void RegisterProductCreate(WireMockServer server)
     {
-        // TODO: Faz 3.2-sonrasi — Fixtures/Hepsiburada/product-create.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/product/api/products/*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/hepsiburada/product-create.json"));
     }
 
-    /// <summary>
-    /// Stub: Claim servisi — iade/sikayet islemleri (HepsiburadaClaimService).
-    /// </summary>
     public static void RegisterClaim(WireMockServer server)
     {
-        // TODO: Faz 3.2-sonrasi — Fixtures/Hepsiburada/claim.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/claims/*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/hepsiburada/claim.json"));
     }
 
-    /// <summary>
-    /// Stub: QnA servisi — urun soru-cevap (HepsiburadaQnAService).
-    /// </summary>
     public static void RegisterQnA(WireMockServer server)
     {
-        // TODO: Faz 3.2-sonrasi — Fixtures/Hepsiburada/qna.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/qna/*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/hepsiburada/qna.json"));
+    }
+
+    public static void RegisterAll(WireMockServer server)
+    {
+        RegisterListing(server);
+        RegisterOrderImport(server);
+        RegisterProductCreate(server);
+        RegisterClaim(server);
+        RegisterQnA(server);
     }
 }

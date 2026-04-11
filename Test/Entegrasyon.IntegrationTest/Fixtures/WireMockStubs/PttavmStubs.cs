@@ -1,52 +1,83 @@
+using WireMock.Matchers;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using WireMock.Server;
 
 namespace Entegrasyon.IntegrationTest.Fixtures.WireMockStubs;
 
 /// <summary>
-/// PttAVM API stub helper'lari. PttAVM iki ayri API base URL'ine sahip —
-/// Catalog API (urun/stok/fiyat) ve Shipment API (kargo/siparis/fatura).
-///
-/// NOT (Faz 3.6): Iskelet. Stub'lar Podman blokeri cozuldugunde doldurulacak.
+/// PttAVM API stub helper'lari. PttAVM iki ayri API (Catalog + Shipment) ama
+/// tek WireMock server uzerinden path-based dispatch yeterli.
+/// Fixture JSON dosyalari: docs/wiremock/__files/pttavm/*.json
 /// </summary>
 public static class PttavmStubs
 {
-    /// <summary>
-    /// Stub: Catalog API — urun yonetimi.
-    /// </summary>
     public static void RegisterProductCreate(WireMockServer server)
     {
-        // TODO: Faz 3.6-sonrasi — Fixtures/Pttavm/product-create.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*/product*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/pttavm/product-create.json"));
     }
 
-    /// <summary>
-    /// Stub: Catalog API — stok/fiyat guncelleme.
-    /// </summary>
     public static void RegisterStockPriceUpdate(WireMockServer server)
     {
-        // TODO: Faz 3.6-sonrasi — Fixtures/Pttavm/stock-price-update.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*/stock-price*"))
+                .UsingPut())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/pttavm/stock-price-update.json"));
     }
 
-    /// <summary>
-    /// Stub: Shipment API — siparis listesi.
-    /// </summary>
     public static void RegisterOrderImport(WireMockServer server)
     {
-        // TODO: Faz 3.6-sonrasi — Fixtures/Pttavm/orders-page1.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*/order*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/pttavm/orders-page1.json"));
     }
 
-    /// <summary>
-    /// Stub: Shipment API — kargo takip/guncelleme.
-    /// </summary>
     public static void RegisterShipping(WireMockServer server)
     {
-        // TODO: Faz 3.6-sonrasi — Fixtures/Pttavm/shipping.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*/shipping*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/pttavm/shipping.json"));
     }
 
-    /// <summary>
-    /// Stub: Shipment API — fatura gonderimi.
-    /// </summary>
     public static void RegisterInvoice(WireMockServer server)
     {
-        // TODO: Faz 3.6-sonrasi — Fixtures/Pttavm/invoice.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*/invoice*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/pttavm/invoice.json"));
+    }
+
+    public static void RegisterAll(WireMockServer server)
+    {
+        RegisterProductCreate(server);
+        RegisterStockPriceUpdate(server);
+        RegisterOrderImport(server);
+        RegisterShipping(server);
+        RegisterInvoice(server);
     }
 }

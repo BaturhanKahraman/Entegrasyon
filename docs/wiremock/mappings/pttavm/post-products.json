@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "POST", "urlPathPattern": ".*/product.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "pttavm/product-create.json"
+  }
+}

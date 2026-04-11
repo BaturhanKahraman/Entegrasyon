@@ -1,0 +1,8 @@
+{
+  "status": "success",
+  "result": {
+    "productSellerCode": "MOCK-N11-001",
+    "productId": 987654321,
+    "message": "Urun basariyla eklendi (mock)"
+  }
+}

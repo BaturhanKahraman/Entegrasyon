@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": [
+    {
+      "orderNumber": "PTT-MOCK-001",
+      "orderDate": "2026-04-11T10:00:00Z",
+      "totalAmount": 189.90,
+      "status": "New",
+      "customer": {
+        "firstName": "Test",
+        "lastName": "PttAlici",
+        "email": "test@ptt.com"
+      },
+      "items": [
+        {
+          "productCode": "MOCK-PTT-001",
+          "productName": "Mock PttAVM Urun",
+          "quantity": 1,
+          "unitPrice": 189.90
+        }
+      ]
+    }
+  ]
+}

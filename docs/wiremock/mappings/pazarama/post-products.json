@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "POST", "urlPathPattern": ".*/products.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "pazarama/product-create.json"
+  }
+}

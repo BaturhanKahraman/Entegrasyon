@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "GET", "urlPathPattern": ".*/questions.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "ciceksepeti/qna.json"
+  }
+}

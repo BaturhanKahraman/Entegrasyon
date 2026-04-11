@@ -1,0 +1,114 @@
+{
+  "page": 0,
+  "size": 20,
+  "totalPages": 1,
+  "totalElements": 2,
+  "content": [
+    {
+      "shipmentPackageId": 100001,
+      "orderNumber": "TY-MOCK-001",
+      "orderDate": 1736154265337,
+      "status": "Created",
+      "shipmentPackageStatus": "Created",
+      "customerFirstName": "Ali",
+      "customerLastName": "Yilmaz",
+      "customerEmail": "ali@example.com",
+      "customerId": 12345,
+      "grossAmount": 299.90,
+      "totalDiscount": 0.00,
+      "totalPrice": 299.90,
+      "currencyCode": "TRY",
+      "cargoProviderName": "Yurtici Kargo",
+      "cargoTrackingNumber": null,
+      "cargoTrackingLink": null,
+      "micro": false,
+      "fastDelivery": false,
+      "commercial": false,
+      "lines": [
+        {
+          "id": 1001,
+          "quantity": 1,
+          "price": 299.90,
+          "discount": 0.00,
+          "barcode": "MOCK-BARCODE-001",
+          "merchantSku": "MOCK-SKU-001",
+          "productName": "Mock Urun 1",
+          "productColor": "Siyah",
+          "productSize": "M",
+          "merchantId": 1
+        }
+      ],
+      "shipmentAddress": {
+        "firstName": "Ali",
+        "lastName": "Yilmaz",
+        "address1": "Test Mah. Test Sk. No:1",
+        "city": "Istanbul",
+        "district": "Kadikoy",
+        "postalCode": "34000",
+        "countryCode": "TR"
+      },
+      "invoiceAddress": {
+        "firstName": "Ali",
+        "lastName": "Yilmaz",
+        "address1": "Test Mah. Test Sk. No:1",
+        "city": "Istanbul",
+        "district": "Kadikoy",
+        "postalCode": "34000",
+        "countryCode": "TR"
+      }
+    },
+    {
+      "shipmentPackageId": 100002,
+      "orderNumber": "TY-MOCK-002",
+      "orderDate": 1736157865337,
+      "status": "Picking",
+      "shipmentPackageStatus": "Picking",
+      "customerFirstName": "Ayse",
+      "customerLastName": "Demir",
+      "customerEmail": "ayse@example.com",
+      "customerId": 12346,
+      "grossAmount": 549.00,
+      "totalDiscount": 50.00,
+      "totalPrice": 499.00,
+      "currencyCode": "TRY",
+      "cargoProviderName": "Aras Kargo",
+      "cargoTrackingNumber": "MOCK123456",
+      "cargoTrackingLink": "https://aras.com.tr/track/MOCK123456",
+      "micro": true,
+      "fastDelivery": true,
+      "commercial": false,
+      "lines": [
+        {
+          "id": 2001,
+          "quantity": 2,
+          "price": 199.50,
+          "discount": 25.00,
+          "barcode": "MOCK-BARCODE-002",
+          "merchantSku": "MOCK-SKU-002",
+          "productName": "Mock Urun 2",
+          "productColor": "Beyaz",
+          "productSize": "L",
+          "merchantId": 1
+        }
+      ],
+      "shipmentAddress": {
+        "firstName": "Ayse",
+        "lastName": "Demir",
+        "address1": "Kizilay Mah. Ataturk Blv. No:5",
+        "city": "Ankara",
+        "district": "Cankaya",
+        "postalCode": "06000",
+        "countryCode": "TR"
+      },
+      "invoiceAddress": {
+        "firstName": "Ayse",
+        "lastName": "Demir",
+        "address1": "Kizilay Mah. Ataturk Blv. No:5",
+        "city": "Ankara",
+        "district": "Cankaya",
+        "postalCode": "06000",
+        "countryCode": "TR"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "GET", "urlPathPattern": "/ms/order/tasklet/orders.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "n11/orders-page1.json"
+  }
+}

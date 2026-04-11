@@ -1,0 +1,6 @@
+{
+  "productTypes": [
+    { "name": "SHIRT", "marketplaceIds": ["A33AVAJ2PDY3EV"] },
+    { "name": "PANTS", "marketplaceIds": ["A33AVAJ2PDY3EV"] }
+  ]
+}

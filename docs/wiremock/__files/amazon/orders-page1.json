@@ -1,0 +1,21 @@
+{
+  "payload": {
+    "Orders": [
+      {
+        "AmazonOrderId": "AMZ-MOCK-001-0001-0001",
+        "PurchaseDate": "2026-04-11T10:00:00Z",
+        "OrderStatus": "Unshipped",
+        "FulfillmentChannel": "MFN",
+        "OrderTotal": { "CurrencyCode": "TRY", "Amount": "399.00" },
+        "NumberOfItemsShipped": 0,
+        "NumberOfItemsUnshipped": 1,
+        "MarketplaceId": "A33AVAJ2PDY3EV",
+        "BuyerInfo": {
+          "BuyerEmail": "mock@amazon.buyer.com",
+          "BuyerName": "Mock Amazon Buyer"
+        }
+      }
+    ],
+    "NextToken": null
+  }
+}

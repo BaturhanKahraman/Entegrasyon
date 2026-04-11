@@ -1,0 +1,23 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Cicekler",
+      "parentId": null,
+      "hasChildren": true
+    },
+    {
+      "id": 2,
+      "name": "Buketler",
+      "parentId": 1,
+      "hasChildren": false
+    },
+    {
+      "id": 3,
+      "name": "Saksi Cicekleri",
+      "parentId": 1,
+      "hasChildren": false
+    }
+  ],
+  "totalCount": 3
+}

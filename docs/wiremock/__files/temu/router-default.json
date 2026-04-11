@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "errorCode": 0,
+  "errorMsg": "",
+  "result": {
+    "message": "Mock Temu router response — type-specific stub kullanilmali (product.create, order.list vs.)",
+    "requestId": "mock-temu-request-id-99999"
+  }
+}

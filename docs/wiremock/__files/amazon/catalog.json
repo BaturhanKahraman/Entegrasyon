@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "asin": "B0MOCK00001",
+      "attributes": {
+        "item_name": [{ "value": "Mock Amazon Urun 1", "language_tag": "tr_TR" }],
+        "brand": [{ "value": "Mock Brand", "language_tag": "tr_TR" }]
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "isSuccess": true,
+  "data": {
+    "items": [
+      {
+        "orderNumber": "CS-MOCK-001",
+        "orderDate": "2026-04-11T10:00:00",
+        "status": "New",
+        "totalPrice": 179.50,
+        "customer": {
+          "name": "Test",
+          "surname": "CicekAlici",
+          "email": "test@ciceksepeti.com"
+        },
+        "lines": [
+          {
+            "productCode": "MOCK-CS-001",
+            "productName": "Mock Cicek Buketi",
+            "quantity": 1,
+            "price": 179.50
+          }
+        ],
+        "shippingAddress": {
+          "address": "Test Mah. No:1",
+          "city": "Istanbul",
+          "district": "Kadikoy"
+        }
+      }
+    ],
+    "totalCount": 1
+  }
+}

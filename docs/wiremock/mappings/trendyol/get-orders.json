@@ -1,0 +1,12 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/suppliers/[0-9]+/orders.*"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/orders-page1.json"
+  }
+}

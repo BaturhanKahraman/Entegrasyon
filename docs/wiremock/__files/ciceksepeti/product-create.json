@@ -1,0 +1,9 @@
+{
+  "isSuccess": true,
+  "code": 0,
+  "message": "Urun basariyla eklendi (mock)",
+  "data": {
+    "batchRequestId": "mock-cs-batch-12345",
+    "productCode": "MOCK-CS-001"
+  }
+}

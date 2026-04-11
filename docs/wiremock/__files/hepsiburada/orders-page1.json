@@ -1,0 +1,27 @@
+{
+  "totalCount": 1,
+  "items": [
+    {
+      "id": "HB-ORD-MOCK-001",
+      "orderNumber": "HB100001",
+      "orderDate": "2026-04-11T10:30:00.000Z",
+      "totalPrice": { "amount": 349.90, "currency": "TRY" },
+      "status": "Open",
+      "customerName": "Test Musteri",
+      "lines": [
+        {
+          "id": "LINE-001",
+          "merchantSku": "MOCK-HB-001",
+          "productName": "Mock Hepsiburada Urun 1",
+          "quantity": 1,
+          "unitPrice": { "amount": 349.90, "currency": "TRY" }
+        }
+      ],
+      "shippingAddress": {
+        "address": "Test Mah. No:1",
+        "city": "Istanbul",
+        "town": "Kadikoy"
+      }
+    }
+  ]
+}

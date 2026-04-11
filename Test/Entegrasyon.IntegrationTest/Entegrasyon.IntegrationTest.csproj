@@ -39,9 +39,13 @@
     <Content Include="appsettings.IntegrationTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <!-- WireMock stub fixture JSON dosyalari — WithBodyFromFile icin output'a kopyalanmali.
-         Fixtures/<marketplace>/*.json pattern'i her marketplace icin ayri klasor. -->
-    <Content Include="Fixtures\WireMockStubs\Fixtures\**\*.json">
+    <!-- WireMock stub fixture JSON dosyalari — tek kaynak docs/wiremock/__files/
+         (dev mode ve integration test ayni fixture'lari paylasir). Linked content
+         ile test output'a kopyalanir: bin/Debug/net10.0/Fixtures/<marketplace>/*.json
+         WireMock.Net WithBodyFromFile default RootFolder = CurrentDirectory, bu yuzden
+         "Fixtures/Trendyol/orders.json" cagrisi bu dosyalari bulur. -->
+    <Content Include="..\..\docs\wiremock\__files\**\*.json"
+             Link="Fixtures\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

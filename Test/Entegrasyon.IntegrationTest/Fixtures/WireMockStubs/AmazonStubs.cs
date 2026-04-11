@@ -1,61 +1,96 @@
+using WireMock.Matchers;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using WireMock.Server;
 
 namespace Entegrasyon.IntegrationTest.Fixtures.WireMockStubs;
 
 /// <summary>
-/// Amazon SP-API stub helper'lari.
-///
-/// NOT (Faz 3.5): Iskelet. Amazon SP-API OAuth 2.0 token akisi + SP-API endpoint'leri
-/// (Catalog, Listing, Feed, Order, Product, ProductType). Stub'lar Podman blokeri
-/// cozuldugunde doldurulacak.
+/// Amazon SP-API stub helper'lari. OAuth 2.0 LWA + SP-API endpoint'leri
+/// (Catalog, Listing, Feed, Order, Product, ProductType).
+/// Fixture JSON dosyalari: docs/wiremock/__files/amazon/*.json
 /// </summary>
 public static class AmazonStubs
 {
-    /// <summary>
-    /// Stub: OAuth 2.0 token endpoint'i (LWA — Login with Amazon).
-    /// </summary>
     public static void RegisterAuthToken(WireMockServer server)
     {
-        // TODO: Faz 3.5-sonrasi — Fixtures/Amazon/auth-token.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*auth/o2/token*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/amazon/auth-token.json"));
     }
 
-    /// <summary>
-    /// Stub: Catalog API — urun katalog sorgulama.
-    /// </summary>
     public static void RegisterCatalog(WireMockServer server)
     {
-        // TODO: Faz 3.5-sonrasi — Fixtures/Amazon/catalog.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/catalog/*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/amazon/catalog.json"));
     }
 
-    /// <summary>
-    /// Stub: Listing API — urun listeleme/guncelleme.
-    /// </summary>
     public static void RegisterListing(WireMockServer server)
     {
-        // TODO: Faz 3.5-sonrasi — Fixtures/Amazon/listing.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/listings/*"))
+                .UsingPut())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/amazon/listing.json"));
     }
 
-    /// <summary>
-    /// Stub: Feed API — toplu urun gonderimi.
-    /// </summary>
     public static void RegisterFeed(WireMockServer server)
     {
-        // TODO: Faz 3.5-sonrasi — Fixtures/Amazon/feed.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/feeds/*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/amazon/feed.json"));
     }
 
-    /// <summary>
-    /// Stub: Orders API — siparis listesi.
-    /// </summary>
     public static void RegisterOrderImport(WireMockServer server)
     {
-        // TODO: Faz 3.5-sonrasi — Fixtures/Amazon/orders-page1.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/orders/*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/amazon/orders-page1.json"));
     }
 
-    /// <summary>
-    /// Stub: ProductType API — urun tipi metadata.
-    /// </summary>
     public static void RegisterProductType(WireMockServer server)
     {
-        // TODO: Faz 3.5-sonrasi — Fixtures/Amazon/product-type.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("/definitions/*productTypes*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/amazon/product-type.json"));
+    }
+
+    public static void RegisterAll(WireMockServer server)
+    {
+        RegisterAuthToken(server);
+        RegisterCatalog(server);
+        RegisterListing(server);
+        RegisterFeed(server);
+        RegisterOrderImport(server);
+        RegisterProductType(server);
     }
 }

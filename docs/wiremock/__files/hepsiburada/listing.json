@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "code": 0,
+  "data": {
+    "listings": [
+      {
+        "hepsiburadaSku": "HB-MOCK-SKU-001",
+        "merchantSku": "MOCK-001",
+        "productName": "Mock Urun 1",
+        "price": 299.90,
+        "availableStock": 50,
+        "status": "Active"
+      },
+      {
+        "hepsiburadaSku": "HB-MOCK-SKU-002",
+        "merchantSku": "MOCK-002",
+        "productName": "Mock Urun 2",
+        "price": 499.00,
+        "availableStock": 30,
+        "status": "Active"
+      }
+    ]
+  }
+}

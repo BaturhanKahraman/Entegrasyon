@@ -8,21 +8,9 @@ namespace Entegrasyon.IntegrationTest.Fixtures.WireMockStubs;
 /// Trendyol API stub helper'lari. Integration testler ihtiyac duyduklari
 /// endpoint'leri bu sinif araciligi ile WireMock'a kaydeder.
 ///
-/// Kullanim ornegi (integration test OnInitializeAsync icinde):
-///   TrendyolStubs.RegisterOrderImport(WireMock.Server);
-///   TrendyolStubs.RegisterProductCreate(WireMock.Server);
-///
-/// Fixture JSON dosyalari: Fixtures/Trendyol/*.json (WireMock.Net WithBodyFromFile
-/// convention). Dosyalar csproj CopyToOutputDirectory="PreserveNewest" ile
-/// bin/Debug/.../Fixtures/Trendyol/ altina kopyalanir, WireMock server startup'ta
-/// RootFolder bu path'e set edilir.
-///
-/// NOT (Faz 3.1): Bu sinif su an ISKELET. Integration testler Podman/Testcontainers
-/// blokeri nedeniyle Fedora'da calismadigi icin stub'larin gerceklestirilmesi
-/// erteleniyor — bloker cozuldugunde her integration test yazilirken stub'lar
-/// burada doldurulacak. TrendyolProductService, TrendyolOrderService,
-/// TrendyolStockPriceService, TrendyolInvoiceService ve TrendyolMarketplaceSearchService'in
-/// gercek HTTP call'lari oneri olarak asagidaki metod iskeletlerinde listelenmis.
+/// Fixture JSON dosyalari: docs/wiremock/__files/trendyol/*.json (tek kaynak —
+/// dev mode container ve integration test paylasir). csproj linked content
+/// ile test output'a kopyalanir: bin/Debug/net10.0/Fixtures/trendyol/*.json
 /// </summary>
 public static class TrendyolStubs
 {
@@ -30,37 +18,48 @@ public static class TrendyolStubs
     /// Stub: GET /suppliers/{sellerId}/orders — Trendyol sipariş sorgulama
     /// (TrendyolOrderService.FetchOrdersAsync icin).
     /// </summary>
-    public static void RegisterOrderImport(WireMockServer server, string sellerId = "12345")
+    public static void RegisterOrderImport(WireMockServer server)
     {
-        // TODO: Faz 3.1-sonrasi — Fixtures/Trendyol/orders-page1.json dosyasini yaz
-        // ve asagidaki stub'i aktif et.
-        //
-        // server
-        //     .Given(Request.Create()
-        //         .WithPath($"/suppliers/{sellerId}/orders")
-        //         .UsingGet())
-        //     .RespondWith(Response.Create()
-        //         .WithStatusCode(200)
-        //         .WithHeader("Content-Type", "application/json")
-        //         .WithBodyFromFile("Fixtures/Trendyol/orders-page1.json"));
+        server
+            .Given(Request.Create()
+                .WithPath(new WireMock.Matchers.WildcardMatcher("/suppliers/*/orders*"))
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/trendyol/orders-page1.json"));
     }
 
     /// <summary>
     /// Stub: POST /suppliers/{sellerId}/v2/products — ürün oluşturma / toplu
     /// (TrendyolProductService.AddProductAsync icin). Dönen response batchRequestId icerir.
     /// </summary>
-    public static void RegisterProductCreate(WireMockServer server, string sellerId = "12345")
+    public static void RegisterProductCreate(WireMockServer server)
     {
-        // TODO: Faz 3.1-sonrasi — Fixtures/Trendyol/product-create.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WireMock.Matchers.WildcardMatcher("/suppliers/*/v2/products"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/trendyol/product-create.json"));
     }
 
     /// <summary>
     /// Stub: POST /suppliers/{sellerId}/products/price-and-inventory — stok/fiyat güncellemesi
     /// (TrendyolStockPriceService.UpdateStockPriceAsync icin).
     /// </summary>
-    public static void RegisterStockPriceUpdate(WireMockServer server, string sellerId = "12345")
+    public static void RegisterStockPriceUpdate(WireMockServer server)
     {
-        // TODO: Faz 3.1-sonrasi — Fixtures/Trendyol/stock-price-update.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WireMock.Matchers.WildcardMatcher("/suppliers/*/products/price-and-inventory"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/trendyol/stock-price-update.json"));
     }
 
     /// <summary>
@@ -69,15 +68,42 @@ public static class TrendyolStubs
     /// </summary>
     public static void RegisterBrandSearch(WireMockServer server)
     {
-        // TODO: Faz 3.1-sonrasi — Fixtures/Trendyol/brand-search.json
+        server
+            .Given(Request.Create()
+                .WithPath("/product/brands/by-name")
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/trendyol/brand-search.json"));
     }
 
     /// <summary>
     /// Stub: POST /suppliers/{sellerId}/invoice-link — fatura link gonderme
     /// (TrendyolInvoiceService.SendInvoiceLinkAsync icin).
     /// </summary>
-    public static void RegisterInvoiceLink(WireMockServer server, string sellerId = "12345")
+    public static void RegisterInvoiceLink(WireMockServer server)
     {
-        // TODO: Faz 3.1-sonrasi — Fixtures/Trendyol/invoice-link.json
+        server
+            .Given(Request.Create()
+                .WithPath(new WireMock.Matchers.WildcardMatcher("/suppliers/*/invoice-link"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/trendyol/invoice-link.json"));
+    }
+
+    /// <summary>
+    /// Tum Trendyol endpoint'lerini tek hamlede kaydeder — integration test
+    /// setup'inda kolaylik icin.
+    /// </summary>
+    public static void RegisterAll(WireMockServer server)
+    {
+        RegisterOrderImport(server);
+        RegisterProductCreate(server);
+        RegisterStockPriceUpdate(server);
+        RegisterBrandSearch(server);
+        RegisterInvoiceLink(server);
     }
 }

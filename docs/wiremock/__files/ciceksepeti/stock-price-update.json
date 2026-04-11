@@ -1,0 +1,6 @@
+{
+  "isSuccess": true,
+  "code": 0,
+  "message": "Stok ve fiyat guncellendi (mock)",
+  "data": { "updatedCount": 2 }
+}

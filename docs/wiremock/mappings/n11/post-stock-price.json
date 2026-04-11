@@ -1,0 +1,9 @@
+{
+  "priority": 5,
+  "request": { "method": "POST", "urlPathPattern": "/ms/product/stock-price.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "n11/stock-price-update.json"
+  }
+}

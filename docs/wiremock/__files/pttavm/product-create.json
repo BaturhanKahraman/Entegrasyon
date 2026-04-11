@@ -1,0 +1,5 @@
+{
+  "success": true,
+  "message": "Urun eklendi (mock)",
+  "data": { "productId": "PTT-MOCK-001" }
+}

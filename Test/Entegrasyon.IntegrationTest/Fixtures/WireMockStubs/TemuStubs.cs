@@ -1,24 +1,32 @@
+using WireMock.Matchers;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using WireMock.Server;
 
 namespace Entegrasyon.IntegrationTest.Fixtures.WireMockStubs;
 
 /// <summary>
-/// Temu API stub helper'lari. Temu "tek router endpoint" uzerinden tum API
-/// cagrilarini POST /openapi/router ile yapar — request body "type" alani
-/// ile dispatch edilir (product.create, order.list vs.). Stub'lar bu yapiya
-/// uygun olmali — body matching ile dispatch simule edilmeli.
-///
-/// NOT (Faz 3.8): Iskelet. Stub'lar Podman blokeri cozuldugunde doldurulacak.
+/// Temu API stub helper'lari. Temu "tek router endpoint" pattern'i kullanir:
+/// POST /openapi/router → body "type" alaninda dispatch. Farkli type'lar icin
+/// farkli stub'lar gerekebilir (product.create, order.list vs.) — simdilik
+/// generic 200 response.
 /// </summary>
 public static class TemuStubs
 {
-    /// <summary>
-    /// Stub: Router endpoint'i — tum type'lar icin generic 200 response.
-    /// Gelismis testler body matching ile type bazli farkli response donecek.
-    /// </summary>
     public static void RegisterRouter(WireMockServer server)
     {
-        // TODO: Faz 3.8-sonrasi — Fixtures/Temu/router-default.json
-        // Ileri seviye: Fixtures/Temu/router-{type}.json (product-create, order-list vs.)
+        server
+            .Given(Request.Create()
+                .WithPath(new WildcardMatcher("*/openapi/router*"))
+                .UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyFromFile("Fixtures/temu/router-default.json"));
+    }
+
+    public static void RegisterAll(WireMockServer server)
+    {
+        RegisterRouter(server);
     }
 }

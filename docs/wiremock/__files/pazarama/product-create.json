@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "data": {
+    "batchRequestId": "mock-pazarama-batch-12345",
+    "message": "Urunler islem kuyruguna alindi (mock)"
+  }
+}
