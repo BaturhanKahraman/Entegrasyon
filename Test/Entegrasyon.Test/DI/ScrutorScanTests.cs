@@ -22,8 +22,7 @@ public class ScrutorScanTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 // Force all UseMock=true so real HTTP clients are never created
-                // (Trendyol + Hepsiburada + N11 + Pazarama Faz 3.1-3.4'de kaldirildi — digerleri Faz 3.5+)
-                ["Amazon:UseMock"] = "true",
+                // (Trendyol + Hepsiburada + N11 + Pazarama + Amazon Faz 3.1-3.5'de kaldirildi — digerleri Faz 3.6+)
                 ["Pttavm:UseMock"] = "true",
                 ["Ciceksepeti:UseMock"] = "true",
                 ["Temu:UseMock"] = "true",
@@ -148,6 +147,4 @@ public class ScrutorScanTests
     // dogrulanmali. ITrendyolProductService_Resolves_Mock testi bu yuzden silindi.
     // Hepsiburada, Amazon (ve digerleri) Faz 3.2+ sirasinda ayni sekilde silinecek.
 
-    [Fact] public void IAmazonListingService_Resolves_Mock() =>
-        BuildProvider().GetRequiredService<IAmazonListingService>().Should().NotBeNull();
 }

@@ -156,25 +156,13 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<IAmazonTokenManager, AmazonTokenManager>();   // MUST be Singleton (multi-tenant cache)
             services.AddScoped<AmazonMappingValidator>();
 
-            var useAmazonMock = configuration.GetValue<bool>("Amazon:UseMock", true);
-            if (useAmazonMock)
-            {
-                services.AddScoped<IAmazonCatalogService, MockAmazonCatalogService>();
-                services.AddScoped<IAmazonProductTypeService, MockAmazonProductTypeService>();
-                services.AddScoped<IAmazonListingService, MockAmazonListingService>();
-                services.AddScoped<IAmazonProductService, MockAmazonProductService>();
-                services.AddScoped<IAmazonOrderService, MockAmazonOrderService>();
-                services.AddScoped<IAmazonFeedService, MockAmazonFeedService>();
-            }
-            else
-            {
-                services.AddScoped<IAmazonCatalogService, AmazonCatalogService>();
-                services.AddScoped<IAmazonProductTypeService, AmazonProductTypeService>();
-                services.AddScoped<IAmazonListingService, AmazonListingService>();
-                services.AddScoped<IAmazonProductService, AmazonProductService>();
-                services.AddScoped<IAmazonOrderService, AmazonOrderService>();
-                services.AddScoped<IAmazonFeedService, AmazonFeedService>();
-            }
+            // Amazon servisleri — UseMock flag kaldirildi (Faz 3.5).
+            services.AddScoped<IAmazonCatalogService, AmazonCatalogService>();
+            services.AddScoped<IAmazonProductTypeService, AmazonProductTypeService>();
+            services.AddScoped<IAmazonListingService, AmazonListingService>();
+            services.AddScoped<IAmazonProductService, AmazonProductService>();
+            services.AddScoped<IAmazonOrderService, AmazonOrderService>();
+            services.AddScoped<IAmazonFeedService, AmazonFeedService>();
 
             // N11 servisleri
             services.AddScoped<N11MappingValidator>();
