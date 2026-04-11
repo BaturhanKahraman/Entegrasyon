@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Entegrasyon.Entity\Entegrasyon.Entity.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Entegrasyon.AdminPanel.Test" />
+  </ItemGroup>
+
 </Project>

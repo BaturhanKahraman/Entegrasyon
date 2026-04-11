@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Entegrasyon.AdminPanel.Infrastructure;
 using Entegrasyon.AdminPanel.Infrastructure.Auth;
 using Entegrasyon.AdminPanel.Infrastructure.Data;
+using Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,17 @@ builder.Services.AddDbContext<TemplateDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TemplateDb")));
 
 builder.Services.AddScoped<TenantProvisioningService>();
+
+builder.Services.AddHttpClient("TrendyolPublic", client =>
+{
+    client.BaseAddress = new Uri("https://api.trendyol.com/sapigw/");
+    client.Timeout = TimeSpan.FromMinutes(2);
+});
+
+if (builder.Configuration.GetValue("MasterCatalog:EnableAutoSync", false))
+{
+    builder.Services.AddHostedService<MasterCatalogSyncService>();
+}
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

@@ -40,7 +40,7 @@ public class MasterCatalogSyncService(
         }
     }
 
-    private async Task SyncAsync(CancellationToken ct)
+    internal async Task SyncAsync(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AdminPanelDbContext>();
