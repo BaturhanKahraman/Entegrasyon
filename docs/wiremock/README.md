@@ -86,9 +86,79 @@ gercek sandbox URL'ine yaz, seeder dokunmaz.
 
 ## Fixture Guncelleme (Recording)
 
-Gercek sandbox API'nin response'larini fixture olarak kaydetmek icin Faz 5'te
-`docs/wiremock/record.sh` scripti yazilacak. Bu script WireMock'u proxy mode'una
-cevirir, gercek API'ye yonlendirir, gelen response'lari otomatik JSON'a kaydeder.
+Gercek sandbox API'nin response'larini fixture olarak kaydetmek icin `record.sh`
+scripti WireMock'u proxy mode'una cevirir, gercek API'ye yonlendirir, gelen
+response'lari otomatik JSON'a kaydeder.
+
+### On kosullar
+
+- WireMock container ayakta (`docker-compose.dev.yml` ile)
+- `jq` kurulu (`sudo dnf install jq`)
+- Gercek sandbox API credential'lari MarketPlace tablosunda mevcut
+- `RealApiMarketplaces` listesine ilgili marketplace eklenmis (seeder dokunmasin)
+
+### Kullanim
+
+```bash
+# Trendyol sandbox'a kaydet
+./docs/wiremock/record.sh trendyol https://stageapigw.trendyol.com
+
+# Script asamalari:
+# 1. Proxy mapping kaydeder (* → target-url)
+# 2. "Enter'a bas" mesaji — MVC'den akislari tetikleme zamani
+# 3. Snapshot alir: recorded-YYYYMMDD-HHMMSS.json
+# 4. sanitize.sh otomatik calisir (credential temizligi)
+```
+
+### Sanitize — Credential Temizligi
+
+`sanitize.sh` mapping dosyasindan hassas bilgileri temizler:
+
+**Request headers:** `Authorization`, `x-api-key`, `X-API-Key`, `Cookie`,
+`x-amz-access-token` → `REDACTED`
+
+**Response headers:** `Set-Cookie` → `REDACTED`
+
+**Response body:** `"access_token"`, `"refresh_token"`, `"refreshToken"`,
+`"apiSecret"`, `"password"` field'lari → `REDACTED`
+
+**ONEMLI:** Regex-based sanitize mukemmel degil. Commit etmeden once manuel
+goz gezdir:
+```bash
+jq '.mappings[] | .response.body' docs/wiremock/mappings/trendyol/recorded-*.json | head -50
+```
+
+### Recorded Fixture'u Kullanma
+
+Recording cikti dosyasi tek bir mega-mapping JSON'i icerir. Bunu integration
+test stub'inda kullanmak icin iki secenek:
+
+**Opsiyon A — Tek dosya import:** WireMock standalone container otomatik olarak
+`mappings/` altindaki tum JSON dosyalarini yukler. Recorded dosyayi olduu gibi
+`docs/wiremock/mappings/<marketplace>/` altina biraktir.
+
+**Opsiyon B — Parcalara bol:** Ozellikle integration test'lerde her stub'i
+ayri JSON olarak tutmak istersen, `jq` ile mapping'leri endpoint bazli bol:
+```bash
+jq '.mappings[] | select(.request.url // .request.urlPattern // .request.urlPathPattern | test("orders"))' \
+    recorded-20260411.json > mappings/trendyol/get-orders.json
+```
+
+Sonra `TrendyolStubs.cs` iskelet metodlarindaki TODO'lari doldur ve
+`WithBodyFromFile("Fixtures/Trendyol/orders-page1.json")` ile bodyleri
+integration test fixture klasorunde referans al.
+
+### Fixture Guncellik
+
+Marketplace API'leri yilda 2-3 kez degisir. Bir endpoint'in stub'i eskirse:
+
+1. Ilgili marketplace icin `record.sh` calistir
+2. Yeni recorded dosyayi mevcut stub ile diff'le (`diff -u old.json new.json`)
+3. Breaking change varsa integration test beklentilerini guncelle
+4. Eski recorded dosyasini sil, yenisini commit et
+
+CI'da otomatik bir "fixture drift detection" job'u opsiyonel — gelecekteki bir
+is olarak ele alinabilir.
 
 ## Stub'lari Gelistirici Tarafindan Doldurma
 
