@@ -1,0 +1,52 @@
+# WireMock dev override — lokal gelistirici ortaminda marketplace HTTP cagrilarini
+# WireMock in-process server'a yonlendirir. Kullanim:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# WireMock container docs/wiremock/ altindaki stub dosyalarini volume mount ile
+# okur. Stub ekledikten sonra container'i restart etmeye gerek yok (hot-reload
+# WireMock tarafindan yapilir).
+#
+# MVC uygulamasi DevWireMockSeeder ile DB'deki MarketPlace.BaseUrl alanini
+# runtime'da http://wiremock:8080 degerine ceker. Gercek sandbox API'ye gitmek
+# isteyen bir marketplace icin appsettings.Development.json'daki
+# DevMode.RealApiMarketplaces listesine marketplace adi eklenir.
+
+services:
+  wiremock:
+    image: wiremock/wiremock:3.9.2
+    container_name: entegrasyon-wiremock
+    ports:
+      - "8080:8080"
+    command:
+      - "--global-response-templating"
+      - "--verbose"
+      - "--root-dir"
+      - "/home/wiremock"
+    volumes:
+      # Mapping dosyalari (request-response eslestirme kurallari)
+      - ./docs/wiremock/mappings:/home/wiremock/mappings:ro
+      # Response body dosyalari (WithBodyFromFile ile referans alinan JSON'lar)
+      - ./docs/wiremock/__files:/home/wiremock/__files:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/__admin/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - entegrasyon-dev
+
+  # MVC uygulamasi WireMock'a bagli calisir — docker-compose.yml'deki mvc servisi
+  # bu override ile genisletilir (depends_on + environment + network).
+  mvc:
+    environment:
+      - DevMode__WireMockUrl=http://wiremock:8080
+    depends_on:
+      wiremock:
+        condition: service_healthy
+    networks:
+      - entegrasyon-dev
+
+networks:
+  entegrasyon-dev:
+    driver: bridge

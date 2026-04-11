@@ -341,6 +341,16 @@ app.Lifetime.ApplicationStarted.Register(async () =>
     var adminPermissionSeeder = serviceScope.ServiceProvider
         .GetRequiredService<Entegrasyon.ApplicationBootstrap.Security.AdminPermissionSeeder>();
     await adminPermissionSeeder.EnsureAdminPermissionsAsync();
+
+    // Development offline mode: WireMock container varsa marketplace BaseUrl'lerini
+    // WireMock URL'ine ata. Staging/Production'da ASLA calistirilmaz (production
+    // DB'de marketplace URL'lerini bozar).
+    if (app.Environment.IsDevelopment())
+    {
+        var devSeederLogger = app.Services.GetRequiredService<ILogger<Program>>();
+        await Entegrasyon.MVC.Infrastructure.DevMode.DevWireMockSeeder
+            .SeedAsync(app.Services, app.Configuration, devSeederLogger);
+    }
 });
 
 // ── Middleware Pipeline ──────────────────────────────────────────────────
