@@ -236,55 +236,22 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ITemuApiClient, TemuApiClient>();
             services.AddScoped<TemuCategoryImporter>();
 
-            // Yurtici Kargo servisleri
-            var useYurticiMock = configuration.GetValue<bool>("YurticiKargo:UseMock", true);
-            if (useYurticiMock)
-            {
-                services.AddScoped<IYurticiKargoClient, MockYurticiKargoClient>();
-                services.AddScoped<IYurticiKargoService, MockYurticiKargoService>();
-            }
-            else
-            {
-                services.AddScoped<IYurticiKargoClient, YurticiKargoClient>();
-                services.AddScoped<IYurticiKargoService, YurticiKargoService>();
-            }
+            // Kargo servisleri — UseMock flag'leri kaldirildi (Faz 7).
+            // Yurtici Kargo
+            services.AddScoped<IYurticiKargoClient, YurticiKargoClient>();
+            services.AddScoped<IYurticiKargoService, YurticiKargoService>();
 
-            // Sürat Kargo servisleri
-            var useSuratKargoMock = configuration.GetValue<bool>("SuratKargo:UseMock", true);
-            if (useSuratKargoMock)
-            {
-                services.AddScoped<ISuratKargoService, MockSuratKargoService>();
-            }
-            else
-            {
-                services.AddScoped<ISuratKargoClient, SuratKargoClient>();
-                services.AddScoped<ISuratKargoService, SuratKargoService>();
-            }
+            // Surat Kargo
+            services.AddScoped<ISuratKargoClient, SuratKargoClient>();
+            services.AddScoped<ISuratKargoService, SuratKargoService>();
 
-            // Aras Kargo servisleri
-            var useArasKargoMock = configuration.GetValue<bool>("ArasKargo:UseMock", true);
-            if (useArasKargoMock)
-            {
-                services.AddScoped<IArasKargoService, MockArasKargoService>();
-            }
-            else
-            {
-                services.AddScoped<ArasKargoClient>();
-                services.AddScoped<IArasKargoService, ArasKargoService>();
-            }
+            // Aras Kargo
+            services.AddScoped<ArasKargoClient>();
+            services.AddScoped<IArasKargoService, ArasKargoService>();
 
-            // Trendyol e-Fatura servisleri
-            var useEFaturaMock = configuration.GetValue<bool>("TrendyolEFatura:UseMock", true);
-            if (useEFaturaMock)
-            {
-                services.AddScoped<ITrendyolEFaturaApiClient, MockTrendyolEFaturaApiClient>();
-                services.AddScoped<ITrendyolEFaturaService, MockTrendyolEFaturaService>();
-            }
-            else
-            {
-                services.AddScoped<ITrendyolEFaturaApiClient, TrendyolEFaturaApiClient>();
-                services.AddScoped<ITrendyolEFaturaService, TrendyolEFaturaService>();
-            }
+            // Trendyol e-Fatura servisleri — UseMock flag kaldirildi (Faz 7).
+            services.AddScoped<ITrendyolEFaturaApiClient, TrendyolEFaturaApiClient>();
+            services.AddScoped<ITrendyolEFaturaService, TrendyolEFaturaService>();
             services.AddScoped<TrendyolEFaturaInvoiceBuilder>();
 
             // Shipping Tracking — multi-registration (ICargoTrackingAdapter), kept explicit
@@ -293,16 +260,9 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICargoTrackingAdapter, Entegrasyon.Business.Concrete.Shipping.YurticiTrackingAdapter>();
             // IShipmentTrackingManager → ShipmentTrackingManager: covered by scan (Concrete.Shipping namespace)
 
-            // E-Fatura / E-Arsiv (genel amacli) servisleri — covered by scan (IEInvoiceManager → EInvoiceManager)
-            var useEInvoiceMock = configuration.GetValue<bool>("EInvoice:UseMock", true);
-            if (useEInvoiceMock)
-            {
-                services.AddScoped<IEInvoiceIntegratorClient, MockInvoiceClient>();
-            }
-            else
-            {
-                services.AddScoped<IEInvoiceIntegratorClient, ParasutInvoiceClient>();
-            }
+            // E-Fatura / E-Arsiv (genel amacli) servisleri — UseMock flag kaldirildi (Faz 7).
+            // IEInvoiceManager → EInvoiceManager Scrutor scan ile otomatik kayitli.
+            services.AddScoped<IEInvoiceIntegratorClient, ParasutInvoiceClient>();
 
             services.AddSingleton<ProductMapper>();
             services.AddSingleton<UserMapper>();

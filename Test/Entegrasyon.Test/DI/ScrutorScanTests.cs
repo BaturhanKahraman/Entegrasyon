@@ -22,12 +22,7 @@ public class ScrutorScanTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 // Force all UseMock=true so real HTTP clients are never created
-                // (8 marketplace Faz 3.1-3.8'de kaldirildi — sadece Kargo/EFatura kalmis mock'lar Faz 7 disinda)
-                ["YurticiKargo:UseMock"] = "true",
-                ["SuratKargo:UseMock"] = "true",
-                ["ArasKargo:UseMock"] = "true",
-                ["TrendyolEFatura:UseMock"] = "true",
-                ["EInvoice:UseMock"] = "true",
+                // (Tum marketplace + Kargo + EFatura Faz 3 ve Faz 7'de kaldirildi)
                 ["ConnectionStrings:Main"] = "Host=localhost;Database=test;",
                 ["Minio:Endpoint"] = "localhost:9000",
                 ["Minio:AccessKey"] = "test",
