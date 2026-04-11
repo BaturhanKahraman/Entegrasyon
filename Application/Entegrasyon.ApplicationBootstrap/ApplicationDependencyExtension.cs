@@ -204,28 +204,14 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IPazaramaRefundService, PazaramaRefundService>();
             services.AddScoped<PazaramaCategoryImporter>();
 
-            // PttAVM
-            var usePttavmMock = configuration.GetValue<bool>("Pttavm:UseMock", true);
-            if (usePttavmMock)
-            {
-                services.AddScoped<IPttavmCatalogApiClient, MockPttavmCatalogApiClient>();
-                services.AddScoped<IPttavmProductService, MockPttavmProductService>();
-                services.AddScoped<IPttavmStockPriceService, MockPttavmStockPriceService>();
-                services.AddScoped<IPttavmShipmentApiClient, MockPttavmShipmentApiClient>();
-                services.AddScoped<IPttavmOrderService, MockPttavmOrderService>();
-                services.AddScoped<IPttavmShippingService, MockPttavmShippingService>();
-                services.AddScoped<IPttavmInvoiceService, MockPttavmInvoiceService>();
-            }
-            else
-            {
-                services.AddScoped<IPttavmCatalogApiClient, PttavmCatalogApiClient>();
-                services.AddScoped<IPttavmProductService, PttavmProductService>();
-                services.AddScoped<IPttavmStockPriceService, PttavmStockPriceService>();
-                services.AddScoped<IPttavmShipmentApiClient, PttavmShipmentApiClient>();
-                services.AddScoped<IPttavmOrderService, PttavmOrderService>();
-                services.AddScoped<IPttavmShippingService, PttavmShippingService>();
-                services.AddScoped<IPttavmInvoiceService, PttavmInvoiceService>();
-            }
+            // PttAVM — UseMock flag kaldirildi (Faz 3.6).
+            services.AddScoped<IPttavmCatalogApiClient, PttavmCatalogApiClient>();
+            services.AddScoped<IPttavmProductService, PttavmProductService>();
+            services.AddScoped<IPttavmStockPriceService, PttavmStockPriceService>();
+            services.AddScoped<IPttavmShipmentApiClient, PttavmShipmentApiClient>();
+            services.AddScoped<IPttavmOrderService, PttavmOrderService>();
+            services.AddScoped<IPttavmShippingService, PttavmShippingService>();
+            services.AddScoped<IPttavmInvoiceService, PttavmInvoiceService>();
 
             services.AddScoped<PttavmCategoryImporter>();
             services.AddScoped<PttavmMappingValidator>();
