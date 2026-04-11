@@ -184,17 +184,11 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<N11CategoryImporter>();
             services.AddScoped<N11RestCategoryImporter>();
 
-            var useN11Mock = configuration.GetValue<bool>("N11:UseMock", true);
-            var useN11Soap = configuration.GetValue<bool>("N11:UseSoap", false); // default: REST
-
-            if (useN11Mock)
-            {
-                services.AddScoped<IN11ProductService, MockN11ProductService>();
-                services.AddScoped<IN11StockPriceService, MockN11StockPriceService>();
-                services.AddScoped<IN11OrderService, MockN11OrderService>();
-                services.AddScoped<IN11ClaimService, MockN11ClaimService>();
-            }
-            else if (useN11Soap)
+            // N11 servisleri — UseMock flag kaldirildi (Faz 3.3). REST varsayilan,
+            // SOAP flag ile legacy stack secilebilir. WireMock.Net integration testlerde
+            // HTTP mock saglar.
+            var useN11Soap = configuration.GetValue<bool>("N11:UseSoap", false);
+            if (useN11Soap)
             {
                 // SOAP (legacy) — tam SOAP stack
                 services.AddScoped<IN11ProductMapper, N11ProductMapper>();
@@ -205,7 +199,7 @@ namespace Entegrasyon.ApplicationBootstrap
             }
             else
             {
-                // REST (yeni varsayılan)
+                // REST (yeni varsayilan)
                 services.AddScoped<IN11RestClient, N11RestClient>();
                 services.AddScoped<IN11ProductService, N11RestProductService>();
                 services.AddScoped<IN11StockPriceService, N11RestStockPriceService>();
