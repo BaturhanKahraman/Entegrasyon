@@ -128,31 +128,18 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<ILabelGenerator, ZplLabelGenerator>();
             services.AddSingleton<IReceiptGenerator, EscPosReceiptGenerator>();
 
-            // Trendyol servisleri
+            // Trendyol servisleri — UseMock flag kaldirildi, WireMock.Net testlerde
+            // HTTP mock saglar (bkz. Test/Entegrasyon.IntegrationTest/Fixtures/WireMockStubs/).
             services.AddScoped<TrendyolCategoryImporter>();
             services.AddScoped<TrendyolMappingValidator>();
-
-            var useMock = configuration.GetValue<bool>("Trendyol:UseMock", true);
             services.AddScoped<TrendyolSupplierAddressCache>();
 
-            if (useMock)
-            {
-                services.AddScoped<ITrendyolProductService, MockTrendyolProductService>();
-                services.AddScoped<ITrendyolStockPriceService, MockTrendyolStockPriceService>();
-                services.AddScoped<ITrendyolOrderService, MockTrendyolOrderService>();
-                services.AddScoped<ITrendyolInvoiceService, MockTrendyolInvoiceService>();
-                services.AddScoped<IMarketplaceSearchService, MockMarketplaceSearchService>();
-                services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
-            }
-            else
-            {
-                services.AddScoped<ITrendyolProductService, TrendyolProductService>();
-                services.AddScoped<ITrendyolStockPriceService, TrendyolStockPriceService>();
-                services.AddScoped<ITrendyolOrderService, TrendyolOrderService>();
-                services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
-                services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
-                services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
-            }
+            services.AddScoped<ITrendyolProductService, TrendyolProductService>();
+            services.AddScoped<ITrendyolStockPriceService, TrendyolStockPriceService>();
+            services.AddScoped<ITrendyolOrderService, TrendyolOrderService>();
+            services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
+            services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
+            services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
 
             // Hepsiburada servisleri
             services.AddScoped<HepsiburadaCategoryImporter>();

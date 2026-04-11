@@ -39,6 +39,11 @@
     <Content Include="appsettings.IntegrationTest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <!-- WireMock stub fixture JSON dosyalari — WithBodyFromFile icin output'a kopyalanmali.
+         Fixtures/<marketplace>/*.json pattern'i her marketplace icin ayri klasor. -->
+    <Content Include="Fixtures\WireMockStubs\Fixtures\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

@@ -22,7 +22,7 @@ public class ScrutorScanTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 // Force all UseMock=true so real HTTP clients are never created
-                ["Trendyol:UseMock"] = "true",
+                // (Trendyol Faz 3.1'de kaldirildi — diger marketplace'ler Faz 3.2+)
                 ["Hepsiburada:UseMock"] = "true",
                 ["Amazon:UseMock"] = "true",
                 ["N11:UseMock"] = "true",
@@ -144,9 +144,12 @@ public class ScrutorScanTests
         BuildProvider().GetRequiredService<ICheckoutManager>().Should().NotBeNull();
 
     // --- Mock-mode marketplace services ---
-
-    [Fact] public void ITrendyolProductService_Resolves_Mock() =>
-        BuildProvider().GetRequiredService<ITrendyolProductService>().Should().NotBeNull();
+    //
+    // NOT: Trendyol mock servisi Faz 3.1'de kaldirildi. Gercek TrendyolProductService
+    // HTTP client dependency'leri (ITrendyolApiClient vs.) nedeniyle bu mini DI
+    // container'da resolve edilemez — integration test kapsaminda (WireMock ile)
+    // dogrulanmali. ITrendyolProductService_Resolves_Mock testi bu yuzden silindi.
+    // Hepsiburada, Amazon (ve digerleri) Faz 3.2+ sirasinda ayni sekilde silinecek.
 
     [Fact] public void IHepsiburadaProductService_Resolves_Mock() =>
         BuildProvider().GetRequiredService<IHepsiburadaProductService>().Should().NotBeNull();
