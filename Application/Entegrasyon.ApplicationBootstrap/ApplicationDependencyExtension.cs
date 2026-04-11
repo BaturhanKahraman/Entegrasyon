@@ -232,16 +232,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
             services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
 
-            // Temu servisleri
-            var useTemuMock = configuration.GetValue<bool>("Temu:UseMock", true);
-            if (useTemuMock)
-            {
-                services.AddScoped<ITemuApiClient, MockTemuApiClient>();
-            }
-            else
-            {
-                services.AddScoped<ITemuApiClient, TemuApiClient>();
-            }
+            // Temu servisleri — UseMock flag kaldirildi (Faz 3.8).
+            services.AddScoped<ITemuApiClient, TemuApiClient>();
             services.AddScoped<TemuCategoryImporter>();
 
             // Yurtici Kargo servisleri
