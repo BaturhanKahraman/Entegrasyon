@@ -68,13 +68,14 @@ public class BrandMappingController(
     }
 
     [HttpPost("/marketplace/sync/brands/{brandId:int}/map")]
-    public async Task<IActionResult> CreateMapping(int brandId, int mp, int externalBrandId, string? returnUrl)
+    public async Task<IActionResult> CreateMapping(int brandId, int mp, int externalBrandId, string? externalBrandName, string? returnUrl)
     {
         var dto = new CreateBrandMarketPlaceMatchDto
         {
             ApplicationBrandId = brandId,
             MarketPlaceId = mp,
-            MarketPlaceBrandId = externalBrandId
+            MarketPlaceBrandId = externalBrandId,
+            MarketPlaceBrandName = externalBrandName
         };
 
         var result = await brandMatchService.CreateBrandMappingAsync(dto);

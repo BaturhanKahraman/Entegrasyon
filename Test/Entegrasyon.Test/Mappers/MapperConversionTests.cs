@@ -212,6 +212,21 @@ public class MapperConversionTests
         };
         var dto = mapper.MapToDto(entity);
         dto.ApplicationBrandName.Should().Be("Nike");
-        dto.MarketPlaceBrandName.Should().BeNull(); // MapperIgnoreTarget leaves it null; MapToDtoList sets it to string.Empty
+        dto.MarketPlaceBrandName.Should().BeNull();
+    }
+
+    [Fact]
+    public void BrandMatchMapper_MapToDto_PreservesMarketPlaceBrandName()
+    {
+        var mapper = new BrandMatchMapper();
+        var entity = new BrandMarketPlaceMatch
+        {
+            ApplicationBrand = new Brand { Name = "Nike" },
+            MarketPlaceBrandId = 12345,
+            MarketPlaceBrandName = "Nike (Trendyol)"
+        };
+        var dto = mapper.MapToDto(entity);
+        dto.MarketPlaceBrandId.Should().Be(12345);
+        dto.MarketPlaceBrandName.Should().Be("Nike (Trendyol)");
     }
 }

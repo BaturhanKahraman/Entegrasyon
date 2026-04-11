@@ -9,5 +9,5 @@ public record BrandMarketPlaceMatchDto
     public string ApplicationBrandName { get; set; } = null!;
     public int MarketPlaceId { get; set; }
     public int MarketPlaceBrandId { get; set; }
-    public string MarketPlaceBrandName { get; set; } = null!;
+    public string? MarketPlaceBrandName { get; set; }
 }

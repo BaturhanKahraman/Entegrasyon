@@ -138,7 +138,8 @@ public class BrandMatchService(
         {
             ApplicationBrandId = dto.ApplicationBrandId,
             MarketPlaceId = dto.MarketPlaceId,
-            MarketPlaceBrandId = dto.MarketPlaceBrandId
+            MarketPlaceBrandId = dto.MarketPlaceBrandId,
+            MarketPlaceBrandName = dto.MarketPlaceBrandName
         };
 
         dbContext.BrandMarketPlaceMatches.Add(mapping);

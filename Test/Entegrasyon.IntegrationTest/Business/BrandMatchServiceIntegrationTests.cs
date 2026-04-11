@@ -77,6 +77,35 @@ public class BrandMatchServiceIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task CreateBrandMapping_ShouldPersistMarketPlaceBrandName()
+    {
+        // Arrange
+        var (service, scope) = GetScopedService<IBrandMatchService>();
+        using var _ = scope;
+
+        var dto = new CreateBrandMarketPlaceMatchDto
+        {
+            ApplicationBrandId = _brand1Id,
+            MarketPlaceId = 1,
+            MarketPlaceBrandId = 9500,
+            MarketPlaceBrandName = "Nike (Trendyol)"
+        };
+
+        // Act
+        var result = await service.CreateBrandMappingAsync(dto);
+
+        // Assert
+        result.Success.Should().BeTrue(result.Message);
+
+        using var dbContext = CreateDbContext();
+        var mapping = await dbContext.BrandMarketPlaceMatches
+            .FirstOrDefaultAsync(m => m.ApplicationBrandId == _brand1Id && m.MarketPlaceId == 1);
+        mapping.Should().NotBeNull();
+        mapping!.MarketPlaceBrandName.Should().Be("Nike (Trendyol)",
+            "daily sync yerine kullanici tarafindan secilen marka ismi DB'ye yazilmali");
+    }
+
+    [Fact]
     public async Task CreateBrandMapping_ShouldFail_WhenDuplicate()
     {
         // Arrange — ilk mapping'i olustur
