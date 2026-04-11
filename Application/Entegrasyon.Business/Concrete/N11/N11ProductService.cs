@@ -11,8 +11,10 @@ using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 namespace Entegrasyon.Business.Concrete.N11;
 
 /// <summary>
-/// N11 SOAP API ile gerçek ürün işlemleri gerçekleştiren servis.
-/// MockN11ProductService'in production uygulamasıdır.
+/// N11 SOAP API ile ürün işlemleri gerçekleştiren legacy servis.
+/// REST tercihi N11RestProductService (varsayılan). Bu servis yalnızca
+/// `N11:UseSoap=true` flag'i ile aktif olur. Integration testlerinde HTTP
+/// mock'lama WireMock.Net ile yapılır.
 /// </summary>
 public sealed class N11ProductService(
     IN11SoapClient soapClient,

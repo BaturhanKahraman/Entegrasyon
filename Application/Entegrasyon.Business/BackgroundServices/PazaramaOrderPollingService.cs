@@ -1,6 +1,5 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Tenants;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -8,14 +7,13 @@ namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 2 dakikada Pazarama sipariş API'sini poll eder,
-/// yeni siparişleri import eder.
-/// Pazarama:UseMock = true ise polling yapılmaz.
+/// yeni siparişleri import eder. WireMock'a yönlenmiş dev ortamda da
+/// çalışır — IPazaramaOrderService WireMock stub'larından response alır.
 /// </summary>
 public class PazaramaOrderPollingService(
     IServiceScopeFactory scopeFactory,
     ITenantRegistry tenantRegistry,
-    ILogger<PazaramaOrderPollingService> logger,
-    IConfiguration configuration)
+    ILogger<PazaramaOrderPollingService> logger)
     : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     protected override TimeSpan PollInterval => TimeSpan.FromMinutes(2);
@@ -25,13 +23,6 @@ public class PazaramaOrderPollingService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        if (configuration.GetValue<bool>("Pazarama:UseMock"))
-        {
-            logger.LogInformation("PazaramaOrderPollingService: UseMock=true, polling devre dışı for tenant {TenantId}",
-                tenantId);
-            return;
-        }
-
         var orderService = services.GetRequiredService<IPazaramaOrderService>();
         var orderManager = services.GetRequiredService<IOrderManager>();
 

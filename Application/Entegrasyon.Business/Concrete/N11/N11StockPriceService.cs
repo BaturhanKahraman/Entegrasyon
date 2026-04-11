@@ -10,8 +10,10 @@ using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 namespace Entegrasyon.Business.Concrete.N11;
 
 /// <summary>
-/// N11 SOAP API ile gerçek fiyat ve stok güncelleme işlemlerini gerçekleştiren servis.
-/// MockN11StockPriceService'in production uygulamasıdır.
+/// N11 SOAP API ile fiyat ve stok güncelleme işlemlerini gerçekleştiren legacy servis.
+/// REST tercihi N11RestStockPriceService (varsayılan). Bu servis yalnızca
+/// `N11:UseSoap=true` flag'i ile aktif olur. Integration testlerinde HTTP
+/// mock'lama WireMock.Net ile yapılır.
 /// </summary>
 public sealed class N11StockPriceService(
     IN11SoapClient soapClient,

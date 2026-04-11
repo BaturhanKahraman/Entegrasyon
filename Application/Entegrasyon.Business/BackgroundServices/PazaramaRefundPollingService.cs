@@ -1,6 +1,5 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Tenants;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -8,14 +7,13 @@ namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 5 dakikada Pazarama iade/iptal taleplerini poll eder.
-/// Pazarama:UseMock = true ise polling yapılmaz.
-/// Tum aktif tenant'lar icin calisir.
+/// Tum aktif tenant'lar icin calisir. WireMock'a yönlenmiş dev ortamda da
+/// çalışır — IPazaramaRefundService WireMock stub'larından response alır.
 /// </summary>
 public class PazaramaRefundPollingService(
     IServiceScopeFactory scopeFactory,
     ITenantRegistry tenantRegistry,
-    ILogger<PazaramaRefundPollingService> logger,
-    IConfiguration configuration)
+    ILogger<PazaramaRefundPollingService> logger)
     : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     protected override TimeSpan PollInterval => TimeSpan.FromMinutes(5);
@@ -25,13 +23,6 @@ public class PazaramaRefundPollingService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        if (configuration.GetValue<bool>("Pazarama:UseMock"))
-        {
-            logger.LogInformation("PazaramaRefundPollingService: UseMock=true, polling devre disi for tenant {TenantId}",
-                tenantId);
-            return;
-        }
-
         var refundService = services.GetRequiredService<IPazaramaRefundService>();
 
         var now = DateTimeOffset.UtcNow;

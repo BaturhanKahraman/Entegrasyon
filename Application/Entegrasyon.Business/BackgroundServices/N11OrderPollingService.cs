@@ -1,6 +1,5 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Tenants;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -8,14 +7,13 @@ namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
 /// Her 2 dakikada N11 sipariş API'sini poll eder,
-/// yeni siparişleri import eder.
-/// N11:UseMock = true ise polling yapılmaz.
+/// yeni siparişleri import eder. WireMock'a yönlenmiş dev ortamda da
+/// çalışır — IN11OrderService WireMock stub'larından response alır.
 /// </summary>
 public class N11OrderPollingService(
     IServiceScopeFactory scopeFactory,
     ITenantRegistry tenantRegistry,
-    ILogger<N11OrderPollingService> logger,
-    IConfiguration configuration)
+    ILogger<N11OrderPollingService> logger)
     : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     protected override TimeSpan PollInterval => TimeSpan.FromMinutes(2);
@@ -25,13 +23,6 @@ public class N11OrderPollingService(
         IServiceProvider services, int tenantId,
         DateTimeOffset lastPoll, CancellationToken ct)
     {
-        if (configuration.GetValue<bool>("N11:UseMock"))
-        {
-            logger.LogInformation("N11OrderPollingService: UseMock=true, polling devre dışı for tenant {TenantId}",
-                tenantId);
-            return;
-        }
-
         var orderService = services.GetRequiredService<IN11OrderService>();
         var orderManager = services.GetRequiredService<IOrderManager>();
 

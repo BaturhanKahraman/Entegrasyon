@@ -54,8 +54,11 @@ namespace Entegrasyon.ApplicationBootstrap
         {
             // ── Scrutor convention scan ──────────────────────────────────────────────
             // Automatically registers all standard IXxx → Xxx Scoped pairs from the
-            // Business assembly. Naming-exception and conditional (UseMock) services
-            // are registered explicitly below and override via last-wins.
+            // Business assembly. Naming-exception services are registered explicitly
+            // below and override via last-wins. Mock filter defensive — artik Business
+            // projesinde hic Mock class'i yok (Faz 3 + Faz 7 temizligi sonrasi), ama
+            // ileride yanlislikla Mock* isimli class eklenirse Scrutor tarafindan
+            // yakalanip register edilmemesini garanti eder.
             services.Scan(scan => scan
                 .FromAssemblyOf<NotificationManager>()      // Entegrasyon.Business assembly
                 .AddClasses(classes => classes
@@ -72,7 +75,7 @@ namespace Entegrasyon.ApplicationBootstrap
                         "Entegrasyon.Business.Notifications"
                     )
                     .Where(t =>
-                        !t.Name.StartsWith("Mock")                   &&  // handled by UseMock blocks
+                        !t.Name.StartsWith("Mock")                   &&  // defensive — Business'te artik Mock class yok
                         !t.Name.EndsWith("CategoryImporter")         &&  // concrete-only, no interface
                         !t.Name.EndsWith("MappingValidator")         &&  // concrete-only, no interface
                         !t.Name.EndsWith("Cache")                    &&  // may need explicit lifetime
