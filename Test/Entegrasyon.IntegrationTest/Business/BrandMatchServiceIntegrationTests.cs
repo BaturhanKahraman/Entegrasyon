@@ -21,7 +21,8 @@ public class BrandMatchServiceIntegrationTests : IntegrationTestBase
     private int _brand2Id;
     private int _brand3Id;
 
-    public BrandMatchServiceIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public BrandMatchServiceIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

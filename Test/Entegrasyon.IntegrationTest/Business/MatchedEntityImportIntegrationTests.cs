@@ -16,7 +16,8 @@ namespace Entegrasyon.IntegrationTest.Business;
 [Trait("Category", "Integration")]
 public class MatchedEntityImportIntegrationTests : IntegrationTestBase
 {
-    public MatchedEntityImportIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public MatchedEntityImportIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     #region Helpers
 

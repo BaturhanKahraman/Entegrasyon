@@ -13,7 +13,8 @@ namespace Entegrasyon.IntegrationTest.Business;
 [Trait("Category", "Integration")]
 public class OrderImportIntegrationTests : IntegrationTestBase
 {
-    public OrderImportIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public OrderImportIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     private static TrendyolShipmentPackage BuildTrendyolPackage(long packageId, string orderNumber, string barcode = "1111111111111")
         => new(

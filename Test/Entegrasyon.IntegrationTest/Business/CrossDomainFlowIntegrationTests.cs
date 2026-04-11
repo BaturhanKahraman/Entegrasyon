@@ -29,7 +29,8 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
     private Guid _userId;
     private int _customerId;
 
-    public CrossDomainFlowIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public CrossDomainFlowIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

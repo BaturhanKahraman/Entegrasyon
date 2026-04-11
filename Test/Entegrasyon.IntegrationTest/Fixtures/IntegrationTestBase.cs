@@ -27,16 +27,28 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     private Respawner _respawner = null!;
     private NpgsqlConnection _dbConnection = null!;
 
+    /// <summary>
+    /// WireMock in-process server — marketplace HTTP client'lari icin tek mock kaynak.
+    /// Her test class'i ResetAll() cagirip kendi stub'larini kurar. MarketPlace seed'i
+    /// SeedMarketPlaceAsync icinde BaseUrl = WireMock.BaseUrl olarak set edilir.
+    /// </summary>
+    protected WireMockFixture WireMock { get; }
+
     protected IServiceProvider Services => _factory.Services;
     protected IServiceScope CreateScope() => Services.CreateScope();
 
-    protected IntegrationTestBase(PostgreSqlFixture pgFixture)
+    protected IntegrationTestBase(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
     {
         _pgFixture = pgFixture;
+        WireMock = wireMock;
     }
 
     public async Task InitializeAsync()
     {
+        // Her test class'i kendi WireMock stub'larini kuracak — onceki class'tan kalan
+        // mapping'leri, log entry'leri ve scenario state'lerini temizle.
+        WireMock.ResetAll();
+
         _factory = new IntegrationTestWebAppFactory(_pgFixture.ConnectionString);
 
         // Force the WebApplicationFactory to build the host
@@ -171,8 +183,12 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
     /// <summary>
     /// MarketPlace kaydı seed eder. Respawn her test class'ta temizler.
+    /// BaseUrl varsayilan olarak WireMock.BaseUrl — boylece runtime'da marketplace
+    /// HTTP client'lari (TrendyolApiClient, HepsiburadaApiClient vb.) gercek API
+    /// yerine WireMock in-process server'a yonelir. Override etmek icin baseUrl
+    /// parametresi gecilebilir.
     /// </summary>
-    protected async Task SeedMarketPlaceAsync(int id, string name)
+    protected async Task SeedMarketPlaceAsync(int id, string name, string? baseUrl = null)
     {
         using var dbContext = CreateDbContext();
         if (!await dbContext.MarketPlaces.AnyAsync(mp => mp.Id == id))
@@ -181,6 +197,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             {
                 Id = id,
                 Name = name,
+                BaseUrl = baseUrl ?? WireMock.BaseUrl,
                 CreatedAt = DateTimeOffset.UtcNow
             });
             await dbContext.SaveChangesAsync();

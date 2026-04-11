@@ -26,7 +26,8 @@ public class ActiveBranchOfficeAccessorTests : IntegrationTestBase
     private int _officeBId;
     private Guid _userId;
 
-    public ActiveBranchOfficeAccessorTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public ActiveBranchOfficeAccessorTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

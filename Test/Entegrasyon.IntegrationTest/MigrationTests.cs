@@ -12,7 +12,8 @@ namespace Entegrasyon.IntegrationTest;
 [Trait("Category", "Integration")]
 public class MigrationTests : IntegrationTestBase
 {
-    public MigrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public MigrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     [Fact]
     public async Task AllMigrations_ShouldBeApplied_WithoutErrors()

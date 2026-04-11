@@ -17,7 +17,8 @@ namespace Entegrasyon.IntegrationTest.Business;
 [Trait("Category", "Integration")]
 public class ProductManagerIntegrationTests : IntegrationTestBase
 {
-    public ProductManagerIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public ProductManagerIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     /// <summary>
     /// Test icin gerekli Category, Brand ve BranchOffice seed eder.

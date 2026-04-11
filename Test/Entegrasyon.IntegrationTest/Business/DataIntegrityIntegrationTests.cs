@@ -23,7 +23,8 @@ public class DataIntegrityIntegrationTests : IntegrationTestBase
     private int _brandId;
     private int _categoryId;
 
-    public DataIntegrityIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public DataIntegrityIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

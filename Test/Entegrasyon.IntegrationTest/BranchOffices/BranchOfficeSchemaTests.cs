@@ -12,7 +12,8 @@ namespace Entegrasyon.IntegrationTest.BranchOffices;
 /// </summary>
 public class BranchOfficeSchemaTests : IntegrationTestBase
 {
-    public BranchOfficeSchemaTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public BranchOfficeSchemaTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     [Fact]
     public async Task Hq_seed_row_has_IsHeadquarters_true_and_normalized_name()

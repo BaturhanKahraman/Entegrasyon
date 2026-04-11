@@ -15,7 +15,8 @@ public class ProductSyncManagerIntegrationTests : IntegrationTestBase
 {
     private const int TestMarketPlaceId = 1;
 
-    public ProductSyncManagerIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public ProductSyncManagerIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

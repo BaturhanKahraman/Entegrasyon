@@ -20,7 +20,8 @@ namespace Entegrasyon.IntegrationTest;
 [Trait("Category", "Integration")]
 public class DiContainerTests : IntegrationTestBase
 {
-    public DiContainerTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public DiContainerTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     [Fact]
     public void DbContextFactory_ShouldBeResolvable()

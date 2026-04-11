@@ -18,7 +18,8 @@ namespace Entegrasyon.IntegrationTest.Business;
 [Trait("Category", "Integration")]
 public class OrderImportPazaramaIntegrationTests : IntegrationTestBase
 {
-    public OrderImportPazaramaIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public OrderImportPazaramaIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

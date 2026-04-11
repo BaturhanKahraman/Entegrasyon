@@ -26,7 +26,8 @@ public class TransferRequestNotifiesApproversTests : IntegrationTestBase
     private Guid _approverId;
     private Guid _variantId;
 
-    public TransferRequestNotifiesApproversTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public TransferRequestNotifiesApproversTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

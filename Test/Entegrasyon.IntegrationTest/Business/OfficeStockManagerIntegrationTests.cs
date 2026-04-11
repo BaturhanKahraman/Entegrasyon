@@ -15,7 +15,8 @@ namespace Entegrasyon.IntegrationTest.Business;
 [Trait("Category", "Integration")]
 public class OfficeStockManagerIntegrationTests : IntegrationTestBase
 {
-    public OfficeStockManagerIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public OfficeStockManagerIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

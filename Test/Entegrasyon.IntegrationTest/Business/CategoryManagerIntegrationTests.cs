@@ -16,7 +16,8 @@ namespace Entegrasyon.IntegrationTest.Business;
 [Trait("Category", "Integration")]
 public class CategoryManagerIntegrationTests : IntegrationTestBase
 {
-    public CategoryManagerIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public CategoryManagerIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     [Fact]
     public async Task AddCategoryStepOne_ShouldCreateCategory_InDatabase()

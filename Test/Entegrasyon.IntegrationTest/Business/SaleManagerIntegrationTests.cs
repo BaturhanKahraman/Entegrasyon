@@ -17,7 +17,8 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
     private Guid _userId;
     private int _customerId;
 
-    public SaleManagerIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public SaleManagerIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

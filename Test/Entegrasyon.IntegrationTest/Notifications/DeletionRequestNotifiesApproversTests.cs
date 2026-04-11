@@ -29,7 +29,8 @@ public class DeletionRequestNotifiesApproversTests : IntegrationTestBase
     private Guid _requesterId;
     private Guid _approverId;
 
-    public DeletionRequestNotifiesApproversTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public DeletionRequestNotifiesApproversTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {

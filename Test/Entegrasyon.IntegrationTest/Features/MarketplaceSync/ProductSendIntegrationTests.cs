@@ -20,7 +20,8 @@ public class ProductSendIntegrationTests : IntegrationTestBase
 {
     private const int TrendyolMarketPlaceId = 1;
 
-    public ProductSendIntegrationTests(PostgreSqlFixture pgFixture) : base(pgFixture) { }
+    public ProductSendIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
+        : base(pgFixture, wireMock) { }
 
     protected override async Task OnInitializeAsync()
     {
