@@ -50,9 +50,9 @@
                     <hr class="my-3" />
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="card-title mb-0">Fatura Satirlari</h3>
+                        <h3 class="card-title mb-0">Fatura Satırları</h3>
                         <button type="button" id="add-line" class="btn btn-outline-primary btn-sm">
-                            + Satir Ekle
+                            + Satır Ekle
                         </button>
                     </div>
 
@@ -83,7 +83,7 @@
         const container = document.getElementById('invoice-lines');
         const html = `<div class="row g-2 mb-2 invoice-line">
             <div class="col-md-4">
-                <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Ürün Adi" required>
+                <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Ürün Adı" required>
             </div>
             <div class="col-md-2">
                 <input name="Lines[${lineIndex}].Quantity" type="number" class="form-control form-control-sm" value="1" min="1" required>

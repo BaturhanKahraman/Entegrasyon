@@ -18,7 +18,7 @@
             <div class="card-body">
                 <div class="datagrid">
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Ürün Adi</div>
+                        <div class="datagrid-title">Ürün Adı</div>
                         <div class="datagrid-content">@Model.Product.Title</div>
                     </div>
                     <div class="datagrid-item">
@@ -34,7 +34,7 @@
                         <div class="datagrid-content">@Model.Product.CategoryName</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Varyant Sayisi</div>
+                        <div class="datagrid-title">Varyant Sayısı</div>
                         <div class="datagrid-content">@Model.Product.VariantCount</div>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(Model.Product.Description))
@@ -69,11 +69,11 @@
                                         {
                                             MarketplaceSyncState.Synced => ("bg-green-lt", "Senkronize"),
                                             MarketplaceSyncState.Waiting => ("bg-warning-lt", "Bekleyen"),
-                                            MarketplaceSyncState.Processing => ("bg-info-lt", "Isleniyor"),
-                                            MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Guncellenmemis"),
-                                            MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatali"),
+                                            MarketplaceSyncState.Processing => ("bg-info-lt", "İşleniyor"),
+                                            MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Güncellenmemiş"),
+                                            MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatalı"),
                                             MarketplaceSyncState.Rejected => ("bg-danger-lt", "Reddedildi"),
-                                            _ => ("bg-secondary-lt", "Hic Senkronize Edilmemis")
+                                            _ => ("bg-secondary-lt", "Hiç Senkronize Edilmemiş")
                                         };
                                     }
                                     <span class="badge @badgeClass ms-2">@badgeText</span>
@@ -108,11 +108,11 @@
                                                         {
                                                             MarketplaceSyncState.Synced => ("bg-green-lt", "Senkronize"),
                                                             MarketplaceSyncState.Waiting => ("bg-warning-lt", "Bekleyen"),
-                                                            MarketplaceSyncState.Processing => ("bg-info-lt", "Isleniyor"),
-                                                            MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Guncellenmemis"),
-                                                            MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatali"),
+                                                            MarketplaceSyncState.Processing => ("bg-info-lt", "İşleniyor"),
+                                                            MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Güncellenmemiş"),
+                                                            MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatalı"),
                                                             MarketplaceSyncState.Rejected => ("bg-danger-lt", "Reddedildi"),
-                                                            _ => ("bg-secondary-lt", "Hic Senkronize Edilmemis")
+                                                            _ => ("bg-secondary-lt", "Hiç Senkronize Edilmemiş")
                                                         };
                                                     }
                                                     <span class="badge @stClass">@stText</span>

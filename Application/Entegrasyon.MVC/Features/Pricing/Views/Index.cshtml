@@ -13,18 +13,18 @@
             <div class="col-auto ms-auto">
                 <a href="/pricing/rules" class="btn btn-outline-secondary">
                     <i class="ti ti-adjustments"></i>
-                    Fiyatlandirma Kurallari
+                    Fiyatlandırma Kuralları
                 </a>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Ürün Fiyatlari</h3>
+                <h3 class="card-title">Ürün Fiyatları</h3>
                 @if (Model != null)
                 {
                     <div class="card-actions">
-                        <span class="badge bg-blue">@Model.TotalItemCount kayit</span>
+                        <span class="badge bg-blue">@Model.TotalItemCount kayıt</span>
                     </div>
                 }
             </div>
@@ -32,8 +32,8 @@
             {
                 <div class="card-body text-center py-5">
                     <i class="ti ti-currency-lira text-secondary" style="font-size: 2.5rem;"></i>
-                    <h3 class="text-secondary mt-2">Ürün bulunamadi</h3>
-                    <p class="text-secondary">Arama kriterlerinizi degistirerek tekrar deneyin.</p>
+                    <h3 class="text-secondary mt-2">Ürün bulunamadı</h3>
+                    <p class="text-secondary">Arama kriterlerinizi değiştirerek tekrar deneyin.</p>
                 </div>
             }
             else
@@ -43,12 +43,12 @@
                         <thead>
                             <tr>
                                 <th>Stok Kodu</th>
-                                <th>Ürün Adi</th>
+                                <th>Ürün Adı</th>
                                 <th>Marka</th>
                                 <th>Kategori</th>
-                                <th>Varyant Sayisi</th>
+                                <th>Varyant Sayısı</th>
                                 <th>Stok</th>
-                                <th class="text-end">Islemler</th>
+                                <th class="text-end">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -94,7 +94,7 @@
                                                 hx-get="/pricing/@product.Id/variants"
                                                 hx-target="closest tr"
                                                 hx-swap="afterend"
-                                                title="Varyant fiyatlarini goster">
+                                                title="Varyant fiyatlarını göster">
                                             <i class="ti ti-currency-lira"></i>
                                             Fiyatlar
                                         </button>
