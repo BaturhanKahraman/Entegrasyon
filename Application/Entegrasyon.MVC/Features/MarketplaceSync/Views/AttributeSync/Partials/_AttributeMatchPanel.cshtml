@@ -42,19 +42,41 @@
                     {
                         <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
                     }
-                    <div class="col-auto">
-                        <label class="form-label">Pazaryeri Özellik ID</label>
-                        <input type="number" class="form-control form-control-sm" name="mpAttributeId" required />
-                    </div>
-                    <div class="col-auto">
-                        <label class="form-label">External ID (opsiyonel)</label>
-                        <input type="text" class="form-control form-control-sm" name="externalId" />
+                    <div class="col-md-8">
+                        <label class="form-label">Pazaryeri Özelliği</label>
+                        <select id="attrSearchSelect" name="mpAttributeId" required>
+                            <option value=""></option>
+                        </select>
+                        <small class="form-hint">Özellik adı yazmaya başlayın (örn: "Renk").</small>
                     </div>
                     <div class="col-auto">
                         <button type="submit" class="btn btn-primary btn-sm">Esle</button>
                     </div>
                 </form>
             </div>
+
+            <script>
+                (function () {
+                    var el = document.getElementById('attrSearchSelect');
+                    if (!el || el.tomselect) return;
+                    new TomSelect(el, {
+                        valueField: 'id',
+                        labelField: 'label',
+                        searchField: ['name', 'label'],
+                        maxOptions: 20,
+                        placeholder: 'Özellik adı yazın...',
+                        loadThrottle: 500,
+                        preload: false,
+                        load: function (query, callback) {
+                            if (query.length < 2) { callback(); return; }
+                            fetch('/marketplace/sync/suggestions/attributes?mp=@Model.MarketPlaceId&q=' + encodeURIComponent(query))
+                                .then(function (r) { return r.json(); })
+                                .then(function (data) { callback(data); })
+                                .catch(function () { callback(); });
+                        }
+                    });
+                })();
+            </script>
         }
 
         <!-- Value Matches -->
@@ -147,16 +169,15 @@
                   hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('mapValueModal')).hide(); htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'}); }">
                 <div class="modal-body">
                     <p class="text-secondary mb-3">
-                        <strong id="modal-value-name"></strong> için pazaryeri degeri girin.
+                        <strong id="modal-value-name"></strong> için pazaryeri degerini arayın.
                     </p>
                     <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
                     <div class="mb-3">
-                        <label class="form-label">Pazaryeri Değer ID</label>
-                        <input type="number" class="form-control" name="mpValueId" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">External ID (opsiyonel)</label>
-                        <input type="text" class="form-control" name="externalId" />
+                        <label class="form-label">Pazaryeri Değeri</label>
+                        <select id="valueSearchSelect" name="mpValueId" required>
+                            <option value=""></option>
+                        </select>
+                        <small class="form-hint">Değer adı yazın (örn: "Kırmızı").</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -169,10 +190,40 @@
 </div>
 
 <script>
+    var valueSearchTs = null;
+
+    function ensureValueSearchTomSelect() {
+        var el = document.getElementById('valueSearchSelect');
+        if (!el) return;
+        if (el.tomselect) { valueSearchTs = el.tomselect; return; }
+        valueSearchTs = new TomSelect(el, {
+            valueField: 'id',
+            labelField: 'label',
+            searchField: ['name', 'label'],
+            maxOptions: 20,
+            placeholder: 'Değer adı yazın...',
+            loadThrottle: 500,
+            preload: false,
+            load: function (query, callback) {
+                if (query.length < 2) { callback(); return; }
+                var attributeId = @Model.AttributeId;
+                fetch('/marketplace/sync/suggestions/attributes/' + attributeId + '/values?mp=@Model.MarketPlaceId&q=' + encodeURIComponent(query))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) { callback(data); })
+                    .catch(function () { callback(); });
+            }
+        });
+    }
+
     function openValueMapModal(valueId, valueName) {
         document.getElementById('modal-value-name').textContent = valueName;
         var form = document.getElementById('mapValueForm');
         form.setAttribute('hx-post', '/marketplace/sync/attributes/values/' + valueId + '/map');
         htmx.process(form);
+        ensureValueSearchTomSelect();
+        if (valueSearchTs) {
+            valueSearchTs.clear();
+            valueSearchTs.clearOptions();
+        }
     }
 </script>

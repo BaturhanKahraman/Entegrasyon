@@ -49,10 +49,13 @@
                 {
                     <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
                 }
-                <div class="col-md-6">
-                    <label class="form-label">Pazaryeri Marka ID</label>
-                    <input type="number" class="form-control" name="externalBrandId" required
-                           placeholder="Ornek: 12345" />
+                <div class="col-md-8">
+                    <label class="form-label">Pazaryeri Markası</label>
+                    <select class="form-select" id="brand-search-select" name="externalBrandId" required>
+                        <option value=""></option>
+                    </select>
+                    <input type="hidden" name="externalBrandName" id="brand-search-name" />
+                    <small class="form-hint">Marka adı yazmaya başlayın, sonuçlar canlı aranır.</small>
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">
@@ -61,6 +64,42 @@
                     </button>
                 </div>
             </form>
+
+            <script>
+                (function () {
+                    var el = document.getElementById('brand-search-select');
+                    if (!el || el.tomselect) return;
+                    var ts = new TomSelect(el, {
+                        valueField: 'id',
+                        labelField: 'label',
+                        searchField: ['name', 'label'],
+                        maxOptions: 20,
+                        placeholder: 'Marka adı yazın...',
+                        loadThrottle: 500,
+                        preload: false,
+                        load: function (query, callback) {
+                            if (query.length < 2) { callback(); return; }
+                            fetch('/marketplace/sync/suggestions/brands?mp=@Model.MarketPlaceId&q=' + encodeURIComponent(query))
+                                .then(function (r) { return r.json(); })
+                                .then(function (data) { callback(data); })
+                                .catch(function () { callback(); });
+                        },
+                        render: {
+                            option: function (item, escape) {
+                                return '<div><strong>' + escape(item.name) + '</strong> ' +
+                                       '<small class="text-muted">(ID: ' + escape(item.id) + ')</small></div>';
+                            },
+                            item: function (item, escape) {
+                                return '<div>' + escape(item.name) + ' <small class="text-muted">(ID: ' + escape(item.id) + ')</small></div>';
+                            }
+                        }
+                    });
+                    ts.on('change', function (value) {
+                        var opt = ts.options[value];
+                        document.getElementById('brand-search-name').value = opt ? opt.name : '';
+                    });
+                })();
+            </script>
         }
 
         <!-- Brand Info -->

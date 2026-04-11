@@ -85,6 +85,30 @@ public sealed class TrendyolMarketplaceSearchService(
         }
     }
 
+    public async Task<IDataResult<List<MarketplaceOption>>> SearchAttributeValuesAsync(
+        int marketPlaceId, int attributeId, string query, CancellationToken ct = default)
+    {
+        try
+        {
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
+
+            var values = await dbContext.CategoryAttributeValues
+                .Where(v => v.CategoryAttributeId == attributeId &&
+                            (string.IsNullOrWhiteSpace(query) || v.Name!.Contains(query)))
+                .OrderBy(v => v.Name)
+                .Take(20)
+                .Select(v => new MarketplaceOption(v.Id, v.Name!))
+                .ToListAsync(ct);
+
+            return new SuccessDataResult<List<MarketplaceOption>>(values);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Trendyol özellik değeri arama hatası. AttributeId={AttributeId}", attributeId);
+            return new ErrorDataResult<List<MarketplaceOption>>([], "Özellik değeri arama sırasında hata oluştu.");
+        }
+    }
+
     private async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsTrendyolAsync(
         string query, CancellationToken ct)
     {

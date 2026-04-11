@@ -318,4 +318,55 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
         result.Success.Should().BeTrue();
         result.Data.Should().HaveCount(2);
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SearchAttributeValuesAsync
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task SearchAttributeValuesAsync_FiltersByAttributeIdAndName()
+    {
+        // Arrange — 3 degerimiz var, 2'si attribute 1'e ait
+        var values = new List<CategoryAttributeValue>
+        {
+            new() { Id = 1, Name = "Kirmizi", CategoryAttributeId = 1 },
+            new() { Id = 2, Name = "Mavi", CategoryAttributeId = 1 },
+            new() { Id = 3, Name = "Kirmizi", CategoryAttributeId = 2 } // farkli attribute — hariç tutulmalı
+        };
+
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeValues).ReturnsDbSet(values);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchAttributeValuesAsync(1, attributeId: 1, query: "Kir");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(1);
+        result.Data[0].Id.Should().Be(1);
+        result.Data[0].Name.Should().Be("Kirmizi");
+    }
+
+    [Fact]
+    public async Task SearchAttributeValuesAsync_EmptyQuery_ReturnsAllForAttribute()
+    {
+        // Arrange
+        var values = new List<CategoryAttributeValue>
+        {
+            new() { Id = 1, Name = "Kirmizi", CategoryAttributeId = 1 },
+            new() { Id = 2, Name = "Mavi", CategoryAttributeId = 1 },
+            new() { Id = 3, Name = "Kirmizi", CategoryAttributeId = 2 }
+        };
+
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeValues).ReturnsDbSet(values);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchAttributeValuesAsync(1, attributeId: 1, query: "");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().HaveCount(2, "bos query de attribute filtresi korunmali");
+        result.Data.Select(v => v.Id).Should().BeEquivalentTo(new[] { 1, 2 });
+    }
 }
