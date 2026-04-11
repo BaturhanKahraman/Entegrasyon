@@ -207,26 +207,13 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.AddScoped<IN11ClaimService, N11ClaimService>();
             }
 
-            // Pazarama servisleri
+            // Pazarama servisleri — UseMock flag kaldirildi (Faz 3.4).
             services.AddScoped<PazaramaMappingValidator>();
-
-            var usePazaramaMock = configuration.GetValue<bool>("Pazarama:UseMock", true);
-            if (usePazaramaMock)
-            {
-                services.AddScoped<IPazaramaApiClient, MockPazaramaApiClient>();
-                services.AddScoped<IPazaramaProductService, MockPazaramaProductService>();
-                services.AddScoped<IPazaramaStockPriceService, MockPazaramaStockPriceService>();
-                services.AddScoped<IPazaramaOrderService, MockPazaramaOrderService>();
-                services.AddScoped<IPazaramaRefundService, MockPazaramaRefundService>();
-            }
-            else
-            {
-                services.AddScoped<IPazaramaApiClient, PazaramaApiClient>();
-                services.AddScoped<IPazaramaProductService, PazaramaProductService>();
-                services.AddScoped<IPazaramaStockPriceService, PazaramaStockPriceService>();
-                services.AddScoped<IPazaramaOrderService, PazaramaOrderService>();
-                services.AddScoped<IPazaramaRefundService, PazaramaRefundService>();
-            }
+            services.AddScoped<IPazaramaApiClient, PazaramaApiClient>();
+            services.AddScoped<IPazaramaProductService, PazaramaProductService>();
+            services.AddScoped<IPazaramaStockPriceService, PazaramaStockPriceService>();
+            services.AddScoped<IPazaramaOrderService, PazaramaOrderService>();
+            services.AddScoped<IPazaramaRefundService, PazaramaRefundService>();
             services.AddScoped<PazaramaCategoryImporter>();
 
             // PttAVM
