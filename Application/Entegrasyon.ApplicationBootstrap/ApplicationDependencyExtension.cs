@@ -221,31 +221,16 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<CiceksepetiCategoryImporter>();
             services.AddScoped<CiceksepetiMappingValidator>();
 
-            var useCiceksepetiMock = configuration.GetValue<bool>("Ciceksepeti:UseMock", true);
-            if (useCiceksepetiMock)
-            {
-                services.AddScoped<ICiceksepetiApiClient, MockCiceksepetiApiClient>();
-                services.AddScoped<ICiceksepetiCategoryService, MockCiceksepetiCategoryService>();
-                services.AddScoped<ICiceksepetiProductMapper, MockCiceksepetiProductMapper>();
-                services.AddScoped<ICiceksepetiProductService, MockCiceksepetiProductService>();
-                services.AddScoped<ICiceksepetiStockPriceService, MockCiceksepetiStockPriceService>();
-                services.AddScoped<ICiceksepetiOrderService, MockCiceksepetiOrderService>();
-                services.AddScoped<ICiceksepetiInvoiceService, MockCiceksepetiInvoiceService>();
-                services.AddScoped<ICiceksepetiReturnService, MockCiceksepetiReturnService>();
-                services.AddScoped<ICiceksepetiQnAService, MockCiceksepetiQnAService>();
-            }
-            else
-            {
-                services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
-                services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
-                services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
-                services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
-                services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
-                services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
-                services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
-                services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
-                services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
-            }
+            // Cicceksepeti servisleri — UseMock flag kaldirildi (Faz 3.7).
+            services.AddScoped<ICiceksepetiApiClient, CiceksepetiApiClient>();
+            services.AddScoped<ICiceksepetiCategoryService, CiceksepetiCategoryService>();
+            services.AddScoped<ICiceksepetiProductMapper, CiceksepetiProductMapper>();
+            services.AddScoped<ICiceksepetiProductService, CiceksepetiProductService>();
+            services.AddScoped<ICiceksepetiStockPriceService, CiceksepetiStockPriceService>();
+            services.AddScoped<ICiceksepetiOrderService, CiceksepetiOrderService>();
+            services.AddScoped<ICiceksepetiInvoiceService, CiceksepetiInvoiceService>();
+            services.AddScoped<ICiceksepetiReturnService, CiceksepetiReturnService>();
+            services.AddScoped<ICiceksepetiQnAService, CiceksepetiQnAService>();
 
             // Temu servisleri
             var useTemuMock = configuration.GetValue<bool>("Temu:UseMock", true);

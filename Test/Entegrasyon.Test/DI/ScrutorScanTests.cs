@@ -22,8 +22,7 @@ public class ScrutorScanTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 // Force all UseMock=true so real HTTP clients are never created
-                // (Trendyol + Hepsiburada + N11 + Pazarama + Amazon + Pttavm Faz 3.1-3.6'da kaldirildi — digerleri Faz 3.7+)
-                ["Ciceksepeti:UseMock"] = "true",
+                // (Trendyol + Hepsiburada + N11 + Pazarama + Amazon + Pttavm + Ciceksepeti Faz 3.1-3.7'de kaldirildi — Temu Faz 3.8'de)
                 ["Temu:UseMock"] = "true",
                 ["YurticiKargo:UseMock"] = "true",
                 ["SuratKargo:UseMock"] = "true",
