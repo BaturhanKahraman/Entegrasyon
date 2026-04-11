@@ -141,27 +141,16 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
 
-            // Hepsiburada servisleri
+            // Hepsiburada servisleri — UseMock flag kaldirildi, WireMock.Net testlerde
+            // HTTP mock saglar (bkz. Test/Entegrasyon.IntegrationTest/Fixtures/WireMockStubs/).
             services.AddScoped<HepsiburadaCategoryImporter>();
             services.AddScoped<HepsiburadaMappingValidator>();
 
-            var useHbMock = configuration.GetValue<bool>("Hepsiburada:UseMock", true);
-            if (useHbMock)
-            {
-                services.AddScoped<IHepsiburadaProductService, MockHepsiburadaProductService>();
-                services.AddScoped<IHepsiburadaListingService, MockHepsiburadaListingService>();
-                services.AddScoped<IHepsiburadaOrderService, MockHepsiburadaOrderService>();
-                services.AddScoped<IHepsiburadaClaimService, MockHepsiburadaClaimService>();
-                services.AddScoped<IHepsiburadaQnAService, MockHepsiburadaQnAService>();
-            }
-            else
-            {
-                services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
-                services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
-                services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
-                services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
-                services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
-            }
+            services.AddScoped<IHepsiburadaProductService, HepsiburadaProductService>();
+            services.AddScoped<IHepsiburadaListingService, HepsiburadaListingService>();
+            services.AddScoped<IHepsiburadaOrderService, HepsiburadaOrderService>();
+            services.AddScoped<IHepsiburadaClaimService, HepsiburadaClaimService>();
+            services.AddScoped<IHepsiburadaQnAService, HepsiburadaQnAService>();
 
             // Amazon servisleri
             services.AddSingleton<IAmazonTokenManager, AmazonTokenManager>();   // MUST be Singleton (multi-tenant cache)
