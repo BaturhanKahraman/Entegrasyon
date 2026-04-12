@@ -799,4 +799,24 @@ public class ProductManager(
         await applicationLogManager.AddLog("Ürün mağazada yayınlandı.", LogType.Product, LogAction.Update, "Product", productId.ToString());
         return new SuccessResult("Ürün mağazada yayınlandı.");
     }
+
+    public async Task<Dictionary<Guid, string>> GetVariantAttributeNamesAsync(Guid productId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var variants = await dbContext.Set<ProductVariant>()
+            .Where(v => v.ProductId == productId)
+            .Select(v => new
+            {
+                v.Id,
+                Attrs = v.ProductVariantAttributes
+                    .Select(a => a.CategoryAttributeValue)
+                    .ToList()
+            })
+            .ToListAsync();
+
+        return variants.ToDictionary(
+            v => v.Id,
+            v => string.Join(" - ", v.Attrs));
+    }
 }

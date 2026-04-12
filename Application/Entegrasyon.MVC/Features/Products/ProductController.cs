@@ -1098,4 +1098,71 @@ public class ProductController(
             v.Images.Select(i => new VariantImageDto(i.ImageId, i.Src, i.IsMain)).ToList()
         )).ToList();
     }
+
+    // ── Store Settings ────────────────────────────────────────────────
+
+    [HttpGet("/products/{id:guid}/store-settings")]
+    public async Task<IActionResult> StoreSettings(Guid id)
+    {
+        var result = await productService.GetProductDetailById(id);
+        if (!result.Success || result.Data is null)
+            return NotFound();
+
+        var detail = result.Data;
+        var variantAttrNames = await productService.GetVariantAttributeNamesAsync(id);
+
+        var vm = new StoreSettingsVm
+        {
+            ProductId = detail.Id,
+            ProductTitle = detail.Title,
+            IsPublished = detail.IsPublished,
+            SeoTitle = detail.SeoTitle,
+            SeoSlug = detail.SeoSlug,
+            SeoDescription = detail.SeoDescription,
+            SeoKeywords = detail.SeoKeywords,
+            VariantPrices = detail.ProductVariantsDetails.Select(v =>
+            {
+                variantAttrNames.TryGetValue(v.Id, out var attrLabel);
+                return new VariantStorePriceVm
+                {
+                    VariantId = v.Id,
+                    VariantName = string.IsNullOrEmpty(attrLabel) ? v.Barcode ?? "Varyant" : attrLabel,
+                    SalePrice = v.SalePrice,
+                    ECommercePrice = v.ECommercePrice > 0 ? v.ECommercePrice : v.SalePrice
+                };
+            }).ToList()
+        };
+
+        return PartialView("Partials/_StoreSettings", vm);
+    }
+
+    [HttpPost("/products/{id:guid}/store-settings")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveStoreSettings(Guid id, StoreSettingsVm vm)
+    {
+        var prices = vm.VariantPrices.ToDictionary(v => v.VariantId, v => v.ECommercePrice);
+        var result = await productService.UpdateStoreSettings(id, vm.SeoTitle, vm.SeoDescription, vm.SeoSlug, vm.SeoKeywords, prices);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message!);
+        else
+            TempData.SetError(result.Message!);
+
+        return await StoreSettings(id);
+    }
+
+    [HttpPost("/products/{id:guid}/store-settings/publish")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublishToStore(Guid id, StoreSettingsVm vm)
+    {
+        var prices = vm.VariantPrices.ToDictionary(v => v.VariantId, v => v.ECommercePrice);
+        var result = await productService.PublishProduct(id, vm.SeoTitle, vm.SeoDescription, vm.SeoSlug, vm.SeoKeywords, prices);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message!);
+        else
+            TempData.SetError(result.Message!);
+
+        return await StoreSettings(id);
+    }
 }

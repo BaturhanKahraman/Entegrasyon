@@ -45,4 +45,5 @@ public interface IProductService
     // Store Settings
     Task<IResult> UpdateStoreSettings(Guid productId, string? seoTitle, string? seoDescription, string? seoSlug, string? seoKeywords, Dictionary<Guid, decimal> variantECommercePrices);
     Task<IResult> PublishProduct(Guid productId, string? seoTitle, string? seoDescription, string? seoSlug, string? seoKeywords, Dictionary<Guid, decimal> variantECommercePrices);
+    Task<Dictionary<Guid, string>> GetVariantAttributeNamesAsync(Guid productId);
 }

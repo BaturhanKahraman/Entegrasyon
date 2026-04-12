@@ -4,7 +4,17 @@
     ViewData.SetBreadcrumb(("Ürünler", "/products"), (Model.Title, null));
 }
 
-<div class="d-flex justify-content-end mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        @if (Model.IsPublished)
+        {
+            <span class="badge bg-green-lt">Mağazada Yayında</span>
+        }
+        else
+        {
+            <span class="badge bg-secondary-lt">Mağazada Yayınlanmadı</span>
+        }
+    </div>
     <div class="btn-list">
         <a href="/products/@Model.Id/edit" class="btn btn-primary">
             Düzenle
@@ -14,7 +24,7 @@
         </a>
         <button class="btn btn-outline-danger"
                 hx-post="/products/@Model.Id/delete"
-                hx-confirm="Bu urunu silmek istediginize emin misiniz?"
+                hx-confirm="Bu ürünü silmek istediğinize emin misiniz?"
                 hx-on::after-request="if(event.detail.successful) window.location='/products'">
             Sil
         </button>
@@ -171,3 +181,18 @@
                 </div>
             </div>
         }
+
+        <!-- Store Settings (lazy loaded via HTMX) -->
+        <div class="mt-3"
+             hx-get="/products/@Model.Id/store-settings"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+            <div class="card">
+                <div class="card-body">
+                    <div class="placeholder-glow">
+                        <div class="placeholder col-4 mb-2"></div>
+                        <div class="placeholder col-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>

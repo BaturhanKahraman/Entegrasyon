@@ -1,0 +1,104 @@
+@model Entegrasyon.MVC.Features.Products.ViewModels.StoreSettingsVm
+
+<div id="store-settings-card">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                Mağaza Ayarları
+                @if (Model.IsPublished)
+                {
+                    <span class="badge bg-green-lt ms-2">Yayında</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary-lt ms-2">Taslak</span>
+                }
+            </h3>
+        </div>
+        <div class="card-body">
+            @Html.AntiForgeryToken()
+            <h4 class="mb-3">SEO Bilgileri</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">SEO Başlık</label>
+                    <input type="text" name="SeoTitle" value="@Model.SeoTitle" class="form-control"
+                           placeholder="@Model.ProductTitle" maxlength="70" />
+                    <small class="text-muted">Boş bırakılırsa ürün adı kullanılır (maks. 70 karakter)</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">SEO URL (Slug)</label>
+                    <input type="text" name="SeoSlug" value="@Model.SeoSlug" class="form-control"
+                           placeholder="ornek-urun-adi" />
+                    <small class="text-muted">Boş bırakılırsa otomatik oluşturulur</small>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">SEO Açıklama</label>
+                    <textarea name="SeoDescription" class="form-control" rows="2" maxlength="160"
+                              placeholder="Arama motorlarında görünecek kısa açıklama...">@Model.SeoDescription</textarea>
+                    <small class="text-muted">Maks. 160 karakter</small>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">SEO Anahtar Kelimeler</label>
+                    <input type="text" name="SeoKeywords" value="@Model.SeoKeywords" class="form-control"
+                           placeholder="anahtar, kelime, virgül, ile" />
+                </div>
+            </div>
+
+            @if (Model.VariantPrices.Count > 0)
+            {
+                <h4 class="mb-3 mt-4">Mağaza Fiyatları</h4>
+                <p class="text-muted small mb-3">Her varyant için mağazada görünecek fiyatı belirleyin. Boş bırakılırsa satış fiyatı kullanılır.</p>
+                <div class="table-responsive">
+                    <table class="table table-vcenter table-sm">
+                        <thead>
+                            <tr>
+                                <th>Varyant</th>
+                                <th>Satış Fiyatı</th>
+                                <th>Mağaza Fiyatı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.VariantPrices.Count; i++)
+                            {
+                                var v = Model.VariantPrices[i];
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="VariantPrices[@i].VariantId" value="@v.VariantId" />
+                                        <input type="hidden" name="VariantPrices[@i].VariantName" value="@v.VariantName" />
+                                        <input type="hidden" name="VariantPrices[@i].SalePrice" value="@v.SalePrice" />
+                                        <span class="fw-bold">@v.VariantName</span>
+                                    </td>
+                                    <td class="text-muted">@v.SalePrice.ToString("N2") TL</td>
+                                    <td>
+                                        <div class="input-group input-group-sm" style="width:160px">
+                                            <span class="input-group-text">₺</span>
+                                            <input type="text" name="VariantPrices[@i].ECommercePrice"
+                                                   value="@v.ECommercePrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                                                   class="form-control currency-input" inputmode="decimal" autocomplete="off" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-primary"
+                    hx-post="/products/@Model.ProductId/store-settings"
+                    hx-target="#store-settings-card"
+                    hx-swap="outerHTML"
+                    hx-include="#store-settings-card">
+                Kaydet
+            </button>
+            <button type="button" class="btn btn-primary"
+                    hx-post="/products/@Model.ProductId/store-settings/publish"
+                    hx-target="#store-settings-card"
+                    hx-swap="outerHTML"
+                    hx-include="#store-settings-card">
+                Kaydet ve Yayınla
+            </button>
+        </div>
+    </div>
+</div>
