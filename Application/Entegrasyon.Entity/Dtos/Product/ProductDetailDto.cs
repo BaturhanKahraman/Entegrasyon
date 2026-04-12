@@ -17,5 +17,10 @@ public sealed record ProductDetailDto(
         int TotalSoldQuantity,
         IEnumerable<ProductVariantDetailDto> ProductVariantsDetails,
         IEnumerable<AttributeKeyValueDetailDto> AttributeKeyValueDetails,
-        DateTimeOffset UpdatedAt
+        DateTimeOffset UpdatedAt,
+        string? SeoTitle = null,
+        string? SeoDescription = null,
+        string? SeoSlug = null,
+        string? SeoKeywords = null,
+        bool IsPublished = false
     );

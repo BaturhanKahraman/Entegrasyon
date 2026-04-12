@@ -322,7 +322,12 @@ public class ProductManager(
                     kv.CategoryAttribute.CategoryAttributeKey!,
                     kv.CategoryAttribute!.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey ?? "",
                     kv.AttributeValueId.HasValue ? kv.AttributeValue!.Name! : kv.CustomValue ?? "")),
-                p.UpdatedAt
+                p.UpdatedAt,
+                p.SeoTitle,
+                p.SeoDescription,
+                p.SeoSlug,
+                p.SeoKeywords,
+                p.IsPublished
             ))
             .FirstOrDefaultAsync();
 
