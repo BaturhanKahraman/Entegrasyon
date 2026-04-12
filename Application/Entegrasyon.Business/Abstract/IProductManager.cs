@@ -41,4 +41,8 @@ public interface IProductService
     Task<IDataResult<StorefrontProductDetailDto>> GetStorefrontProductDetailAsync(string seoSlug);
     Task<IDataResult<List<StorefrontProductDetailDto>>> GetProductsByIdsAsync(List<Guid> ids);
     Task<IDataResult<List<BrandFilterDto>>> GetBrandsForCategoryAsync(int categoryId);
+
+    // Store Settings
+    Task<IResult> UpdateStoreSettings(Guid productId, string? seoTitle, string? seoDescription, string? seoSlug, string? seoKeywords, Dictionary<Guid, decimal> variantECommercePrices);
+    Task<IResult> PublishProduct(Guid productId, string? seoTitle, string? seoDescription, string? seoSlug, string? seoKeywords, Dictionary<Guid, decimal> variantECommercePrices);
 }

@@ -720,4 +720,83 @@ public class ProductManager(
 
         return new MarketplaceSyncStatusDto(state, marketplace.LastSyncedAt, marketplace.BatchRequestId, marketplace.StatusMessage);
     }
+
+    public async Task<IResult> UpdateStoreSettings(
+        Guid productId,
+        string? seoTitle, string? seoDescription, string? seoSlug, string? seoKeywords,
+        Dictionary<Guid, decimal> variantECommercePrices)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var product = await dbContext.MainProducts
+            .Include(p => p.ProductVariants)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product is null)
+            return new ErrorResult("Ürün bulunamadı.");
+
+        // Slug unique kontrolü
+        if (!string.IsNullOrWhiteSpace(seoSlug))
+        {
+            var slugExists = await dbContext.MainProducts
+                .AnyAsync(p => p.SeoSlug == seoSlug && p.Id != productId && !p.IsDeleted);
+            if (slugExists)
+                return new ErrorResult("Bu SEO URL zaten başka bir ürün tarafından kullanılıyor.");
+        }
+
+        product.SeoTitle = seoTitle;
+        product.SeoDescription = seoDescription;
+        product.SeoSlug = seoSlug;
+        product.SeoKeywords = seoKeywords;
+
+        foreach (var variant in product.ProductVariants)
+        {
+            if (variantECommercePrices.TryGetValue(variant.Id, out var ecomPrice))
+                variant.ECommercePrice = ecomPrice;
+        }
+
+        await dbContext.SaveChangesAsync();
+        await applicationLogManager.AddLog("Mağaza ayarları güncellendi.", LogType.Product, LogAction.Update, "Product", productId.ToString());
+        return new SuccessResult("Mağaza ayarları kaydedildi.");
+    }
+
+    public async Task<IResult> PublishProduct(
+        Guid productId,
+        string? seoTitle, string? seoDescription, string? seoSlug, string? seoKeywords,
+        Dictionary<Guid, decimal> variantECommercePrices)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var product = await dbContext.MainProducts
+            .Include(p => p.ProductVariants)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product is null)
+            return new ErrorResult("Ürün bulunamadı.");
+
+        // Slug unique kontrolü
+        if (!string.IsNullOrWhiteSpace(seoSlug))
+        {
+            var slugExists = await dbContext.MainProducts
+                .AnyAsync(p => p.SeoSlug == seoSlug && p.Id != productId && !p.IsDeleted);
+            if (slugExists)
+                return new ErrorResult("Bu SEO URL zaten başka bir ürün tarafından kullanılıyor.");
+        }
+
+        product.SeoTitle = seoTitle;
+        product.SeoDescription = seoDescription;
+        product.SeoSlug = seoSlug;
+        product.SeoKeywords = seoKeywords;
+        product.IsPublished = true;
+
+        foreach (var variant in product.ProductVariants)
+        {
+            if (variantECommercePrices.TryGetValue(variant.Id, out var ecomPrice))
+                variant.ECommercePrice = ecomPrice;
+        }
+
+        await dbContext.SaveChangesAsync();
+        await applicationLogManager.AddLog("Ürün mağazada yayınlandı.", LogType.Product, LogAction.Update, "Product", productId.ToString());
+        return new SuccessResult("Ürün mağazada yayınlandı.");
+    }
 }
