@@ -40,7 +40,7 @@
         <div class="card-body">
             @if (variantAttrs.Count == 0)
             {
-                <div class="alert alert-info">Bu kategoride varyant ozelligi bulunmamaktadir.</div>
+                <div class="alert alert-info">Bu kategoride varyant özelliği bulunmamaktadır.</div>
             }
             else
             {
@@ -102,7 +102,7 @@
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-2 mb-3">
+                <div class="col-md-3 mb-3">
                     <label class="form-label">Liste Fiyat</label>
                     <div class="input-group">
                         <span class="input-group-text">₺</span>
@@ -110,7 +110,7 @@
                                class="form-control currency-input" inputmode="decimal" autocomplete="off" />
                     </div>
                 </div>
-                <div class="col-md-2 mb-3">
+                <div class="col-md-3 mb-3">
                     <label class="form-label">Satış Fiyat</label>
                     <div class="input-group">
                         <span class="input-group-text">₺</span>
@@ -131,14 +131,9 @@
                     <input type="number" name="DefaultValues.VatRate" value="@(Model.DefaultValues.VatRate == 0 ? 20 : Model.DefaultValues.VatRate)"
                            class="form-control" step="1" min="0" max="100" />
                 </div>
-                <div class="col-md-2 mb-3">
-                    <label class="form-label">Varsayilan Stok</label>
-                    <input type="number" name="DefaultValues.DefaultStock" value="@Model.DefaultValues.DefaultStock"
-                           class="form-control" step="1" min="0" />
-                </div>
                 <div class="col-md-2 mb-3 d-flex align-items-end">
                     <button type="button" id="btn-generate-variants" class="btn btn-primary w-100">
-                        Varyantlari Olustur
+                        Varyantları Oluştur
                     </button>
                 </div>
             </div>
@@ -148,18 +143,18 @@
     <!-- Generated Variant Table -->
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="card-title">Olusturulan Varyantlar</h3>
+            <h3 class="card-title">Oluşturulan Varyantlar</h3>
         </div>
         <div class="card-body">
             <div id="variant-table-container">
-                <div class="text-muted">Varyant olusturmak için yukaridaki özellik degerlerini seçin ve "Varyantlari Olustur" butonuna tıklayın.</div>
+                <div class="text-muted">Varyant oluşturmak için yukarıdaki özellik değerlerini seçin ve "Varyantları Oluştur" butonuna tıklayın.</div>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
     <div class="d-flex justify-content-between">
-        <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+        <a href="/products/add/back-to-step2" hx-get="/products/add/back-to-step2" hx-target="#wizard-content" hx-swap="innerHTML" class="btn btn-ghost-secondary">&larr; Geri</a>
         <button type="submit" id="btn-step3-next" class="btn btn-primary" disabled>
             Devam: Görseller &rarr;
         </button>

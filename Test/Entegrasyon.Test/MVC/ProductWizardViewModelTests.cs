@@ -35,7 +35,7 @@ public class ProductWizardViewModelTests
         };
 
         var defaults = new DefaultVariantValuesVm
-        { ListPrice = 299.90m, SalePrice = 249.90m, CostPrice = 120m, VatRate = 20, DefaultStock = 50 };
+        { ListPrice = 299.90m, SalePrice = 249.90m, CostPrice = 120m, VatRate = 20 };
 
         var variants = CreateProductVm.GenerateVariants(selections, defaults);
 
@@ -66,7 +66,7 @@ public class ProductWizardViewModelTests
             }
         };
 
-        var defaults = new DefaultVariantValuesVm { ListPrice = 100, SalePrice = 90, CostPrice = 50, VatRate = 20, DefaultStock = 10 };
+        var defaults = new DefaultVariantValuesVm { ListPrice = 100, SalePrice = 90, CostPrice = 50, VatRate = 20 };
         var variants = CreateProductVm.GenerateVariants(selections, defaults);
 
         variants.Should().HaveCount(2);

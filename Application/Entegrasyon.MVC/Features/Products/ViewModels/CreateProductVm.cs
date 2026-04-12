@@ -134,7 +134,6 @@ public class DefaultVariantValuesVm
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; } = 20;
-    public int DefaultStock { get; set; }
 }
 
 public class AttributeValueVm
