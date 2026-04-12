@@ -6,8 +6,8 @@
 
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="card-title">Magaza Yayinlama</h3>
-            <span class="card-subtitle">Ürünü kendi magazanizda yayinlamak için SEO ve fiyat bilgilerini ayarlayin. Bu adimi atlayabilirsiniz.</span>
+            <h3 class="card-title">Mağaza Yayınlama</h3>
+            <span class="card-subtitle">Ürünü kendi mağazanızda yayınlamak için SEO ve fiyat bilgilerini ayarlayın. Bu adımı atlayabilirsiniz.</span>
         </div>
         <div class="card-body">
             <h4 class="mb-3">SEO Bilgileri</h4>
@@ -104,6 +104,7 @@
     @for (int i = 0; i < Model.Variants.Count; i++)
     {
         var v = Model.Variants[i];
+        <input type="hidden" name="Variants[@i].Barcode" value="@v.Barcode" />
         <input type="hidden" name="Variants[@i].ListPrice" value="@v.ListPrice" />
         <input type="hidden" name="Variants[@i].SalePrice" value="@v.SalePrice" />
         <input type="hidden" name="Variants[@i].CostPrice" value="@v.CostPrice" />
@@ -139,13 +140,13 @@
     }
 
     <div class="d-flex justify-content-between">
-        <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+        <a href="/products/add/back-to-step5" hx-get="/products/add/back-to-step5" hx-target="#wizard-content" hx-swap="innerHTML" class="btn btn-ghost-secondary">&larr; Geri</a>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-outline-secondary">
                 Atla, Kaydet
             </button>
             <button type="submit" class="btn btn-primary" name="publishToStorefront" value="true">
-                Yayinla ve Kaydet
+                Yayınla ve Kaydet
             </button>
         </div>
     </div>

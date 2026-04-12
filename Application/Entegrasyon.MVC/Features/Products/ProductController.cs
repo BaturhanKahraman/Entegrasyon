@@ -34,7 +34,7 @@ public class ProductController(
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
     {
-        ViewData.SetPageTitle("Urunler");
+        ViewData.SetPageTitle("Ürünler");
         ViewData.SetActiveNav("products");
 
         var result = await productService.GetProductsDetailsPageable(
@@ -53,13 +53,13 @@ public class ProductController(
         var result = await productService.GetProductDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            TempData.SetError(result.Message ?? "Ürün bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
         ViewData.SetPageTitle(result.Data!.Title);
         ViewData.SetActiveNav("products");
-        ViewData.SetBreadcrumb(("Urunler", "/products"), (result.Data.Title, null));
+        ViewData.SetBreadcrumb(("Ürünler", "/products"), (result.Data.Title, null));
         return View(result.Data);
     }
 
@@ -71,13 +71,13 @@ public class ProductController(
         var result = await productService.GetProductEditPageData(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            TempData.SetError(result.Message ?? "Ürün bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData.SetPageTitle("Urun Duzenle");
+        ViewData.SetPageTitle("Ürün Düzenle");
         ViewData.SetActiveNav("products");
-        ViewData.SetBreadcrumb(("Urunler", "/products"), ("Duzenle", null));
+        ViewData.SetBreadcrumb(("Ürünler", "/products"), ("Düzenle", null));
         return View(result.Data);
     }
 
@@ -88,7 +88,7 @@ public class ProductController(
         {
             var pageData = await productService.GetProductEditPageData(id);
             if (!pageData.Success) return RedirectToAction(nameof(Index));
-            ViewData.SetPageTitle("Urun Duzenle");
+            ViewData.SetPageTitle("Ürün Düzenle");
             ViewData.SetActiveNav("products");
             return View(pageData.Data);
         }
@@ -109,9 +109,9 @@ public class ProductController(
 
         var result = await productService.UpdateProduct(dto);
         if (result.Success)
-            TempData.SetSuccess("Urun basariyla guncellendi.");
+            TempData.SetSuccess("Ürün başarıyla güncellendi.");
         else
-            TempData.SetError(result.Message ?? "Urun guncellenemedi.");
+            TempData.SetError(result.Message ?? "Ürün güncellenemedi.");
 
         return RedirectToAction(nameof(Detail), new { id });
     }
@@ -136,9 +136,9 @@ public class ProductController(
     [HttpGet("/products/add")]
     public async Task<IActionResult> Create()
     {
-        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetPageTitle("Yeni Ürün");
         ViewData.SetActiveNav("products");
-        ViewData.SetBreadcrumb(("Urunler", "/products"), ("Yeni Urun", null));
+        ViewData.SetBreadcrumb(("Ürünler", "/products"), ("Yeni Ürün", null));
 
         // Fresh wizard: eski session state'i temizle ki onceki denemeden kalan
         // veri kullaniciyi sasirtmasin.
@@ -190,7 +190,7 @@ public class ProductController(
             if (Request.IsHtmx())
                 return PartialView("Partials/_CreateStep1", state);
 
-            ViewData.SetPageTitle("Yeni Urun");
+            ViewData.SetPageTitle("Yeni Ürün");
             ViewData.SetActiveNav("products");
             return View(nameof(Create), state);
         }
@@ -212,7 +212,7 @@ public class ProductController(
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep2Attributes", state);
 
-        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetPageTitle("Yeni Ürün");
         ViewData.SetActiveNav("products");
         return View(nameof(Create), state);
     }
@@ -226,7 +226,7 @@ public class ProductController(
         state.CategoryAttributes = vm.CategoryAttributes ?? [];
         SaveWizardState(state);
 
-        // Step 2 validation — zorunlu kategori ozelliklerini kontrol et
+        // Step 2 validation — zorunlu kategori özelliklerini kontrol et
         var missing = state.CategoryAttributes
             .Where(a => a.IsRequired && (a.ValueId is null or 0) && string.IsNullOrWhiteSpace(a.CustomValue))
             .ToList();
@@ -235,7 +235,7 @@ public class ProductController(
         {
             foreach (var attr in missing)
                 ModelState.AddModelError($"CategoryAttributes[{state.CategoryAttributes.IndexOf(attr)}].ValueId",
-                    $"'{attr.AttributeName}' zorunlu alandir.");
+                    $"'{attr.AttributeName}' zorunlu alanıdır.");
 
             var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
             var attrs = attrResult.Success ? attrResult.Data! : [];
@@ -244,7 +244,7 @@ public class ProductController(
             if (Request.IsHtmx())
                 return PartialView("Partials/_CreateStep2Attributes", state);
 
-            ViewData.SetPageTitle("Yeni Urun");
+            ViewData.SetPageTitle("Yeni Ürün");
             ViewData.SetActiveNav("products");
             return View(nameof(Create), state);
         }
@@ -260,7 +260,7 @@ public class ProductController(
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep3Variants", state);
 
-        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetPageTitle("Yeni Ürün");
         ViewData.SetActiveNav("products");
         return View(nameof(Create), state);
     }
@@ -292,7 +292,7 @@ public class ProductController(
 
         if (state.Variants.Count == 0)
         {
-            ModelState.AddModelError(string.Empty, "En az bir varyant olusturulmalidir.");
+            ModelState.AddModelError(string.Empty, "En az bir varyant oluşturulmalıdır.");
 
             var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
             ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])
@@ -303,7 +303,7 @@ public class ProductController(
             if (Request.IsHtmx())
                 return PartialView("Partials/_CreateStep3Variants", state);
 
-            ViewData.SetPageTitle("Yeni Urun");
+            ViewData.SetPageTitle("Yeni Ürün");
             ViewData.SetActiveNav("products");
             return View(nameof(Create), state);
         }
@@ -311,7 +311,7 @@ public class ProductController(
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep4Images", state);
 
-        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetPageTitle("Yeni Ürün");
         ViewData.SetActiveNav("products");
         return View(nameof(Create), state);
     }
@@ -320,7 +320,7 @@ public class ProductController(
     public async Task<IActionResult> UploadTempImage(IFormFile file)
     {
         if (file is null || file.Length == 0)
-            return Json(new { success = false, message = "Dosya bulunamadi." });
+            return Json(new { success = false, message = "Dosya bulunamadı." });
 
         var tempKey = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
         var tempDir = Path.Combine(Path.GetTempPath(), "product-wizard-images");
@@ -346,7 +346,7 @@ public class ProductController(
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep5Review", vm);
 
-        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetPageTitle("Yeni Ürün");
         ViewData.SetActiveNav("products");
         return View(nameof(Create), vm);
     }
@@ -363,7 +363,7 @@ public class ProductController(
         if (Request.IsHtmx())
             return PartialView("Partials/_CreateStep6Publish", vm);
 
-        ViewData.SetPageTitle("Yeni Urun");
+        ViewData.SetPageTitle("Yeni Ürün");
         ViewData.SetActiveNav("products");
         return View(nameof(Create), vm);
     }
@@ -385,9 +385,20 @@ public class ProductController(
         vm.SeoSlug = formVm.SeoSlug;
         vm.SeoKeywords = formVm.SeoKeywords;
 
-        // Merge ECommercePrice per variant
+        // Merge ECommercePrice + fallback: Session'da fiyat kaybolmuşsa hidden field'dan al
         for (int i = 0; i < vm.Variants.Count && i < formVm.Variants.Count; i++)
+        {
             vm.Variants[i].ECommercePrice = formVm.Variants[i].ECommercePrice;
+
+            if (vm.Variants[i].SalePrice == 0 && formVm.Variants[i].SalePrice > 0)
+                vm.Variants[i].SalePrice = formVm.Variants[i].SalePrice;
+            if ((vm.Variants[i].ListPrice ?? 0) == 0 && (formVm.Variants[i].ListPrice ?? 0) > 0)
+                vm.Variants[i].ListPrice = formVm.Variants[i].ListPrice;
+            if (vm.Variants[i].CostPrice == 0 && formVm.Variants[i].CostPrice > 0)
+                vm.Variants[i].CostPrice = formVm.Variants[i].CostPrice;
+            if (string.IsNullOrEmpty(vm.Variants[i].Barcode) && !string.IsNullOrEmpty(formVm.Variants[i].Barcode))
+                vm.Variants[i].Barcode = formVm.Variants[i].Barcode;
+        }
 
         return await DoSave(vm);
     }
@@ -401,8 +412,8 @@ public class ProductController(
         if (json is null)
         {
             if (Request.IsHtmx())
-                return Content("<div class=\"alert alert-danger\">Urun bilgileri eksik. Lutfen <a href=\"/products/add\">bastan baslatin</a>.</div>", "text/html");
-            TempData.SetError("Urun bilgileri eksik.");
+                return Content("<div class=\"alert alert-danger\">Ürün bilgileri eksik. Lütfen <a href=\"/products/add\">baştan başlatın</a>.</div>", "text/html");
+            TempData.SetError("Ürün bilgileri eksik.");
             return RedirectToAction(nameof(Create));
         }
 
@@ -415,9 +426,9 @@ public class ProductController(
         if (string.IsNullOrWhiteSpace(vm.Title) || vm.CategoryId == 0)
         {
             if (Request.IsHtmx())
-                return Content("<div class=\"alert alert-danger\">Urun bilgileri eksik. Lutfen <a href=\"/products/add\">bastan baslatın</a>.</div>", "text/html");
+                return Content("<div class=\"alert alert-danger\">Ürün bilgileri eksik. Lütfen <a href=\"/products/add\">baştan başlatın</a>.</div>", "text/html");
 
-            TempData.SetError("Urun bilgileri eksik. Lutfen bastan baslatin.");
+            TempData.SetError("Ürün bilgileri eksik. Lütfen baştan başlatın.");
             return RedirectToAction(nameof(Create));
         }
 
@@ -537,6 +548,83 @@ public class ProductController(
         return RedirectToAction(nameof(Create));
     }
 
+    // ── Wizard Back Navigation ──────────────────────────────────────
+
+    [HttpGet("/products/add/back-to-step1")]
+    public async Task<IActionResult> BackToStep1()
+    {
+        var state = GetWizardState();
+        await LoadCreateDropdowns();
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep1", state);
+
+        ViewData.SetPageTitle("Yeni Ürün");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), state);
+    }
+
+    [HttpGet("/products/add/back-to-step2")]
+    public async Task<IActionResult> BackToStep2()
+    {
+        var state = GetWizardState();
+        var attrResult = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
+        var attrs = attrResult.Success ? attrResult.Data! : [];
+        ViewBag.NonVariantAttributes = attrs.Where(a => !a.IsVarianter && !a.IsSlicer).ToList();
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep2Attributes", state);
+
+        ViewData.SetPageTitle("Yeni Ürün");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), state);
+    }
+
+    [HttpGet("/products/add/back-to-step3")]
+    public async Task<IActionResult> BackToStep3()
+    {
+        var state = GetWizardState();
+        var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
+        ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])
+            .Where(a => a.IsVarianter || a.IsSlicer).ToList();
+
+        var branches = await branchOfficeManager.GetBranchList();
+        ViewBag.BranchOffices = branches.Data ?? [];
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep3Variants", state);
+
+        ViewData.SetPageTitle("Yeni Ürün");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), state);
+    }
+
+    [HttpGet("/products/add/back-to-step4")]
+    public IActionResult BackToStep4()
+    {
+        var state = GetWizardState();
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep4Images", state);
+
+        ViewData.SetPageTitle("Yeni Ürün");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), state);
+    }
+
+    [HttpGet("/products/add/back-to-step5")]
+    public IActionResult BackToStep5()
+    {
+        var state = GetWizardState();
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_CreateStep5Review", state);
+
+        ViewData.SetPageTitle("Yeni Ürün");
+        ViewData.SetActiveNav("products");
+        return View(nameof(Create), state);
+    }
+
     // ── Other Actions ────────────────────────────────────────────────
 
     [HttpGet("/products/{id:guid}/sync")]
@@ -545,14 +633,14 @@ public class ProductController(
         var result = await productService.GetProductDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            TempData.SetError(result.Message ?? "Ürün bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
         ViewData.SetPageTitle("Senkronizasyon Durumu");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(
-            ("Urunler", "/products"),
+            ("Ürünler", "/products"),
             (result.Data!.Title, $"/products/{id}"),
             ("Senkronizasyon", null));
         return View("~/Features/Products/Views/SyncDetail.cshtml", result.Data);
@@ -564,7 +652,7 @@ public class ProductController(
         var result = await productService.GetProductDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            TempData.SetError(result.Message ?? "Ürün bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -630,12 +718,12 @@ public class ProductController(
             }
         }
 
-        ViewData.SetPageTitle("Trendyol Gonderim");
+        ViewData.SetPageTitle("Trendyol Gönderimi");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(
-            ("Urunler", "/products"),
+            ("Ürünler", "/products"),
             (result.Data.Title, $"/products/{id}"),
-            ("Trendyol Gonderim", null));
+            ("Trendyol Gönderimi", null));
         return View("~/Features/Products/Views/TrendyolSend.cshtml", vm);
     }
 
@@ -668,9 +756,9 @@ public class ProductController(
         // Queue the product for sync
         var result = await productSyncManager.SyncProductAsync(id, marketPlaceId: 1);
         if (result.Success)
-            TempData.SetSuccess(result.Message ?? "Urun Trendyol'a gonderim icin kuyruga eklendi.");
+            TempData.SetSuccess(result.Message ?? "Ürün Trendyol'a gönderim için kuyruğa eklendi.");
         else
-            TempData.SetError(result.Message ?? "Gonderim sirasinda bir hata olustu.");
+            TempData.SetError(result.Message ?? "Gönderim sırasında bir hata oluştu.");
 
         return RedirectToAction(nameof(SyncDetail), new { id });
     }
@@ -681,7 +769,7 @@ public class ProductController(
         var result = await productService.GetProductDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            TempData.SetError(result.Message ?? "Ürün bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -692,7 +780,7 @@ public class ProductController(
         ViewData.SetPageTitle("Varyantlar");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(
-            ("Urunler", "/products"),
+            ("Ürünler", "/products"),
             (result.Data!.Title, $"/products/{id}"),
             ("Varyantlar", null));
         return View(result.Data);
@@ -704,14 +792,14 @@ public class ProductController(
         var result = await productVariantManager.GetVariantDetailPage(variantId);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Varyant bulunamadi.");
+            TempData.SetError(result.Message ?? "Varyant bulunamadı.");
             return RedirectToAction(nameof(Variants), new { id = productId });
         }
 
         ViewData.SetPageTitle($"Varyant — {result.Data!.Barcode}");
         ViewData.SetActiveNav("products");
         ViewData.SetBreadcrumb(
-            ("Urunler", "/products"),
+            ("Ürünler", "/products"),
             (result.Data.ProductTitle, $"/products/{productId}"),
             ("Varyantlar", $"/products/{productId}/variants"),
             (result.Data.Barcode, null));
@@ -881,9 +969,9 @@ public class ProductController(
         var result = await imageManager.AddProductImages(id, streams);
 
         if (result.Success)
-            TempData.SetSuccess($"{files.Count} gorsel yuklendi.");
+            TempData.SetSuccess($"{files.Count} görsel yüklendi.");
         else
-            TempData.SetError(result.Message ?? "Gorsel yuklenemedi.");
+            TempData.SetError(result.Message ?? "Görsel yüklenemedi.");
 
         return RedirectToAction(nameof(Edit), new { id });
     }
@@ -892,7 +980,7 @@ public class ProductController(
     public IActionResult DeleteImage(Guid id, int imageId)
     {
         // TODO: implement when IImageManager has delete method
-        TempData.SetWarning("Gorsel silme henuz desteklenmiyor.");
+        TempData.SetWarning("Görsel silme henüz desteklenmiyor.");
         return RedirectToAction(nameof(Edit), new { id });
     }
 
@@ -931,7 +1019,7 @@ public class ProductController(
             var product = await productService.GetProductDetailById(id);
             if (!product.Success) return NotFound();
             variantId = product.Data!.ProductVariantsDetails?.FirstOrDefault()?.Id;
-            if (variantId == null) return BadRequest("Urun varyanti bulunamadi.");
+            if (variantId == null) return BadRequest("Ürün varyantı bulunamadı.");
         }
 
         var result = await labelService.GenerateProductLabel(variantId.Value);
