@@ -27,7 +27,7 @@
         <div class="card-body">
             @if (attrs.Count == 0)
             {
-                <div class="alert alert-info">Bu kategorinin ek ozelligi bulunmamaktadir.</div>
+                <div class="alert alert-info">Bu kategorinin ek özelliği bulunmamaktadır.</div>
             }
             else
             {
@@ -35,6 +35,8 @@
                     @for (int i = 0; i < attrs.Count; i++)
                     {
                         var attr = attrs[i];
+                        var saved = Model.CategoryAttributes
+                            .FirstOrDefault(a => a.CategoryAttributeId == attr.Id);
                         <div class="col-md-6 mb-3">
                             <label class="form-label @(attr.IsRequired ? "required fw-bold" : "")">
                                 @attr.CategoriyAttributeHumanized
@@ -48,16 +50,24 @@
                             {
                                 <input type="text" name="CategoryAttributes[@i].CustomValue"
                                        class="form-control" placeholder="Değer girin..."
+                                       value="@(saved?.CustomValue)"
                                        @(attr.IsRequired ? "required" : "") />
                             }
                             else
                             {
                                 <select name="CategoryAttributes[@i].ValueId" class="form-select"
                                         @(attr.IsRequired ? "required" : "")>
-                                    <option value="">Secin...</option>
+                                    <option value="">Seçin...</option>
                                     @foreach (var val in attr.CategoryAttributeValues)
                                     {
-                                        <option value="@val.Id">@val.Name</option>
+                                        if (saved?.ValueId == val.Id)
+                                        {
+                                            <option value="@val.Id" selected>@val.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@val.Id">@val.Name</option>
+                                        }
                                     }
                                 </select>
                             }
@@ -67,7 +77,7 @@
             }
         </div>
         <div class="card-footer d-flex justify-content-between">
-            <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+            <a href="/products/add/back-to-step1" hx-get="/products/add/back-to-step1" hx-target="#wizard-content" hx-swap="innerHTML" class="btn btn-ghost-secondary">&larr; Geri</a>
             <button type="submit" class="btn btn-primary">Devam: Varyantlar &rarr;</button>
         </div>
     </div>
