@@ -2,27 +2,26 @@
 
 @{
     var branches = ViewBag.BranchOffices as List<Entegrasyon.Entity.BranchOffice> ?? [];
+    var branchesJson = System.Text.Json.JsonSerializer.Serialize(
+        branches.Select(b => new { id = b.Id, name = b.Name }));
 }
 
 @if (Model.Variants.Count == 0)
 {
-    <div class="alert alert-warning">Varyant olusturmak için en az bir özellik degeri seçin.</div>
+    <div class="alert alert-warning">Varyant oluşturmak için en az bir özellik değeri seçin.</div>
 }
 else
 {
     <div class="table-responsive">
-        <table class="table table-vcenter">
+        <table class="table table-vcenter" id="variant-table">
             <thead>
                 <tr>
                     <th>Özellikler</th>
-                    <th>Liste Fiyat</th>
+                    <th>Liste Fiyat <span class="text-muted fw-normal small">(opsiyonel)</span></th>
                     <th>Satış Fiyat</th>
                     <th>Maliyet</th>
                     <th>KDV %</th>
-                    @for (int b = 0; b < branches.Count; b++)
-                    {
-                        <th>@branches[b].Name</th>
-                    }
+                    <th>Stok</th>
                     <th class="w-1"></th>
                 </tr>
             </thead>
@@ -30,7 +29,7 @@ else
                 @for (int i = 0; i < Model.Variants.Count; i++)
                 {
                     var variant = Model.Variants[i];
-                    <tr>
+                    <tr data-variant-index="@i">
                         <td>
                             @for (int j = 0; j < variant.VariantAttributes.Count; j++)
                             {
@@ -48,7 +47,7 @@ else
                         <td>
                             <div class="input-group input-group-sm" style="width:140px">
                                 <span class="input-group-text">₺</span>
-                                <input type="text" name="Variants[@i].ListPrice" value="@variant.ListPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                                <input type="text" name="Variants[@i].ListPrice" value="@(variant.ListPrice?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))"
                                        class="form-control currency-input" inputmode="decimal" autocomplete="off" />
                             </div>
                         </td>
@@ -70,17 +69,21 @@ else
                             <input type="number" name="Variants[@i].VatRate" value="@variant.VatRate"
                                    class="form-control form-control-sm" step="1" min="0" max="100" style="width:80px" />
                         </td>
-                        @for (int b = 0; b < branches.Count; b++)
-                        {
-                            <td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-stock-modal"
+                                    data-variant-index="@i">
+                                <i class="ti ti-building-warehouse icon me-1"></i>
+                                <span class="variant-stock-total">0</span> adet
+                            </button>
+                            @for (int b = 0; b < branches.Count; b++)
+                            {
                                 <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeId" value="@branches[b].Id" />
                                 <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].BranchOfficeName" value="@branches[b].Name" />
-                                <input type="number" name="Variants[@i].BranchOfficeStocks[@b].Stock" value="0"
-                                       class="form-control form-control-sm" step="1" min="0" style="width:80px" />
-                            </td>
-                        }
+                                <input type="hidden" name="Variants[@i].BranchOfficeStocks[@b].Stock" value="0" class="variant-stock-value" data-branch-id="@branches[b].Id" />
+                            }
+                        </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-ghost-danger btn-remove-variant p-1" title="Varyanti kaldir">
+                            <button type="button" class="btn btn-sm btn-ghost-danger btn-remove-variant p-1" title="Varyantı kaldır">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-sm" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                         </td>
@@ -90,27 +93,135 @@ else
         </table>
     </div>
     <div class="text-muted small mt-2">
-        <span id="variant-count">@Model.Variants.Count varyant</span> olusturuldu. Barkod otomatik olusturulur.
+        <span id="variant-count">@Model.Variants.Count varyant</span> oluşturuldu. Barkod otomatik oluşturulur.
     </div>
 
+    <div id="variant-stock-modal-container"></div>
+
+    <template id="variant-stock-modal-template">
+        <div class="modal modal-blur show" style="display:block" tabindex="-1">
+            <div class="modal-dialog modal-md modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ofise Göre Stok</h5>
+                        <button type="button" class="btn-close" data-action="close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Her ofis için stok miktarını girin. Toplam stok satış için kullanılır.</p>
+                        <div class="vsm-rows"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-ghost-secondary" data-action="close">Vazgeç</button>
+                        <button type="button" class="btn btn-primary" data-action="save">Kaydet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show" data-action="close"></div>
+    </template>
+
+    <template id="variant-stock-row-template">
+        <div class="row align-items-center mb-2">
+            <label class="col-sm-7 col-form-label">
+                <i class="ti ti-building-warehouse me-1"></i>
+                <span class="vsm-branch-name"></span>
+            </label>
+            <div class="col-sm-5">
+                <input type="number" class="form-control vsm-branch-input" step="1" min="0" value="0" />
+            </div>
+        </div>
+    </template>
+
+    <script id="variant-branches-data" type="application/json">@Html.Raw(branchesJson)</script>
     <script>
-    document.addEventListener('click', function(e) {
-        var btn = e.target.closest('.btn-remove-variant');
-        if (!btn) return;
-        btn.closest('tr').remove();
-        // Re-index all remaining rows
-        var rows = document.querySelectorAll('#variant-table-container tbody tr');
-        rows.forEach(function(row, idx) {
-            row.querySelectorAll('input[name], select[name]').forEach(function(input) {
-                input.name = input.name.replace(/Variants\[\d+\]/, 'Variants[' + idx + ']');
+    (function() {
+        var branches = JSON.parse(document.getElementById('variant-branches-data').textContent);
+        var modalContainer = document.getElementById('variant-stock-modal-container');
+        var modalTpl = document.getElementById('variant-stock-modal-template');
+        var rowTpl = document.getElementById('variant-stock-row-template');
+        var activeRowIndex = null;
+
+        function openStockModal(rowIndex) {
+            activeRowIndex = rowIndex;
+            var tableRow = document.querySelector('#variant-table tbody tr[data-variant-index="' + rowIndex + '"]');
+            if (!tableRow) return;
+
+            var currentStocks = {};
+            tableRow.querySelectorAll('.variant-stock-value').forEach(function(inp) {
+                currentStocks[inp.dataset.branchId] = inp.value;
             });
+
+            // Modal iskeletini clone et
+            var modalFragment = modalTpl.content.cloneNode(true);
+            var rowsContainer = modalFragment.querySelector('.vsm-rows');
+
+            // Her branch için template'den satır oluştur
+            branches.forEach(function(b) {
+                var rowFragment = rowTpl.content.cloneNode(true);
+                rowFragment.querySelector('.vsm-branch-name').textContent = b.name;
+                var input = rowFragment.querySelector('.vsm-branch-input');
+                input.value = currentStocks[b.id] || '0';
+                input.dataset.branchId = b.id;
+                rowsContainer.appendChild(rowFragment);
+            });
+
+            modalContainer.replaceChildren(modalFragment);
+        }
+
+        function closeStockModal() {
+            modalContainer.replaceChildren();
+            activeRowIndex = null;
+        }
+
+        function saveStockModal() {
+            if (activeRowIndex === null) return;
+            var tableRow = document.querySelector('#variant-table tbody tr[data-variant-index="' + activeRowIndex + '"]');
+            if (!tableRow) return closeStockModal();
+
+            var total = 0;
+            modalContainer.querySelectorAll('.vsm-branch-input').forEach(function(inp) {
+                var branchId = inp.dataset.branchId;
+                var val = parseInt(inp.value, 10) || 0;
+                total += val;
+                var hidden = tableRow.querySelector('.variant-stock-value[data-branch-id="' + branchId + '"]');
+                if (hidden) hidden.value = val;
+            });
+            tableRow.querySelector('.variant-stock-total').textContent = total;
+            closeStockModal();
+        }
+
+        modalContainer.addEventListener('click', function(e) {
+            var actionEl = e.target.closest('[data-action]');
+            if (!actionEl) return;
+            var action = actionEl.dataset.action;
+            if (action === 'close') closeStockModal();
+            else if (action === 'save') saveStockModal();
         });
-        // Update count
-        var countEl = document.querySelector('#variant-count');
-        if (countEl) countEl.textContent = rows.length + ' varyant';
-        // Update next button state
-        var nextBtn = document.getElementById('btn-step3-next');
-        if (nextBtn) nextBtn.disabled = rows.length === 0;
-    });
+
+        document.addEventListener('click', function(e) {
+            var openBtn = e.target.closest('.btn-open-stock-modal');
+            if (openBtn) {
+                openStockModal(openBtn.dataset.variantIndex);
+                return;
+            }
+            var removeBtn = e.target.closest('.btn-remove-variant');
+            if (removeBtn) {
+                removeBtn.closest('tr').remove();
+                var rows = document.querySelectorAll('#variant-table tbody tr');
+                rows.forEach(function(row, idx) {
+                    row.dataset.variantIndex = idx;
+                    var openStockBtn = row.querySelector('.btn-open-stock-modal');
+                    if (openStockBtn) openStockBtn.dataset.variantIndex = idx;
+                    row.querySelectorAll('input[name], select[name]').forEach(function(input) {
+                        input.name = input.name.replace(/Variants\[\d+\]/, 'Variants[' + idx + ']');
+                    });
+                });
+                var countEl = document.querySelector('#variant-count');
+                if (countEl) countEl.textContent = rows.length + ' varyant';
+                var nextBtn = document.getElementById('btn-step3-next');
+                if (nextBtn) nextBtn.disabled = rows.length === 0;
+            }
+        });
+    })();
     </script>
 }

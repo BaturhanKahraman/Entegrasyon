@@ -36,9 +36,17 @@ public class EditProductVariantValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WhenListPriceIsZero_ShouldFail()
+    public async Task Validate_WhenListPriceIsZero_ShouldPass()
     {
         var dto = ValidDto() with { ListPrice = 0 };
+        var result = await _validator.TestValidateAsync(dto);
+        result.ShouldNotHaveValidationErrorFor(x => x.ListPrice);
+    }
+
+    [Fact]
+    public async Task Validate_WhenListPriceIsNegative_ShouldFail()
+    {
+        var dto = ValidDto() with { ListPrice = -1 };
         var result = await _validator.TestValidateAsync(dto);
         result.ShouldHaveValidationErrorFor(x => x.ListPrice);
     }

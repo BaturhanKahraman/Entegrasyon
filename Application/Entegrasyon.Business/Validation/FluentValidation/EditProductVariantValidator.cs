@@ -7,7 +7,10 @@ public class EditProductVariantValidator : AbstractValidator<EditProductVariantD
 {
     public EditProductVariantValidator()
     {
-        RuleFor(x => x.ListPrice).GreaterThan(0).WithMessage("Liste fiyatı 0'dan büyük olmalıdır.");
+        RuleFor(x => x.ListPrice)
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("Liste fiyatı negatif olamaz.");
+
         RuleFor(x => x.SalePrice).GreaterThan(0).WithMessage("Satış fiyatı 0'dan büyük olmalıdır.");
 
         RuleFor(x => x.VatRate)
@@ -16,6 +19,7 @@ public class EditProductVariantValidator : AbstractValidator<EditProductVariantD
 
         RuleFor(x => x.SalePrice)
             .LessThanOrEqualTo(x => x.ListPrice)
+            .When(x => x.ListPrice > 0)
             .WithMessage("Satış fiyatı liste fiyatından büyük olamaz.");
 
         RuleFor(x => x.DimensionalWeight)

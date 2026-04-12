@@ -16,15 +16,31 @@ public class AddProductVariantValidatorTests
     };
 
     [Fact]
-    public async Task Should_Fail_WhenListPriceIsZero()
+    public async Task Should_Pass_WhenListPriceIsNull()
+    {
+        var variant = ValidVariant();
+        variant.ListPrice = null;
+        var result = await _validator.ValidateAsync(variant);
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Should_Pass_WhenListPriceIsZero()
     {
         var variant = ValidVariant();
         variant.ListPrice = 0;
-
         var result = await _validator.ValidateAsync(variant);
+        result.IsValid.Should().BeTrue();
+    }
 
+    [Fact]
+    public async Task Should_Fail_WhenListPriceIsNegative()
+    {
+        var variant = ValidVariant();
+        variant.ListPrice = -1;
+        var result = await _validator.ValidateAsync(variant);
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Liste fiyatı boş geçilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Liste fiyatı negatif olamaz.");
     }
 
     [Fact]
@@ -32,9 +48,17 @@ public class AddProductVariantValidatorTests
     {
         var variant = ValidVariant();
         variant.SalePrice = 0;
-
         var result = await _validator.ValidateAsync(variant);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Satış Fiyatı boş geçilemez");
+    }
 
+    [Fact]
+    public async Task Should_Fail_WhenSalePriceIsNull()
+    {
+        var variant = ValidVariant();
+        variant.SalePrice = null;
+        var result = await _validator.ValidateAsync(variant);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.ErrorMessage == "Satış Fiyatı boş geçilemez");
     }
@@ -44,9 +68,7 @@ public class AddProductVariantValidatorTests
     {
         var variant = ValidVariant();
         variant.BranchOfficeStocks = [];
-
         var result = await _validator.ValidateAsync(variant);
-
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.ErrorMessage == "Lütfen stok değerlerini girin.");
     }
@@ -55,7 +77,27 @@ public class AddProductVariantValidatorTests
     public async Task Should_Pass_WhenAllFieldsAreValid()
     {
         var result = await _validator.ValidateAsync(ValidVariant());
-
         result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Should_Pass_WhenListPriceIsNull_AndSalePriceIsSet()
+    {
+        var variant = ValidVariant();
+        variant.ListPrice = null;
+        variant.SalePrice = 50;
+        var result = await _validator.ValidateAsync(variant);
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Should_Fail_WhenSalePriceExceedsListPrice()
+    {
+        var variant = ValidVariant();
+        variant.ListPrice = 50;
+        variant.SalePrice = 100;
+        var result = await _validator.ValidateAsync(variant);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Satış fiyatı liste fiyatından büyük olamaz.");
     }
 }

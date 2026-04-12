@@ -83,7 +83,7 @@ public class CreateProductVm
 public class CreateVariantVm
 {
     public string Barcode { get; set; } = "";
-    public decimal ListPrice { get; set; }
+    public decimal? ListPrice { get; set; }
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; } = 20;
@@ -130,7 +130,7 @@ public class SelectedAttributeValueVm
 
 public class DefaultVariantValuesVm
 {
-    public decimal ListPrice { get; set; }
+    public decimal? ListPrice { get; set; }
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }
     public decimal VatRate { get; set; } = 20;

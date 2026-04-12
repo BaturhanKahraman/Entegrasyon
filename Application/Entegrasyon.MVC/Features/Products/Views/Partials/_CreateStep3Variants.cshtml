@@ -103,12 +103,13 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3 mb-3">
-                    <label class="form-label">Liste Fiyat</label>
+                    <label class="form-label">Liste Fiyat <span class="text-muted fw-normal">(opsiyonel)</span></label>
                     <div class="input-group">
                         <span class="input-group-text">₺</span>
-                        <input type="text" name="DefaultValues.ListPrice" value="@Model.DefaultValues.ListPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                        <input type="text" name="DefaultValues.ListPrice" value="@(Model.DefaultValues.ListPrice?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))"
                                class="form-control currency-input" inputmode="decimal" autocomplete="off" />
                     </div>
+                    <small class="text-muted">Boş bırakılırsa yalnızca satış fiyatı kullanılır</small>
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Satış Fiyat</label>
