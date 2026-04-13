@@ -1,4 +1,19 @@
 @model Entegrasyon.MVC.Features.POS.ViewModels.POSTerminalVm
+@{
+    var zReportSessionId = TempData["ZReportSessionId"] as long?;
+}
+
+@if (zReportSessionId.HasValue)
+{
+    <div class="alert alert-success alert-dismissible d-flex align-items-center mb-3" role="alert">
+        <i class="ti ti-check me-2"></i>
+        <div>
+            Kasa başarıyla kapatıldı.
+            <a href="/pos/z-report/@zReportSessionId" class="alert-link ms-1">Z Raporunu Görüntüle</a>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 @if (!Model.HasActiveSession)
 {
@@ -46,13 +61,16 @@ else
         <span class="text-secondary me-3">
             @Model.OpenedAt.ToLocalTime().ToString("HH:mm")
         </span>
+        <a href="/pos/x-report" class="btn btn-outline-info me-2">
+            <i class="ti ti-file-analytics me-1"></i>X Raporu
+        </a>
         <button type="button" class="btn btn-outline-danger"
                 hx-get="/pos/close-session-dialog?sessionId=@Model.SessionId"
                 hx-target="#dynamicModal"
                 hx-swap="innerHTML"
                 data-bs-toggle="modal"
                 data-bs-target="#dynamicModal">
-            Kasayi Kapat
+            Kasayı Kapat
         </button>
     </div>
 

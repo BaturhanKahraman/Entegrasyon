@@ -101,9 +101,14 @@ public class POSController(
         var result = await posSessionManager.CloseSessionAsync(dto);
 
         if (!result.Success)
-            TempData.SetError(result.Message ?? "Kasa kapatilamadi.");
+        {
+            TempData.SetError(result.Message ?? "Kasa kapatılamadı.");
+        }
         else
-            TempData.SetSuccess("Kasa basariyla kapatildi.");
+        {
+            TempData.SetSuccess("Kasa başarıyla kapatıldı.");
+            TempData["ZReportSessionId"] = sessionId;
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -381,5 +386,44 @@ public class POSController(
     {
         var json = System.Text.Json.JsonSerializer.Serialize(cart);
         HttpContext.Session.SetString("pos_cart", json);
+    }
+
+    // ── Reports ──────────────────────────────────────────────────────────
+
+    [HttpGet("/pos/x-report")]
+    public async Task<IActionResult> XReport()
+    {
+        var sessionResult = await posSessionManager.GetActiveSessionAsync(DefaultBranchOfficeId);
+        if (!sessionResult.Success || sessionResult.Data is null)
+        {
+            TempData.SetError("Aktif kasa oturumu bulunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reportResult = await posSessionManager.GetXReportAsync(sessionResult.Data.Id);
+        if (!reportResult.Success || reportResult.Data is null)
+        {
+            TempData.SetError(reportResult.Message ?? "Rapor oluşturulamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("X Raporu");
+        ViewData.SetActiveNav("pos");
+        return View(reportResult.Data);
+    }
+
+    [HttpGet("/pos/z-report/{sessionId:long}")]
+    public async Task<IActionResult> ZReport(long sessionId)
+    {
+        var reportResult = await posSessionManager.GetZReportAsync(sessionId);
+        if (!reportResult.Success || reportResult.Data is null)
+        {
+            TempData.SetError(reportResult.Message ?? "Rapor oluşturulamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("Z Raporu");
+        ViewData.SetActiveNav("pos");
+        return View(reportResult.Data);
     }
 }

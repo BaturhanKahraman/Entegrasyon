@@ -1,0 +1,140 @@
+@using Entegrasyon.Entity.Dtos.POS
+@using System.Globalization
+@model POSReportDto
+@{
+    var tr = new CultureInfo("tr-TR");
+}
+
+<style>
+    @@media print {
+        .page-header, .btn-list, nav, .sidebar, .navbar { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        body { padding: 0 !important; }
+    }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="page-title">X Raporu</h2>
+        <div class="text-muted">Anlık kasa durumu (kasa kapanmaz)</div>
+    </div>
+    <div class="btn-list">
+        <a href="/pos" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Geri
+        </a>
+        <button type="button" onclick="window.print()" class="btn btn-primary">
+            <i class="ti ti-printer me-1"></i>Yazdır
+        </button>
+    </div>
+</div>
+
+<div class="row row-cards">
+    <div class="col-lg-6">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Oturum Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-5 text-muted">Oturum No:</div><div class="col-7 fw-bold">#@Model.SessionId</div></div>
+                <div class="row mb-2"><div class="col-5 text-muted">Kasiyer:</div><div class="col-7">@Model.CashierName</div></div>
+                <div class="row mb-2"><div class="col-5 text-muted">Açılış:</div><div class="col-7">@Model.OpenedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div></div>
+                <div class="row mb-2"><div class="col-5 text-muted">Açılış Kasası:</div><div class="col-7 fw-bold">@Model.OpeningCash.ToString("C2", tr)</div></div>
+                <div class="row mb-2"><div class="col-5 text-muted">İşlem Sayısı:</div><div class="col-7 fw-bold">@Model.TransactionCount</div></div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Satış Özeti</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-7 text-muted">Toplam Satış:</div><div class="col-5 text-end fw-bold">@Model.TotalSales.ToString("C2", tr)</div></div>
+                <div class="row mb-2"><div class="col-7 text-muted">Toplam İade:</div><div class="col-5 text-end text-danger">@Model.TotalReturns.ToString("C2", tr)</div></div>
+                <hr />
+                <div class="row mb-2"><div class="col-7 fw-bold">Net Satış:</div><div class="col-5 text-end fw-bold fs-4">@Model.NetSales.ToString("C2", tr)</div></div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Kasa Durumu</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-7 text-muted">Beklenen Kasa:</div><div class="col-5 text-end fw-bold fs-4">@Model.ExpectedCash.ToString("C2", tr)</div></div>
+                <div class="text-muted small mt-2">Açılış Kasası + Nakit Satışlar + Kasa Hareketleri</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Ödeme Yöntemi Dağılımı</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Yöntem</th>
+                            <th class="text-end">Adet</th>
+                            <th class="text-end">Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.PaymentBreakdown.Count == 0)
+                        {
+                            <tr><td colspan="3" class="text-center text-muted">Kayıt yok</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var row in Model.PaymentBreakdown)
+                            {
+                                <tr>
+                                    <td>@row.MethodName</td>
+                                    <td class="text-end">@row.Count</td>
+                                    <td class="text-end fw-bold">@row.Total.ToString("C2", tr)</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">KDV Dökümü</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Oran</th>
+                            <th class="text-end">Matrah</th>
+                            <th class="text-end">KDV</th>
+                            <th class="text-end">Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.VatBreakdown.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-center text-muted">Kayıt yok</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var row in Model.VatBreakdown)
+                            {
+                                <tr>
+                                    <td>%@row.VatRate</td>
+                                    <td class="text-end">@row.TaxBase.ToString("C2", tr)</td>
+                                    <td class="text-end">@row.VatAmount.ToString("C2", tr)</td>
+                                    <td class="text-end fw-bold">@row.Total.ToString("C2", tr)</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
