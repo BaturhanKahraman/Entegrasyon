@@ -1,0 +1,125 @@
+@using Entegrasyon.Entity.Sales
+@model List<PaymentMethodDefinition>
+
+<div class="row">
+    <div class="col-md-3">
+        <partial name="~/Features/Settings/Views/_SettingsNav.cshtml" />
+    </div>
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="card-title">Ödeme Yöntemleri</h3>
+                    <p class="card-subtitle text-secondary mb-0">
+                        POS ve satışlarda kullanılabilecek ödeme yöntemlerini yönetin. Sıralama için sürükleyip bırakın.
+                    </p>
+                </div>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createPaymentMethodModal">
+                    <i class="ti ti-plus me-1"></i>Yeni Ödeme Yöntemi
+                </button>
+            </div>
+            <partial name="~/Features/Settings/Views/Partials/_PaymentMethodsTable.cshtml" model="Model" />
+        </div>
+    </div>
+</div>
+
+<!-- Create Payment Method Modal -->
+<div class="modal modal-blur fade" id="createPaymentMethodModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="/settings/payment-methods/create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Ödeme Yöntemi Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Ad</label>
+                        <input type="text" name="name" class="form-control" required placeholder="örn. Nakit" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Sistem Kodu</label>
+                        <input type="text" name="systemCode" class="form-control" required placeholder="örn. CASH" />
+                        <small class="form-hint">Kod benzersiz olmalı ve sistem içinde tanımlayıcı olarak kullanılır.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">İkon</label>
+                        <input type="text" name="icon" class="form-control" value="ti ti-cash" placeholder="örn. ti ti-cash" />
+                        <small class="form-hint">Tabler Icons sınıf adı — <a href="https://tabler.io/icons" target="_blank">tabler.io/icons</a> adresinden bulabilirsiniz.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="requiresAuthCode" value="true" />
+                            <span class="form-check-label">Yetki kodu gerektirir</span>
+                        </label>
+                        <small class="form-hint text-muted">İşlem sırasında yönetici yetki kodu istenir.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="requiresCashInput" value="true" />
+                            <span class="form-check-label">Nakit giriş gerektirir</span>
+                        </label>
+                        <small class="form-hint text-muted">Kasiyerin verilen tutarı girmesi gerekir (para üstü hesabı için).</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Payment Method Modal -->
+<div class="modal modal-blur fade" id="editPaymentMethodModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editPaymentMethodForm" method="post" action="">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Ödeme Yöntemi Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Ad</label>
+                        <input type="text" id="editName" name="name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">İkon</label>
+                        <input type="text" id="editIcon" name="icon" class="form-control" placeholder="örn. ti ti-cash" />
+                        <small class="form-hint">Tabler Icons sınıf adı — <a href="https://tabler.io/icons" target="_blank">tabler.io/icons</a> adresinden bulabilirsiniz.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Komisyon Oranı (%)</label>
+                        <input type="number" id="editCommission" name="commissionRate" class="form-control" step="0.01" min="0" max="100" placeholder="örn. 1.50" />
+                        <small class="form-hint text-muted">Boş bırakırsanız komisyon uygulanmaz.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('editPaymentMethodModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.dataset.id;
+            var name = button.dataset.name;
+            var icon = button.dataset.icon;
+            var commission = button.dataset.commission;
+
+            document.getElementById('editName').value = name || '';
+            document.getElementById('editIcon').value = icon || '';
+            document.getElementById('editCommission').value = commission || '';
+            document.getElementById('editPaymentMethodForm').action = '/settings/payment-methods/' + id + '/update';
+        });
+    </script>
+}

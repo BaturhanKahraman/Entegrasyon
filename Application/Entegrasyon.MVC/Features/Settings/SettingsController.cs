@@ -17,6 +17,7 @@ public class SettingsController(
     ICargoCompaniesManager cargoCompaniesManager,
     IApiKeyManager apiKeyManager,
     IWebhookManager webhookManager,
+    IPaymentMethodManager paymentMethodManager,
     ITenantContext tenantContext) : Controller
 {
     private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
@@ -436,5 +437,70 @@ public class SettingsController(
         else
             TempData.SetError(result.Message ?? "API anahtari iptal edilemedi.");
         return RedirectToAction(nameof(ApiKeys));
+    }
+
+    [HttpGet("/settings/payment-methods")]
+    public async Task<IActionResult> PaymentMethods()
+    {
+        ViewData.SetPageTitle("Ödeme Yöntemleri");
+        ViewData.SetActiveNav("settings");
+
+        var result = await paymentMethodManager.GetAllPaymentMethodsAsync(TenantId);
+        return View(result.Data ?? []);
+    }
+
+    [HttpPost("/settings/payment-methods/{id:int}/toggle")]
+    public async Task<IActionResult> TogglePaymentMethod(int id)
+    {
+        var result = await paymentMethodManager.TogglePaymentMethodAsync(id);
+
+        if (Request.IsHtmx())
+        {
+            var methods = await paymentMethodManager.GetAllPaymentMethodsAsync(TenantId);
+            return PartialView("Partials/_PaymentMethodsTable", methods.Data ?? []);
+        }
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "Ödeme yöntemi güncellendi.");
+        else
+            TempData.SetError(result.Message ?? "Ödeme yöntemi güncellenemedi.");
+        return RedirectToAction(nameof(PaymentMethods));
+    }
+
+    [HttpPost("/settings/payment-methods/{id:int}/update")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdatePaymentMethod(int id, [FromForm] string name, [FromForm] string icon, [FromForm] decimal? commissionRate)
+    {
+        var result = await paymentMethodManager.UpdatePaymentMethodAsync(id, name, icon, commissionRate);
+        if (result.Success)
+            TempData.SetSuccess("Ödeme yöntemi güncellendi.");
+        else
+            TempData.SetError(result.Message ?? "Ödeme yöntemi güncellenemedi.");
+        return RedirectToAction(nameof(PaymentMethods));
+    }
+
+    [HttpPost("/settings/payment-methods/create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreatePaymentMethod(
+        [FromForm] string name,
+        [FromForm] string systemCode,
+        [FromForm] string icon,
+        [FromForm] bool requiresAuthCode,
+        [FromForm] bool requiresCashInput)
+    {
+        var result = await paymentMethodManager.CreatePaymentMethodAsync(
+            name, systemCode, icon, requiresAuthCode, requiresCashInput, TenantId);
+        if (result.Success)
+            TempData.SetSuccess("Ödeme yöntemi oluşturuldu.");
+        else
+            TempData.SetError(result.Message ?? "Ödeme yöntemi oluşturulamadı.");
+        return RedirectToAction(nameof(PaymentMethods));
+    }
+
+    [HttpPost("/settings/payment-methods/reorder")]
+    public async Task<IActionResult> ReorderPaymentMethods([FromBody] List<int> orderedIds)
+    {
+        var result = await paymentMethodManager.ReorderPaymentMethodsAsync(orderedIds);
+        return result.Success ? Ok() : BadRequest(result.Message);
     }
 }

@@ -1,0 +1,87 @@
+@using Entegrasyon.Entity.Sales
+@model List<PaymentMethodDefinition>
+
+<div id="payment-methods-list" class="list-group list-group-flush sortable" data-sortable-url="/settings/payment-methods/reorder">
+    @foreach (var method in Model.OrderBy(m => m.SortOrder))
+    {
+        <div class="list-group-item" data-id="@method.Id">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <i class="ti ti-grip-vertical text-muted drag-handle" style="cursor: grab;"></i>
+                </div>
+                <div class="col-auto">
+                    <span class="avatar avatar-sm bg-blue-lt">
+                        <i class="@method.Icon"></i>
+                    </span>
+                </div>
+                <div class="col">
+                    <div class="fw-bold">@method.Name</div>
+                    <div class="text-muted small">
+                        <span class="badge bg-secondary">@method.SystemCode</span>
+                        @if (method.CommissionRate.HasValue)
+                        {
+                            <span class="ms-2">Komisyon: %@method.CommissionRate.Value.ToString("F2")</span>
+                        }
+                        @if (method.RequiresAuthCode)
+                        {
+                            <span class="ms-1 badge bg-yellow-lt text-yellow">Yetki Kodu</span>
+                        }
+                        @if (method.RequiresCashInput)
+                        {
+                            <span class="ms-1 badge bg-green-lt text-green">Nakit Giriş</span>
+                        }
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <label class="form-check form-switch mb-0">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               @(method.IsActive ? "checked" : "")
+                               hx-post="/settings/payment-methods/@method.Id/toggle"
+                               hx-target="#payment-methods-list"
+                               hx-swap="outerHTML" />
+                    </label>
+                </div>
+                <div class="col-auto">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editPaymentMethodModal"
+                            data-id="@method.Id"
+                            data-name="@method.Name"
+                            data-icon="@method.Icon"
+                            data-commission="@(method.CommissionRate?.ToString("F2") ?? "")">
+                        <i class="ti ti-edit"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    (function initSortable() {
+        var list = document.getElementById('payment-methods-list');
+        if (!list || typeof Sortable === 'undefined') return;
+        if (list.dataset.sortableInitialized) return;
+        list.dataset.sortableInitialized = 'true';
+
+        new Sortable(list, {
+            handle: '.drag-handle',
+            animation: 150,
+            onEnd: async function () {
+                var ids = Array.from(list.querySelectorAll('[data-id]')).map(function (el) {
+                    return parseInt(el.dataset.id);
+                });
+                await fetch(list.dataset.sortableUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': (document.querySelector('meta[name="csrf-token"]') || {}).content || ''
+                    },
+                    body: JSON.stringify(ids)
+                });
+            }
+        });
+    })();
+</script>
