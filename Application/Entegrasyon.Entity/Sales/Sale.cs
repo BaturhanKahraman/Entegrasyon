@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Customers;
+using System.ComponentModel.DataAnnotations;
+using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
 using Entegrasyon.Entity.User;
 
@@ -18,6 +19,17 @@ namespace Entegrasyon.Entity.Sales
         public int? CustomerId { get; set; }
         public Customer? Customer { get; set; }
 
+        [StringLength(50)]
+        public string SaleNumber { get; set; } = "";
 
+        public DateTimeOffset SaleDate { get; set; }
+        public SaleSource SaleSource { get; set; }
+        public SaleStatus SaleStatus { get; set; } = SaleStatus.Completed;
+
+        [StringLength(500)]
+        public string? Note { get; set; }
+
+        public ICollection<SalePayment> Payments { get; set; } = [];
+        public ICollection<SaleReturn> Returns { get; set; } = [];
     }
 }

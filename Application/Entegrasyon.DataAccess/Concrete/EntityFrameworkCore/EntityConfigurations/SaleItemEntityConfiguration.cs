@@ -10,5 +10,6 @@ public class SaleItemEntityConfiguration : IEntityTypeConfiguration<SaleItem>
     {
         builder.Property(x => x.UnitPrice).HasColumnType("numeric(18,2)");
         builder.HasQueryFilter(x => !x.IsDeleted);
+        builder.Property(x => x.ReturnedQuantity).HasDefaultValue(0);
     }
 }

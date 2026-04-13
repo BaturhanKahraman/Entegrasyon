@@ -7,10 +7,8 @@ public class POSTransaction : BaseEntity
     public long Id { get; set; }
     public long POSSessionId { get; set; }
     public Guid SaleId { get; set; }
-    public PaymentMethod PaymentMethod { get; set; }
     public decimal CashReceived { get; set; }
     public decimal ChangeGiven { get; set; }
-    public string? CardAuthCode { get; set; }
     public DateTimeOffset TransactionAt { get; set; }
 
     public POSSession POSSession { get; set; } = null!;

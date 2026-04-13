@@ -173,6 +173,12 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<POSTransaction> POSTransactions { get; set; }
     public virtual DbSet<CashMovement> CashMovements { get; set; }
 
+    // Sales — Payment + Returns
+    public DbSet<PaymentMethodDefinition> PaymentMethodDefinitions { get; set; } = null!;
+    public DbSet<SalePayment> SalePayments { get; set; } = null!;
+    public DbSet<SaleReturn> SaleReturns { get; set; } = null!;
+    public DbSet<SaleReturnItem> SaleReturnItems { get; set; } = null!;
+
     // Storefront
     public virtual DbSet<StorefrontSettings> StorefrontSettings { get; set; }
     public virtual DbSet<StorefrontDomainMapping> StorefrontDomainMappings { get; set; }

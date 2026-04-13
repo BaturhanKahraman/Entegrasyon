@@ -9,5 +9,9 @@ public class SaleEntityConfiguration : IEntityTypeConfiguration<Sale>
     public void Configure(EntityTypeBuilder<Sale> builder)
     {
         builder.HasQueryFilter(x => !x.IsDeleted);
+        builder.HasIndex(x => x.SaleNumber).IsUnique();
+        builder.HasIndex(x => x.SaleDate);
+        builder.HasIndex(x => x.SaleSource);
+        builder.HasIndex(x => x.SaleStatus);
     }
 }

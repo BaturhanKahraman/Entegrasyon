@@ -81,8 +81,8 @@ public sealed class POSSessionManager(
             .Where(cm => cm.POSSessionId == dto.SessionId)
             .ToListAsync();
 
+        // TODO: PaymentMethod moved to SalePayment — cash total should filter by payment method from SalePayment
         var totalCash = transactions
-            .Where(t => t.PaymentMethod == PaymentMethod.Cash)
             .Sum(t => t.CashReceived - t.ChangeGiven);
 
         var totalCashIn = cashMovements
@@ -162,10 +162,10 @@ public sealed class POSSessionManager(
         {
             POSSessionId = dto.POSSessionId,
             SaleId = Guid.NewGuid(), // Sale entity gets its own Id from EF
-            PaymentMethod = dto.PaymentMethod,
+            // TODO: PaymentMethod moved to SalePayment — will be wired in later task
             CashReceived = dto.CashReceived,
             ChangeGiven = changeGiven,
-            CardAuthCode = dto.CardAuthCode,
+            // TODO: CardAuthCode moved to SalePayment — will be wired in later task
             TransactionAt = DateTimeOffset.UtcNow
         };
 
@@ -241,13 +241,11 @@ public sealed class POSSessionManager(
             .Where(cm => cm.POSSessionId == sessionId)
             .ToListAsync();
 
+        // TODO: PaymentMethod moved to SalePayment — cash/card split should use SalePayment in later task
         var totalCash = transactions
-            .Where(t => t.PaymentMethod == PaymentMethod.Cash)
             .Sum(t => t.CashReceived - t.ChangeGiven);
 
-        var totalCard = transactions
-            .Where(t => t.PaymentMethod is PaymentMethod.CreditCard or PaymentMethod.DebitCard)
-            .Sum(t => t.Sale?.SaleItems?.Sum(si => si.UnitPrice * si.Quantity) ?? 0m);
+        var totalCard = 0m; // TODO: wire from SalePayment in later task
 
         var totalSales = transactions
             .Sum(t => t.Sale?.SaleItems?.Sum(si => si.UnitPrice * si.Quantity) ?? 0m);
@@ -303,13 +301,11 @@ public sealed class POSSessionManager(
             .Where(cm => sessionIds.Contains(cm.POSSessionId))
             .ToListAsync();
 
+        // TODO: PaymentMethod moved to SalePayment — cash/card split should use SalePayment in later task
         var totalCash = transactions
-            .Where(t => t.PaymentMethod == PaymentMethod.Cash)
             .Sum(t => t.CashReceived - t.ChangeGiven);
 
-        var totalCard = transactions
-            .Where(t => t.PaymentMethod is PaymentMethod.CreditCard or PaymentMethod.DebitCard)
-            .Sum(t => t.Sale?.SaleItems?.Sum(si => si.UnitPrice * si.Quantity) ?? 0m);
+        var totalCard = 0m; // TODO: wire from SalePayment in later task
 
         var totalSales = transactions
             .Sum(t => t.Sale?.SaleItems?.Sum(si => si.UnitPrice * si.Quantity) ?? 0m);

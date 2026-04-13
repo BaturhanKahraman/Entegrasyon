@@ -1,4 +1,5 @@
-﻿using Entegrasyon.Entity.Products;
+﻿using System.ComponentModel.DataAnnotations;
+using Entegrasyon.Entity.Products;
 
 namespace Entegrasyon.Entity.Sales;
 
@@ -14,5 +15,12 @@ public sealed class SaleItem:BaseEntity
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
     public string? UsedDiscountVoucherCode { get; set; }
-    
+
+    [StringLength(100)]
+    public string Barcode { get; set; } = "";
+
+    [StringLength(300)]
+    public string ProductTitle { get; set; } = "";
+
+    public int ReturnedQuantity { get; set; }
 }
