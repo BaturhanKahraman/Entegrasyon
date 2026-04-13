@@ -243,8 +243,17 @@ public class POSSessionManagerTests : BaseTest
             OpenedAt = DateTimeOffset.UtcNow.AddHours(-4)
         };
 
+        var cashMethod = new PaymentMethodDefinition { Id = 1, Name = "Nakit", SystemCode = "Cash", TenantId = 1 };
+        var cardMethod = new PaymentMethodDefinition { Id = 2, Name = "Kredi Karti", SystemCode = "CreditCard", TenantId = 1 };
+
         var sale1 = new Sale { Id = Guid.NewGuid(), BranchOfficeId = 1, SaleItems = new List<SaleItem> { new() { UnitPrice = 150m, Quantity = 1, DiscountPercent = 0 } } };
         var sale2 = new Sale { Id = Guid.NewGuid(), BranchOfficeId = 1, SaleItems = new List<SaleItem> { new() { UnitPrice = 200m, Quantity = 2, DiscountPercent = 0 } } };
+
+        var salePayments = new List<SalePayment>
+        {
+            new() { Id = 1, SaleId = sale1.Id, PaymentMethodId = 1, PaymentMethod = cashMethod, Amount = 150m },
+            new() { Id = 2, SaleId = sale2.Id, PaymentMethodId = 2, PaymentMethod = cardMethod, Amount = 400m }
+        };
 
         var transactions = new List<POSTransaction>
         {
@@ -258,6 +267,7 @@ public class POSSessionManagerTests : BaseTest
 
         mockIntegrationDbContext.Setup(x => x.POSSessions).ReturnsDbSet(new List<POSSession> { session });
         mockIntegrationDbContext.Setup(x => x.POSTransactions).ReturnsDbSet(transactions);
+        mockIntegrationDbContext.Setup(x => x.SalePayments).ReturnsDbSet(salePayments);
         mockIntegrationDbContext.Setup(x => x.CashMovements).ReturnsDbSet(cashMovements);
 
         // Act

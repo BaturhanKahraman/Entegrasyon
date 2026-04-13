@@ -3,9 +3,11 @@ using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.POS;
+using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.POS;
 using Entegrasyon.Entity.Results;
+using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -231,21 +233,33 @@ public sealed class POSSessionManager(
         if (session == null)
             return new ErrorDataResult<POSSummaryDto>(null!, "Oturum bulunamadi.");
 
+        var saleIds = await dbContext.POSTransactions
+            .Where(t => t.POSSessionId == sessionId)
+            .Select(t => t.SaleId)
+            .ToListAsync();
+
         var transactions = await dbContext.POSTransactions
             .Where(t => t.POSSessionId == sessionId)
             .Include(t => t.Sale)
             .ThenInclude(s => s.SaleItems)
             .ToListAsync();
 
+        var salePayments = await dbContext.SalePayments
+            .Include(p => p.PaymentMethod)
+            .Where(p => saleIds.Contains(p.SaleId))
+            .ToListAsync();
+
         var cashMovements = await dbContext.CashMovements
             .Where(cm => cm.POSSessionId == sessionId)
             .ToListAsync();
 
-        // TODO: PaymentMethod moved to SalePayment — cash/card split should use SalePayment in later task
-        var totalCash = transactions
-            .Sum(t => t.CashReceived - t.ChangeGiven);
+        var totalCash = salePayments
+            .Where(p => p.PaymentMethod.SystemCode == "Cash")
+            .Sum(p => p.Amount);
 
-        var totalCard = 0m; // TODO: wire from SalePayment in later task
+        var totalCard = salePayments
+            .Where(p => p.PaymentMethod.SystemCode != "Cash")
+            .Sum(p => p.Amount);
 
         var totalSales = transactions
             .Sum(t => t.Sale?.SaleItems?.Sum(si => si.UnitPrice * si.Quantity) ?? 0m);
@@ -297,15 +311,24 @@ public sealed class POSSessionManager(
             .ThenInclude(s => s.SaleItems)
             .ToListAsync();
 
+        var dailySaleIds = transactions.Select(t => t.SaleId).ToList();
+
+        var dailySalePayments = await dbContext.SalePayments
+            .Include(p => p.PaymentMethod)
+            .Where(p => dailySaleIds.Contains(p.SaleId))
+            .ToListAsync();
+
         var cashMovements = await dbContext.CashMovements
             .Where(cm => sessionIds.Contains(cm.POSSessionId))
             .ToListAsync();
 
-        // TODO: PaymentMethod moved to SalePayment — cash/card split should use SalePayment in later task
-        var totalCash = transactions
-            .Sum(t => t.CashReceived - t.ChangeGiven);
+        var totalCash = dailySalePayments
+            .Where(p => p.PaymentMethod.SystemCode == "Cash")
+            .Sum(p => p.Amount);
 
-        var totalCard = 0m; // TODO: wire from SalePayment in later task
+        var totalCard = dailySalePayments
+            .Where(p => p.PaymentMethod.SystemCode != "Cash")
+            .Sum(p => p.Amount);
 
         var totalSales = transactions
             .Sum(t => t.Sale?.SaleItems?.Sum(si => si.UnitPrice * si.Quantity) ?? 0m);
@@ -334,6 +357,95 @@ public sealed class POSSessionManager(
             Difference: null);
 
         return new SuccessDataResult<POSSummaryDto>(summary);
+    }
+
+    public async Task<IDataResult<POSReportDto>> GetXReportAsync(long sessionId)
+    {
+        return await BuildReportAsync(sessionId, isZReport: false);
+    }
+
+    public async Task<IDataResult<POSReportDto>> GetZReportAsync(long sessionId)
+    {
+        return await BuildReportAsync(sessionId, isZReport: true);
+    }
+
+    private async Task<IDataResult<POSReportDto>> BuildReportAsync(long sessionId, bool isZReport)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var session = await dbContext.POSSessions
+            .Include(s => s.Cashier)
+            .Include(s => s.CashMovements)
+            .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+        if (session is null)
+            return new ErrorDataResult<POSReportDto>(null!, "Kasa oturumu bulunamadi.");
+
+        var saleIds = await dbContext.POSTransactions
+            .Where(t => t.POSSessionId == sessionId)
+            .Select(t => t.SaleId)
+            .ToListAsync();
+
+        var sales = await dbContext.Sales
+            .Include(s => s.SaleItems)
+            .Include(s => s.Payments).ThenInclude(p => p.PaymentMethod)
+            .Where(s => saleIds.Contains(s.Id) && s.SaleStatus != SaleStatus.Cancelled)
+            .ToListAsync();
+
+        var paymentBreakdown = sales
+            .SelectMany(s => s.Payments)
+            .GroupBy(p => p.PaymentMethod.Name)
+            .Select(g => new PaymentMethodSummaryDto(g.Key, g.Count(), g.Sum(p => p.Amount)))
+            .ToList();
+
+        var vatBreakdown = sales
+            .SelectMany(s => s.SaleItems)
+            .GroupBy(si => (decimal)si.TaxPercentage)
+            .Select(g =>
+            {
+                var taxBase = g.Sum(si => si.UnitPrice * si.Quantity);
+                var vatAmount = taxBase * g.Key / 100m;
+                return new VatSummaryLineDto(g.Key, Math.Round(taxBase, 2), Math.Round(vatAmount, 2), Math.Round(taxBase + vatAmount, 2));
+            })
+            .OrderBy(v => v.VatRate)
+            .ToList();
+
+        var totalSales = sales.Sum(s => s.Payments.Sum(p => p.Amount));
+        var totalCash = sales
+            .SelectMany(s => s.Payments)
+            .Where(p => p.PaymentMethod.SystemCode == "Cash")
+            .Sum(p => p.Amount);
+
+        var cashMovementsNet = session.CashMovements
+            .Sum(cm => cm.MovementType == CashMovementType.CashIn ? cm.Amount : -cm.Amount);
+
+        var totalReturns = await dbContext.SaleReturns
+            .Where(r => saleIds.Contains(r.SaleId) && r.ReturnStatus == ReturnStatus.Approved)
+            .SumAsync(r => r.RefundAmount);
+
+        var expectedCash = session.OpeningCash + totalCash + cashMovementsNet;
+
+        var report = new POSReportDto
+        {
+            SessionId = sessionId,
+            CashierName = $"{session.Cashier.Name} {session.Cashier.Surname}",
+            OpenedAt = session.OpenedAt,
+            ClosedAt = session.ClosedAt,
+            OpeningCash = session.OpeningCash,
+            TransactionCount = sales.Count,
+            TotalSales = totalSales,
+            TotalReturns = totalReturns,
+            NetSales = totalSales - totalReturns,
+            PaymentBreakdown = paymentBreakdown,
+            VatBreakdown = vatBreakdown,
+            ExpectedCash = expectedCash,
+            ActualCash = isZReport ? session.ClosingCash : null,
+            CashDifference = isZReport && session.ClosingCash.HasValue
+                ? session.ClosingCash.Value - expectedCash
+                : null
+        };
+
+        return new SuccessDataResult<POSReportDto>(report);
     }
 
     private static async Task<IResult> CheckNoOpenSessionExists(IntegrationDbContext dbContext, int branchOfficeId, string? terminalId)

@@ -13,4 +13,6 @@ public interface IPOSSessionManager
     Task<IResult> AddCashMovementAsync(AddCashMovementDto dto);
     Task<IDataResult<POSSummaryDto>> GetSessionSummaryAsync(long sessionId);
     Task<IDataResult<POSSummaryDto>> GetDailySummaryAsync(int branchOfficeId, DateOnly date);
+    Task<IDataResult<POSReportDto>> GetXReportAsync(long sessionId);
+    Task<IDataResult<POSReportDto>> GetZReportAsync(long sessionId);
 }
