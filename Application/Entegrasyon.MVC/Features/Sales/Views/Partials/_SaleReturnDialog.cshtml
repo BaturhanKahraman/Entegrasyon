@@ -1,0 +1,147 @@
+@using Entegrasyon.Entity.Dtos.Sale
+@using Entegrasyon.Entity.Sales
+@using System.Globalization
+@model SaleDetailDto
+
+@{
+    var tr = new CultureInfo("tr-TR");
+    var paymentMethods = ViewBag.PaymentMethods as List<PaymentMethodDefinition> ?? [];
+    var returnableItems = Model.Items.Where(i => i.Quantity > i.ReturnedQuantity).ToList();
+}
+
+<div class="modal modal-blur fade" id="saleReturnModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <form method="post" action="/sales/@Model.Id/return">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">İade Talebi Oluştur — @Model.SaleNumber</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    @if (returnableItems.Count == 0)
+                    {
+                        <div class="alert alert-warning">Bu satışta iade edilebilecek kalem kalmamış.</div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label class="form-label required">İade Nedeni</label>
+                            <textarea name="returnReason" class="form-control" rows="2" required placeholder="Örn: Beden uymuyor, hatalı ürün, vs."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">İade Ödeme Yöntemi</label>
+                            <select name="refundPaymentMethodId" class="form-select">
+                                <option value="">Seçiniz...</option>
+                                @foreach (var pm in paymentMethods)
+                                {
+                                    <option value="@pm.Id">@pm.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Not (opsiyonel)</label>
+                            <input type="text" name="note" class="form-control" />
+                        </div>
+
+                        <h4 class="mb-2">İade Edilecek Kalemler</h4>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-vcenter">
+                                <thead>
+                                    <tr>
+                                        <th>Ürün</th>
+                                        <th class="text-end">Satılan</th>
+                                        <th class="text-end">Daha Önce İade</th>
+                                        <th class="text-end">Max İade</th>
+                                        <th style="width: 120px;">İade Adedi</th>
+                                        <th>Not</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in returnableItems)
+                                    {
+                                        var maxReturn = item.Quantity - item.ReturnedQuantity;
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@item.ProductTitle</div>
+                                                <div class="text-muted small">@item.UnitPriceWithVat.ToString("C2", tr)</div>
+                                                <input type="hidden" name="itemIds" value="@item.Id" />
+                                            </td>
+                                            <td class="text-end">@item.Quantity</td>
+                                            <td class="text-end">@item.ReturnedQuantity</td>
+                                            <td class="text-end">@maxReturn</td>
+                                            <td>
+                                                <input type="number"
+                                                       name="itemQuantities"
+                                                       class="form-control form-control-sm return-qty"
+                                                       min="0"
+                                                       max="@maxReturn"
+                                                       value="0"
+                                                       data-unit-price="@item.UnitPriceWithVat" />
+                                            </td>
+                                            <td>
+                                                <input type="text" name="itemReasons" class="form-control form-control-sm" />
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4" class="text-end">Toplam İade Tutarı (KDV Dahil):</th>
+                                        <th colspan="2" class="text-end fs-4" id="return-total">@((0m).ToString("C2", tr))</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    @if (returnableItems.Count > 0)
+                    {
+                        <button type="submit" class="btn btn-warning">
+                            <i class="ti ti-arrow-back me-1"></i>İade Talebini Oluştur
+                        </button>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modalEl = document.getElementById('saleReturnModal');
+        if (!modalEl) return;
+
+        // Auto-show when HTMX swaps this in
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        // Remove DOM on close
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            modalEl.remove();
+        });
+
+        // Auto-calculate total
+        var qtyInputs = modalEl.querySelectorAll('.return-qty');
+        var totalEl = modalEl.querySelector('#return-total');
+        var formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' });
+
+        function updateTotal() {
+            var total = 0;
+            qtyInputs.forEach(function (input) {
+                var qty = parseInt(input.value) || 0;
+                var price = parseFloat(input.dataset.unitPrice) || 0;
+                total += qty * price;
+            });
+            if (totalEl) totalEl.textContent = formatter.format(total);
+        }
+
+        qtyInputs.forEach(function (input) {
+            input.addEventListener('input', updateTotal);
+        });
+    })();
+</script>

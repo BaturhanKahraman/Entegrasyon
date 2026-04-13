@@ -154,6 +154,23 @@
                                     <div class="text-muted small">@ret.ReturnDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm") — @ret.ReturnedByName — @ret.ItemCount kalem</div>
                                 </div>
                                 <div class="col-auto fw-bold">@ret.RefundAmount.ToString("C2", tr)</div>
+                                @if (ret.ReturnStatus == ReturnStatus.Pending)
+                                {
+                                    <div class="col-auto">
+                                        <form method="post" action="/sales/returns/@ret.Id/approve" class="d-inline"
+                                              onsubmit="return confirm('İadeyi onaylamak istediğinize emin misiniz? Stok geri eklenecek.');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="saleId" value="@Model.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Onayla">
+                                                <i class="ti ti-check"></i>
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-1" title="Reddet"
+                                                onclick="rejectReturn('@ret.Id', '@Model.Id')">
+                                            <i class="ti ti-x"></i>
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
@@ -235,3 +252,38 @@
         </div>
     </div>
 </div>
+
+<script>
+function rejectReturn(returnId, saleId) {
+    var reason = prompt('Ret nedeni:');
+    if (!reason) return;
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/sales/returns/' + returnId + '/reject';
+
+    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+    if (token) {
+        var tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '__RequestVerificationToken';
+        tokenInput.value = token.value;
+        form.appendChild(tokenInput);
+    }
+
+    var saleIdInput = document.createElement('input');
+    saleIdInput.type = 'hidden';
+    saleIdInput.name = 'saleId';
+    saleIdInput.value = saleId;
+    form.appendChild(saleIdInput);
+
+    var reasonInput = document.createElement('input');
+    reasonInput.type = 'hidden';
+    reasonInput.name = 'reason';
+    reasonInput.value = reason;
+    form.appendChild(reasonInput);
+
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
