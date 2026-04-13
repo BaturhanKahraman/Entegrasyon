@@ -2,6 +2,7 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Sales;
 using Entegrasyon.IntegrationTest.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,11 +42,14 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
             CustomerId: _customerId,
             GeneralDiscount: 0,
             BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
             SaleItems: new[]
             {
                 new SaleItemDto(variantId1, 18, 0, 180m, 2, ""),
                 new SaleItemDto(variantId2, 18, 0, 180m, 3, "")
-            });
+            },
+            Payments: []);
 
         // Act
         var result = await service.MakeSale(dto);
@@ -90,10 +94,13 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
             CustomerId: _customerId,
             GeneralDiscount: 0,
             BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
             SaleItems: new[]
             {
                 new SaleItemDto(variantId, 18, 0, 180m, 5, "") // qty=5 > stock=1
-            });
+            },
+            Payments: []);
 
         // Act
         var result = await service.MakeSale(dto);
@@ -127,11 +134,14 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
             CustomerId: _customerId,
             GeneralDiscount: 0,
             BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
             SaleItems: new[]
             {
                 new SaleItemDto(variantOk, 18, 0, 180m, 2, ""),    // ok
                 new SaleItemDto(variantFail, 18, 0, 180m, 5, "")   // fail: stock=1 < qty=5
-            });
+            },
+            Payments: []);
 
         // Act
         var result = await service.MakeSale(dto);
@@ -165,10 +175,13 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
                 CustomerId: _customerId,
                 GeneralDiscount: 0,
                 BranchOfficeId: 1,
+                SaleSource: SaleSource.POS,
+                Note: null,
                 SaleItems: new[]
                 {
                     new SaleItemDto(vId, 18, 0, 100m, 1, "")
-                });
+                },
+                Payments: []);
             var r = await svc.MakeSale(dto);
             r.Success.Should().BeTrue(r.Message);
         }
@@ -182,6 +195,8 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
             DateBetweenStart: null,
             DateBetweenEnd: null,
             SalePersonId: _userId,
+            SaleSource: null,
+            SaleStatus: null,
             FullTextSearchKey: "",
             PageIndex: 0,
             PageSize: 2);
@@ -208,10 +223,13 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
             CustomerId: _customerId,
             GeneralDiscount: 0,
             BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
             SaleItems: new[]
             {
                 new SaleItemDto(variantId, 18, 0, 180m, 3, "")
-            });
+            },
+            Payments: []);
 
         // Act
         var result = await service.MakeSale(dto);

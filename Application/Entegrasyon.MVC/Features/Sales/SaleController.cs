@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Sales;
 using Entegrasyon.MVC.Features.Sales.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
@@ -15,7 +16,7 @@ public class SaleController(
     IProductService productService,
     ICustomerManager customerManager) : Controller
 {
-    private const int DefaultBranchOfficeId = 1;
+    private const int defaultBranchOfficeId = 1;
 
     private Guid GetCurrentUserId()
         => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -29,7 +30,7 @@ public class SaleController(
         DateTimeOffset? endDate = null,
         int page = 1)
     {
-        ViewData.SetPageTitle("Satislar");
+        ViewData.SetPageTitle("Satışlar");
         ViewData.SetActiveNav("sales");
 
         var dto = new SalePageableDto(
@@ -37,6 +38,8 @@ public class SaleController(
             DateBetweenStart: startDate,
             DateBetweenEnd: endDate,
             SalePersonId: Guid.Empty,
+            SaleSource: null,
+            SaleStatus: null,
             FullTextSearchKey: search ?? "",
             PageIndex: page - 1,
             PageSize: 20);
@@ -57,7 +60,7 @@ public class SaleController(
     [HttpGet("/sales/create")]
     public IActionResult Create()
     {
-        ViewData.SetPageTitle("Yeni Satis");
+        ViewData.SetPageTitle("Yeni Satış");
         ViewData.SetActiveNav("sales");
 
         var cart = GetCartFromSession();
@@ -262,8 +265,11 @@ public class SaleController(
             SalePersonId: GetCurrentUserId(),
             CustomerId: customerId,
             GeneralDiscount: 0,
-            BranchOfficeId: DefaultBranchOfficeId,
-            SaleItems: saleItems);
+            BranchOfficeId: defaultBranchOfficeId,
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: saleItems,
+            Payments: []);
 
         var result = await saleManager.MakeSale(makeSaleDto);
 

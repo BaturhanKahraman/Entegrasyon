@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.POS;
+using Entegrasyon.Entity.Sales;
 using Entegrasyon.MVC.Features.POS.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
@@ -257,7 +258,7 @@ public class POSController(
         var cart = GetCartFromSession();
         if (cart.Count == 0)
         {
-            TempData.SetError("Sepet bos. Satis yapilamaz.");
+            TempData.SetError("Sepet boş. Satış yapılamaz.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -274,13 +275,16 @@ public class POSController(
             CustomerId: 0,
             GeneralDiscount: 0,
             BranchOfficeId: DefaultBranchOfficeId,
-            SaleItems: saleItems);
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: saleItems,
+            Payments: []);
 
         // Satis kaydi
         var saleResult = await saleManager.MakeSale(makeSaleDto);
         if (!saleResult.Success)
         {
-            TempData.SetError(saleResult.Message ?? "Satis basarisiz.");
+            TempData.SetError(saleResult.Message ?? "Satış başarısız.");
             return RedirectToAction(nameof(Index));
         }
 

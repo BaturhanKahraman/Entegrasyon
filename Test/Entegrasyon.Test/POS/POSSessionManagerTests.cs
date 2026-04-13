@@ -150,11 +150,14 @@ public class POSSessionManagerTests : BaseTest
         mockIntegrationDbContext.Setup(x => x.POSTransactions).ReturnsDbSet(new List<POSTransaction>());
 
         var saleDto = new MakeSaleDto(
-            Guid.NewGuid(),
-            1,
-            0,
-            1,
-            new[] { new SaleItemDto(Guid.NewGuid(), 20, 0, 100m, 1, "") });
+            SalePersonId: Guid.NewGuid(),
+            CustomerId: 1,
+            GeneralDiscount: 0,
+            BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: new[] { new SaleItemDto(Guid.NewGuid(), 20, 0, 100m, 1, "") },
+            Payments: []);
 
         var transactionDto = new POSTransactionDto(1, saleDto, PaymentMethod.Cash, 100m, null);
 
@@ -185,8 +188,15 @@ public class POSSessionManagerTests : BaseTest
         };
         mockIntegrationDbContext.Setup(x => x.POSSessions).ReturnsDbSet(new List<POSSession> { session });
 
-        var saleDto = new MakeSaleDto(Guid.NewGuid(), 1, 0, 1,
-            new[] { new SaleItemDto(Guid.NewGuid(), 20, 0, 100m, 1, "") });
+        var saleDto = new MakeSaleDto(
+            SalePersonId: Guid.NewGuid(),
+            CustomerId: 1,
+            GeneralDiscount: 0,
+            BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: new[] { new SaleItemDto(Guid.NewGuid(), 20, 0, 100m, 1, "") },
+            Payments: []);
         var transactionDto = new POSTransactionDto(1, saleDto, PaymentMethod.Cash, 100m, null);
 
         // Act

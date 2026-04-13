@@ -65,14 +65,17 @@ public sealed class SaleManager(
             .Skip(dto.PageIndex * dto.PageSize)
             .Take(dto.PageSize)
             .Select(x => new SaleListDetailDto(
-                x.Id, x.CreatedAt,
-                x.DiscountVoucherId.HasValue || x.GeneralDiscount > 0 || x.SaleItems.Any(s => s.DiscountPercent > 0),
-                x.GeneralDiscount,
+                x.Id,
+                x.SaleNumber,
+                x.SaleDate,
+                x.SaleSource,
+                x.SaleStatus,
+                x.Customer != null ? x.Customer.FullName : null,
                 x.SalePerson.Name + ' ' + x.SalePerson.Surname,
-                x.Customer!.FullName!,
                 x.SaleItems.Count(),
                 x.SaleItems.Sum(si => si.Quantity),
-                x.SaleItems.Sum(si => si.UnitPrice - si.UnitPrice * ((decimal)si.DiscountPercent / 100))))
+                x.SaleItems.Sum(si => si.UnitPrice - si.UnitPrice * ((decimal)si.DiscountPercent / 100)),
+                x.Payments.Select(p => p.PaymentMethod != null ? p.PaymentMethod.Name : "").ToList()))
             .ToListAsync();
 
         return new SuccessDataResult<Pageable<SaleListDetailDto>>(new Pageable<SaleListDetailDto>(items, dto.PageIndex, dto.PageSize, total));

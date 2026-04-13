@@ -12,7 +12,7 @@
                         <th>Satici</th>
                         <th>Ürün Çeşidi</th>
                         <th>Toplam Adet</th>
-                        <th>Indirim</th>
+                        <th>Ödeme Yöntemleri</th>
                         <th>Toplam Tutar</th>
                     </tr>
                 </thead>
@@ -26,16 +26,16 @@
                             <td>@sale.SaleItemVarietyCount</td>
                             <td>@sale.SaleItemCount</td>
                             <td>
-                                @if (sale.IsDiscountApplied)
+                                @if (sale.PaymentMethods.Any())
                                 {
-                                    <span class="badge bg-yellow-lt">%@sale.GeneralDiscount</span>
+                                    <span class="text-secondary">@string.Join(", ", sale.PaymentMethods)</span>
                                 }
                                 else
                                 {
                                     <span class="text-secondary">-</span>
                                 }
                             </td>
-                            <td><strong>@sale.TotalPrice.ToString("C2")</strong></td>
+                            <td><strong>@sale.GrandTotal.ToMoney()</strong></td>
                         </tr>
                     }
                 </tbody>

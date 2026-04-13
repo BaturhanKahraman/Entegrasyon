@@ -8,6 +8,7 @@ using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
 using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Sales;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.User;
@@ -272,7 +273,10 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
             CustomerId: _customerId,
             GeneralDiscount: 0,
             BranchOfficeId: 1,
-            SaleItems: [new SaleItemDto(variantId, 18, 0, 180, 4, "")]);
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: [new SaleItemDto(variantId, 18, 0, 180, 4, "")],
+            Payments: []);
         var saleResult = await saleManager.MakeSale(saleDto);
         saleResult.Success.Should().BeTrue(saleResult.Message);
 
