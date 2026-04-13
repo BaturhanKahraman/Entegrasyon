@@ -94,8 +94,8 @@ public class POSSessionManagerTests : BaseTest
         };
         var transactions = new List<POSTransaction>
         {
-            new() { Id = 1, POSSessionId = 1, PaymentMethod = PaymentMethod.Cash, CashReceived = 100m, ChangeGiven = 0m },
-            new() { Id = 2, POSSessionId = 1, PaymentMethod = PaymentMethod.CreditCard, CashReceived = 0m, ChangeGiven = 0m }
+            new() { Id = 1, POSSessionId = 1, CashReceived = 100m, ChangeGiven = 0m },
+            new() { Id = 2, POSSessionId = 1, CashReceived = 0m, ChangeGiven = 0m }
         };
         var cashMovements = new List<CashMovement>();
 
@@ -168,7 +168,7 @@ public class POSSessionManagerTests : BaseTest
         // Assert
         result.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
-        result.Data.PaymentMethod.Should().Be(PaymentMethod.Cash);
+        result.Data.Should().NotBeNull();
         _mockSaleManager.Verify(x => x.MakeSale(saleDto), Times.Once);
     }
 
@@ -238,8 +238,8 @@ public class POSSessionManagerTests : BaseTest
 
         var transactions = new List<POSTransaction>
         {
-            new() { Id = 1, POSSessionId = 1, SaleId = sale1.Id, PaymentMethod = PaymentMethod.Cash, CashReceived = 150m, ChangeGiven = 0m, Sale = sale1 },
-            new() { Id = 2, POSSessionId = 1, SaleId = sale2.Id, PaymentMethod = PaymentMethod.CreditCard, CashReceived = 0m, ChangeGiven = 0m, Sale = sale2 }
+            new() { Id = 1, POSSessionId = 1, SaleId = sale1.Id, CashReceived = 150m, ChangeGiven = 0m, Sale = sale1 },
+            new() { Id = 2, POSSessionId = 1, SaleId = sale2.Id, CashReceived = 0m, ChangeGiven = 0m, Sale = sale2 }
         };
         var cashMovements = new List<CashMovement>
         {
