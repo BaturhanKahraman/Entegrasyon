@@ -1,13 +1,16 @@
-﻿namespace Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Sales;
+
+namespace Entegrasyon.Entity.Dtos.Sale;
 
 public record SaleListDetailDto(
     Guid Id,
+    string SaleNumber,
     DateTimeOffset SaleDate,
-    bool IsDiscountApplied,
-    double GeneralDiscount,
+    SaleSource SaleSource,
+    SaleStatus SaleStatus,
+    string? CustomerFullName,
     string SalePersonFullName,
-    string CustomerFullName,
     int SaleItemVarietyCount,
     int SaleItemCount,
-    decimal TotalPrice
-    );
+    decimal GrandTotal,
+    List<string> PaymentMethods);

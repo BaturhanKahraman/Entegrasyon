@@ -1,11 +1,17 @@
-﻿namespace Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Sales;
+
+namespace Entegrasyon.Entity.Dtos.Sale;
 
 public sealed record MakeSaleDto(
     Guid SalePersonId,
     int CustomerId,
     double GeneralDiscount,
     int BranchOfficeId,
-    IEnumerable<SaleItemDto> SaleItems);
+    SaleSource SaleSource,
+    string? Note,
+    IEnumerable<SaleItemDto> SaleItems,
+    List<SalePaymentDto> Payments);
+
 public sealed record SaleItemDto(
     Guid ProductVariantId,
     double TaxPercentage,
