@@ -1,47 +1,86 @@
+@using Entegrasyon.Entity.Dtos.Sale
+@using Entegrasyon.Entity.Sales
+@using System.Globalization
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Sale.SaleListDetailDto>
 
-<div id="sale-table">
-    @if (Model.HasItem)
+@{
+    var tr = new CultureInfo("tr-TR");
+
+    string StatusBadge(SaleStatus s) => s switch
     {
-        <div class="table-responsive">
-            <table class="table table-vcenter card-table table-hover">
-                <thead>
+        SaleStatus.Completed    => "<span class=\"badge bg-green-lt\">Tamamlandı</span>",
+        SaleStatus.PartialReturn => "<span class=\"badge bg-yellow-lt\">Kısmi İade</span>",
+        SaleStatus.FullReturn   => "<span class=\"badge bg-red-lt\">Tam İade</span>",
+        SaleStatus.Cancelled    => "<span class=\"badge bg-secondary\">İptal</span>",
+        _                       => ""
+    };
+
+    string SourceBadge(SaleSource src) => src switch
+    {
+        SaleSource.POS    => "<span class=\"badge bg-blue-lt\">POS</span>",
+        SaleSource.Manual => "<span class=\"badge bg-purple-lt\">Manuel</span>",
+        _                 => ""
+    };
+}
+
+<div id="sale-table">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+            <thead>
+                <tr>
+                    <th>Fiş No</th>
+                    <th>Tarih</th>
+                    <th>Kaynak</th>
+                    <th>Müşteri</th>
+                    <th>Kasiyer</th>
+                    <th class="text-end">Ürün</th>
+                    <th class="text-end">Tutar</th>
+                    <th>Ödeme</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.HasItem)
+                {
                     <tr>
-                        <th>Tarih</th>
-                        <th>Müşteri</th>
-                        <th>Satici</th>
-                        <th>Ürün Çeşidi</th>
-                        <th>Toplam Adet</th>
-                        <th>Ödeme Yöntemleri</th>
-                        <th>Toplam Tutar</th>
+                        <td colspan="9" class="text-center text-muted py-4">Kayıt bulunamadı</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var sale in Model.Items)
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
                     {
-                        <tr>
-                            <td class="text-secondary">@sale.SaleDate.ToString("dd.MM.yyyy HH:mm")</td>
-                            <td>@sale.CustomerFullName</td>
-                            <td class="text-secondary">@sale.SalePersonFullName</td>
-                            <td>@sale.SaleItemVarietyCount</td>
-                            <td>@sale.SaleItemCount</td>
+                        <tr data-href="/sales/@item.Id">
+                            <td><strong>@item.SaleNumber</strong></td>
+                            <td>@item.SaleDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@Html.Raw(SourceBadge(item.SaleSource))</td>
+                            <td>@(item.CustomerFullName ?? "—")</td>
+                            <td>@item.SalePersonFullName</td>
+                            <td class="text-end">@item.SaleItemCount (@item.SaleItemVarietyCount çeşit)</td>
+                            <td class="text-end fw-bold">@item.GrandTotal.ToString("C2", tr)</td>
                             <td>
-                                @if (sale.PaymentMethods.Any())
+                                @if (item.PaymentMethods.Any())
                                 {
-                                    <span class="text-secondary">@string.Join(", ", sale.PaymentMethods)</span>
+                                    @foreach (var method in item.PaymentMethods.Distinct())
+                                    {
+                                        <span class="badge bg-secondary-lt me-1">@method</span>
+                                    }
                                 }
                                 else
                                 {
-                                    <span class="text-secondary">-</span>
+                                    <span class="text-muted">—</span>
                                 }
                             </td>
-                            <td><strong>@sale.GrandTotal.ToMoney()</strong></td>
+                            <td>@Html.Raw(StatusBadge(item.SaleStatus))</td>
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
+    </div>
 
+    @if (Model.TotalPageCount > 1)
+    {
         <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
                  model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
                  {
@@ -52,21 +91,10 @@
                      TargetId = "#sale-table",
                      QueryParams = new Dictionary<string, string>
                      {
-                         ["search"] = ViewBag.Search as string ?? "",
-                         ["startDate"] = ViewBag.StartDate as string ?? "",
-                         ["endDate"] = ViewBag.EndDate as string ?? ""
+                         ["search"] = ViewBag.CurrentFilters is Entegrasyon.Entity.Dtos.Sale.SalePageableDto f ? f.FullTextSearchKey : "",
+                         ["startDate"] = ViewBag.CurrentFilters is Entegrasyon.Entity.Dtos.Sale.SalePageableDto f2 ? (f2.DateBetweenStart?.ToString("yyyy-MM-dd") ?? "") : "",
+                         ["endDate"] = ViewBag.CurrentFilters is Entegrasyon.Entity.Dtos.Sale.SalePageableDto f3 ? (f3.DateBetweenEnd?.ToString("yyyy-MM-dd") ?? "") : ""
                      }
                  }'/>
-    }
-    else
-    {
-        <div class="card-body">
-            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
-                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
-                     {
-                         Title = "Satış bulunamadi",
-                         Subtitle = "Henüz satış kaydi yok veya arama kriterinize uygun satış bulunamadi."
-                     }'/>
-        </div>
     }
 </div>

@@ -28,31 +28,35 @@ public class SaleController(
         string? search = null,
         DateTimeOffset? startDate = null,
         DateTimeOffset? endDate = null,
-        int page = 1)
+        SaleSource? source = null,
+        SaleStatus? status = null,
+        int page = 0)
     {
-        ViewData.SetPageTitle("Satışlar");
-        ViewData.SetActiveNav("sales");
+        var start = startDate ?? DateTimeOffset.UtcNow.Date;
+        var end = endDate ?? DateTimeOffset.UtcNow.Date.AddDays(1);
 
         var dto = new SalePageableDto(
             CustomerId: null,
-            DateBetweenStart: startDate,
-            DateBetweenEnd: endDate,
+            DateBetweenStart: start,
+            DateBetweenEnd: end,
             SalePersonId: Guid.Empty,
-            SaleSource: null,
-            SaleStatus: null,
+            SaleSource: source,
+            SaleStatus: status,
             FullTextSearchKey: search ?? "",
-            PageIndex: page - 1,
-            PageSize: 20);
+            PageIndex: page);
 
-        var result = await saleManager.GetSalesPageable(dto);
+        var salesResult = await saleManager.GetSalesPageable(dto);
+        var summaryResult = await saleManager.GetSalesSummaryAsync(dto);
+
+        ViewData.SetPageTitle("Satışlar");
+        ViewData.SetActiveNav("sales");
+        ViewBag.Summary = summaryResult.Data;
+        ViewBag.CurrentFilters = dto;
 
         if (Request.IsHtmx())
-            return PartialView("Partials/_SaleTable", result.Data);
+            return PartialView("Partials/_SaleTable", salesResult.Data);
 
-        ViewBag.Search = search;
-        ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
-        ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
-        return View(result.Data);
+        return View(salesResult.Data);
     }
 
     // ── New Sale Entry ───────────────────────────────────────────────────

@@ -1,114 +1,84 @@
+@using Entegrasyon.Entity.Dtos.Sale
+@using Entegrasyon.Entity.Sales
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Sale.SaleListDetailDto>
+@{
+    var summary = ViewBag.Summary as SaleSummaryDto ?? new SaleSummaryDto(0m, 0, 0m, 0m);
+    var filters = ViewBag.CurrentFilters as SalePageableDto;
+}
 
-<div class="d-flex justify-content-end mb-3 d-print-none">
+<div class="page-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="page-title">Satışlar</h2>
+        <div class="text-muted">POS ve manuel satış kayıtları</div>
+    </div>
     <a href="/sales/create" class="btn btn-primary">
-        <i class="ti ti-plus icon"></i>
-        Yeni Satış
+        <i class="ti ti-plus me-1"></i>Yeni Satış
     </a>
 </div>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="row g-2 align-items-center w-100">
-                    <div class="col-auto">
-                        <input type="text"
-                               class="form-control"
-                               name="search"
-                               placeholder="Satış ara..."
-                               value="@ViewBag.Search"
-                               hx-get="/sales"
-                               hx-trigger="keyup changed delay:300ms"
-                               hx-target="#sale-table"
-                               hx-swap="outerHTML"
-                               hx-include="[name='search'], [name='startDate'], [name='endDate']"/>
-                    </div>
-                    <div class="col-auto">
-                        <input type="date" class="form-control" name="startDate" value="@ViewBag.StartDate"
-                               hx-get="/sales"
-                               hx-trigger="change"
-                               hx-target="#sale-table"
-                               hx-swap="outerHTML"
-                               hx-include="[name='search'], [name='startDate'], [name='endDate']"/>
-                    </div>
-                    <div class="col-auto">
-                        <input type="date" class="form-control" name="endDate" value="@ViewBag.EndDate"
-                               hx-get="/sales"
-                               hx-trigger="change"
-                               hx-target="#sale-table"
-                               hx-swap="outerHTML"
-                               hx-include="[name='search'], [name='startDate'], [name='endDate']"/>
-                    </div>
-                </div>
+@await Html.PartialAsync("Partials/_SaleSummaryCards", summary)
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" action="/sales" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">Başlangıç</label>
+                <input type="date" name="startDate" class="form-control"
+                       value="@(filters?.DateBetweenStart?.ToString("yyyy-MM-dd"))" />
             </div>
+            <div class="col-md-2">
+                <label class="form-label">Bitiş</label>
+                <input type="date" name="endDate" class="form-control"
+                       value="@(filters?.DateBetweenEnd?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Kaynak</label>
+                <select name="source" class="form-select">
+                    <option value="">Tümü</option>
+                    <option value="@SaleSource.POS" selected="@(filters?.SaleSource == SaleSource.POS ? "selected" : null)">POS</option>
+                    <option value="@SaleSource.Manual" selected="@(filters?.SaleSource == SaleSource.Manual ? "selected" : null)">Manuel</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Durum</label>
+                <select name="status" class="form-select">
+                    <option value="">Tümü</option>
+                    <option value="@SaleStatus.Completed" selected="@(filters?.SaleStatus == SaleStatus.Completed ? "selected" : null)">Tamamlandı</option>
+                    <option value="@SaleStatus.PartialReturn" selected="@(filters?.SaleStatus == SaleStatus.PartialReturn ? "selected" : null)">Kısmi İade</option>
+                    <option value="@SaleStatus.FullReturn" selected="@(filters?.SaleStatus == SaleStatus.FullReturn ? "selected" : null)">Tam İade</option>
+                    <option value="@SaleStatus.Cancelled" selected="@(filters?.SaleStatus == SaleStatus.Cancelled ? "selected" : null)">İptal</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Arama</label>
+                <input type="search" name="search" class="form-control"
+                       placeholder="Fiş no, müşteri..."
+                       value="@(filters?.FullTextSearchKey)" />
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="ti ti-search"></i>
+                </button>
+            </div>
+        </form>
 
-            <div id="sale-table">
-                @if (Model.HasItem)
-                {
-                    <div class="table-responsive">
-                        <table class="table table-vcenter card-table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Tarih</th>
-                                    <th>Müşteri</th>
-                                    <th>Satici</th>
-                                    <th>Ürün Çeşidi</th>
-                                    <th>Toplam Adet</th>
-                                    <th>Ödeme Yöntemleri</th>
-                                    <th>Toplam Tutar</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var sale in Model.Items)
-                                {
-                                    <tr>
-                                        <td class="text-secondary">@sale.SaleDate.ToString("dd.MM.yyyy HH:mm")</td>
-                                        <td>@sale.CustomerFullName</td>
-                                        <td class="text-secondary">@sale.SalePersonFullName</td>
-                                        <td>@sale.SaleItemVarietyCount</td>
-                                        <td>@sale.SaleItemCount</td>
-                                        <td>
-                                            @if (sale.PaymentMethods.Any())
-                                            {
-                                                <span class="text-secondary">@string.Join(", ", sale.PaymentMethods)</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-secondary">-</span>
-                                            }
-                                        </td>
-                                        <td><strong>@sale.GrandTotal.ToMoney()</strong></td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
-                             model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
-                             {
-                                 CurrentPage = Model.CurrentPageIndex + 1,
-                                 TotalPages = Model.TotalPageCount,
-                                 TotalCount = Model.TotalItemCount,
-                                 BaseUrl = "/sales",
-                                 TargetId = "#sale-table",
-                                 QueryParams = new Dictionary<string, string>
-                                 {
-                                     ["search"] = ViewBag.Search as string ?? "",
-                                     ["startDate"] = ViewBag.StartDate as string ?? "",
-                                     ["endDate"] = ViewBag.EndDate as string ?? ""
-                                 }
-                             }'/>
-                }
-                else
-                {
-                    <div class="card-body">
-                        <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
-                                 model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
-                                 {
-                                     Title = "Satış bulunamadi",
-                                     Subtitle = "Henüz satış kaydi yok veya arama kriterinize uygun satış bulunamadi."
-                                 }'/>
-                    </div>
-                }
+        <div class="mt-2">
+            <div class="btn-list">
+                <a href="/sales?startDate=@(DateTimeOffset.UtcNow.Date.ToString("yyyy-MM-dd"))&endDate=@(DateTimeOffset.UtcNow.Date.AddDays(1).ToString("yyyy-MM-dd"))"
+                   class="btn btn-sm btn-outline-secondary">Bugün</a>
+                <a href="/sales?startDate=@(DateTimeOffset.UtcNow.Date.AddDays(-1).ToString("yyyy-MM-dd"))&endDate=@(DateTimeOffset.UtcNow.Date.ToString("yyyy-MM-dd"))"
+                   class="btn btn-sm btn-outline-secondary">Dün</a>
+                <a href="/sales?startDate=@(DateTimeOffset.UtcNow.Date.AddDays(-(int)DateTimeOffset.UtcNow.DayOfWeek + 1).ToString("yyyy-MM-dd"))&endDate=@(DateTimeOffset.UtcNow.Date.AddDays(1).ToString("yyyy-MM-dd"))"
+                   class="btn btn-sm btn-outline-secondary">Bu Hafta</a>
+                <a href="/sales?startDate=@(new DateTime(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1).ToString("yyyy-MM-dd"))&endDate=@(DateTimeOffset.UtcNow.Date.AddDays(1).ToString("yyyy-MM-dd"))"
+                   class="btn btn-sm btn-outline-secondary">Bu Ay</a>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="card">
+    <div id="sale-table-container">
+        @await Html.PartialAsync("Partials/_SaleTable", Model)
+    </div>
+</div>
