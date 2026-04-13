@@ -1,0 +1,237 @@
+@using Entegrasyon.Entity.Dtos.Sale
+@using Entegrasyon.Entity.Sales
+@using System.Globalization
+@model SaleDetailDto
+
+@{
+    var tr = new CultureInfo("tr-TR");
+
+    string StatusBadge(SaleStatus status) => status switch
+    {
+        SaleStatus.Completed => "<span class=\"badge bg-green\">Tamamlandı</span>",
+        SaleStatus.PartialReturn => "<span class=\"badge bg-yellow\">Kısmi İade</span>",
+        SaleStatus.FullReturn => "<span class=\"badge bg-red\">Tam İade</span>",
+        SaleStatus.Cancelled => "<span class=\"badge bg-secondary\">İptal</span>",
+        _ => ""
+    };
+
+    string SourceBadge(SaleSource source) => source switch
+    {
+        SaleSource.POS => "<span class=\"badge bg-blue-lt\">POS</span>",
+        SaleSource.Manual => "<span class=\"badge bg-purple-lt\">Manuel</span>",
+        _ => ""
+    };
+
+    string ReturnStatusBadge(ReturnStatus status) => status switch
+    {
+        ReturnStatus.Pending => "<span class=\"badge bg-yellow\">Beklemede</span>",
+        ReturnStatus.Approved => "<span class=\"badge bg-green\">Onaylandı</span>",
+        ReturnStatus.Rejected => "<span class=\"badge bg-red\">Reddedildi</span>",
+        _ => ""
+    };
+
+    var isCancellable = Model.SaleStatus != SaleStatus.Cancelled
+                     && Model.SaleDate.Date == DateTimeOffset.UtcNow.Date;
+    var isReturnable = Model.SaleStatus == SaleStatus.Completed
+                    || Model.SaleStatus == SaleStatus.PartialReturn;
+}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <div class="page-pretitle">
+            <a href="/sales">Satışlar</a>
+        </div>
+        <h2 class="page-title">Satış Detay</h2>
+        <div class="text-muted">Fiş No: <strong>@Model.SaleNumber</strong></div>
+    </div>
+    <div class="btn-list">
+        @if (isReturnable)
+        {
+            <button type="button" class="btn btn-outline-warning"
+                    hx-get="/sales/@Model.Id/return-dialog"
+                    hx-target="#return-dialog-container"
+                    hx-swap="innerHTML">
+                <i class="ti ti-arrow-back me-1"></i>İade Et
+            </button>
+        }
+        <a href="/sales/@Model.Id/print" target="_blank" class="btn btn-outline-primary">
+            <i class="ti ti-printer me-1"></i>Yazdır
+        </a>
+        @if (isCancellable)
+        {
+            <form method="post" action="/sales/@Model.Id/cancel" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger"
+                        onclick="return confirm('Satışı iptal etmek istediğinize emin misiniz?')">
+                    <i class="ti ti-x me-1"></i>İptal Et
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div id="return-dialog-container"></div>
+
+<div class="row row-cards">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2"><strong>Fiş No:</strong> @Model.SaleNumber</div>
+                        <div class="mb-2"><strong>Tarih:</strong> @Model.SaleDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        <div class="mb-2"><strong>Kasiyer:</strong> @Model.SalePersonName</div>
+                        <div class="mb-2"><strong>Şube:</strong> @Model.BranchOfficeName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2"><strong>Kaynak:</strong> @Html.Raw(SourceBadge(Model.SaleSource))</div>
+                        <div class="mb-2"><strong>Durum:</strong> @Html.Raw(StatusBadge(Model.SaleStatus))</div>
+                        <div class="mb-2"><strong>Müşteri:</strong> @(Model.CustomerName ?? "—")</div>
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <div class="mb-2"><strong>Not:</strong> @Model.Note</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Satılan Ürünler</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th class="text-end">Adet</th>
+                            <th class="text-end">Birim Fiyat (KDV Dahil)</th>
+                            <th class="text-end">KDV</th>
+                            <th class="text-end">Satır Toplamı</th>
+                            <th>İade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            var isFullyReturned = item.ReturnedQuantity >= item.Quantity;
+                            <tr class="@(isFullyReturned ? "text-decoration-line-through text-muted" : "")">
+                                <td>
+                                    <div class="fw-bold">@item.ProductTitle</div>
+                                    <div class="text-muted small">@item.Barcode</div>
+                                </td>
+                                <td class="text-end">@item.Quantity</td>
+                                <td class="text-end">@item.UnitPriceWithVat.ToString("C2", tr)</td>
+                                <td class="text-end">%@item.VatRate</td>
+                                <td class="text-end fw-bold">@item.LineTotalWithVat.ToString("C2", tr)</td>
+                                <td>
+                                    @if (item.ReturnedQuantity > 0)
+                                    {
+                                        <span class="badge bg-yellow-lt">@item.ReturnedQuantity / @item.Quantity iade</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.Returns.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">İade Geçmişi</h3>
+                </div>
+                <div class="list-group list-group-flush">
+                    @foreach (var ret in Model.Returns.OrderByDescending(r => r.ReturnDate))
+                    {
+                        <div class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div>@Html.Raw(ReturnStatusBadge(ret.ReturnStatus)) @ret.ReturnReason</div>
+                                    <div class="text-muted small">@ret.ReturnDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm") — @ret.ReturnedByName — @ret.ItemCount kalem</div>
+                                </div>
+                                <div class="col-auto fw-bold">@ret.RefundAmount.ToString("C2", tr)</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Ödeme Bilgileri</h3>
+            </div>
+            <div class="list-group list-group-flush">
+                @foreach (var payment in Model.Payments)
+                {
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-auto"><i class="@payment.PaymentMethodIcon"></i></div>
+                            <div class="col">
+                                <div class="fw-bold">@payment.PaymentMethodName</div>
+                                @if (!string.IsNullOrEmpty(payment.CardAuthCode))
+                                {
+                                    <div class="text-muted small">Provizyon: @payment.CardAuthCode</div>
+                                }
+                                <div class="text-muted small">@payment.PaidAt.ToLocalTime().ToString("HH:mm")</div>
+                            </div>
+                            <div class="col-auto fw-bold">@payment.Amount.ToString("C2", tr)</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">KDV Dökümü</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Oran</th>
+                            <th class="text-end">Matrah</th>
+                            <th class="text-end">KDV</th>
+                            <th class="text-end">Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in Model.VatSummary)
+                        {
+                            <tr>
+                                <td>%@line.VatRate</td>
+                                <td class="text-end">@line.TaxBase.ToString("C2", tr)</td>
+                                <td class="text-end">@line.VatAmount.ToString("C2", tr)</td>
+                                <td class="text-end">@line.Total.ToString("C2", tr)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Ara Toplam (KDV Hariç)</span>
+                    <span>@Model.SubTotal.ToString("C2", tr)</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">KDV</span>
+                    <span>@Model.VatTotal.ToString("C2", tr)</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold fs-4 pt-2 border-top">
+                    <span>Genel Toplam</span>
+                    <span>@Model.GrandTotal.ToString("C2", tr)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

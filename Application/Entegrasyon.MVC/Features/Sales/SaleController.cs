@@ -14,9 +14,12 @@ namespace Entegrasyon.MVC.Features.Sales;
 public class SaleController(
     ISaleManager saleManager,
     IProductService productService,
-    ICustomerManager customerManager) : Controller
+    ICustomerManager customerManager,
+    IPaymentMethodManager paymentMethodManager,
+    ITenantContext tenantContext) : Controller
 {
     private const int defaultBranchOfficeId = 1;
+    private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
 
     private Guid GetCurrentUserId()
         => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -290,6 +293,52 @@ public class SaleController(
 
         TempData.SetSuccess("Satis basariyla tamamlandi.");
         return RedirectToAction(nameof(Index));
+    }
+
+    // ── Sale Detail ──────────────────────────────────────────────────────
+
+    [HttpGet("/sales/{id:guid}")]
+    public async Task<IActionResult> Detail(Guid id)
+    {
+        var result = await saleManager.GetSaleDetailAsync(id);
+        if (!result.Success || result.Data is null)
+        {
+            TempData.SetError(result.Message ?? "Satış bulunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var paymentMethods = await paymentMethodManager.GetActivePaymentMethodsAsync(TenantId);
+
+        ViewData.SetPageTitle($"Satış Detay — {result.Data.SaleNumber}");
+        ViewData.SetActiveNav("sales");
+        ViewBag.PaymentMethods = paymentMethods.Data ?? [];
+
+        return View(result.Data);
+    }
+
+    [HttpGet("/sales/{id:guid}/print")]
+    public async Task<IActionResult> Print(Guid id)
+    {
+        var result = await saleManager.GetSaleDetailAsync(id);
+        if (!result.Success || result.Data is null)
+            return NotFound();
+
+        return View(result.Data);
+    }
+
+    [HttpPost("/sales/{id:guid}/cancel")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        var result = await saleManager.CancelSaleAsync(id, userId);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "Satış iptal edildi.");
+        else
+            TempData.SetError(result.Message ?? "Satış iptal edilemedi.");
+
+        return RedirectToAction(nameof(Detail), new { id });
     }
 
     // ── Session-based Cart ───────────────────────────────────────────────
