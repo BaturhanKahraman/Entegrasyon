@@ -22,7 +22,7 @@ public sealed class SaleManager(
     IFluentValidator fluentValidator,
     IOfficeStockManager officeStockManager) : ISaleManager
 {
-    public async Task<IResult> MakeSale(MakeSaleDto dto)
+    public async Task<IDataResult<Guid>> MakeSale(MakeSaleDto dto)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         await applicationLogManager.AddLog("Satış yapma isteği geldi.", LogType.Sale, LogAction.Add, dto);
@@ -49,7 +49,7 @@ public sealed class SaleManager(
                 StockMovementType.Sale, "Sale");
 
             if (!stockResult.Success)
-                return new ErrorResult(stockResult.Message!);
+                return new ErrorDataResult<Guid>(Guid.Empty, stockResult.Message!);
 
             if (variantInfo.TryGetValue(item.ProductVariantId, out var info))
             {
@@ -80,7 +80,7 @@ public sealed class SaleManager(
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Satış başarı ile tamamlandı.", LogType.Sale, LogAction.Add, dto);
         logger.LogInformation("Sale completed: {SaleNumber}", sale.SaleNumber);
-        return new SuccessResult(Messages.SaleSuccess);
+        return new SuccessDataResult<Guid>(sale.Id, Messages.SaleSuccess);
     }
 
     public async Task<IDataResult<Pageable<SaleListDetailDto>>> GetSalesPageable(SalePageableDto dto)

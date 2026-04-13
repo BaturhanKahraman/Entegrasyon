@@ -16,7 +16,9 @@ namespace Entegrasyon.MVC.Features.POS;
 public class POSController(
     IPOSSessionManager posSessionManager,
     ISaleManager saleManager,
-    IProductService productService) : Controller
+    IProductService productService,
+    IPaymentMethodManager paymentMethodManager,
+    ITenantContext tenantContext) : Controller
 {
     // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -25,6 +27,8 @@ public class POSController(
 
     private string GetCurrentUserName()
         => User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(ClaimTypes.Name) ?? "Kasiyer";
+
+    private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
 
     // Varsayilan branch office — ilerde claims'ten alinabilir
     private const int DefaultBranchOfficeId = 1;
@@ -206,18 +210,26 @@ public class POSController(
     // ── Payment Dialog (HTMX) ───────────────────────────────────────────
 
     [HttpGet("/pos/payment-dialog")]
-    public IActionResult PaymentDialog([FromQuery] long sessionId)
+    public async Task<IActionResult> PaymentDialog()
     {
         var cart = GetCartFromSession();
+        if (cart.Count == 0) return BadRequest("Sepet boş.");
+
+        var sessionResult = await posSessionManager.GetActiveSessionAsync(DefaultBranchOfficeId);
+        if (!sessionResult.Success || sessionResult.Data is null)
+            return BadRequest("Aktif kasa oturumu bulunamadı.");
+
         var cartVm = new POSCartVm { Items = cart };
+        var paymentMethodsResult = await paymentMethodManager.GetActivePaymentMethodsAsync(TenantId);
 
         var vm = new POSPaymentDialogVm
         {
-            SessionId = sessionId,
+            SessionId = sessionResult.Data.Id,
             Subtotal = cartVm.Subtotal,
             VatTotal = cartVm.VatTotal,
             GrandTotal = cartVm.GrandTotal,
-            ItemCount = cartVm.TotalItems
+            ItemCount = cartVm.TotalItems,
+            PaymentMethods = paymentMethodsResult.Data ?? []
         };
 
         return PartialView("Partials/_POSPaymentDialog", vm);
@@ -249,16 +261,25 @@ public class POSController(
 
     [HttpPost("/pos/complete-sale")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CompleteSale(
-        [FromForm] long sessionId,
-        [FromForm] PaymentMethod paymentMethod,
-        [FromForm] decimal cashReceived,
-        [FromForm] string? cardAuthCode)
+    public async Task<IActionResult> CompleteSale([FromForm] List<SalePaymentDto> payments)
     {
         var cart = GetCartFromSession();
         if (cart.Count == 0)
         {
             TempData.SetError("Sepet boş. Satış yapılamaz.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (payments == null || payments.Count == 0)
+        {
+            TempData.SetError("En az bir ödeme yöntemi seçmelisiniz.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var sessionResult = await posSessionManager.GetActiveSessionAsync(DefaultBranchOfficeId);
+        if (!sessionResult.Success || sessionResult.Data is null)
+        {
+            TempData.SetError("Aktif kasa oturumu bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -278,9 +299,8 @@ public class POSController(
             SaleSource: SaleSource.POS,
             Note: null,
             SaleItems: saleItems,
-            Payments: []);
+            Payments: payments);
 
-        // Satis kaydi
         var saleResult = await saleManager.MakeSale(makeSaleDto);
         if (!saleResult.Success)
         {
@@ -288,19 +308,9 @@ public class POSController(
             return RedirectToAction(nameof(Index));
         }
 
-        // POS Transaction kaydi
-        var transactionDto = new POSTransactionDto(
-            POSSessionId: sessionId,
-            Sale: makeSaleDto,
-            PaymentMethod: paymentMethod,
-            CashReceived: cashReceived,
-            CardAuthCode: cardAuthCode);
-
-        await posSessionManager.RecordTransactionAsync(transactionDto);
-
         // Sepeti temizle
         SaveCartToSession([]);
-        TempData.SetSuccess("Satis basariyla tamamlandi.");
+        TempData.SetSuccess("Satış başarıyla tamamlandı.");
         return RedirectToAction(nameof(Index));
     }
 

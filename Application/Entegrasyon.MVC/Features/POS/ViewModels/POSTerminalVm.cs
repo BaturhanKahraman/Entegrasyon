@@ -1,4 +1,5 @@
 using Entegrasyon.Entity.Dtos.POS;
+using Entegrasyon.Entity.Sales;
 
 namespace Entegrasyon.MVC.Features.POS.ViewModels;
 
@@ -57,6 +58,7 @@ public class POSPaymentDialogVm
     public decimal VatTotal { get; set; }
     public decimal GrandTotal { get; set; }
     public int ItemCount { get; set; }
+    public List<PaymentMethodDefinition> PaymentMethods { get; set; } = [];
 }
 
 public class POSCloseSessionDialogVm

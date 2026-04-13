@@ -6,7 +6,7 @@ namespace Entegrasyon.Business.Abstract;
 
 public interface ISaleManager
 {
-    Task<IResult> MakeSale(MakeSaleDto dto);
+    Task<IDataResult<Guid>> MakeSale(MakeSaleDto dto);
     Task<IDataResult<Pageable<SaleListDetailDto>>> GetSalesPageable(SalePageableDto dto);
     Task<IDataResult<SaleDetailDto>> GetSaleDetailAsync(Guid saleId);
     Task<IResult> CancelSaleAsync(Guid saleId, Guid cancelledByUserId);

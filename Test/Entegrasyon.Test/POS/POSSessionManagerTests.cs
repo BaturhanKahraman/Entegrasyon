@@ -4,6 +4,7 @@ using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.POS;
+using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Sales;
 using Microsoft.Extensions.Logging;
 
@@ -163,7 +164,7 @@ public class POSSessionManagerTests : BaseTest
 
         _mockSaleManager
             .Setup(x => x.MakeSale(It.IsAny<MakeSaleDto>()))
-            .ReturnsAsync(new SuccessResult(Messages.SaleSuccess));
+            .ReturnsAsync(new SuccessDataResult<Guid>(Guid.NewGuid(), "Satış başarıyla tamamlandı."));
 
         // Act
         var result = await _manager.RecordTransactionAsync(transactionDto);

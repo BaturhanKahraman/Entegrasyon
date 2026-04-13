@@ -1,191 +1,307 @@
-@model Entegrasyon.MVC.Features.POS.ViewModels.POSPaymentDialogVm
+@using Entegrasyon.Entity.Sales
+@using Entegrasyon.MVC.Features.POS.ViewModels
+@using System.Globalization
+@model POSPaymentDialogVm
+@{
+    var tr = new CultureInfo("tr-TR");
+}
 
-<div class="modal-dialog modal-md">
-    <div class="modal-content">
-        <form method="post" action="/pos/complete-sale" id="paymentModalForm">
+<div class="modal modal-blur fade" id="posPaymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <form id="pos-payment-form" method="post" action="/pos/complete-sale">
             @Html.AntiForgeryToken()
-            <input type="hidden" name="sessionId" value="@Model.SessionId" />
-
-            <div class="modal-header">
-                <h5 class="modal-title">Odeme</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <!-- Sepet Ozeti -->
-                <div class="alert alert-info py-2 mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>@Model.ItemCount adet ürün</span>
-                        <span class="fw-bold">Ara Toplam: @Model.Subtotal.ToString("N2") TL</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>KDV</span>
-                        <span>@Model.VatTotal.ToString("N2") TL</span>
-                    </div>
-                    <hr class="my-1" />
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bold fs-4">TOPLAM</span>
-                        <span class="fw-bold fs-4 text-primary" id="pmGrandTotal"
-                              data-amount="@Model.GrandTotal">@Model.GrandTotal.ToString("N2") TL</span>
-                    </div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ödeme — @Model.ItemCount kalem</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
                 </div>
-
-                <!-- Odeme Yontemi -->
-                <div class="mb-3">
-                    <label class="form-label">Odeme Yontemi</label>
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <label class="form-selectgroup-item flex-fill">
-                                <input type="radio" name="paymentMethod" value="1"
-                                       class="form-selectgroup-input pm-radio" checked />
-                                <span class="form-selectgroup-label d-flex align-items-center justify-content-center p-2">
-                                    <i class="ti ti-cash icon me-1"></i>
-                                    Nakit
-                                </span>
-                            </label>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="card card-sm bg-muted-lt">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">Ara Toplam</div>
+                                    <div class="fw-bold">@Model.Subtotal.ToString("C2", tr)</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <label class="form-selectgroup-item flex-fill">
-                                <input type="radio" name="paymentMethod" value="2"
-                                       class="form-selectgroup-input pm-radio" />
-                                <span class="form-selectgroup-label d-flex align-items-center justify-content-center p-2">
-                                    <i class="ti ti-credit-card icon me-1"></i>
-                                    Kredi Karti
-                                </span>
-                            </label>
+                        <div class="col-md-4">
+                            <div class="card card-sm bg-muted-lt">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">KDV</div>
+                                    <div class="fw-bold">@Model.VatTotal.ToString("C2", tr)</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <label class="form-selectgroup-item flex-fill">
-                                <input type="radio" name="paymentMethod" value="4"
-                                       class="form-selectgroup-input pm-radio" />
-                                <span class="form-selectgroup-label d-flex align-items-center justify-content-center p-2">
-                                    <i class="ti ti-activity icon me-1"></i>
-                                    Karma
-                                </span>
-                            </label>
+                        <div class="col-md-4">
+                            <div class="card card-sm bg-green-lt">
+                                <div class="card-body text-center">
+                                    <div class="text-muted small">Toplam</div>
+                                    <div class="fw-bold fs-3" id="pos-grand-total" data-amount="@Model.GrandTotal.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.GrandTotal.ToString("C2", tr)</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Nakit Alani -->
-                <div id="pmCashSection">
-                    <div class="mb-3">
-                        <label class="form-label">Alinan Nakit (TL)</label>
-                        <input type="number" name="cashReceived" id="pmCashReceived"
-                               class="form-control form-control-lg" step="0.01" min="0"
-                               value="@Model.GrandTotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" />
-                    </div>
-                    <div id="pmChangeRow" class="alert alert-success py-2 mb-3" style="display:none;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold">Para Ustu:</span>
-                            <span class="fw-bold fs-3" id="pmChangeAmount">0.00 TL</span>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card card-sm">
+                                <div class="card-body">
+                                    <div class="text-muted small">Ödenen</div>
+                                    <div class="fw-bold fs-4" id="pos-paid-total">@((0m).ToString("C2", tr))</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card card-sm" id="pos-remaining-card">
+                                <div class="card-body">
+                                    <div class="text-muted small">Kalan</div>
+                                    <div class="fw-bold fs-4" id="pos-remaining">@Model.GrandTotal.ToString("C2", tr)</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <hr />
+
+                    <h4>Ödeme Yöntemleri</h4>
+                    @if (!Model.PaymentMethods.Any())
+                    {
+                        <div class="alert alert-warning">
+                            Aktif ödeme yöntemi bulunamadı. Lütfen <a href="/settings/payment-methods">Ayarlar → Ödeme Yöntemleri</a> sayfasından ödeme yöntemi ekleyin.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <div class="btn-list" id="pos-method-buttons">
+                                @foreach (var method in Model.PaymentMethods)
+                                {
+                                    <button type="button" class="btn btn-outline-primary pos-add-payment"
+                                            data-method-id="@method.Id"
+                                            data-method-name="@method.Name"
+                                            data-method-icon="@method.Icon"
+                                            data-requires-auth="@method.RequiresAuthCode.ToString().ToLower()"
+                                            data-requires-cash="@method.RequiresCashInput.ToString().ToLower()">
+                                        <i class="@method.Icon me-1"></i>@method.Name
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div id="pos-payment-rows"></div>
                 </div>
 
-                <!-- Kart Alani -->
-                <div id="pmCardSection" style="display:none;">
-                    <div class="mb-3">
-                        <label class="form-label">Provizyon Kodu (Opsiyonel)</label>
-                        <input type="text" name="cardAuthCode" id="pmCardAuthCode"
-                               class="form-control" placeholder="orn. 123456" />
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" id="pos-complete-btn" class="btn btn-success" disabled>
+                        <i class="ti ti-check me-1"></i>Satışı Tamamla
+                    </button>
                 </div>
-
-                <!-- Karma Odeme Alani -->
-                <div id="pmMixedSection" style="display:none;">
-                    <div class="mb-3">
-                        <label class="form-label">Nakit Tutar (TL)</label>
-                        <input type="number" id="pmMixedCash"
-                               class="form-control" step="0.01" min="0" value="0" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kart Tutar (TL)</label>
-                        <input type="text" id="pmMixedCard" class="form-control" readonly
-                               value="@Model.GrandTotal.ToString("N2")" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Provizyon Kodu (Opsiyonel)</label>
-                        <input type="text" id="pmMixedAuthCode" class="form-control" placeholder="orn. 123456" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
-                <button type="submit" class="btn btn-success btn-lg" id="pmSubmitBtn">
-                    Odemeyi Tamamla
-                </button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-(function() {
-    var grandTotal = parseFloat(document.getElementById('pmGrandTotal').dataset.amount);
-    var cashSection = document.getElementById('pmCashSection');
-    var cardSection = document.getElementById('pmCardSection');
-    var mixedSection = document.getElementById('pmMixedSection');
-    var cashInput = document.getElementById('pmCashReceived');
-    var changeRow = document.getElementById('pmChangeRow');
-    var changeAmount = document.getElementById('pmChangeAmount');
-    var form = document.getElementById('paymentModalForm');
+(function () {
+    var modalEl = document.getElementById('posPaymentModal');
+    if (!modalEl) return;
 
-    function updateChange() {
-        var received = parseFloat(cashInput.value) || 0;
-        var change = received - grandTotal;
-        if (change > 0) {
-            changeRow.style.display = 'block';
-            changeAmount.textContent = change.toFixed(2) + ' TL';
-        } else {
-            changeRow.style.display = 'none';
-        }
-    }
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
 
-    function showSection(method) {
-        cashSection.style.display = method === '1' ? 'block' : 'none';
-        cardSection.style.display = method === '2' || method === '3' ? 'block' : 'none';
-        mixedSection.style.display = method === '4' ? 'block' : 'none';
-    }
-
-    document.querySelectorAll('.pm-radio').forEach(function(radio) {
-        radio.addEventListener('change', function() { showSection(this.value); });
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        modalEl.remove();
     });
 
-    if (cashInput) {
-        cashInput.addEventListener('input', updateChange);
-        updateChange();
-    }
+    var grandTotal = parseFloat(document.getElementById('pos-grand-total').dataset.amount) || 0;
+    var paidTotalEl = document.getElementById('pos-paid-total');
+    var remainingEl = document.getElementById('pos-remaining');
+    var remainingCard = document.getElementById('pos-remaining-card');
+    var rowsContainer = document.getElementById('pos-payment-rows');
+    var completeBtn = document.getElementById('pos-complete-btn');
+    var formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' });
 
-    // Karma odeme: nakit degisince kart otomatik hesapla
-    var mixedCash = document.getElementById('pmMixedCash');
-    var mixedCard = document.getElementById('pmMixedCard');
-    if (mixedCash && mixedCard) {
-        mixedCash.addEventListener('input', function() {
-            var c = parseFloat(this.value) || 0;
-            var remainder = Math.max(0, grandTotal - c);
-            mixedCard.value = remainder.toFixed(2);
-        });
-    }
+    var nextIndex = 0;
 
-    // Form submit: karma odeme için hidden degerler ekle
-    form.addEventListener('submit', function(e) {
-        var selected = document.querySelector('.pm-radio:checked').value;
-        if (selected === '4') {
-            // Karma: cashReceived = nakit kisim, cardAuthCode = mixed auth
-            cashInput.value = mixedCash.value || '0';
-            var mixedAuth = document.getElementById('pmMixedAuthCode');
-            var authField = document.getElementById('pmCardAuthCode');
-            if (!authField) {
-                var h = document.createElement('input');
-                h.type = 'hidden'; h.name = 'cardAuthCode';
-                h.value = mixedAuth ? mixedAuth.value : '';
-                form.appendChild(h);
-            } else {
-                authField.value = mixedAuth ? mixedAuth.value : '';
+    function recalcTotals() {
+        var paid = 0;
+        rowsContainer.querySelectorAll('.pos-payment-row').forEach(function (row) {
+            var amountInput = row.querySelector('.pos-amount');
+            var amt = parseFloat(amountInput.value) || 0;
+            paid += amt;
+
+            var requiresCash = row.dataset.requiresCash === 'true';
+            if (requiresCash) {
+                var cashInput = row.querySelector('.pos-cash-received');
+                var changeEl = row.querySelector('.pos-change');
+                if (cashInput && changeEl) {
+                    var cash = parseFloat(cashInput.value) || 0;
+                    var change = Math.max(0, cash - amt);
+                    changeEl.textContent = formatter.format(change);
+                }
             }
+        });
+
+        paidTotalEl.textContent = formatter.format(paid);
+        var remaining = grandTotal - paid;
+        remainingEl.textContent = formatter.format(remaining);
+
+        if (paid >= grandTotal - 0.005) {
+            remainingCard.classList.remove('bg-red-lt');
+            remainingCard.classList.add('bg-green-lt');
+            completeBtn.disabled = false;
+        } else {
+            remainingCard.classList.remove('bg-green-lt');
+            if (paid > 0) {
+                remainingCard.classList.add('bg-red-lt');
+            }
+            completeBtn.disabled = true;
         }
+    }
+
+    function sumCurrentPaid() {
+        var sum = 0;
+        rowsContainer.querySelectorAll('.pos-amount').forEach(function (i) { sum += parseFloat(i.value) || 0; });
+        return sum;
+    }
+
+    function buildPaymentRow(idx, methodId, methodName, methodIcon, requiresAuth, requiresCash, defaultAmount) {
+        var row = document.createElement('div');
+        row.className = 'pos-payment-row card card-sm mb-2';
+        row.dataset.requiresCash = requiresCash;
+
+        var methodCell = document.createElement('div');
+        methodCell.className = 'col-md-3';
+        var methodLabel = document.createElement('div');
+        methodLabel.className = 'fw-bold';
+        var methodIcon2 = document.createElement('i');
+        methodIcon2.className = methodIcon + ' me-1';
+        methodLabel.appendChild(methodIcon2);
+        methodLabel.appendChild(document.createTextNode(methodName));
+        var hiddenId = document.createElement('input');
+        hiddenId.type = 'hidden';
+        hiddenId.name = 'payments[' + idx + '].PaymentMethodId';
+        hiddenId.value = methodId;
+        methodCell.appendChild(methodLabel);
+        methodCell.appendChild(hiddenId);
+
+        var amountCell = document.createElement('div');
+        amountCell.className = 'col-md-3';
+        var amountLabel = document.createElement('label');
+        amountLabel.className = 'form-label small';
+        amountLabel.textContent = 'Tutar';
+        var amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.step = '0.01';
+        amountInput.min = '0.01';
+        amountInput.className = 'form-control pos-amount';
+        amountInput.name = 'payments[' + idx + '].Amount';
+        amountInput.value = defaultAmount;
+        amountInput.required = true;
+        amountCell.appendChild(amountLabel);
+        amountCell.appendChild(amountInput);
+
+        var rowInner = document.createElement('div');
+        rowInner.className = 'row align-items-center';
+        rowInner.appendChild(methodCell);
+        rowInner.appendChild(amountCell);
+
+        if (requiresCash) {
+            var cashCell = document.createElement('div');
+            cashCell.className = 'col-md-2';
+            var cashLabel = document.createElement('label');
+            cashLabel.className = 'form-label small';
+            cashLabel.textContent = 'Alınan Nakit';
+            var cashInput = document.createElement('input');
+            cashInput.type = 'number';
+            cashInput.step = '0.01';
+            cashInput.min = '0';
+            cashInput.className = 'form-control pos-cash-received';
+            cashInput.name = 'payments[' + idx + '].CashReceived';
+            cashInput.value = defaultAmount;
+            cashCell.appendChild(cashLabel);
+            cashCell.appendChild(cashInput);
+
+            var changeCell = document.createElement('div');
+            changeCell.className = 'col-md-2';
+            var changeLabel = document.createElement('label');
+            changeLabel.className = 'form-label small';
+            changeLabel.textContent = 'Para Üstü';
+            var changeDiv = document.createElement('div');
+            changeDiv.className = 'form-control-plaintext pos-change fw-bold text-success';
+            changeDiv.textContent = formatter.format(0);
+            changeCell.appendChild(changeLabel);
+            changeCell.appendChild(changeDiv);
+
+            rowInner.appendChild(cashCell);
+            rowInner.appendChild(changeCell);
+
+            cashInput.addEventListener('input', recalcTotals);
+        }
+
+        if (requiresAuth) {
+            var authCell = document.createElement('div');
+            authCell.className = 'col-md-3';
+            var authLabel = document.createElement('label');
+            authLabel.className = 'form-label small';
+            authLabel.textContent = 'Provizyon Kodu';
+            var authInput = document.createElement('input');
+            authInput.type = 'text';
+            authInput.className = 'form-control';
+            authInput.name = 'payments[' + idx + '].CardAuthCode';
+            authCell.appendChild(authLabel);
+            authCell.appendChild(authInput);
+            rowInner.appendChild(authCell);
+        }
+
+        var removeCell = document.createElement('div');
+        removeCell.className = 'col-auto ms-auto';
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-outline-danger pos-remove-row';
+        var removeIcon = document.createElement('i');
+        removeIcon.className = 'ti ti-x';
+        removeBtn.appendChild(removeIcon);
+        removeCell.appendChild(removeBtn);
+        rowInner.appendChild(removeCell);
+
+        var cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+        cardBody.appendChild(rowInner);
+        row.appendChild(cardBody);
+
+        amountInput.addEventListener('input', recalcTotals);
+        removeBtn.addEventListener('click', function () {
+            row.remove();
+            recalcTotals();
+        });
+
+        return row;
+    }
+
+    function addPaymentRow(methodId, methodName, methodIcon, requiresAuth, requiresCash) {
+        var idx = nextIndex++;
+        var remaining = Math.max(0, grandTotal - sumCurrentPaid());
+        var defaultAmount = remaining.toFixed(2);
+
+        var row = buildPaymentRow(idx, methodId, methodName, methodIcon, requiresAuth, requiresCash, defaultAmount);
+        rowsContainer.appendChild(row);
+        recalcTotals();
+    }
+
+    document.querySelectorAll('.pos-add-payment').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            addPaymentRow(
+                btn.dataset.methodId,
+                btn.dataset.methodName,
+                btn.dataset.methodIcon,
+                btn.dataset.requiresAuth === 'true',
+                btn.dataset.requiresCash === 'true'
+            );
+        });
     });
 })();
 </script>

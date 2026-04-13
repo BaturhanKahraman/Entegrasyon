@@ -163,7 +163,7 @@ public sealed class POSSessionManager(
         var transaction = new POSTransaction
         {
             POSSessionId = dto.POSSessionId,
-            SaleId = Guid.NewGuid(), // Sale entity gets its own Id from EF
+            SaleId = saleResult.Data, // Actual Sale Id from MakeSale
             // TODO: PaymentMethod moved to SalePayment — will be wired in later task
             CashReceived = dto.CashReceived,
             ChangeGiven = changeGiven,
