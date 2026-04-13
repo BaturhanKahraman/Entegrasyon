@@ -19,6 +19,11 @@ public partial class SaleMapper
     [MapperIgnoreTarget(nameof(Sale.SalePerson))]
     [MapperIgnoreTarget(nameof(Sale.BranchOffice))]
     [MapperIgnoreTarget(nameof(Sale.Customer))]
+    [MapperIgnoreTarget(nameof(Sale.Payments))]
+    [MapperIgnoreTarget(nameof(Sale.Returns))]
+    [MapperIgnoreTarget(nameof(Sale.SaleNumber))]
+    [MapperIgnoreTarget(nameof(Sale.SaleDate))]
+    [MapperIgnoreTarget(nameof(Sale.SaleStatus))]
     public partial Sale MapToEntity(MakeSaleDto dto);
 
     public partial MakeSaleDto MapToDto(Sale sale);
