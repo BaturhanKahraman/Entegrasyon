@@ -8,6 +8,7 @@ using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.POS;
 using Entegrasyon.Entity.Sales;
 using Entegrasyon.MVC.Features.POS.ViewModels;
+using Entegrasyon.MVC.Features.Sales.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.POS;
@@ -17,6 +18,7 @@ public class POSController(
     IPOSSessionManager posSessionManager,
     ISaleManager saleManager,
     IProductService productService,
+    ICustomerManager customerManager,
     IPaymentMethodManager paymentMethodManager,
     ITenantContext tenantContext) : Controller
 {
@@ -33,6 +35,9 @@ public class POSController(
     // Varsayilan branch office — ilerde claims'ten alinabilir
     private const int DefaultBranchOfficeId = 1;
 
+    private int? GetCustomerIdFromSession()
+        => HttpContext.Session.GetInt32("pos_customer_id");
+
     // ── Main Page ────────────────────────────────────────────────────────
 
     [HttpGet("/pos")]
@@ -45,7 +50,9 @@ public class POSController(
         var vm = new POSTerminalVm
         {
             CashierName = GetCurrentUserName(),
-            HasActiveSession = sessionResult.Success && sessionResult.Data is not null
+            HasActiveSession = sessionResult.Success && sessionResult.Data is not null,
+            CustomerId = HttpContext.Session.GetInt32("pos_customer_id"),
+            CustomerName = HttpContext.Session.GetString("pos_customer_name")
         };
 
         if (vm.HasActiveSession)
@@ -204,7 +211,52 @@ public class POSController(
     public IActionResult ClearCart()
     {
         SaveCartToSession([]);
+        HttpContext.Session.Remove("pos_customer_id");
+        HttpContext.Session.Remove("pos_customer_name");
         return PartialView("Partials/_POSCart", new POSCartVm { Items = [] });
+    }
+
+    // ── Customer Search & Selection (HTMX) ─────────────────────────────
+
+    [HttpGet("/pos/search-customer")]
+    public async Task<IActionResult> SearchCustomer([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            return Content("");
+
+        var result = await customerManager.GetCustomerBySearch(q);
+
+        if (!result.Success || result.Data is null || !result.Data.Any())
+            return PartialView("Partials/_POSCustomerResults", new SaleCustomerSearchVm());
+
+        return PartialView("Partials/_POSCustomerResults", new SaleCustomerSearchVm
+        {
+            Customers = result.Data.Select(c => new SaleCustomerItemVm
+            {
+                Id = c.Id,
+                Name = c.NameSurname ?? c.CorporateName ?? "-",
+                Phone = c.PhoneNumber ?? "",
+                Type = c.CustomerType ?? ""
+            }).ToList()
+        });
+    }
+
+    [HttpPost("/pos/select-customer")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectCustomer([FromForm] int customerId, [FromForm] string customerName)
+    {
+        HttpContext.Session.SetInt32("pos_customer_id", customerId);
+        HttpContext.Session.SetString("pos_customer_name", customerName);
+        return PartialView("Partials/_POSCustomerBadge", ((int?)customerId, customerName));
+    }
+
+    [HttpPost("/pos/clear-customer")]
+    [ValidateAntiForgeryToken]
+    public IActionResult ClearCustomer()
+    {
+        HttpContext.Session.Remove("pos_customer_id");
+        HttpContext.Session.Remove("pos_customer_name");
+        return PartialView("Partials/_POSCustomerBadge", ((int?)null, (string?)null));
     }
 
     // ── Payment Dialog (HTMX) ───────────────────────────────────────────
@@ -293,7 +345,7 @@ public class POSController(
 
         var makeSaleDto = new MakeSaleDto(
             SalePersonId: GetCurrentUserId(),
-            CustomerId: 0,
+            CustomerId: GetCustomerIdFromSession() ?? 0,
             GeneralDiscount: 0,
             BranchOfficeId: DefaultBranchOfficeId,
             SaleSource: SaleSource.POS,
@@ -308,8 +360,10 @@ public class POSController(
             return RedirectToAction(nameof(Index));
         }
 
-        // Sepeti temizle
+        // Sepeti ve müşteri seçimini temizle
         SaveCartToSession([]);
+        HttpContext.Session.Remove("pos_customer_id");
+        HttpContext.Session.Remove("pos_customer_name");
         TempData.SetSuccess("Satış başarıyla tamamlandı.");
         return RedirectToAction(nameof(Index));
     }

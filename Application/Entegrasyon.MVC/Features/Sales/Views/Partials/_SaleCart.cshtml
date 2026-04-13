@@ -69,8 +69,8 @@ else
                                 </form>
                             </div>
                         </td>
-                        <td class="text-end">@item.UnitPrice.ToString("N2") TL</td>
-                        <td class="text-end fw-bold">@item.LineTotal.ToString("N2") TL</td>
+                        <td class="text-end">@item.UnitPriceWithVat.ToString("N2") TL</td>
+                        <td class="text-end fw-bold">@item.LineTotalWithVat.ToString("N2") TL</td>
                         <td>
                             <form method="post" action="/sales/remove-item"
                                   hx-post="/sales/remove-item"

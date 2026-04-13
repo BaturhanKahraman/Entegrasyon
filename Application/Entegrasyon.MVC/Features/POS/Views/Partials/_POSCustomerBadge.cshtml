@@ -1,0 +1,28 @@
+@model (int? CustomerId, string? CustomerName)
+
+@if (Model.CustomerId.HasValue && !string.IsNullOrEmpty(Model.CustomerName))
+{
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <span class="avatar avatar-sm bg-blue-lt me-2">
+                <i class="ti ti-user icon"></i>
+            </span>
+            <strong>@Model.CustomerName</strong>
+        </div>
+        <form method="post" action="/pos/clear-customer"
+              hx-post="/pos/clear-customer"
+              hx-target="#pos-customer-badge"
+              hx-swap="innerHTML">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-ghost-danger btn-sm btn-icon">
+                <i class="ti ti-x icon"></i>
+            </button>
+        </form>
+    </div>
+}
+else
+{
+    <div class="text-secondary small">
+        Müşteri seçilmedi (opsiyonel)
+    </div>
+}

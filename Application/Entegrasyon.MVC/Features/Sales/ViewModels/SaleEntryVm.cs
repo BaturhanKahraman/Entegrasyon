@@ -24,6 +24,8 @@ public class SaleCartItemVm
 
     public decimal LineTotal => UnitPrice * Quantity;
     public decimal VatAmount => LineTotal * VatRate / 100m;
+    public decimal UnitPriceWithVat => Math.Round(UnitPrice * (1 + VatRate / 100m), 2);
+    public decimal LineTotalWithVat => Math.Round(UnitPrice * Quantity * (1 + VatRate / 100m), 2);
 }
 
 public class SaleSearchResultsVm
