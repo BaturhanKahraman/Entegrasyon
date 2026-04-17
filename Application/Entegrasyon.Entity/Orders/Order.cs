@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Entegrasyon.Entity.Sales;
 
 namespace Entegrasyon.Entity.Orders;
 
@@ -92,4 +93,6 @@ public sealed class Order : BaseEntity
     public string? GiftMessage { get; set; }
 
     public bool HideInvoice { get; set; }
+
+    public ICollection<SaleReturn> Returns { get; set; } = [];
 }

@@ -420,7 +420,7 @@ public sealed class POSSessionManager(
             .Sum(cm => cm.MovementType == CashMovementType.CashIn ? cm.Amount : -cm.Amount);
 
         var totalReturns = await dbContext.SaleReturns
-            .Where(r => saleIds.Contains(r.SaleId) && r.ReturnStatus == ReturnStatus.Approved)
+            .Where(r => r.SaleId.HasValue && saleIds.Contains(r.SaleId.Value) && r.ReturnStatus == ReturnStatus.Approved)
             .SumAsync(r => r.RefundAmount);
 
         var expectedCash = session.OpeningCash + totalCash + cashMovementsNet;

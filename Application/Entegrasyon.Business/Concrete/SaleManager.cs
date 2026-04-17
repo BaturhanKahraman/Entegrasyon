@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -41,7 +42,8 @@ public sealed class SaleManager(
             .Select(v => new { v.Id, v.Barcode, ProductTitle = v.Product.Title })
             .ToDictionaryAsync(v => v.Id);
 
-        // Atomic stok düşme — her ürün için ayrı ayrı
+        // Atomic stok düşme — başarısızlık compensating transaction ile telafi edilir
+        var decreasedItems = new List<(Guid variantId, int quantity)>();
         foreach (var item in sale.SaleItems)
         {
             var stockResult = await officeStockManager.DecreaseStockAtomicAsync(
@@ -49,7 +51,16 @@ public sealed class SaleManager(
                 StockMovementType.Sale, "Sale");
 
             if (!stockResult.Success)
+            {
+                // Daha önce düşürülmüş stokları geri al (compensating transaction)
+                foreach (var (vid, qty) in decreasedItems)
+                    await officeStockManager.IncreaseStockAtomicAsync(
+                        dto.BranchOfficeId, vid, qty,
+                        StockMovementType.Return, "SaleRollback");
                 return new ErrorDataResult<Guid>(Guid.Empty, stockResult.Message!);
+            }
+
+            decreasedItems.Add((item.ProductVariantId, item.Quantity));
 
             if (variantInfo.TryGetValue(item.ProductVariantId, out var info))
             {
@@ -77,7 +88,21 @@ public sealed class SaleManager(
         }
 
         dbContext.Sales.Add(sale);
-        await dbContext.SaveChangesAsync();
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch
+        {
+            // Sale persist fail → düşürülmüş tüm stokları geri al
+            foreach (var (vid, qty) in decreasedItems)
+                await officeStockManager.IncreaseStockAtomicAsync(
+                    dto.BranchOfficeId, vid, qty,
+                    StockMovementType.Return, "SaleRollback");
+            throw;
+        }
+
         await applicationLogManager.AddLog("Satış başarı ile tamamlandı.", LogType.Sale, LogAction.Add, dto);
         logger.LogInformation("Sale completed: {SaleNumber}", sale.SaleNumber);
         return new SuccessDataResult<Guid>(sale.Id, Messages.SaleSuccess);
@@ -178,7 +203,7 @@ public sealed class SaleManager(
             Id = r.Id,
             ReturnDate = r.ReturnDate,
             ReturnStatus = r.ReturnStatus,
-            ReturnReason = r.ReturnReason,
+            ReturnReason = r.ReturnReason != null ? r.ReturnReason.Name : (r.CustomReason ?? ""),
             RefundAmount = r.RefundAmount,
             ReturnedByName = r.ReturnedBy != null ? r.ReturnedBy.Name + " " + r.ReturnedBy.Surname : "",
             ItemCount = r.Items.Count
@@ -222,7 +247,8 @@ public sealed class SaleManager(
         if (sale.SaleStatus == SaleStatus.Cancelled)
             return new ErrorResult("Bu satış zaten iptal edilmiş.");
 
-        if (sale.SaleDate.Date != DateTimeOffset.UtcNow.Date)
+        var saleLocalDate = TurkeyTime.StartOfDay(sale.SaleDate);
+        if (saleLocalDate != TurkeyTime.StartOfToday)
             return new ErrorResult("Sadece bugünkü satışlar iptal edilebilir.");
 
         foreach (var item in sale.SaleItems)
@@ -264,7 +290,7 @@ public sealed class SaleManager(
         var saleIds = await activeQuery.Select(s => s.Id).ToListAsync();
 
         var totalReturns = await dbContext.SaleReturns
-            .Where(r => r.ReturnStatus == ReturnStatus.Approved && saleIds.Contains(r.SaleId))
+            .Where(r => r.ReturnStatus == ReturnStatus.Approved && r.SaleId.HasValue && saleIds.Contains(r.SaleId.Value))
             .SumAsync(r => r.RefundAmount);
 
         var summary = new SaleSummaryDto(

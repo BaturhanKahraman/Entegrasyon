@@ -1,0 +1,351 @@
+@model Entegrasyon.Entity.Sales.SaleReturn
+@using Entegrasyon.Entity.Sales
+@using System.Globalization
+@{
+    var tr = new CultureInfo("tr-TR");
+    var reasons = ViewBag.ReturnReasons as List<ReturnReason> ?? [];
+    var branches = ViewBag.BranchOffices as List<Entegrasyon.Entity.BranchOffice> ?? [];
+
+    string StatusBadge(ReturnStatus s) => s switch
+    {
+        ReturnStatus.Draft     => "bg-secondary",
+        ReturnStatus.Pending   => "bg-yellow",
+        ReturnStatus.Approved  => "bg-cyan",
+        ReturnStatus.Completed => "bg-green",
+        ReturnStatus.Rejected  => "bg-red",
+        ReturnStatus.Cancelled => "bg-dark",
+        _ => "bg-secondary"
+    };
+    string StatusText(ReturnStatus s) => s switch
+    {
+        ReturnStatus.Draft     => "Taslak",
+        ReturnStatus.Pending   => "Beklemede",
+        ReturnStatus.Approved  => "Onaylandı",
+        ReturnStatus.Completed => "Tamamlandı",
+        ReturnStatus.Rejected  => "Reddedildi",
+        ReturnStatus.Cancelled => "İptal",
+        _ => s.ToString()
+    };
+    string SourceText(ReturnSource s) => s switch
+    {
+        ReturnSource.InPerson    => "Elden / POS",
+        ReturnSource.Storefront  => "Mağaza Sitesi",
+        ReturnSource.Trendyol    => "Trendyol",
+        ReturnSource.N11         => "N11",
+        ReturnSource.Hepsiburada => "Hepsiburada",
+        ReturnSource.Amazon      => "Amazon",
+        ReturnSource.Pazarama    => "Pazarama",
+        ReturnSource.PttAvm      => "PttAVM",
+        ReturnSource.Ciceksepeti => "Çiçeksepeti",
+        ReturnSource.Manual      => "Manuel",
+        _ => s.ToString()
+    };
+    var canApprove  = Model.ReturnStatus == ReturnStatus.Pending;
+    var canReject   = Model.ReturnStatus == ReturnStatus.Pending;
+    var canCancel   = Model.ReturnStatus is ReturnStatus.Pending or ReturnStatus.Approved;
+    var canComplete = Model.ReturnStatus == ReturnStatus.Approved;
+    var canRestore  = Model.ReturnStatus is ReturnStatus.Approved or ReturnStatus.Completed;
+}
+
+<div class="container-xl">
+    <div class="page-header d-print-none">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <a href="/returns" class="btn btn-ghost-secondary btn-sm">
+                    <i class="ti ti-arrow-left icon"></i> İadeler
+                </a>
+            </div>
+            <div class="col">
+                <h2 class="page-title">
+                    İade #@Model.Id
+                    <span class="badge @StatusBadge(Model.ReturnStatus) ms-2">@StatusText(Model.ReturnStatus)</span>
+                    <span class="badge bg-azure-lt ms-1">@SourceText(Model.Source)</span>
+                </h2>
+            </div>
+            <div class="col-auto">
+                @if (canApprove)
+                {
+                    <button class="btn btn-success" hx-post="/returns/@Model.Id/approve" hx-swap="none"
+                            hx-confirm="Bu iadeyi onaylamak istiyor musunuz?">
+                        <i class="ti ti-check icon"></i> Onayla
+                    </button>
+                }
+                @if (canReject)
+                {
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="ti ti-x icon"></i> Reddet
+                    </button>
+                }
+                @if (canComplete)
+                {
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#completeModal">
+                        <i class="ti ti-check-circle icon"></i> Tamamla
+                    </button>
+                }
+                @if (canCancel)
+                {
+                    <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="ti ti-ban icon"></i> İptal Et
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-deck row-cards">
+        <!-- Özet Kartı -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-5">Tarih</dt>
+                        <dd class="col-7">@Model.ReturnDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+
+                        <dt class="col-5">Kaynak</dt>
+                        <dd class="col-7">@SourceText(Model.Source)</dd>
+
+                        <dt class="col-5">Sebep</dt>
+                        <dd class="col-7">@(Model.ReturnReason?.Name ?? Model.CustomReason ?? "-")</dd>
+
+                        <dt class="col-5">İade Tutarı</dt>
+                        <dd class="col-7 fw-bold">@Model.RefundAmount.ToString("C2", tr)</dd>
+
+                        @if (Model.Sale is not null)
+                        {
+                            <dt class="col-5">Satış</dt>
+                            <dd class="col-7"><a href="/sales/@Model.SaleId">@Model.Sale.SaleNumber</a></dd>
+                        }
+                        @if (Model.Order is not null)
+                        {
+                            <dt class="col-5">Sipariş</dt>
+                            <dd class="col-7"><a href="/orders/@Model.OrderId">@Model.Order.OrderNumber</a></dd>
+                        }
+
+                        @if (Model.ReturnedBy is not null)
+                        {
+                            <dt class="col-5">Oluşturan</dt>
+                            <dd class="col-7">@Model.ReturnedBy.Name @Model.ReturnedBy.Surname</dd>
+                        }
+                        @if (Model.ApprovedBy is not null)
+                        {
+                            <dt class="col-5">Onaylayan</dt>
+                            <dd class="col-7">@Model.ApprovedBy.Name @Model.ApprovedBy.Surname</dd>
+                        }
+                        @if (Model.CompletedBy is not null)
+                        {
+                            <dt class="col-5">Tamamlayan</dt>
+                            <dd class="col-7">@Model.CompletedBy.Name @Model.CompletedBy.Surname</dd>
+                            <dt class="col-5">Tamamlanma</dt>
+                            <dd class="col-7">@Model.CompletedAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+                        }
+                        @if (Model.RestoreBranchOffice is not null)
+                        {
+                            <dt class="col-5">Stok Şubesi</dt>
+                            <dd class="col-7">@Model.RestoreBranchOffice.Name</dd>
+                        }
+
+                        @if (Model.ReturnStatus == ReturnStatus.Cancelled)
+                        {
+                            <dt class="col-5 text-danger">İptal Nedeni</dt>
+                            <dd class="col-7 text-danger">@Model.CancellationReason</dd>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <dt class="col-5">Not</dt>
+                            <dd class="col-7">@Model.Note</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kalemler Tablosu -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">İade Kalemleri</h3></div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Adet</th>
+                            <th>Sebep</th>
+                            <th>Envanter</th>
+                            <th class="w-1"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            var productTitle = item.SaleItem?.ProductTitle ?? item.OrderItem?.Barcode ?? $"Kalem #{item.Id}";
+                            <tr>
+                                <td>@productTitle</td>
+                                <td>@item.Quantity adet</td>
+                                <td class="text-secondary">@(item.Reason ?? "-")</td>
+                                <td>
+                                    @if (item.RestoredToStock)
+                                    {
+                                        <span class="badge bg-green-lt">
+                                            <i class="ti ti-check icon"></i> Envantere eklendi
+                                        </span>
+                                        <br/><small class="text-secondary">@item.RestoredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-lt">Eklenmedi</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (canRestore && !item.RestoredToStock)
+                                    {
+                                        <form class="d-inline">
+                                            <select name="branchOfficeId" class="form-select form-select-sm d-inline w-auto me-1" required>
+                                                @foreach (var b in branches)
+                                                {
+                                                    <option value="@b.Id" selected="@(b.Id == (Model.RestoreBranchOfficeId ?? 1))">@b.Name</option>
+                                                }
+                                            </select>
+                                            <button type="button" class="btn btn-sm btn-outline-success"
+                                                    hx-post="/returns/items/@item.Id/restore"
+                                                    hx-include="closest form"
+                                                    hx-swap="none"
+                                                    hx-confirm="Bu ürünü envantere eklemek istiyor musunuz?">
+                                                <i class="ti ti-package icon"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── REJECT MODAL ──────────────────────────────────────────────────── -->
+@if (canReject)
+{
+    <div class="modal modal-blur fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <form hx-post="/returns/@Model.Id/reject" hx-swap="none">
+                    <div class="modal-header">
+                        <h5 class="modal-title">İade Reddet</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label required">Red Nedeni</label>
+                            <textarea name="reason" class="form-control" rows="2" required minlength="5"
+                                      placeholder="Red nedenini belirtin..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Reddet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ── CANCEL MODAL ──────────────────────────────────────────────────── -->
+@if (canCancel)
+{
+    <div class="modal modal-blur fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <form hx-post="/returns/@Model.Id/cancel" hx-swap="none">
+                    <div class="modal-header">
+                        <h5 class="modal-title">İade İptal Et</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="ti ti-alert-triangle icon"></i>
+                            Bu işlem geri alınamaz. Daha önce envantere eklenen ürünler stoktan düşülecektir.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">İptal Nedeni</label>
+                            <textarea name="reason" class="form-control" rows="2" required minlength="5"
+                                      placeholder="İptal nedenini belirtin..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-dark" data-bs-dismiss="modal">İptal Et</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ── COMPLETE MODAL ────────────────────────────────────────────────── -->
+@if (canComplete)
+{
+    var restorableItems = Model.Items.Where(i => !i.RestoredToStock).ToList();
+    <div class="modal modal-blur fade" id="completeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="/returns/@Model.Id/complete">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title">İade Tamamla — Envantere Ekleme</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label required">Stok Eklenecek Şube</label>
+                            <select name="branchOfficeId" class="form-select" required>
+                                @foreach (var b in branches)
+                                {
+                                    <option value="@b.Id" selected="@(b.Id == (Model.RestoreBranchOfficeId ?? 1))">@b.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (restorableItems.Count > 0)
+                        {
+                            <div class="mb-2 d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.querySelectorAll('.restore-check').forEach(c => c.checked = true)">Tümünü Seç</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelectorAll('.restore-check').forEach(c => c.checked = false)">Hiçbirini Seçme</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-vcenter">
+                                    <thead><tr><th></th><th>Ürün</th><th>Adet</th></tr></thead>
+                                    <tbody>
+                                    @foreach (var item in restorableItems)
+                                    {
+                                        var title = item.SaleItem?.ProductTitle ?? item.OrderItem?.Barcode ?? $"Kalem #{item.Id}";
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-check-input restore-check"
+                                                       name="itemIds" value="@item.Id" checked/>
+                                            </td>
+                                            <td>@title</td>
+                                            <td>@item.Quantity adet</td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">Tüm kalemler zaten envantere eklenmiş.</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-primary">Tamamla</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,23 +1,38 @@
-@model List<Entegrasyon.Entity.Storefront.StorefrontReturnRequest>
+@model List<Entegrasyon.Entity.Sales.SaleReturn>
+@using Entegrasyon.Entity.Sales
 
-        <div class="card">
-            <div class="card-header">
-                <div class="row w-100 g-2 align-items-center">
-                    <div class="col-auto">
-                        <select class="form-select"
-                                name="status"
-                                hx-get="/returns"
-                                hx-trigger="change"
-                                hx-target="#return-table"
-                                hx-swap="outerHTML">
-                            <option value="">Tum Durumlar</option>
-                            <option value="Pending" selected="@(ViewBag.Status == "Pending")">Beklemede</option>
-                            <option value="Approved" selected="@(ViewBag.Status == "Approved")">Onaylandı</option>
-                            <option value="Rejected" selected="@(ViewBag.Status == "Rejected")">Reddedildi</option>
-                            <option value="Completed" selected="@(ViewBag.Status == "Completed")">Tamamlandi</option>
-                        </select>
-                    </div>
-                </div>
+<div class="card">
+    <div class="card-header">
+        <div class="row w-100 g-2 align-items-center">
+            <div class="col-auto">
+                <select class="form-select" name="status"
+                        hx-get="/returns" hx-trigger="change"
+                        hx-target="#return-table" hx-swap="outerHTML"
+                        hx-include="[name='source']">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="@((int)ReturnStatus.Draft)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Draft.ToString())">Taslak</option>
+                    <option value="@((int)ReturnStatus.Pending)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Pending.ToString())">Beklemede</option>
+                    <option value="@((int)ReturnStatus.Approved)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Approved.ToString())">Onaylandı</option>
+                    <option value="@((int)ReturnStatus.Completed)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Completed.ToString())">Tamamlandı</option>
+                    <option value="@((int)ReturnStatus.Rejected)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Rejected.ToString())">Reddedildi</option>
+                    <option value="@((int)ReturnStatus.Cancelled)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Cancelled.ToString())">İptal</option>
+                </select>
             </div>
-            <partial name="~/Features/Returns/Views/Partials/_ReturnTable.cshtml" model="Model"/>
+            <div class="col-auto">
+                <select class="form-select" name="source"
+                        hx-get="/returns" hx-trigger="change"
+                        hx-target="#return-table" hx-swap="outerHTML"
+                        hx-include="[name='status']">
+                    <option value="">Tüm Kaynaklar</option>
+                    <option value="@((int)ReturnSource.InPerson)">Elden / POS</option>
+                    <option value="@((int)ReturnSource.Storefront)">Mağaza Sitesi</option>
+                    <option value="@((int)ReturnSource.Trendyol)">Trendyol</option>
+                    <option value="@((int)ReturnSource.N11)">N11</option>
+                    <option value="@((int)ReturnSource.Hepsiburada)">Hepsiburada</option>
+                    <option value="@((int)ReturnSource.Manual)">Manuel</option>
+                </select>
+            </div>
         </div>
+    </div>
+    <partial name="~/Features/Returns/Views/Partials/_ReturnTable.cshtml" model="Model"/>
+</div>

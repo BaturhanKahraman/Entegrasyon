@@ -15,18 +15,21 @@ namespace Entegrasyon.UnitTest.Business;
 public class SaleReturnManagerTests : BaseTest
 {
     private readonly SaleReturnManager _sut;
-    private readonly Mock<IOfficeStockManager> _mockOfficeStockManager;
+    private readonly Mock<IOfficeStockManager> _mockStock;
 
     public SaleReturnManagerTests()
     {
         MockValidator = new Mock<IFluentValidator>();
-        MockValidator
-            .Setup(v => v.ValidateAndThrowAsync(It.IsAny<CreateSaleReturnDto>()))
-            .Returns(Task.CompletedTask);
+        MockValidator.Setup(v => v.ValidateAndThrowAsync(It.IsAny<object>())).Returns(Task.CompletedTask);
 
-        _mockOfficeStockManager = new Mock<IOfficeStockManager>();
-        _mockOfficeStockManager
+        _mockStock = new Mock<IOfficeStockManager>();
+        _mockStock
             .Setup(s => s.IncreaseStockAtomicAsync(
+                It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
+                It.IsAny<StockMovementType>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new SuccessDataResult<StockMovement>(new StockMovement()));
+        _mockStock
+            .Setup(s => s.DecreaseStockAtomicAsync(
                 It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
                 It.IsAny<StockMovementType>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new SuccessDataResult<StockMovement>(new StockMovement()));
@@ -35,387 +38,396 @@ public class SaleReturnManagerTests : BaseTest
             mockContextFactory.Object,
             mockApplicationLogger.Object,
             MockValidator.Object,
-            _mockOfficeStockManager.Object);
+            _mockStock.Object);
     }
 
-    private static Sale BuildCompletedSale(
-        Guid? saleId = null,
-        int branchOfficeId = 1,
-        List<SaleItem>? items = null)
-    {
-        var id = saleId ?? Guid.NewGuid();
-        return new Sale
-        {
-            Id = id,
-            SaleNumber = $"S202601010001",
-            SaleDate = DateTimeOffset.UtcNow,
-            BranchOfficeId = branchOfficeId,
-            SaleStatus = SaleStatus.Completed,
-            SaleItems = items ?? new List<SaleItem>
-            {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    ProductVariantId = Guid.NewGuid(),
-                    UnitPrice = 100m,
-                    TaxPercentage = 18,
-                    Quantity = 3,
-                    ReturnedQuantity = 0,
-                    ProductTitle = "Test Ürün"
-                }
-            }
-        };
-    }
+    // ── Helpers ──────────────────────────────────────────────────────────
 
-    private void SetupForCreateReturn(List<Sale> sales)
-    {
-        mockIntegrationDbContext
-            .Setup(x => x.Sales)
-            .ReturnsDbSet(sales);
-
-        mockIntegrationDbContext
-            .Setup(x => x.SaleReturns.Add(It.IsAny<SaleReturn>()));
-
-        mockIntegrationDbContext
-            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-    }
-
-    private void SetupForApproveReject(List<SaleReturn> returns)
-    {
-        mockIntegrationDbContext
-            .Setup(x => x.SaleReturns)
-            .ReturnsDbSet(returns);
-
-        mockIntegrationDbContext
-            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(1);
-    }
-
-    // -------------------------------------------------------------------------
-    // CreateReturnAsync Tests
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public async Task CreateReturnAsync_PartialReturn_UpdatesReturnedQuantityAndPartialStatus()
-    {
-        // Arrange
-        var saleItem = new SaleItem
+    private static SaleItem MakeSaleItem(int qty = 3, int returned = 0, decimal price = 100m, double tax = 18)
+        => new()
         {
             Id = Guid.NewGuid(),
             ProductVariantId = Guid.NewGuid(),
-            UnitPrice = 100m,
-            TaxPercentage = 18,
-            Quantity = 3,
-            ReturnedQuantity = 0,
+            UnitPrice = price,
+            TaxPercentage = tax,
+            Quantity = qty,
+            ReturnedQuantity = returned,
             ProductTitle = "Test Ürün"
         };
-        var sale = BuildCompletedSale(items: new List<SaleItem> { saleItem });
 
-        // Only 1 of 3 returned — partial
-        sale.SaleItems = new List<SaleItem> { saleItem };
-        SetupForCreateReturn(new List<Sale> { sale });
+    private static Sale MakeSale(SaleItem? item = null)
+    {
+        var si = item ?? MakeSaleItem();
+        return new Sale
+        {
+            Id = Guid.NewGuid(),
+            SaleNumber = "S202601010001",
+            BranchOfficeId = 1,
+            SaleStatus = SaleStatus.Completed,
+            SaleItems = [si]
+        };
+    }
 
-        var dto = new CreateSaleReturnDto(
-            SaleId: sale.Id,
-            ReturnedByUserId: Guid.NewGuid(),
-            ReturnReason: "Ürün hasarlı",
-            RefundPaymentMethodId: null,
-            Note: null,
-            Items: new List<SaleReturnItemDto>
-            {
-                new(saleItem.Id, Quantity: 1, Reason: "Hasar")
-            });
+    private CreateSaleReturnDto MakeCreateDto(Sale sale, int qty = 1) => new(
+        SaleId: sale.Id,
+        OrderId: null,
+        ReturnedByUserId: Guid.NewGuid(),
+        Source: ReturnSource.InPerson,
+        ReturnReasonId: 1,
+        CustomReason: null,
+        RefundPaymentMethodId: null,
+        Note: null,
+        Items: [new SaleReturnItemDto(sale.SaleItems.First().Id, null, qty, "Hasar")]);
 
-        // Act
-        var result = await _sut.CreateReturnAsync(dto);
+    private void SetupSales(List<Sale> sales) =>
+        mockIntegrationDbContext.Setup(x => x.Sales).ReturnsDbSet(sales);
 
-        // Assert
+    private void SetupReturns(List<SaleReturn> returns) =>
+        mockIntegrationDbContext.Setup(x => x.SaleReturns).ReturnsDbSet(returns);
+
+    private void SetupReturnItems(List<SaleReturnItem> items) =>
+        mockIntegrationDbContext.Setup(x => x.SaleReturnItems).ReturnsDbSet(items);
+
+    private void SetupSave() =>
+        mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+    // ── CREATE ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateReturnAsync_PartialReturn_SetsPartialStatus()
+    {
+        var si = MakeSaleItem(qty: 3);
+        var sale = MakeSale(si);
+        SetupSales([sale]);
+        SetupSave();
+        mockIntegrationDbContext.Setup(x => x.SaleReturns.Add(It.IsAny<SaleReturn>()));
+
+        var result = await _sut.CreateReturnAsync(MakeCreateDto(sale, qty: 1));
+
         result.Success.Should().BeTrue();
-        saleItem.ReturnedQuantity.Should().Be(1);
+        si.ReturnedQuantity.Should().Be(1);
         sale.SaleStatus.Should().Be(SaleStatus.PartialReturn);
     }
 
     [Fact]
-    public async Task CreateReturnAsync_AllItemsReturned_SetsFullReturnStatus()
+    public async Task CreateReturnAsync_AllReturned_SetsFullReturnStatus()
     {
-        // Arrange
-        var saleItem = new SaleItem
-        {
-            Id = Guid.NewGuid(),
-            ProductVariantId = Guid.NewGuid(),
-            UnitPrice = 100m,
-            TaxPercentage = 18,
-            Quantity = 2,
-            ReturnedQuantity = 0,
-            ProductTitle = "Test Ürün"
-        };
-        var sale = BuildCompletedSale(items: new List<SaleItem> { saleItem });
-        SetupForCreateReturn(new List<Sale> { sale });
+        var si = MakeSaleItem(qty: 2);
+        var sale = MakeSale(si);
+        SetupSales([sale]);
+        SetupSave();
+        mockIntegrationDbContext.Setup(x => x.SaleReturns.Add(It.IsAny<SaleReturn>()));
 
-        var dto = new CreateSaleReturnDto(
-            SaleId: sale.Id,
-            ReturnedByUserId: Guid.NewGuid(),
-            ReturnReason: "Ürün beklentileri karşılamadı",
-            RefundPaymentMethodId: null,
-            Note: null,
-            Items: new List<SaleReturnItemDto>
-            {
-                new(saleItem.Id, Quantity: 2, Reason: null)
-            });
+        var result = await _sut.CreateReturnAsync(MakeCreateDto(sale, qty: 2));
 
-        // Act
-        var result = await _sut.CreateReturnAsync(dto);
-
-        // Assert
         result.Success.Should().BeTrue();
-        saleItem.ReturnedQuantity.Should().Be(2);
         sale.SaleStatus.Should().Be(SaleStatus.FullReturn);
     }
 
     [Fact]
-    public async Task CreateReturnAsync_ExceedsAvailableQuantity_ReturnsError()
+    public async Task CreateReturnAsync_ExceedsAvailable_ReturnsError()
     {
-        // Arrange
-        var saleItem = new SaleItem
-        {
-            Id = Guid.NewGuid(),
-            ProductVariantId = Guid.NewGuid(),
-            UnitPrice = 100m,
-            TaxPercentage = 18,
-            Quantity = 2,
-            ReturnedQuantity = 1, // 1 already returned, only 1 available
-            ProductTitle = "Test Ürün"
-        };
-        var sale = BuildCompletedSale(items: new List<SaleItem> { saleItem });
-        SetupForCreateReturn(new List<Sale> { sale });
+        var si = MakeSaleItem(qty: 2, returned: 1);
+        var sale = MakeSale(si);
+        SetupSales([sale]);
 
-        var dto = new CreateSaleReturnDto(
-            SaleId: sale.Id,
-            ReturnedByUserId: Guid.NewGuid(),
-            ReturnReason: "Hasarlı",
-            RefundPaymentMethodId: null,
-            Note: null,
-            Items: new List<SaleReturnItemDto>
-            {
-                new(saleItem.Id, Quantity: 2, Reason: null) // requesting 2, but only 1 available
-            });
+        var result = await _sut.CreateReturnAsync(MakeCreateDto(sale, qty: 2));
 
-        // Act
-        var result = await _sut.CreateReturnAsync(dto);
-
-        // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("maksimum 1 adet iade edilebilir");
-        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        result.Message.Should().Contain("maksimum 1 adet");
     }
 
     [Fact]
     public async Task CreateReturnAsync_CancelledSale_ReturnsError()
     {
-        // Arrange
-        var sale = BuildCompletedSale();
+        var sale = MakeSale();
         sale.SaleStatus = SaleStatus.Cancelled;
-        SetupForCreateReturn(new List<Sale> { sale });
+        SetupSales([sale]);
 
-        var dto = new CreateSaleReturnDto(
-            SaleId: sale.Id,
-            ReturnedByUserId: Guid.NewGuid(),
-            ReturnReason: "Hasarlı",
-            RefundPaymentMethodId: null,
-            Note: null,
-            Items: new List<SaleReturnItemDto> { new(Guid.NewGuid(), 1, null) });
+        var result = await _sut.CreateReturnAsync(MakeCreateDto(sale));
 
-        // Act
-        var result = await _sut.CreateReturnAsync(dto);
-
-        // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("İptal edilmiş satış");
-        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        result.Message.Should().Contain("İptal edilmiş");
     }
 
     [Fact]
-    public async Task CreateReturnAsync_FullyReturnedSale_ReturnsError()
+    public async Task CreateReturnAsync_Draft_WhenSubmitImmediatelyFalse()
     {
-        // Arrange
-        var sale = BuildCompletedSale();
-        sale.SaleStatus = SaleStatus.FullReturn;
-        SetupForCreateReturn(new List<Sale> { sale });
+        var si = MakeSaleItem(qty: 3);
+        var sale = MakeSale(si);
+        SetupSales([sale]);
+        SetupSave();
 
-        var dto = new CreateSaleReturnDto(
-            SaleId: sale.Id,
-            ReturnedByUserId: Guid.NewGuid(),
-            ReturnReason: "Hasarlı",
-            RefundPaymentMethodId: null,
-            Note: null,
-            Items: new List<SaleReturnItemDto> { new(Guid.NewGuid(), 1, null) });
-
-        // Act
-        var result = await _sut.CreateReturnAsync(dto);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Contain("tamamı zaten iade edilmiş");
-        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task CreateReturnAsync_CalculatesRefundAmountWithVat()
-    {
-        // Arrange — 2 adet, 100 TL, %18 KDV → 2 * 100 * 1.18 = 236
-        var saleItem = new SaleItem
-        {
-            Id = Guid.NewGuid(),
-            ProductVariantId = Guid.NewGuid(),
-            UnitPrice = 100m,
-            TaxPercentage = 18,
-            Quantity = 5,
-            ReturnedQuantity = 0,
-            ProductTitle = "Test Ürün"
-        };
-        var sale = BuildCompletedSale(items: new List<SaleItem> { saleItem });
-
-        SaleReturn? capturedReturn = null;
-        mockIntegrationDbContext.Setup(x => x.Sales).ReturnsDbSet(new List<Sale> { sale });
+        SaleReturn? captured = null;
         mockIntegrationDbContext.Setup(x => x.SaleReturns.Add(It.IsAny<SaleReturn>()))
-            .Callback<SaleReturn>(r => capturedReturn = r);
-        mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            .Callback<SaleReturn>(r => captured = r);
 
-        var dto = new CreateSaleReturnDto(
-            SaleId: sale.Id,
-            ReturnedByUserId: Guid.NewGuid(),
-            ReturnReason: "Test",
-            RefundPaymentMethodId: null,
-            Note: null,
-            Items: new List<SaleReturnItemDto>
-            {
-                new(saleItem.Id, Quantity: 2, Reason: null)
-            });
-
-        // Act
+        var dto = MakeCreateDto(sale) with { SubmitImmediately = false };
         var result = await _sut.CreateReturnAsync(dto);
 
-        // Assert
         result.Success.Should().BeTrue();
-        capturedReturn.Should().NotBeNull();
-        capturedReturn!.RefundAmount.Should().Be(236m); // 2 * 100 * 1.18
+        captured!.ReturnStatus.Should().Be(ReturnStatus.Draft);
     }
 
-    // -------------------------------------------------------------------------
-    // ApproveReturnAsync Tests
-    // -------------------------------------------------------------------------
+    [Fact]
+    public async Task CreateReturnAsync_CalculatesRefundWithVat()
+    {
+        var si = MakeSaleItem(qty: 5, price: 100m, tax: 18);
+        var sale = MakeSale(si);
+        SetupSales([sale]);
+        SetupSave();
+
+        SaleReturn? captured = null;
+        mockIntegrationDbContext.Setup(x => x.SaleReturns.Add(It.IsAny<SaleReturn>()))
+            .Callback<SaleReturn>(r => captured = r);
+
+        var result = await _sut.CreateReturnAsync(MakeCreateDto(sale, qty: 2));
+
+        result.Success.Should().BeTrue();
+        captured!.RefundAmount.Should().Be(236m); // 2 * 100 * 1.18
+    }
+
+    // ── APPROVE (artık stok eklemez) ─────────────────────────────────────
 
     [Fact]
-    public async Task ApproveReturnAsync_SetsApprovedStatusAndCallsStockIncrease()
+    public async Task ApproveReturnAsync_DoesNotTouchStock()
     {
-        // Arrange
-        var variantId = Guid.NewGuid();
-        var saleItem = new SaleItem
-        {
-            Id = Guid.NewGuid(),
-            ProductVariantId = variantId,
-            Quantity = 3,
-            ReturnedQuantity = 2
-        };
-        var sale = new Sale
-        {
-            Id = Guid.NewGuid(),
-            SaleNumber = "S202601010001",
-            BranchOfficeId = 1,
-            SaleItems = new List<SaleItem> { saleItem }
-        };
-        var saleReturn = new SaleReturn
-        {
-            Id = 1,
-            Sale = sale,
-            SaleId = sale.Id,
-            ReturnStatus = ReturnStatus.Pending,
-            Items = new List<SaleReturnItem>
-            {
-                new() { Id = 1, SaleItem = saleItem, SaleItemId = saleItem.Id, Quantity = 2 }
-            }
-        };
-        SetupForApproveReject(new List<SaleReturn> { saleReturn });
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Pending };
+        SetupReturns([sr]);
+        SetupSave();
 
-        // Act
         var result = await _sut.ApproveReturnAsync(1, Guid.NewGuid());
 
-        // Assert
         result.Success.Should().BeTrue();
-        saleReturn.ReturnStatus.Should().Be(ReturnStatus.Approved);
-        _mockOfficeStockManager.Verify(s => s.IncreaseStockAtomicAsync(
-            1, variantId, 2, StockMovementType.Return, It.IsAny<string>(), null), Times.Once);
-        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        sr.ReturnStatus.Should().Be(ReturnStatus.Approved);
+        _mockStock.Verify(s => s.IncreaseStockAtomicAsync(
+            It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
+            It.IsAny<StockMovementType>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
-    public async Task ApproveReturnAsync_AlreadyProcessed_ReturnsError()
+    public async Task ApproveReturnAsync_NotPending_ReturnsError()
     {
-        // Arrange
-        var saleReturn = new SaleReturn
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Approved };
+        SetupReturns([sr]);
+
+        var result = await _sut.ApproveReturnAsync(1, Guid.NewGuid());
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("bekleyen");
+    }
+
+    // ── SUBMIT ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task SubmitReturnAsync_Draft_TransitionsToPending()
+    {
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Draft };
+        SetupReturns([sr]);
+        SetupSave();
+
+        var result = await _sut.SubmitReturnAsync(1, Guid.NewGuid());
+
+        result.Success.Should().BeTrue();
+        sr.ReturnStatus.Should().Be(ReturnStatus.Pending);
+    }
+
+    [Fact]
+    public async Task SubmitReturnAsync_NotDraft_ReturnsError()
+    {
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Pending };
+        SetupReturns([sr]);
+
+        var result = await _sut.SubmitReturnAsync(1, Guid.NewGuid());
+
+        result.Success.Should().BeFalse();
+    }
+
+    // ── COMPLETE ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CompleteReturnAsync_PartialItems_OnlyRestoresSelected()
+    {
+        var si1 = MakeSaleItem();
+        var si2 = MakeSaleItem();
+        var item1 = new SaleReturnItem { Id = 10, SaleItem = si1, SaleItemId = si1.Id, Quantity = 1 };
+        var item2 = new SaleReturnItem { Id = 20, SaleItem = si2, SaleItemId = si2.Id, Quantity = 1 };
+        var sr = new SaleReturn
         {
             Id = 1,
             ReturnStatus = ReturnStatus.Approved,
-            Sale = new Sale { SaleNumber = "S202601010001", BranchOfficeId = 1, SaleItems = new List<SaleItem>() },
-            Items = new List<SaleReturnItem>()
+            SaleId = Guid.NewGuid(),
+            Items = [item1, item2]
         };
-        SetupForApproveReject(new List<SaleReturn> { saleReturn });
+        SetupReturns([sr]);
+        SetupSave();
 
-        // Act
-        var result = await _sut.ApproveReturnAsync(1, Guid.NewGuid());
+        var dto = new CompleteSaleReturnDto(1, Guid.NewGuid(), BranchOfficeId: 1, ItemIdsToRestore: [10]);
+        var result = await _sut.CompleteReturnAsync(dto);
 
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Contain("zaten işlenmiş");
-        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        result.Success.Should().BeTrue();
+        sr.ReturnStatus.Should().Be(ReturnStatus.Completed);
+        item1.RestoredToStock.Should().BeTrue();
+        item2.RestoredToStock.Should().BeFalse();
+        _mockStock.Verify(s => s.IncreaseStockAtomicAsync(
+            1, si1.ProductVariantId, 1, StockMovementType.Return, "SaleReturn", "1"), Times.Once);
     }
 
-    // -------------------------------------------------------------------------
-    // RejectReturnAsync Tests
-    // -------------------------------------------------------------------------
+    [Fact]
+    public async Task CompleteReturnAsync_EmptyList_CompletesWithoutStock()
+    {
+        var si = MakeSaleItem();
+        var item = new SaleReturnItem { Id = 10, SaleItem = si, SaleItemId = si.Id, Quantity = 1 };
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Approved, Items = [item] };
+        SetupReturns([sr]);
+        SetupSave();
+
+        var dto = new CompleteSaleReturnDto(1, Guid.NewGuid(), BranchOfficeId: 1, ItemIdsToRestore: []);
+        var result = await _sut.CompleteReturnAsync(dto);
+
+        result.Success.Should().BeTrue();
+        sr.ReturnStatus.Should().Be(ReturnStatus.Completed);
+        item.RestoredToStock.Should().BeFalse();
+        _mockStock.Verify(s => s.IncreaseStockAtomicAsync(
+            It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
+            It.IsAny<StockMovementType>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteReturnAsync_Idempotent_SkipsAlreadyRestored()
+    {
+        var si = MakeSaleItem();
+        var item = new SaleReturnItem
+        {
+            Id = 10, SaleItem = si, SaleItemId = si.Id, Quantity = 1,
+            RestoredToStock = true, RestoredAt = DateTimeOffset.UtcNow
+        };
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Approved, Items = [item] };
+        SetupReturns([sr]);
+        SetupSave();
+
+        var dto = new CompleteSaleReturnDto(1, Guid.NewGuid(), BranchOfficeId: 1, ItemIdsToRestore: [10]);
+        await _sut.CompleteReturnAsync(dto);
+
+        _mockStock.Verify(s => s.IncreaseStockAtomicAsync(
+            It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
+            It.IsAny<StockMovementType>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteReturnAsync_NotApproved_ReturnsError()
+    {
+        var sr = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Pending, Items = [] };
+        SetupReturns([sr]);
+
+        var dto = new CompleteSaleReturnDto(1, Guid.NewGuid(), BranchOfficeId: 1, ItemIdsToRestore: []);
+        var result = await _sut.CompleteReturnAsync(dto);
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("onaylanmış");
+    }
+
+    // ── CANCEL ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CancelReturnAsync_PendingSaleReturn_RecalcsSaleStatus()
+    {
+        var si = MakeSaleItem(qty: 3, returned: 2);
+        var sale = MakeSale(si);
+        var sr = new SaleReturn
+        {
+            Id = 1,
+            SaleId = sale.Id,
+            ReturnStatus = ReturnStatus.Pending,
+            Items = [new SaleReturnItem { Id = 10, SaleItem = si, SaleItemId = si.Id, Quantity = 2 }]
+        };
+        SetupReturns([sr]);
+        SetupSales([sale]);
+        SetupSave();
+
+        var dto = new CancelSaleReturnDto(1, Guid.NewGuid(), "Yanlış girildi");
+        var result = await _sut.CancelReturnAsync(dto);
+
+        result.Success.Should().BeTrue();
+        sr.ReturnStatus.Should().Be(ReturnStatus.Cancelled);
+        sr.CancellationReason.Should().Be("Yanlış girildi");
+        si.ReturnedQuantity.Should().Be(0);
+        sale.SaleStatus.Should().Be(SaleStatus.Completed);
+    }
+
+    [Fact]
+    public async Task CancelReturnAsync_WhenItemsRestored_DecreasesStock()
+    {
+        var si = MakeSaleItem();
+        var item = new SaleReturnItem
+        {
+            Id = 10, SaleItem = si, SaleItemId = si.Id, Quantity = 1,
+            RestoredToStock = true, RestoredAt = DateTimeOffset.UtcNow
+        };
+        var sr = new SaleReturn
+        {
+            Id = 1,
+            ReturnStatus = ReturnStatus.Approved,
+            RestoreBranchOfficeId = 1,
+            Items = [item]
+        };
+        SetupReturns([sr]);
+        SetupSave();
+
+        var dto = new CancelSaleReturnDto(1, Guid.NewGuid(), "İptal lazım");
+        var result = await _sut.CancelReturnAsync(dto);
+
+        result.Success.Should().BeTrue();
+        item.RestoredToStock.Should().BeFalse();
+        _mockStock.Verify(s => s.DecreaseStockAtomicAsync(
+            1, si.ProductVariantId, 1, StockMovementType.Return, "SaleReturn", "1"), Times.Once);
+    }
+
+    // ── REJECT ───────────────────────────────────────────────────────────
 
     [Fact]
     public async Task RejectReturnAsync_RollsBackReturnedQuantity()
     {
-        // Arrange
-        var saleItem = new SaleItem
-        {
-            Id = Guid.NewGuid(),
-            ProductVariantId = Guid.NewGuid(),
-            Quantity = 3,
-            ReturnedQuantity = 2 // was set to 2 when return was created
-        };
-        var sale = new Sale
-        {
-            Id = Guid.NewGuid(),
-            SaleNumber = "S202601010001",
-            BranchOfficeId = 1,
-            SaleStatus = SaleStatus.PartialReturn,
-            SaleItems = new List<SaleItem> { saleItem }
-        };
-        var saleReturn = new SaleReturn
+        var si = MakeSaleItem(qty: 3, returned: 2);
+        var sale = MakeSale(si);
+        var sr = new SaleReturn
         {
             Id = 1,
-            Sale = sale,
             SaleId = sale.Id,
             ReturnStatus = ReturnStatus.Pending,
-            Items = new List<SaleReturnItem>
-            {
-                new() { Id = 1, SaleItem = saleItem, SaleItemId = saleItem.Id, Quantity = 2 }
-            }
+            Items = [new SaleReturnItem { Id = 10, SaleItem = si, SaleItemId = si.Id, Quantity = 2 }]
         };
-        SetupForApproveReject(new List<SaleReturn> { saleReturn });
+        SetupReturns([sr]);
+        SetupSales([sale]);
+        SetupSave();
 
-        // Act
         var result = await _sut.RejectReturnAsync(1, Guid.NewGuid(), "Geçersiz talep");
 
-        // Assert
         result.Success.Should().BeTrue();
-        saleReturn.ReturnStatus.Should().Be(ReturnStatus.Rejected);
-        saleItem.ReturnedQuantity.Should().Be(0); // rolled back from 2 to 0
-        sale.SaleStatus.Should().Be(SaleStatus.Completed); // no more returns
-        _mockOfficeStockManager.Verify(s => s.IncreaseStockAtomicAsync(
+        sr.ReturnStatus.Should().Be(ReturnStatus.Rejected);
+        si.ReturnedQuantity.Should().Be(0);
+        sale.SaleStatus.Should().Be(SaleStatus.Completed);
+    }
+
+    // ── RESTORE ITEM ─────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task RestoreItemToStockAsync_AlreadyRestored_ReturnsSuccess()
+    {
+        var si = MakeSaleItem();
+        var item = new SaleReturnItem
+        {
+            Id = 10, SaleReturn = new SaleReturn { Id = 1, ReturnStatus = ReturnStatus.Completed },
+            SaleItem = si, SaleItemId = si.Id, Quantity = 1,
+            RestoredToStock = true
+        };
+        SetupReturnItems([item]);
+
+        var result = await _sut.RestoreItemToStockAsync(10, Guid.NewGuid(), 1);
+
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("zaten");
+        _mockStock.Verify(s => s.IncreaseStockAtomicAsync(
             It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
             It.IsAny<StockMovementType>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }

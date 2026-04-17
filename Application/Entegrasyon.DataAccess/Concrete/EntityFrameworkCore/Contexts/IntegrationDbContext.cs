@@ -178,6 +178,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<SalePayment> SalePayments { get; set; } = null!;
     public virtual DbSet<SaleReturn> SaleReturns { get; set; } = null!;
     public virtual DbSet<SaleReturnItem> SaleReturnItems { get; set; } = null!;
+    public virtual DbSet<ReturnReason> ReturnReasons { get; set; } = null!;
 
     // Storefront
     public virtual DbSet<StorefrontSettings> StorefrontSettings { get; set; }

@@ -43,4 +43,6 @@ public sealed class OrderItem : BaseEntity
 
     [Column(TypeName = "money")]
     public decimal? CommissionAmount { get; set; }
+
+    public int ReturnedQuantity { get; set; }
 }

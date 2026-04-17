@@ -3,16 +3,12 @@ using FluentValidation;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
-public class CreateSaleReturnValidator : AbstractValidator<CreateSaleReturnDto>
+public class UpdateSaleReturnValidator : AbstractValidator<UpdateSaleReturnDto>
 {
-    public CreateSaleReturnValidator()
+    public UpdateSaleReturnValidator()
     {
-        RuleFor(x => x).Must(x => x.SaleId.HasValue || x.OrderId.HasValue)
-            .WithMessage("Satış veya sipariş ID'si zorunludur.");
-
-        RuleFor(x => x).Must(x => !(x.SaleId.HasValue && x.OrderId.HasValue))
-            .WithMessage("Aynı anda hem satış hem sipariş ID'si belirtilemez.");
-
+        RuleFor(x => x.Id).GreaterThan(0);
+        RuleFor(x => x.UpdatedByUserId).NotEmpty();
         RuleFor(x => x.Source).IsInEnum();
 
         RuleFor(x => x.CustomReason)
@@ -27,8 +23,8 @@ public class CreateSaleReturnValidator : AbstractValidator<CreateSaleReturnDto>
         RuleForEach(x => x.Items).ChildRules(item =>
         {
             item.RuleFor(x => x).Must(x => x.SaleItemId.HasValue || x.OrderItemId.HasValue)
-                .WithMessage("Kalem için satış veya sipariş item ID'si zorunludur.");
-            item.RuleFor(x => x.Quantity).GreaterThan(0).WithMessage("İade adedi sıfırdan büyük olmalıdır.");
+                .WithMessage("Kalem ID'si zorunludur.");
+            item.RuleFor(x => x.Quantity).GreaterThan(0);
         });
     }
 }

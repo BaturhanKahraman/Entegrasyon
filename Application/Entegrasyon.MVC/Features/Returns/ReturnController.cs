@@ -1,32 +1,56 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Entity.Storefront;
+using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Sales;
 using Entegrasyon.MVC.Infrastructure.Controllers;
 using Entegrasyon.MVC.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
 namespace Entegrasyon.MVC.Features.Returns;
 
 [Authorize]
 public class ReturnController(
-    IStorefrontReturnManager returnManager,
-    ITenantContext tenantContext) : HtmxController
+    ISaleReturnManager saleReturnManager,
+    IReturnReasonManager returnReasonManager,
+    IDbContextFactory<IntegrationDbContext> contextFactory) : HtmxController
 {
-    private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    // ── INDEX ────────────────────────────────────────────────────────────
 
     [HttpGet("/returns")]
-    public async Task<IActionResult> Index(string? status = null)
+    public async Task<IActionResult> Index(
+        ReturnStatus? status = null,
+        ReturnSource? source = null,
+        string? search = null)
     {
-        ViewData.SetPageTitle("Iade Yonetimi");
+        ViewData.SetPageTitle("İade Yönetimi");
         ViewData.SetActiveNav("returns");
 
-        var result = await returnManager.GetAllReturnsAsync(TenantId);
-        var returns = result.Data ?? [];
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
 
-        if (status is not null && Enum.TryParse<ReturnStatus>(status, out var parsed))
-            returns = returns.Where(r => r.Status == parsed).ToList();
+        var query = dbContext.SaleReturns
+            .Include(r => r.ReturnReason)
+            .Include(r => r.ReturnedBy)
+            .Include(r => r.Sale)
+            .Include(r => r.Order)
+            .Include(r => r.Items)
+            .OrderByDescending(r => r.CreatedAt)
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (status.HasValue) query = query.Where(r => r.ReturnStatus == status.Value);
+        if (source.HasValue) query = query.Where(r => r.Source == source.Value);
+
+        var returns = await query.Take(200).ToListAsync();
 
         ViewBag.Status = status;
+        ViewBag.Source = source;
+        ViewBag.Search = search;
 
         if (Request.IsHtmx())
             return PartialView("~/Features/Returns/Views/Partials/_ReturnTable.cshtml", returns);
@@ -34,24 +58,90 @@ public class ReturnController(
         return View("~/Features/Returns/Views/Index.cshtml", returns);
     }
 
-    [HttpPost("/returns/{id:int}/approve")]
-    public async Task<IActionResult> Approve(int id, [FromForm] string? reviewNote, [FromForm] decimal? refundAmount)
+    // ── DETAIL ───────────────────────────────────────────────────────────
+
+    [HttpGet("/returns/{id:long}")]
+    public async Task<IActionResult> Detail(long id)
     {
-        var result = await returnManager.UpdateReturnStatusAsync(id, ReturnStatus.Approved, reviewNote, refundAmount);
-        return HtmxMutationResult(result, "Iade talebi onaylandi.", refreshEvent: "returnStatusChanged");
+        ViewData.SetPageTitle("İade Detayı");
+        ViewData.SetActiveNav("returns");
+
+        var result = await saleReturnManager.GetReturnByIdAsync(id);
+        if (!result.Success)
+        {
+            TempData.SetError("İade kaydı bulunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var reasons = await returnReasonManager.GetAllAsync();
+        ViewBag.ReturnReasons = reasons.Data ?? [];
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var branchOffices = await dbContext.BranchOffices.AsNoTracking()
+            .Where(b => !b.IsDeleted).OrderBy(b => b.Name).ToListAsync();
+        ViewBag.BranchOffices = branchOffices;
+
+        return View("~/Features/Returns/Views/Detail.cshtml", result.Data);
     }
 
-    [HttpPost("/returns/{id:int}/reject")]
-    public async Task<IActionResult> Reject(int id, [FromForm] string? reviewNote)
+    // ── ACTIONS ──────────────────────────────────────────────────────────
+
+    [HttpPost("/returns/{id:long}/submit")]
+    public async Task<IActionResult> Submit(long id)
     {
-        var result = await returnManager.UpdateReturnStatusAsync(id, ReturnStatus.Rejected, reviewNote, null);
-        return HtmxMutationResult(result, "Iade talebi reddedildi.", refreshEvent: "returnStatusChanged");
+        var result = await saleReturnManager.SubmitReturnAsync(id, GetCurrentUserId());
+        return HtmxMutationResult(result, "İade onaya sunuldu.", refreshEvent: "returnStatusChanged");
     }
 
-    [HttpPost("/returns/{id:int}/complete")]
-    public async Task<IActionResult> Complete(int id)
+    [HttpPost("/returns/{id:long}/approve")]
+    public async Task<IActionResult> Approve(long id)
     {
-        var result = await returnManager.UpdateReturnStatusAsync(id, ReturnStatus.Completed, null, null);
-        return HtmxMutationResult(result, "Iade tamamlandi.", refreshEvent: "returnStatusChanged");
+        var result = await saleReturnManager.ApproveReturnAsync(id, GetCurrentUserId());
+        return HtmxMutationResult(result, "İade onaylandı.", refreshEvent: "returnStatusChanged");
+    }
+
+    [HttpPost("/returns/{id:long}/reject")]
+    public async Task<IActionResult> Reject(long id, [FromForm] string reason)
+    {
+        var result = await saleReturnManager.RejectReturnAsync(id, GetCurrentUserId(), reason);
+        return HtmxMutationResult(result, "İade reddedildi.", refreshEvent: "returnStatusChanged");
+    }
+
+    [HttpPost("/returns/{id:long}/cancel")]
+    public async Task<IActionResult> Cancel(long id, [FromForm] string reason)
+    {
+        var dto = new CancelSaleReturnDto(id, GetCurrentUserId(), reason);
+        var result = await saleReturnManager.CancelReturnAsync(dto);
+        return HtmxMutationResult(result, "İade iptal edildi.", refreshEvent: "returnStatusChanged");
+    }
+
+    [HttpPost("/returns/{id:long}/complete")]
+    public async Task<IActionResult> Complete(long id, [FromForm] int branchOfficeId, [FromForm] List<long> itemIds)
+    {
+        var dto = new CompleteSaleReturnDto(id, GetCurrentUserId(), branchOfficeId, itemIds);
+        var result = await saleReturnManager.CompleteReturnAsync(dto);
+
+        if (Request.IsHtmx())
+        {
+            if (result.Success)
+            {
+                Response.HtmxTriggerWithData("showToast", new { message = "İade tamamlandı.", type = "success" });
+                Response.HtmxTrigger("returnStatusChanged");
+                return Content("");
+            }
+            Response.HtmxTriggerWithData("showToast", new { message = result.Message ?? "İşlem başarısız.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        if (result.Success) TempData.SetSuccess("İade tamamlandı.");
+        else TempData.SetError(result.Message ?? "İşlem başarısız.");
+        return RedirectToAction(nameof(Detail), new { id });
+    }
+
+    [HttpPost("/returns/items/{itemId:long}/restore")]
+    public async Task<IActionResult> RestoreItem(long itemId, [FromForm] int branchOfficeId)
+    {
+        var result = await saleReturnManager.RestoreItemToStockAsync(itemId, GetCurrentUserId(), branchOfficeId);
+        return HtmxMutationResult(result, "Ürün envantere eklendi.", refreshEvent: "returnStatusChanged");
     }
 }
