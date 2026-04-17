@@ -4,7 +4,7 @@ namespace Entegrasyon.Entity.Dtos.Sale;
 
 public sealed record MakeSaleDto(
     Guid SalePersonId,
-    int CustomerId,
+    int? CustomerId,
     double GeneralDiscount,
     int BranchOfficeId,
     SaleSource SaleSource,

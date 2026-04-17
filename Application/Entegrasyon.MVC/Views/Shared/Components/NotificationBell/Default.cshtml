@@ -1,11 +1,11 @@
 @model int
 
 <div class="nav-item" id="notification-bell">
-    <a href="/notifications" class="nav-link px-0 position-relative" title="Bildirimler">
+    <a href="/notifications" class="nav-link px-0" title="Bildirimler">
         <i class="ti ti-bell fs-2"></i>
         @if (Model > 0)
         {
-            <span class="badge bg-red badge-notification" id="notification-badge">@Model</span>
+            <span class="badge bg-red" id="notification-badge"></span>
         }
     </a>
 </div>

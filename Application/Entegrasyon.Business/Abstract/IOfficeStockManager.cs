@@ -53,4 +53,16 @@ public interface IOfficeStockManager
     Task<IDataResult<Pageable<StockMovementViewDto>>> GetStockMovementsAsync(
         int pageIndex = 0, int pageSize = 50,
         int? branchOfficeId = null, StockMovementType? type = null);
+
+    /// <summary>
+    /// Belirli bir şube ve varyant için mevcut stoku döner. Kayıt yoksa 0.
+    /// POS stok aşım kontrolü için kullanılır.
+    /// </summary>
+    Task<int> GetAvailableStockAsync(int branchOfficeId, Guid productVariantId);
+
+    /// <summary>
+    /// Stok değişikliği event'ini marketplace sync kanalına yayınlar.
+    /// SaleManager gibi inline stok değişikliği yapan manager'lar bu metodu çağırır.
+    /// </summary>
+    Task PublishStockChangedEventAsync(Guid productVariantId, Guid productId);
 }

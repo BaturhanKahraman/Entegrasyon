@@ -1,0 +1,338 @@
+@using Entegrasyon.MVC.Features.Products.ViewModels
+@model TrendyolSendVm
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="@(string.IsNullOrEmpty(Model.ReturnUrl) ? $"/products/{Model.ProductId}/sync/trendyol/detail" : Model.ReturnUrl)" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i>
+        Geri Dön
+    </a>
+</div>
+
+@if (Model.IsApproved)
+{
+    <div class="alert alert-info mb-3">
+        <div class="d-flex">
+            <div><i class="ti ti-info-circle icon alert-icon"></i></div>
+            <div>Bu ürün Trendyol tarafından <strong>onaylanmış</strong>. Sadece başlık, açıklama ve görseller güncellenebilir. Kategori, marka ve barkod değişikliği yapılamaz.</div>
+        </div>
+    </div>
+}
+
+        <div class="row row-deck row-cards">
+
+            @* Section 1: Preflight Checks *@
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ön Uçuş Kontrolleri</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Preflight is null)
+                        {
+                            <div class="alert alert-warning">
+                                Ön uçuş kontrolleri yüklenemedi. Ürünün kategori ve marka eşleştirmelerini kontrol edin.
+                            </div>
+                        }
+                        else
+                        {
+                            var returnUrl = Uri.EscapeDataString($"/products/{Model.ProductId}/sync/trendyol/edit");
+                            var categoryFixUrl = !string.IsNullOrEmpty(Model.Preflight.ProductCategoryName)
+                                ? $"/marketplace/sync/categories?mp=1&search={Uri.EscapeDataString(Model.Preflight.ProductCategoryName)}&returnUrl={returnUrl}"
+                                : $"/marketplace/sync/categories?mp=1&returnUrl={returnUrl}";
+                            var brandFixUrl = !string.IsNullOrEmpty(Model.Preflight.ProductBrandName)
+                                ? $"/marketplace/sync/brands?mp=1&search={Uri.EscapeDataString(Model.Preflight.ProductBrandName)}&returnUrl={returnUrl}"
+                                : $"/marketplace/sync/brands?mp=1&returnUrl={returnUrl}";
+                            var firstMissingAttr = Model.Preflight.MissingAttributes.FirstOrDefault() ?? "";
+                            var attrFixUrl = !string.IsNullOrEmpty(firstMissingAttr)
+                                ? $"/marketplace/sync/attributes?mp=1&search={Uri.EscapeDataString(firstMissingAttr)}&returnUrl={returnUrl}"
+                                : $"/marketplace/sync/attributes?mp=1&returnUrl={returnUrl}";
+
+                            <div class="list-group list-group-flush">
+                                @{ RenderCheck(Model.Preflight.CategoryMatched,
+                                    "Kategori Eşleştirmesi",
+                                    Model.Preflight.CategoryMatched
+                                        ? $"Eşleşti: {Model.Preflight.MatchedCategoryName}"
+                                        : $"Trendyol kategori eşleştirmesi bulunamadı ({Model.Preflight.ProductCategoryName})",
+                                    Model.Preflight.CategoryMatched ? null : categoryFixUrl); }
+
+                                @{ RenderCheck(Model.Preflight.BrandMatched,
+                                    "Marka Eşleştirmesi",
+                                    Model.Preflight.BrandMatched
+                                        ? $"Eşleşti: {Model.Preflight.MatchedBrandName}"
+                                        : $"Trendyol marka eşleştirmesi bulunamadı ({Model.Preflight.ProductBrandName})",
+                                    Model.Preflight.BrandMatched ? null : brandFixUrl); }
+
+                                @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
+                                    "Zorunlu Özellikler",
+                                    Model.Preflight.RequiredAttributesMatched
+                                        ? "Tüm zorunlu özellikler eşleşti"
+                                        : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}",
+                                    Model.Preflight.RequiredAttributesMatched ? null : attrFixUrl); }
+
+                                @{ RenderCheck(Model.Preflight.HasVariants,
+                                    "Varyant Durumu",
+                                    Model.Preflight.HasVariants
+                                        ? "En az bir varyant mevcut"
+                                        : "Ürünün varyantı bulunmuyor",
+                                    Model.Preflight.HasVariants ? null : $"/products/{Model.ProductId}/variants"); }
+
+                                @{ RenderCheck(Model.Preflight.AllVariantsHaveBarcodes,
+                                    "Barkod Durumu",
+                                    Model.Preflight.AllVariantsHaveBarcodes
+                                        ? "Tüm varyantların barkodu mevcut"
+                                        : "Barkodu olmayan varyantlar var",
+                                    Model.Preflight.AllVariantsHaveBarcodes ? null : $"/products/{Model.ProductId}/variants"); }
+                            </div>
+
+                            @if (Model.PreflightPassed)
+                            {
+                                <div class="alert alert-success mt-3 mb-0">
+                                    <div class="d-flex">
+                                        <div><i class="ti ti-check icon alert-icon"></i></div>
+                                        <div>Tüm kontroller başarılı. Ürün güncellemeye hazır.</div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger mt-3 mb-0">
+                                    <div class="d-flex">
+                                        <div><i class="ti ti-alert-triangle icon alert-icon"></i></div>
+                                        <div>Bazı kontroller başarısız. Lütfen eksikleri tamamlayın.</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Section 2: Override Form + Update *@
+            <div class="col-lg-6">
+                <form method="post" action="/products/@Model.ProductId/sync/trendyol/edit">
+                    @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+                    {
+                        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+                    }
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Güncelleme Ayarları</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Başlık Override</label>
+                                <input type="text" class="form-control" name="TitleOverride"
+                                       value="@Model.TitleOverride"
+                                       placeholder="Boş bırakılırsa ürün başlığı kullanılır"
+                                       @(Model.PreflightPassed ? "" : "disabled")>
+                                <small class="form-hint">Trendyol'da görünecek başlık. Boş bırakırsanız ürünün mevcut başlığı gönderilir.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Açıklama Override</label>
+                                <textarea class="form-control" name="DescriptionOverride" rows="4"
+                                          placeholder="Boş bırakılırsa ürün açıklaması kullanılır"
+                                          @(Model.PreflightPassed ? "" : "disabled")>@Model.DescriptionOverride</textarea>
+                                <small class="form-hint">Trendyol'da görünecek açıklama. Boş bırakırsanız ürünün mevcut açıklaması gönderilir.</small>
+                            </div>
+
+                            @if (Model.Variants.Any())
+                            {
+                                <hr class="my-3" />
+                                <h4 class="subheader mb-2">Varyant Fiyat Override</h4>
+                                <small class="text-secondary d-block mb-3">Boş bırakırsanız ürünün mevcut fiyatı gönderilir.</small>
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Barkod</th>
+                                                <th class="text-end">Liste Fiyatı</th>
+                                                <th class="text-end">Satış Fiyatı</th>
+                                                <th>Trendyol Liste</th>
+                                                <th>Trendyol Satış</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (var i = 0; i < Model.Variants.Count; i++)
+                                            {
+                                                var v = Model.Variants[i];
+                                                <tr>
+                                                    <td><code>@v.Barcode</code>
+                                                        <input type="hidden" name="Variants[@i].VariantId" value="@v.VariantId" />
+                                                        <input type="hidden" name="Variants[@i].Barcode" value="@v.Barcode" />
+                                                        <input type="hidden" name="Variants[@i].ListPrice" value="@v.ListPrice" />
+                                                        <input type="hidden" name="Variants[@i].SalePrice" value="@v.SalePrice" />
+                                                    </td>
+                                                    <td class="text-end text-secondary">@v.ListPrice.ToString("N2")</td>
+                                                    <td class="text-end text-secondary">@v.SalePrice.ToString("N2")</td>
+                                                    <td>
+                                                        <div class="input-group input-group-sm">
+                                                            <span class="input-group-text">₺</span>
+                                                            <input type="text" class="form-control currency-input"
+                                                                   name="Variants[@i].ListPriceOverride"
+                                                                   value="@(v.ListPriceOverride?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "")"
+                                                                   placeholder="@v.ListPrice.ToString("N2")"
+                                                                   inputmode="decimal" autocomplete="off"
+                                                                   @(Model.PreflightPassed ? "" : "disabled") />
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="input-group input-group-sm">
+                                                            <span class="input-group-text">₺</span>
+                                                            <input type="text" class="form-control currency-input"
+                                                                   name="Variants[@i].SalePriceOverride"
+                                                                   value="@(v.SalePriceOverride?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? "")"
+                                                                   placeholder="@v.SalePrice.ToString("N2")"
+                                                                   inputmode="decimal" autocomplete="off"
+                                                                   @(Model.PreflightPassed ? "" : "disabled") />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer text-end">
+                            <button type="submit" class="btn btn-primary"
+                                    @(Model.PreflightPassed ? "" : "disabled")
+                                    onclick="return confirm('Bu ürünü Trendyol\'da güncellemek istediğinize emin misiniz?')">
+                                <i class="ti ti-refresh icon"></i>
+                                Güncelle ve Trendyol'a Gönder
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            @* Section 3: Preview *@
+            @if (Model.Preview is not null)
+            {
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Güncelleme Ön İzleme</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="datagrid">
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Başlık</div>
+                                            <div class="datagrid-content">@Model.Preview.Title</div>
+                                        </div>
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Marka</div>
+                                            <div class="datagrid-content">@Model.Preview.BrandName &rarr; @Model.Preview.TrendyolBrandName</div>
+                                        </div>
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Kategori</div>
+                                            <div class="datagrid-content">@Model.Preview.CategoryName &rarr; @Model.Preview.TrendyolCategoryName</div>
+                                        </div>
+                                        <div class="datagrid-item">
+                                            <div class="datagrid-title">Trendyol Kategori ID</div>
+                                            <div class="datagrid-content">@Model.Preview.TrendyolCategoryId</div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(Model.Preview.Description))
+                                        {
+                                            <div class="datagrid-item">
+                                                <div class="datagrid-title">Açıklama</div>
+                                                <div class="datagrid-content">@Model.Preview.Description</div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    @if (Model.Preview.Attributes.Count > 0)
+                                    {
+                                        <h4 class="subheader mb-2">Özellikler</h4>
+                                        <div class="datagrid">
+                                            @foreach (var attr in Model.Preview.Attributes)
+                                            {
+                                                <div class="datagrid-item">
+                                                    <div class="datagrid-title">@attr.Name</div>
+                                                    <div class="datagrid-content">@attr.Value</div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (Model.Preview.Variants.Count > 0)
+                            {
+                                <h4 class="subheader mt-3 mb-2">Varyantlar</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter card-table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Barkod</th>
+                                                <th>Özellikler</th>
+                                                <th class="text-end">Liste Fiyatı</th>
+                                                <th class="text-end">Satış Fiyatı</th>
+                                                <th class="text-end">Stok</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var variant in Model.Preview.Variants)
+                                            {
+                                                <tr>
+                                                    <td><code>@variant.Barcode</code></td>
+                                                    <td>@variant.Attributes</td>
+                                                    <td class="text-end">@variant.ListPrice.ToString("N2") TL</td>
+                                                    <td class="text-end">@variant.SalePrice.ToString("N2") TL</td>
+                                                    <td class="text-end">@variant.Quantity</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+@functions {
+    void RenderCheck(bool passed, string label, string detail, string? fixUrl = null)
+    {
+        <div class="list-group-item @(!passed && fixUrl != null ? "list-group-item-action" : "")"
+             @(!passed && fixUrl != null ? $"onclick=\"window.location='{fixUrl}'\"" : "")
+             style="@(!passed && fixUrl != null ? "cursor:pointer" : "")">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    @if (passed)
+                    {
+                        <span class="status-dot status-dot-animated status-green"></span>
+                    }
+                    else
+                    {
+                        <span class="status-dot status-dot-animated status-red"></span>
+                    }
+                </div>
+                <div class="col">
+                    <div class="d-block text-truncate">@label</div>
+                    <div class="d-block text-secondary text-truncate mt-n1">@detail</div>
+                </div>
+                <div class="col-auto">
+                    @if (passed)
+                    {
+                        <i class="ti ti-check icon text-green"></i>
+                    }
+                    else if (fixUrl != null)
+                    {
+                        <a href="@fixUrl" class="btn btn-sm btn-outline-primary">
+                            <i class="ti ti-external-link me-1"></i>Düzelt
+                        </a>
+                    }
+                    else
+                    {
+                        <i class="ti ti-x icon text-red"></i>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}

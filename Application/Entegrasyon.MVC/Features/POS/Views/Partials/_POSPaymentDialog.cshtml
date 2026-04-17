@@ -6,14 +6,15 @@
     var tr = new CultureInfo("tr-TR");
 }
 
-<div class="modal modal-blur fade" id="posPaymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal modal-blur show" style="display:block" tabindex="-1" id="posPaymentModal">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <form id="pos-payment-form" method="post" action="/pos/complete-sale">
             @Html.AntiForgeryToken()
+            <input type="hidden" name="submitToken" value="@Model.SubmitToken" />
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Ödeme — @Model.ItemCount kalem</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                    <button type="button" class="btn-close" onclick="closePosPaymentModal()" aria-label="Kapat"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
@@ -94,27 +95,26 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="closePosPaymentModal()">İptal</button>
                     <button type="submit" id="pos-complete-btn" class="btn btn-success" disabled>
-                        <i class="ti ti-check me-1"></i>Satışı Tamamla
+                        <span class="spinner-border spinner-border-sm me-1 d-none" id="pos-complete-spinner"></span>
+                        <i class="ti ti-check me-1" id="pos-complete-icon"></i>Satışı Tamamla
                     </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+<div class="modal-backdrop fade show" onclick="closePosPaymentModal()"></div>
 
 <script>
 (function () {
-    var modalEl = document.getElementById('posPaymentModal');
-    if (!modalEl) return;
-
-    var modal = new bootstrap.Modal(modalEl);
-    modal.show();
-
-    modalEl.addEventListener('hidden.bs.modal', function () {
-        modalEl.remove();
-    });
+    window.closePosPaymentModal = function () {
+        var container = document.getElementById('modal-container');
+        if (container) {
+            while (container.firstChild) container.removeChild(container.firstChild);
+        }
+    };
 
     var grandTotal = parseFloat(document.getElementById('pos-grand-total').dataset.amount) || 0;
     var paidTotalEl = document.getElementById('pos-paid-total');
@@ -123,6 +123,18 @@
     var rowsContainer = document.getElementById('pos-payment-rows');
     var completeBtn = document.getElementById('pos-complete-btn');
     var formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' });
+
+    // Double-submit koruması — form gönderildikten sonra butonu devre dışı bırak + spinner
+    var paymentForm = document.getElementById('pos-payment-form');
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', function () {
+            completeBtn.disabled = true;
+            var spinner = document.getElementById('pos-complete-spinner');
+            var icon = document.getElementById('pos-complete-icon');
+            if (spinner) spinner.classList.remove('d-none');
+            if (icon) icon.classList.add('d-none');
+        });
+    }
 
     var nextIndex = 0;
 

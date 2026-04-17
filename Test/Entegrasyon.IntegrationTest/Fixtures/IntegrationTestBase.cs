@@ -74,7 +74,8 @@ public abstract class IntegrationTestBase : IAsyncLifetime
                 new Respawn.Graph.Table("Roles"),
                 new Respawn.Graph.Table("Users"),
                 new Respawn.Graph.Table("UsersRoles"),
-                new Respawn.Graph.Table("ApplicationSettings")
+                new Respawn.Graph.Table("ApplicationSettings"),
+                new Respawn.Graph.Table("PaymentMethodDefinitions")
             ]
         });
 

@@ -24,7 +24,7 @@
                 @if (Model != null)
                 {
                     <div class="card-actions">
-                        <span class="badge bg-blue">@Model.TotalItemCount kayıt</span>
+                        <span class="badge bg-secondary-lt">@Model.TotalItemCount kayıt</span>
                     </div>
                 }
             </div>
@@ -68,7 +68,7 @@
                                     <td>
                                         @if (product.VariantCount > 1)
                                         {
-                                            <span class="badge bg-azure">@product.VariantCount varyant</span>
+                                            <span class="badge bg-azure-lt">@product.VariantCount varyant</span>
                                         }
                                         else
                                         {
@@ -78,15 +78,15 @@
                                     <td>
                                         @if (product.TotalCurrentStock <= 0)
                                         {
-                                            <span class="badge bg-red">Stok Yok</span>
+                                            <span class="badge bg-red-lt">Stok Yok</span>
                                         }
                                         else if (product.TotalCurrentStock < 5)
                                         {
-                                            <span class="badge bg-orange">@product.TotalCurrentStock adet</span>
+                                            <span class="badge bg-orange-lt">@product.TotalCurrentStock adet</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-green">@product.TotalCurrentStock adet</span>
+                                            <span class="badge bg-green-lt">@product.TotalCurrentStock adet</span>
                                         }
                                     </td>
                                     <td class="text-end">

@@ -1,3 +1,4 @@
+@using Entegrasyon.Business.Utilities
 @using Entegrasyon.Entity.Dtos.Sale
 @using Entegrasyon.Entity.Sales
 @using System.Globalization
@@ -31,7 +32,7 @@
     };
 
     var isCancellable = Model.SaleStatus != SaleStatus.Cancelled
-                     && Model.SaleDate.Date == DateTimeOffset.UtcNow.Date;
+                     && TurkeyTime.StartOfDay(Model.SaleDate) == TurkeyTime.StartOfToday;
     var isReturnable = Model.SaleStatus == SaleStatus.Completed
                     || Model.SaleStatus == SaleStatus.PartialReturn;
 }

@@ -8,7 +8,8 @@ public enum MarketplaceSyncState
     OutOfSync,
     Synced,
     Failed,
-    Rejected
+    Rejected,
+    Removed
 }
 
 public sealed record MarketplaceSyncStatusDto(

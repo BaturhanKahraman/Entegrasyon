@@ -8,6 +8,8 @@ public sealed class Brand : BaseEntity
     public int Id { get; set; }
     [StringLength(maximumLength: 55, MinimumLength = 1)]
     public string Name { get; set; } = null!;
+    [StringLength(maximumLength: 55)]
+    public string? NormalizedName { get; set; }
     public string? SeoSlug { get; set; }
     public IEnumerable<Product> Products { get; set; } = new List<Product>();
 }

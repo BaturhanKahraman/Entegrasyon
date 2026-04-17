@@ -366,8 +366,20 @@ public class ProductManager(
                 x.Id, x.Title, x.Description ?? "", x.StockCode ?? "", x.Brand!.Name!, x.Category!.Name!,
                 x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
                 x.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
-                x.ProductVariants.Count()))
+                x.ProductVariants.Count())
+            {
+                FeaturedImageUrl = x.ProductVariants
+                    .SelectMany(pv => pv.Images.Where(i => !i.IsDeleted))
+                    .OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder)
+                    .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src)
+                    .FirstOrDefault()
+            })
             .ToListAsync();
+
+        // StorageKey -> public URL
+        for (int i = 0; i < items.Count; i++)
+            if (!string.IsNullOrEmpty(items[i].FeaturedImageUrl))
+                items[i].FeaturedImageUrl = minioFileStorage.GetPublicUrl(items[i].FeaturedImageUrl!);
 
         return new SuccessDataResult<Pageable<ProductsDetailDto>>(new Pageable<ProductsDetailDto>(items, dto.PageIndex, dto.PageSize, total));
     }

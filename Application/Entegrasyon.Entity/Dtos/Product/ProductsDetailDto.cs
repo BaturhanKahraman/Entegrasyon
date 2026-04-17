@@ -33,5 +33,5 @@ public sealed class ProductsDetailDto
     public int TotalSoldQuantity { get; init; }
     public int TotalCurrentStock => TotalQuantity - TotalSoldQuantity;
     public int VariantCount { get; init; }
-    
+    public string? FeaturedImageUrl { get; set; }
 }

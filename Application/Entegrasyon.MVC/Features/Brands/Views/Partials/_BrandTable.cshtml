@@ -10,27 +10,17 @@
                         <th>Marka Adi</th>
                         <th>Ürün Sayisi</th>
                         <th>Olusturma Tarihi</th>
-                        <th class="w-1"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var brand in Model.Items)
                     {
-                        <tr>
-                            <td><a href="/brands/@brand.Id">@brand.Name</a></td>
+                        <tr style="cursor: pointer" onclick="window.location='/brands/@brand.Id'">
+                            <td>@brand.Name</td>
                             <td>
                                 <span class="badge bg-blue-lt">@brand.ProductNumber</span>
                             </td>
                             <td class="text-secondary">@brand.CreatedAt.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-danger"
-                                        hx-post="/brands/@brand.Id/delete"
-                                        hx-target="closest tr"
-                                        hx-swap="outerHTML swap:300ms"
-                                        hx-confirm="Bu markayi silmek istediginize emin misiniz?">
-                                    Sil
-                                </button>
-                            </td>
                         </tr>
                     }
                 </tbody>

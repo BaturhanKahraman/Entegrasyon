@@ -29,11 +29,28 @@ else
                 {
                     <tr>
                         <td>
-                            <div class="fw-bold">@item.Title</div>
-                            @if (!string.IsNullOrEmpty(item.Barcode))
-                            {
-                                <div class="text-secondary small">@item.Barcode</div>
-                            }
+                            <div class="d-flex align-items-center">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt=""
+                                         style="width:40px;height:40px;object-fit:cover"
+                                         class="rounded me-2" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center"
+                                         style="width:40px;height:40px">
+                                        <i class="ti ti-photo text-secondary"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <div class="fw-bold">@item.Title</div>
+                                    @if (!string.IsNullOrEmpty(item.Barcode))
+                                    {
+                                        <div class="text-secondary small">@item.Barcode</div>
+                                    }
+                                </div>
+                            </div>
                         </td>
                         <td class="text-center">
                             <div class="input-group input-group-sm" style="width:110px; margin:0 auto;">
@@ -56,7 +73,9 @@ else
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="productId" value="@item.ProductId" />
                                     <input type="hidden" name="quantity" value="@(item.Quantity + 1)" />
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                            disabled="@(item.Quantity >= item.AvailableStock)"
+                                            title="Stok: @item.AvailableStock">+</button>
                                 </form>
                             </div>
                         </td>

@@ -24,8 +24,8 @@ public class HtmxExceptionHandler(
             <div class="alert alert-danger alert-dismissible" role="alert">
                 <div class="d-flex">
                     <div>
-                        <h4 class="alert-title">Bir hata olustu</h4>
-                        <div class="text-secondary">Isleminiz gerceklestirilemedi. Lutfen sayfayi yenileyip tekrar deneyin.</div>
+                        <h4 class="alert-title">Bir hata oluştu</h4>
+                        <div class="text-secondary">İşleminiz gerçekleştirilemedi. Lütfen sayfayı yenileyip tekrar deneyin.</div>
                     </div>
                 </div>
                 <a class="btn-close" data-bs-dismiss="alert" aria-label="Close"></a>

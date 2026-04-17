@@ -1,0 +1,52 @@
+@{
+    var productId = (Guid)ViewBag.ProductId;
+    var productTitle = (string)ViewBag.ProductTitle;
+    var isApproved = (bool)ViewBag.IsApproved;
+    var isArchived = (bool)ViewBag.IsArchived;
+}
+
+<div class="modal modal-blur fade show" id="trendyol-remove-modal" tabindex="-1" style="display:block" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <i class="ti ti-alert-triangle icon mb-2 text-danger icon-lg"></i>
+                <h3>Trendyol'dan Kaldır</h3>
+                <div class="text-secondary">
+                    <strong>@productTitle</strong> ürünü Trendyol'dan kaldırılacak.
+                    Bu işlem geri alınamaz.
+                </div>
+                <div class="text-secondary mt-2">
+                    Ürün sistemden silinmez, sadece Trendyol'daki listesi kaldırılır.
+                </div>
+                @if (isApproved && !isArchived)
+                {
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="ti ti-info-circle"></i>
+                        Bu ürün onaylanmış ve arşivlenmemiş. Trendyol kurallarına göre sadece onaysız veya 1+ gün arşivlenmiş ürünler silinebilir. İşlem başarısız olabilir.
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn w-100" data-bs-dismiss="modal" onclick="document.getElementById('trendyol-remove-modal').remove()">
+                                İptal
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-danger w-100"
+                                    hx-post="/products/@productId/sync/trendyol/remove"
+                                    hx-swap="none"
+                                    onclick="document.getElementById('trendyol-remove-modal').remove()">
+                                Evet, Kaldır
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="document.getElementById('trendyol-remove-modal')?.remove(); this.remove();"></div>

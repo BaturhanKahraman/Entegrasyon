@@ -13,18 +13,13 @@
                         <th>Kategori</th>
                         <th>Stok</th>
                         <th>Varyant</th>
-                        <th class="w-1"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var product in Model.Items)
                     {
-                        <tr>
-                            <td>
-                                <a href="/products/@product.Id" class="text-reset">
-                                    @product.Title
-                                </a>
-                            </td>
+                        <tr style="cursor: pointer" onclick="window.location='/products/@product.Id'">
+                            <td>@product.Title</td>
                             <td class="text-secondary">@product.StockCode</td>
                             <td class="text-secondary">@product.BrandName</td>
                             <td class="text-secondary">@product.CategoryName</td>
@@ -34,23 +29,6 @@
                                 </span>
                             </td>
                             <td class="text-secondary">@product.VariantCount</td>
-                            <td>
-                                <div class="btn-list flex-nowrap">
-                                    <a href="/products/@product.Id" class="btn btn-sm btn-outline-primary">
-                                        Detay
-                                    </a>
-                                    <a href="/products/@product.Id/edit" class="btn btn-sm btn-outline-secondary">
-                                        Düzenle
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            hx-post="/products/@product.Id/delete"
-                                            hx-target="closest tr"
-                                            hx-swap="outerHTML swap:300ms"
-                                            hx-confirm="Bu ürünü silmek istediğinize emin misiniz?">
-                                        Sil
-                                    </button>
-                                </div>
-                            </td>
                         </tr>
                     }
                 </tbody>

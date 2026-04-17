@@ -134,7 +134,7 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var entity = await dbContext.Brands
             .Where(x => x.Id == id)
-            .Select(x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
+            .Select(x => new BrandDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count(), x.SeoSlug, x.NormalizedName))
             .FirstOrDefaultAsync();
         return new SuccessDataResult<BrandDetailDto>(entity!);
     }

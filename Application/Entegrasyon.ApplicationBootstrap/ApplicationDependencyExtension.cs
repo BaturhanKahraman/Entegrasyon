@@ -292,7 +292,7 @@ namespace Entegrasyon.ApplicationBootstrap
             //   - AttemptTimeout: 60s  (default 30s — Amazon Feed/N11 SOAP icin yetersizdi)
             //   - TotalRequestTimeout: 120s (retry'lari kapsiyor)
             //   - Retry: 2 attempt, exponential backoff (default 3 — POST idempotency riskini azalt)
-            //   - CircuitBreaker: failure ratio 0.5, sampling 30s
+            //   - CircuitBreaker: failure ratio 0.5, sampling 150s (Polly: SamplingDuration >= 2 * AttemptTimeout)
             static void ConfigureMarketplacePolicy(
                 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions o)
             {
@@ -301,7 +301,7 @@ namespace Entegrasyon.ApplicationBootstrap
                 o.Retry.MaxRetryAttempts = 2;
                 o.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
                 o.Retry.UseJitter = true;
-                o.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                o.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(150);
                 o.CircuitBreaker.FailureRatio = 0.5;
             }
 

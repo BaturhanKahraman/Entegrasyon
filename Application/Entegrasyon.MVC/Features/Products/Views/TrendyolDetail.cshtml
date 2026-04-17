@@ -1,0 +1,208 @@
+@using Entegrasyon.Entity.Dtos.Product
+@using Entegrasyon.MVC.Features.Products.ViewModels
+@model TrendyolDetailVm
+
+<div class="d-flex justify-content-end mb-3">
+    <a href="@(string.IsNullOrEmpty(Model.ReturnUrl) ? $"/marketplace/matching/{Model.ProductId}" : Model.ReturnUrl)" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i>
+        Geri Dön
+    </a>
+</div>
+
+<div class="row row-deck row-cards">
+    @* Sol: Gönderim Bilgileri *@
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Gönderim Bilgileri</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    @if (!string.IsNullOrWhiteSpace(Model.Overrides?.TitleOverride))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Başlık Override</div>
+                            <div class="datagrid-content">@Model.Overrides.TitleOverride</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Overrides?.DescriptionOverride))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Açıklama Override</div>
+                            <div class="datagrid-content">@Model.Overrides.DescriptionOverride</div>
+                        </div>
+                    }
+                    @if (Model.Overrides is null || (string.IsNullOrWhiteSpace(Model.Overrides.TitleOverride) && string.IsNullOrWhiteSpace(Model.Overrides.DescriptionOverride)))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Override</div>
+                            <div class="datagrid-content text-secondary">Herhangi bir override ayarlanmamış</div>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Overrides?.VariantOverrides?.Any(v => v.ListPriceOverride.HasValue || v.SalePriceOverride.HasValue) == true)
+                {
+                    <h4 class="subheader mt-3 mb-2">Varyant Fiyat Override</h4>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Barkod</th>
+                                    <th>Varyant</th>
+                                    <th class="text-end">Orijinal Liste</th>
+                                    <th class="text-end">Orijinal Satış</th>
+                                    <th class="text-end">Trendyol Liste</th>
+                                    <th class="text-end">Trendyol Satış</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var v in Model.Overrides.VariantOverrides.Where(vo => vo.ListPriceOverride.HasValue || vo.SalePriceOverride.HasValue))
+                                {
+                                    <tr>
+                                        <td><code>@v.Barcode</code></td>
+                                        <td>@v.VariantLabel</td>
+                                        <td class="text-end text-secondary">@v.OriginalListPrice.ToString("N2") TL</td>
+                                        <td class="text-end text-secondary">@v.OriginalSalePrice.ToString("N2") TL</td>
+                                        <td class="text-end">@(v.ListPriceOverride?.ToString("N2") ?? "—") TL</td>
+                                        <td class="text-end">@(v.SalePriceOverride?.ToString("N2") ?? "—") TL</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Sağ: Trendyol Durumu *@
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Trendyol Durumu</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Senkronizasyon Durumu</div>
+                        <div class="datagrid-content">
+                            @{
+                                var (stClass, stText) = Model.SyncInfo.SyncState switch
+                                {
+                                    MarketplaceSyncState.Synced => ("bg-green-lt", "Senkronize"),
+                                    MarketplaceSyncState.Waiting => ("bg-warning-lt", "Bekleyen"),
+                                    MarketplaceSyncState.Processing => ("bg-info-lt", "İşleniyor"),
+                                    MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Güncellenmemiş"),
+                                    MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatalı"),
+                                    MarketplaceSyncState.Rejected => ("bg-danger-lt", "Reddedildi"),
+                                    MarketplaceSyncState.Removed => ("bg-secondary-lt", "Kaldırıldı"),
+                                    _ => ("bg-secondary-lt", "Hiç Senkronize Edilmemiş")
+                                };
+                            }
+                            <span class="badge @stClass">@stText</span>
+                        </div>
+                    </div>
+                    @if (Model.SyncInfo.IsApproved.HasValue)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Onay Durumu</div>
+                            <div class="datagrid-content">
+                                @if (Model.SyncInfo.IsApproved.Value)
+                                {
+                                    <span class="badge bg-green-lt">Onaylı</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-lt">Onay Bekliyor</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (Model.SyncInfo.IsArchived == true)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Arşiv Durumu</div>
+                            <div class="datagrid-content">
+                                <span class="badge bg-secondary-lt">Arşivlenmiş</span>
+                            </div>
+                        </div>
+                    }
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Son Senkronizasyon</div>
+                        <div class="datagrid-content">
+                            @if (Model.SyncInfo.LastSyncedAt.HasValue)
+                            {
+                                @Model.SyncInfo.LastSyncedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-secondary">Henüz senkronize edilmedi</span>
+                            }
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.SyncInfo.ExternalProductId))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Dış Ürün ID</div>
+                            <div class="datagrid-content"><code>@Model.SyncInfo.ExternalProductId</code></div>
+                        </div>
+                    }
+                    @if (Model.SyncInfo.ContentId.HasValue)
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Content ID</div>
+                            <div class="datagrid-content"><code>@Model.SyncInfo.ContentId</code></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.SyncInfo.BatchRequestId))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Batch Request ID</div>
+                            <div class="datagrid-content"><code>@Model.SyncInfo.BatchRequestId</code></div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.SyncInfo.StatusMessage))
+                    {
+                        <div class="datagrid-item">
+                            <div class="datagrid-title">Durum Mesajı</div>
+                            <div class="datagrid-content text-secondary">@Model.SyncInfo.StatusMessage</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Alt: Aksiyon Butonları *@
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex gap-2 justify-content-end">
+                    @{
+                        var returnUrl = Uri.EscapeDataString($"/products/{Model.ProductId}/sync/trendyol/detail");
+                    }
+                    @if (Model.SyncInfo.SyncState != MarketplaceSyncState.Removed)
+                    {
+                        <a href="/products/@Model.ProductId/sync/trendyol/edit?returnUrl=@returnUrl" class="btn btn-primary">
+                            <i class="ti ti-edit"></i>
+                            Düzenle
+                        </a>
+                    }
+                    <div require-permission="Permissions.Trendyol.Remove">
+                        @if (Model.CanRemove && Model.SyncInfo.SyncState != MarketplaceSyncState.Removed && Model.SyncInfo.SyncState != MarketplaceSyncState.NeverSynced)
+                        {
+                            <button class="btn btn-outline-danger"
+                                    hx-get="/products/@Model.ProductId/sync/trendyol/remove-confirm"
+                                    hx-target="body"
+                                    hx-swap="beforeend">
+                                <i class="ti ti-trash"></i>
+                                Kaldır
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -5,6 +5,11 @@ namespace Entegrasyon.MVC.Infrastructure.Extensions;
 
 public static class TempDataExtensions
 {
+    /// <summary>
+    /// Belirtilen mesajı "success" türünde bir toast mesajı olarak TempData'ya ekler.
+    /// </summary>
+    /// <param name="tempData"></param>
+    /// <param name="message">Toast mesajı olarak gösterilecek metin.</param>
     public static void SetSuccess(this ITempDataDictionary tempData, string message)
         => tempData["_toast"] = JsonSerializer.Serialize(new ToastMessage("success", message));
 

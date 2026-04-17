@@ -1,0 +1,54 @@
+@{
+    // Hızlı müşteri ekleme modalı — POS akışını kırmadan yeni retail müşteri kaydı açar.
+}
+
+<div class="modal modal-blur show" style="display:block" tabindex="-1" id="posQuickCustomerModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="pos-quick-customer-form" method="post" action="/pos/quick-customer"
+              hx-post="/pos/quick-customer"
+              hx-target="#pos-customer-badge"
+              hx-swap="innerHTML">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hızlı Müşteri Ekle</h5>
+                    <button type="button" class="btn-close" onclick="closePosQuickCustomerModal()" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Ad</label>
+                        <input type="text" class="form-control" name="name" required autofocus />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Soyad</label>
+                        <input type="text" class="form-control" name="surname" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefon</label>
+                        <input type="tel" class="form-control" name="phone" placeholder="0555 123 45 67" />
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">TC Kimlik No (opsiyonel)</label>
+                        <input type="text" class="form-control" name="nationalIdentity" maxlength="11" pattern="\d{11}" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="closePosQuickCustomerModal()">İptal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-user-plus me-1"></i>Ekle ve Seç
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="modal-backdrop fade show" onclick="closePosQuickCustomerModal()"></div>
+
+<script>
+    window.closePosQuickCustomerModal = function () {
+        var container = document.getElementById('modal-container');
+        if (container) container.replaceChildren();
+    };
+    // Server başarı sonrası HX-Trigger: closePosQuickCustomerModal event'i ile kapatma
+    document.body.addEventListener('closePosQuickCustomerModal', closePosQuickCustomerModal, { once: true });
+</script>

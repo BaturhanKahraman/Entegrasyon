@@ -1,0 +1,77 @@
+@model Entegrasyon.Entity.Dtos.Category.CategoryUnmapPreviewDto
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Eşleştirme Kaldırma Önizlemesi</h3>
+    </div>
+    <div class="card-body">
+        <p>
+            <strong>@Model.CategoryName</strong> kategorisinin pazaryeri eşleştirmesini kaldırmak üzeresiniz.
+        </p>
+
+        @if (Model.AffectedProductCount > 0)
+        {
+            <div class="alert alert-warning">
+                <div class="d-flex">
+                    <i class="ti ti-alert-triangle me-2"></i>
+                    <div>
+                        Bu kategoride <strong>@Model.AffectedProductCount ürün</strong> bulunmaktadır.
+                        Eşleştirme kaldırıldığında bu ürünler yeni eşleştirme yapılana kadar pazaryerine gönderilemez.
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.OrphanedAttributeMatches.Count > 0)
+        {
+            <div class="alert alert-info">
+                <div class="d-flex">
+                    <i class="ti ti-info-circle me-2"></i>
+                    <div>
+                        <strong>@Model.OrphanedAttributeMatches.Count özellik eşleştirmesi</strong> başka bir eşleşmiş kategoride
+                        kullanılmadığı için otomatik olarak kaldırılacaktır:
+                        <ul class="mb-0 mt-1">
+                            @foreach (var attr in Model.OrphanedAttributeMatches.Take(5))
+                            {
+                                <li>@attr.ApplicationName</li>
+                            }
+                            @if (Model.OrphanedAttributeMatches.Count > 5)
+                            {
+                                <li class="text-muted">ve @(Model.OrphanedAttributeMatches.Count - 5) daha...</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.OrphanedValueMatches.Count > 0)
+        {
+            <div class="alert alert-info">
+                <div class="d-flex">
+                    <i class="ti ti-info-circle me-2"></i>
+                    <div>
+                        <strong>@Model.OrphanedValueMatches.Count özellik değeri eşleştirmesi</strong> de birlikte kaldırılacaktır.
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.OrphanedAttributeMatches.Count == 0 && Model.OrphanedValueMatches.Count == 0)
+        {
+            <div class="alert alert-success">
+                Tüm özellik eşleştirmeleri başka kategorilerde de kullanıldığı için korunacaktır.
+            </div>
+        }
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="button" class="btn btn-danger"
+                hx-post="/marketplace/sync/categories/@Model.CategoryId/unmap?mp=@Model.MarketPlaceId"
+                hx-swap="none"
+                hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('unmap-modal'))?.hide(); }">
+            <i class="ti ti-unlink"></i>
+            Eşleştirmeyi Kaldır
+        </button>
+    </div>
+</div>

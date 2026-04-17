@@ -19,7 +19,7 @@
                             Ürün Sorulari
                             @if (Model.UnansweredQuestions.Count > 0)
                             {
-                                <span class="badge bg-blue ms-1">@Model.UnansweredQuestions.Count</span>
+                                <span class="badge bg-secondary-lt ms-1">@Model.UnansweredQuestions.Count</span>
                             }
                         </a>
                     </li>
@@ -58,7 +58,7 @@
                                         <td>
                                             @if (!msg.IsRead)
                                             {
-                                                <span class="badge bg-blue">Yeni</span>
+                                                <span class="badge bg-secondary-lt">Yeni</span>
                                             }
                                             else
                                             {

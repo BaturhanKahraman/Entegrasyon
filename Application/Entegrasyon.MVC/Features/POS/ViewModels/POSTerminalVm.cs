@@ -31,9 +31,11 @@ public class POSCartItemVm
     public Guid VariantId { get; set; }
     public string Title { get; set; } = "";
     public string Barcode { get; set; } = "";
+    public string? ImageUrl { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal VatRate { get; set; }
     public int Quantity { get; set; } = 1;
+    public int AvailableStock { get; set; }
 
     public decimal LineTotal => UnitPrice * Quantity;
     public decimal VatAmount => LineTotal * VatRate / 100m;
@@ -52,6 +54,7 @@ public class POSSearchItemVm
     public string Title { get; set; } = "";
     public string StockCode { get; set; } = "";
     public string BrandName { get; set; } = "";
+    public string? ImageUrl { get; set; }
     public int CurrentStock { get; set; }
 }
 
@@ -63,6 +66,7 @@ public class POSPaymentDialogVm
     public decimal GrandTotal { get; set; }
     public int ItemCount { get; set; }
     public List<PaymentMethodDefinition> PaymentMethods { get; set; } = [];
+    public string SubmitToken { get; set; } = "";
 }
 
 public class POSCloseSessionDialogVm

@@ -1,9 +1,9 @@
 @model Entegrasyon.MVC.Features.POS.ViewModels.POSTerminalVm
 @{
-    var zReportSessionId = TempData["ZReportSessionId"] as long?;
+    var zReportSessionId = TempData["ZReportSessionId"] as string;
 }
 
-@if (zReportSessionId.HasValue)
+@if (!string.IsNullOrEmpty(zReportSessionId))
 {
     <div class="alert alert-success alert-dismissible d-flex align-items-center mb-3" role="alert">
         <i class="ti ti-check me-2"></i>
@@ -17,21 +17,21 @@
 
 @if (!Model.HasActiveSession)
 {
-    <!-- Kasa Ac Dialogu -->
+    <!-- Kasa Aç Dialogu -->
             <div class="row justify-content-center">
                 <div class="col-md-6 col-lg-5">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Kasa Ac</h3>
+                            <h3 class="card-title">Kasa Aç</h3>
                         </div>
                         <form method="post" action="/pos/open-session">
                             @Html.AntiForgeryToken()
                             <div class="card-body">
                                 <p class="text-secondary mb-3">
-                                    Satış islemlerine baslamak için kasayi acin. Baslangic tutarini girin.
+                                    Satış işlemlerine başlamak için kasayı açın. Başlangıç tutarını girin.
                                 </p>
                                 <div class="mb-3">
-                                    <label class="form-label">Baslangic Kasasi (TL)</label>
+                                    <label class="form-label">Başlangıç Kasası (TL)</label>
                                     <input type="number" name="openingCash" class="form-control"
                                            step="0.01" min="0" value="0" required />
                                 </div>
@@ -43,7 +43,7 @@
                             </div>
                             <div class="card-footer text-end">
                                 <button type="submit" class="btn btn-primary">
-                                    Kasayi Ac
+                                    Kasayı Aç
                                 </button>
                             </div>
                         </form>
@@ -66,10 +66,8 @@ else
         </a>
         <button type="button" class="btn btn-outline-danger"
                 hx-get="/pos/close-session-dialog?sessionId=@Model.SessionId"
-                hx-target="#dynamicModal"
-                hx-swap="innerHTML"
-                data-bs-toggle="modal"
-                data-bs-target="#dynamicModal">
+                hx-target="#modal-container"
+                hx-swap="innerHTML">
             Kasayı Kapat
         </button>
     </div>
@@ -134,15 +132,24 @@ else
                                          model="@((Model.CustomerId, Model.CustomerName))" />
                             </div>
                             <div class="position-relative mt-2">
-                                <input type="text" class="form-control"
-                                       id="posCustomerSearchInput"
-                                       placeholder="Müşteri ara..."
-                                       autocomplete="off"
-                                       hx-get="/pos/search-customer"
-                                       hx-trigger="keyup changed delay:300ms"
-                                       hx-target="#pos-customer-results"
-                                       hx-swap="innerHTML"
-                                       name="q" />
+                                <div class="input-group">
+                                    <input type="text" class="form-control"
+                                           id="posCustomerSearchInput"
+                                           placeholder="Müşteri ara..."
+                                           autocomplete="off"
+                                           hx-get="/pos/search-customer"
+                                           hx-trigger="keyup changed delay:300ms"
+                                           hx-target="#pos-customer-results"
+                                           hx-swap="innerHTML"
+                                           name="q" />
+                                    <button type="button" class="btn btn-outline-primary"
+                                            hx-get="/pos/quick-customer-dialog"
+                                            hx-target="#modal-container"
+                                            hx-swap="innerHTML"
+                                            title="Hızlı müşteri ekle">
+                                        <i class="ti ti-user-plus"></i>
+                                    </button>
+                                </div>
                                 <div id="pos-customer-results"
                                      class="position-absolute w-100 shadow-lg bg-white border rounded-bottom"
                                      style="z-index:1050; top:100%; max-height:250px; overflow-y:auto;">
@@ -192,12 +199,12 @@ else
                     <!-- Odeme Butonu -->
                     <div class="card">
                         <div class="card-body text-center py-4">
-                            <button type="button" class="btn btn-success w-100 btn-lg"
+                            <button type="button" id="pos-finalize-btn"
+                                    class="btn btn-success w-100 btn-lg"
+                                    disabled
                                     hx-get="/pos/payment-dialog?sessionId=@Model.SessionId"
-                                    hx-target="#dynamicModal"
-                                    hx-swap="innerHTML"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#dynamicModal">
+                                    hx-target="#modal-container"
+                                    hx-swap="innerHTML">
                                 <i class="ti ti-cash icon icon-lg me-1"></i>
                                 Satışı Tamamla
                             </button>
@@ -206,13 +213,43 @@ else
                 </div>
             </div>
 
-    <!-- Dynamic Modal Container -->
-    <div class="modal fade" id="dynamicModal" tabindex="-1">
-    </div>
+    <!-- Modal Container (swap target for HTMX-loaded modals) -->
+    <div id="modal-container"></div>
 
     @section Scripts {
         <script>
             document.getElementById('posSearchInput')?.focus();
+
+            // Sepet dolu/boş durumuna göre "Satışı Tamamla" butonunu toggle et
+            function syncFinalizeButton() {
+                var btn = document.getElementById('pos-finalize-btn');
+                if (!btn) return;
+                var hasItems = document.querySelector('#pos-cart tbody tr') !== null;
+                btn.disabled = !hasItems;
+                // Sepet boşsa modal container'ı temizle (stale modal fix)
+                if (!hasItems) {
+                    var modal = document.getElementById('modal-container');
+                    if (modal) modal.replaceChildren();
+                }
+            }
+            document.body.addEventListener('htmx:afterSwap', function(e) {
+                if (e.target && e.target.id === 'pos-cart') syncFinalizeButton();
+            });
+            // İlk yüklemede de çalıştır
+            syncFinalizeButton();
+
+            // Sunucudan gelen toast event'leri için dinleyici (HtmxTriggerWithData('showToast', {message, level}))
+            document.body.addEventListener('showToast', function(e) {
+                var detail = e.detail || {};
+                var msg = detail.message || detail.value || '';
+                if (!msg) return;
+                if (window.Notyf) {
+                    var notyf = window.__notyf || (window.__notyf = new window.Notyf({ duration: 3000, ripple: true, dismissible: true }));
+                    if (detail.level === 'error') notyf.error(msg); else notyf.success(msg);
+                } else {
+                    alert(msg);
+                }
+            });
 
             // Ürün ekleme — arama sonuçları tıklandığında
             document.addEventListener('click', function(e) {

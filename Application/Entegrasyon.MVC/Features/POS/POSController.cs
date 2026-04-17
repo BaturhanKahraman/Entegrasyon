@@ -1,10 +1,13 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos;
+using Entegrasyon.Entity.Dtos.Customers;
 using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Dtos.Sale;
+using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.POS;
 using Entegrasyon.Entity.Sales;
 using Entegrasyon.MVC.Features.POS.ViewModels;
@@ -20,6 +23,7 @@ public class POSController(
     IProductService productService,
     ICustomerManager customerManager,
     IPaymentMethodManager paymentMethodManager,
+    IOfficeStockManager officeStockManager,
     ITenantContext tenantContext) : Controller
 {
     // ── Helpers ──────────────────────────────────────────────────────────
@@ -86,9 +90,9 @@ public class POSController(
         var result = await posSessionManager.OpenSessionAsync(dto);
 
         if (!result.Success)
-            TempData.SetError(result.Message ?? "Kasa acilamadi.");
+            TempData.SetError(result.Message ?? "Kasa açılamadı.");
         else
-            TempData.SetSuccess("Kasa basariyla acildi.");
+            TempData.SetSuccess("Kasa başarıyla açıldı.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -107,7 +111,7 @@ public class POSController(
         else
         {
             TempData.SetSuccess("Kasa başarıyla kapatıldı.");
-            TempData["ZReportSessionId"] = sessionId;
+            TempData["ZReportSessionId"] = sessionId.ToString(CultureInfo.InvariantCulture);
         }
 
         return RedirectToAction(nameof(Index));
@@ -135,6 +139,7 @@ public class POSController(
                 Title = p.Title,
                 StockCode = p.StockCode,
                 BrandName = p.BrandName,
+                ImageUrl = p.FeaturedImageUrl,
                 CurrentStock = p.TotalCurrentStock
             }).ToList()
         });
@@ -152,29 +157,47 @@ public class POSController(
         var detailResult = await productService.GetProductDetailById(productId);
         if (!detailResult.Success || detailResult.Data is null)
         {
-            Response.HtmxTrigger("showToast");
+            Response.HtmxTriggerWithData("showToast", new { message = "Ürün bulunamadı.", level = "error" });
             return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
         }
 
         var product = detailResult.Data;
         var firstVariant = product.ProductVariantsDetails?.FirstOrDefault();
+        var variantId = firstVariant?.Id ?? Guid.Empty;
+
+        var availableStock = variantId != Guid.Empty
+            ? await officeStockManager.GetAvailableStockAsync(DefaultBranchOfficeId, variantId)
+            : 0;
 
         var existingItem = cart.FirstOrDefault(c => c.ProductId == productId);
+        var desiredQuantity = existingItem?.Quantity + 1 ?? 1;
+
+        if (desiredQuantity > availableStock)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = $"Stok yetersiz. Mevcut: {availableStock} adet.", level = "error" });
+            // Mevcut cart aynen döner — quantity artırılmaz
+            return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+        }
+
         if (existingItem is not null)
         {
             existingItem.Quantity++;
+            existingItem.AvailableStock = availableStock;
         }
         else
         {
             cart.Add(new POSCartItemVm
             {
                 ProductId = productId,
-                VariantId = firstVariant?.Id ?? Guid.Empty,
+                VariantId = variantId,
                 Title = product.Title,
                 Barcode = firstVariant?.Barcode ?? "",
+                ImageUrl = firstVariant?.imageLinks?.FirstOrDefault(),
                 UnitPrice = firstVariant?.SalePrice ?? 0,
                 VatRate = firstVariant?.VatRate ?? 0,
-                Quantity = 1
+                Quantity = 1,
+                AvailableStock = availableStock
             });
         }
 
@@ -184,7 +207,7 @@ public class POSController(
 
     [HttpPost("/pos/update-quantity")]
     [ValidateAntiForgeryToken]
-    public IActionResult UpdateQuantity([FromForm] Guid productId, [FromForm] int quantity)
+    public async Task<IActionResult> UpdateQuantity([FromForm] Guid productId, [FromForm] int quantity)
     {
         var cart = GetCartFromSession();
         var item = cart.FirstOrDefault(c => c.ProductId == productId);
@@ -192,9 +215,26 @@ public class POSController(
         if (item is not null)
         {
             if (quantity <= 0)
+            {
                 cart.Remove(item);
+            }
             else
-                item.Quantity = quantity;
+            {
+                var availableStock = await officeStockManager.GetAvailableStockAsync(
+                    DefaultBranchOfficeId, item.VariantId);
+
+                if (quantity > availableStock)
+                {
+                    Response.HtmxTriggerWithData("showToast",
+                        new { message = $"Stok yetersiz. Mevcut: {availableStock} adet.", level = "error" });
+                    item.AvailableStock = availableStock;
+                }
+                else
+                {
+                    item.Quantity = quantity;
+                    item.AvailableStock = availableStock;
+                }
+            }
         }
 
         SaveCartToSession(cart);
@@ -255,6 +295,54 @@ public class POSController(
         return PartialView("Partials/_POSCustomerBadge", ((int?)customerId, customerName));
     }
 
+    [HttpGet("/pos/quick-customer-dialog")]
+    public IActionResult QuickCustomerDialog()
+        => PartialView("Partials/_POSQuickCustomerDialog");
+
+    [HttpPost("/pos/quick-customer")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> QuickCustomer(
+        [FromForm] string name, [FromForm] string surname,
+        [FromForm] string phone, [FromForm] string? nationalIdentity)
+    {
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname))
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Ad ve soyad zorunludur.", level = "error" });
+            return NoContent();
+        }
+
+        var dto = new CustomerAddDto(
+            NationalIdentity: nationalIdentity ?? "",
+            TaxNumber: "",
+            Name: name.Trim(),
+            Surname: surname.Trim(),
+            CorporateName: "",
+            PhoneNumber: phone?.Trim() ?? "",
+            FullAddress: "",
+            CustomerType: "Retail");
+
+        var result = await customerManager.AddCustomer(dto);
+        if (!result.Success || result is not IDataResult<CustomerDetailDto> dataResult || dataResult.Data is null)
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Müşteri eklenemedi.", level = "error" });
+            return NoContent();
+        }
+
+        var fullName = $"{dto.Name} {dto.Surname}".Trim();
+        HttpContext.Session.SetInt32("pos_customer_id", dataResult.Data.Id);
+        HttpContext.Session.SetString("pos_customer_name", fullName);
+
+        Response.HtmxTrigger("closePosQuickCustomerModal");
+        Response.HtmxTriggerWithData("showToast",
+            new { message = "Müşteri eklendi ve seçildi.", level = "success" });
+        return PartialView("Partials/_POSCustomerBadge",
+            ((int?)dataResult.Data.Id, (string?)fullName));
+    }
+
     [HttpPost("/pos/clear-customer")]
     [ValidateAntiForgeryToken]
     public IActionResult ClearCustomer()
@@ -270,14 +358,30 @@ public class POSController(
     public async Task<IActionResult> PaymentDialog()
     {
         var cart = GetCartFromSession();
-        if (cart.Count == 0) return BadRequest("Sepet boş.");
+        if (cart.Count == 0)
+        {
+            // HTMX swap'i iptal et, stale modal açılmasın
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Sepet boş. Ödeme yapılamaz.", level = "error" });
+            return NoContent();
+        }
 
         var sessionResult = await posSessionManager.GetActiveSessionAsync(DefaultBranchOfficeId);
         if (!sessionResult.Success || sessionResult.Data is null)
-            return BadRequest("Aktif kasa oturumu bulunamadı.");
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Aktif kasa oturumu bulunamadı.", level = "error" });
+            return NoContent();
+        }
 
         var cartVm = new POSCartVm { Items = cart };
         var paymentMethodsResult = await paymentMethodManager.GetActivePaymentMethodsAsync(TenantId);
+
+        // Idempotency — her PaymentDialog açılışında yeni token üret
+        var submitToken = Guid.NewGuid().ToString("N");
+        HttpContext.Session.SetString("pos_submit_token", submitToken);
 
         var vm = new POSPaymentDialogVm
         {
@@ -286,7 +390,8 @@ public class POSController(
             VatTotal = cartVm.VatTotal,
             GrandTotal = cartVm.GrandTotal,
             ItemCount = cartVm.TotalItems,
-            PaymentMethods = paymentMethodsResult.Data ?? []
+            PaymentMethods = paymentMethodsResult.Data ?? [],
+            SubmitToken = submitToken
         };
 
         return PartialView("Partials/_POSPaymentDialog", vm);
@@ -318,8 +423,17 @@ public class POSController(
 
     [HttpPost("/pos/complete-sale")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CompleteSale([FromForm] List<SalePaymentDto> payments)
+    public async Task<IActionResult> CompleteSale([FromForm] List<SalePaymentDto> payments, [FromForm] string? submitToken)
     {
+        // Idempotency — aynı token iki kez gelirse ikinci satış reddedilir
+        const string tokenKey = "pos_submit_token";
+        var expectedToken = HttpContext.Session.GetString(tokenKey);
+        if (string.IsNullOrEmpty(submitToken) || expectedToken != submitToken)
+        {
+            TempData.SetError("Satış talebi yinelenmiş veya geçersiz. Lütfen tekrar deneyin.");
+            return RedirectToAction(nameof(Index));
+        }
+
         var cart = GetCartFromSession();
         if (cart.Count == 0)
         {
@@ -350,7 +464,7 @@ public class POSController(
 
         var makeSaleDto = new MakeSaleDto(
             SalePersonId: GetCurrentUserId(),
-            CustomerId: GetCustomerIdFromSession() ?? 0,
+            CustomerId: GetCustomerIdFromSession(),
             GeneralDiscount: 0,
             BranchOfficeId: DefaultBranchOfficeId,
             SaleSource: SaleSource.POS,
@@ -365,10 +479,11 @@ public class POSController(
             return RedirectToAction(nameof(Index));
         }
 
-        // Sepeti ve müşteri seçimini temizle
+        // Sepeti, müşteriyi ve submit token'ı temizle — yeni satışta taze token üretilir
         SaveCartToSession([]);
         HttpContext.Session.Remove("pos_customer_id");
         HttpContext.Session.Remove("pos_customer_name");
+        HttpContext.Session.Remove(tokenKey);
         TempData.SetSuccess("Satış başarıyla tamamlandı.");
         return RedirectToAction(nameof(Index));
     }

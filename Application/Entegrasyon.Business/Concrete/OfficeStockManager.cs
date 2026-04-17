@@ -335,6 +335,24 @@ public class OfficeStockManager(
             new Pageable<StockMovementViewDto>(items, pageIndex, pageSize, totalCount));
     }
 
+    public async Task<int> GetAvailableStockAsync(int branchOfficeId, Guid productVariantId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        return await dbContext.BranchOfficeStocks.AsNoTracking()
+            .Where(s => s.BranchOfficeId == branchOfficeId && s.ProductVariantId == productVariantId)
+            .Select(s => s.CurrentStock)
+            .FirstOrDefaultAsync();
+    }
+
+    public Task PublishStockChangedEventAsync(Guid productVariantId, Guid productId)
+    {
+        stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId)
+        {
+            TenantId = tenantContext.TenantId
+        });
+        return Task.CompletedTask;
+    }
+
     private async Task CheckStockLevelsAsync(int branchOfficeId, Guid productVariantId, int currentStock)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
