@@ -40,7 +40,7 @@
             <div class="col-6" id="cd-percent-wrapper">
               <label class="form-label">Yüzde</label>
               <div class="input-group">
-                <input type="number" class="form-control" name="percent" min="0" max="100" step="0.1"
+                <input type="number" class="form-control" name="percent" min="1" max="100" step="0.1"
                        value="@(Model.CurrentType == "percent" && Model.CurrentValue > 0 ? Model.CurrentValue.ToString("0.##", CultureInfo.InvariantCulture) : "")"
                        placeholder="0" />
                 <span class="input-group-text">%</span>
