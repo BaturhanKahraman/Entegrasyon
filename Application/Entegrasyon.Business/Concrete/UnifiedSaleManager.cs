@@ -10,22 +10,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
 
-public sealed class UnifiedSaleManager(IntegrationDbContext db) : IUnifiedSaleManager
+public sealed class UnifiedSaleManager(
+    IDbContextFactory<IntegrationDbContext> contextFactory) : IUnifiedSaleManager
 {
     public async Task<IDataResult<Pageable<UnifiedSaleListItemDto>>> GetPageableAsync(UnifiedSaleFilterDto filter)
     {
-        var query = BuildBaseQuery(filter, applyStatus: false);
+        await using var db = await contextFactory.CreateDbContextAsync();
+        var query = BuildBaseQuery(db, filter);
 
-        List<UnifiedSaleView> allRows;
         if (filter.Status.HasValue)
         {
-            allRows = await query.OrderByDescending(x => x.SaleDate).ToListAsync();
-            allRows = allRows
+            var allRows = await query.OrderByDescending(x => x.SaleDate).ToListAsync();
+            var filtered = allRows
                 .Where(x => UnifiedSaleStatusMapper.Map(x.RawStatusCode, x.EntityType) == filter.Status.Value)
                 .ToList();
 
-            var total = allRows.Count;
-            var page = allRows
+            var total = filtered.Count;
+            var page = filtered
                 .Skip(filter.PageIndex * filter.PageSize)
                 .Take(filter.PageSize)
                 .Select(MapToDto)
@@ -50,7 +51,8 @@ public sealed class UnifiedSaleManager(IntegrationDbContext db) : IUnifiedSaleMa
 
     public async Task<IDataResult<UnifiedSaleSummaryDto>> GetSummaryAsync(UnifiedSaleFilterDto filter)
     {
-        var query = BuildBaseQuery(filter, applyStatus: false);
+        await using var db = await contextFactory.CreateDbContextAsync();
+        var query = BuildBaseQuery(db, filter);
         var rows = await query.ToListAsync();
 
         if (filter.Status.HasValue)
@@ -75,8 +77,9 @@ public sealed class UnifiedSaleManager(IntegrationDbContext db) : IUnifiedSaleMa
 
     public async Task<IDataResult<List<UnifiedSaleSourceCountDto>>> GetSourceCountsAsync(UnifiedSaleFilterDto filter)
     {
+        await using var db = await contextFactory.CreateDbContextAsync();
         var baseFilter = filter with { Source = null, Status = null };
-        var query = BuildBaseQuery(baseFilter, applyStatus: false);
+        var query = BuildBaseQuery(db, baseFilter);
 
         var grouped = await query
             .GroupBy(x => x.Source)
@@ -97,7 +100,7 @@ public sealed class UnifiedSaleManager(IntegrationDbContext db) : IUnifiedSaleMa
         return new SuccessDataResult<List<UnifiedSaleSourceCountDto>>(list);
     }
 
-    private IQueryable<UnifiedSaleView> BuildBaseQuery(UnifiedSaleFilterDto filter, bool applyStatus)
+    private static IQueryable<UnifiedSaleView> BuildBaseQuery(IntegrationDbContext db, UnifiedSaleFilterDto filter)
     {
         var q = db.UnifiedSales.AsNoTracking();
 
