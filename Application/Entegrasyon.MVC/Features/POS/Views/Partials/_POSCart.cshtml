@@ -129,18 +129,53 @@ else
                 <tr class="bg-light">
                     <td colspan="2" class="fw-bold">Ara Toplam</td>
                     <td class="text-end">@Model.TotalItems adet</td>
-                    <td class="text-end fw-bold">@Model.Subtotal.ToString("N2") TL</td>
+                    <td class="text-end fw-bold">@Model.SubtotalAfterLineDiscount.ToString("N2") TL</td>
                     <td></td>
                 </tr>
-                <tr class="bg-light">
-                    <td colspan="3" class="text-secondary">KDV</td>
-                    <td class="text-end text-secondary">@Model.VatTotal.ToString("N2") TL</td>
-                    <td></td>
-                </tr>
+                @if (Model.HasGeneralDiscount)
+                {
+                    <tr class="bg-light">
+                        <td colspan="3" class="text-success">
+                            Sepet İndirimi
+                            @if (Model.GeneralDiscountType == "percent")
+                            {
+                                <span class="badge bg-green-lt ms-2">%@Model.GeneralDiscountValue.ToString("0.##")</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.GeneralDiscountReasonName))
+                            {
+                                <span class="text-secondary small ms-2">(@Model.GeneralDiscountReasonName)</span>
+                            }
+                        </td>
+                        <td class="text-end text-success">-@Model.GeneralDiscountAmount.ToString("N2") TL</td>
+                        <td class="text-end">
+                            <form method="post" action="/pos/clear-cart-discount"
+                                  hx-post="/pos/clear-cart-discount"
+                                  hx-target="#pos-cart"
+                                  hx-swap="innerHTML"
+                                  style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-ghost-danger btn-sm btn-icon"
+                                        title="İndirimi kaldır">
+                                    <i class="ti ti-x icon"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
                 <tr class="bg-light">
                     <td colspan="3" class="fw-bold fs-4">TOPLAM</td>
                     <td class="text-end fw-bold fs-4 text-primary">@Model.GrandTotal.ToString("N2") TL</td>
-                    <td></td>
+                    <td class="text-end">
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                title="@(Model.HasGeneralDiscount ? "Sepet indirimini düzenle" : "Sepet indirimi uygula")"
+                                hx-get="/pos/cart-discount-dialog"
+                                hx-target="#modal-container"
+                                hx-swap="innerHTML">
+                            <i class="ti ti-discount icon"></i>
+                            @(Model.HasGeneralDiscount ? "Düzenle" : "İndirim")
+                        </button>
+                    </td>
                 </tr>
             </tfoot>
         </table>
