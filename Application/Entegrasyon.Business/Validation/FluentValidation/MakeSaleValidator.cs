@@ -20,6 +20,23 @@ namespace Entegrasyon.Business.Validation.FluentValidation
                 p.RuleFor(x => x.PaymentMethodId).GreaterThan(0);
                 p.RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Ödeme tutarı sıfırdan büyük olmalıdır.");
             });
+
+            RuleFor(x => x.GeneralDiscount)
+                .GreaterThanOrEqualTo(0m)
+                .WithMessage("Genel indirim negatif olamaz.");
+
+            RuleFor(x => x)
+                .Must(HaveDiscountWithinSubtotal)
+                .WithName(nameof(MakeSaleDto.GeneralDiscount))
+                .WithMessage("Genel indirim sepet alt toplamından büyük olamaz.");
+        }
+
+        private static bool HaveDiscountWithinSubtotal(MakeSaleDto dto)
+        {
+            if (dto.GeneralDiscount <= 0m) return true;
+            var subtotalGross = dto.SaleItems
+                .Sum(i => i.UnitPrice * i.Quantity * (1m + (decimal)i.TaxPercentage / 100m));
+            return dto.GeneralDiscount <= subtotalGross;
         }
     }
 }
