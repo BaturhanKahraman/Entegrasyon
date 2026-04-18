@@ -518,6 +518,132 @@ public class POSController(
         return PartialView("Partials/_POSCart", cart);
     }
 
+    // ── Sepet (Genel) İndirimi (HTMX) ───────────────────────────────────
+
+    [HttpGet("/pos/cart-discount-dialog")]
+    public async Task<IActionResult> CartDiscountDialog()
+    {
+        var cart = GetCartFromSession();
+        if (cart.Items.Count == 0)
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Sepet boş. İndirim uygulanamaz.", level = "error" });
+            return NoContent();
+        }
+
+        var reasons = await discountReasonManager.GetActiveAsync();
+
+        var vm = new POSCartDiscountDialogVm
+        {
+            SubtotalAfterLineDiscount = cart.SubtotalAfterLineDiscount,
+            CurrentType = cart.GeneralDiscountType,
+            CurrentValue = cart.GeneralDiscountValue,
+            CurrentReasonId = cart.GeneralDiscountReasonId,
+            CurrentNote = cart.GeneralDiscountReasonNote,
+            Reasons = reasons.ToList()
+        };
+
+        return PartialView("Partials/_POSCartDiscountModal", vm);
+    }
+
+    [HttpPost("/pos/apply-cart-discount")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApplyCartDiscount(
+        [FromForm] string discountType,
+        [FromForm] decimal? percent,
+        [FromForm] decimal? amount,
+        [FromForm] int? reasonId,
+        [FromForm] string? note)
+    {
+        var cart = GetCartFromSession();
+        if (cart.Items.Count == 0)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Sepet boş.", level = "error" });
+            return PartialView("Partials/_POSCart", cart);
+        }
+
+        // Reset
+        cart.GeneralDiscountType = null;
+        cart.GeneralDiscountValue = 0m;
+
+        if (discountType == "percent")
+        {
+            if (percent is not > 0 || percent > 100m)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "Yüzde 0-100 arasında olmalı.", level = "error" });
+                return PartialView("Partials/_POSCart", cart);
+            }
+            cart.GeneralDiscountType = "percent";
+            cart.GeneralDiscountValue = percent.Value;
+        }
+        else if (discountType == "amount")
+        {
+            if (amount is not > 0m)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "İndirim 0'dan büyük olmalı.", level = "error" });
+                return PartialView("Partials/_POSCart", cart);
+            }
+            if (amount.Value > cart.SubtotalAfterLineDiscount)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "İndirim sepet toplamından büyük olamaz.", level = "error" });
+                return PartialView("Partials/_POSCart", cart);
+            }
+            cart.GeneralDiscountType = "amount";
+            cart.GeneralDiscountValue = amount.Value;
+        }
+        else
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Geçersiz indirim tipi.", level = "error" });
+            return PartialView("Partials/_POSCart", cart);
+        }
+
+        cart.GeneralDiscountReasonId = reasonId;
+        cart.GeneralDiscountReasonNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+
+        // Reason name denormalize
+        if (reasonId.HasValue)
+        {
+            var reasons = await discountReasonManager.GetActiveAsync();
+            cart.GeneralDiscountReasonName = reasons.FirstOrDefault(r => r.Id == reasonId.Value)?.Name;
+        }
+        else
+        {
+            cart.GeneralDiscountReasonName = null;
+        }
+
+        SaveCartToSession(cart);
+
+        Response.HtmxTrigger("closePosCartDiscountModal");
+        Response.HtmxTriggerWithData("showToast",
+            new { message = "Sepet indirimi uygulandı.", level = "success" });
+
+        return PartialView("Partials/_POSCart", cart);
+    }
+
+    [HttpPost("/pos/clear-cart-discount")]
+    [ValidateAntiForgeryToken]
+    public IActionResult ClearCartDiscount()
+    {
+        var cart = GetCartFromSession();
+        cart.GeneralDiscountType = null;
+        cart.GeneralDiscountValue = 0m;
+        cart.GeneralDiscountReasonId = null;
+        cart.GeneralDiscountReasonName = null;
+        cart.GeneralDiscountReasonNote = null;
+        SaveCartToSession(cart);
+
+        Response.HtmxTriggerWithData("showToast",
+            new { message = "Sepet indirimi kaldırıldı.", level = "success" });
+
+        return PartialView("Partials/_POSCart", cart);
+    }
+
     // ── Complete Sale ────────────────────────────────────────────────────
 
     [HttpPost("/pos/complete-sale")]
