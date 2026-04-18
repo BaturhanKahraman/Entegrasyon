@@ -66,6 +66,8 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → MVC:
 
 **Tabler UI Referans:** https://tabler.io/docs/getting-started — Tabler'ın tüm bileşenleri (card, alert, badge, avatar, progress, ribbon, steps, timeline, datagrid, placeholder, empty, status-dot, dropdown, modal, offcanvas, accordion, tabs) kullanılabilir. Yeni UI geliştirirken önce Tabler'ın hazır bileşenlerini kontrol et.
 
+**Tabler Component Kullanımı (Strict Rule):** Herhangi bir Tabler bileşeni (badge, card, alert, ribbon, status, button vb.) kullanılmadan ÖNCE o bileşenin resmi dokümantasyonuna (https://tabler.io/docs/ui/<component>) bakılmalıdır. Class isimleri tahmin edilmemeli; doğru kombinasyon doğrulanmalı. Örn. `badge bg-green` tek başına kullanılmaz — Tabler solid renkli badge için `badge bg-green text-green-fg` ya da light varyant için `badge bg-green-lt` ister. CSS'te global override eklemek yerine Tabler'ın önerdiği class kombinasyonunu kullan.
+
 MVC-specific pattern'ler için bkz: `~/.claude/skills/aspnet-mvc-htmx/` skill dosyaları.
 
 **Temel MVC pattern'leri:**

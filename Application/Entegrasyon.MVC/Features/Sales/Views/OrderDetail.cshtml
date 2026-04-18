@@ -5,15 +5,15 @@
 
     string StatusBadge(string? status) => status switch
     {
-        "Created" => "bg-blue-lt",
-        "Picking" => "bg-cyan-lt",
-        "Invoiced" => "bg-indigo-lt",
-        "Shipped" => "bg-yellow-lt",
-        "Delivered" => "bg-green-lt",
-        "Cancelled" => "bg-red-lt",
-        "UnDelivered" => "bg-orange-lt",
-        "ReturnAccepted" => "bg-purple-lt",
-        _ => "bg-secondary-lt"
+        "Created" => "bg-blue-lt text-blue-lt",
+        "Picking" => "bg-cyan-lt text-cyan-lt",
+        "Invoiced" => "bg-indigo-lt text-indigo-lt",
+        "Shipped" => "bg-yellow-lt text-yellow-lt",
+        "Delivered" => "bg-green-lt text-green-lt",
+        "Cancelled" => "bg-red-lt text-red-lt",
+        "UnDelivered" => "bg-orange-lt text-orange-lt",
+        "ReturnAccepted" => "bg-purple-lt text-purple-lt",
+        _ => "bg-secondary-lt text-secondary-lt"
     };
 
     string StatusText(string? status) => status switch
@@ -130,7 +130,7 @@
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Hizli Teslimat</div>
                                     <div class="datagrid-content">
-                                        <span class="badge bg-green-lt">Evet</span>
+                                        <span class="badge bg-green-lt text-green-fg">Evet</span>
                                     </div>
                                 </div>
                             }
@@ -160,7 +160,7 @@
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Hediye Paketleme</div>
                                     <div class="datagrid-content">
-                                        <span class="badge bg-pink-lt">Evet</span>
+                                        <span class="badge bg-pink-lt text-pink-fg">Evet</span>
                                         @if (!string.IsNullOrWhiteSpace(Model.GiftMessage))
                                         {
                                             <div class="mt-1 text-secondary">@Model.GiftMessage</div>

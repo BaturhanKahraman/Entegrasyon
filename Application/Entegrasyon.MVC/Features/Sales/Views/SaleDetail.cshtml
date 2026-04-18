@@ -9,25 +9,25 @@
 
     string StatusBadge(SaleStatus status) => status switch
     {
-        SaleStatus.Completed => "<span class=\"badge bg-green\">Tamamlandı</span>",
-        SaleStatus.PartialReturn => "<span class=\"badge bg-yellow\">Kısmi İade</span>",
-        SaleStatus.FullReturn => "<span class=\"badge bg-red\">Tam İade</span>",
-        SaleStatus.Cancelled => "<span class=\"badge bg-secondary\">İptal</span>",
+        SaleStatus.Completed => "<span class=\"badge bg-green text-green-fg\">Tamamlandı</span>",
+        SaleStatus.PartialReturn => "<span class=\"badge bg-yellow text-yellow-fg\">Kısmi İade</span>",
+        SaleStatus.FullReturn => "<span class=\"badge bg-red text-red-fg\">Tam İade</span>",
+        SaleStatus.Cancelled => "<span class=\"badge bg-secondary text-secondary-fg\">İptal</span>",
         _ => ""
     };
 
     string SourceBadge(SaleSource source) => source switch
     {
-        SaleSource.POS => "<span class=\"badge bg-blue-lt\">POS</span>",
-        SaleSource.Manual => "<span class=\"badge bg-purple-lt\">Manuel</span>",
+        SaleSource.POS => "<span class=\"badge bg-blue-lt text-blue-lt\">POS</span>",
+        SaleSource.Manual => "<span class=\"badge bg-purple-lt text-purple-lt\">Manuel</span>",
         _ => ""
     };
 
     string ReturnStatusBadge(ReturnStatus status) => status switch
     {
-        ReturnStatus.Pending => "<span class=\"badge bg-yellow\">Beklemede</span>",
-        ReturnStatus.Approved => "<span class=\"badge bg-green\">Onaylandı</span>",
-        ReturnStatus.Rejected => "<span class=\"badge bg-red\">Reddedildi</span>",
+        ReturnStatus.Pending => "<span class=\"badge bg-yellow-lt text-yellow-lt\">Beklemede</span>",
+        ReturnStatus.Approved => "<span class=\"badge bg-green-lt text-green-lt\">Onaylandı</span>",
+        ReturnStatus.Rejected => "<span class=\"badge bg-red-lt text-red-lt\">Reddedildi</span>",
         _ => ""
     };
 
@@ -49,18 +49,18 @@
         @if (isReturnable)
         {
             <button type="button" class="btn btn-outline-warning"
-                    hx-get="/sales/@Model.Id/return-dialog"
+                    hx-get="/sales/sale/@Model.Id/return-dialog"
                     hx-target="#return-dialog-container"
                     hx-swap="innerHTML">
                 <i class="ti ti-arrow-back me-1"></i>İade Et
             </button>
         }
-        <a href="/sales/@Model.Id/print" target="_blank" class="btn btn-outline-primary">
+        <a href="/sales/sale/@Model.Id/print" target="_blank" class="btn btn-outline-primary">
             <i class="ti ti-printer me-1"></i>Yazdır
         </a>
         @if (isCancellable)
         {
-            <form method="post" action="/sales/@Model.Id/cancel" class="d-inline">
+            <form method="post" action="/sales/sale/@Model.Id/cancel" class="d-inline">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-outline-danger"
                         onclick="return confirm('Satışı iptal etmek istediğinize emin misiniz?')">
