@@ -19,10 +19,47 @@ public class POSTerminalVm
 public class POSCartVm
 {
     public List<POSCartItemVm> Items { get; set; } = [];
+
+    // Genel (sepet) indirimi state
+    public string? GeneralDiscountType { get; set; }   // "percent" | "amount" | null
+    public decimal GeneralDiscountValue { get; set; }
+    public int? GeneralDiscountReasonId { get; set; }
+    public string? GeneralDiscountReasonName { get; set; }
+    public string? GeneralDiscountReasonNote { get; set; }
+
+    // Kalem indirimi uygulanmış alt toplam (KDV-dahil)
+    public decimal SubtotalAfterLineDiscount => Items.Sum(i => i.LineTotalWithVat);
+
+    // KDV hariç ara toplam (kalem indirimi uygulanmış) — geriye dönük
     public decimal Subtotal => Items.Sum(i => i.LineTotal);
+
+    // KDV toplamı (kalem indirimi uygulanmış)
     public decimal VatTotal => Items.Sum(i => i.VatAmount);
-    public decimal GrandTotal => Subtotal + VatTotal;
+
+    // Genel indirim uygulanmamış grand total (kalem indirimli, KDV-dahil)
+    public decimal GrandTotalBeforeGeneralDiscount => SubtotalAfterLineDiscount;
+
+    public decimal GeneralDiscountAmount
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(GeneralDiscountType) || GeneralDiscountValue <= 0m)
+                return 0m;
+            if (SubtotalAfterLineDiscount <= 0m) return 0m;
+
+            return GeneralDiscountType switch
+            {
+                "percent" => Math.Round(
+                    SubtotalAfterLineDiscount * Math.Min(GeneralDiscountValue, 100m) / 100m, 2),
+                "amount"  => Math.Min(GeneralDiscountValue, SubtotalAfterLineDiscount),
+                _         => 0m
+            };
+        }
+    }
+
+    public decimal GrandTotal => GrandTotalBeforeGeneralDiscount - GeneralDiscountAmount;
     public int TotalItems => Items.Sum(i => i.Quantity);
+    public bool HasGeneralDiscount => GeneralDiscountAmount > 0m;
 }
 
 public class POSCartItemVm
@@ -73,12 +110,16 @@ public class POSSearchItemVm
 public class POSPaymentDialogVm
 {
     public long SessionId { get; set; }
-    public decimal Subtotal { get; set; }
+    public decimal SubtotalBeforeGeneralDiscount { get; set; }  // kalem indirimli, KDV-dahil
+    public decimal GeneralDiscountAmount { get; set; }
+    public string? GeneralDiscountReasonName { get; set; }
+    public decimal Subtotal { get; set; }        // KDV hariç (mevcut davranış)
     public decimal VatTotal { get; set; }
-    public decimal GrandTotal { get; set; }
+    public decimal GrandTotal { get; set; }      // genel indirim uygulanmış
     public int ItemCount { get; set; }
     public List<PaymentMethodDefinition> PaymentMethods { get; set; } = [];
     public string SubmitToken { get; set; } = "";
+    public bool HasGeneralDiscount => GeneralDiscountAmount > 0m;
 }
 
 public class POSCloseSessionDialogVm
@@ -90,6 +131,16 @@ public class POSCloseSessionDialogVm
     public decimal TotalCard { get; set; }
     public int TransactionCount { get; set; }
     public decimal ExpectedCash { get; set; }
+}
+
+public class POSCartDiscountDialogVm
+{
+    public decimal SubtotalAfterLineDiscount { get; set; }
+    public string? CurrentType { get; set; }
+    public decimal CurrentValue { get; set; }
+    public int? CurrentReasonId { get; set; }
+    public string? CurrentNote { get; set; }
+    public List<Entegrasyon.Entity.Sales.DiscountReason> Reasons { get; set; } = [];
 }
 
 public class POSLineDiscountDialogVm
