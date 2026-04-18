@@ -12,22 +12,49 @@ else
     <div class="list-group list-group-flush">
         @foreach (var customer in Model.Customers)
         {
-            <a href="#" class="list-group-item list-group-item-action"
-               data-pos-select-customer="@customer.Id"
-               data-customer-name="@customer.Name">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-bold">@customer.Name</div>
-                        @if (!string.IsNullOrEmpty(customer.Phone))
-                        {
-                            <div class="text-secondary small">@customer.Phone</div>
-                        }
+            if (customer.IsActive)
+            {
+                <a href="#" class="list-group-item list-group-item-action"
+                   data-pos-select-customer="@customer.Id"
+                   data-customer-name="@customer.Name">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">@customer.Name</div>
+                            @if (!string.IsNullOrEmpty(customer.Phone))
+                            {
+                                <div class="text-secondary small">@customer.Phone</div>
+                            }
+                        </div>
+                        <div>
+                            <span class="badge bg-blue-lt">@customer.Type</span>
+                        </div>
                     </div>
-                    <div>
-                        <span class="badge bg-blue-lt">@customer.Type</span>
+                </a>
+            }
+            else
+            {
+                <div class="list-group-item bg-light text-muted"
+                     style="cursor: not-allowed;"
+                     title="Deaktif müşteri seçilemez">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">
+                                @customer.Name
+                                <span class="badge bg-secondary-lt ms-2">
+                                    <span class="status-dot bg-secondary me-1"></span>Deaktif
+                                </span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(customer.Phone))
+                            {
+                                <div class="small">@customer.Phone</div>
+                            }
+                        </div>
+                        <div>
+                            <span class="badge bg-secondary-lt">@customer.Type</span>
+                        </div>
                     </div>
                 </div>
-            </a>
+            }
         }
     </div>
 }

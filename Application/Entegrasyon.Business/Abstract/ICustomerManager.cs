@@ -15,4 +15,6 @@ public interface ICustomerManager
     Task<IDataResult<Customer>> GetCustomerById(int id);
     Task<IDataResult<CustomerDetailDto>> GetCustomerDetailById(int id);
     Task<IResult> SoftDelete(int id);
+    Task<IResult> SetActive(int id, bool active, string? reason = null);
+    Task<IDataResult<List<CustomerActivityDto>>> GetCustomerActivity(int id, int maxItems = 200);
 }

@@ -98,6 +98,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<ReturnProduct> ReturnProducts { get; set; }
     public virtual DbSet<Sale> Sales { get; set; }
     public virtual DbSet<SaleItem> SaleItems { get; set; }
+    public virtual DbSet<DiscountReason> DiscountReasons { get; set; }
     public virtual DbSet<Entegrasyon.Entity.Sales.Views.UnifiedSaleView> UnifiedSales { get; set; }
     public virtual DbSet<BranchOffice> BranchOffices { get; set; }
     public virtual DbSet<UserBranchOffice> UserBranchOffices { get; set; }

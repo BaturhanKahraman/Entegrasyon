@@ -12,24 +12,24 @@
                         <th>Telefon</th>
                         <th>TC / Vergi No</th>
                         <th>Satış Sayısı</th>
-                        <th class="w-1"></th>
+                        <th>Durum</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var customer in Model.Items)
                     {
-                        <tr>
+                        var isCorporate = customer.CustomerType == "Kurumsal" || customer.CustomerType == "Corporate";
+                        <tr data-href="/customers/@customer.Id"
+                            role="link"
+                            tabindex="0"
+                            style="cursor: pointer;"
+                            class="@(customer.IsActive ? "" : "text-muted")">
                             <td>
-                                <a href="/customers/@customer.Id" class="text-reset">
-                                    @(string.IsNullOrEmpty(customer.CorporateName)
-                                        ? customer.NameSurname
-                                        : customer.CorporateName)
-                                </a>
+                                @(string.IsNullOrEmpty(customer.CorporateName)
+                                    ? customer.NameSurname
+                                    : customer.CorporateName)
                             </td>
                             <td>
-                                @{
-                                    var isCorporate = customer.CustomerType == "Kurumsal";
-                                }
                                 <span class="badge @(isCorporate ? "bg-purple-lt" : "bg-blue-lt")">
                                     @(isCorporate ? "Kurumsal" : "Bireysel")
                                 </span>
@@ -40,18 +40,18 @@
                                 <span class="badge bg-green-lt">@customer.SalesCount</span>
                             </td>
                             <td>
-                                <div class="btn-list flex-nowrap">
-                                    <a href="/customers/@customer.Id" class="btn btn-sm btn-outline-primary">
-                                        Detay
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            hx-post="/customers/@customer.Id/delete"
-                                            hx-target="closest tr"
-                                            hx-swap="outerHTML swap:300ms"
-                                            hx-confirm="Bu müşteriyi silmek istediğinize emin misiniz?">
-                                        Sil
-                                    </button>
-                                </div>
+                                @if (customer.IsActive)
+                                {
+                                    <span class="badge bg-success-lt">
+                                        <span class="status-dot status-dot-animated bg-success me-2"></span>Aktif
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-lt">
+                                        <span class="status-dot bg-secondary me-2"></span>Deaktif
+                                    </span>
+                                }
                             </td>
                         </tr>
                     }
@@ -84,3 +84,23 @@
         </div>
     }
 </div>
+
+<script>
+    (function () {
+        const table = document.getElementById('customer-table');
+        if (!table || table.dataset.rowClickBound === '1') return;
+        table.dataset.rowClickBound = '1';
+
+        table.addEventListener('click', (e) => {
+            const row = e.target.closest('tr[data-href]');
+            if (!row) return;
+            window.location = row.dataset.href;
+        });
+        table.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const row = e.target.closest('tr[data-href]');
+            if (!row) return;
+            window.location = row.dataset.href;
+        });
+    })();
+</script>

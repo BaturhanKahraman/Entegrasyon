@@ -3,6 +3,7 @@ using System;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    partial class IntegrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260418065728_AddIsActiveToCustomer")]
+    partial class AddIsActiveToCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3192,42 +3195,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("ChangeProducts");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Sales.DiscountReason", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("DiscountReasons");
-                });
-
             modelBuilder.Entity("Entegrasyon.Entity.Sales.PaymentMethodDefinition", b =>
                 {
                     b.Property<int>("Id")
@@ -3556,18 +3523,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("DiscountAmount")
-                        .HasColumnType("numeric");
-
                     b.Property<double>("DiscountPercent")
                         .HasColumnType("double precision");
-
-                    b.Property<int?>("DiscountReasonId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DiscountReasonNote")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -3606,8 +3563,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BranchOfficeId");
-
-                    b.HasIndex("DiscountReasonId");
 
                     b.HasIndex("ProductVariantId");
 
@@ -8354,10 +8309,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .WithMany()
                         .HasForeignKey("BranchOfficeId");
 
-                    b.HasOne("Entegrasyon.Entity.Sales.DiscountReason", "DiscountReason")
-                        .WithMany()
-                        .HasForeignKey("DiscountReasonId");
-
                     b.HasOne("Entegrasyon.Entity.Products.ProductVariant", "ProductVariant")
                         .WithMany()
                         .HasForeignKey("ProductVariantId")
@@ -8369,8 +8320,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasForeignKey("SaleId");
 
                     b.Navigation("BranchOffice");
-
-                    b.Navigation("DiscountReason");
 
                     b.Navigation("ProductVariant");
                 });

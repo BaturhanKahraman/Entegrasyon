@@ -18,4 +18,7 @@ public sealed record SaleItemDto(
     double DiscountPercent,
     decimal UnitPrice,
     int Quantity,
-    string DiscountVoucherCode);
+    string DiscountVoucherCode,
+    decimal? DiscountAmount = null,
+    int? DiscountReasonId = null,
+    string? DiscountReasonNote = null);

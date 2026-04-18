@@ -13,6 +13,7 @@ public partial class SaleMapper
     [MapProperty(nameof(SaleItemDto.DiscountVoucherCode), nameof(SaleItem.UsedDiscountVoucherCode))]
     [MapperIgnoreTarget(nameof(SaleItem.ProductVariant))]
     [MapperIgnoreTarget(nameof(SaleItem.BranchOffice))]
+    [MapperIgnoreTarget(nameof(SaleItem.DiscountReason))]
     public partial SaleItem MapToEntity(SaleItemDto dto);
 
     [MapperIgnoreTarget(nameof(Sale.DiscountVoucher))]

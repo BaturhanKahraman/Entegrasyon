@@ -1,0 +1,392 @@
+@model Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto
+@using Entegrasyon.Entity.Orders
+@using Entegrasyon.Entity.Dtos.Customers
+
+@{
+    var orders = (List<Order>)ViewBag.Orders;
+    var activities = (List<CustomerActivityDto>)ViewBag.Activities;
+    decimal totalSpend = ViewBag.TotalSpend;
+    int orderCount = ViewBag.OrderCount;
+    DateTimeOffset? lastOrderDate = ViewBag.LastOrderDate;
+    decimal averageOrder = ViewBag.AverageOrder;
+    var isCorporate = Model.CustomerType == "Corporate" || Model.CustomerType == "Kurumsal";
+    var displayName = isCorporate && !string.IsNullOrEmpty(Model.CorporateName)
+        ? Model.CorporateName
+        : Model.NameSurname;
+}
+
+<div class="page-header d-print-none">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title d-flex align-items-center">
+                <span class="avatar avatar-md me-2 bg-@(isCorporate ? "purple" : "blue")-lt">
+                    <i class="ti ti-@(isCorporate ? "building" : "user")"></i>
+                </span>
+                <span>@displayName</span>
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success-lt ms-3">
+                        <span class="status-dot status-dot-animated bg-success me-2"></span>Aktif
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary-lt ms-3">
+                        <span class="status-dot bg-secondary me-2"></span>Deaktif
+                    </span>
+                }
+            </h2>
+            <div class="text-muted mt-1">
+                <i class="ti ti-calendar-plus me-1"></i>Kayıt: @Model.CreatedAt.LocalDateTime.ToString("dd.MM.yyyy")
+                @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                {
+                    <span class="ms-3"><i class="ti ti-phone me-1"></i>@Model.PhoneNumber</span>
+                }
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="ti ti-settings me-1"></i>İşlemler
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="/customers/@Model.Id/edit">
+                        <i class="ti ti-edit dropdown-item-icon"></i>Düzenle
+                    </a>
+                    @if (Model.IsActive)
+                    {
+                        <a class="dropdown-item" href="#"
+                           data-bs-toggle="modal" data-bs-target="#deactivate-customer-modal">
+                            <i class="ti ti-user-off dropdown-item-icon"></i>Deaktif Et
+                        </a>
+                    }
+                    else
+                    {
+                        <form method="post" action="/customers/@Model.Id/set-active" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="active" value="true"/>
+                            <button type="submit" class="dropdown-item">
+                                <i class="ti ti-user-check dropdown-item-icon"></i>Aktif Et
+                            </button>
+                        </form>
+                    }
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/sales/new?customerId=@Model.Id">
+                        <i class="ti ti-shopping-cart-plus dropdown-item-icon"></i>Yeni Satış
+                    </a>
+                    <a class="dropdown-item" href="/discounts/vouchers/create?customerId=@Model.Id">
+                        <i class="ti ti-discount dropdown-item-icon"></i>Kupon Tanımla
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <form method="post" action="/customers/@Model.Id/delete" class="m-0"
+                          onsubmit="return confirm('Bu müşteriyi silmek istediğinize emin misiniz?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="ti ti-trash dropdown-item-icon text-danger"></i>Sil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.IsActive && Model.DeactivatedAt.HasValue)
+{
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="ti ti-alert-triangle me-2"></i>
+        <div>
+            <strong>Bu müşteri deaktif durumda.</strong>
+            Deaktivasyon tarihi: @Model.DeactivatedAt.Value.LocalDateTime.ToString("dd.MM.yyyy HH:mm")
+            @if (!string.IsNullOrEmpty(Model.DeactivationReason))
+            {
+                <span>— Sebep: @Model.DeactivationReason</span>
+            }
+        </div>
+    </div>
+}
+
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="subheader">Toplam Harcama</div>
+                <div class="h2 mb-0">@totalSpend.ToString("N2") ₺</div>
+                <div class="text-muted small">Tüm siparişlerden</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="subheader">Sipariş Sayısı</div>
+                <div class="h2 mb-0">@orderCount</div>
+                <div class="text-muted small">Toplam sipariş</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="subheader">Son Sipariş</div>
+                <div class="h2 mb-0">
+                    @(lastOrderDate.HasValue ? lastOrderDate.Value.LocalDateTime.ToString("dd.MM.yyyy") : "-")
+                </div>
+                <div class="text-muted small">En son sipariş tarihi</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="subheader">Ortalama Sipariş</div>
+                <div class="h2 mb-0">@averageOrder.ToString("N2") ₺</div>
+                <div class="text-muted small">Sipariş başına</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><a href="#tab-overview" class="nav-link active" data-bs-toggle="tab">
+            <i class="ti ti-dashboard me-1"></i>Genel Bakış
+        </a></li>
+        <li class="nav-item"><a href="#tab-orders" class="nav-link" data-bs-toggle="tab">
+            <i class="ti ti-shopping-cart me-1"></i>Sipariş Geçmişi
+            <span class="badge bg-secondary ms-1">@orders.Count</span>
+        </a></li>
+        <li class="nav-item"><a href="#tab-activity" class="nav-link" data-bs-toggle="tab">
+            <i class="ti ti-history me-1"></i>İşlem Dökümü
+            <span class="badge bg-secondary ms-1">@activities.Count</span>
+        </a></li>
+        <li class="nav-item"><a href="#tab-info" class="nav-link" data-bs-toggle="tab">
+            <i class="ti ti-info-circle me-1"></i>Müşteri Bilgileri
+        </a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active show" id="tab-overview">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h3 class="card-title">Son Siparişler</h3>
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Sipariş No</th>
+                                        <th>Durum</th>
+                                        <th class="text-end">Tutar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (orders.Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">Henüz sipariş bulunmuyor.</td>
+                                        </tr>
+                                    }
+                                    @foreach (var order in orders.OrderByDescending(o => o.CreatedAt).Take(5))
+                                    {
+                                        <tr>
+                                            <td>@order.CreatedAt.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(order.OrderNumber))
+                                                { <a href="/orders/@order.Id" class="text-reset">#@order.OrderNumber</a> }
+                                                else
+                                                { <span class="text-muted">-</span> }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(order.MarketplaceOrderStatus))
+                                                { <span class="badge bg-secondary-lt">@order.MarketplaceOrderStatus</span> }
+                                                else if (order.StorefrontOrderStatus.HasValue)
+                                                { <span class="badge bg-blue-lt">@order.StorefrontOrderStatus</span> }
+                                                else
+                                                { <span class="text-muted">-</span> }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (order.GrossAmount.HasValue)
+                                                { <strong>@order.GrossAmount.Value.ToString("N2") ₺</strong> }
+                                                else
+                                                { <span class="text-muted">-</span> }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <h3 class="card-title">Özet</h3>
+                        <div class="datagrid">
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Müşteri Tipi</div>
+                                <div class="datagrid-content">
+                                    @if (isCorporate)
+                                    { <span class="badge bg-purple-lt">Kurumsal</span> }
+                                    else
+                                    { <span class="badge bg-blue-lt">Bireysel</span> }
+                                </div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">TC / Vergi No</div>
+                                <div class="datagrid-content">@(string.IsNullOrEmpty(Model.NationalIdentityOrTaxNumber) ? "-" : Model.NationalIdentityOrTaxNumber)</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Telefon</div>
+                                <div class="datagrid-content">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "-" : Model.PhoneNumber)</div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Adres</div>
+                                <div class="datagrid-content">@(string.IsNullOrEmpty(Model.Address) ? "-" : Model.Address)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="tab-orders">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Sipariş No</th>
+                            <th>Pazaryeri</th>
+                            <th>Durum</th>
+                            <th class="text-end">Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (orders.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-4">Henüz sipariş bulunmuyor.</td></tr>
+                        }
+                        @foreach (var order in orders.OrderByDescending(o => o.CreatedAt))
+                        {
+                            <tr>
+                                <td>@order.CreatedAt.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(order.OrderNumber))
+                                    { <a href="/orders/@order.Id" class="text-reset">#@order.OrderNumber</a> }
+                                    else
+                                    { <span class="text-muted">-</span> }
+                                </td>
+                                <td>@(order.MarketPlace?.Name ?? "-")</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(order.MarketplaceOrderStatus))
+                                    { <span class="badge bg-secondary-lt">@order.MarketplaceOrderStatus</span> }
+                                    else if (order.StorefrontOrderStatus.HasValue)
+                                    { <span class="badge bg-blue-lt">@order.StorefrontOrderStatus</span> }
+                                    else
+                                    { <span class="text-muted">-</span> }
+                                </td>
+                                <td class="text-end">
+                                    @if (order.GrossAmount.HasValue)
+                                    { <strong>@order.GrossAmount.Value.ToString("N2") ₺</strong> }
+                                    else
+                                    { <span class="text-muted">-</span> }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="tab-activity">
+            <div class="card-body">
+                <partial name="Partials/_CustomerActivityTimeline" model="activities"/>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="tab-info">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Ad Soyad</div>
+                            <div>@(string.IsNullOrEmpty(Model.NameSurname) ? "-" : Model.NameSurname)</div>
+                        </div>
+                        @if (isCorporate)
+                        {
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Firma Adı</div>
+                                <div>@(string.IsNullOrEmpty(Model.CorporateName) ? "-" : Model.CorporateName)</div>
+                            </div>
+                        }
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Telefon</div>
+                            <div>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "-" : Model.PhoneNumber)</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">TC / Vergi No</div>
+                            <div>@(string.IsNullOrEmpty(Model.NationalIdentityOrTaxNumber) ? "-" : Model.NationalIdentityOrTaxNumber)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Müşteri Tipi</div>
+                            <div>
+                                @if (isCorporate)
+                                { <span class="badge bg-purple-lt">Kurumsal</span> }
+                                else
+                                { <span class="badge bg-blue-lt">Bireysel</span> }
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Adres</div>
+                            <div>@(string.IsNullOrEmpty(Model.Address) ? "-" : Model.Address)</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="text-muted small mb-1">Kayıt Tarihi</div>
+                            <div>@Model.CreatedAt.LocalDateTime.ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                        @if (!Model.IsActive && Model.DeactivatedAt.HasValue)
+                        {
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1">Deaktivasyon</div>
+                                <div>
+                                    @Model.DeactivatedAt.Value.LocalDateTime.ToString("dd.MM.yyyy HH:mm")
+                                    @if (!string.IsNullOrEmpty(Model.DeactivationReason))
+                                    { <div class="text-secondary small mt-1">@Model.DeactivationReason</div> }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.IsActive)
+{
+    <div class="modal modal-blur fade" id="deactivate-customer-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <form method="post" action="/customers/@Model.Id/set-active" class="modal-content">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="active" value="false"/>
+                <div class="modal-header">
+                    <h5 class="modal-title">Müşteriyi Deaktif Et</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bu müşteri deaktif edildikten sonra POS ve satış ekranlarında seçilemez hale gelecek.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Deaktivasyon Sebebi <span class="text-muted">(opsiyonel)</span></label>
+                        <textarea name="reason" class="form-control" rows="3" maxlength="500"
+                                  placeholder="Örn: Müşteri iletişim bilgisi güncellenemiyor"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Deaktif Et</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

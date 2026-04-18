@@ -13,7 +13,7 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
     [HttpGet("/customers")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
     {
-        ViewData.SetPageTitle("Musteriler");
+        ViewData.SetPageTitle("Müşteriler");
         ViewData.SetActiveNav("customers");
 
         var result = await customerManager.GetCustomerDetailPageable(
@@ -29,25 +29,42 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
     [HttpGet("/customers/{id:int}")]
     public async Task<IActionResult> Detail(int id)
     {
-        var result = await customerManager.GetCustomerDetailById(id);
-        if (!result.Success)
+        var customerResult = await customerManager.GetCustomerDetailById(id);
+        if (!customerResult.Success || customerResult.Data == null)
         {
-            TempData.SetError(result.Message ?? "Musteri bulunamadi.");
+            TempData.SetError(customerResult.Message ?? "Müşteri bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData.SetPageTitle(result.Data!.NameSurname ?? result.Data.CorporateName);
+        var ordersResult = await orderManager.GetCustomerOrdersAsync(id, 1);
+        var activityResult = await customerManager.GetCustomerActivity(id);
+
+        var customer = customerResult.Data;
+        var orders = ordersResult.Data ?? [];
+
+        ViewBag.Orders = orders;
+        ViewBag.TotalSpend = orders.Sum(o => o.GrossAmount ?? 0m);
+        ViewBag.OrderCount = orders.Count;
+        ViewBag.LastOrderDate = orders.Count > 0
+            ? orders.Max(o => o.CreatedAt)
+            : (DateTimeOffset?)null;
+        ViewBag.AverageOrder = orders.Count > 0
+            ? orders.Sum(o => o.GrossAmount ?? 0m) / orders.Count
+            : 0m;
+        ViewBag.Activities = activityResult.Data ?? [];
+
+        ViewData.SetPageTitle(customer.NameSurname ?? customer.CorporateName);
         ViewData.SetActiveNav("customers");
-        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Detay", null));
-        return View(result.Data);
+        ViewData.SetBreadcrumb(("Müşteriler", "/customers"), ("Detay", null));
+        return View(customer);
     }
 
     [HttpGet("/customers/create")]
     public IActionResult Create()
     {
-        ViewData.SetPageTitle("Yeni Musteri");
+        ViewData.SetPageTitle("Yeni Müşteri");
         ViewData.SetActiveNav("customers");
-        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Yeni Musteri", null));
+        ViewData.SetBreadcrumb(("Müşteriler", "/customers"), ("Yeni Müşteri", null));
         return View();
     }
 
@@ -58,11 +75,11 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
 
         if (result.Success)
         {
-            TempData.SetSuccess("Musteri basariyla eklendi.");
+            TempData.SetSuccess("Müşteri başarıyla eklendi.");
             return RedirectToAction(nameof(Index));
         }
 
-        TempData.SetError(result.Message ?? "Musteri eklenemedi.");
+        TempData.SetError(result.Message ?? "Müşteri eklenemedi.");
         return View(dto);
     }
 
@@ -72,13 +89,13 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
         var result = await customerManager.GetCustomerDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Musteri bulunamadi.");
+            TempData.SetError(result.Message ?? "Müşteri bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData.SetPageTitle("Musteri Duzenle");
+        ViewData.SetPageTitle("Müşteri Düzenle");
         ViewData.SetActiveNav("customers");
-        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Duzenle", null));
+        ViewData.SetBreadcrumb(("Müşteriler", "/customers"), ("Düzenle", null));
         return View(result.Data);
     }
 
@@ -92,43 +109,25 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
 
         if (result.Success)
         {
-            TempData.SetSuccess("Musteri basariyla guncellendi.");
-            return RedirectToAction(nameof(Index));
+            TempData.SetSuccess("Müşteri başarıyla güncellendi.");
+            return RedirectToAction(nameof(Detail), new { id });
         }
 
-        TempData.SetError(result.Message ?? "Musteri guncellenemedi.");
+        TempData.SetError(result.Message ?? "Müşteri güncellenemedi.");
         return RedirectToAction(nameof(Edit), new { id });
     }
 
-    [HttpGet("/customers/{id:int}/dashboard")]
-    public async Task<IActionResult> Dashboard(int id)
+    [HttpPost("/customers/{id:int}/set-active")]
+    public async Task<IActionResult> SetActive(int id, [FromForm] bool active, [FromForm] string? reason = null)
     {
-        var customerResult = await customerManager.GetCustomerDetailById(id);
-        if (!customerResult.Success)
-        {
-            TempData.SetError(customerResult.Message ?? "Musteri bulunamadi.");
-            return RedirectToAction(nameof(Index));
-        }
+        var result = await customerManager.SetActive(id, active, reason);
 
-        var ordersResult = await orderManager.GetCustomerOrdersAsync(id, 1);
+        if (result.Success)
+            TempData.SetSuccess(active ? "Müşteri aktif hale getirildi." : "Müşteri deaktif edildi.");
+        else
+            TempData.SetError(result.Message ?? "İşlem başarısız.");
 
-        var customer = customerResult.Data!;
-        var orders = ordersResult.Data ?? [];
-
-        ViewBag.Orders = orders;
-        ViewBag.TotalSpend = orders.Sum(o => o.GrossAmount ?? 0m);
-        ViewBag.OrderCount = orders.Count;
-        ViewBag.LastOrderDate = orders.Count > 0
-            ? orders.Max(o => o.CreatedAt)
-            : (DateTimeOffset?)null;
-        ViewBag.AverageOrder = orders.Count > 0
-            ? orders.Sum(o => o.GrossAmount ?? 0m) / orders.Count
-            : 0m;
-
-        ViewData.SetPageTitle(customer.NameSurname ?? customer.CorporateName);
-        ViewData.SetActiveNav("customers");
-        ViewData.SetBreadcrumb(("Musteriler", "/customers"), ("Dashboard", null));
-        return View(customer);
+        return RedirectToAction(nameof(Detail), new { id });
     }
 
     [HttpPost("/customers/{id:int}/delete")]
@@ -141,7 +140,7 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Musteri silindi.", type = "success" });
+                    new { message = "Müşteri silindi.", type = "success" });
                 return Content("");
             }
 
@@ -151,9 +150,9 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
         }
 
         if (result.Success)
-            TempData.SetSuccess("Musteri basariyla silindi.");
+            TempData.SetSuccess("Müşteri başarıyla silindi.");
         else
-            TempData.SetError(result.Message ?? "Musteri silinemedi.");
+            TempData.SetError(result.Message ?? "Müşteri silinemedi.");
 
         return RedirectToAction(nameof(Index));
     }

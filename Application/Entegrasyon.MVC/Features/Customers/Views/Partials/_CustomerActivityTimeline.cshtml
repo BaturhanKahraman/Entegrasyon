@@ -1,0 +1,60 @@
+@model IReadOnlyList<Entegrasyon.Entity.Dtos.Customers.CustomerActivityDto>
+
+@if (Model == null || Model.Count == 0)
+{
+    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+             {
+                 Title = "Henüz işlem yok",
+                 Subtitle = "Bu müşteriyle ilgili tüm işlemler burada listelenecek."
+             }'/>
+}
+else
+{
+    <ul class="timeline">
+        @foreach (var activity in Model)
+        {
+            var color = string.IsNullOrEmpty(activity.BadgeColor) ? "secondary" : activity.BadgeColor;
+            <li class="timeline-event">
+                <div class="timeline-event-icon bg-@color-lt">
+                    <i class="ti ti-@(string.IsNullOrEmpty(activity.Icon) ? "point" : activity.Icon)"></i>
+                </div>
+                <div class="card timeline-event-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <div class="fw-bold">
+                                    @if (!string.IsNullOrEmpty(activity.RelatedUrl))
+                                    {
+                                        <a href="@activity.RelatedUrl" class="text-reset text-decoration-none">@activity.Title</a>
+                                    }
+                                    else
+                                    {
+                                        @activity.Title
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(activity.Description))
+                                {
+                                    <div class="text-secondary small mt-1">@activity.Description</div>
+                                }
+                                <div class="text-muted small mt-1">
+                                    <i class="ti ti-clock me-1"></i>@activity.OccurredAt.LocalDateTime.ToString("dd.MM.yyyy HH:mm")
+                                    @if (!string.IsNullOrEmpty(activity.UserDisplayName))
+                                    {
+                                        <span class="ms-2"><i class="ti ti-user me-1"></i>@activity.UserDisplayName</span>
+                                    }
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(activity.Amount))
+                            {
+                                <div class="text-end">
+                                    <span class="badge bg-@color-lt">@activity.Amount</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+}

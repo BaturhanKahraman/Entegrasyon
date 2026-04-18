@@ -23,4 +23,15 @@ public sealed class SaleItem:BaseEntity
     public string ProductTitle { get; set; } = "";
 
     public int ReturnedQuantity { get; set; }
+
+    /// <summary>POS'ta kalem başı sabit TL indirimi. DiscountPercent ile aynı anda > 0 olamaz.</summary>
+    public decimal? DiscountAmount { get; set; }
+
+    /// <summary>Opsiyonel seçilen standart indirim nedeni.</summary>
+    public int? DiscountReasonId { get; set; }
+    public DiscountReason? DiscountReason { get; set; }
+
+    /// <summary>Opsiyonel serbest metin not.</summary>
+    [StringLength(200)]
+    public string? DiscountReasonNote { get; set; }
 }

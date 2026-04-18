@@ -80,12 +80,41 @@ else
                             </div>
                         </td>
                         <td class="text-end">@item.UnitPriceWithVat.ToString("N2") TL</td>
-                        <td class="text-end fw-bold">@item.LineTotalWithVat.ToString("N2") TL</td>
-                        <td>
+                        <td class="text-end">
+                            @if (item.HasDiscount)
+                            {
+                                <div class="text-muted text-decoration-line-through small">@item.LineGross.ToString("N2") TL</div>
+                                <div class="fw-bold">@item.LineTotalWithVat.ToString("N2") TL</div>
+                                <div class="small text-success">
+                                  @if (item.DiscountAmount.HasValue)
+                                  {
+                                      <text>-@item.DiscountAmount.Value.ToString("N2") TL</text>
+                                  }
+                                  else
+                                  {
+                                      <text>-%@item.DiscountPercent.ToString("0.##")</text>
+                                  }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="fw-bold">@item.LineTotalWithVat.ToString("N2") TL</span>
+                            }
+                        </td>
+                        <td class="text-nowrap">
+                            <button type="button"
+                                    class="btn btn-ghost-primary btn-sm btn-icon"
+                                    title="İndirim uygula"
+                                    hx-get="/pos/item-discount-dialog?variantId=@item.VariantId"
+                                    hx-target="#modal-container"
+                                    hx-swap="innerHTML">
+                                <i class="ti ti-percentage icon"></i>
+                            </button>
                             <form method="post" action="/pos/remove-item"
                                   hx-post="/pos/remove-item"
                                   hx-target="#pos-cart"
-                                  hx-swap="innerHTML">
+                                  hx-swap="innerHTML"
+                                  style="display:inline;">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="productId" value="@item.ProductId" />
                                 <button type="submit" class="btn btn-ghost-danger btn-sm btn-icon">

@@ -11,4 +11,5 @@ public class SaleCustomerItemVm
     public string Name { get; set; } = "";
     public string Phone { get; set; } = "";
     public string Type { get; set; } = "";
+    public bool IsActive { get; set; } = true;
 }

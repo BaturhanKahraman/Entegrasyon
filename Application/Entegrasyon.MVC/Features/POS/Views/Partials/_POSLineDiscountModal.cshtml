@@ -1,0 +1,123 @@
+@model Entegrasyon.MVC.Features.POS.ViewModels.POSLineDiscountDialogVm
+@{
+    var tr = new System.Globalization.CultureInfo("tr-TR");
+    var startType = Model.CurrentAmount.HasValue && Model.CurrentAmount.Value > 0 ? "amount" : "percent";
+}
+<div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">İndirim Uygula — @Model.ProductTitle</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+    </div>
+    <form hx-post="/pos/apply-item-discount"
+          hx-target="#pos-cart"
+          hx-swap="innerHTML"
+          hx-on::after-request="bootstrap.Modal.getInstance(document.getElementById('pos-modal'))?.hide()">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="variantId" value="@Model.VariantId" />
+
+      <div class="modal-body">
+        @if (Model.AlreadyDiscounted)
+        {
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+              <i class="ti ti-alert-triangle me-2"></i>
+              <div>
+                <strong>Bu ürün zaten indirimde.</strong>
+                Liste fiyatı @Model.ListPrice.ToString("C2", tr), satış fiyatı @Model.UnitPrice.ToString("C2", tr).
+                Yine de indirim yapmak ister misiniz?
+              </div>
+            </div>
+        }
+
+        <div class="row mb-2">
+          <div class="col-6 text-muted small">Adet: @Model.Quantity</div>
+          <div class="col-6 text-end text-muted small">Satır toplamı: <strong>@Model.LineGross.ToString("C2", tr)</strong></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">İndirim Tipi</label>
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="discountType" id="dtype-percent" value="percent"
+                   checked="@(startType == "percent")" />
+            <label class="btn btn-outline-primary" for="dtype-percent">Yüzde (%)</label>
+
+            <input type="radio" class="btn-check" name="discountType" id="dtype-amount" value="amount"
+                   checked="@(startType == "amount")" />
+            <label class="btn btn-outline-primary" for="dtype-amount">Tutar (₺)</label>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6" id="percent-input-wrapper">
+            <label class="form-label">Yüzde</label>
+            <div class="input-group">
+              <input type="number" class="form-control" name="percent" min="0" max="100" step="0.1"
+                     value="@(Model.CurrentPercent > 0 ? Model.CurrentPercent.ToString("0.##") : "")"
+                     placeholder="0" />
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <div class="col-6" id="amount-input-wrapper">
+            <label class="form-label">Tutar</label>
+            <div class="input-group">
+              <input type="number" class="form-control" name="amount" min="0" step="0.01"
+                     value="@(Model.CurrentAmount?.ToString("0.##") ?? "")"
+                     placeholder="0" />
+              <span class="input-group-text">₺</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Neden (opsiyonel)</label>
+          <select class="form-select" name="reasonId">
+            <option value="">— Seçiniz —</option>
+            @foreach (var r in Model.Reasons)
+            {
+                <option value="@r.Id" selected="@(Model.CurrentReasonId == r.Id)">@r.Name</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label">Not (opsiyonel)</label>
+          <input type="text" class="form-control" name="note" maxlength="200"
+                 value="@Model.CurrentNote" placeholder="örn. özel müşteri" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-link" data-bs-dismiss="modal">İptal</button>
+        @if (Model.CurrentPercent > 0 || Model.CurrentAmount.HasValue)
+        {
+            <button type="submit" class="btn btn-outline-danger"
+                    onclick="document.querySelector('[name=percent]').value='';document.querySelector('[name=amount]').value='';">
+              İndirimi Kaldır
+            </button>
+        }
+        <button type="submit" class="btn btn-primary">
+          <i class="ti ti-check me-1"></i> Uygula
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const wrapP = document.getElementById('percent-input-wrapper');
+    const wrapA = document.getElementById('amount-input-wrapper');
+    const radios = document.querySelectorAll('input[name=discountType]');
+    function sync() {
+      const sel = document.querySelector('input[name=discountType]:checked')?.value;
+      wrapP.style.opacity = sel === 'percent' ? '1' : '0.5';
+      wrapA.style.opacity = sel === 'amount' ? '1' : '0.5';
+      const pIn = document.querySelector('input[name=percent]');
+      const aIn = document.querySelector('input[name=amount]');
+      if (sel === 'percent') aIn.value = '';
+      else if (sel === 'amount') pIn.value = '';
+    }
+    radios.forEach(r => r.addEventListener('change', sync));
+    sync();
+  })();
+</script>

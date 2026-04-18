@@ -24,6 +24,7 @@ public class POSController(
     ICustomerManager customerManager,
     IPaymentMethodManager paymentMethodManager,
     IOfficeStockManager officeStockManager,
+    IDiscountReasonManager discountReasonManager,
     ITenantContext tenantContext) : Controller
 {
     // ── Helpers ──────────────────────────────────────────────────────────
@@ -195,6 +196,7 @@ public class POSController(
                 Barcode = firstVariant?.Barcode ?? "",
                 ImageUrl = firstVariant?.imageLinks?.FirstOrDefault(),
                 UnitPrice = firstVariant?.SalePrice ?? 0,
+                ListPrice = firstVariant?.ListPrice ?? firstVariant?.SalePrice ?? 0,
                 VatRate = firstVariant?.VatRate ?? 0,
                 Quantity = 1,
                 AvailableStock = availableStock
@@ -281,15 +283,32 @@ public class POSController(
                 Id = c.Id,
                 Name = c.NameSurname ?? c.CorporateName ?? "-",
                 Phone = c.PhoneNumber ?? "",
-                Type = c.CustomerType ?? ""
+                Type = c.CustomerType ?? "",
+                IsActive = c.IsActive
             }).ToList()
         });
     }
 
     [HttpPost("/pos/select-customer")]
     [ValidateAntiForgeryToken]
-    public IActionResult SelectCustomer([FromForm] int customerId, [FromForm] string customerName)
+    public async Task<IActionResult> SelectCustomer([FromForm] int customerId, [FromForm] string customerName)
     {
+        var customerResult = await customerManager.GetCustomerDetailById(customerId);
+        if (!customerResult.Success || customerResult.Data == null)
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Müşteri bulunamadı.", level = "error" });
+            return NoContent();
+        }
+        if (!customerResult.Data.IsActive)
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Deaktif müşteri seçilemez.", level = "error" });
+            return NoContent();
+        }
+
         HttpContext.Session.SetInt32("pos_customer_id", customerId);
         HttpContext.Session.SetString("pos_customer_name", customerName);
         return PartialView("Partials/_POSCustomerBadge", ((int?)customerId, customerName));
@@ -419,6 +438,84 @@ public class POSController(
         return PartialView("Partials/_POSCloseSessionDialog", vm);
     }
 
+    // ── Kalem İndirimi (HTMX) ───────────────────────────────────────────
+
+    [HttpGet("/pos/item-discount-dialog")]
+    public async Task<IActionResult> ItemDiscountDialog([FromQuery] Guid variantId)
+    {
+        var cart = GetCartFromSession();
+        var item = cart.FirstOrDefault(c => c.VariantId == variantId);
+        if (item is null) return NotFound();
+
+        var reasons = await discountReasonManager.GetActiveAsync();
+
+        var vm = new POSLineDiscountDialogVm
+        {
+            VariantId = variantId,
+            ProductTitle = item.Title,
+            UnitPrice = item.UnitPrice,
+            ListPrice = item.ListPrice,
+            Quantity = item.Quantity,
+            LineGross = item.LineGross,
+            AlreadyDiscounted = item.ProductAlreadyDiscounted,
+            CurrentPercent = item.DiscountPercent,
+            CurrentAmount = item.DiscountAmount,
+            CurrentReasonId = item.DiscountReasonId,
+            CurrentNote = item.DiscountReasonNote,
+            Reasons = reasons.ToList()
+        };
+
+        return PartialView("Partials/_POSLineDiscountModal", vm);
+    }
+
+    [HttpPost("/pos/apply-item-discount")]
+    [ValidateAntiForgeryToken]
+    public IActionResult ApplyItemDiscount(
+        [FromForm] Guid variantId,
+        [FromForm] string discountType,        // "percent" | "amount"
+        [FromForm] double? percent,
+        [FromForm] decimal? amount,
+        [FromForm] int? reasonId,
+        [FromForm] string? note)
+    {
+        var cart = GetCartFromSession();
+        var item = cart.FirstOrDefault(c => c.VariantId == variantId);
+        if (item is null)
+        {
+            Response.HtmxTriggerWithData("showToast", new { message = "Kalem bulunamadı.", level = "error" });
+            return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+        }
+
+        // Reset
+        item.DiscountPercent = 0;
+        item.DiscountAmount = null;
+
+        if (discountType == "percent" && percent is > 0 and <= 100)
+        {
+            item.DiscountPercent = percent.Value;
+        }
+        else if (discountType == "amount" && amount is > 0)
+        {
+            if (amount.Value > item.LineGross)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = "TL indirimi satır toplamından büyük olamaz.", level = "error" });
+                return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+            }
+            item.DiscountAmount = amount.Value;
+        }
+
+        item.DiscountReasonId = reasonId;
+        item.DiscountReasonNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+
+        SaveCartToSession(cart);
+
+        Response.HtmxTriggerWithData("showToast",
+            new { message = item.HasDiscount ? "İndirim uygulandı." : "İndirim kaldırıldı.", level = "success" });
+
+        return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+    }
+
     // ── Complete Sale ────────────────────────────────────────────────────
 
     [HttpPost("/pos/complete-sale")]
@@ -457,10 +554,13 @@ public class POSController(
         var saleItems = cart.Select(c => new SaleItemDto(
             ProductVariantId: c.VariantId,
             TaxPercentage: (double)c.VatRate,
-            DiscountPercent: 0,
+            DiscountPercent: c.DiscountPercent,
             UnitPrice: c.UnitPrice,
             Quantity: c.Quantity,
-            DiscountVoucherCode: "")).ToList();
+            DiscountVoucherCode: "",
+            DiscountAmount: c.DiscountAmount,
+            DiscountReasonId: c.DiscountReasonId,
+            DiscountReasonNote: c.DiscountReasonNote)).ToList();
 
         var makeSaleDto = new MakeSaleDto(
             SalePersonId: GetCurrentUserId(),
