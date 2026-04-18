@@ -8,13 +8,13 @@
 
     string StatusBadge(ReturnStatus s) => s switch
     {
-        ReturnStatus.Draft     => "bg-secondary",
-        ReturnStatus.Pending   => "bg-yellow",
-        ReturnStatus.Approved  => "bg-cyan",
-        ReturnStatus.Completed => "bg-green",
-        ReturnStatus.Rejected  => "bg-red",
-        ReturnStatus.Cancelled => "bg-dark",
-        _ => "bg-secondary"
+        ReturnStatus.Draft     => "bg-secondary text-secondary-fg",
+        ReturnStatus.Pending   => "bg-yellow text-yellow-fg",
+        ReturnStatus.Approved  => "bg-cyan text-cyan-fg",
+        ReturnStatus.Completed => "bg-green text-green-fg",
+        ReturnStatus.Rejected  => "bg-red text-red-fg",
+        ReturnStatus.Cancelled => "bg-dark text-dark-fg",
+        _ => "bg-secondary text-secondary-fg"
     };
     string StatusText(ReturnStatus s) => s switch
     {
@@ -188,7 +188,11 @@
                                         <span class="badge bg-green-lt">
                                             <i class="ti ti-check icon"></i> Envantere eklendi
                                         </span>
-                                        <br/><small class="text-secondary">@item.RestoredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
+                                        @if (item.RestoredAt.HasValue)
+                                        {
+                                            <br />
+                                            <small class="text-secondary">@item.RestoredAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
+                                        }
                                     }
                                     else
                                     {

@@ -315,10 +315,10 @@ document.body.addEventListener('htmx:responseError', function (event) {
 // ── Confirm Dialog (Tabler Modal) ────────────────────────────────────
 
 // hx-confirm icin guzel bir Tabler modal gosterir (duz browser confirm yerine)
-document.body.addEventListener('htmx:confirm', function (event) {
-    event.preventDefault();
-    var message = event.detail.question;
-    if (!message) { event.detail.issueRequest(true); return; }
+document.body.addEventListener('htmx:confirm', function (htmxEvent) {
+    htmxEvent.preventDefault();
+    var message = htmxEvent.detail.question;
+    if (!message) { htmxEvent.detail.issueRequest(true); return; }
 
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop fade show';
@@ -369,6 +369,7 @@ document.body.addEventListener('htmx:confirm', function (event) {
     var colCancel = document.createElement('div');
     colCancel.className = 'col';
     var btnCancel = document.createElement('button');
+    btnCancel.type = 'button';
     btnCancel.className = 'btn w-100';
     btnCancel.textContent = 'Vazgec';
     colCancel.appendChild(btnCancel);
@@ -376,6 +377,7 @@ document.body.addEventListener('htmx:confirm', function (event) {
     var colConfirm = document.createElement('div');
     colConfirm.className = 'col';
     var btnConfirm = document.createElement('button');
+    btnConfirm.type = 'button';
     btnConfirm.className = 'btn btn-danger w-100';
     btnConfirm.textContent = 'Evet, devam et';
     colConfirm.appendChild(btnConfirm);
@@ -396,15 +398,24 @@ document.body.addEventListener('htmx:confirm', function (event) {
         modal.remove();
         backdrop.remove();
         document.body.classList.remove('modal-open');
+        document.removeEventListener('keydown', onKey);
     }
 
-    btnCancel.addEventListener('click', cleanup);
-    btnConfirm.addEventListener('click', function () { cleanup(); event.detail.issueRequest(true); });
+    function confirmAction(clickEv) {
+        if (clickEv) { clickEv.preventDefault(); clickEv.stopPropagation(); }
+        cleanup();
+        htmxEvent.detail.issueRequest(true);
+    }
+
+    btnCancel.addEventListener('click', function (ev) { if (ev) ev.preventDefault(); cleanup(); });
+    btnConfirm.addEventListener('click', confirmAction);
     backdrop.addEventListener('click', cleanup);
     modal.addEventListener('click', function (e) { if (e.target === modal) cleanup(); });
 
-    // Esc ile kapat
-    function onKey(e) { if (e.key === 'Escape') { cleanup(); document.removeEventListener('keydown', onKey); } }
+    function onKey(e) {
+        if (e.key === 'Escape') { cleanup(); }
+        else if (e.key === 'Enter') { confirmAction(e); }
+    }
     document.addEventListener('keydown', onKey);
 
     btnConfirm.focus();
