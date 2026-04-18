@@ -27,6 +27,14 @@ public class POSController(
     IDiscountReasonManager discountReasonManager,
     ITenantContext tenantContext) : Controller
 {
+    // ── Constants ────────────────────────────────────────────────────────
+
+    private static class DiscountTypes
+    {
+        public const string Percent = "percent";
+        public const string Amount = "amount";
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private Guid GetCurrentUserId()
@@ -492,11 +500,11 @@ public class POSController(
         item.DiscountPercent = 0;
         item.DiscountAmount = null;
 
-        if (discountType == "percent" && percent is > 0 and <= 100)
+        if (discountType == DiscountTypes.Percent && percent is > 0 and <= 100)
         {
             item.DiscountPercent = percent.Value;
         }
-        else if (discountType == "amount" && amount is > 0)
+        else if (discountType == DiscountTypes.Amount && amount is > 0)
         {
             if (amount.Value > item.LineGross)
             {
@@ -564,22 +572,23 @@ public class POSController(
             return PartialView("Partials/_POSCart", cart);
         }
 
-        // Reset
+        // Reset — validation başarısızsa SaveCartToSession çağrılmaz,
+        // yani in-memory reset sadece view render için geçerlidir, session değişmez.
         cart.GeneralDiscountType = null;
         cart.GeneralDiscountValue = 0m;
 
-        if (discountType == "percent")
+        if (discountType == DiscountTypes.Percent)
         {
             if (percent is not > 0 || percent > 100m)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Yüzde 0-100 arasında olmalı.", level = "error" });
+                    new { message = "Yüzde 1-100 arasında olmalı.", level = "error" });
                 return PartialView("Partials/_POSCart", cart);
             }
-            cart.GeneralDiscountType = "percent";
+            cart.GeneralDiscountType = DiscountTypes.Percent;
             cart.GeneralDiscountValue = percent.Value;
         }
-        else if (discountType == "amount")
+        else if (discountType == DiscountTypes.Amount)
         {
             if (amount is not > 0m)
             {
@@ -593,7 +602,7 @@ public class POSController(
                     new { message = "İndirim sepet toplamından büyük olamaz.", level = "error" });
                 return PartialView("Partials/_POSCart", cart);
             }
-            cart.GeneralDiscountType = "amount";
+            cart.GeneralDiscountType = DiscountTypes.Amount;
             cart.GeneralDiscountValue = amount.Value;
         }
         else
