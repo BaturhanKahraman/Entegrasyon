@@ -5,15 +5,18 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Dtos.Sale;
 using Entegrasyon.Entity.Sales;
+using Entegrasyon.MVC.Features.Sales.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Sales;
 
 [Authorize]
 public class SaleController(
+    IUnifiedSaleManager unifiedSaleManager,
     ISaleManager saleManager,
     ISaleReturnManager saleReturnManager,
     IPaymentMethodManager paymentMethodManager,
+    IOrderManager orderManager,
     ITenantContext tenantContext) : Controller
 {
     private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
@@ -21,50 +24,61 @@ public class SaleController(
     private Guid GetCurrentUserId()
         => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    // ── Sale List ────────────────────────────────────────────────────────
+    // ── Birleşik Liste ──────────────────────────────────────────────────
 
     [HttpGet("/sales")]
     public async Task<IActionResult> Index(
-        string? search = null,
+        UnifiedSaleSource? source = null,
+        UnifiedSaleStatus? status = null,
         DateTimeOffset? startDate = null,
         DateTimeOffset? endDate = null,
-        SaleSource? source = null,
-        SaleStatus? status = null,
+        string? search = null,
         int page = 0)
     {
-        var startLocal = startDate.HasValue ? TurkeyTime.StartOfDay(startDate.Value) : TurkeyTime.StartOfToday;
-        var endLocal = endDate.HasValue ? TurkeyTime.StartOfDay(endDate.Value) : TurkeyTime.StartOfToday.AddDays(1);
+        var startLocal = startDate.HasValue
+            ? TurkeyTime.StartOfDay(startDate.Value)
+            : TurkeyTime.StartOfToday.AddDays(-7);
+        var endLocal = endDate.HasValue
+            ? TurkeyTime.StartOfDay(endDate.Value).AddDays(1)
+            : TurkeyTime.StartOfToday.AddDays(1);
         var start = startLocal.ToUniversalTime();
         var end = endLocal.ToUniversalTime();
 
-        var dto = new SalePageableDto(
+        var filter = new UnifiedSaleFilterDto(
+            Source: source,
+            Status: status,
+            StartDate: start,
+            EndDate: end,
+            SearchText: search,
             CustomerId: null,
-            DateBetweenStart: start,
-            DateBetweenEnd: end,
-            SalePersonId: Guid.Empty,
-            SaleSource: source,
-            SaleStatus: status,
-            FullTextSearchKey: search ?? "",
-            PageIndex: page);
+            PageIndex: page,
+            PageSize: 25);
 
-        var salesResult = await saleManager.GetSalesPageable(dto);
-        var summaryResult = await saleManager.GetSalesSummaryAsync(dto);
+        var pageResult = await unifiedSaleManager.GetPageableAsync(filter);
+        var summaryResult = await unifiedSaleManager.GetSummaryAsync(filter);
+        var countsResult = await unifiedSaleManager.GetSourceCountsAsync(filter);
+
+        var vm = new UnifiedSaleIndexViewModel
+        {
+            Page = pageResult.Data ?? new Entegrasyon.Entity.Pageable<UnifiedSaleListItemDto>([], 0, 25, 0),
+            Summary = summaryResult.Data ?? new UnifiedSaleSummaryDto(0m, 0, 0m, 0d),
+            SourceCounts = countsResult.Data ?? [],
+            Filter = filter
+        };
 
         ViewData.SetPageTitle("Satışlar");
         ViewData.SetActiveNav("sales");
-        ViewBag.Summary = summaryResult.Data;
-        ViewBag.CurrentFilters = dto;
 
         if (Request.IsHtmx())
-            return PartialView("Partials/_SaleTable", salesResult.Data);
+            return PartialView("Partials/_UnifiedSaleTable", vm);
 
-        return View(salesResult.Data);
+        return View(vm);
     }
 
-    // ── Sale Detail ──────────────────────────────────────────────────────
+    // ── Sale Detay (POS / Manuel) ───────────────────────────────────────
 
-    [HttpGet("/sales/{id:guid}")]
-    public async Task<IActionResult> Detail(Guid id)
+    [HttpGet("/sales/sale/{id:guid}")]
+    public async Task<IActionResult> SaleDetail(Guid id)
     {
         var result = await saleManager.GetSaleDetailAsync(id);
         if (!result.Success || result.Data is null)
@@ -77,12 +91,43 @@ public class SaleController(
 
         ViewData.SetPageTitle($"Satış Detay — {result.Data.SaleNumber}");
         ViewData.SetActiveNav("sales");
+        ViewData.SetBreadcrumb(("Satışlar", "/sales"), ($"#{result.Data.SaleNumber}", null));
         ViewBag.PaymentMethods = paymentMethods.Data ?? [];
 
-        return View(result.Data);
+        return View("SaleDetail", result.Data);
     }
 
-    [HttpGet("/sales/{id:guid}/print")]
+    // ── Order Detay (Marketplace / Storefront) ──────────────────────────
+
+    [HttpGet("/sales/order/{id:guid}")]
+    public async Task<IActionResult> OrderDetail(Guid id)
+    {
+        var result = await orderManager.GetOrderByIdAsync(id);
+        if (!result.Success || result.Data is null)
+        {
+            TempData.SetError(result.Message ?? "Sipariş bulunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        var order = result.Data;
+        var title = order.OrderNumber ?? order.Id.ToString()[..8];
+
+        ViewData.SetPageTitle($"Sipariş #{title}");
+        ViewData.SetActiveNav("sales");
+        ViewData.SetBreadcrumb(("Satışlar", "/sales"), ($"#{title}", null));
+
+        return View("OrderDetail", order);
+    }
+
+    // ── Eski /sales/{id} route'unu yeni /sales/sale/{id}'e yönlendir ─────
+
+    [HttpGet("/sales/{id:guid}")]
+    public IActionResult LegacySaleDetail(Guid id)
+        => RedirectToActionPermanent(nameof(SaleDetail), new { id });
+
+    // ── Print / Cancel / Return (mevcut — redirect'ler güncellendi) ─────
+
+    [HttpGet("/sales/sale/{id:guid}/print")]
     public async Task<IActionResult> Print(Guid id)
     {
         var result = await saleManager.GetSaleDetailAsync(id);
@@ -92,7 +137,7 @@ public class SaleController(
         return View(result.Data);
     }
 
-    [HttpPost("/sales/{id:guid}/cancel")]
+    [HttpPost("/sales/sale/{id:guid}/cancel")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(Guid id)
     {
@@ -104,12 +149,10 @@ public class SaleController(
         else
             TempData.SetError(result.Message ?? "Satış iptal edilemedi.");
 
-        return RedirectToAction(nameof(Detail), new { id });
+        return RedirectToAction(nameof(SaleDetail), new { id });
     }
 
-    // ── Return Flow ──────────────────────────────────────────────────────
-
-    [HttpGet("/sales/{id:guid}/return-dialog")]
+    [HttpGet("/sales/sale/{id:guid}/return-dialog")]
     public async Task<IActionResult> ReturnDialog(Guid id)
     {
         var result = await saleManager.GetSaleDetailAsync(id);
@@ -122,7 +165,7 @@ public class SaleController(
         return PartialView("Partials/_SaleReturnDialog", result.Data);
     }
 
-    [HttpPost("/sales/{saleId:guid}/return")]
+    [HttpPost("/sales/sale/{saleId:guid}/return")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateReturn(
         Guid saleId,
@@ -147,7 +190,7 @@ public class SaleController(
         if (items.Count == 0)
         {
             TempData.SetError("En az bir kalem seçmelisiniz.");
-            return RedirectToAction(nameof(Detail), new { id = saleId });
+            return RedirectToAction(nameof(SaleDetail), new { id = saleId });
         }
 
         var dto = new CreateSaleReturnDto(
@@ -167,7 +210,7 @@ public class SaleController(
         else
             TempData.SetError(result.Message ?? "İade talebi oluşturulamadı.");
 
-        return RedirectToAction(nameof(Detail), new { id = saleId });
+        return RedirectToAction(nameof(SaleDetail), new { id = saleId });
     }
 
     [HttpPost("/sales/returns/{returnId:long}/approve")]
@@ -180,7 +223,7 @@ public class SaleController(
         else
             TempData.SetError(result.Message ?? "İade onaylanamadı.");
 
-        return RedirectToAction(nameof(Detail), new { id = saleId });
+        return RedirectToAction(nameof(SaleDetail), new { id = saleId });
     }
 
     [HttpPost("/sales/returns/{returnId:long}/reject")]
@@ -193,6 +236,6 @@ public class SaleController(
         else
             TempData.SetError(result.Message ?? "İade reddedilemedi.");
 
-        return RedirectToAction(nameof(Detail), new { id = saleId });
+        return RedirectToAction(nameof(SaleDetail), new { id = saleId });
     }
 }
