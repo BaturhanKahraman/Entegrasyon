@@ -34,8 +34,15 @@ namespace Entegrasyon.Business.Validation.FluentValidation
         private static bool HaveDiscountWithinSubtotal(MakeSaleDto dto)
         {
             if (dto.GeneralDiscount <= 0m) return true;
-            var subtotalGross = dto.SaleItems
-                .Sum(i => i.UnitPrice * i.Quantity * (1m + (decimal)i.TaxPercentage / 100m));
+            if (dto.SaleItems is null) return true;
+
+            var subtotalGross = dto.SaleItems.Sum(i =>
+            {
+                // Distributor ile hizalı: önce kalem indirimi düşülür, sonra KDV eklenir.
+                var net = Math.Max(0m, i.UnitPrice * i.Quantity - (i.DiscountAmount ?? 0m));
+                return net * (1m + (decimal)i.TaxPercentage / 100m);
+            });
+
             return dto.GeneralDiscount <= subtotalGross;
         }
     }

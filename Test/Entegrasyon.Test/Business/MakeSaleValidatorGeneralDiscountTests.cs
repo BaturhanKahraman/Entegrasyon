@@ -60,4 +60,48 @@ public class MakeSaleValidatorGeneralDiscountTests
         var result = _sut.TestValidate(dto);
         result.ShouldNotHaveValidationErrorFor(x => x.GeneralDiscount);
     }
+
+    [Fact]
+    public void Validator_CountsLineDiscount_InSubtotal()
+    {
+        // Kalem: UnitPrice 100, Qty 1, line discount 50, KDV %20
+        // net=50, gross=60 → GeneralDiscount 70 reddedilmeli
+        var dto = new MakeSaleDto(
+            SalePersonId: Guid.NewGuid(),
+            CustomerId: null,
+            GeneralDiscount: 70m,
+            BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: [new SaleItemDto(
+                ProductVariantId: Guid.NewGuid(),
+                TaxPercentage: 20,
+                DiscountPercent: 0,
+                UnitPrice: 100m,
+                Quantity: 1,
+                DiscountVoucherCode: "",
+                DiscountAmount: 50m)],   // per-line discount
+            Payments: [new SalePaymentDto(PaymentMethodId: 1, Amount: 50m, null, null)]);
+
+        var result = _sut.TestValidate(dto);
+        result.ShouldHaveValidationErrorFor(x => x.GeneralDiscount);
+    }
+
+    [Fact]
+    public void Validator_HandlesNullSaleItems_WithoutThrowing()
+    {
+        var dto = new MakeSaleDto(
+            SalePersonId: Guid.NewGuid(),
+            CustomerId: null,
+            GeneralDiscount: 50m,
+            BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: null!,
+            Payments: []);
+
+        // Beklenen: NRE atmaz, cross-field kural geçer (SaleItems.NotNull farklı rule ile yakalanır)
+        var act = () => _sut.TestValidate(dto);
+        act.Should().NotThrow<NullReferenceException>();
+    }
 }
