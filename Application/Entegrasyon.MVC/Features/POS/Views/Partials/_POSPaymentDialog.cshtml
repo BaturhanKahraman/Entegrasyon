@@ -44,6 +44,33 @@
                         </div>
                     </div>
 
+                    @if (Model.HasGeneralDiscount)
+                    {
+                        <div class="row mb-2 align-items-center">
+                            <div class="col text-secondary">
+                                Sepet İndirimi
+                                @if (!string.IsNullOrEmpty(Model.GeneralDiscountReasonName))
+                                {
+                                    <span class="small">— @Model.GeneralDiscountReasonName</span>
+                                }
+                            </div>
+                            <div class="col-auto text-end text-success fw-bold">-@Model.GeneralDiscountAmount.ToString("C2", tr)</div>
+                        </div>
+                    }
+
+                    <div class="mb-3 text-end">
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                onclick="closePosPaymentModal()"
+                                hx-get="/pos/cart-discount-dialog"
+                                hx-target="#modal-container"
+                                hx-swap="innerHTML"
+                                hx-trigger="click">
+                            <i class="ti ti-discount icon"></i>
+                            @(Model.HasGeneralDiscount ? "İndirimi Düzenle" : "İndirim Ekle")
+                        </button>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="card card-sm">
