@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Entity.Requests;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Orders;
@@ -11,104 +10,57 @@ public class OrderController(
     IOrderManager orderManager,
     ITrendyolOrderService trendyolOrderService) : Controller
 {
+    // ── Geriye Uyumluluk: Eski /orders ve /marketplace/orders URL'leri ─────
+
     [HttpGet("/orders")]
-    public async Task<IActionResult> Index(string? search = null, string? status = null, int page = 1)
-    {
-        ViewData.SetPageTitle("Siparişler");
-        ViewData.SetActiveNav("orders");
-
-        var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
-        {
-            SearchTerm = search,
-            Status = status,
-            PageIndex = page - 1,
-            PageSize = 20
-        });
-
-        ViewBag.Search = search;
-        ViewBag.Status = status;
-
-        if (Request.IsHtmx())
-            return PartialView("~/Features/Orders/Views/Partials/_OrderTable.cshtml", result.Data);
-
-        return View("~/Features/Orders/Views/Index.cshtml", result.Data);
-    }
+    public IActionResult IndexRedirect() => RedirectPermanent("/sales");
 
     [HttpGet("/marketplace/orders")]
-    public async Task<IActionResult> MarketplaceOrders(int mp = 1, int page = 1)
+    public IActionResult MarketplaceRedirect(int mp = 0)
     {
-        ViewData.SetPageTitle("Pazaryeri Siparişleri");
-        ViewData.SetActiveNav("orders");
-
-        var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest
+        var source = mp switch
         {
-            MarketPlaceId = mp,
-            PageIndex = page - 1,
-            PageSize = 20
-        });
-
-        ViewBag.MarketPlaceId = mp;
-
-        if (Request.IsHtmx())
-            return PartialView("~/Features/Orders/Views/Partials/_OrderTable.cshtml", result.Data);
-
-        return View("~/Features/Orders/Views/MarketplaceOrders.cshtml", result.Data);
+            1 => "Trendyol",
+            2 => "N11",
+            3 => "Hepsiburada",
+            4 => "Amazon",
+            5 => "Pazarama",
+            7 => "PttAvm",
+            8 => "Ciceksepeti",
+            _ => null
+        };
+        var url = source is null ? "/sales" : $"/sales?source={source}";
+        return RedirectPermanent(url);
     }
 
     [HttpGet("/orders/{id:guid}")]
-    public async Task<IActionResult> OrderDetail(Guid id)
-    {
-        var result = await orderManager.GetOrderByIdAsync(id);
-        if (!result.Success)
-        {
-            TempData.SetError(result.Message ?? "Sipariş bulunamadi.");
-            return RedirectToAction(nameof(Index));
-        }
-
-        var order = result.Data!;
-        var title = order.OrderNumber ?? order.Id.ToString()[..8];
-
-        ViewData.SetPageTitle($"Sipariş #{title}");
-        ViewData.SetActiveNav("orders");
-        ViewData.SetBreadcrumb(("Siparişler", "/orders"), ($"#{title}", null));
-
-        return View("~/Features/Orders/Views/OrderDetail.cshtml", order);
-    }
+    public IActionResult DetailRedirect(Guid id)
+        => RedirectPermanent($"/sales/order/{id}");
 
     [HttpGet("/orders/{id:guid}/print")]
+    public IActionResult PrintRedirect(Guid id)
+        => RedirectPermanent($"/sales/order/{id}/print");
+
+    [HttpGet("/marketplace/orders/{id:guid}")]
+    public IActionResult MarketplaceDetailRedirect(Guid id)
+        => RedirectPermanent($"/sales/order/{id}");
+
+    // ── Sipariş İşlemleri (yeni /sales/order prefix'inde) ───────────────────
+
+    [HttpGet("/sales/order/{id:guid}/print")]
     public async Task<IActionResult> Print(Guid id)
     {
         var result = await orderManager.GetOrderByIdAsync(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sipariş bulunamadi.");
-            return RedirectToAction(nameof(Index));
+            TempData.SetError(result.Message ?? "Sipariş bulunamadı.");
+            return Redirect("/sales");
         }
 
-        return View("~/Features/Orders/Views/Print.cshtml", result.Data!);
+        return View("~/Features/Sales/Views/OrderPrint.cshtml", result.Data!);
     }
 
-    [HttpGet("/marketplace/orders/{id:guid}")]
-    public async Task<IActionResult> Detail(Guid id)
-    {
-        var result = await orderManager.GetOrderByIdAsync(id);
-        if (!result.Success)
-        {
-            TempData.SetError(result.Message ?? "Sipariş bulunamadi.");
-            return RedirectToAction(nameof(Index));
-        }
-
-        var order = result.Data!;
-        var title = order.OrderNumber ?? order.Id.ToString()[..8];
-
-        ViewData.SetPageTitle($"Sipariş #{title}");
-        ViewData.SetActiveNav("orders");
-        ViewData.SetBreadcrumb(("Siparişler", "/orders"), ($"#{title}", null));
-
-        return View("~/Features/Orders/Views/Detail.cshtml", order);
-    }
-
-    [HttpPost("/orders/{id:guid}/status")]
+    [HttpPost("/sales/order/{id:guid}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromForm] string newStatus)
     {
         var result = await orderManager.UpdateOrderStatusAsync(id, newStatus);
@@ -118,25 +70,25 @@ public class OrderController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sipariş durumu guncellendi.", type = "success" });
+                    new { message = "Sipariş durumu güncellendi.", type = "success" });
                 Response.HtmxRefresh();
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Durum guncellenemedi.", type = "danger" });
+                new { message = result.Message ?? "Durum güncellenemedi.", type = "danger" });
             return StatusCode(422);
         }
 
         if (result.Success)
-            TempData.SetSuccess("Sipariş durumu basariyla guncellendi.");
+            TempData.SetSuccess("Sipariş durumu başarıyla güncellendi.");
         else
-            TempData.SetError(result.Message ?? "Sipariş durumu guncellenemedi.");
+            TempData.SetError(result.Message ?? "Sipariş durumu güncellenemedi.");
 
-        return RedirectToAction(nameof(Detail), new { id });
+        return Redirect($"/sales/order/{id}");
     }
 
-    [HttpPost("/orders/{id:guid}/mark-unsupplied")]
+    [HttpPost("/sales/order/{id:guid}/mark-unsupplied")]
     public async Task<IActionResult> MarkUnsupplied(Guid id)
     {
         var orderResult = await orderManager.GetOrderByIdAsync(id);
@@ -145,12 +97,12 @@ public class OrderController(
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sipariş bulunamadi.", type = "danger" });
+                    new { message = "Sipariş bulunamadı.", type = "danger" });
                 return StatusCode(404);
             }
 
-            TempData.SetError("Sipariş bulunamadi.");
-            return RedirectToAction(nameof(Index));
+            TempData.SetError("Sipariş bulunamadı.");
+            return Redirect("/sales");
         }
 
         var order = orderResult.Data;
@@ -160,12 +112,12 @@ public class OrderController(
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Bu islem sadece Trendyol Siparişleri icin gecerlidir.", type = "danger" });
+                    new { message = "Bu işlem sadece Trendyol siparişleri için geçerlidir.", type = "danger" });
                 return StatusCode(422);
             }
 
-            TempData.SetError("Bu islem sadece Trendyol Siparişleri icin gecerlidir.");
-            return RedirectToAction(nameof(Detail), new { id });
+            TempData.SetError("Bu işlem sadece Trendyol siparişleri için geçerlidir.");
+            return Redirect($"/sales/order/{id}");
         }
 
         var lineIds = order.OrderItems
@@ -178,12 +130,12 @@ public class OrderController(
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sipariş kalemlerinde satir ID bulunamadi.", type = "danger" });
+                    new { message = "Sipariş kalemlerinde satır ID bulunamadı.", type = "danger" });
                 return StatusCode(422);
             }
 
-            TempData.SetError("Sipariş kalemlerinde satir ID bulunamadi.");
-            return RedirectToAction(nameof(Detail), new { id });
+            TempData.SetError("Sipariş kalemlerinde satır ID bulunamadı.");
+            return Redirect($"/sales/order/{id}");
         }
 
         var result = await trendyolOrderService.MarkUnsuppliedAsync(
@@ -194,21 +146,21 @@ public class OrderController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sipariş tedarik edilemez olarak isaretlendi.", type = "success" });
+                    new { message = "Sipariş tedarik edilemez olarak işaretlendi.", type = "success" });
                 Response.HtmxRefresh();
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Islem basarisiz.", type = "danger" });
+                new { message = result.Message ?? "İşlem başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
         if (result.Success)
-            TempData.SetSuccess("Sipariş tedarik edilemez olarak isaretlendi.");
+            TempData.SetSuccess("Sipariş tedarik edilemez olarak işaretlendi.");
         else
-            TempData.SetError(result.Message ?? "Sipariş tedarik edilemez olarak isaretlenemedi.");
+            TempData.SetError(result.Message ?? "Sipariş tedarik edilemez olarak işaretlenemedi.");
 
-        return RedirectToAction(nameof(Detail), new { id });
+        return Redirect($"/sales/order/{id}");
     }
 }
