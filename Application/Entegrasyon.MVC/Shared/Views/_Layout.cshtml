@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="~/lib/notyf/notyf.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/glightbox/glightbox.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/command-palette.css" asp-append-version="true" />
 </head>
 <body>
     @* ── HTMX Progress Bar ── *@
@@ -107,6 +108,7 @@
     <script src="~/lib/sortablejs/sortable.min.js" asp-append-version="true"></script>
     <script src="~/lib/glightbox/glightbox.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/command-palette.js" asp-append-version="true"></script>
     @* SignalR sadece Chat sayfasında yüklenir *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>

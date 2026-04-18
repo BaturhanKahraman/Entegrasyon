@@ -70,6 +70,7 @@ namespace Entegrasyon.ApplicationBootstrap
                         "Entegrasyon.Business.Concrete.Invoicing",
                         "Entegrasyon.Business.Concrete.Kargo",
                         "Entegrasyon.Business.Concrete.POS",
+                        "Entegrasyon.Business.Concrete.Search",
                         "Entegrasyon.Business.Concrete.Shipping",
                         "Entegrasyon.Business.Concrete.Storefront",
                         "Entegrasyon.Business.Notifications"
@@ -90,6 +91,13 @@ namespace Entegrasyon.ApplicationBootstrap
                 .WithScopedLifetime()
             );
             // ─────────────────────────────────────────────────────────────────────────
+
+            // Search source'ları ISearchSource arabirimine kayıt (GlobalSearchManager IEnumerable<ISearchSource> alır)
+            services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.PageSearchSource>();
+            services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.ProductSearchSource>();
+            services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.CustomerSearchSource>();
+            services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.CategorySearchSource>();
+            services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.BrandSearchSource>();
 
             services.AddScoped<ITenantContext, HttpTenantContext>();
             services.AddScoped<TenantMemoryCache>();
