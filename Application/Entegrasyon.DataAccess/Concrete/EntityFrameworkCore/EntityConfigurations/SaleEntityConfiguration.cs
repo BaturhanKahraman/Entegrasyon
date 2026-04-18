@@ -14,6 +14,8 @@ public class SaleEntityConfiguration : IEntityTypeConfiguration<Sale>
         builder.HasIndex(x => x.SaleSource);
         builder.HasIndex(x => x.SaleStatus);
 
+        builder.Property(x => x.GeneralDiscount).HasColumnType("numeric(18,2)");
+
         builder.HasOne(x => x.GeneralDiscountReason)
                .WithMany()
                .HasForeignKey(x => x.GeneralDiscountReasonId)
