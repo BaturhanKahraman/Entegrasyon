@@ -1,4 +1,3 @@
-// Application/Entegrasyon.MVC/Features/POS/CartDiscountDistributor.cs
 namespace Entegrasyon.MVC.Features.POS;
 
 public readonly record struct CartLine(
@@ -8,8 +7,8 @@ public readonly record struct CartLine(
     decimal ExistingLineDiscountAmount);
 
 public sealed record CartDiscountDistribution(
-    decimal[] PerLineGrossShare,
-    decimal[] PerLineNetShare,
+    IReadOnlyList<decimal> PerLineGrossShare,
+    IReadOnlyList<decimal> PerLineNetShare,
     decimal AppliedGrossTotal);
 
 public static class CartDiscountDistributor

@@ -1,4 +1,3 @@
-// Test/Entegrasyon.Test/Business/POS/CartDiscountDistributorTests.cs
 using Entegrasyon.MVC.Features.POS;
 using FluentAssertions;
 using Xunit;
@@ -85,5 +84,52 @@ public class CartDiscountDistributorTests
         var result = CartDiscountDistributor.Distribute(lines, generalDiscountGross: 150m);
         result.AppliedGrossTotal.Should().Be(100m);
         result.PerLineGrossShare[0].Should().Be(100m);
+    }
+
+    [Fact]
+    public void Distribute_WithExistingLineDiscount_UsesDiscountedGrossAsBase()
+    {
+        // 2 kalem, her biri 100 TL net, %20 KDV
+        // 1. kaleme 10 TL kalem indirimi uygulanmış (yani net=90, gross=108)
+        // 2. kalem tam gross (net=100, gross=120)
+        // subtotalGross = 108 + 120 = 228
+        // genel indirim 22.80 TL → oranlı dağıtım
+        var lines = new[]
+        {
+            Line(100m, 1, 20m, existingDiscountAmount: 10m),  // gross payı 108
+            Line(100m, 1, 20m, existingDiscountAmount: 0m)    // gross payı 120
+        };
+        var result = CartDiscountDistributor.Distribute(lines, generalDiscountGross: 22.80m);
+
+        result.AppliedGrossTotal.Should().Be(22.80m);
+        // 1. kalem: 108/228 * 22.80 = 10.80
+        result.PerLineGrossShare[0].Should().Be(10.80m);
+        // 2. kalem: 120/228 * 22.80 = 12.00
+        result.PerLineGrossShare[1].Should().Be(12.00m);
+        // Toplam dağıtılan gross = 22.80 (invariant)
+        result.PerLineGrossShare.Sum().Should().Be(22.80m);
+    }
+
+    [Fact]
+    public void Distribute_ThreeDifferentVatRates_HandlesRemainderCorrectly()
+    {
+        // Kasten remainder oluşturan senaryo
+        var lines = new[]
+        {
+            Line(333.33m, 1, 20m),   // gross ≈ 400.00
+            Line(100m, 1, 1m),       // gross = 101.00
+            Line(200m, 1, 10m)       // gross = 220.00
+        };
+        var result = CartDiscountDistributor.Distribute(lines, generalDiscountGross: 50m);
+
+        result.AppliedGrossTotal.Should().Be(50m);
+        result.PerLineGrossShare.Sum().Should().Be(50m);  // remainder tam dağıtılmış
+        // Her kalemin net payı kendi KDV oranı ile hesaplanmalı
+        for (int i = 0; i < 3; i++)
+        {
+            var vatRate = lines[i].VatRate;
+            var expectedNet = Math.Round(result.PerLineGrossShare[i] / (1m + vatRate / 100m), 2);
+            result.PerLineNetShare[i].Should().Be(expectedNet);
+        }
     }
 }
