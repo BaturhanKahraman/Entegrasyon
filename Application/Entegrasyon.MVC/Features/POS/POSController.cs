@@ -611,9 +611,9 @@ public class POSController(
             var vm = System.Text.Json.JsonSerializer.Deserialize<POSCartVm>(json);
             if (vm is not null) return vm;
         }
-        catch
+        catch (System.Text.Json.JsonException)
         {
-            // Eski şema (liste) — deserialize başarısız olabilir
+            // POSCartVm deserialize başarısız — eski liste şemasına düş
         }
 
         // Eski şema desteği: JSON bir liste ise items'a koy
@@ -622,7 +622,7 @@ public class POSController(
             var items = System.Text.Json.JsonSerializer.Deserialize<List<POSCartItemVm>>(json);
             if (items is not null) return new POSCartVm { Items = items };
         }
-        catch { }
+        catch (System.Text.Json.JsonException) { }
 
         return new POSCartVm();
     }
