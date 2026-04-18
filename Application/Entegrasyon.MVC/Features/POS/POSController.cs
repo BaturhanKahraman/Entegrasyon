@@ -479,6 +479,14 @@ public class POSController(
             return RedirectToAction(nameof(Index));
         }
 
+        // POSSession ↔ Sale bağlantı satırı — beklenen kasa hesaplaması bu satırdan geçer
+        var cashReceived = payments.Sum(p => p.CashReceived ?? 0);
+        var changeGiven  = payments.Sum(p => p.CashReceived.HasValue
+            ? Math.Max(0, p.CashReceived.Value - p.Amount)
+            : 0);
+        await posSessionManager.AddTransactionRecordAsync(
+            sessionResult.Data.Id, saleResult.Data, cashReceived, changeGiven);
+
         // Sepeti, müşteriyi ve submit token'ı temizle — yeni satışta taze token üretilir
         SaveCartToSession([]);
         HttpContext.Session.Remove("pos_customer_id");

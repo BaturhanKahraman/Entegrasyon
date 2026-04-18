@@ -183,6 +183,41 @@ public sealed class POSSessionManager(
         return new SuccessDataResult<POSTransaction>(transaction, "Islem basariyla kaydedildi.");
     }
 
+    public async Task<IResult> AddTransactionRecordAsync(
+        long sessionId,
+        Guid saleId,
+        decimal cashReceived,
+        decimal changeGiven)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var session = await dbContext.POSSessions
+            .FirstOrDefaultAsync(s => s.Id == sessionId);
+        if (session == null)
+            return new ErrorResult("Oturum bulunamadi.");
+
+        var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
+        if (logicResult != null)
+            return new ErrorResult(logicResult.Message!);
+
+        var saleExists = await dbContext.Sales.AnyAsync(s => s.Id == saleId);
+        if (!saleExists)
+            return new ErrorResult("Satis bulunamadi.");
+
+        dbContext.POSTransactions.Add(new POSTransaction
+        {
+            POSSessionId = sessionId,
+            SaleId = saleId,
+            CashReceived = cashReceived,
+            ChangeGiven = changeGiven,
+            TransactionAt = DateTimeOffset.UtcNow
+        });
+        await dbContext.SaveChangesAsync();
+
+        logger.LogInformation("POS transaction link created — session={SessionId} sale={SaleId}", sessionId, saleId);
+        return new SuccessResult("Islem baglandi.");
+    }
+
     public async Task<IResult> AddCashMovementAsync(AddCashMovementDto dto)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();

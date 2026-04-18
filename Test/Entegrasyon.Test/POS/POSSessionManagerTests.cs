@@ -41,6 +41,61 @@ public class POSSessionManagerTests : BaseTest
     }
 
     [Fact]
+    public async Task AddTransactionRecord_ValidSessionAndSale_CreatesLinkRow()
+    {
+        // Arrange — açık session + var olan sale
+        var sessionId = 10L;
+        var saleId = Guid.NewGuid();
+        var session = new POSSession
+        {
+            Id = sessionId,
+            BranchOfficeId = 1,
+            Status = POSSessionStatus.Open,
+            OpeningCash = 500m
+        };
+        var sale = new Sale
+        {
+            Id = saleId,
+            SaleNumber = "POS-TEST",
+            SaleSource = SaleSource.POS,
+            SaleStatus = SaleStatus.Completed
+        };
+
+        var capturedTransactions = new List<POSTransaction>();
+        mockIntegrationDbContext.Setup(x => x.POSSessions).ReturnsDbSet(new List<POSSession> { session });
+        mockIntegrationDbContext.Setup(x => x.Sales).ReturnsDbSet(new List<Sale> { sale });
+        mockIntegrationDbContext.Setup(x => x.POSTransactions).ReturnsDbSet(capturedTransactions);
+        mockIntegrationDbContext.Setup(x => x.POSTransactions.Add(It.IsAny<POSTransaction>()))
+            .Callback<POSTransaction>(capturedTransactions.Add);
+
+        // Act
+        var result = await _manager.AddTransactionRecordAsync(sessionId, saleId, cashReceived: 150m, changeGiven: 10m);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedTransactions.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(new
+            {
+                POSSessionId = sessionId,
+                SaleId = saleId,
+                CashReceived = 150m,
+                ChangeGiven = 10m
+            });
+    }
+
+    [Fact]
+    public async Task AddTransactionRecord_MissingSession_ReturnsError()
+    {
+        mockIntegrationDbContext.Setup(x => x.POSSessions).ReturnsDbSet(new List<POSSession>());
+        mockIntegrationDbContext.Setup(x => x.Sales).ReturnsDbSet(new List<Sale>());
+
+        var result = await _manager.AddTransactionRecordAsync(999, Guid.NewGuid(), 0m, 0m);
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("bulunamadi");
+    }
+
+    [Fact]
     public async Task OpenSession_ValidDto_CreatesSessionSuccessfully()
     {
         // Arrange
