@@ -24,6 +24,30 @@ public class SaleController(
     private Guid GetCurrentUserId()
         => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    // ── DEBUG (geçici) — view içeriğini JSON döndür ─────────────────────
+
+    [HttpGet("/sales/debug/view")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DebugView()
+    {
+        var all = await unifiedSaleManager.GetPageableAsync(new UnifiedSaleFilterDto(
+            Source: null, Status: null,
+            StartDate: null, EndDate: null,
+            SearchText: null, CustomerId: null,
+            PageIndex: 0, PageSize: 100));
+
+        return Json(new
+        {
+            success = all.Success,
+            message = all.Message,
+            total = all.Data?.TotalItemCount,
+            items = all.Data?.Items.Select(x => new {
+                x.Id, x.EntityType, x.Source, x.Number, x.SaleDate,
+                x.TotalPrice, x.ItemCount, x.Status, x.CustomerDisplayName
+            })
+        });
+    }
+
     // ── Birleşik Liste ──────────────────────────────────────────────────
 
     [HttpGet("/sales")]
