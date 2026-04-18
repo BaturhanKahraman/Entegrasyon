@@ -582,7 +582,7 @@ public class POSController(
             if (percent is not > 0 || percent > 100m)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Yüzde 1-100 arasında olmalı.", level = "error" });
+                    new { message = "Yüzde 0'dan büyük ve 100'den küçük ya da eşit olmalı.", level = "error" });
                 return PartialView("Partials/_POSCart", cart);
             }
             cart.GeneralDiscountType = DiscountTypes.Percent;
