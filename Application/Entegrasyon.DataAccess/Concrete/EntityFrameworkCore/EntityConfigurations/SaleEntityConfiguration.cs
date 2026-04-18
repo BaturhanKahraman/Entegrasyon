@@ -13,5 +13,11 @@ public class SaleEntityConfiguration : IEntityTypeConfiguration<Sale>
         builder.HasIndex(x => x.SaleDate);
         builder.HasIndex(x => x.SaleSource);
         builder.HasIndex(x => x.SaleStatus);
+
+        builder.HasOne(x => x.GeneralDiscountReason)
+               .WithMany()
+               .HasForeignKey(x => x.GeneralDiscountReasonId)
+               .OnDelete(DeleteBehavior.Restrict)
+               .IsRequired(false);
     }
 }
