@@ -159,7 +159,7 @@ public class POSController(
         if (!detailResult.Success || detailResult.Data is null)
         {
             Response.HtmxTriggerWithData("showToast", new { message = "Ürün bulunamadı.", level = "error" });
-            return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+            return PartialView("Partials/_POSCart", cart);
         }
 
         var product = detailResult.Data;
@@ -170,7 +170,7 @@ public class POSController(
             ? await officeStockManager.GetAvailableStockAsync(DefaultBranchOfficeId, variantId)
             : 0;
 
-        var existingItem = cart.FirstOrDefault(c => c.ProductId == productId);
+        var existingItem = cart.Items.FirstOrDefault(c => c.ProductId == productId);
         var desiredQuantity = existingItem?.Quantity + 1 ?? 1;
 
         if (desiredQuantity > availableStock)
@@ -178,7 +178,7 @@ public class POSController(
             Response.HtmxTriggerWithData("showToast",
                 new { message = $"Stok yetersiz. Mevcut: {availableStock} adet.", level = "error" });
             // Mevcut cart aynen döner — quantity artırılmaz
-            return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+            return PartialView("Partials/_POSCart", cart);
         }
 
         if (existingItem is not null)
@@ -188,7 +188,7 @@ public class POSController(
         }
         else
         {
-            cart.Add(new POSCartItemVm
+            cart.Items.Add(new POSCartItemVm
             {
                 ProductId = productId,
                 VariantId = variantId,
@@ -204,7 +204,7 @@ public class POSController(
         }
 
         SaveCartToSession(cart);
-        return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+        return PartialView("Partials/_POSCart", cart);
     }
 
     [HttpPost("/pos/update-quantity")]
@@ -212,13 +212,13 @@ public class POSController(
     public async Task<IActionResult> UpdateQuantity([FromForm] Guid productId, [FromForm] int quantity)
     {
         var cart = GetCartFromSession();
-        var item = cart.FirstOrDefault(c => c.ProductId == productId);
+        var item = cart.Items.FirstOrDefault(c => c.ProductId == productId);
 
         if (item is not null)
         {
             if (quantity <= 0)
             {
-                cart.Remove(item);
+                cart.Items.Remove(item);
             }
             else
             {
@@ -240,7 +240,7 @@ public class POSController(
         }
 
         SaveCartToSession(cart);
-        return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+        return PartialView("Partials/_POSCart", cart);
     }
 
     [HttpPost("/pos/remove-item")]
@@ -248,19 +248,19 @@ public class POSController(
     public IActionResult RemoveItem([FromForm] Guid productId)
     {
         var cart = GetCartFromSession();
-        cart.RemoveAll(c => c.ProductId == productId);
+        cart.Items.RemoveAll(c => c.ProductId == productId);
         SaveCartToSession(cart);
-        return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+        return PartialView("Partials/_POSCart", cart);
     }
 
     [HttpPost("/pos/clear-cart")]
     [ValidateAntiForgeryToken]
     public IActionResult ClearCart()
     {
-        SaveCartToSession([]);
+        SaveCartToSession(new POSCartVm());
         HttpContext.Session.Remove("pos_customer_id");
         HttpContext.Session.Remove("pos_customer_name");
-        return PartialView("Partials/_POSCart", new POSCartVm { Items = [] });
+        return PartialView("Partials/_POSCart", new POSCartVm());
     }
 
     // ── Customer Search & Selection (HTMX) ─────────────────────────────
@@ -377,7 +377,7 @@ public class POSController(
     public async Task<IActionResult> PaymentDialog()
     {
         var cart = GetCartFromSession();
-        if (cart.Count == 0)
+        if (cart.Items.Count == 0)
         {
             // HTMX swap'i iptal et, stale modal açılmasın
             Response.HtmxReswap("none");
@@ -395,7 +395,6 @@ public class POSController(
             return NoContent();
         }
 
-        var cartVm = new POSCartVm { Items = cart };
         var paymentMethodsResult = await paymentMethodManager.GetActivePaymentMethodsAsync(TenantId);
 
         // Idempotency — her PaymentDialog açılışında yeni token üret
@@ -405,10 +404,13 @@ public class POSController(
         var vm = new POSPaymentDialogVm
         {
             SessionId = sessionResult.Data.Id,
-            Subtotal = cartVm.Subtotal,
-            VatTotal = cartVm.VatTotal,
-            GrandTotal = cartVm.GrandTotal,
-            ItemCount = cartVm.TotalItems,
+            SubtotalBeforeGeneralDiscount = cart.GrandTotalBeforeGeneralDiscount,
+            GeneralDiscountAmount = cart.GeneralDiscountAmount,
+            GeneralDiscountReasonName = cart.GeneralDiscountReasonName,
+            Subtotal = cart.Subtotal,
+            VatTotal = cart.VatTotal,
+            GrandTotal = cart.GrandTotal,
+            ItemCount = cart.TotalItems,
             PaymentMethods = paymentMethodsResult.Data ?? [],
             SubmitToken = submitToken
         };
@@ -444,7 +446,7 @@ public class POSController(
     public async Task<IActionResult> ItemDiscountDialog([FromQuery] Guid variantId)
     {
         var cart = GetCartFromSession();
-        var item = cart.FirstOrDefault(c => c.VariantId == variantId);
+        var item = cart.Items.FirstOrDefault(c => c.VariantId == variantId);
         if (item is null) return NotFound();
 
         var reasons = await discountReasonManager.GetActiveAsync();
@@ -479,11 +481,11 @@ public class POSController(
         [FromForm] string? note)
     {
         var cart = GetCartFromSession();
-        var item = cart.FirstOrDefault(c => c.VariantId == variantId);
+        var item = cart.Items.FirstOrDefault(c => c.VariantId == variantId);
         if (item is null)
         {
             Response.HtmxTriggerWithData("showToast", new { message = "Kalem bulunamadı.", level = "error" });
-            return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+            return PartialView("Partials/_POSCart", cart);
         }
 
         // Reset
@@ -500,7 +502,7 @@ public class POSController(
             {
                 Response.HtmxTriggerWithData("showToast",
                     new { message = "TL indirimi satır toplamından büyük olamaz.", level = "error" });
-                return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+                return PartialView("Partials/_POSCart", cart);
             }
             item.DiscountAmount = amount.Value;
         }
@@ -513,7 +515,7 @@ public class POSController(
         Response.HtmxTriggerWithData("showToast",
             new { message = item.HasDiscount ? "İndirim uygulandı." : "İndirim kaldırıldı.", level = "success" });
 
-        return PartialView("Partials/_POSCart", new POSCartVm { Items = cart });
+        return PartialView("Partials/_POSCart", cart);
     }
 
     // ── Complete Sale ────────────────────────────────────────────────────
@@ -532,7 +534,7 @@ public class POSController(
         }
 
         var cart = GetCartFromSession();
-        if (cart.Count == 0)
+        if (cart.Items.Count == 0)
         {
             TempData.SetError("Sepet boş. Satış yapılamaz.");
             return RedirectToAction(nameof(Index));
@@ -551,7 +553,7 @@ public class POSController(
             return RedirectToAction(nameof(Index));
         }
 
-        var saleItems = cart.Select(c => new SaleItemDto(
+        var saleItems = cart.Items.Select(c => new SaleItemDto(
             ProductVariantId: c.VariantId,
             TaxPercentage: (double)c.VatRate,
             DiscountPercent: c.DiscountPercent,
@@ -588,7 +590,7 @@ public class POSController(
             sessionResult.Data.Id, saleResult.Data, cashReceived, changeGiven);
 
         // Sepeti, müşteriyi ve submit token'ı temizle — yeni satışta taze token üretilir
-        SaveCartToSession([]);
+        SaveCartToSession(new POSCartVm());
         HttpContext.Session.Remove("pos_customer_id");
         HttpContext.Session.Remove("pos_customer_name");
         HttpContext.Session.Remove(tokenKey);
@@ -598,14 +600,34 @@ public class POSController(
 
     // ── Session-based Cart ───────────────────────────────────────────────
 
-    private List<POSCartItemVm> GetCartFromSession()
+    private POSCartVm GetCartFromSession()
     {
         var json = HttpContext.Session.GetString("pos_cart");
-        if (string.IsNullOrEmpty(json)) return [];
-        return System.Text.Json.JsonSerializer.Deserialize<List<POSCartItemVm>>(json) ?? [];
+        if (string.IsNullOrEmpty(json)) return new POSCartVm();
+
+        // Yeni şema: POSCartVm (items + genel indirim state)
+        try
+        {
+            var vm = System.Text.Json.JsonSerializer.Deserialize<POSCartVm>(json);
+            if (vm is not null) return vm;
+        }
+        catch
+        {
+            // Eski şema (liste) — deserialize başarısız olabilir
+        }
+
+        // Eski şema desteği: JSON bir liste ise items'a koy
+        try
+        {
+            var items = System.Text.Json.JsonSerializer.Deserialize<List<POSCartItemVm>>(json);
+            if (items is not null) return new POSCartVm { Items = items };
+        }
+        catch { }
+
+        return new POSCartVm();
     }
 
-    private void SaveCartToSession(List<POSCartItemVm> cart)
+    private void SaveCartToSession(POSCartVm cart)
     {
         var json = System.Text.Json.JsonSerializer.Serialize(cart);
         HttpContext.Session.SetString("pos_cart", json);
