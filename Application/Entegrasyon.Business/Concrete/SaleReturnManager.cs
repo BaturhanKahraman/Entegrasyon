@@ -403,6 +403,7 @@ public sealed class SaleReturnManager(
         BuildSaleReturnItems(IntegrationDbContext dbContext, Guid saleId, List<SaleReturnItemDto> itemDtos)
     {
         var sale = await dbContext.Sales
+            .AsTracking()
             .Include(s => s.SaleItems)
             .FirstOrDefaultAsync(s => s.Id == saleId);
 
@@ -455,6 +456,7 @@ public sealed class SaleReturnManager(
         BuildOrderReturnItems(IntegrationDbContext dbContext, Guid orderId, List<SaleReturnItemDto> itemDtos)
     {
         var order = await dbContext.Orders
+            .AsTracking()
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
@@ -497,6 +499,7 @@ public sealed class SaleReturnManager(
         if (!saleReturn.SaleId.HasValue) return;
 
         var sale = await dbContext.Sales
+            .AsTracking()
             .Include(s => s.SaleItems)
             .FirstOrDefaultAsync(s => s.Id == saleReturn.SaleId.Value);
 
@@ -513,6 +516,7 @@ public sealed class SaleReturnManager(
     private async Task RecalculateSaleStatus(IntegrationDbContext dbContext, Guid saleId)
     {
         var sale = await dbContext.Sales
+            .AsTracking()
             .Include(s => s.SaleItems)
             .FirstOrDefaultAsync(s => s.Id == saleId);
 

@@ -3,18 +3,19 @@
     var alerts = TempData.GetAlerts();
 }
 
+@* Tabler v1: `alert-important` — solid renk arka plan + beyaz metin. Saydam görünümü önler. *@
 @if (toast is not null)
 {
-    <div class="alert alert-@toast.Type alert-dismissible fade show" role="alert">
+    <div class="alert alert-important alert-@toast.Type alert-dismissible fade show" role="alert">
         @toast.Text
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Kapat"></button>
     </div>
 }
 
 @foreach (var alert in alerts)
 {
-    <div class="alert alert-@alert.Type alert-dismissible fade show" role="alert">
+    <div class="alert alert-important alert-@alert.Type alert-dismissible fade show" role="alert">
         @alert.Text
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Kapat"></button>
     </div>
 }
