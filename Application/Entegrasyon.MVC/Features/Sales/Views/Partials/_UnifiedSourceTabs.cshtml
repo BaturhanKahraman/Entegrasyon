@@ -1,0 +1,28 @@
+@model Entegrasyon.MVC.Features.Sales.ViewModels.UnifiedSaleIndexViewModel
+@{
+    string BuildUrl(Entegrasyon.Entity.Sales.UnifiedSaleSource? src)
+    {
+        var qs = new List<string>();
+        if (src.HasValue) qs.Add($"source={src.Value}");
+        if (Model.Filter.Status.HasValue) qs.Add($"status={Model.Filter.Status.Value}");
+        if (Model.Filter.StartDate.HasValue) qs.Add($"startDate={Model.Filter.StartDate.Value:yyyy-MM-dd}");
+        if (Model.Filter.EndDate.HasValue) qs.Add($"endDate={Model.Filter.EndDate.Value:yyyy-MM-dd}");
+        if (!string.IsNullOrWhiteSpace(Model.Filter.SearchText)) qs.Add($"search={Uri.EscapeDataString(Model.Filter.SearchText)}");
+        return qs.Count == 0 ? "/sales" : $"/sales?{string.Join("&", qs)}";
+    }
+}
+<div class="card mb-3">
+  <ul class="nav nav-tabs nav-fill px-2" role="tablist">
+    @foreach (var c in Model.SourceCounts)
+    {
+        var isActive = (Model.Filter.Source is null && c.Source is null)
+                    || (Model.Filter.Source.HasValue && c.Source == Model.Filter.Source);
+        <li class="nav-item">
+          <a class="nav-link @(isActive ? "active" : "")" href="@BuildUrl(c.Source)">
+            @c.Label
+            <span class="badge bg-muted-lt ms-1">@c.Count</span>
+          </a>
+        </li>
+    }
+  </ul>
+</div>

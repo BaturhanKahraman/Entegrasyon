@@ -1,85 +1,17 @@
-@using Entegrasyon.Business.Utilities
-@using Entegrasyon.Entity.Dtos.Sale
-@using Entegrasyon.Entity.Sales
-@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Sale.SaleListDetailDto>
-@{
-    var summary = ViewBag.Summary as SaleSummaryDto ?? new SaleSummaryDto(0m, 0, 0m, 0m);
-    var filters = ViewBag.CurrentFilters as SalePageableDto;
-    var today = TurkeyTime.StartOfToday;
-    var tomorrow = today.AddDays(1);
-    var yesterday = today.AddDays(-1);
-    var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
-    var monthStart = new DateTimeOffset(today.Year, today.Month, 1, 0, 0, 0, today.Offset);
-}
+@model Entegrasyon.MVC.Features.Sales.ViewModels.UnifiedSaleIndexViewModel
 
-<div class="page-header mb-3">
-    <h2 class="page-title">Satışlar</h2>
-    <div class="text-muted">POS satış kayıtları</div>
-</div>
-
-@await Html.PartialAsync("Partials/_SaleSummaryCards", summary)
-
-<div class="card mb-3">
-    <div class="card-body">
-        <form method="get" action="/sales" class="row g-2 align-items-end">
-            <div class="col-md-2">
-                <label class="form-label">Başlangıç</label>
-                <input type="date" name="startDate" class="form-control"
-                       value="@(filters?.DateBetweenStart?.ToString("yyyy-MM-dd"))" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Bitiş</label>
-                <input type="date" name="endDate" class="form-control"
-                       value="@(filters?.DateBetweenEnd?.ToString("yyyy-MM-dd"))" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Kaynak</label>
-                <select name="source" class="form-select">
-                    <option value="">Tümü</option>
-                    <option value="@SaleSource.POS" selected="@(filters?.SaleSource == SaleSource.POS ? "selected" : null)">POS</option>
-                    <option value="@SaleSource.Manual" selected="@(filters?.SaleSource == SaleSource.Manual ? "selected" : null)">Manuel</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Durum</label>
-                <select name="status" class="form-select">
-                    <option value="">Tümü</option>
-                    <option value="@SaleStatus.Completed" selected="@(filters?.SaleStatus == SaleStatus.Completed ? "selected" : null)">Tamamlandı</option>
-                    <option value="@SaleStatus.PartialReturn" selected="@(filters?.SaleStatus == SaleStatus.PartialReturn ? "selected" : null)">Kısmi İade</option>
-                    <option value="@SaleStatus.FullReturn" selected="@(filters?.SaleStatus == SaleStatus.FullReturn ? "selected" : null)">Tam İade</option>
-                    <option value="@SaleStatus.Cancelled" selected="@(filters?.SaleStatus == SaleStatus.Cancelled ? "selected" : null)">İptal</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Arama</label>
-                <input type="search" name="search" class="form-control"
-                       placeholder="Fiş no, müşteri..."
-                       value="@(filters?.FullTextSearchKey)" />
-            </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="ti ti-search"></i>
-                </button>
-            </div>
-        </form>
-
-        <div class="mt-2">
-            <div class="btn-list">
-                <a href="/sales?startDate=@(today.ToString("yyyy-MM-dd"))&endDate=@(tomorrow.ToString("yyyy-MM-dd"))"
-                   class="btn btn-sm btn-outline-secondary">Bugün</a>
-                <a href="/sales?startDate=@(yesterday.ToString("yyyy-MM-dd"))&endDate=@(today.ToString("yyyy-MM-dd"))"
-                   class="btn btn-sm btn-outline-secondary">Dün</a>
-                <a href="/sales?startDate=@(weekStart.ToString("yyyy-MM-dd"))&endDate=@(tomorrow.ToString("yyyy-MM-dd"))"
-                   class="btn btn-sm btn-outline-secondary">Bu Hafta</a>
-                <a href="/sales?startDate=@(monthStart.ToString("yyyy-MM-dd"))&endDate=@(tomorrow.ToString("yyyy-MM-dd"))"
-                   class="btn btn-sm btn-outline-secondary">Bu Ay</a>
-            </div>
-        </div>
+<div class="container-xl">
+  <div class="page-header d-print-none mb-3">
+    <div class="row align-items-center">
+      <div class="col">
+        <h2 class="page-title">Satışlar</h2>
+        <div class="text-muted">Tüm kanallardan satış ve siparişler</div>
+      </div>
     </div>
-</div>
+  </div>
 
-<div class="card">
-    <div id="sale-table-container">
-        @await Html.PartialAsync("Partials/_SaleTable", Model)
-    </div>
+  <partial name="Partials/_UnifiedKpiCards" model="Model.Summary" />
+  <partial name="Partials/_UnifiedSourceTabs" model="Model" />
+  <partial name="Partials/_UnifiedFilters" model="Model" />
+  <partial name="Partials/_UnifiedSaleTable" model="Model" />
 </div>

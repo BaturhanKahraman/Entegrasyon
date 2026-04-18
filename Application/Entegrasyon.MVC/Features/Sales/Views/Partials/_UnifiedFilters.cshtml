@@ -1,0 +1,59 @@
+@using Entegrasyon.Entity.Sales
+@model Entegrasyon.MVC.Features.Sales.ViewModels.UnifiedSaleIndexViewModel
+
+<form class="card card-body mb-3" method="get" action="/sales">
+  @if (Model.Filter.Source.HasValue)
+  {
+      <input type="hidden" name="source" value="@Model.Filter.Source" />
+  }
+
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Başlangıç</label>
+      <input type="date" class="form-control"
+             name="startDate"
+             value="@Model.Filter.StartDate?.ToString("yyyy-MM-dd")" />
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Bitiş</label>
+      <input type="date" class="form-control"
+             name="endDate"
+             value="@Model.Filter.EndDate?.ToString("yyyy-MM-dd")" />
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Durum</label>
+      <select class="form-select" name="status">
+        <option value="">Tümü</option>
+        @foreach (var s in Enum.GetValues<UnifiedSaleStatus>())
+        {
+            var label = s switch
+            {
+                UnifiedSaleStatus.Completed     => "Tamamlandı",
+                UnifiedSaleStatus.Pending       => "Beklemede",
+                UnifiedSaleStatus.Shipping      => "Kargoda",
+                UnifiedSaleStatus.PartialReturn => "Kısmi İade",
+                UnifiedSaleStatus.FullReturn    => "Tam İade",
+                UnifiedSaleStatus.Cancelled     => "İptal",
+                _                               => s.ToString()
+            };
+            <option value="@s" selected="@(Model.Filter.Status == s)">@label</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Ara</label>
+      <input type="text" class="form-control" name="search"
+             placeholder="No veya müşteri adı"
+             value="@Model.Filter.SearchText" />
+    </div>
+
+    <div class="col-md-1">
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="ti ti-filter"></i>
+      </button>
+    </div>
+  </div>
+</form>

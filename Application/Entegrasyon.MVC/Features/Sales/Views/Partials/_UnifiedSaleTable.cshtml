@@ -1,0 +1,137 @@
+@using Entegrasyon.Entity.Sales
+@model Entegrasyon.MVC.Features.Sales.ViewModels.UnifiedSaleIndexViewModel
+@{
+    var tr = new System.Globalization.CultureInfo("tr-TR");
+
+    string SourceBadge(UnifiedSaleSource s) => s switch
+    {
+        UnifiedSaleSource.POS         => "bg-blue-lt text-blue",
+        UnifiedSaleSource.Manual      => "bg-yellow-lt text-yellow",
+        UnifiedSaleSource.Storefront  => "bg-cyan-lt text-cyan",
+        UnifiedSaleSource.Trendyol    => "bg-orange-lt text-orange",
+        UnifiedSaleSource.N11         => "bg-red-lt text-red",
+        UnifiedSaleSource.Hepsiburada => "bg-purple-lt text-purple",
+        UnifiedSaleSource.Amazon      => "bg-yellow-lt text-yellow",
+        UnifiedSaleSource.Pazarama    => "bg-green-lt text-green",
+        UnifiedSaleSource.PttAvm      => "bg-azure-lt text-azure",
+        UnifiedSaleSource.Ciceksepeti => "bg-pink-lt text-pink",
+        _                             => "bg-muted-lt text-muted"
+    };
+
+    string StatusBadge(UnifiedSaleStatus s) => s switch
+    {
+        UnifiedSaleStatus.Completed     => "bg-green-lt text-green",
+        UnifiedSaleStatus.Pending       => "bg-yellow-lt text-yellow",
+        UnifiedSaleStatus.Shipping      => "bg-blue-lt text-blue",
+        UnifiedSaleStatus.PartialReturn => "bg-orange-lt text-orange",
+        UnifiedSaleStatus.FullReturn    => "bg-red-lt text-red",
+        UnifiedSaleStatus.Cancelled     => "bg-muted-lt text-muted",
+        _                               => "bg-muted-lt text-muted"
+    };
+
+    string StatusLabel(UnifiedSaleStatus s) => s switch
+    {
+        UnifiedSaleStatus.Completed     => "Tamamlandı",
+        UnifiedSaleStatus.Pending       => "Beklemede",
+        UnifiedSaleStatus.Shipping      => "Kargoda",
+        UnifiedSaleStatus.PartialReturn => "Kısmi İade",
+        UnifiedSaleStatus.FullReturn    => "Tam İade",
+        UnifiedSaleStatus.Cancelled     => "İptal",
+        _                               => s.ToString()
+    };
+
+    string GetRelative(DateTimeOffset dt)
+    {
+        var diff = DateTimeOffset.UtcNow - dt;
+        if (diff.TotalMinutes < 1) return "az önce";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} dk önce";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} sa önce";
+        return $"{(int)diff.TotalDays} gün önce";
+    }
+}
+
+<div id="unified-sale-list">
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-vcenter card-table table-hover">
+        <thead>
+          <tr>
+            <th>Tarih</th>
+            <th>Sipariş / Satış</th>
+            <th>Müşteri</th>
+            <th class="text-end">Kalem</th>
+            <th class="text-end">Tutar</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (Model.Page.Items.Count == 0)
+          {
+              <tr><td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+          }
+          @foreach (var item in Model.Page.Items)
+          {
+              <tr style="cursor:pointer;" onclick="window.location.href='@item.DetailUrl'">
+                  <td>
+                      <div>@item.SaleDate.ToLocalTime().ToString("dd.MM HH:mm")</div>
+                      <div class="text-muted small">@GetRelative(item.SaleDate)</div>
+                  </td>
+                  <td>
+                      <div class="fw-bold">@item.Number</div>
+                      <span class="badge @SourceBadge(item.Source) mt-1">@item.Source</span>
+                  </td>
+                  <td>
+                      <div>@(item.CustomerDisplayName ?? "—")</div>
+                      @if (!string.IsNullOrWhiteSpace(item.CustomerSubLine))
+                      {
+                          <div class="text-muted small">@item.CustomerSubLine</div>
+                      }
+                  </td>
+                  <td class="text-end">
+                      <div>@item.ItemCount adet</div>
+                  </td>
+                  <td class="text-end">
+                      <div class="fw-bold">@item.TotalPrice.ToString("C2", tr)</div>
+                  </td>
+                  <td>
+                      <span class="badge @StatusBadge(item.Status)">@StatusLabel(item.Status)</span>
+                      @if (!string.IsNullOrWhiteSpace(item.StatusSubLine))
+                      {
+                          <div class="text-muted small mt-1">@item.StatusSubLine</div>
+                      }
+                  </td>
+              </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @{
+        var totalPages = Model.Page.TotalPageCount;
+    }
+    @if (totalPages > 1)
+    {
+        <div class="card-footer d-flex align-items-center">
+          <p class="m-0 text-muted">Toplam @Model.Page.TotalItemCount kayıt</p>
+          <ul class="pagination m-0 ms-auto">
+            @for (int i = 0; i < totalPages; i++)
+            {
+                var isActive = i == Model.Page.CurrentPageIndex;
+                var url = Url.Action("Index", "Sale", new
+                {
+                    source = Model.Filter.Source,
+                    status = Model.Filter.Status,
+                    startDate = Model.Filter.StartDate?.ToString("yyyy-MM-dd"),
+                    endDate = Model.Filter.EndDate?.ToString("yyyy-MM-dd"),
+                    search = Model.Filter.SearchText,
+                    page = i
+                });
+                <li class="page-item @(isActive ? "active" : "")">
+                  <a class="page-link" href="@url">@(i+1)</a>
+                </li>
+            }
+          </ul>
+        </div>
+    }
+  </div>
+</div>
