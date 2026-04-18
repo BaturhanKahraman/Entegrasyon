@@ -15,7 +15,14 @@ namespace Entegrasyon.Entity.Sales
         public ApplicationUser SalePerson { get; set; } = null!;
         public int BranchOfficeId { get; set; }
         public BranchOffice BranchOffice { get; set; } = null!;
-        public double GeneralDiscount { get; set; }
+        public decimal GeneralDiscount { get; set; }
+
+        public int? GeneralDiscountReasonId { get; set; }
+        public DiscountReason? GeneralDiscountReason { get; set; }
+
+        [StringLength(200)]
+        public string? GeneralDiscountReasonNote { get; set; }
+
         public int? CustomerId { get; set; }
         public Customer? Customer { get; set; }
 

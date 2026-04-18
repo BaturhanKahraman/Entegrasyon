@@ -16,7 +16,7 @@ public record SaleDetailDto
     public decimal SubTotal { get; init; }
     public decimal VatTotal { get; init; }
     public decimal GrandTotal { get; init; }
-    public double GeneralDiscount { get; init; }
+    public decimal GeneralDiscount { get; init; }
     public List<SaleDetailItemDto> Items { get; init; } = [];
     public List<SaleDetailPaymentDto> Payments { get; init; } = [];
     public List<VatSummaryLineDto> VatSummary { get; init; } = [];

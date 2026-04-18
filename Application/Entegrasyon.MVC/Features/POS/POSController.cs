@@ -565,7 +565,7 @@ public class POSController(
         var makeSaleDto = new MakeSaleDto(
             SalePersonId: GetCurrentUserId(),
             CustomerId: GetCustomerIdFromSession(),
-            GeneralDiscount: 0,
+            GeneralDiscount: 0m,
             BranchOfficeId: DefaultBranchOfficeId,
             SaleSource: SaleSource.POS,
             Note: null,

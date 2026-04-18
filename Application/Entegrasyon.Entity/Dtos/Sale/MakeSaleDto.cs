@@ -5,12 +5,14 @@ namespace Entegrasyon.Entity.Dtos.Sale;
 public sealed record MakeSaleDto(
     Guid SalePersonId,
     int? CustomerId,
-    double GeneralDiscount,
+    decimal GeneralDiscount,
     int BranchOfficeId,
     SaleSource SaleSource,
     string? Note,
     IEnumerable<SaleItemDto> SaleItems,
-    List<SalePaymentDto> Payments);
+    List<SalePaymentDto> Payments,
+    int? GeneralDiscountReasonId = null,
+    string? GeneralDiscountReasonNote = null);
 
 public sealed record SaleItemDto(
     Guid ProductVariantId,
