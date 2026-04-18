@@ -51,7 +51,7 @@ public class POSCartVm
             {
                 "percent" => Math.Round(
                     SubtotalAfterLineDiscount * Math.Min(GeneralDiscountValue, 100m) / 100m, 2),
-                "amount"  => Math.Min(GeneralDiscountValue, SubtotalAfterLineDiscount),
+                "amount"  => Math.Round(Math.Min(GeneralDiscountValue, SubtotalAfterLineDiscount), 2),
                 _         => 0m
             };
         }
