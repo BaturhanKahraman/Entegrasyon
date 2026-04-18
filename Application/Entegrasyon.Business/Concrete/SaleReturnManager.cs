@@ -79,6 +79,7 @@ public sealed class SaleReturnManager(
         await fluentValidator.ValidateAndThrowAsync(dto);
 
         var saleReturn = await dbContext.SaleReturns
+            .AsTracking()
             .Include(r => r.Items)
             .FirstOrDefaultAsync(r => r.Id == dto.Id);
 
@@ -139,7 +140,7 @@ public sealed class SaleReturnManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
-        var saleReturn = await dbContext.SaleReturns.FirstOrDefaultAsync(r => r.Id == returnId);
+        var saleReturn = await dbContext.SaleReturns.AsTracking().FirstOrDefaultAsync(r => r.Id == returnId);
         if (saleReturn is null) return new ErrorResult("İade kaydı bulunamadı.");
         if (saleReturn.ReturnStatus != ReturnStatus.Draft)
             return new ErrorResult("Sadece taslak durumundaki iadeler onaya sunulabilir.");
@@ -158,7 +159,7 @@ public sealed class SaleReturnManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
-        var saleReturn = await dbContext.SaleReturns.FirstOrDefaultAsync(r => r.Id == returnId);
+        var saleReturn = await dbContext.SaleReturns.AsTracking().FirstOrDefaultAsync(r => r.Id == returnId);
         if (saleReturn is null) return new ErrorResult("İade kaydı bulunamadı.");
         if (saleReturn.ReturnStatus != ReturnStatus.Pending)
             return new ErrorResult("Sadece bekleyen iadeler onaylanabilir.");
@@ -183,6 +184,7 @@ public sealed class SaleReturnManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var saleReturn = await dbContext.SaleReturns
+            .AsTracking()
             .Include(r => r.Items)
             .FirstOrDefaultAsync(r => r.Id == returnId);
 
@@ -220,6 +222,7 @@ public sealed class SaleReturnManager(
         await fluentValidator.ValidateAndThrowAsync(dto);
 
         var saleReturn = await dbContext.SaleReturns
+            .AsTracking()
             .Include(r => r.Items).ThenInclude(ri => ri.SaleItem)
             .Include(r => r.Items).ThenInclude(ri => ri.OrderItem)
             .FirstOrDefaultAsync(r => r.Id == dto.ReturnId);
@@ -278,6 +281,7 @@ public sealed class SaleReturnManager(
         await fluentValidator.ValidateAndThrowAsync(dto);
 
         var saleReturn = await dbContext.SaleReturns
+            .AsTracking()
             .Include(r => r.Items).ThenInclude(ri => ri.SaleItem)
             .Include(r => r.Items).ThenInclude(ri => ri.OrderItem)
             .FirstOrDefaultAsync(r => r.Id == dto.ReturnId);
@@ -328,6 +332,7 @@ public sealed class SaleReturnManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var item = await dbContext.SaleReturnItems
+            .AsTracking()
             .Include(i => i.SaleReturn)
             .Include(i => i.SaleItem)
             .Include(i => i.OrderItem)
