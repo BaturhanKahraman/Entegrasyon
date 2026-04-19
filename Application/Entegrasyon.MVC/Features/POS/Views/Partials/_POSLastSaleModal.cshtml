@@ -1,0 +1,38 @@
+@*
+    Satış tamamlandıktan sonra /pos sayfası TempData["pos_last_sale"] varsa bu partial'ı
+    include eder. Index.cshtml'deki script modal'ı açıp fiş modu seçim akışını başlatır.
+*@
+<div class="modal modal-blur fade" id="posLastSaleModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-status bg-success"></div>
+            <div class="modal-body text-center py-4">
+                <i class="ti ti-circle-check icon mb-2 text-success" style="font-size: 48px;"></i>
+                <h3 class="mb-1">Satış Tamamlandı</h3>
+                <div class="text-secondary small mb-3">
+                    Fiş No: <span id="posLastSaleNumber" class="fw-semibold">-</span>
+                </div>
+                <div class="mb-3">
+                    <div class="text-secondary small">İade Kodu</div>
+                    <div id="posLastReturnCode"
+                         class="fw-bold fs-3 font-monospace"
+                         style="letter-spacing: 1.5px;">-</div>
+                </div>
+                <div class="text-secondary small">
+                    Müşteriye fiş teslim edecek misiniz?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                    Atla
+                </button>
+                <button type="button" class="btn btn-outline-primary ms-auto" id="posPrintGiftBtn">
+                    <i class="ti ti-gift me-1"></i>Hediye Fişi
+                </button>
+                <button type="button" class="btn btn-primary" id="posPrintNormalBtn">
+                    <i class="ti ti-printer me-1"></i>Fişi Yazdır
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

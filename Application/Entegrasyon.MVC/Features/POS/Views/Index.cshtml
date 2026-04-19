@@ -1,6 +1,7 @@
 @model Entegrasyon.MVC.Features.POS.ViewModels.POSTerminalVm
 @{
     var zReportSessionId = TempData["ZReportSessionId"] as string;
+    var lastSaleJson = TempData["pos_last_sale"] as string;
 }
 
 @if (!string.IsNullOrEmpty(zReportSessionId))
@@ -216,9 +217,46 @@ else
     <!-- Modal Container (swap target for HTMX-loaded modals) -->
     <div id="modal-container"></div>
 
+    @* Satış sonrası fiş teslim modal'ı *@
+    @if (!string.IsNullOrEmpty(lastSaleJson))
+    {
+        <div id="pos-last-sale-data" data-payload='@lastSaleJson' style="display:none"></div>
+        @await Html.PartialAsync("Partials/_POSLastSaleModal")
+    }
+
     @section Scripts {
         <script>
             document.getElementById('posSearchInput')?.focus();
+
+            // Satış sonrası fiş teslim modal'ı
+            (function () {
+                var dataEl = document.getElementById('pos-last-sale-data');
+                if (!dataEl) return;
+
+                var payload;
+                try { payload = JSON.parse(dataEl.dataset.payload); }
+                catch (e) { return; }
+
+                var modalEl = document.getElementById('posLastSaleModal');
+                if (!modalEl) return;
+
+                document.getElementById('posLastSaleNumber').textContent = payload.saleNumber || '-';
+                document.getElementById('posLastReturnCode').textContent = payload.returnCode || '-';
+
+                function printUrl(mode) {
+                    return '/sales/sale/' + payload.saleId + '/print?mode=' + mode;
+                }
+                document.getElementById('posPrintNormalBtn').addEventListener('click', function () {
+                    window.open(printUrl('normal'), '_blank');
+                    bootstrap.Modal.getInstance(modalEl)?.hide();
+                });
+                document.getElementById('posPrintGiftBtn').addEventListener('click', function () {
+                    window.open(printUrl('gift'), '_blank');
+                    bootstrap.Modal.getInstance(modalEl)?.hide();
+                });
+
+                new bootstrap.Modal(modalEl).show();
+            })();
 
             // Sepet dolu/boş durumuna göre "Satışı Tamamla" butonunu toggle et
             function syncFinalizeButton() {
