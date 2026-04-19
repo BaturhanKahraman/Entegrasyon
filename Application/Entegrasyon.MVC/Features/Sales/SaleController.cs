@@ -17,6 +17,7 @@ public class SaleController(
     ISaleReturnManager saleReturnManager,
     IPaymentMethodManager paymentMethodManager,
     IOrderManager orderManager,
+    IReceiptRenderer receiptRenderer,
     ITenantContext tenantContext) : Controller
 {
     private int TenantId => tenantContext.IsInitialized ? tenantContext.TenantId : 1;
@@ -128,13 +129,21 @@ public class SaleController(
     // ── Print / Cancel / Return (mevcut — redirect'ler güncellendi) ─────
 
     [HttpGet("/sales/sale/{id:guid}/print")]
-    public async Task<IActionResult> Print(Guid id, string mode = "normal")
+    public async Task<IActionResult> Print(Guid id, string mode = "normal", string size = "thermal")
     {
         var result = await saleManager.GetSaleDetailAsync(id);
         if (!result.Success || result.Data is null)
             return NotFound();
 
-        ViewBag.GiftMode = string.Equals(mode, "gift", StringComparison.OrdinalIgnoreCase);
+        var rMode = string.Equals(mode, "gift", StringComparison.OrdinalIgnoreCase)
+            ? Entegrasyon.Entity.Receipts.ReceiptMode.Gift
+            : Entegrasyon.Entity.Receipts.ReceiptMode.Normal;
+        var rSize = string.Equals(size, "a4", StringComparison.OrdinalIgnoreCase)
+            ? Entegrasyon.Entity.Receipts.ReceiptSize.A4
+            : Entegrasyon.Entity.Receipts.ReceiptSize.Thermal;
+
+        ViewBag.RenderedHtml = await receiptRenderer.RenderAsync(result.Data, rMode, rSize);
+        ViewBag.ReceiptSize = rSize;
         return View(result.Data);
     }
 

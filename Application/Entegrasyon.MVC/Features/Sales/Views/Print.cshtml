@@ -1,104 +1,20 @@
 @using Entegrasyon.Entity.Dtos.Sale
-@using System.Globalization
+@using Entegrasyon.Entity.Receipts
 @model SaleDetailDto
 @{
     Layout = null;
-    var tr = new CultureInfo("tr-TR");
-    var isGift = ViewBag.GiftMode as bool? ?? false;
-    var title = isGift ? "HEDİYE FİŞİ" : "FİŞ";
+    var size = (ReceiptSize)(ViewBag.ReceiptSize ?? ReceiptSize.Thermal);
+    var cssFile = size == ReceiptSize.A4 ? "receipt-a4.css" : "receipt-thermal.css";
 }
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
-    <title>@title — @Model.SaleNumber</title>
-    <style>
-        body { font-family: monospace; font-size: 12px; max-width: 300px; margin: 20px auto; padding: 10px; }
-        h1 { font-size: 16px; text-align: center; margin: 0 0 4px; }
-        .subtitle { text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 4px; letter-spacing: 1px; }
-        .sale-number-small { text-align: center; font-size: 10px; color: #888; margin-bottom: 6px; }
-        .divider { border-top: 1px dashed #000; margin: 8px 0; }
-        .row { display: flex; justify-content: space-between; }
-        .item { margin-bottom: 4px; }
-        .item-title { font-weight: bold; }
-        .total { font-weight: bold; font-size: 14px; }
-        .return-code-label { text-align: center; font-size: 10px; color: #555; margin-top: 8px; }
-        .return-code { text-align: center; font-size: 15px; font-weight: bold; letter-spacing: 1.5px; margin: 4px 0 8px; padding: 6px; border: 1px dashed #000; }
-        @@media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-        }
-    </style>
+    <title>Fiş — @Model.SaleNumber</title>
+    <link rel="stylesheet" href="~/css/@cssFile" />
 </head>
 <body>
-    <h1>@Model.BranchOfficeName</h1>
-    <div class="subtitle">@title</div>
-    <div class="sale-number-small">Fiş No: @Model.SaleNumber</div>
-
-    <div class="row">
-        <span>Tarih:</span>
-        <span>@Model.SaleDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
-    </div>
-    <div class="row">
-        <span>Kasiyer:</span>
-        <span>@Model.SalePersonName</span>
-    </div>
-    @if (!string.IsNullOrEmpty(Model.CustomerName))
-    {
-        <div class="row">
-            <span>Müşteri:</span>
-            <span>@Model.CustomerName</span>
-        </div>
-    }
-    <div class="divider"></div>
-
-    @foreach (var item in Model.Items)
-    {
-        <div class="item">
-            <div class="item-title">@item.ProductTitle</div>
-            @if (!isGift)
-            {
-                <div class="row">
-                    <span>@item.Quantity x @item.UnitPriceWithVat.ToString("C2", tr)</span>
-                    <span>@item.LineTotalWithVat.ToString("C2", tr)</span>
-                </div>
-            }
-            else
-            {
-                <div class="row">
-                    <span>Adet:</span>
-                    <span>@item.Quantity</span>
-                </div>
-            }
-        </div>
-    }
-    <div class="divider"></div>
-
-    @if (!isGift)
-    {
-        <div class="row"><span>Ara Toplam:</span><span>@Model.SubTotal.ToString("C2", tr)</span></div>
-        <div class="row"><span>KDV:</span><span>@Model.VatTotal.ToString("C2", tr)</span></div>
-        <div class="row total"><span>TOPLAM:</span><span>@Model.GrandTotal.ToString("C2", tr)</span></div>
-
-        <div class="divider"></div>
-        <div><strong>Ödeme:</strong></div>
-        @foreach (var payment in Model.Payments)
-        {
-            <div class="row">
-                <span>@payment.PaymentMethodName</span>
-                <span>@payment.Amount.ToString("C2", tr)</span>
-            </div>
-        }
-        <div class="divider"></div>
-    }
-
-    @if (!string.IsNullOrEmpty(Model.ReturnCode))
-    {
-        <div class="return-code-label">İade Kodu</div>
-        <div class="return-code">@Model.ReturnCode</div>
-    }
-
-    <div style="text-align: center;">Teşekkür ederiz!</div>
+    @Html.Raw(ViewBag.RenderedHtml as string ?? "")
 
     <div class="no-print" style="margin-top: 20px; text-align: center;">
         <button onclick="window.print()">Yazdır</button>
