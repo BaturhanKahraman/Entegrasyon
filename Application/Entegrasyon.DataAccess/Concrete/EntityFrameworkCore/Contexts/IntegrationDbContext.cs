@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Receipts;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -99,6 +100,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<Sale> Sales { get; set; }
     public virtual DbSet<SaleItem> SaleItems { get; set; }
     public virtual DbSet<DiscountReason> DiscountReasons { get; set; }
+    public virtual DbSet<ReceiptTemplate> ReceiptTemplates { get; set; } = null!;
     public virtual DbSet<Entegrasyon.Entity.Sales.Views.UnifiedSaleView> UnifiedSales { get; set; }
     public virtual DbSet<BranchOffice> BranchOffices { get; set; }
     public virtual DbSet<UserBranchOffice> UserBranchOffices { get; set; }
