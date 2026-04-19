@@ -134,6 +134,7 @@ public class ProductVariantManager(
             variant.DimensionalWeight,
             variant.CurrencyType,
             variant.Barcode ?? "",
+            variant.Name,
             variant.ListPrice,
             variant.SalePrice,
             variant.CostPrice,
@@ -232,7 +233,10 @@ public class ProductVariantManager(
         variant.VatRate = dto.VatRate;
         variant.DimensionalWeight = dto.DimensionalWeight;
         variant.CurrencyType = dto.CurrencyType;
-        variant.Name = namingService.Compute(variant, variant.Product);
+        // Kullanıcı elle Name verdi → sakla; boşsa attribute'lardan yeniden hesapla.
+        variant.Name = !string.IsNullOrWhiteSpace(dto.Name)
+            ? dto.Name.Trim()
+            : namingService.Compute(variant, variant.Product);
 
         await dbContext.SaveChangesAsync();
 

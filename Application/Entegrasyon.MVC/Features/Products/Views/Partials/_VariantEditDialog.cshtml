@@ -18,6 +18,14 @@
                 <input type="hidden" name="Id" value="@variant.Id" />
                 <input type="hidden" name="CurrencyType" value="@variant.CurrencyType" />
                 <div class="modal-body">
+                    <!-- Varyant Adı (opsiyonel override) -->
+                    <div class="mb-3">
+                        <label class="form-label">Varyant Adı</label>
+                        <input type="text" name="Name" class="form-control" maxlength="256"
+                               value="@variant.Name" placeholder="Boş bırakırsanız otomatik hesaplanır (ör. Sarı XL)" />
+                        <small class="form-hint">Özel bir isim vermek istemezseniz boş bırakın — varianter/slicer özelliklerinden üretilir.</small>
+                    </div>
+
                     <!-- Fiyat Alanlari -->
                     <div class="row">
                         <div class="col-md-6 mb-3">

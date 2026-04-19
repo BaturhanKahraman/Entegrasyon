@@ -7,6 +7,7 @@ public record ProductVariantEditDetailDto(
     decimal DimensionalWeight,
     string CurrencyType,
     string Barcode,
+    string? Name,
     decimal ListPrice,
     decimal SalePrice,
     decimal CostPrice,

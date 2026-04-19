@@ -8,5 +8,6 @@ public sealed record EditProductVariantDto(
     decimal ECommercePrice,
     decimal DimensionalWeight,
     decimal VatRate,
-    string CurrencyType
+    string CurrencyType,
+    string? Name = null
 );

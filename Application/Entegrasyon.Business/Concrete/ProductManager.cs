@@ -139,7 +139,7 @@ public class ProductManager(
                 p.Season ?? "", p.Year ?? "",
                 p.BrandId!.Value, p.CategoryId,
                 p.ProductVariants.Select(pv => new ProductVariantEditDetailDto(
-                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode ?? "",
+                    pv.Id, pv.DimensionalWeight, pv.CurrencyType, pv.Barcode ?? "", pv.Name,
                     pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
                     pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId, bos.FirstTotalStock)).ToList(),
                     pv.Images.Select(img => new EditableImageDto(img.Id, img.Src ?? "", img.IsMain, img.IsDeleted)).ToList(),
