@@ -31,6 +31,7 @@ public sealed class SaleManager(
 
         var sale = mapper.MapToEntity(dto);
         sale.SaleNumber = await GenerateSaleNumberAsync(dbContext);
+        sale.ReturnCode = await GenerateReturnCodeAsync(dbContext);
         sale.SaleDate = DateTimeOffset.UtcNow;
         sale.SaleStatus = SaleStatus.Completed;
 
@@ -363,4 +364,8 @@ public sealed class SaleManager(
 
         return $"{prefix}{sequence:D4}";
     }
+
+    private static Task<string> GenerateReturnCodeAsync(IntegrationDbContext dbContext)
+        => ReturnCodeGenerator.GenerateUniqueAsync(code =>
+            dbContext.Sales.AnyAsync(s => s.ReturnCode == code));
 }
