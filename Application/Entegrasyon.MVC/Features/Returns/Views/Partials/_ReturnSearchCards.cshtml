@@ -1,0 +1,62 @@
+@*
+    İki ayrı arama akışı:
+      1) Sol — mevcut iadeleri filtrele (search parametresi, HTMX ile tabloyu günceller)
+      2) Sağ — müşteri fişindeki kodla yeni iade başlat (POST /returns/lookup -> modal)
+*@
+<div class="row row-cards mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-search me-1"></i>Mevcut iadelerde ara
+                </h3>
+            </div>
+            <div class="card-body">
+                <input type="search"
+                       name="search"
+                       class="form-control"
+                       placeholder="Fiş no, iade kodu veya müşteri adı"
+                       value="@(ViewBag.Search as string)"
+                       hx-get="/returns"
+                       hx-trigger="keyup changed delay:300ms, search"
+                       hx-target="#return-table"
+                       hx-swap="outerHTML"
+                       hx-include="[name='status'],[name='source']" />
+                <small class="form-hint">Tablo anında filtrelenir.</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-receipt-2 me-1"></i>Yeni iade başlat
+                </h3>
+            </div>
+            <div class="card-body">
+                <form hx-post="/returns/lookup"
+                      hx-target="#returns-modal-container"
+                      hx-swap="innerHTML">
+                    @Html.AntiForgeryToken()
+                    <div class="input-group">
+                        <input type="text"
+                               name="code"
+                               class="form-control font-monospace"
+                               placeholder="R-XXXXXXXXXXXXX  veya  S20260419-NNNN"
+                               autocomplete="off"
+                               required />
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-arrow-right"></i>
+                            Satışı Getir
+                        </button>
+                    </div>
+                    <small class="form-hint">
+                        Müşterinin fişindeki iade kodunu veya fiş numarasını girin.
+                    </small>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="returns-modal-container"></div>
