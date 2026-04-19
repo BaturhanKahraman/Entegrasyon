@@ -372,7 +372,8 @@ public sealed class SaleReturnManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var saleReturn = await dbContext.SaleReturns
-            .Include(r => r.Items).ThenInclude(ri => ri.SaleItem)
+            .Include(r => r.Items).ThenInclude(ri => ri.SaleItem!).ThenInclude(si => si.ProductVariant).ThenInclude(pv => pv.Product)
+            .Include(r => r.Items).ThenInclude(ri => ri.SaleItem!).ThenInclude(si => si.ProductVariant).ThenInclude(pv => pv.ProductVariantAttributes)
             .Include(r => r.Items).ThenInclude(ri => ri.OrderItem)
             .Include(r => r.ReturnedBy)
             .Include(r => r.ApprovedBy)

@@ -1,4 +1,5 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -145,7 +146,8 @@ public sealed class SaleManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var sale = await dbContext.Sales
-            .Include(s => s.SaleItems)
+            .Include(s => s.SaleItems).ThenInclude(si => si.ProductVariant).ThenInclude(pv => pv.Product)
+            .Include(s => s.SaleItems).ThenInclude(si => si.ProductVariant).ThenInclude(pv => pv.ProductVariantAttributes)
             .Include(s => s.Payments).ThenInclude(p => p.PaymentMethod)
             .Include(s => s.Returns).ThenInclude(r => r.Items)
             .Include(s => s.Returns).ThenInclude(r => r.ReturnedBy)
@@ -172,10 +174,19 @@ public sealed class SaleManager(
             var unitPriceWithVat = Math.Round(si.UnitPrice * (1 + (decimal)si.TaxPercentage / 100), 2);
             var netAfterDiscount = NetAfterDiscount(si);
             var lineTotalWithVat = Math.Round(netAfterDiscount * (1 + (decimal)si.TaxPercentage / 100), 2);
+            var variantDisplayName = si.ProductVariant != null
+                ? VariantNameExtensions.ResolveDisplayName(
+                    si.ProductVariant.Name,
+                    si.ProductVariant.ProductVariantAttributes.Select((a, i) =>
+                        new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    si.ProductVariant.Product?.Title ?? si.ProductTitle)
+                : si.ProductTitle;
+
             return new SaleDetailItemDto
             {
                 Id = si.Id,
                 ProductTitle = si.ProductTitle,
+                VariantDisplayName = variantDisplayName,
                 Barcode = si.Barcode,
                 Quantity = si.Quantity,
                 UnitPriceWithVat = unitPriceWithVat,

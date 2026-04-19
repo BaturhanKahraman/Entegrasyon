@@ -79,7 +79,7 @@
                 @if (canComplete)
                 {
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#completeModal">
-                        <i class="ti ti-check-circle icon"></i> Tamamla
+                        <i class="ti ti-circle-check icon"></i> Tamamla
                     </button>
                 }
                 @if (canCancel)
@@ -178,8 +178,22 @@
                         @foreach (var item in Model.Items)
                         {
                             var productTitle = item.SaleItem?.ProductTitle ?? item.OrderItem?.Barcode ?? $"Kalem #{item.Id}";
+                            string? variantDisplayName = null;
+                            if (item.SaleItem?.ProductVariant is var pv && pv is not null)
+                            {
+                                variantDisplayName = Entegrasyon.Business.Extensions.VariantNameExtensions.ResolveDisplayName(
+                                    pv.Name,
+                                    pv.ProductVariantAttributes.Select((a, i) => new Entegrasyon.Business.Abstract.VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                                    pv.Product?.Title ?? productTitle);
+                            }
                             <tr>
-                                <td>@productTitle</td>
+                                <td>
+                                    <div>@productTitle</div>
+                                    @if (!string.IsNullOrEmpty(variantDisplayName) && variantDisplayName != productTitle)
+                                    {
+                                        <div class="text-secondary small">@variantDisplayName</div>
+                                    }
+                                </td>
                                 <td>@item.Quantity adet</td>
                                 <td class="text-secondary">@(item.Reason ?? "-")</td>
                                 <td>
@@ -352,4 +366,26 @@
             </div>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            // İade status değiştiğinde (approve/reject/cancel/submit/restore) tam sayfa yenile.
+            // Bootstrap modal backdrop'ları temizle; bazen kapanış animasyonu tamamlanmadan
+            // reload başlarsa artifact DOM'da kalabilir.
+            document.body.addEventListener('returnStatusChanged', function () {
+                document.querySelectorAll('.modal.show').forEach(function (m) {
+                    var inst = bootstrap.Modal.getInstance(m);
+                    if (inst) inst.hide();
+                });
+                document.querySelectorAll('.modal-backdrop').forEach(function (b) { b.remove(); });
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('overflow');
+                document.body.style.removeProperty('padding-right');
+                // Küçük gecikme: toast görünür, sonra reload. location.href ile bfcache bypass.
+                setTimeout(function () { window.location.href = window.location.href; }, 600);
+            });
+        })();
+    </script>
 }

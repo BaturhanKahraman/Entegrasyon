@@ -123,6 +123,10 @@
                             <tr class="@(isFullyReturned ? "text-decoration-line-through text-muted" : "")">
                                 <td>
                                     <div class="fw-bold">@item.ProductTitle</div>
+                                    @if (!string.IsNullOrEmpty(item.VariantDisplayName) && item.VariantDisplayName != item.ProductTitle)
+                                    {
+                                        <div class="text-secondary small">@item.VariantDisplayName</div>
+                                    }
                                     <div class="text-muted small">@item.Barcode</div>
                                 </td>
                                 <td class="text-end">@item.Quantity</td>

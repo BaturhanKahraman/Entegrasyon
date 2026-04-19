@@ -28,6 +28,7 @@ public record SaleDetailItemDto
 {
     public Guid Id { get; init; }
     public string ProductTitle { get; init; } = "";
+    public string VariantDisplayName { get; init; } = "";
     public string Barcode { get; init; } = "";
     public int Quantity { get; init; }
     public decimal UnitPriceWithVat { get; init; }
