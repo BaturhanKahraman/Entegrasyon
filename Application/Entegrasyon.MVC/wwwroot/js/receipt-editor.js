@@ -1,6 +1,6 @@
 // receipt-editor.js — fiş şablonu editörü
 // Güvenlik: kullanıcı içeriği DOM API (.textContent, createElement) ile yazılır;
-// server-rendered preview HTML'i iframe srcdoc üzerinden sandbox'lu render edilir
+// server-rendered preview HTML'i DOMParser ile parse edilip appendChild ile enjekte edilir
 // (IReceiptRenderer HtmlEncoder.Create(UnicodeRanges.All) ile output encode ediyor).
 (function () {
     'use strict';
