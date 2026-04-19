@@ -128,12 +128,13 @@ public class SaleController(
     // ── Print / Cancel / Return (mevcut — redirect'ler güncellendi) ─────
 
     [HttpGet("/sales/sale/{id:guid}/print")]
-    public async Task<IActionResult> Print(Guid id)
+    public async Task<IActionResult> Print(Guid id, string mode = "normal")
     {
         var result = await saleManager.GetSaleDetailAsync(id);
         if (!result.Success || result.Data is null)
             return NotFound();
 
+        ViewBag.GiftMode = string.Equals(mode, "gift", StringComparison.OrdinalIgnoreCase);
         return View(result.Data);
     }
 
