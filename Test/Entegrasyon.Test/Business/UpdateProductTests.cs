@@ -48,7 +48,8 @@ public class UpdateProductTests : BaseTest
             _productAddedChannel,
             _productUpdatedChannel,
             _mockMinioFileStorage.Object,
-            mockTenantContext.Object
+            mockTenantContext.Object,
+            new VariantNamingService()
         );
     }
 

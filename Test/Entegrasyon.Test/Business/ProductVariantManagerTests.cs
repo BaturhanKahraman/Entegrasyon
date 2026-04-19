@@ -64,7 +64,8 @@ public class ProductVariantManagerTests : BaseTest
             _mockBarcodeService.Object,
             _mockImageManager.Object,
             _productUpdatedChannel,
-            mockTenantContext.Object
+            mockTenantContext.Object,
+            new VariantNamingService()
         );
     }
 

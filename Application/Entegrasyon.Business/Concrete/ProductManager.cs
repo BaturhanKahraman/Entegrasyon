@@ -6,6 +6,7 @@ using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Business.Mappers;
+using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Brand;
@@ -36,7 +37,8 @@ public class ProductManager(
     EventChannel<ProductAddedEvent> productAddedChannel,
     EventChannel<ProductUpdatedEvent> productUpdatedChannel,
     IMinioFileStorage minioFileStorage,
-    ITenantContext tenantContext) : IProductService
+    ITenantContext tenantContext,
+    IVariantNamingService namingService) : IProductService
 {
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
@@ -82,6 +84,8 @@ public class ProductManager(
         }
 
         attributeKeyValueManager.ClearEmptyAttributes(product);
+        foreach (var variant in product.ProductVariants)
+            variant.Name = namingService.Compute(variant, product);
         dbContext.MainProducts.Add(product);
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add, "Product", product.Id.ToString());
@@ -382,6 +386,119 @@ public class ProductManager(
                 items[i].FeaturedImageUrl = minioFileStorage.GetPublicUrl(items[i].FeaturedImageUrl!);
 
         return new SuccessDataResult<Pageable<ProductsDetailDto>>(new Pageable<ProductsDetailDto>(items, dto.PageIndex, dto.PageSize, total));
+    }
+
+    public async Task<IDataResult<POSProductSearchResultDto>> SearchPOSProductsAsync(int branchOfficeId, string query, int limit = 10)
+    {
+        var result = new POSProductSearchResultDto();
+        if (string.IsNullOrWhiteSpace(query))
+            return new SuccessDataResult<POSProductSearchResultDto>(result);
+
+        var trimmed = query.Trim();
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // 1) Barkod exact match — tek satırı işaretle, sepete doğrudan eklenebilsin
+        //    Stoğu 0 olan varyant eşleşmesi yok sayılır (POS satış aracı — satılamayan ürün gösterilmez)
+        var exactBarcode = await dbContext.ProductVariants
+            .Where(pv => pv.Barcode == trimmed && !pv.IsDeleted && !pv.Product.IsDeleted &&
+                pv.BranchOfficeStocks.Any(bs => bs.BranchOfficeId == branchOfficeId && bs.CurrentStock > 0))
+            .Select(pv => new POSProductSearchVariantDto
+            {
+                ProductId = pv.ProductId,
+                VariantId = pv.Id,
+                ProductTitle = pv.Product.Title,
+                Barcode = pv.Barcode!,
+                SalePrice = pv.SalePrice,
+                ListPrice = pv.ListPrice,
+                VatRate = pv.VatRate,
+                CurrentStock = pv.BranchOfficeStocks
+                    .Where(bs => bs.BranchOfficeId == branchOfficeId)
+                    .Sum(bs => bs.CurrentStock),
+                ImageUrl = pv.Images
+                    .Where(i => !i.IsDeleted)
+                    .OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder)
+                    .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src ?? "")
+                    .FirstOrDefault(),
+                AttributeSummary = string.Join(" / ", pv.ProductVariantAttributes
+                    .Where(a => a.IsVarianter && a.CategoryAttributeValue != null)
+                    .Select(a => a.CategoryAttributeValue!))
+            })
+            .FirstOrDefaultAsync();
+
+        if (exactBarcode is not null)
+        {
+            if (!string.IsNullOrEmpty(exactBarcode.ImageUrl))
+                exactBarcode.ImageUrl = minioFileStorage.GetPublicUrl(exactBarcode.ImageUrl);
+            result.ExactBarcodeMatch = exactBarcode;
+        }
+
+        // 2) Geniş arama — tsquery OR ILIKE (pg_trgm index) OR barkod contains
+        var tsQuery = trimmed.ToFullTextSearchQuery();
+        var likePattern = $"%{trimmed}%";
+
+        var productItems = await dbContext.MainProducts
+            .Where(p => !p.IsDeleted && (
+                p.SearchVector.Matches(tsQuery) ||
+                EF.Functions.ILike(p.Title, likePattern) ||
+                (p.StockCode != null && EF.Functions.ILike(p.StockCode, likePattern)) ||
+                p.ProductVariants.Any(pv => pv.Barcode != null && EF.Functions.ILike(pv.Barcode, likePattern))
+            ))
+            // Stoksuz ürünleri ele — en az bir varyantın seçili branşta pozitif stoğu olmalı
+            .Where(p => p.ProductVariants.Any(pv => !pv.IsDeleted &&
+                pv.BranchOfficeStocks.Any(bs => bs.BranchOfficeId == branchOfficeId && bs.CurrentStock > 0)))
+            .OrderByDescending(p => EF.Functions.TrigramsSimilarity(p.Title, trimmed))
+            .Take(limit)
+            .Select(p => new POSProductSearchItemDto
+            {
+                ProductId = p.Id,
+                Title = p.Title,
+                StockCode = p.StockCode ?? "",
+                BrandName = p.Brand!.Name ?? "",
+                FeaturedImageUrl = p.ProductVariants
+                    .SelectMany(pv => pv.Images.Where(i => !i.IsDeleted))
+                    .OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder)
+                    .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src)
+                    .FirstOrDefault(),
+                Variants = p.ProductVariants
+                    .Where(pv => !pv.IsDeleted &&
+                        pv.BranchOfficeStocks.Any(bs => bs.BranchOfficeId == branchOfficeId && bs.CurrentStock > 0))
+                    .Select(pv => new POSProductSearchVariantDto
+                    {
+                        ProductId = p.Id,
+                        VariantId = pv.Id,
+                        ProductTitle = p.Title,
+                        Barcode = pv.Barcode ?? "",
+                        SalePrice = pv.SalePrice,
+                        ListPrice = pv.ListPrice,
+                        VatRate = pv.VatRate,
+                        CurrentStock = pv.BranchOfficeStocks
+                            .Where(bs => bs.BranchOfficeId == branchOfficeId)
+                            .Sum(bs => bs.CurrentStock),
+                        ImageUrl = pv.Images
+                            .Where(i => !i.IsDeleted)
+                            .OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder)
+                            .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src ?? "")
+                            .FirstOrDefault(),
+                        AttributeSummary = string.Join(" / ", pv.ProductVariantAttributes
+                            .Where(a => a.IsVarianter && a.CategoryAttributeValue != null)
+                            .Select(a => a.CategoryAttributeValue!))
+                    })
+                    .ToList()
+            })
+            .ToListAsync();
+
+        // StorageKey → public URL dönüşümü (EF projection içinde yapılamaz)
+        foreach (var p in productItems)
+        {
+            if (!string.IsNullOrEmpty(p.FeaturedImageUrl))
+                p.FeaturedImageUrl = minioFileStorage.GetPublicUrl(p.FeaturedImageUrl);
+            foreach (var v in p.Variants)
+                if (!string.IsNullOrEmpty(v.ImageUrl))
+                    v.ImageUrl = minioFileStorage.GetPublicUrl(v.ImageUrl);
+        }
+
+        result.Products = productItems;
+        return new SuccessDataResult<POSProductSearchResultDto>(result);
     }
 
     public async Task<IResult> SoftDeleteProduct(Guid id)

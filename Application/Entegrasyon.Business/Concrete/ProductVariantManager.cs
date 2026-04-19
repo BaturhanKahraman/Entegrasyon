@@ -21,7 +21,8 @@ public class ProductVariantManager(
     IBarcodeService barcodeService,
     IImageManager imageManager,
     EventChannel<ProductUpdatedEvent> productUpdatedChannel,
-    ITenantContext tenantContext) : IProductVariantManager
+    ITenantContext tenantContext,
+    IVariantNamingService namingService) : IProductVariantManager
 {
     public async Task<ProductVariant> GetById(Guid id)
     {
@@ -161,6 +162,8 @@ public class ProductVariantManager(
             }).ToList()
         };
 
+        variant.Name = namingService.Compute(variant, product);
+
         dbContext.ProductVariants.Add(variant);
         await dbContext.SaveChangesAsync();
 
@@ -196,6 +199,7 @@ public class ProductVariantManager(
         variant.VatRate = dto.VatRate;
         variant.DimensionalWeight = dto.DimensionalWeight;
         variant.CurrencyType = dto.CurrencyType;
+        variant.Name = namingService.Compute(variant, variant.Product);
 
         await dbContext.SaveChangesAsync();
 
