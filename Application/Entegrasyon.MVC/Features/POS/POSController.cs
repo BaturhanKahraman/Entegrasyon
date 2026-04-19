@@ -747,6 +747,18 @@ public class POSController(
         await posSessionManager.AddTransactionRecordAsync(
             sessionResult.Data.Id, saleResult.Data, cashReceived, changeGiven);
 
+        // Fiş teslim akışı — /pos sayfası bu TempData'yı okuyup modal açar
+        var saleDetailResult = await saleManager.GetSaleDetailAsync(saleResult.Data);
+        if (saleDetailResult.Success && saleDetailResult.Data is not null)
+        {
+            TempData["pos_last_sale"] = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                saleId = saleResult.Data,
+                saleNumber = saleDetailResult.Data.SaleNumber,
+                returnCode = saleDetailResult.Data.ReturnCode
+            });
+        }
+
         // Sepeti, müşteriyi ve submit token'ı temizle — yeni satışta taze token üretilir
         SaveCartToSession(new POSCartVm());
         HttpContext.Session.Remove("pos_customer_id");
