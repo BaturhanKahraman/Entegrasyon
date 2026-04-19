@@ -58,6 +58,10 @@ public class SaleWithGeneralDiscountTests : IntegrationTestBase
             ],
             Payments:
             [
+                // Payment math: UnitPrice 1000 × 1.20 tax = 1200 (gross)
+                // − line DiscountAmount 100 × 1.20 = 120 gross ≈ 1080
+                // − GeneralDiscount 120 gross = 960
+                // Test payment uses 980 (above net-due, CashReceived 1000 handles change)
                 new SalePaymentDto(
                     PaymentMethodId: paymentMethodId,
                     Amount: 980m,
@@ -87,8 +91,8 @@ public class SaleWithGeneralDiscountTests : IntegrationTestBase
         saved!.GeneralDiscount.Should().Be(120m);
         saved.GeneralDiscountReasonNote.Should().Be("Pazarlık");
         saved.GeneralDiscountReasonId.Should().BeNull();
-        saved.SaleItems.Should().ContainSingle();
-        saved.SaleItems.First().DiscountAmount.Should().Be(100m);
+        saved.SaleItems.Should().ContainSingle()
+            .Which.DiscountAmount.Should().Be(100m);
         saved.SaleStatus.Should().Be(SaleStatus.Completed);
     }
 }
