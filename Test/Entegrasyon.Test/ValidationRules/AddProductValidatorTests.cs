@@ -34,7 +34,7 @@ public class AddProductValidatorTests
         var result = await _validator.ValidateAsync(dto);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Urun adi bos gecilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün adı boş geçilemez");
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class AddProductValidatorTests
         var result = await _validator.ValidateAsync(dto);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Urun kategorisi bos gecilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün kategorisi boş geçilemez");
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class AddProductValidatorTests
         var result = await _validator.ValidateAsync(dto);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Urun varyantlari bos gecilemez");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Ürün varyantları boş geçilemez");
     }
 
     [Fact]
