@@ -10,6 +10,9 @@ public class SaleEntityConfiguration : IEntityTypeConfiguration<Sale>
     {
         builder.HasQueryFilter(x => !x.IsDeleted);
         builder.HasIndex(x => x.SaleNumber).IsUnique();
+        builder.HasIndex(x => x.ReturnCode)
+               .IsUnique()
+               .HasFilter("\"ReturnCode\" IS NOT NULL");
         builder.HasIndex(x => x.SaleDate);
         builder.HasIndex(x => x.SaleSource);
         builder.HasIndex(x => x.SaleStatus);

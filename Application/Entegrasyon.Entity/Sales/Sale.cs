@@ -29,6 +29,9 @@ namespace Entegrasyon.Entity.Sales
         [StringLength(50)]
         public string SaleNumber { get; set; } = "";
 
+        [StringLength(16)]
+        public string? ReturnCode { get; set; }
+
         public DateTimeOffset SaleDate { get; set; }
         public SaleSource SaleSource { get; set; }
         public SaleStatus SaleStatus { get; set; } = SaleStatus.Completed;
