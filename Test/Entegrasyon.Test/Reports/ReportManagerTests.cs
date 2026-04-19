@@ -130,7 +130,7 @@ public class ReportManagerTests : BaseTest
     public void StockAlertDto_SuggestedOrderQuantity_IsPositive()
     {
         var alert = new StockAlertDto(
-            Guid.NewGuid(), "ABC123", "Test Product",
+            Guid.NewGuid(), "ABC123", "Test Product", "Sarı XL",
             CurrentStock: 2, MinimumStock: 10,
             DaysUntilStockout: 3, SuggestedOrderQuantity: 30);
 
@@ -142,7 +142,7 @@ public class ReportManagerTests : BaseTest
     public void StockAlertDto_EmptyBarcode_HandledGracefully()
     {
         var alert = new StockAlertDto(
-            Guid.NewGuid(), null, "Test Product",
+            Guid.NewGuid(), null, "Test Product", "Test Product",
             CurrentStock: 0, MinimumStock: 10,
             DaysUntilStockout: 0, SuggestedOrderQuantity: 30);
 

@@ -4,6 +4,7 @@ public sealed record StockAlertDto(
     Guid ProductVariantId,
     string? Barcode,
     string ProductName,
+    string VariantDisplayName,
     int CurrentStock,
     int MinimumStock,
     int DaysUntilStockout,

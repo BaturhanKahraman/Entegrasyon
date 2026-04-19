@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Reports;
@@ -150,15 +151,30 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
         if (filter.BranchOfficeId.HasValue)
             query = query.Where(x => x.bos.BranchOfficeId == filter.BranchOfficeId.Value);
 
-        var data = await query.Select(x => new StockItemDto(
-            x.pv.Id,
-            x.p.Title ?? "",
-            x.pv.Barcode ?? x.pv.Id.ToString(),
-            x.pv.Barcode,
+        var raw = await query.Select(x => new
+        {
+            VariantId = x.pv.Id,
+            ProductTitle = x.p.Title ?? "",
+            x.pv.Name,
+            Barcode = x.pv.Barcode,
             x.bos.CurrentStock,
             x.bos.SoldQuantity,
-            x.bo.Name ?? ""
-        )).ToListAsync();
+            BranchName = x.bo.Name ?? "",
+            RawAttrs = x.pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+        }).ToListAsync();
+
+        var data = raw.Select(r => new StockItemDto(
+            r.VariantId,
+            r.ProductTitle,
+            VariantNameExtensions.ResolveDisplayName(
+                r.Name,
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.ProductTitle),
+            r.Barcode,
+            r.CurrentStock,
+            r.SoldQuantity,
+            r.BranchName
+        )).ToList();
 
         var filtered = filter.StockFilter switch
         {
@@ -413,7 +429,13 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                     where !pv.IsDeleted && !p.IsDeleted
                           && bos.CurrentStock <= request.MinimumStockThreshold
                     orderby bos.CurrentStock
-                    select new { bos, pv, p };
+                    select new
+                    {
+                        bos,
+                        pv,
+                        p,
+                        RawAttrs = pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                    };
 
         var totalCount = await query.CountAsync();
 
@@ -432,10 +454,16 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                 : 0;
             var suggestedOrder = Math.Max(request.MinimumStockThreshold * 3 - x.bos.CurrentStock, 0);
 
+            var displayName = VariantNameExtensions.ResolveDisplayName(
+                x.pv.Name,
+                x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                x.p.Title ?? "");
+
             return new StockAlertDto(
                 x.pv.Id,
                 x.pv.Barcode,
                 x.p.Title ?? "",
+                displayName,
                 x.bos.CurrentStock,
                 request.MinimumStockThreshold,
                 daysUntilStockout,

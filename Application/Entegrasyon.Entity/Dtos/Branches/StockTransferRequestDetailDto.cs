@@ -20,6 +20,7 @@ public record StockTransferRequestDetailDto(
 public record StockTransferItemDetailDto(
     Guid ProductVariantId,
     string ProductTitle,
+    string VariantDisplayName,
     string Barcode,
     int Quantity,
     int CurrentSourceStock);

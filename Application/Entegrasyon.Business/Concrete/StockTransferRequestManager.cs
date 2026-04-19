@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Constants;
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
@@ -353,15 +354,26 @@ public class StockTransferRequestManager(
 
         // Item title + canlı kaynak stok
         var variantIds = r.Items.Select(i => i.ProductVariantId).Distinct().ToList();
-        var variantInfo = await dbContext.ProductVariants.AsNoTracking()
+        var variantRaw = await dbContext.ProductVariants.AsNoTracking()
             .Where(v => variantIds.Contains(v.Id))
             .Select(v => new
             {
                 v.Id,
                 Title = v.Product.Title ?? "",
-                Barcode = v.Barcode ?? ""
+                Barcode = v.Barcode ?? "",
+                v.Name,
+                RawAttrs = v.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
-            .ToDictionaryAsync(x => x.Id, x => (x.Title, x.Barcode), ct);
+            .ToListAsync(ct);
+
+        var variantInfo = variantRaw.ToDictionary(x => x.Id, x => (
+            x.Title,
+            x.Barcode,
+            DisplayName: VariantNameExtensions.ResolveDisplayName(
+                x.Name,
+                x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                x.Title)
+        ));
 
         var liveStocks = await dbContext.BranchOfficeStocks.AsNoTracking()
             .Where(s => s.BranchOfficeId == r.SourceBranchOfficeId
@@ -371,12 +383,17 @@ public class StockTransferRequestManager(
             .ToDictionaryAsync(x => x.VariantId, x => x.Stock, ct);
 
         var itemDtos = r.Items
-            .Select(i => new StockTransferItemDetailDto(
-                i.ProductVariantId,
-                variantInfo.TryGetValue(i.ProductVariantId, out var info) ? info.Title : "",
-                variantInfo.TryGetValue(i.ProductVariantId, out var b) ? b.Barcode : "",
-                i.Quantity,
-                liveStocks.TryGetValue(i.ProductVariantId, out var stock) ? stock : 0))
+            .Select(i =>
+            {
+                variantInfo.TryGetValue(i.ProductVariantId, out var info);
+                return new StockTransferItemDetailDto(
+                    i.ProductVariantId,
+                    info.Title ?? "",
+                    info.DisplayName ?? "",
+                    info.Barcode ?? "",
+                    i.Quantity,
+                    liveStocks.TryGetValue(i.ProductVariantId, out var stock) ? stock : 0);
+            })
             .ToList();
 
         var detail = new StockTransferRequestDetailDto(

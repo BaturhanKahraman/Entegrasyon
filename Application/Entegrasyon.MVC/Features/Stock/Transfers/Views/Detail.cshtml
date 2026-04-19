@@ -77,7 +77,13 @@
                         {
                             var insufficient = isPending && item.CurrentSourceStock < item.Quantity;
                             <tr class="@(insufficient ? "table-danger" : "")">
-                                <td>@item.ProductTitle</td>
+                                <td>
+                                    <div>@item.ProductTitle</div>
+                                    @if (!string.IsNullOrEmpty(item.VariantDisplayName) && item.VariantDisplayName != item.ProductTitle)
+                                    {
+                                        <div class="text-secondary small">@item.VariantDisplayName</div>
+                                    }
+                                </td>
                                 <td><code>@item.Barcode</code></td>
                                 <td class="text-end">@item.Quantity</td>
                                 <td class="text-end">

@@ -1,4 +1,5 @@
 ﻿using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -321,17 +322,34 @@ public class BranchOfficeManager(
     public async Task<IDataResult<List<BranchStockItemDto>>> GetBranchStocksAsync(int branchId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var stocks = await dbContext.BranchOfficeStocks
+        var raw = await dbContext.BranchOfficeStocks
             .AsNoTracking()
             .Where(s => s.BranchOfficeId == branchId)
-            .Select(s => new BranchStockItemDto(
-                s.ProductVariantId!.Value,
-                s.ProductVariant!.Product.Title,
-                s.ProductVariant.Barcode ?? string.Empty,
+            .Select(s => new
+            {
+                VariantId = s.ProductVariantId!.Value,
+                ProductTitle = s.ProductVariant!.Product.Title,
+                Name = s.ProductVariant!.Name,
+                Barcode = s.ProductVariant.Barcode ?? string.Empty,
                 s.FirstTotalStock,
                 s.SoldQuantity,
-                s.FirstTotalStock - s.SoldQuantity))
+                RawAttrs = s.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+            })
             .ToListAsync();
+
+        var stocks = raw.Select(r => new BranchStockItemDto(
+            r.VariantId,
+            r.ProductTitle,
+            VariantNameExtensions.ResolveDisplayName(
+                r.Name,
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.ProductTitle),
+            r.Barcode,
+            r.FirstTotalStock,
+            r.SoldQuantity,
+            r.FirstTotalStock - r.SoldQuantity
+        )).ToList();
+
         return new SuccessDataResult<List<BranchStockItemDto>>(stocks);
     }
 
@@ -348,20 +366,42 @@ public class BranchOfficeManager(
         if (to.HasValue)
             query = query.Where(m => m.CreatedAt <= to.Value);
 
-        var movements = await query
+        var rawMovements = await query
             .OrderByDescending(m => m.CreatedAt)
-            .Select(m => new StockMovementViewDto(
+            .Select(m => new
+            {
                 m.Id,
                 m.CreatedAt,
-                m.ProductVariant.Product.Title,
-                m.ProductVariant.Barcode ?? string.Empty,
+                ProductTitle = m.ProductVariant.Product.Title,
+                VariantName = m.ProductVariant.Name,
+                Barcode = m.ProductVariant.Barcode ?? string.Empty,
                 m.Type,
                 m.Quantity,
                 m.StockBefore,
                 m.StockAfter,
                 m.ReferenceType,
-                m.ReferenceId))
+                m.ReferenceId,
+                RawAttrs = m.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+            })
             .ToListAsync();
+
+        var movements = rawMovements.Select(r => new StockMovementViewDto(
+            r.Id,
+            r.CreatedAt,
+            r.ProductTitle,
+            VariantNameExtensions.ResolveDisplayName(
+                r.VariantName,
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.ProductTitle),
+            r.Barcode,
+            r.Type,
+            r.Quantity,
+            r.StockBefore,
+            r.StockAfter,
+            r.ReferenceType,
+            r.ReferenceId
+        )).ToList();
+
         return new SuccessDataResult<List<StockMovementViewDto>>(movements);
     }
 

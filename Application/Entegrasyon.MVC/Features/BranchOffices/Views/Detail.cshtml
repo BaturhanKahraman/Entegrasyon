@@ -60,7 +60,13 @@
                             @foreach (var stock in stocks)
                             {
                                 <tr>
-                                    <td>@stock.ProductName</td>
+                                    <td>
+                                        <div>@stock.ProductName</div>
+                                        @if (!string.IsNullOrEmpty(stock.VariantDisplayName) && stock.VariantDisplayName != stock.ProductName)
+                                        {
+                                            <div class="text-secondary small">@stock.VariantDisplayName</div>
+                                        }
+                                    </td>
                                     <td class="text-secondary"><code>@stock.Barcode</code></td>
                                     <td>@stock.FirstTotalStock</td>
                                     <td>@stock.SoldQuantity</td>

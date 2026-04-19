@@ -1,3 +1,4 @@
+using Entegrasyon.Business.Extensions;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
@@ -314,22 +315,43 @@ public class OfficeStockManager(
             query = query.Where(m => m.Type == type.Value);
 
         var totalCount = await query.CountAsync();
-        var items = await query
+        var raw = await query
             .OrderByDescending(m => m.CreatedAt)
             .Skip(pageIndex * pageSize)
             .Take(pageSize)
-            .Select(m => new StockMovementViewDto(
+            .Select(m => new
+            {
                 m.Id,
                 m.CreatedAt,
-                m.ProductVariant.Product!.Title ?? "",
-                m.ProductVariant.Barcode ?? "",
+                ProductTitle = m.ProductVariant.Product!.Title ?? "",
+                VariantName = m.ProductVariant.Name,
+                Barcode = m.ProductVariant.Barcode ?? "",
                 m.Type,
                 m.Quantity,
                 m.StockBefore,
                 m.StockAfter,
                 m.ReferenceType,
-                m.ReferenceId))
+                m.ReferenceId,
+                RawAttrs = m.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+            })
             .ToListAsync();
+
+        var items = raw.Select(r => new StockMovementViewDto(
+            r.Id,
+            r.CreatedAt,
+            r.ProductTitle,
+            VariantNameExtensions.ResolveDisplayName(
+                r.VariantName,
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.ProductTitle),
+            r.Barcode,
+            r.Type,
+            r.Quantity,
+            r.StockBefore,
+            r.StockAfter,
+            r.ReferenceType,
+            r.ReferenceId
+        )).ToList();
 
         return new SuccessDataResult<Pageable<StockMovementViewDto>>(
             new Pageable<StockMovementViewDto>(items, pageIndex, pageSize, totalCount));

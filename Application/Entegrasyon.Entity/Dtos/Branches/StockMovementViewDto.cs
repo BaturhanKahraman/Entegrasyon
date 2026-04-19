@@ -6,6 +6,7 @@ public record StockMovementViewDto(
     long Id,
     DateTimeOffset MovedAt,
     string ProductName,
+    string VariantDisplayName,
     string Barcode,
     StockMovementType MovementType,
     int Quantity,
