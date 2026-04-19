@@ -55,7 +55,7 @@
     <script src="~/lib/sortablejs/sortable.min.js"></script>
     <script>
         window.__rcptState = {
-            template: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Template)),
+            template: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Template, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
             activeSize: 'thermal',
             activeMode: 'normal'
         };
