@@ -159,7 +159,8 @@ public sealed class SaleManager(
         var items = sale.SaleItems.Select(si =>
         {
             var unitPriceWithVat = Math.Round(si.UnitPrice * (1 + (decimal)si.TaxPercentage / 100), 2);
-            var lineTotalWithVat = Math.Round(si.UnitPrice * si.Quantity * (1 + (decimal)si.TaxPercentage / 100), 2);
+            var netAfterDiscount = Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m));
+            var lineTotalWithVat = Math.Round(netAfterDiscount * (1 + (decimal)si.TaxPercentage / 100), 2);
             return new SaleDetailItemDto
             {
                 Id = si.Id,
@@ -173,16 +174,23 @@ public sealed class SaleManager(
             };
         }).ToList();
 
-        var subTotal = sale.SaleItems.Sum(si => si.UnitPrice * si.Quantity);
-        var grandTotal = sale.SaleItems.Sum(si => si.UnitPrice * si.Quantity * (1 + (decimal)si.TaxPercentage / 100));
+        // Net satır toplamı = UnitPrice*Qty - DiscountAmount (kalem + pro-rata genel indirim birleşik)
+        var subTotal = sale.SaleItems.Sum(si =>
+            Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)));
+
+        // KDV dahil grand total
+        var grandTotal = sale.SaleItems.Sum(si =>
+            Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m))
+            * (1 + (decimal)si.TaxPercentage / 100));
+
         var vatTotal = grandTotal - subTotal;
 
         var vatSummary = sale.SaleItems
             .GroupBy(si => si.TaxPercentage)
             .Select(g =>
             {
-                var taxBase = g.Sum(si => si.UnitPrice * si.Quantity);
-                var vatAmount = g.Sum(si => si.UnitPrice * si.Quantity * ((decimal)g.Key / 100));
+                var taxBase = g.Sum(si => Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)));
+                var vatAmount = g.Sum(si => Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)) * ((decimal)g.Key / 100));
                 return new VatSummaryLineDto(
                     VatRate: (decimal)g.Key,
                     TaxBase: Math.Round(taxBase, 2),
