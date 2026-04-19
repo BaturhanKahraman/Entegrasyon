@@ -317,6 +317,47 @@ public class SaleManagerMakeSaleTests : BaseTest
     }
 
     [Fact]
+    public async Task MakeSale_WithGeneralDiscount_PersistsGeneralDiscountFieldsToSale()
+    {
+        // Arrange
+        Sale? capturedSale = null;
+        mockIntegrationDbContext.Setup(x => x.Sales).ReturnsDbSet(new List<Sale>());
+        mockIntegrationDbContext.Setup(x => x.ProductVariants).ReturnsDbSet(new List<ProductVariant>());
+        mockIntegrationDbContext.Setup(x => x.Sales.Add(It.IsAny<Sale>()))
+            .Callback<Sale>(s => capturedSale = s);
+        mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        var dto = new MakeSaleDto(
+            SalePersonId: Guid.NewGuid(),
+            CustomerId: null,
+            GeneralDiscount: 100m,
+            BranchOfficeId: 1,
+            SaleSource: SaleSource.POS,
+            Note: null,
+            SaleItems: [new SaleItemDto(
+                ProductVariantId: Guid.NewGuid(),
+                TaxPercentage: 20,
+                DiscountPercent: 0,
+                UnitPrice: 1000m,
+                Quantity: 1,
+                DiscountVoucherCode: "",
+                DiscountAmount: 83.33m)],
+            Payments: [new SalePaymentDto(PaymentMethodId: 1, Amount: 1100m, null, null)],
+            GeneralDiscountReasonId: null,
+            GeneralDiscountReasonNote: "pazarlık");
+
+        // Act
+        var result = await _sut.MakeSale(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedSale.Should().NotBeNull();
+        capturedSale!.GeneralDiscount.Should().Be(100m);
+        capturedSale.GeneralDiscountReasonNote.Should().Be("pazarlık");
+        capturedSale.GeneralDiscountReasonId.Should().BeNull();
+    }
+
+    [Fact]
     public async Task CancelSaleAsync_TodaySale_CancelsSaleAndRestoresStock()
     {
         // Arrange

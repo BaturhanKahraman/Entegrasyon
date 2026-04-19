@@ -688,26 +688,47 @@ public class POSController(
             return RedirectToAction(nameof(Index));
         }
 
-        var saleItems = cart.Items.Select(c => new SaleItemDto(
-            ProductVariantId: c.VariantId,
-            TaxPercentage: (double)c.VatRate,
-            DiscountPercent: c.DiscountPercent,
+        // Kalem indirimi uygulanmış satır bilgileri - pro-rata dağıtım için
+        var lines = cart.Items.Select(c => new CartLine(
             UnitPrice: c.UnitPrice,
             Quantity: c.Quantity,
-            DiscountVoucherCode: "",
-            DiscountAmount: c.DiscountAmount,
-            DiscountReasonId: c.DiscountReasonId,
-            DiscountReasonNote: c.DiscountReasonNote)).ToList();
+            VatRate: c.VatRate,
+            ExistingLineDiscountAmount: c.DiscountAmount
+                ?? Math.Round(c.LineGross * (decimal)c.DiscountPercent / 100m, 2)
+        )).ToList();
+
+        var generalDiscountGross = cart.GeneralDiscountAmount;
+        var distribution = CartDiscountDistributor.Distribute(lines, generalDiscountGross);
+
+        var saleItems = cart.Items.Select((c, idx) =>
+        {
+            var existingDiscount = c.DiscountAmount
+                ?? Math.Round(c.LineGross * (decimal)c.DiscountPercent / 100m, 2);
+            var newDiscountAmount = existingDiscount + distribution.PerLineNetShare[idx];
+
+            return new SaleItemDto(
+                ProductVariantId: c.VariantId,
+                TaxPercentage: (double)c.VatRate,
+                DiscountPercent: 0,                           // normalize: hepsi DiscountAmount'a
+                UnitPrice: c.UnitPrice,
+                Quantity: c.Quantity,
+                DiscountVoucherCode: "",
+                DiscountAmount: newDiscountAmount > 0m ? newDiscountAmount : null,
+                DiscountReasonId: c.DiscountReasonId,
+                DiscountReasonNote: c.DiscountReasonNote);
+        }).ToList();
 
         var makeSaleDto = new MakeSaleDto(
             SalePersonId: GetCurrentUserId(),
             CustomerId: GetCustomerIdFromSession(),
-            GeneralDiscount: 0m,
+            GeneralDiscount: distribution.AppliedGrossTotal,   // gerçek uygulanan (clamp sonrası)
             BranchOfficeId: DefaultBranchOfficeId,
             SaleSource: SaleSource.POS,
             Note: null,
             SaleItems: saleItems,
-            Payments: payments);
+            Payments: payments,
+            GeneralDiscountReasonId: cart.GeneralDiscountReasonId,
+            GeneralDiscountReasonNote: cart.GeneralDiscountReasonNote);
 
         var saleResult = await saleManager.MakeSale(makeSaleDto);
         if (!saleResult.Success)

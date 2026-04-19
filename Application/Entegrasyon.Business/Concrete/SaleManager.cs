@@ -103,6 +103,13 @@ public sealed class SaleManager(
             throw;
         }
 
+        if (dto.GeneralDiscount > 0m)
+        {
+            await applicationLogManager.AddLog(
+                $"Sepet indirimi uygulandı: {dto.GeneralDiscount:N2} TL",
+                LogType.Sale, LogAction.Add);
+        }
+
         await applicationLogManager.AddLog("Satış başarı ile tamamlandı.", LogType.Sale, LogAction.Add, dto);
         logger.LogInformation("Sale completed: {SaleNumber}", sale.SaleNumber);
         return new SuccessDataResult<Guid>(sale.Id, Messages.SaleSuccess);

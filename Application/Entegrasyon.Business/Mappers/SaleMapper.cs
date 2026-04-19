@@ -25,6 +25,7 @@ public partial class SaleMapper
     [MapperIgnoreTarget(nameof(Sale.SaleNumber))]
     [MapperIgnoreTarget(nameof(Sale.SaleDate))]
     [MapperIgnoreTarget(nameof(Sale.SaleStatus))]
+    [MapperIgnoreTarget(nameof(Sale.GeneralDiscountReason))]
     public partial Sale MapToEntity(MakeSaleDto dto);
 
     public partial MakeSaleDto MapToDto(Sale sale);
