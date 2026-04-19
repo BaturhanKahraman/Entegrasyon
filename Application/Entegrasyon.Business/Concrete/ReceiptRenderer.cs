@@ -21,11 +21,13 @@ public sealed class ReceiptRenderer(IReceiptTemplateManager templateManager) : I
         if (!result.Success || result.Data is null)
             return "<div class=\"receipt-fallback\">Şablon yüklenemedi.</div>";
 
-        var template = result.Data;
-        return size == ReceiptSize.Thermal
+        return RenderWithTemplate(result.Data, sale, mode, size);
+    }
+
+    public string RenderWithTemplate(ReceiptTemplateDto template, SaleDetailDto sale, ReceiptMode mode, ReceiptSize size)
+        => size == ReceiptSize.Thermal
             ? RenderThermal(template, sale, mode)
             : RenderA4(template, sale, mode);
-    }
 
     private static string RenderThermal(ReceiptTemplateDto t, SaleDetailDto sale, ReceiptMode mode)
     {

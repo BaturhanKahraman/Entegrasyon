@@ -419,6 +419,16 @@
         var fd = new FormData();
         fd.append('size', state.activeSize);
         fd.append('mode', state.activeMode);
+        fd.append('thermalJson', state.template.thermalJson || '[]');
+        fd.append('a4Json', state.template.a4Json || '{}');
+        fd.append('logoUrl', state.template.logoUrl || '');
+        fd.append('logoWidthPx', String(state.template.logoWidthPx || 120));
+        var nameEl = document.getElementById('store-name-input');
+        var addrEl = document.getElementById('store-address-input');
+        var phoneEl = document.getElementById('store-phone-input');
+        fd.append('storeName', nameEl ? nameEl.value : (state.template.storeName || ''));
+        fd.append('storeAddress', addrEl ? addrEl.value : (state.template.storeAddress || ''));
+        fd.append('storePhone', phoneEl ? phoneEl.value : (state.template.storePhone || ''));
         fd.append('__RequestVerificationToken', token);
 
         fetch('/settings/receipt-template/preview', { method: 'POST', body: fd })
@@ -536,6 +546,12 @@
                 state.activeMode = e.target.value;
                 refreshPreview();
             });
+        });
+
+        // Mağaza bilgileri değişince canlı preview
+        ['store-name-input', 'store-address-input', 'store-phone-input'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.addEventListener('input', refreshPreview);
         });
 
         renderEditor();

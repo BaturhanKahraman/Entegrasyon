@@ -58,11 +58,32 @@ public class ReceiptTemplateController(
 
     [HttpPost("/settings/receipt-template/preview")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Preview([FromForm] string size, [FromForm] string mode)
+    public IActionResult Preview(
+        [FromForm] string size,
+        [FromForm] string mode,
+        [FromForm] string? thermalJson,
+        [FromForm] string? a4Json,
+        [FromForm] string? logoUrl,
+        [FromForm] int? logoWidthPx,
+        [FromForm] string? storeName,
+        [FromForm] string? storeAddress,
+        [FromForm] string? storePhone)
     {
         var rMode = string.Equals(mode, "gift", StringComparison.OrdinalIgnoreCase) ? ReceiptMode.Gift : ReceiptMode.Normal;
         var rSize = string.Equals(size, "a4", StringComparison.OrdinalIgnoreCase) ? ReceiptSize.A4 : ReceiptSize.Thermal;
-        var html = await receiptRenderer.RenderAsync(BuildPlaceholderSale(), rMode, rSize);
+
+        var template = new ReceiptTemplateDto
+        {
+            ThermalJson = string.IsNullOrEmpty(thermalJson) ? "[]" : thermalJson,
+            A4Json = string.IsNullOrEmpty(a4Json) ? "{}" : a4Json,
+            LogoUrl = logoUrl,
+            LogoWidthPx = logoWidthPx ?? 120,
+            StoreName = storeName ?? "",
+            StoreAddress = storeAddress ?? "",
+            StorePhone = storePhone ?? ""
+        };
+
+        var html = receiptRenderer.RenderWithTemplate(template, BuildPlaceholderSale(), rMode, rSize);
         return Content(html, "text/html");
     }
 
