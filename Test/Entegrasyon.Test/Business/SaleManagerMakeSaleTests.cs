@@ -355,6 +355,8 @@ public class SaleManagerMakeSaleTests : BaseTest
         capturedSale!.GeneralDiscount.Should().Be(100m);
         capturedSale.GeneralDiscountReasonNote.Should().Be("pazarlık");
         capturedSale.GeneralDiscountReasonId.Should().BeNull();
+        // Kalem bazlı DiscountAmount da korunmalı (pro-rata payı + mevcut kalem indirimi)
+        capturedSale.SaleItems.Should().ContainSingle().Which.DiscountAmount.Should().Be(83.33m);
     }
 
     [Fact]

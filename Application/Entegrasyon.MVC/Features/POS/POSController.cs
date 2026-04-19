@@ -713,7 +713,9 @@ public class POSController(
                 UnitPrice: c.UnitPrice,
                 Quantity: c.Quantity,
                 DiscountVoucherCode: "",
-                DiscountAmount: newDiscountAmount > 0m ? newDiscountAmount : null,
+                DiscountAmount: newDiscountAmount >= 0m
+                    ? (newDiscountAmount > 0m ? newDiscountAmount : (decimal?)null)
+                    : throw new InvalidOperationException($"Negatif indirim hesaplandı: {newDiscountAmount}"),
                 DiscountReasonId: c.DiscountReasonId,
                 DiscountReasonNote: c.DiscountReasonNote);
         }).ToList();
