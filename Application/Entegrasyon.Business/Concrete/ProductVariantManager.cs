@@ -165,7 +165,9 @@ public class ProductVariantManager(
 
         // 2. Business Rules
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var product = await dbContext.MainProducts.AsTracking().FirstOrDefaultAsync(p => p.Id == productId);
+        var product = await dbContext.MainProducts.AsTracking()
+            .Include(p => p.ProductVariants).ThenInclude(pv => pv.ProductVariantAttributes)
+            .FirstOrDefaultAsync(p => p.Id == productId);
         if (product is null)
             return new ErrorResult("Ürün bulunamadı.");
 
@@ -197,6 +199,13 @@ public class ProductVariantManager(
         };
 
         variant.Name = namingService.Compute(variant, product);
+
+        // Kardeş varyant reconcile: Mevcut variant'ların Name'i product.Title'a eşitse
+        // (yani fallback ile atanmışsa, user override değil) yeniden hesapla.
+        // Bu, tek-variant'tan multi-variant'a geçişte "Basic Tshirt" gibi stale isimlerin
+        // ilgili attribute'lara göre yeniden üretilmesini sağlar.
+        foreach (var sibling in product.ProductVariants.Where(v => v.Name == product.Title))
+            sibling.Name = namingService.Compute(sibling, product);
 
         dbContext.ProductVariants.Add(variant);
         await dbContext.SaveChangesAsync();
