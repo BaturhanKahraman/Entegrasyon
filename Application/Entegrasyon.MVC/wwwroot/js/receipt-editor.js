@@ -407,7 +407,23 @@
         });
     }
 
-    // ── Preview (iframe srcdoc — CSS izolasyonu + XSS sandbox) ──
+    // ── Preview ──
+
+    function ensurePreviewStyles() {
+        var links = [
+            { id: 'rcpt-css-thermal', href: '/css/receipt-thermal.css' },
+            { id: 'rcpt-css-a4', href: '/css/receipt-a4.css' }
+        ];
+        links.forEach(function (l) {
+            if (document.getElementById(l.id)) return;
+            var link = document.createElement('link');
+            link.id = l.id;
+            link.rel = 'stylesheet';
+            link.href = l.href;
+            document.head.appendChild(link);
+        });
+    }
+
 
     var previewTimer = null;
     function refreshPreview() {
@@ -434,18 +450,19 @@
         fetch('/settings/receipt-template/preview', { method: 'POST', body: fd })
             .then(function (r) { return r.text(); })
             .then(function (html) {
-                var cssHref = state.activeSize === 'a4' ? '/css/receipt-a4.css' : '/css/receipt-thermal.css';
                 var cont = document.getElementById('preview-container');
                 while (cont.firstChild) cont.removeChild(cont.firstChild);
 
-                var iframe = document.createElement('iframe');
-                iframe.setAttribute('sandbox', 'allow-same-origin');
-                iframe.style.width = '100%';
-                iframe.style.minHeight = '400px';
-                iframe.style.border = '0';
-                // srcdoc — güvenli kullanıcı içeriği burada server-encoded HTML.
-                iframe.srcdoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="' + cssHref + '"></head><body>' + html + '</body></html>';
-                cont.appendChild(iframe);
+                // Ensure preview CSS is loaded on the main document (for thermal + a4 both)
+                ensurePreviewStyles();
+
+                // Server HTML (HtmlEncoder.Create(UnicodeRanges.All) ile sanitize edilmiş)
+                // DOMParser ile güvenli parse — script yürütülmez, hook-friendly.
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                while (doc.body.firstChild) {
+                    cont.appendChild(doc.body.firstChild);
+                }
             })
             .catch(function () {
                 var cont = document.getElementById('preview-container');
