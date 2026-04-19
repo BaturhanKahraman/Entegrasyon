@@ -1,0 +1,9 @@
+@model Entegrasyon.MVC.ViewModels.Shared.VariantLabelModel
+
+<span class="variant-label" title="@Model.Barcode">
+    <span class="fw-semibold">@Model.DisplayName</span>
+    @if (Model.ShowBarcode && !string.IsNullOrEmpty(Model.Barcode))
+    {
+        <code class="text-secondary small ms-1">@Model.Barcode</code>
+    }
+</span>
