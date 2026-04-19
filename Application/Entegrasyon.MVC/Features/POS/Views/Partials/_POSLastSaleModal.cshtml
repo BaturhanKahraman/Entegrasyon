@@ -22,16 +22,22 @@
                     Müşteriye fiş teslim edecek misiniz?
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
-                    Atla
-                </button>
-                <button type="button" class="btn btn-outline-primary ms-auto" id="posPrintGiftBtn">
-                    <i class="ti ti-gift me-1"></i>Hediye Fişi
-                </button>
-                <button type="button" class="btn btn-primary" id="posPrintNormalBtn">
-                    <i class="ti ti-printer me-1"></i>Fişi Yazdır
-                </button>
+            <div class="modal-footer d-flex flex-column align-items-stretch">
+                <div class="btn-group btn-group-sm w-100 mb-2" role="group">
+                    <input type="radio" class="btn-check" name="rcpt-size-choice" id="rs-thermal" value="thermal" checked>
+                    <label class="btn btn-outline-primary" for="rs-thermal">Thermal</label>
+                    <input type="radio" class="btn-check" name="rcpt-size-choice" id="rs-a4" value="a4">
+                    <label class="btn btn-outline-primary" for="rs-a4">A4</label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-link link-secondary flex-grow-1" data-bs-dismiss="modal">Atla</button>
+                    <button type="button" class="btn btn-outline-primary" id="posPrintGiftBtn">
+                        <i class="ti ti-gift me-1"></i>Hediye
+                    </button>
+                    <button type="button" class="btn btn-primary" id="posPrintNormalBtn">
+                        <i class="ti ti-printer me-1"></i>Normal
+                    </button>
+                </div>
             </div>
         </div>
     </div>

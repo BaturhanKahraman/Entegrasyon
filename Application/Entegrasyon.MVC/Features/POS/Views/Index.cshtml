@@ -244,7 +244,9 @@ else
                 document.getElementById('posLastReturnCode').textContent = payload.returnCode || '-';
 
                 function printUrl(mode) {
-                    return '/sales/sale/' + payload.saleId + '/print?mode=' + mode;
+                    var size = document.querySelector('input[name="rcpt-size-choice"]:checked');
+                    var sizeVal = size ? size.value : 'thermal';
+                    return '/sales/sale/' + payload.saleId + '/print?mode=' + mode + '&size=' + sizeVal;
                 }
                 document.getElementById('posPrintNormalBtn').addEventListener('click', function () {
                     window.open(printUrl('normal'), '_blank');

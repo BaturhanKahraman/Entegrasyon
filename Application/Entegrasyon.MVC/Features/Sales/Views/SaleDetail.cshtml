@@ -55,12 +55,26 @@
                 <i class="ti ti-arrow-back me-1"></i>İade Et
             </button>
         }
-        <a href="/sales/sale/@Model.Id/print?mode=normal" target="_blank" class="btn btn-outline-primary">
-            <i class="ti ti-printer me-1"></i>Fişi Yazdır
-        </a>
-        <a href="/sales/sale/@Model.Id/print?mode=gift" target="_blank" class="btn btn-outline-secondary">
-            <i class="ti ti-gift me-1"></i>Hediye Fişi
-        </a>
+        <div class="dropdown d-inline-block">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="ti ti-printer me-1"></i>Fişi Yazdır
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="/sales/sale/@Model.Id/print?mode=normal&size=thermal" target="_blank">
+                    <i class="ti ti-receipt me-2"></i>Normal (Thermal)
+                </a>
+                <a class="dropdown-item" href="/sales/sale/@Model.Id/print?mode=normal&size=a4" target="_blank">
+                    <i class="ti ti-file me-2"></i>Normal (A4)
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/sales/sale/@Model.Id/print?mode=gift&size=thermal" target="_blank">
+                    <i class="ti ti-gift me-2"></i>Hediye (Thermal)
+                </a>
+                <a class="dropdown-item" href="/sales/sale/@Model.Id/print?mode=gift&size=a4" target="_blank">
+                    <i class="ti ti-file me-2"></i>Hediye (A4)
+                </a>
+            </div>
+        </div>
         @if (isCancellable)
         {
             <form method="post" action="/sales/sale/@Model.Id/cancel" class="d-inline">
