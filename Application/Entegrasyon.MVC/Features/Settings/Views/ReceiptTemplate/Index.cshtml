@@ -1,6 +1,8 @@
 @using Entegrasyon.Entity.Dtos.Receipts
 @model Entegrasyon.MVC.Features.Settings.ViewModels.ReceiptTemplateEditorVm
 
+<link rel="stylesheet" href="~/css/receipt-editor.css" />
+
 <div class="page-header d-flex justify-content-between align-items-center mb-3">
     <h2 class="page-title">Fiş Şablonu</h2>
     <button type="button" class="btn btn-primary" id="btn-save-template">
@@ -50,7 +52,7 @@
 <div id="block-settings-offcanvas-container"></div>
 
 @section Scripts {
-    <script src="~/lib/sortablejs/Sortable.min.js"></script>
+    <script src="~/lib/sortablejs/sortable.min.js"></script>
     <script>
         window.__rcptState = {
             template: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Template)),
