@@ -55,8 +55,11 @@
                 <i class="ti ti-arrow-back me-1"></i>İade Et
             </button>
         }
-        <a href="/sales/sale/@Model.Id/print" target="_blank" class="btn btn-outline-primary">
-            <i class="ti ti-printer me-1"></i>Yazdır
+        <a href="/sales/sale/@Model.Id/print?mode=normal" target="_blank" class="btn btn-outline-primary">
+            <i class="ti ti-printer me-1"></i>Fişi Yazdır
+        </a>
+        <a href="/sales/sale/@Model.Id/print?mode=gift" target="_blank" class="btn btn-outline-secondary">
+            <i class="ti ti-gift me-1"></i>Hediye Fişi
         </a>
         @if (isCancellable)
         {
