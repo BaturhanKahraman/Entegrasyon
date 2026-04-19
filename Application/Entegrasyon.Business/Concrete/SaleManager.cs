@@ -233,6 +233,7 @@ public sealed class SaleManager(
         {
             Id = sale.Id,
             SaleNumber = sale.SaleNumber,
+            ReturnCode = sale.ReturnCode,
             SaleDate = sale.SaleDate,
             SaleSource = sale.SaleSource,
             SaleStatus = sale.SaleStatus,

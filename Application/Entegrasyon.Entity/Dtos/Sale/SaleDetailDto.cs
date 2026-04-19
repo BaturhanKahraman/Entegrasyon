@@ -6,6 +6,7 @@ public record SaleDetailDto
 {
     public Guid Id { get; init; }
     public string SaleNumber { get; init; } = "";
+    public string? ReturnCode { get; init; }
     public DateTimeOffset SaleDate { get; init; }
     public SaleSource SaleSource { get; init; }
     public SaleStatus SaleStatus { get; init; }
