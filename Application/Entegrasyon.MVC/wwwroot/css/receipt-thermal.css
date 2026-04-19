@@ -1,0 +1,37 @@
+.receipt-thermal { font-family: 'Courier New', Courier, monospace; font-size: 12px; max-width: 300px; margin: 0 auto; padding: 10px; color: #000; }
+.receipt-thermal .rcpt-logo { text-align: center; margin-bottom: 4px; }
+.receipt-thermal .rcpt-logo img { max-width: 100%; }
+.receipt-thermal .rcpt-store-info { margin-bottom: 6px; }
+.receipt-thermal .rcpt-store-name { font-size: 14px; margin-bottom: 2px; }
+.receipt-thermal .rcpt-align-left { text-align: left; }
+.receipt-thermal .rcpt-align-center { text-align: center; }
+.receipt-thermal .rcpt-align-right { text-align: right; }
+.receipt-thermal .rcpt-size-s { font-size: 10px; }
+.receipt-thermal .rcpt-size-m { font-size: 12px; }
+.receipt-thermal .rcpt-size-l { font-size: 14px; }
+.receipt-thermal .rcpt-divider { height: 0; margin: 6px 0; }
+.receipt-thermal .rcpt-divider-dashed { border-top: 1px dashed #000; }
+.receipt-thermal .rcpt-divider-solid { border-top: 1px solid #000; }
+.receipt-thermal .rcpt-divider-dotted { border-top: 1px dotted #000; }
+.receipt-thermal .rcpt-divider-gray { border-color: #888; }
+.receipt-thermal .rcpt-meta-row { display: flex; justify-content: space-between; }
+.receipt-thermal .rcpt-items { width: 100%; border-collapse: collapse; }
+.receipt-thermal .rcpt-items th, .receipt-thermal .rcpt-items td { padding: 2px 0; text-align: left; }
+.receipt-thermal .rcpt-items th:nth-child(n+2), .receipt-thermal .rcpt-items td:nth-child(n+2) { text-align: right; }
+.receipt-thermal .rcpt-barcode { font-size: 10px; color: #555; }
+.receipt-thermal .rcpt-totals { margin: 4px 0; }
+.receipt-thermal .rcpt-total-row { display: flex; justify-content: space-between; }
+.receipt-thermal .rcpt-grand { font-weight: bold; font-size: 14px; }
+.receipt-thermal .rcpt-payments-title { font-weight: bold; margin-top: 4px; }
+.receipt-thermal .rcpt-payment-row { display: flex; justify-content: space-between; }
+.receipt-thermal .rcpt-vat-summary { width: 100%; border-collapse: collapse; font-size: 10px; }
+.receipt-thermal .rcpt-vat-summary th, .receipt-thermal .rcpt-vat-summary td { padding: 2px 0; text-align: right; }
+.receipt-thermal .rcpt-vat-summary th:first-child, .receipt-thermal .rcpt-vat-summary td:first-child { text-align: left; }
+.receipt-thermal .rcpt-return-code-wrap { text-align: center; margin: 8px 0; }
+.receipt-thermal .rcpt-return-code-label { font-size: 10px; color: #555; }
+.receipt-thermal .rcpt-return-code { font-size: 15px; font-weight: bold; letter-spacing: 1.5px; padding: 6px; border: 1px dashed #000; margin-top: 2px; }
+.receipt-thermal .rcpt-spacer-s { height: 4px; }
+.receipt-thermal .rcpt-spacer-m { height: 8px; }
+.receipt-thermal .rcpt-spacer-l { height: 16px; }
+.receipt-thermal .rcpt-text { margin: 2px 0; }
+@media print { body { margin: 0; } .no-print { display: none; } }
