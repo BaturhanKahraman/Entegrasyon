@@ -134,33 +134,28 @@ public class POSController(
         if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
             return Content("");
 
-        var results = await productService.GetProductsDetailsPageable(
-            new SearchablePageDto(q, 0, 10));
-
-        if (!results.Success || results.Data?.Items is null || !results.Data.Items.Any())
-            return PartialView("Partials/_POSSearchResults", new POSSearchResultsVm());
-
-        return PartialView("Partials/_POSSearchResults", new POSSearchResultsVm
-        {
-            Products = results.Data.Items.Select(p => new POSSearchItemVm
-            {
-                ProductId = p.Id,
-                Title = p.Title,
-                StockCode = p.StockCode,
-                BrandName = p.BrandName,
-                ImageUrl = p.FeaturedImageUrl,
-                CurrentStock = p.TotalCurrentStock
-            }).ToList()
-        });
+        var result = await productService.SearchPOSProductsAsync(DefaultBranchOfficeId, q, limit: 10);
+        return PartialView("Partials/_POSSearchResults",
+            result.Data ?? new POSProductSearchResultDto());
     }
 
     // ── Cart Operations (HTMX) ──────────────────────────────────────────
 
     [HttpPost("/pos/add-item")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddItem([FromForm] Guid productId)
+    public async Task<IActionResult> AddItem(
+        [FromForm] Guid productId,
+        [FromForm] Guid variantId,
+        [FromForm] string? variantSummary)
     {
         var cart = GetCartFromSession();
+
+        if (variantId == Guid.Empty)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Varyant seçilmeden ürün eklenemez.", level = "error" });
+            return PartialView("Partials/_POSCart", cart);
+        }
 
         // Urun detayini cek — fiyat ve varyant bilgisi icin
         var detailResult = await productService.GetProductDetailById(productId);
@@ -171,21 +166,23 @@ public class POSController(
         }
 
         var product = detailResult.Data;
-        var firstVariant = product.ProductVariantsDetails?.FirstOrDefault();
-        var variantId = firstVariant?.Id ?? Guid.Empty;
+        var selectedVariant = product.ProductVariantsDetails?.FirstOrDefault(v => v.Id == variantId);
+        if (selectedVariant is null)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Seçilen varyant bulunamadı.", level = "error" });
+            return PartialView("Partials/_POSCart", cart);
+        }
 
-        var availableStock = variantId != Guid.Empty
-            ? await officeStockManager.GetAvailableStockAsync(DefaultBranchOfficeId, variantId)
-            : 0;
+        var availableStock = await officeStockManager.GetAvailableStockAsync(DefaultBranchOfficeId, variantId);
 
-        var existingItem = cart.Items.FirstOrDefault(c => c.ProductId == productId);
+        var existingItem = cart.Items.FirstOrDefault(c => c.VariantId == variantId);
         var desiredQuantity = existingItem?.Quantity + 1 ?? 1;
 
         if (desiredQuantity > availableStock)
         {
             Response.HtmxTriggerWithData("showToast",
                 new { message = $"Stok yetersiz. Mevcut: {availableStock} adet.", level = "error" });
-            // Mevcut cart aynen döner — quantity artırılmaz
             return PartialView("Partials/_POSCart", cart);
         }
 
@@ -201,11 +198,12 @@ public class POSController(
                 ProductId = productId,
                 VariantId = variantId,
                 Title = product.Title,
-                Barcode = firstVariant?.Barcode ?? "",
-                ImageUrl = firstVariant?.imageLinks?.FirstOrDefault(),
-                UnitPrice = firstVariant?.SalePrice ?? 0,
-                ListPrice = firstVariant?.ListPrice ?? firstVariant?.SalePrice ?? 0,
-                VatRate = firstVariant?.VatRate ?? 0,
+                Barcode = selectedVariant.Barcode ?? "",
+                VariantAttributeSummary = variantSummary?.Trim() ?? "",
+                ImageUrl = selectedVariant.imageLinks?.FirstOrDefault(),
+                UnitPrice = selectedVariant.SalePrice,
+                ListPrice = selectedVariant.ListPrice > 0 ? selectedVariant.ListPrice : selectedVariant.SalePrice,
+                VatRate = selectedVariant.VatRate,
                 Quantity = 1,
                 AvailableStock = availableStock
             });
@@ -217,10 +215,10 @@ public class POSController(
 
     [HttpPost("/pos/update-quantity")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateQuantity([FromForm] Guid productId, [FromForm] int quantity)
+    public async Task<IActionResult> UpdateQuantity([FromForm] Guid variantId, [FromForm] int quantity)
     {
         var cart = GetCartFromSession();
-        var item = cart.Items.FirstOrDefault(c => c.ProductId == productId);
+        var item = cart.Items.FirstOrDefault(c => c.VariantId == variantId);
 
         if (item is not null)
         {
@@ -253,10 +251,10 @@ public class POSController(
 
     [HttpPost("/pos/remove-item")]
     [ValidateAntiForgeryToken]
-    public IActionResult RemoveItem([FromForm] Guid productId)
+    public IActionResult RemoveItem([FromForm] Guid variantId)
     {
         var cart = GetCartFromSession();
-        cart.Items.RemoveAll(c => c.ProductId == productId);
+        cart.Items.RemoveAll(c => c.VariantId == variantId);
         SaveCartToSession(cart);
         return PartialView("Partials/_POSCart", cart);
     }
@@ -409,14 +407,16 @@ public class POSController(
         var submitToken = Guid.NewGuid().ToString("N");
         HttpContext.Session.SetString("pos_submit_token", submitToken);
 
+        var (netSubtotal, vatTotal) = cart.ComputeNetTotalsAfterAllDiscounts();
+
         var vm = new POSPaymentDialogVm
         {
             SessionId = sessionResult.Data.Id,
             SubtotalBeforeGeneralDiscount = cart.GrandTotalBeforeGeneralDiscount,
             GeneralDiscountAmount = cart.GeneralDiscountAmount,
             GeneralDiscountReasonName = cart.GeneralDiscountReasonName,
-            Subtotal = cart.Subtotal,
-            VatTotal = cart.VatTotal,
+            Subtotal = netSubtotal,
+            VatTotal = vatTotal,
             GrandTotal = cart.GrandTotal,
             ItemCount = cart.TotalItems,
             PaymentMethods = paymentMethodsResult.Data ?? [],
