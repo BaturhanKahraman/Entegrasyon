@@ -131,7 +131,7 @@ public sealed class SaleManager(
                 x.SalePerson.Name + " " + x.SalePerson.Surname,
                 x.SaleItems.Count(),
                 x.SaleItems.Sum(si => si.Quantity),
-                x.SaleItems.Sum(si => si.UnitPrice * si.Quantity * (1 + (decimal)si.TaxPercentage / 100m)),
+                x.SaleItems.Sum(si => Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)) * (1 + (decimal)si.TaxPercentage / 100m)),
                 x.Payments.Select(p => p.PaymentMethod != null ? p.PaymentMethod.Name : "").ToList()))
             .ToListAsync();
 
@@ -156,10 +156,20 @@ public sealed class SaleManager(
         if (sale is null)
             return new ErrorDataResult<SaleDetailDto>(null!, "Satış bulunamadı.");
 
+        foreach (var si in sale.SaleItems)
+        {
+            if (si.DiscountAmount.HasValue && si.DiscountAmount.Value > si.UnitPrice * si.Quantity)
+            {
+                logger.LogWarning(
+                    "SaleItem {SaleItemId} has DiscountAmount {Discount} exceeding line total {LineTotal} on Sale {SaleId}",
+                    si.Id, si.DiscountAmount.Value, si.UnitPrice * si.Quantity, sale.Id);
+            }
+        }
+
         var items = sale.SaleItems.Select(si =>
         {
             var unitPriceWithVat = Math.Round(si.UnitPrice * (1 + (decimal)si.TaxPercentage / 100), 2);
-            var netAfterDiscount = Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m));
+            var netAfterDiscount = NetAfterDiscount(si);
             var lineTotalWithVat = Math.Round(netAfterDiscount * (1 + (decimal)si.TaxPercentage / 100), 2);
             return new SaleDetailItemDto
             {
@@ -175,13 +185,11 @@ public sealed class SaleManager(
         }).ToList();
 
         // Net satır toplamı = UnitPrice*Qty - DiscountAmount (kalem + pro-rata genel indirim birleşik)
-        var subTotal = sale.SaleItems.Sum(si =>
-            Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)));
+        var subTotal = sale.SaleItems.Sum(si => NetAfterDiscount(si));
 
         // KDV dahil grand total
         var grandTotal = sale.SaleItems.Sum(si =>
-            Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m))
-            * (1 + (decimal)si.TaxPercentage / 100));
+            NetAfterDiscount(si) * (1 + (decimal)si.TaxPercentage / 100));
 
         var vatTotal = grandTotal - subTotal;
 
@@ -189,8 +197,8 @@ public sealed class SaleManager(
             .GroupBy(si => si.TaxPercentage)
             .Select(g =>
             {
-                var taxBase = g.Sum(si => Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)));
-                var vatAmount = g.Sum(si => Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m)) * ((decimal)g.Key / 100));
+                var taxBase = g.Sum(si => NetAfterDiscount(si));
+                var vatAmount = g.Sum(si => NetAfterDiscount(si) * ((decimal)g.Key / 100));
                 return new VatSummaryLineDto(
                     VatRate: (decimal)g.Key,
                     TaxBase: Math.Round(taxBase, 2),
@@ -294,7 +302,9 @@ public sealed class SaleManager(
         var activeQuery = query.Where(s => s.SaleStatus != SaleStatus.Cancelled);
 
         var totalSales = await activeQuery
-            .SumAsync(s => s.SaleItems.Sum(si => si.UnitPrice * si.Quantity * (1 + (decimal)si.TaxPercentage / 100m)));
+            .SumAsync(s => s.SaleItems.Sum(si =>
+                Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m))
+                * (1 + (decimal)si.TaxPercentage / 100m)));
 
         var saleCount = await activeQuery.CountAsync();
 
@@ -332,6 +342,9 @@ public sealed class SaleManager(
 
         return query;
     }
+
+    private static decimal NetAfterDiscount(SaleItem si)
+        => Math.Max(0m, si.UnitPrice * si.Quantity - (si.DiscountAmount ?? 0m));
 
     private static async Task<string> GenerateSaleNumberAsync(IntegrationDbContext dbContext)
     {
