@@ -91,9 +91,6 @@ public interface IVariantNamingService
     // Yazma akışı: variant ve product üzerinden Name hesaplar.
     // Hiçbir varianter/slicer değer yoksa product.Title döner; attribute tamamen boşsa null döner (DB'ye null yazılır, fallback render eder).
     string? Compute(ProductVariant variant, Product product);
-
-    // Okuma akışı: zaten yüklenmiş alanlardan display name çıkarır. Asla null dönmez.
-    string Resolve(string? storedName, IEnumerable<VariantAttributeLite> attributes, string productTitle);
 }
 
 public readonly record struct VariantAttributeLite(
@@ -102,6 +99,9 @@ public readonly record struct VariantAttributeLite(
     bool IsVarianter,
     bool IsSlicer,
     int Order);
+```
+
+**Not:** Okuma (display) akışı `VariantNameExtensions.ResolveDisplayName` static metoduna delegate edilir (Bölüm 6.1). İki ayrı API tutup aynı logic'i dublike etmiyoruz — servis sadece yazma akışında kullanılıyor, read path'lerde (projection + in-memory map) static extension yeterli.
 ```
 
 ### 4.2 Compute akışı
@@ -115,7 +115,9 @@ public readonly record struct VariantAttributeLite(
 7. Boşsa → `product.Title`.
 8. `product.Title` da boşsa (teoride olamaz) → `null`.
 
-### 4.3 Resolve akışı
+### 4.3 Resolve akışı (extension'da)
+
+Fiili implementasyon `VariantNameExtensions.ResolveDisplayName` içinde — Bölüm 6.1. Pseudokod:
 
 ```csharp
 if (!string.IsNullOrWhiteSpace(storedName)) return storedName;
@@ -256,18 +258,41 @@ var rows = await dbContext.ProductVariants
     .Select(v => new
     {
         v.Name,
-        Attributes = v.ProductVariantAttributes.Select(a =>
-            new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, 0)),
+        // Collection navigation'dan projection: EF Core sırayı garanti etmez; bu yüzden
+        // indeks-bazlı Order ClientEval aşamasında set edilir (.ToListAsync() sonrası).
+        RawAttributes = v.ProductVariantAttributes
+            .Select(a => new
+            {
+                a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer,
+                // Sıralama anahtarı: kalıcı bir alan yok, bu yüzden şimdilik sabit 0.
+                // Plan aşamasında "entity'ye SortOrder ekle" kararı verilirse burası güncellenir.
+            })
+            .ToList(),
         ProductTitle = v.Product.Title,
         // ... diğer alanlar
     })
     .ToListAsync();
 
-var result = rows.Select(r => new FooDto(
-    DisplayName: VariantNameExtensions.ResolveDisplayName(r.Name, r.Attributes, r.ProductTitle),
-    // ... diğer alanlar
-)).ToList();
+var result = rows.Select(r =>
+{
+    var attrs = r.RawAttributes
+        .Select((a, idx) => new VariantAttributeLite(
+            a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, idx));
+
+    return new FooDto(
+        DisplayName: VariantNameExtensions.ResolveDisplayName(r.Name, attrs, r.ProductTitle),
+        // ... diğer alanlar
+    );
+}).ToList();
 ```
+
+**Sıralama stratejisi (açık nokta):** EF Core collection projection'da kayıt sırasını garanti etmez (özellikle PostgreSQL'de). Üç olası çözüm — plan aşamasında karar:
+
+- **A)** `ProductVariantAttribute`'a `SortOrder` kolonu ekle, projection'da `.OrderBy(a => a.SortOrder)` kullan.
+- **B)** `CategoryAttributeId` alanını entity'ye ekleyip onunla sırala (zaten `CategoryAttributeCategory` tablosu yoluyla join'lenebilir olduğu için anlamlı).
+- **C)** Şimdilik stable değil kabul et — `IsVarianter`/`IsSlicer` gruplaması zaten tutuyor, grup içinde sıra DB'den geldiği gibi (genelde insertion order, PostgreSQL sequential scan'de çoğu zaman insertion).
+
+İlk implementasyonda **C** ile başlanır (düşük riskli, test edilebilir). Eğer UI'da tutarsızlık görülürse **B**'ye geçilir.
 
 ### 6.4 Değişecek DTO'lar
 
@@ -380,7 +405,7 @@ Her commit sonrası: `dotnet build`, unit + integration test suite çalıştır�
 
 ## 9. Risk ve Açık Noktalar
 
-- **`ProductVariantAttribute` entity'sinin `CategoryAttributeId` alanı yok** — sıralama için List insertion order güvencesi var mı, plan aşamasında doğrulanacak. Gerekirse entity'ye `CategoryAttributeId` + `SortOrder` eklenebilir.
+- **`ProductVariantAttribute` entity'sinde kalıcı sıralama alanı yok.** Bölüm 6.3'te anlatılan **C** seçeneği ile başlanır (DB read order = insertion order, PostgreSQL'de genelde stable); kullanıcı UI'da tutarsız sıralama görürse entity'ye `SortOrder` (A) veya `CategoryAttributeId` (B) eklenir.
 - **Marketplace import'tan gelen variant'larda `IsVarianter`/`IsSlicer` bayrakları** doğru set edilemezse Compute `product.Title`'a fallback eder. Kullanıcı manuel düzeltebilir (ileride `NameOverride` gerekirse).
 - **Çoklu kelimeli değerlerde boşluk ayırıcı belirsizleşebilir:** `"Koyu Mavi Ekstra Geniş"` — renk mi beden mi belirsiz. Kullanıcının örneğini takip ettik; UX'te sorun olursa slash ayırıcıya geçilebilir (tek satır değişiklik).
 - **Wizard step3 `_VariantTable.cshtml` preview badge'leri** şimdilik olduğu gibi kalır — preview'de Name basmak UX improvement olarak ayrı tutulur.
