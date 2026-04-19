@@ -13,6 +13,7 @@ namespace Entegrasyon.MVC.Features.Returns;
 
 [Authorize]
 public class ReturnController(
+    ISaleManager saleManager,
     ISaleReturnManager saleReturnManager,
     IReturnReasonManager returnReasonManager,
     IDbContextFactory<IntegrationDbContext> contextFactory) : HtmxController
@@ -36,7 +37,7 @@ public class ReturnController(
         var query = dbContext.SaleReturns
             .Include(r => r.ReturnReason)
             .Include(r => r.ReturnedBy)
-            .Include(r => r.Sale)
+            .Include(r => r.Sale).ThenInclude(s => s!.Customer)
             .Include(r => r.Order)
             .Include(r => r.Items)
             .OrderByDescending(r => r.CreatedAt)
@@ -45,6 +46,17 @@ public class ReturnController(
 
         if (status.HasValue) query = query.Where(r => r.ReturnStatus == status.Value);
         if (source.HasValue) query = query.Where(r => r.Source == source.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var needle = search.Trim();
+            var pattern = $"%{needle}%";
+            query = query.Where(r => r.Sale != null && (
+                EF.Functions.ILike(r.Sale.SaleNumber, pattern) ||
+                (r.Sale.ReturnCode != null && EF.Functions.ILike(r.Sale.ReturnCode, pattern)) ||
+                (r.Sale.Customer != null && r.Sale.Customer.FullName != null &&
+                    EF.Functions.ILike(r.Sale.Customer.FullName, pattern))));
+        }
 
         var returns = await query.Take(200).ToListAsync();
 
@@ -143,5 +155,31 @@ public class ReturnController(
     {
         var result = await saleReturnManager.RestoreItemToStockAsync(itemId, GetCurrentUserId(), branchOfficeId);
         return HtmxMutationResult(result, "Ürün envantere eklendi.", refreshEvent: "returnStatusChanged");
+    }
+
+    // ── LOOKUP (kod ile yeni iade başlatma) ─────────────────────────────
+
+    [HttpPost("/returns/lookup")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Lookup([FromForm] string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Kod boş olamaz.", level = "error" });
+            return NoContent();
+        }
+
+        var result = await saleManager.GetSaleByCodeAsync(code);
+        if (!result.Success || result.Data is null)
+        {
+            Response.HtmxReswap("none");
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Satış bulunamadı.", level = "error" });
+            return NoContent();
+        }
+
+        return PartialView("~/Features/Sales/Views/Partials/_SaleReturnDialog.cshtml", result.Data);
     }
 }
