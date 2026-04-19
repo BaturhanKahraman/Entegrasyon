@@ -309,46 +309,83 @@ public class ProductManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
-        var result = await dbContext.MainProducts
+        var raw = await dbContext.MainProducts
             .Where(p => p.Id == productId)
-            .Select(p => new ProductDetailDto(
-                p.Id, p.Title, p.Description ?? "", p.StockCode ?? "", p.Season ?? "", p.Year ?? "", p.BrandId, p.Brand!.Name!, p.CategoryId, p.Category!.Name!,
-                p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
-                p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
-                p.ProductVariants.Select(pv => new ProductVariantDetailDto(
-                    pv.Id, pv.Barcode!, pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
-                    pv.Images.OrderBy(img => img.DisplayOrder)
+            .Select(p => new
+            {
+                p.Id,
+                p.Title,
+                Description = p.Description ?? "",
+                StockCode = p.StockCode ?? "",
+                Season = p.Season ?? "",
+                Year = p.Year ?? "",
+                p.BrandId,
+                BrandName = p.Brand!.Name!,
+                p.CategoryId,
+                CategoryName = p.Category!.Name!,
+                FirstTotalStock = p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.FirstTotalStock),
+                SoldQuantity = p.ProductVariants.SelectMany(pv => pv.BranchOfficeStocks).Sum(bo => bo.SoldQuantity),
+                Variants = p.ProductVariants.Select(pv => new
+                {
+                    pv.Id,
+                    Barcode = pv.Barcode!,
+                    pv.Name,
+                    pv.DimensionalWeight,
+                    pv.CurrencyType,
+                    pv.ListPrice,
+                    pv.SalePrice,
+                    pv.CostPrice,
+                    pv.ECommercePrice,
+                    pv.VatRate,
+                    ImageLinks = pv.Images.OrderBy(img => img.DisplayOrder)
                         .Select(img => img.StorageKey != null ? img.StorageKey + "_original.webp" : img.Src ?? "")
                         .ToArray(),
-                    pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name!, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock))
-                )),
-                p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
+                    StockDetails = pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name!, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock)).ToList(),
+                    RawAttrs = pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                }).ToList(),
+                AttributeKeyValues = p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
                     kv.CategoryAttribute.CategoryAttributeKey!,
                     kv.CategoryAttribute!.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey ?? "",
-                    kv.AttributeValueId.HasValue ? kv.AttributeValue!.Name! : kv.CustomValue ?? "")),
+                    kv.AttributeValueId.HasValue ? kv.AttributeValue!.Name! : kv.CustomValue ?? "")).ToList(),
                 p.UpdatedAt,
                 p.SeoTitle,
                 p.SeoDescription,
                 p.SeoSlug,
                 p.SeoKeywords,
                 p.IsPublished
-            ))
+            })
             .FirstOrDefaultAsync();
 
+        if (raw is null) return new SuccessDataResult<ProductDetailDto>(null!);
+
+        var result = new ProductDetailDto(
+            raw.Id, raw.Title, raw.Description, raw.StockCode, raw.Season, raw.Year,
+            raw.BrandId, raw.BrandName, raw.CategoryId, raw.CategoryName,
+            raw.FirstTotalStock, raw.SoldQuantity,
+            raw.Variants.Select(pv => new ProductVariantDetailDto(
+                pv.Id, pv.Barcode,
+                VariantNameExtensions.ResolveDisplayName(
+                    pv.Name,
+                    pv.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    raw.Title),
+                pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
+                pv.ImageLinks, pv.StockDetails
+            )),
+            raw.AttributeKeyValues,
+            raw.UpdatedAt, raw.SeoTitle, raw.SeoDescription, raw.SeoSlug, raw.SeoKeywords, raw.IsPublished
+        );
+
         // StorageKey → public URL dönüşümü (EF projection içinde yapılamaz)
-        if (result is not null)
+        foreach (var variant in result.ProductVariantsDetails)
         {
-            foreach (var variant in result.ProductVariantsDetails)
+            for (int i = 0; i < variant.imageLinks.Length; i++)
             {
-                for (int i = 0; i < variant.imageLinks.Length; i++)
-                {
-                    if (!string.IsNullOrEmpty(variant.imageLinks[i]))
-                        variant.imageLinks[i] = minioFileStorage.GetPublicUrl(variant.imageLinks[i]);
-                }
+                if (!string.IsNullOrEmpty(variant.imageLinks[i]))
+                    variant.imageLinks[i] = minioFileStorage.GetPublicUrl(variant.imageLinks[i]);
             }
         }
 
-        return new SuccessDataResult<ProductDetailDto>(result!);
+        return new SuccessDataResult<ProductDetailDto>(result);
     }
 
     public async Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto)

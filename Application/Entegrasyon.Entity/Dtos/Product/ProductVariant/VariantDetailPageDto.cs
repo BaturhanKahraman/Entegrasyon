@@ -3,6 +3,7 @@ namespace Entegrasyon.Entity.Dtos.Product.ProductVariant;
 public record VariantDetailPageDto(
     Guid ProductId,
     string ProductTitle,
+    string DisplayName,
     Guid VariantId,
     string Barcode,
     decimal ListPrice,

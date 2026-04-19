@@ -47,37 +47,70 @@ public class ProductVariantManager(
     public async Task<IDataResult<ProductVariantSaleSearchDto>> GetProductVariantByBarcode(string barcode)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var result = await dbContext.ProductVariants
+        var raw = await dbContext.ProductVariants
             .Where(x => x.Barcode == barcode)
-            .Select(x => new ProductVariantSaleSearchDto(
-                x.Id, x.Product.Title,
-                x.Images.FirstOrDefault(img => img.IsMain)!.Src ?? x.Images.FirstOrDefault()!.Src ?? "",
-                x.VatRate, x.ListPrice, x.SalePrice, x.CostPrice,
-                x.BranchOfficeStocks.Sum(z => z.CurrentStock),
-                x.Product.Category.Name))
+            .Select(x => new
+            {
+                x.Id,
+                ProductTitle = x.Product.Title,
+                Image = x.Images.FirstOrDefault(img => img.IsMain)!.Src ?? x.Images.FirstOrDefault()!.Src ?? "",
+                x.VatRate,
+                x.ListPrice,
+                x.SalePrice,
+                x.CostPrice,
+                Stock = x.BranchOfficeStocks.Sum(z => z.CurrentStock),
+                CategoryName = x.Product.Category.Name,
+                x.Name,
+                RawAttrs = x.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+            })
             .FirstOrDefaultAsync();
-        if (result == null)
+        if (raw == null)
             return new ErrorDataResult<ProductVariantSaleSearchDto>(null!, Messages.ProductVariantNotFound);
+
+        var displayName = VariantNameExtensions.ResolveDisplayName(
+            raw.Name,
+            raw.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+            raw.ProductTitle);
+
+        var result = new ProductVariantSaleSearchDto(
+            raw.Id, raw.ProductTitle, displayName, raw.Image, raw.VatRate, raw.ListPrice, raw.SalePrice, raw.CostPrice, raw.Stock, raw.CategoryName);
+
         return new SuccessDataResult<ProductVariantSaleSearchDto>(result, Messages.ProductVariantGettingSuccessful);
     }
 
     public async Task<IResult> GetProductVariantsBySearchText(string fullTextSearch)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var result = await dbContext.ProductVariants
+        var raw = await dbContext.ProductVariants
             .Where(x => x.BranchOfficeStocks.Sum(stck => stck.CurrentStock) > 0 &&
                 (x.Product.SearchVector.Matches(EF.Functions.ToTsQuery(fullTextSearch.ToFullTextSearchQuery()))
                  || x.Barcode == fullTextSearch))
             .OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.UpdatedAt)
-            .Select(x => new ProductVariantSaleSearchDto(
-                x.Id, x.Product.Title,
-                x.Images.FirstOrDefault(img => img.IsMain)!.Src ?? x.Images.FirstOrDefault()!.Src ?? "",
-                x.VatRate, x.ListPrice, x.SalePrice, x.CostPrice,
-                x.BranchOfficeStocks.Sum(z => z.CurrentStock),
-                x.Product.Category.Name))
+            .Select(x => new
+            {
+                x.Id,
+                ProductTitle = x.Product.Title,
+                Image = x.Images.FirstOrDefault(img => img.IsMain)!.Src ?? x.Images.FirstOrDefault()!.Src ?? "",
+                x.VatRate,
+                x.ListPrice,
+                x.SalePrice,
+                x.CostPrice,
+                Stock = x.BranchOfficeStocks.Sum(z => z.CurrentStock),
+                CategoryName = x.Product.Category.Name,
+                x.Name,
+                RawAttrs = x.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+            })
             .ToListAsync();
-        if (result == null)
-            return new ErrorResult(Messages.ProductVariantNotFound);
+
+        var result = raw.Select(r => new ProductVariantSaleSearchDto(
+            r.Id, r.ProductTitle,
+            VariantNameExtensions.ResolveDisplayName(
+                r.Name,
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.ProductTitle),
+            r.Image, r.VatRate, r.ListPrice, r.SalePrice, r.CostPrice, r.Stock, r.CategoryName
+        )).ToList();
+
         return new SuccessDataResult<List<ProductVariantSaleSearchDto>>(result, Messages.ProductVariantGettingSuccessful);
     }
 
@@ -311,9 +344,16 @@ public class ProductVariantManager(
             );
         }).ToList();
 
+        var displayName = VariantNameExtensions.ResolveDisplayName(
+            variant.Name,
+            variant.ProductVariantAttributes.Select((a, i) =>
+                new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+            variant.Product.Title);
+
         var dto = new VariantDetailPageDto(
             variant.ProductId,
             variant.Product.Title,
+            displayName,
             variant.Id,
             variant.Barcode ?? "",
             variant.ListPrice,

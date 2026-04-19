@@ -3,6 +3,7 @@
 public record ProductVariantSaleSearchDto(
     Guid ProductVariantId,
     string ProductName,
+    string DisplayName,
     string PrimaryImage,
     decimal TaxPercentage,
     decimal ListPrice,

@@ -60,6 +60,7 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
+                                <th>Varyant</th>
                                 <th>Barkod</th>
                                 <th>Stok Kodu</th>
                                 <th class="text-end">Liste Fiyati</th>
@@ -76,6 +77,9 @@
                             {
                                 var totalStock = variant.StockDetails?.Sum(s => s.CurrentStock) ?? 0;
                                 <tr>
+                                    <td>
+                                        <span class="fw-semibold">@variant.DisplayName</span>
+                                    </td>
                                     <td>
                                         <a href="/products/@Model.Id/variants/@variant.Id/detail">
                                             <code>@variant.Barcode</code>

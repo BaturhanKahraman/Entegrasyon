@@ -2,6 +2,7 @@
 
 public sealed record ProductVariantDetailDto(Guid Id,
     string Barcode,
+    string DisplayName,
     decimal DeminsionalWeight,
     string CurrencyType,
     decimal ListPrice,

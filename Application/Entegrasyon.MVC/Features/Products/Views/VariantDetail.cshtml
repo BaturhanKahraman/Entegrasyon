@@ -21,7 +21,7 @@
         <!-- Genel Bilgi -->
         <div class="card mb-3">
             <div class="card-header">
-                <h3 class="card-title">Varyant Bilgileri</h3>
+                <h3 class="card-title">Varyant Bilgileri — <span class="fw-semibold">@Model.DisplayName</span></h3>
             </div>
             <div class="card-body">
                 <div class="datagrid">
@@ -30,6 +30,10 @@
                         <div class="datagrid-content">
                             <a href="/products/@Model.ProductId">@Model.ProductTitle</a>
                         </div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Varyant Adı</div>
+                        <div class="datagrid-content">@Model.DisplayName</div>
                     </div>
                     <div class="datagrid-item">
                         <div class="datagrid-title">Barkod</div>
