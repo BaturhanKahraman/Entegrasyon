@@ -254,6 +254,27 @@ public sealed class SaleManager(
         return new SuccessDataResult<SaleDetailDto>(dto);
     }
 
+    public async Task<IDataResult<SaleDetailDto>> GetSaleByCodeAsync(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return new ErrorDataResult<SaleDetailDto>(null!, "Kod boş olamaz.");
+
+        var normalized = code.Trim().ToUpperInvariant();
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var saleId = await dbContext.Sales
+            .AsNoTracking()
+            .Where(s => s.ReturnCode == normalized || s.SaleNumber == normalized)
+            .Select(s => (Guid?)s.Id)
+            .FirstOrDefaultAsync();
+
+        if (saleId is null)
+            return new ErrorDataResult<SaleDetailDto>(null!, "Satış bulunamadı.");
+
+        return await GetSaleDetailAsync(saleId.Value);
+    }
+
     public async Task<IResult> CancelSaleAsync(Guid saleId, Guid cancelledByUserId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
