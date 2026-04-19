@@ -1,0 +1,62 @@
+@model Entegrasyon.MVC.Features.Settings.ViewModels.ReceiptTemplateEditorVm
+@{ var t = Model.Template; }
+
+<div class="card mb-3">
+    <div class="card-header"><h3 class="card-title">Blok Ekle</h3></div>
+    <div class="card-body d-grid gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="logo">+ Logo</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="store_info">+ Mağaza Bilgisi</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="text">+ Metin</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="divider">+ Ayırıcı</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="meta">+ Meta Satırı</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="items">+ Ürün Listesi</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="totals">+ Toplamlar</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="payments">+ Ödeme Özeti</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="vat_summary">+ KDV Özeti</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="return_code">+ İade Kodu</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-add-block="spacer">+ Boşluk</button>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header"><h3 class="card-title">Logo</h3></div>
+    <div class="card-body">
+        <div id="logo-preview" class="text-center mb-2">
+            @if (!string.IsNullOrEmpty(t.LogoUrl))
+            {
+                <img src="@t.LogoUrl" style="max-width:100%; max-height:100px" />
+            }
+            else
+            {
+                <div class="text-secondary small">(Logo yüklü değil)</div>
+            }
+        </div>
+        <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/webp" class="form-control form-control-sm mb-2" />
+        <div class="mb-2">
+            <label class="form-label small">Logo Genişliği</label>
+            <input type="range" id="logo-width-range" min="80" max="200" step="5" value="@t.LogoWidthPx" class="form-range" />
+            <div class="small text-secondary"><span id="logo-width-value">@t.LogoWidthPx</span> px</div>
+        </div>
+        <button type="button" id="btn-delete-logo" class="btn btn-sm btn-outline-danger w-100" @(string.IsNullOrEmpty(t.LogoUrl) ? "disabled" : "")>
+            Logoyu Sil
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3 class="card-title">Mağaza Bilgileri</h3></div>
+    <div class="card-body">
+        <div class="mb-2">
+            <label class="form-label small">Mağaza Adı</label>
+            <input type="text" id="store-name-input" class="form-control form-control-sm" maxlength="100" value="@t.StoreName" />
+        </div>
+        <div class="mb-2">
+            <label class="form-label small">Adres</label>
+            <textarea id="store-address-input" class="form-control form-control-sm" maxlength="200" rows="2">@t.StoreAddress</textarea>
+        </div>
+        <div class="mb-2">
+            <label class="form-label small">Telefon</label>
+            <input type="text" id="store-phone-input" class="form-control form-control-sm" maxlength="20" value="@t.StorePhone" />
+        </div>
+    </div>
+</div>
