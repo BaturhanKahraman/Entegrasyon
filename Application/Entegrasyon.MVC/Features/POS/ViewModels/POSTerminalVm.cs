@@ -1,5 +1,6 @@
 using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Sales;
+using Entegrasyon.MVC.Features.POS;
 
 namespace Entegrasyon.MVC.Features.POS.ViewModels;
 
@@ -60,6 +61,36 @@ public class POSCartVm
     public decimal GrandTotal => GrandTotalBeforeGeneralDiscount - GeneralDiscountAmount;
     public int TotalItems => Items.Sum(i => i.Quantity);
     public bool HasGeneralDiscount => GeneralDiscountAmount > 0m;
+
+    // Sepet (genel) indirimi pro-rata dağıtıldıktan sonra KDV-hariç net subtotal ve KDV toplamı.
+    // Why: Subtotal/VatTotal yalnızca kalem indirimini içerir → sepet indirimi varsa KDV gösterimi
+    // GrandTotal ile tutarsız olur. CompleteSale'deki dağıtımla aynı mantık burada da uygulanır.
+    public (decimal NetSubtotal, decimal VatTotal) ComputeNetTotalsAfterAllDiscounts()
+    {
+        if (Items.Count == 0) return (0m, 0m);
+        if (!HasGeneralDiscount) return (Subtotal, VatTotal);
+
+        var lines = Items.Select(c => new CartLine(
+            UnitPrice: c.UnitPrice,
+            Quantity: c.Quantity,
+            VatRate: c.VatRate,
+            ExistingLineDiscountAmount: c.DiscountAmount
+                ?? Math.Round(c.LineGross * (decimal)c.DiscountPercent / 100m, 2)
+        )).ToList();
+
+        var dist = CartDiscountDistributor.Distribute(lines, GeneralDiscountAmount);
+
+        decimal netSubtotal = 0m, vatTotal = 0m;
+        for (int i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            var lineNet = item.LineTotal - dist.PerLineNetShare[i];
+            if (lineNet < 0m) lineNet = 0m;
+            netSubtotal += lineNet;
+            vatTotal += Math.Round(lineNet * item.VatRate / 100m, 2);
+        }
+        return (netSubtotal, vatTotal);
+    }
 }
 
 public class POSCartItemVm
@@ -68,6 +99,8 @@ public class POSCartItemVm
     public Guid VariantId { get; set; }
     public string Title { get; set; } = "";
     public string Barcode { get; set; } = "";
+    // Varyant display name — ör. "Sarı XL". Sepette hangi varyant seçildiğini göstermek için.
+    public string DisplayName { get; set; } = "";
     public string? ImageUrl { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal ListPrice { get; set; }       // Ürün zaten indirimli mi? ListPrice>UnitPrice ise evet

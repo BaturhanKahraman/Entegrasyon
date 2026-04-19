@@ -1,4 +1,7 @@
 @model Entegrasyon.MVC.Features.POS.ViewModels.POSCartVm
+@{
+    var (cartNetSubtotal, cartVatTotal) = Model.ComputeNetTotalsAfterAllDiscounts();
+}
 
 @if (Model.Items.Count == 0)
 {
@@ -45,9 +48,13 @@ else
                                 }
                                 <div>
                                     <div class="fw-bold">@item.Title</div>
+                                    @if (!string.IsNullOrEmpty(item.DisplayName))
+                                    {
+                                        <span class="badge bg-blue-lt me-1">@item.DisplayName</span>
+                                    }
                                     @if (!string.IsNullOrEmpty(item.Barcode))
                                     {
-                                        <div class="text-secondary small">@item.Barcode</div>
+                                        <span class="text-secondary small">@item.Barcode</span>
                                     }
                                 </div>
                             </div>
@@ -60,7 +67,7 @@ else
                                       hx-swap="innerHTML"
                                       style="display:contents;">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="productId" value="@item.ProductId" />
+                                    <input type="hidden" name="variantId" value="@item.VariantId" />
                                     <input type="hidden" name="quantity" value="@(item.Quantity - 1)" />
                                     <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
                                 </form>
@@ -71,7 +78,7 @@ else
                                       hx-swap="innerHTML"
                                       style="display:contents;">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="productId" value="@item.ProductId" />
+                                    <input type="hidden" name="variantId" value="@item.VariantId" />
                                     <input type="hidden" name="quantity" value="@(item.Quantity + 1)" />
                                     <button type="submit" class="btn btn-sm btn-outline-secondary"
                                             disabled="@(item.Quantity >= item.AvailableStock)"
@@ -116,7 +123,7 @@ else
                                   hx-swap="innerHTML"
                                   style="display:inline;">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="variantId" value="@item.VariantId" />
                                 <button type="submit" class="btn btn-ghost-danger btn-sm btn-icon">
                                     <i class="ti ti-x icon"></i>
                                 </button>
@@ -127,9 +134,14 @@ else
             </tbody>
             <tfoot>
                 <tr class="bg-light">
-                    <td colspan="2" class="fw-bold">Ara Toplam</td>
-                    <td class="text-end">@Model.TotalItems adet</td>
-                    <td class="text-end fw-bold">@Model.SubtotalAfterLineDiscount.ToString("N2") TL</td>
+                    <td colspan="2" class="fw-bold">Ara Toplam <span class="text-secondary fw-normal">(KDV hariç)</span></td>
+                    <td class="text-end text-secondary">@Model.TotalItems adet</td>
+                    <td class="text-end fw-bold">@cartNetSubtotal.ToString("N2") TL</td>
+                    <td></td>
+                </tr>
+                <tr class="bg-light">
+                    <td colspan="3" class="text-secondary">KDV</td>
+                    <td class="text-end">@cartVatTotal.ToString("N2") TL</td>
                     <td></td>
                 </tr>
                 @if (Model.HasGeneralDiscount)
@@ -163,7 +175,7 @@ else
                     </tr>
                 }
                 <tr class="bg-light">
-                    <td colspan="3" class="fw-bold fs-4">TOPLAM</td>
+                    <td colspan="3" class="fw-bold fs-4">TOPLAM <span class="text-secondary fs-6 fw-normal">(KDV dahil)</span></td>
                     <td class="text-end fw-bold fs-4 text-primary">@Model.GrandTotal.ToString("N2") TL</td>
                     <td class="text-end">
                         <button type="button"

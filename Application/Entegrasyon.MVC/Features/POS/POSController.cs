@@ -199,7 +199,7 @@ public class POSController(
                 VariantId = variantId,
                 Title = product.Title,
                 Barcode = selectedVariant.Barcode ?? "",
-                VariantAttributeSummary = variantSummary?.Trim() ?? "",
+                DisplayName = variantSummary?.Trim() ?? "",
                 ImageUrl = selectedVariant.imageLinks?.FirstOrDefault(),
                 UnitPrice = selectedVariant.SalePrice,
                 ListPrice = selectedVariant.ListPrice > 0 ? selectedVariant.ListPrice : selectedVariant.SalePrice,

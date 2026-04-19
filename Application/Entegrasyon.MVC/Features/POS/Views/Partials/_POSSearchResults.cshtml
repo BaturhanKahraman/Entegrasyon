@@ -1,51 +1,136 @@
-@model Entegrasyon.MVC.Features.POS.ViewModels.POSSearchResultsVm
+@model Entegrasyon.Entity.Dtos.POS.POSProductSearchResultDto
+@using System.Globalization
 
-@if (Model.Products.Count == 0)
+@{
+    var trCulture = new CultureInfo("tr-TR");
+}
+
+@* Barkod exact match: client-side JavaScript tarafından otomatik sepete eklenir *@
+@if (Model.ExactBarcodeMatch is not null)
 {
-    <div class="p-3 text-secondary text-center">
-        Ürün bulunamadi.
+    var v = Model.ExactBarcodeMatch;
+    <div class="d-none"
+         data-pos-auto-add="1"
+         data-product-id="@v.ProductId"
+         data-variant-id="@v.VariantId"
+         data-variant-summary="@v.DisplayName"></div>
+    <div class="p-3 border-bottom bg-green-lt">
+        <div class="d-flex align-items-center">
+            <i class="ti ti-barcode me-2 text-success"></i>
+            <div class="flex-fill">
+                <div class="fw-bold">Barkod eşleşti: @v.ProductTitle</div>
+                <div class="small text-secondary">
+                    @v.Barcode
+                    @if (!string.IsNullOrEmpty(v.DisplayName))
+                    {
+                        <span class="ms-2">· @v.DisplayName</span>
+                    }
+                </div>
+            </div>
+            <span class="badge bg-green text-green-fg">Sepete ekleniyor…</span>
+        </div>
     </div>
 }
-else
+
+@if (Model.Products.Count == 0 && Model.ExactBarcodeMatch is null)
+{
+    <div class="p-3 text-secondary text-center">
+        Ürün bulunamadı.
+    </div>
+}
+else if (Model.Products.Count > 0)
 {
     <div class="list-group list-group-flush">
         @foreach (var product in Model.Products)
         {
-            <a href="#" class="list-group-item list-group-item-action"
-               data-add-product="@product.ProductId">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+            var variantCount = product.Variants.Count;
+            var isSingleVariant = variantCount == 1;
+            var singleVariant = isSingleVariant ? product.Variants[0] : null;
+
+            <div class="list-group-item px-3 py-2">
+                <div class="d-flex align-items-start">
+                    @if (!string.IsNullOrEmpty(product.FeaturedImageUrl))
+                    {
+                        <img src="@product.FeaturedImageUrl" alt=""
+                             style="width:48px;height:48px;object-fit:cover"
+                             class="rounded me-2 flex-shrink-0" loading="lazy" />
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:48px;height:48px">
+                            <i class="ti ti-photo text-secondary"></i>
+                        </div>
+                    }
+                    <div class="flex-fill">
+                        @if (isSingleVariant && singleVariant is not null)
                         {
-                            <img src="@product.ImageUrl" alt=""
-                                 style="width:40px;height:40px;object-fit:cover"
-                                 class="rounded me-2" loading="lazy" />
+                            <a href="#" class="d-block text-decoration-none text-dark"
+                               data-pos-select-variant="1"
+                               data-product-id="@singleVariant.ProductId"
+                               data-variant-id="@singleVariant.VariantId"
+                               data-variant-summary="@singleVariant.DisplayName">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-bold">@product.Title</div>
+                                        <div class="text-secondary small">
+                                            @if (!string.IsNullOrEmpty(product.StockCode))
+                                            {
+                                                <span>@product.StockCode</span>
+                                            }
+                                            @if (!string.IsNullOrEmpty(singleVariant.Barcode))
+                                            {
+                                                <span class="ms-2">· @singleVariant.Barcode</span>
+                                            }
+                                            @if (!string.IsNullOrEmpty(product.BrandName))
+                                            {
+                                                <span class="ms-2">· @product.BrandName</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="text-end text-nowrap">
+                                        <div class="fw-bold">@singleVariant.SalePrice.ToString("C", trCulture)</div>
+                                        <span class="badge @(singleVariant.CurrentStock > 0 ? "bg-green-lt" : "bg-red-lt")">
+                                            Stok: @singleVariant.CurrentStock
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
                         }
                         else
                         {
-                            <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center"
-                                 style="width:40px;height:40px">
-                                <i class="ti ti-photo text-secondary"></i>
-                            </div>
-                        }
-                        <div>
                             <div class="fw-bold">@product.Title</div>
-                            <div class="text-secondary small">
-                                @product.StockCode
+                            <div class="text-secondary small mb-1">
+                                @if (!string.IsNullOrEmpty(product.StockCode))
+                                {
+                                    <span>@product.StockCode</span>
+                                }
                                 @if (!string.IsNullOrEmpty(product.BrandName))
                                 {
-                                    <span class="ms-2">@product.BrandName</span>
+                                    <span class="ms-2">· @product.BrandName</span>
+                                }
+                                <span class="ms-2 text-secondary">· @variantCount varyant</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var v in product.Variants)
+                                {
+                                    var label = string.IsNullOrEmpty(v.DisplayName) ? v.Barcode : v.DisplayName;
+                                    <a href="#" class="btn btn-sm btn-outline-primary"
+                                       data-pos-select-variant="1"
+                                       data-product-id="@v.ProductId"
+                                       data-variant-id="@v.VariantId"
+                                       data-variant-summary="@v.DisplayName"
+                                       title="@v.Barcode · @v.SalePrice.ToString("C", trCulture)">
+                                        <span class="fw-semibold">@label</span>
+                                        <span class="text-secondary ms-1 small">@v.SalePrice.ToString("C", trCulture)</span>
+                                        <span class="ms-1 text-success small">· @v.CurrentStock</span>
+                                    </a>
                                 }
                             </div>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge @(product.CurrentStock > 0 ? "bg-green-lt" : "bg-red-lt")">
-                            Stok: @product.CurrentStock
-                        </span>
+                        }
                     </div>
                 </div>
-            </a>
+            </div>
         }
     </div>
 }

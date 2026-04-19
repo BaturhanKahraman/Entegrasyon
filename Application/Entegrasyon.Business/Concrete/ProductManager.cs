@@ -399,18 +399,18 @@ public class ProductManager(
 
         // 1) Barkod exact match — tek satırı işaretle, sepete doğrudan eklenebilsin
         //    Stoğu 0 olan varyant eşleşmesi yok sayılır (POS satış aracı — satılamayan ürün gösterilmez)
-        var exactBarcode = await dbContext.ProductVariants
+        var exactBarcodeRaw = await dbContext.ProductVariants
             .Where(pv => pv.Barcode == trimmed && !pv.IsDeleted && !pv.Product.IsDeleted &&
                 pv.BranchOfficeStocks.Any(bs => bs.BranchOfficeId == branchOfficeId && bs.CurrentStock > 0))
-            .Select(pv => new POSProductSearchVariantDto
+            .Select(pv => new
             {
-                ProductId = pv.ProductId,
+                pv.ProductId,
                 VariantId = pv.Id,
                 ProductTitle = pv.Product.Title,
                 Barcode = pv.Barcode!,
-                SalePrice = pv.SalePrice,
-                ListPrice = pv.ListPrice,
-                VatRate = pv.VatRate,
+                pv.SalePrice,
+                pv.ListPrice,
+                pv.VatRate,
                 CurrentStock = pv.BranchOfficeStocks
                     .Where(bs => bs.BranchOfficeId == branchOfficeId)
                     .Sum(bs => bs.CurrentStock),
@@ -419,14 +419,33 @@ public class ProductManager(
                     .OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder)
                     .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src ?? "")
                     .FirstOrDefault(),
-                AttributeSummary = string.Join(" / ", pv.ProductVariantAttributes
-                    .Where(a => a.IsVarianter && a.CategoryAttributeValue != null)
-                    .Select(a => a.CategoryAttributeValue!))
+                pv.Name,
+                RawAttrs = pv.ProductVariantAttributes
+                    .Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer })
+                    .ToList()
             })
             .FirstOrDefaultAsync();
 
-        if (exactBarcode is not null)
+        if (exactBarcodeRaw is not null)
         {
+            var exactBarcode = new POSProductSearchVariantDto
+            {
+                ProductId = exactBarcodeRaw.ProductId,
+                VariantId = exactBarcodeRaw.VariantId,
+                ProductTitle = exactBarcodeRaw.ProductTitle,
+                Barcode = exactBarcodeRaw.Barcode,
+                SalePrice = exactBarcodeRaw.SalePrice,
+                ListPrice = exactBarcodeRaw.ListPrice,
+                VatRate = exactBarcodeRaw.VatRate,
+                CurrentStock = exactBarcodeRaw.CurrentStock,
+                ImageUrl = exactBarcodeRaw.ImageUrl,
+                DisplayName = VariantNameExtensions.ResolveDisplayName(
+                    exactBarcodeRaw.Name,
+                    exactBarcodeRaw.RawAttrs.Select((a, i) =>
+                        new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    exactBarcodeRaw.ProductTitle)
+            };
+
             if (!string.IsNullOrEmpty(exactBarcode.ImageUrl))
                 exactBarcode.ImageUrl = minioFileStorage.GetPublicUrl(exactBarcode.ImageUrl);
             result.ExactBarcodeMatch = exactBarcode;
@@ -436,7 +455,7 @@ public class ProductManager(
         var tsQuery = trimmed.ToFullTextSearchQuery();
         var likePattern = $"%{trimmed}%";
 
-        var productItems = await dbContext.MainProducts
+        var productItemsRaw = await dbContext.MainProducts
             .Where(p => !p.IsDeleted && (
                 p.SearchVector.Matches(tsQuery) ||
                 EF.Functions.ILike(p.Title, likePattern) ||
@@ -448,7 +467,7 @@ public class ProductManager(
                 pv.BranchOfficeStocks.Any(bs => bs.BranchOfficeId == branchOfficeId && bs.CurrentStock > 0)))
             .OrderByDescending(p => EF.Functions.TrigramsSimilarity(p.Title, trimmed))
             .Take(limit)
-            .Select(p => new POSProductSearchItemDto
+            .Select(p => new
             {
                 ProductId = p.Id,
                 Title = p.Title,
@@ -462,15 +481,13 @@ public class ProductManager(
                 Variants = p.ProductVariants
                     .Where(pv => !pv.IsDeleted &&
                         pv.BranchOfficeStocks.Any(bs => bs.BranchOfficeId == branchOfficeId && bs.CurrentStock > 0))
-                    .Select(pv => new POSProductSearchVariantDto
+                    .Select(pv => new
                     {
-                        ProductId = p.Id,
                         VariantId = pv.Id,
-                        ProductTitle = p.Title,
                         Barcode = pv.Barcode ?? "",
-                        SalePrice = pv.SalePrice,
-                        ListPrice = pv.ListPrice,
-                        VatRate = pv.VatRate,
+                        pv.SalePrice,
+                        pv.ListPrice,
+                        pv.VatRate,
                         CurrentStock = pv.BranchOfficeStocks
                             .Where(bs => bs.BranchOfficeId == branchOfficeId)
                             .Sum(bs => bs.CurrentStock),
@@ -479,13 +496,40 @@ public class ProductManager(
                             .OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder)
                             .Select(i => i.StorageKey != null ? i.StorageKey + "_original.webp" : i.Src ?? "")
                             .FirstOrDefault(),
-                        AttributeSummary = string.Join(" / ", pv.ProductVariantAttributes
-                            .Where(a => a.IsVarianter && a.CategoryAttributeValue != null)
-                            .Select(a => a.CategoryAttributeValue!))
+                        pv.Name,
+                        RawAttrs = pv.ProductVariantAttributes
+                            .Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer })
+                            .ToList()
                     })
                     .ToList()
             })
             .ToListAsync();
+
+        var productItems = productItemsRaw.Select(p => new POSProductSearchItemDto
+        {
+            ProductId = p.ProductId,
+            Title = p.Title,
+            StockCode = p.StockCode,
+            BrandName = p.BrandName,
+            FeaturedImageUrl = p.FeaturedImageUrl,
+            Variants = p.Variants.Select(pv => new POSProductSearchVariantDto
+            {
+                ProductId = p.ProductId,
+                VariantId = pv.VariantId,
+                ProductTitle = p.Title,
+                Barcode = pv.Barcode,
+                SalePrice = pv.SalePrice,
+                ListPrice = pv.ListPrice,
+                VatRate = pv.VatRate,
+                CurrentStock = pv.CurrentStock,
+                ImageUrl = pv.ImageUrl,
+                DisplayName = VariantNameExtensions.ResolveDisplayName(
+                    pv.Name,
+                    pv.RawAttrs.Select((a, i) =>
+                        new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    p.Title)
+            }).ToList()
+        }).ToList();
 
         // StorageKey → public URL dönüşümü (EF projection içinde yapılamaz)
         foreach (var p in productItems)
