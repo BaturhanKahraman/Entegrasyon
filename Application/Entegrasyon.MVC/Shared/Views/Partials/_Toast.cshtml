@@ -1,21 +1,43 @@
 @{
     var toast = TempData.GetToast();
     var alerts = TempData.GetAlerts();
+
+    string IconClassFor(string type) => type switch
+    {
+        "success" => "ti ti-circle-check",
+        "info" => "ti ti-info-circle",
+        "warning" => "ti ti-alert-triangle",
+        "danger" => "ti ti-alert-circle",
+        _ => "ti ti-info-circle"
+    };
 }
 
-@* Tabler v1: `alert-important` — solid renk arka plan + beyaz metin. Saydam görünümü önler. *@
+@* Tabler standard alert: https://tabler.io/docs/ui/alerts
+   alert-icon = sol taraftaki ikon container'ı, sağında heading/description.
+   alert-dismissible + btn-close = kullanıcı kapatabilsin. *@
+
 @if (toast is not null)
 {
-    <div class="alert alert-important alert-@toast.Type alert-dismissible fade show" role="alert">
-        @toast.Text
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Kapat"></button>
+    <div class="alert alert-@toast.Type alert-dismissible" role="alert">
+        <div class="alert-icon">
+            <i class="@IconClassFor(toast.Type) icon icon-2"></i>
+        </div>
+        <div>
+            <div class="alert-description">@toast.Text</div>
+        </div>
+        <a class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></a>
     </div>
 }
 
 @foreach (var alert in alerts)
 {
-    <div class="alert alert-important alert-@alert.Type alert-dismissible fade show" role="alert">
-        @alert.Text
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Kapat"></button>
+    <div class="alert alert-@alert.Type alert-dismissible" role="alert">
+        <div class="alert-icon">
+            <i class="@IconClassFor(alert.Type) icon icon-2"></i>
+        </div>
+        <div>
+            <div class="alert-description">@alert.Text</div>
+        </div>
+        <a class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></a>
     </div>
 }

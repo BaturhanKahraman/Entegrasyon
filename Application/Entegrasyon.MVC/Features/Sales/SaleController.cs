@@ -206,9 +206,14 @@ public class SaleController(
 
         var result = await saleReturnManager.CreateReturnAsync(dto);
         if (result.Success)
+        {
             TempData.SetSuccess(result.Message ?? "İade talebi oluşturuldu.");
+            TempData["_pendingReturnId"] = result.Data.ToString();
+        }
         else
+        {
             TempData.SetError(result.Message ?? "İade talebi oluşturulamadı.");
+        }
 
         return RedirectToAction(nameof(SaleDetail), new { id = saleId });
     }

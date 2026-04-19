@@ -6,7 +6,7 @@ namespace Entegrasyon.Business.Abstract;
 
 public interface ISaleReturnManager
 {
-    Task<IResult> CreateReturnAsync(CreateSaleReturnDto dto);
+    Task<IDataResult<long>> CreateReturnAsync(CreateSaleReturnDto dto);
     Task<IResult> UpdateReturnAsync(UpdateSaleReturnDto dto);
     Task<IResult> SubmitReturnAsync(long returnId, Guid userId);
     Task<IResult> ApproveReturnAsync(long returnId, Guid approvedByUserId);

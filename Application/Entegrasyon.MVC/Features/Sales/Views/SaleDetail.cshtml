@@ -261,7 +261,39 @@
     </div>
 </div>
 
+@{
+    var pendingReturnId = TempData["_pendingReturnId"] as string;
+}
+@if (!string.IsNullOrEmpty(pendingReturnId))
+{
+    <div class="modal modal-blur fade" id="navigate-return-modal" tabindex="-1" aria-hidden="true" data-auto-open="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-status bg-success"></div>
+                <div class="modal-body text-center py-4">
+                    <i class="ti ti-circle-check icon mb-2 text-success" style="font-size: 3rem;"></i>
+                    <h3>İade Talebi Oluşturuldu</h3>
+                    <div class="text-muted">İade talebine gitmek ister misiniz?</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary me-auto" data-bs-dismiss="modal">Hayır</button>
+                    <a href="/returns/@pendingReturnId" class="btn btn-success">
+                        <i class="ti ti-arrow-right me-1"></i>Evet, İadeye Git
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 <script>
+(function () {
+    var el = document.getElementById('navigate-return-modal');
+    if (el && el.dataset.autoOpen === 'true' && typeof bootstrap !== 'undefined') {
+        new bootstrap.Modal(el).show();
+    }
+})();
+
 function rejectReturn(returnId, saleId) {
     var reason = prompt('Ret nedeni:');
     if (!reason) return;

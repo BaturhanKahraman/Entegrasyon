@@ -208,27 +208,16 @@ document.body.addEventListener('clearBanners', function (event) {
 
 // ── Toast Notifications ───────────────────────────────────────────────
 
-// HTMX response'larından gelen showToast trigger'ını dinle
+// HTMX response'larından gelen showToast trigger'ını dinle.
+// Gerçek "toast" = floating corner notification — Notyf (sağ üstte) bu işi yapar.
+// Inline alerts (banner) için _Toast.cshtml partial + TempData kullanılır.
 document.body.addEventListener('showToast', function (event) {
     var detail = event.detail || {};
-    var message = detail.message || 'Islem tamamlandi';
+    var message = detail.message || 'İşlem tamamlandı';
     var type = detail.type || 'info';
-    var container = document.getElementById('toast-container');
-    if (!container) return;
-
-    var alert = document.createElement('div');
-    alert.className = 'alert alert-' + type + ' alert-dismissible fade show';
-    alert.setAttribute('role', 'alert');
-    alert.textContent = message;
-
-    var closeBtn = document.createElement('a');
-    closeBtn.className = 'btn-close';
-    closeBtn.setAttribute('data-bs-dismiss', 'alert');
-    closeBtn.setAttribute('aria-label', 'Kapat');
-    alert.appendChild(closeBtn);
-
-    container.appendChild(alert);
-    setTimeout(function () { alert.remove(); }, 5000);
+    if (typeof window.showNotify === 'function') {
+        window.showNotify(message, type);
+    }
 });
 
 // ── Modal Management ──────────────────────────────────────────────────

@@ -20,7 +20,7 @@ public sealed class SaleReturnManager(
     // CREATE
     // ────────────────────────────────────────────────────────────────────
 
-    public async Task<IResult> CreateReturnAsync(CreateSaleReturnDto dto)
+    public async Task<IDataResult<long>> CreateReturnAsync(CreateSaleReturnDto dto)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         await fluentValidator.ValidateAndThrowAsync(dto);
@@ -31,14 +31,14 @@ public sealed class SaleReturnManager(
         if (dto.SaleId.HasValue)
         {
             var result = await BuildSaleReturnItems(dbContext, dto.SaleId.Value, dto.Items);
-            if (!result.Success) return result;
+            if (!result.Success) return new ErrorDataResult<long>(0, result.Message ?? "İade oluşturulamadı.");
             totalRefund = result.Data.TotalRefund;
             returnItems = result.Data.Items;
         }
         else if (dto.OrderId.HasValue)
         {
             var result = await BuildOrderReturnItems(dbContext, dto.OrderId.Value, dto.Items);
-            if (!result.Success) return result;
+            if (!result.Success) return new ErrorDataResult<long>(0, result.Message ?? "İade oluşturulamadı.");
             totalRefund = result.Data.TotalRefund;
             returnItems = result.Data.Items;
         }
@@ -66,7 +66,7 @@ public sealed class SaleReturnManager(
             $"İade talebi oluşturuldu. Tutar: {totalRefund:C}",
             LogType.Sale, LogAction.Add);
 
-        return new SuccessResult("İade talebi oluşturuldu.");
+        return new SuccessDataResult<long>(saleReturn.Id, "İade talebi oluşturuldu.");
     }
 
     // ────────────────────────────────────────────────────────────────────
