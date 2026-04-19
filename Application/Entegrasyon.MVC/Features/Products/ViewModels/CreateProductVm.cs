@@ -83,6 +83,7 @@ public class CreateProductVm
 public class CreateVariantVm
 {
     public string Barcode { get; set; } = "";
+    public string? Name { get; set; }
     public decimal? ListPrice { get; set; }
     public decimal SalePrice { get; set; }
     public decimal CostPrice { get; set; }

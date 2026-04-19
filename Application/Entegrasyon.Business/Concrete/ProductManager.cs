@@ -85,7 +85,14 @@ public class ProductManager(
 
         attributeKeyValueManager.ClearEmptyAttributes(product);
         foreach (var variant in product.ProductVariants)
-            variant.Name = namingService.Compute(variant, product);
+        {
+            // Kullanıcı wizard'da elle Name girdi mi? Mapperly AddProductVariantDto.Name'i
+            // ProductVariant.Name'e zaten kopyaladı. Boşsa attribute'lardan hesapla.
+            if (string.IsNullOrWhiteSpace(variant.Name))
+                variant.Name = namingService.Compute(variant, product);
+            else
+                variant.Name = variant.Name.Trim();
+        }
         dbContext.MainProducts.Add(product);
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add, "Product", product.Id.ToString());

@@ -17,7 +17,8 @@ else
             <thead>
                 <tr>
                     <th>Özellikler</th>
-                    <th>Liste Fiyat <span class="text-muted fw-normal small">(opsiyonel)</span></th>
+                    <th>Varyant Adı <span class="text-muted fw-normal small">(ops.)</span></th>
+                    <th>Liste Fiyat <span class="text-muted fw-normal small">(ops.)</span></th>
                     <th>Satış Fiyat</th>
                     <th>Maliyet</th>
                     <th>KDV %</th>
@@ -29,6 +30,14 @@ else
                 @for (int i = 0; i < Model.Variants.Count; i++)
                 {
                     var variant = Model.Variants[i];
+                    // Auto-compute preview: varianter+slicer değerleri boşluk ile
+                    var autoName = string.Join(" ",
+                        variant.VariantAttributes
+                            .Where(a => a.IsVarianter || a.IsSlicer)
+                            .OrderByDescending(a => a.IsVarianter)
+                            .Select(a => a.ValueName)
+                            .Where(v => !string.IsNullOrWhiteSpace(v)));
+                    if (string.IsNullOrWhiteSpace(autoName)) autoName = Model.Title;
                     <tr data-variant-index="@i">
                         <td>
                             @for (int j = 0; j < variant.VariantAttributes.Count; j++)
@@ -43,6 +52,11 @@ else
                                 <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsVarianter" value="@attr.IsVarianter" />
                                 <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsSlicer" value="@attr.IsSlicer" />
                             }
+                        </td>
+                        <td>
+                            <input type="text" name="Variants[@i].Name" value="@variant.Name"
+                                   class="form-control form-control-sm" maxlength="256"
+                                   placeholder="@autoName" style="min-width:160px" autocomplete="off" />
                         </td>
                         <td>
                             <div class="input-group input-group-sm" style="width:140px">

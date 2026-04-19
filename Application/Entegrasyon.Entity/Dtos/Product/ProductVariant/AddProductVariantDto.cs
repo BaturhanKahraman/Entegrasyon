@@ -8,6 +8,7 @@ public sealed class AddProductVariantDto
     public decimal? DimensionalWeight { get; set; }
     public string CurrencyType { get; set; } = null!;
     public string Barcode { get; set; } = null!;
+    public string? Name { get; set; }
     public decimal? ListPrice { get; set; }
     public decimal? SalePrice { get; set; }
     public decimal? CostPrice { get; set; }
