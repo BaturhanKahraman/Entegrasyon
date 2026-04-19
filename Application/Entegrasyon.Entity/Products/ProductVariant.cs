@@ -20,6 +20,7 @@ public sealed class ProductVariant:BaseEntity
     [Column(TypeName = "money")]
     public decimal ECommercePrice { get; set; }
     public decimal VatRate { get; set; }
+    public string? Name { get; set; }
     public ICollection<BranchOfficeStock> BranchOfficeStocks { get; set; } = new List<BranchOfficeStock>();
     public ICollection<Image> Images { get; set; } = new List<Image>();
     

@@ -15,6 +15,7 @@ public class ProductVariantEntityConfiguration : IEntityTypeConfiguration<Produc
             .IsRowVersion();
         builder.HasQueryFilter(x => !x.IsDeleted);
         builder.HasIndex(x => x.Barcode).IsUnique();
+        builder.Property(x => x.Name).HasMaxLength(256);
         //builder.OwnsMany(x => x.ProductVariantAttributes, navBuilder =>
         //{
         //    navBuilder.ToJson();

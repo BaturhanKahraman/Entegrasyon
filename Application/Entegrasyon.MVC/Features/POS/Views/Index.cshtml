@@ -289,21 +289,47 @@ else
                 }
             });
 
-            // Ürün ekleme — arama sonuçları tıklandığında
-            document.addEventListener('click', function(e) {
-                var btn = e.target.closest('[data-add-product]');
-                if (!btn) return;
-                e.preventDefault();
-                var productId = btn.getAttribute('data-add-product');
+            // Varyant seçimi — arama sonuçlarında tek varyant satırı veya chip'e tıklandığında
+            function posAddVariantToCart(productId, variantId, variantSummary) {
                 var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                 htmx.ajax('POST', '/pos/add-item', {
                     target: '#pos-cart',
                     swap: 'innerHTML',
-                    values: { productId: productId, __RequestVerificationToken: token }
+                    values: {
+                        productId: productId,
+                        variantId: variantId,
+                        variantSummary: variantSummary || '',
+                        __RequestVerificationToken: token
+                    }
                 });
-                document.getElementById('search-results').replaceChildren();
-                document.getElementById('posSearchInput').value = '';
-                document.getElementById('posSearchInput').focus();
+                var results = document.getElementById('search-results');
+                if (results) results.replaceChildren();
+                var input = document.getElementById('posSearchInput');
+                if (input) { input.value = ''; input.focus(); }
+            }
+
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('[data-pos-select-variant]');
+                if (!btn) return;
+                e.preventDefault();
+                if (btn.classList.contains('disabled')) return;
+                posAddVariantToCart(
+                    btn.getAttribute('data-product-id'),
+                    btn.getAttribute('data-variant-id'),
+                    btn.getAttribute('data-variant-summary')
+                );
+            });
+
+            // Barkod exact match — arama sonucu swap olduğunda otomatik sepete ekle
+            document.body.addEventListener('htmx:afterSwap', function(e) {
+                if (!e.target || e.target.id !== 'search-results') return;
+                var auto = e.target.querySelector('[data-pos-auto-add]');
+                if (!auto) return;
+                posAddVariantToCart(
+                    auto.getAttribute('data-product-id'),
+                    auto.getAttribute('data-variant-id'),
+                    auto.getAttribute('data-variant-summary')
+                );
             });
 
             // Müşteri seçimi — arama sonuçları tıklandığında
