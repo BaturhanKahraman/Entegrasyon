@@ -405,6 +405,12 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
         {
+            // Task 0.13/0.14: InProcessEventDispatcher as hosted service
+            // Channel<BaseEvent> is registered in AddNotification() (always runs, dev + prod)
+            // so it is always available when InProcessEventDispatcher needs it here.
+            services.AddSingleton<InProcessEventDispatcher>();
+            services.AddHostedService(sp => sp.GetRequiredService<InProcessEventDispatcher>());
+
             // Task 0.12: OutboxDispatcher — LISTEN/NOTIFY + retry + dead-letter
             services.AddSingleton<OutboxDispatcher>();
             services.AddHostedService(sp => sp.GetRequiredService<OutboxDispatcher>());
@@ -482,6 +488,21 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<INotificationSender, SmsSender>();
 
             // INotificationRecipientResolver → NotificationRecipientResolver: covered by scan (Notifications namespace)
+
+            // Task 0.14: Ephemeral event channel — registered here (not in AddBackgroundServices) so it is
+            // always available in both Development and Production. AddBackgroundServices is skipped in dev.
+            services.AddSingleton<System.Threading.Channels.Channel<Entegrasyon.Business.Channels.Events.BaseEvent>>(
+                _ => System.Threading.Channels.Channel.CreateBounded<Entegrasyon.Business.Channels.Events.BaseEvent>(
+                    new System.Threading.Channels.BoundedChannelOptions(1000)
+                    {
+                        FullMode = System.Threading.Channels.BoundedChannelFullMode.DropOldest,
+                        SingleReader = true,
+                        SingleWriter = false
+                    }));
+
+            // Task 0.14: IEventBus — Scoped because InMemoryEventBus depends on ITenantContext (Scoped)
+            services.AddScoped<IEventBus, InMemoryEventBus>();
+
             return services;
         }
 
