@@ -1,5 +1,6 @@
-﻿using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
+using System.Threading.Channels;
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events;
 using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -15,7 +16,7 @@ public sealed class NotificationManager(
     IEnumerable<INotificationSender> notificationSenders,
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator validator,
-    EventChannel<NotificationEvent> eventChannel,
+    Channel<BaseEvent> ephemeralChannel,
     ITenantContext tenantContext,
     ILogger<NotificationManager> logger) : INotificationManager
 {
@@ -73,14 +74,6 @@ public sealed class NotificationManager(
                     sender.Type, notification.Id);
             }
         }
-
-        // EventChannel'a yaz → NotificationEventPublisher → INotificationDeliveryService
-        var evt = new NotificationEvent(
-            notification.Id, header, content, existingUserIds, severity, category, actionUrl)
-        {
-            TenantId = tenantContext.TenantId
-        };
-        await eventChannel.Writer.WriteAsync(evt);
     }
 
     public async Task<IEnumerable<Notification>> GetNotificationsForUser(Guid userId, bool onlyUnread = false, int? take = null)
@@ -90,7 +83,8 @@ public sealed class NotificationManager(
             .Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed));
 
         if (onlyUnread)
-            query = query.Where(n => !n.IsRead);
+            query = query.Where(n => n.NotificationsUsers.Any(
+                nu => nu.ApplicationUserId == userId && !nu.IsRead));
 
         query = query.OrderByDescending(n => n.CreatedAt);
 
@@ -103,49 +97,58 @@ public sealed class NotificationManager(
     public async Task MarkAsRead(long notificationId, Guid userId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var notification = await dbContext.Notifications
-            .Include(n => n.Users)
-            .FirstOrDefaultAsync(n => n.Id == notificationId && n.Users.Any(u => u.Id == userId));
+        var affected = await dbContext.Set<NotificationsUsers>()
+            .Where(nu => nu.NotificationId == notificationId
+                      && nu.ApplicationUserId == userId
+                      && !nu.IsRead)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(nu => nu.IsRead, true)
+                .SetProperty(nu => nu.ReadAt, DateTimeOffset.UtcNow));
 
-        if (notification is null) return;
-
-        notification.IsRead = true;
-        notification.ReadAt = DateTimeOffset.UtcNow;
-        await dbContext.SaveChangesAsync();
+        if (affected > 0)
+        {
+            await ephemeralChannel.Writer.WriteAsync(
+                new NotificationReadEvent(notificationId, userId, DateTimeOffset.UtcNow)
+                {
+                    TenantId = tenantContext.TenantId
+                });
+        }
     }
 
     public async Task MarkAllAsRead(Guid userId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        await dbContext.Notifications
-            .Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed) && !n.IsRead)
+        await dbContext.Set<NotificationsUsers>()
+            .Where(nu => nu.ApplicationUserId == userId && !nu.IsDismissed && !nu.IsRead)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(n => n.IsRead, true)
-                .SetProperty(n => n.ReadAt, DateTimeOffset.UtcNow));
+                .SetProperty(nu => nu.IsRead, true)
+                .SetProperty(nu => nu.ReadAt, DateTimeOffset.UtcNow));
     }
 
     public async Task DismissNotification(long notificationId, Guid userId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        await dbContext.Set<NotificationsUsers>()
+        var affected = await dbContext.Set<NotificationsUsers>()
             .Where(nu => nu.NotificationId == notificationId && nu.ApplicationUserId == userId && !nu.IsDismissed)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(nu => nu.IsDismissed, true)
                 .SetProperty(nu => nu.DismissedAt, DateTimeOffset.UtcNow));
+
+        if (affected > 0)
+        {
+            await ephemeralChannel.Writer.WriteAsync(
+                new NotificationDismissedEvent(notificationId, userId)
+                {
+                    TenantId = tenantContext.TenantId
+                });
+        }
     }
 
     public async Task DismissAllRead(Guid userId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var readNotificationIds = await dbContext.Notifications
-            .Where(n => n.IsRead && n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed))
-            .Select(n => n.Id)
-            .ToListAsync();
-
-        if (readNotificationIds.Count == 0) return;
-
         await dbContext.Set<NotificationsUsers>()
-            .Where(nu => readNotificationIds.Contains(nu.NotificationId) && nu.ApplicationUserId == userId)
+            .Where(nu => nu.ApplicationUserId == userId && nu.IsRead && !nu.IsDismissed)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(nu => nu.IsDismissed, true)
                 .SetProperty(nu => nu.DismissedAt, DateTimeOffset.UtcNow));
