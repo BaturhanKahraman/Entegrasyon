@@ -137,6 +137,9 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<Login> Logins { get; set; }
     public virtual DbSet<ApplicationSetting> ApplicationSettings { get; set; }
     public virtual DbSet<NotificationSetting> NotificationSettings { get; set; }
+    public virtual DbSet<NotificationOutbox> NotificationOutbox => Set<NotificationOutbox>();
+    public virtual DbSet<DeadLetterOutbox> DeadLetterOutbox => Set<DeadLetterOutbox>();
+    public virtual DbSet<AdminPushSubscription> AdminPushSubscriptions => Set<AdminPushSubscription>();
     public virtual DbSet<EFaturaRecord> EFaturaRecords { get; set; }
 
     // E-Fatura / E-Arsiv (genel amacli)
