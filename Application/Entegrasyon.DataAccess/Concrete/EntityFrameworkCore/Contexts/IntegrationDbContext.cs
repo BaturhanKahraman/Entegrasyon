@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Entegrasyon.Entity.Events;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts.Seed;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
@@ -10,6 +11,7 @@ using Entegrasyon.Entity.Receipts;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using System.Text.Json;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.DiscountVouchers;
@@ -34,6 +36,23 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
 public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options) : DbContext(options)
 {
+    private readonly List<IDomainEvent> _pendingDomainEvents = [];
+
+    private static readonly JsonSerializerOptions _domainEventJsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    /// <summary>
+    /// Domain event'i buffer'a ekler. SaveChangesAsync çağrısında event atomik
+    /// olarak notification_outbox tablosuna yazılır ve buffer temizlenir.
+    /// </summary>
+    public void AddDomainEvent(IDomainEvent evt)
+    {
+        ArgumentNullException.ThrowIfNull(evt);
+        _pendingDomainEvents.Add(evt);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -53,6 +72,21 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
+        if (_pendingDomainEvents.Count > 0)
+        {
+            foreach (var evt in _pendingDomainEvents)
+            {
+                Set<NotificationOutbox>().Add(new NotificationOutbox
+                {
+                    EventType = evt.GetType().Name,
+                    PayloadJson = JsonSerializer.Serialize(evt, evt.GetType(), _domainEventJsonOpts),
+                    Status = OutboxStatus.Pending,
+                    TenantId = evt.TenantId
+                });
+            }
+            _pendingDomainEvents.Clear();
+        }
+
         foreach (var entry in ChangeTracker.Entries()
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {

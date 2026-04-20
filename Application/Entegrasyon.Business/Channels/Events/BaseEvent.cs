@@ -1,6 +1,8 @@
+using Entegrasyon.Entity.Events;
+
 namespace Entegrasyon.Business.Channels.Events;
 
-public abstract class BaseEvent
+public abstract class BaseEvent : IDomainEvent
 {
     public Guid EventId { get; } = Guid.NewGuid();
     public DateTime OccurredAt { get; } = DateTime.UtcNow;
