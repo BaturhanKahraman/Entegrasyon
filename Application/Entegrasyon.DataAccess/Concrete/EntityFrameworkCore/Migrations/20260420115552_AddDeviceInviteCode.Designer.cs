@@ -3,6 +3,7 @@ using System;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    partial class IntegrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420115552_AddDeviceInviteCode")]
+    partial class AddDeviceInviteCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2638,12 +2641,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<bool>("IsDismissed")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("ReadAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("ApplicationUserId", "NotificationId");
 

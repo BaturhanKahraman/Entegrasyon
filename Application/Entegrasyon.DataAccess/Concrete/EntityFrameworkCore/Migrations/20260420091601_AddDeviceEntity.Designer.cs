@@ -3,6 +3,7 @@ using System;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    partial class IntegrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420091601_AddDeviceEntity")]
+    partial class AddDeviceEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1306,55 +1309,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.ToTable("Devices");
                 });
 
-            modelBuilder.Entity("Entegrasyon.Entity.Devices.DeviceInviteCode", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("RedeemedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("RedeemedByDeviceId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("DeviceInviteCodes");
-                });
-
             modelBuilder.Entity("Entegrasyon.Entity.DiscountVouchers.DiscountVoucher", b =>
                 {
                     b.Property<int>("Id")
@@ -2638,12 +2592,6 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 
                     b.Property<bool>("IsDismissed")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("ReadAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("ApplicationUserId", "NotificationId");
 
