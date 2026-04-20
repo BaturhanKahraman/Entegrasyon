@@ -503,6 +503,13 @@ namespace Entegrasyon.ApplicationBootstrap
             // Task 0.14: IEventBus — Scoped because InMemoryEventBus depends on ITenantContext (Scoped)
             services.AddScoped<IEventBus, InMemoryEventBus>();
 
+            // Task 2.3: IDomainEventHandler<T> — Scrutor auto-registration for all notification handlers
+            services.Scan(scan => scan
+                .FromAssemblyOf<Entegrasyon.Business.Notifications.Handlers.ProductAddedNotificationHandler>()
+                .AddClasses(c => c.AssignableTo(typeof(Entegrasyon.Business.Notifications.Handlers.IDomainEventHandler<>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+
             return services;
         }
 
