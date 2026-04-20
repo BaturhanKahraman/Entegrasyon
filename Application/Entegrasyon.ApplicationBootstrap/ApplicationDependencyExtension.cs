@@ -405,6 +405,10 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
         {
+            // Task 0.12: OutboxDispatcher — LISTEN/NOTIFY + retry + dead-letter
+            services.AddSingleton<OutboxDispatcher>();
+            services.AddHostedService(sp => sp.GetRequiredService<OutboxDispatcher>());
+
             services.AddHostedService<CategoryImportBackgroundService>();
             services.AddHostedService<TrendyolProductPublishBackgroundService>();
             services.AddHostedService<TrendyolBatchStatusPollingService>();
@@ -447,6 +451,15 @@ namespace Entegrasyon.ApplicationBootstrap
         public static IServiceCollection AddConfigurations(this IServiceCollection services, IConfiguration? configuration = null)
         {
             services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);
+            if (configuration is not null)
+            {
+                services.Configure<Entegrasyon.Business.Concrete.Auth.BatchTokenOptions>(
+                    configuration.GetSection(Entegrasyon.Business.Concrete.Auth.BatchTokenOptions.SectionName));
+
+                // Task 0.12: OutboxDispatcher polling/retry ayarları
+                services.Configure<OutboxDispatchOptions>(
+                    configuration.GetSection(OutboxDispatchOptions.SectionName));
+            }
             return services;
         }
         public static IServiceCollection AddCustomUserIdProvider(this IServiceCollection services)
