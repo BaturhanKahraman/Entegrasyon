@@ -10,5 +10,5 @@ public abstract class BaseEvent
     /// Publisher'lar ITenantContext.TenantId'den set eder.
     /// Consumer'lar bu deger ile tenant scope olusturur.
     /// </summary>
-    public int TenantId { get; init; }
+    public int TenantId { get; set; }
 }

@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Threading.Channels;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels.Events;
@@ -9,9 +8,6 @@ public sealed class InMemoryEventBus(
     Channel<BaseEvent> ephemeralChannel,
     ITenantContext tenantContext) : IEventBus
 {
-    private static readonly PropertyInfo TenantIdProperty =
-        typeof(BaseEvent).GetProperty(nameof(BaseEvent.TenantId))!;
-
     public async ValueTask PublishAsync<TEvent>(TEvent @event, bool persistent = false, CancellationToken ct = default)
         where TEvent : BaseEvent
     {
@@ -22,7 +18,7 @@ public sealed class InMemoryEventBus(
                 "publish edilmelidir (business transaction ile atomiklik için).");
         }
 
-        TenantIdProperty.SetValue(@event, tenantContext.TenantId);
+        @event.TenantId = tenantContext.TenantId;
         await ephemeralChannel.Writer.WriteAsync(@event, ct);
     }
 }
