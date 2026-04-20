@@ -11,4 +11,6 @@ public class NotificationsUsers
     public Notification Notification { get; set; } = null!;
     public bool IsDismissed { get; set; }
     public DateTimeOffset? DismissedAt { get; set; }
+    public bool IsRead { get; set; }
+    public DateTimeOffset? ReadAt { get; set; }
 }
