@@ -1,4 +1,6 @@
+using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
@@ -6,6 +8,8 @@ using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Entegrasyon.UnitTest.Business;
 
@@ -31,6 +35,8 @@ public class BrandServiceTests : BaseTest
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
+        var notificationFlags = Options.Create(new NotificationFeatureFlags { PublishEnabled = false });
+        var currentUser = new Mock<ICurrentUserContext>();
         _sut = new BrandService(
             MockValidator.Object,
             mockApplicationLogger.Object,
@@ -38,7 +44,9 @@ public class BrandServiceTests : BaseTest
             mockContextFactory.Object,
             _tenantCache,
             mockHybridCache.Object,
-            mockTenantContext.Object);
+            mockTenantContext.Object,
+            notificationFlags,
+            currentUser.Object);
     }
 
     [Fact]

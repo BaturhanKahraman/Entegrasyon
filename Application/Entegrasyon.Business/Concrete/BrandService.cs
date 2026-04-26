@@ -1,23 +1,26 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Brands;
+using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.FeatureFlags;
+using Entegrasyon.Business.Mappers;
+using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity;
-using Entegrasyon.Business.Mappers;
+using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Requests;
-using Microsoft.EntityFrameworkCore;
-using Entegrasyon.Business.Extensions;
-using Entegrasyon.Business.Tenants;
-using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext)
+public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext, IOptions<NotificationFeatureFlags> notificationFlags, ICurrentUserContext currentUser)
     : IBrandService
 {
     private const string brandListCacheKey = "brands:list";
@@ -58,6 +61,13 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
             return new ErrorResult(result.Message!);
         }
         dbContext.Brands.Add(brand);
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new BrandAddedEvent(
+                brand.Id,
+                brand.Name ?? string.Empty,
+                currentUser.UserId ?? Guid.Empty));
+        }
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
         await hybridCache.RemoveByTagAsync("brands");
@@ -78,6 +88,14 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         }
         await validator.ValidateAndThrowAsync(brand);
         dbContext.Brands.Update(brand);
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new BrandUpdatedEvent(
+                brand.Id,
+                brand.Name ?? string.Empty,
+                Array.Empty<string>(),
+                currentUser.UserId ?? Guid.Empty));
+        }
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
         await hybridCache.RemoveByTagAsync("brands");
@@ -99,8 +117,16 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
             await applicationLogManager.AddLog("Marka silme basarisiz. Ilgili id bulunamadi:", LogType.Brand, LogAction.Delete, id);
             return new ErrorResult("Boyle bir marka bulunamadi");
         }
+        var deletedName = brand.Name ?? string.Empty;
         brand.IsDeleted = true;
         brand.DeletedAt = DateTimeOffset.UtcNow;
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new BrandDeletedEvent(
+                brand.Id,
+                deletedName,
+                currentUser.UserId ?? Guid.Empty));
+        }
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
         await hybridCache.RemoveByTagAsync("brands");
