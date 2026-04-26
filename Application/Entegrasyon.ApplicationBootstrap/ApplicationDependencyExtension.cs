@@ -527,6 +527,9 @@ namespace Entegrasyon.ApplicationBootstrap
             // Task 4.2: ISseConnectionRegistry — Singleton (process-scoped connection state)
             services.AddSingleton<Entegrasyon.Business.Notifications.Sse.ISseConnectionRegistry, Entegrasyon.Business.Notifications.Sse.SseConnectionRegistry>();
 
+            // Task 4.3: SseNotificationSender — Scoped (matches other INotificationSender lifetimes)
+            services.AddScoped<INotificationSender, Entegrasyon.Business.Notifications.Sse.SseNotificationSender>();
+
             return services;
         }
 
