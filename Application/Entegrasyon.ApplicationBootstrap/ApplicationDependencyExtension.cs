@@ -534,6 +534,10 @@ namespace Entegrasyon.ApplicationBootstrap
             // Task 4.3: SseNotificationSender — Scoped (matches other INotificationSender lifetimes)
             services.AddScoped<INotificationSender, Entegrasyon.Business.Notifications.Sse.SseNotificationSender>();
 
+            // Task 5.2: AdminPushSubscriptionManager — Web Push subscription CRUD for admin users
+            services.AddScoped<Entegrasyon.Business.Notifications.WebPush.IAdminPushSubscriptionManager,
+                               Entegrasyon.Business.Notifications.WebPush.AdminPushSubscriptionManager>();
+
             return services;
         }
 
