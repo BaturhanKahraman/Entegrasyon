@@ -135,5 +135,63 @@
         // browser auto-reconnects on error
     }
 
-    document.addEventListener('DOMContentLoaded', connect);
+    async function registerPush() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+        try {
+            const registration = await navigator.serviceWorker.register('/sw-admin.js');
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') return;
+
+                const vapidKeyResp = await fetch('/admin-push/vapid-public-key');
+                if (!vapidKeyResp.ok) return;
+                const vapidKey = await vapidKeyResp.text();
+                if (!vapidKey) return;  // server returned empty key — VAPID not configured
+
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidKey)
+                });
+            }
+
+            await fetch('/admin-push/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    endpoint: subscription.endpoint,
+                    p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+                    auth: arrayBufferToBase64(subscription.getKey('auth'))
+                })
+            });
+        } catch (e) {
+            console.warn('Push registration failed', e);
+        }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw = atob(base64);
+        const out = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+        return out;
+    }
+
+    function arrayBufferToBase64(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        connect();
+        registerPush();
+    });
 })();
