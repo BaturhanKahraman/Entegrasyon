@@ -70,11 +70,36 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     }
 
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
-        if (_pendingDomainEvents.Count > 0)
+        // --- Pre-save audit logic (runs before every base.SaveChangesAsync call) ---
+        ApplyAuditAndUtcConversions();
+
+        // Capture pending events and clear buffer NOW so the re-entrant base.SaveChangesAsync
+        // call in step 2 (outbox persist) does not double-serialize events.
+        var pending = _pendingDomainEvents.ToList();
+        _pendingDomainEvents.Clear();
+
+        if (pending.Count == 0)
         {
-            foreach (var evt in _pendingDomainEvents)
+            // Fast path: no events, skip transaction overhead
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        // Begin an explicit transaction if the caller hasn't already started one.
+        // If an ambient transaction exists, we join it so atomicity is preserved by the caller.
+        var existingTx = Database.CurrentTransaction;
+        var ownTx = existingTx is null
+            ? await Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
+        try
+        {
+            // Step 1: persist entity changes — this assigns auto-increment IDs to new entities.
+            var entityChangesResult = await base.SaveChangesAsync(cancellationToken);
+
+            // Step 2: now that IDs are assigned, serialize events with correct values and add outbox rows.
+            foreach (var evt in pending)
             {
                 Set<NotificationOutbox>().Add(new NotificationOutbox
                 {
@@ -84,9 +109,37 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
                     TenantId = evt.TenantId
                 });
             }
-            _pendingDomainEvents.Clear();
-        }
 
+            // Apply audit logic to the newly-added outbox rows before saving them.
+            ApplyAuditAndUtcConversions();
+
+            // Step 3: persist outbox rows only (entity changes already committed in step 1).
+            await base.SaveChangesAsync(cancellationToken);
+
+            if (ownTx is not null)
+                await ownTx.CommitAsync(cancellationToken);
+
+            return entityChangesResult;
+        }
+        catch
+        {
+            if (ownTx is not null)
+                await ownTx.RollbackAsync(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            if (ownTx is not null)
+                await ownTx.DisposeAsync();
+        }
+    }
+
+    /// <summary>
+    /// ChangeTracker üzerindeki Added/Modified entity'lere UTC dönüşümü ve CreatedAt/UpdatedAt atar.
+    /// SaveChangesAsync içinde her base.SaveChangesAsync öncesinde çağrılır.
+    /// </summary>
+    private void ApplyAuditAndUtcConversions()
+    {
         foreach (var entry in ChangeTracker.Entries()
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
@@ -110,8 +163,6 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
                     baseEntity.UpdatedAt = DateTimeOffset.UtcNow;
             }
         }
-
-        return base.SaveChangesAsync(cancellationToken);
     }
 
     public virtual DbSet<Category> Categories { get; set; }
@@ -128,6 +179,10 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<PricingRule> PricingRules { get; set; }
     public virtual DbSet<VatRate> VatRates { get; set; }
     public virtual DbSet<ApiKey> ApiKeys { get; set; }
+    public virtual DbSet<Entegrasyon.Entity.Devices.Device> Devices { get; set; }
+    public virtual DbSet<Entegrasyon.Entity.Devices.DeviceInviteCode> DeviceInviteCodes { get; set; }
+    public virtual DbSet<Entegrasyon.Entity.Printing.PrintBatch> PrintBatches { get; set; }
+    public virtual DbSet<Entegrasyon.Entity.Printing.PrintBatchItem> PrintBatchItems { get; set; }
     public virtual DbSet<WebhookSubscription> WebhookSubscriptions { get; set; }
     public virtual DbSet<WebhookDeliveryLog> WebhookDeliveryLogs { get; set; }
     public virtual DbSet<ReturnProduct> ReturnProducts { get; set; }
