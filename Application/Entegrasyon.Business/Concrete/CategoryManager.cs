@@ -1,24 +1,27 @@
-using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
-using Entegrasyon.Entity.Categories;
-using Entegrasyon.Entity;
-using Entegrasyon.Entity.Dtos.Category;
-using Entegrasyon.Entity.Dtos.Storefront;
-using Entegrasyon.Entity.Logs;
-using Microsoft.EntityFrameworkCore;
-using Entegrasyon.Entity.Results;
+using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Categories;
+using Entegrasyon.Business.FeatureFlags;
+using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Tenants;
-using System.Linq.Expressions;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
+using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity;
+using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Dtos.Category.AddStep;
-using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Mappers;
-using System.Linq.Dynamic.Core;
+using Entegrasyon.Entity.Dtos.Storefront;
+using Entegrasyon.Entity.Logs;
+using Entegrasyon.Entity.Results;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Options;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 
 namespace Entegrasyon.Business.Concrete
 {
-    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, CategoryMapper mapper, IFluentValidator fluentValidator, IProductService productService, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext) : ICategoryService
+    public class CategoryManager(IDbContextFactory<IntegrationDbContext> contextFactory, IApplicationLogManager applicationLogManager, CategoryMapper mapper, IFluentValidator fluentValidator, IProductService productService, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext, IOptions<NotificationFeatureFlags> notificationFlags, ICurrentUserContext currentUser) : ICategoryService
     {
         private const string CategoryListCacheKey = "categories:list";
         private string TenantCacheKey(string key) => $"t:{tenantContext.TenantId}:{key}";
@@ -56,6 +59,14 @@ namespace Entegrasyon.Business.Concrete
 
             var category = mapper.MapToEntity(dto);
             dbContext.Categories.Add(category);
+            if (notificationFlags.Value.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new CategoryAddedEvent(
+                    category.Id,
+                    category.Name ?? string.Empty,
+                    category.SuperCategoryId,
+                    currentUser.UserId ?? Guid.Empty));
+            }
             await dbContext.SaveChangesAsync();
             cache.Remove(CategoryListCacheKey);
             await hybridCache.RemoveByTagAsync("categories");
@@ -93,6 +104,13 @@ namespace Entegrasyon.Business.Concrete
             dbCategory.IsFavorite = dto.IsFavorite;
             dbCategory.IsImported = dto.IsImported;
             dbCategory.DefaultVatRate = dto.DefaultVatRate;
+            if (notificationFlags.Value.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new CategoryUpdatedEvent(
+                    dbCategory.Id,
+                    "Kategori güncellendi",
+                    currentUser.UserId ?? Guid.Empty));
+            }
             await dbContext.SaveChangesAsync();
             cache.Remove(CategoryListCacheKey);
             await hybridCache.RemoveByTagAsync("categories");
@@ -124,8 +142,16 @@ namespace Entegrasyon.Business.Concrete
             int productCount = await productService.GetProductCountByCategoryId(categoryId);
             if (productCount > 0)
                 return new ErrorResult(Messages.CategoryHasProducts);
+            var deletedName = category.Name ?? string.Empty;
             category.IsDeleted = true;
             category.DeletedAt = DateTimeOffset.UtcNow;
+            if (notificationFlags.Value.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new CategoryDeletedEvent(
+                    category.Id,
+                    deletedName,
+                    currentUser.UserId ?? Guid.Empty));
+            }
             await dbContext.SaveChangesAsync();
             cache.Remove(CategoryListCacheKey);
             await hybridCache.RemoveByTagAsync("categories");

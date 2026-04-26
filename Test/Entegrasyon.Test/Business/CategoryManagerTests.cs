@@ -1,16 +1,17 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Mappers;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
-using Moq;
-using Xunit;
 using FluentAssertions;
-using Entegrasyon.Business.Utility.Constants;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Moq;
 using Moq.EntityFrameworkCore;
+using Xunit;
 
 namespace Entegrasyon.UnitTest.Business;
 
@@ -24,6 +25,8 @@ public class CategoryManagerTests : BaseTest
     {
         MockValidator = new Mock<IFluentValidator>();
         var tenantCache = new TenantMemoryCache(new MemoryCache(new MemoryCacheOptions()), mockTenantContext.Object);
+        var notificationFlags = Options.Create(new NotificationFeatureFlags { PublishEnabled = false });
+        var currentUser = new Mock<ICurrentUserContext>();
         _categoryManager = new CategoryManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
@@ -32,7 +35,9 @@ public class CategoryManagerTests : BaseTest
             _mockProductService.Object,
             tenantCache,
             mockHybridCache.Object,
-            mockTenantContext.Object
+            mockTenantContext.Object,
+            notificationFlags,
+            currentUser.Object
         );
     }
 
