@@ -296,6 +296,7 @@ builder.Services.AddSession(options =>
 
 // ── Misc ─────────────────────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Entegrasyon.Business.Abstract.ICurrentUserContext, Entegrasyon.MVC.Infrastructure.CurrentUserContext>();
 builder.Services.AddAntiforgery();
 
 // ── Request Localization ────────────────────────────────────────────────

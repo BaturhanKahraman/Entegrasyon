@@ -70,6 +70,7 @@ namespace Entegrasyon.ApplicationBootstrap
                         "Entegrasyon.Business.Concrete.Invoicing",
                         "Entegrasyon.Business.Concrete.Kargo",
                         "Entegrasyon.Business.Concrete.POS",
+                        "Entegrasyon.Business.Concrete.Printing",
                         "Entegrasyon.Business.Concrete.Search",
                         "Entegrasyon.Business.Concrete.Shipping",
                         "Entegrasyon.Business.Concrete.Storefront",
@@ -465,6 +466,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 // Task 0.12: OutboxDispatcher polling/retry ayarları
                 services.Configure<OutboxDispatchOptions>(
                     configuration.GetSection(OutboxDispatchOptions.SectionName));
+
+                // Task 3.1: Notification feature flags
+                services.Configure<Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags>(
+                    configuration.GetSection(Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags.SectionName));
             }
             return services;
         }
