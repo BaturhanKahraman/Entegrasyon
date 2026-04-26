@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Business.Notifications;
@@ -99,6 +100,10 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.CustomerSearchSource>();
             services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.CategorySearchSource>();
             services.AddScoped<Entegrasyon.Business.Abstract.Search.ISearchSource, Entegrasyon.Business.Concrete.Search.BrandSearchSource>();
+
+            // Task 3.1: ICurrentUserContext fallback (MVC katmanı Program.cs'de override eder)
+            services.TryAddScoped<Entegrasyon.Business.Abstract.ICurrentUserContext,
+                Entegrasyon.Business.Concrete.Auth.NullCurrentUserContext>();
 
             services.AddScoped<ITenantContext, HttpTenantContext>();
             services.AddScoped<TenantMemoryCache>();
@@ -470,6 +475,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 // Task 3.1: Notification feature flags
                 services.Configure<Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags>(
                     configuration.GetSection(Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags.SectionName));
+
+                // Task 3.1: ICurrentUserContext — fallback null-object; MVC katmanı Program.cs'de override eder
+                services.TryAddScoped<Entegrasyon.Business.Abstract.ICurrentUserContext,
+                    Entegrasyon.Business.Concrete.Auth.NullCurrentUserContext>();
             }
             return services;
         }

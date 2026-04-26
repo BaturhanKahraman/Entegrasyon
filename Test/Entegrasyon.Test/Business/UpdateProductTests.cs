@@ -2,12 +2,14 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Products;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 using ProductMapper = Entegrasyon.Business.Mappers.ProductMapper;
 
 namespace Entegrasyon.UnitTest.Business;
@@ -22,6 +24,8 @@ public class UpdateProductTests : BaseTest
     private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
     private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
     private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
+    private readonly Mock<IOptions<NotificationFeatureFlags>> _mockNotificationFlags = new();
+    private readonly Mock<ICurrentUserContext> _mockCurrentUser = new();
 
     public UpdateProductTests()
     {
@@ -37,6 +41,9 @@ public class UpdateProductTests : BaseTest
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
+        _mockNotificationFlags.Setup(x => x.Value).Returns(new NotificationFeatureFlags { PublishEnabled = false });
+        _mockCurrentUser.Setup(x => x.UserId).Returns(Guid.NewGuid());
+
         _productManager = new ProductManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
@@ -49,7 +56,9 @@ public class UpdateProductTests : BaseTest
             _productUpdatedChannel,
             _mockMinioFileStorage.Object,
             mockTenantContext.Object,
-            new VariantNamingService()
+            new VariantNamingService(),
+            _mockNotificationFlags.Object,
+            _mockCurrentUser.Object
         );
     }
 

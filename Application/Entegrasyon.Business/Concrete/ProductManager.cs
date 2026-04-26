@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -16,6 +17,7 @@ using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Entegrasyon.Business.Extensions;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
@@ -38,7 +40,9 @@ public class ProductManager(
     EventChannel<ProductUpdatedEvent> productUpdatedChannel,
     IMinioFileStorage minioFileStorage,
     ITenantContext tenantContext,
-    IVariantNamingService namingService) : IProductService
+    IVariantNamingService namingService,
+    IOptions<NotificationFeatureFlags> notificationFlags,
+    ICurrentUserContext currentUser) : IProductService
 {
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
@@ -94,9 +98,16 @@ public class ProductManager(
                 variant.Name = variant.Name.Trim();
         }
         dbContext.MainProducts.Add(product);
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new ProductAddedEvent(
+                product.Id,
+                product.Title ?? string.Empty,
+                currentUser.UserId ?? Guid.Empty));
+        }
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add, "Product", product.Id.ToString());
-        productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title)
+        productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title ?? string.Empty)
         {
             TenantId = tenantContext.TenantId
         });
@@ -298,13 +309,21 @@ public class ProductManager(
             product.ChangeHistory = System.Text.Json.JsonSerializer.Serialize(history);
         }
 
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new ProductUpdatedEvent(
+                product.Id,
+                product.Title ?? string.Empty,
+                categoryChanged,
+                currentUser.UserId ?? Guid.Empty));
+        }
         await dbContext.SaveChangesAsync();
 
         await applicationLogManager.AddLog($"'{product.Title}' ürünü güncellendi.", LogType.Product, LogAction.Update, "Product", product.Id.ToString());
         if (categoryChanged)
             await applicationLogManager.AddLog("Ürünün kategorisi değiştirildi, mevcut özellikler temizlendi.", LogType.Product, LogAction.Update);
 
-        productUpdatedChannel.TryPublish(new ProductUpdatedEvent(product.Id, product.Title, categoryChanged)
+        productUpdatedChannel.TryPublish(new ProductUpdatedEvent(product.Id, product.Title ?? string.Empty, categoryChanged)
         {
             TenantId = tenantContext.TenantId
         });
@@ -598,8 +617,16 @@ public class ProductManager(
         var product = await dbContext.MainProducts.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
         if (product is null)
             return new ErrorResult("Silinecek ürün bulunamadı.");
+        var deletedProductTitle = product.Title ?? string.Empty;
         product.IsDeleted = true;
         product.DeletedAt = DateTimeOffset.UtcNow;
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new ProductDeletedEvent(
+                product.Id,
+                deletedProductTitle,
+                currentUser.UserId ?? Guid.Empty));
+        }
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog($"'{product.Title}' ürünü silindi.", LogType.Product, LogAction.Delete, "Product", product.Id.ToString());
         return new SuccessResult("Ürün silindi.");

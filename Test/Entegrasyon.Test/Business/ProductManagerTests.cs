@@ -2,12 +2,14 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Products;
+using Microsoft.Extensions.Options;
 using ProductMapper = Entegrasyon.Business.Mappers.ProductMapper;
 
 namespace Entegrasyon.UnitTest.Business;
@@ -22,6 +24,8 @@ public class ProductManagerTests : BaseTest
     private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
     private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
     private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
+    private readonly Mock<IOptions<NotificationFeatureFlags>> _mockNotificationFlags = new();
+    private readonly Mock<ICurrentUserContext> _mockCurrentUser = new();
 
     public ProductManagerTests()
     {
@@ -40,6 +44,9 @@ public class ProductManagerTests : BaseTest
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
+        _mockNotificationFlags.Setup(x => x.Value).Returns(new NotificationFeatureFlags { PublishEnabled = false });
+        _mockCurrentUser.Setup(x => x.UserId).Returns(Guid.NewGuid());
+
         _productManager = new ProductManager(
             mockContextFactory.Object,
             mockApplicationLogger.Object,
@@ -52,7 +59,9 @@ public class ProductManagerTests : BaseTest
             _productUpdatedChannel,
             _mockMinioFileStorage.Object,
             mockTenantContext.Object,
-            new VariantNamingService()
+            new VariantNamingService(),
+            _mockNotificationFlags.Object,
+            _mockCurrentUser.Object
         );
     }
 
@@ -167,4 +176,10 @@ public class ProductManagerTests : BaseTest
             a => a.ClearEmptyAttributes(It.IsAny<Product>()),
             Times.Once);
     }
+
+    // SKIPPED: AddProduct_FlagEnabled_AddsDomainEventToOutbox
+    // IntegrationDbContext + InMemory provider çakışıyor: NpgsqlTsVector gibi PostgreSQL-spesifik
+    // tipler InMemory adapter tarafından desteklenmiyor. Tam uçtan uca doğrulama Phase 2'nin
+    // DomainEventPipelineTests entegrasyon testine (Testcontainers + gerçek PostgreSQL) bırakıldı.
+    // Task 3.2 unit-test kapsamı: mevcut testler PublishEnabled=false (davranış değişmedi) kanıtlıyor.
 }
