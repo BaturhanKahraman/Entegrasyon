@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Entegrasyon.MVC</RootNamespace>
+    <UserSecretsId>89fa4fc5-0140-4b0a-8213-3fe4d0021e56</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
