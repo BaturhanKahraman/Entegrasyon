@@ -538,6 +538,26 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<Entegrasyon.Business.Notifications.WebPush.IAdminPushSubscriptionManager,
                                Entegrasyon.Business.Notifications.WebPush.AdminPushSubscriptionManager>();
 
+            // Task 5.3: PushServiceClient — singleton (thread-safe HTTP client wrapper)
+            // The if-guard allows startup without VAPID keys (dev / placeholder mode).
+            services.AddSingleton<Lib.Net.Http.WebPush.PushServiceClient>(sp =>
+            {
+                var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Entegrasyon.Business.Notifications.WebPush.WebPushOptions>>().Value;
+                var client = new Lib.Net.Http.WebPush.PushServiceClient();
+                if (!string.IsNullOrEmpty(opts.VapidPublicKey) && !string.IsNullOrEmpty(opts.VapidPrivateKey))
+                {
+                    client.DefaultAuthentication = new Lib.Net.Http.WebPush.Authentication.VapidAuthentication(
+                        opts.VapidPublicKey, opts.VapidPrivateKey)
+                    {
+                        Subject = opts.VapidSubject
+                    };
+                }
+                return client;
+            });
+
+            // Task 5.3: AdminWebPushSender — sends Web Push to all admin subscribers
+            services.AddScoped<INotificationSender, Entegrasyon.Business.Notifications.WebPush.AdminWebPushSender>();
+
             return services;
         }
 
