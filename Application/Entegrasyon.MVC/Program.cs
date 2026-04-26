@@ -297,7 +297,10 @@ builder.Services.AddSession(options =>
 // ── Misc ─────────────────────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Entegrasyon.Business.Abstract.ICurrentUserContext, Entegrasyon.MVC.Infrastructure.CurrentUserContext>();
-builder.Services.AddAntiforgery();
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 
 // ── Request Localization ────────────────────────────────────────────────
 // Model binder decimal/DateTime parse'inin host OS culture'indan bagimsiz

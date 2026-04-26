@@ -15,7 +15,6 @@ public sealed class AdminPushController(
     public IActionResult VapidPublicKey() => Content(options.Value.VapidPublicKey, "text/plain");
 
     [HttpPost("/admin-push/subscribe")]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Subscribe([FromBody] SubscribeDto dto)
     {
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -30,7 +29,6 @@ public sealed class AdminPushController(
     }
 
     [HttpPost("/admin-push/unsubscribe")]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Unsubscribe([FromBody] UnsubscribeDto dto)
     {
         var result = await manager.UnsubscribeAsync(dto.Endpoint);
