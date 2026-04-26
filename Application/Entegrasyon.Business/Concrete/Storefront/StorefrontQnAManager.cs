@@ -45,11 +45,13 @@ public class StorefrontQnAManager(
         };
 
         dbContext.StorefrontProductQuestions.Add(entity);
+        await dbContext.SaveChangesAsync(); // First save: entity.Id assigned by DB
 
         if (notificationFlags.Value.PublishEnabled)
+        {
             dbContext.AddDomainEvent(new StorefrontProductQuestionEvent(entity.Id, productId, customerId));
-
-        await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(); // Second save: outbox row with correct entity.Id
+        }
 
         return new SuccessResult("Sorunuz basariyla gonderildi.");
     }

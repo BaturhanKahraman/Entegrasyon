@@ -60,11 +60,13 @@ public class StorefrontReviewManager(
         };
 
         dbContext.StorefrontReviews.Add(review);
+        await dbContext.SaveChangesAsync(); // First save: review.Id assigned by DB
 
         if (notificationFlags.Value.PublishEnabled)
+        {
             dbContext.AddDomainEvent(new StorefrontReviewSubmittedEvent(review.Id, productId, rating));
-
-        await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(); // Second save: outbox row with correct review.Id
+        }
 
         return new SuccessDataResult<StorefrontReview>(review, "Yorumunuz basariyla gonderildi. Onaylandiktan sonra yayinlanacaktir.");
     }
