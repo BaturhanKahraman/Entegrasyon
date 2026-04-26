@@ -1,6 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Dtos.Product;
@@ -14,7 +12,6 @@ public class ProductVariantManagerTests : BaseTest
     private readonly IProductVariantManager _sut;
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
     private readonly Mock<IImageManager> _mockImageManager = new();
-    private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
     private readonly List<ProductVariant> _variants;
 
     public ProductVariantManagerTests()
@@ -63,8 +60,6 @@ public class ProductVariantManagerTests : BaseTest
             MockValidator.Object,
             _mockBarcodeService.Object,
             _mockImageManager.Object,
-            _productUpdatedChannel,
-            mockTenantContext.Object,
             new VariantNamingService()
         );
     }

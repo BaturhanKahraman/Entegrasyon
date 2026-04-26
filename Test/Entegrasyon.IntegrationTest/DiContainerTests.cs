@@ -1,7 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Categories;
-using Entegrasyon.Business.Channels.Events.Notifications;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete.Auth;
 using Entegrasyon.Business.FileStorage;
@@ -171,12 +170,9 @@ public class DiContainerTests : IntegrationTestBase
     {
         // Event channels
         typeof(EventChannel<ProductCreatedForMarketplaceEvent>),
-        typeof(EventChannel<ProductAddedEvent>),
         typeof(EventChannel<CategoryUpdatedEvent>),
         typeof(EventChannel<CategoryImportRequestedEvent>),
         typeof(EventChannel<CategoryImportCompletedEvent>),
-        typeof(EventChannel<NotificationEvent>),
-        typeof(EventChannel<ProductUpdatedEvent>),
         typeof(EventChannel<StockPriceChangedEvent>),
 
         // Storage

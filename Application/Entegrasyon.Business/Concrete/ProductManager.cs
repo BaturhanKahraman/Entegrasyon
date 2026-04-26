@@ -1,5 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Utility.Constants;
@@ -36,10 +35,7 @@ public class ProductManager(
     IOfficeStockManager officeStockManager,
     IAttributeKeyValueManager attributeKeyValueManager,
     IBarcodeService barcodeService,
-    EventChannel<ProductAddedEvent> productAddedChannel,
-    EventChannel<ProductUpdatedEvent> productUpdatedChannel,
     IMinioFileStorage minioFileStorage,
-    ITenantContext tenantContext,
     IVariantNamingService namingService,
     IOptions<NotificationFeatureFlags> notificationFlags,
     ICurrentUserContext currentUser) : IProductService
@@ -107,10 +103,6 @@ public class ProductManager(
         }
         await dbContext.SaveChangesAsync();
         await applicationLogManager.AddLog("Ürün başarı ile eklendi", LogType.Product, LogAction.Add, "Product", product.Id.ToString());
-        productAddedChannel.TryPublish(new ProductAddedEvent(product.Id, product.Title ?? string.Empty)
-        {
-            TenantId = tenantContext.TenantId
-        });
         return new SuccessDataResult<Product>(product, Messages.ProductAdded);
     }
 
@@ -322,11 +314,6 @@ public class ProductManager(
         await applicationLogManager.AddLog($"'{product.Title}' ürünü güncellendi.", LogType.Product, LogAction.Update, "Product", product.Id.ToString());
         if (categoryChanged)
             await applicationLogManager.AddLog("Ürünün kategorisi değiştirildi, mevcut özellikler temizlendi.", LogType.Product, LogAction.Update);
-
-        productUpdatedChannel.TryPublish(new ProductUpdatedEvent(product.Id, product.Title ?? string.Empty, categoryChanged)
-        {
-            TenantId = tenantContext.TenantId
-        });
 
         return new SuccessResult("Ürün güncellendi.");
     }

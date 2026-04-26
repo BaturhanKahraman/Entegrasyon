@@ -496,12 +496,10 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddNotification(this IServiceCollection services)
         {
-            services.AddScoped<ISignalRNotificationSender, SignalRSender>();
             services.AddScoped<IEmailSender, EmailSender>();
             services.AddScoped<ISmsSender, SmsSender>();
 
             // NotificationManager IEnumerable<INotificationSender> olarak inject eder
-            services.AddScoped<INotificationSender, SignalRSender>();
             services.AddScoped<INotificationSender, EmailSender>();
             services.AddScoped<INotificationSender, SmsSender>();
 

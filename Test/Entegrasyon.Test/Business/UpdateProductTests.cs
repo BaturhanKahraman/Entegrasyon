@@ -1,6 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.FileStorage;
@@ -21,8 +19,6 @@ public class UpdateProductTests : BaseTest
     private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
-    private readonly EventChannel<ProductAddedEvent> _productAddedChannel = new();
-    private readonly EventChannel<ProductUpdatedEvent> _productUpdatedChannel = new();
     private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
     private readonly Mock<IOptions<NotificationFeatureFlags>> _mockNotificationFlags = new();
     private readonly Mock<ICurrentUserContext> _mockCurrentUser = new();
@@ -52,10 +48,7 @@ public class UpdateProductTests : BaseTest
             _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,
             _mockBarcodeService.Object,
-            _productAddedChannel,
-            _productUpdatedChannel,
             _mockMinioFileStorage.Object,
-            mockTenantContext.Object,
             new VariantNamingService(),
             _mockNotificationFlags.Object,
             _mockCurrentUser.Object

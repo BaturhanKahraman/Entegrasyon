@@ -1,6 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -20,8 +18,6 @@ public class ProductVariantManager(
     IFluentValidator fluentValidator,
     IBarcodeService barcodeService,
     IImageManager imageManager,
-    EventChannel<ProductUpdatedEvent> productUpdatedChannel,
-    ITenantContext tenantContext,
     IVariantNamingService namingService) : IProductVariantManager
 {
     public async Task<ProductVariant> GetById(Guid id)
@@ -210,9 +206,6 @@ public class ProductVariantManager(
         dbContext.ProductVariants.Add(variant);
         await dbContext.SaveChangesAsync();
 
-        // Sync trigger: Product.UpdatedAt dokunarak OutOfSync yap
-        PublishProductUpdated(product.Id, product.Title);
-
         await applicationLogManager.AddLog($"Varyant eklendi. Barkod: {barcode}", LogType.Product, LogAction.Add, "Product", productId.ToString());
         return new SuccessResult("Varyant başarıyla eklendi.");
     }
@@ -249,9 +242,6 @@ public class ProductVariantManager(
 
         await dbContext.SaveChangesAsync();
 
-        // Sync trigger
-        PublishProductUpdated(variant.ProductId, variant.Product.Title);
-
         await applicationLogManager.AddLog("Varyant güncellendi.", LogType.Product, LogAction.Update, "Product", variant.ProductId.ToString());
         return new SuccessResult("Varyant başarıyla güncellendi.");
     }
@@ -275,9 +265,6 @@ public class ProductVariantManager(
 
         // Kullanılmayan resimleri temizle
         await imageManager.SoftDeleteVariantImages(variantId);
-
-        // Sync trigger
-        PublishProductUpdated(variant.ProductId, variant.Product.Title);
 
         await applicationLogManager.AddLog($"Varyant silindi. Barkod: {variant.Barcode}", LogType.Product, LogAction.Delete, "Product", variant.ProductId.ToString());
         return new SuccessResult("Varyant silindi.");
@@ -392,16 +379,6 @@ public class ProductVariantManager(
         );
 
         return new SuccessDataResult<VariantDetailPageDto>(dto);
-    }
-
-    // ── Private Helpers ──────────────────────────────────────────────
-
-    private void PublishProductUpdated(Guid productId, string productTitle)
-    {
-        productUpdatedChannel.TryPublish(new ProductUpdatedEvent(productId, productTitle, false)
-        {
-            TenantId = tenantContext.TenantId
-        });
     }
 
     private static MarketplaceSyncState MapSyncState(ProductMarketplace? marketplace, DateTimeOffset productUpdatedAt)

@@ -31,8 +31,8 @@ public class NotificationManagerTests : BaseTest
             .Setup(v => v.ValidateAndThrowAsync(It.IsAny<SendNotificationRequest>()))
             .Returns(Task.CompletedTask);
 
-        _mockSender1.Setup(s => s.Type).Returns(SenderType.SignalR);
-        _mockSender2.Setup(s => s.Type).Returns(SenderType.Email);
+        _mockSender1.Setup(s => s.Type).Returns(SenderType.Email);
+        _mockSender2.Setup(s => s.Type).Returns(SenderType.Sms);
 
         mockIntegrationDbContext
             .Setup(x => x.Users)
