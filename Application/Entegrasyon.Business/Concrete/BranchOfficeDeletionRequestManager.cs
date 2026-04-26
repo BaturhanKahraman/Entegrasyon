@@ -1,5 +1,7 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.System;
 using Entegrasyon.Business.Constants;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Notifications;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -12,6 +14,7 @@ using Entegrasyon.Entity.Results;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -47,6 +50,7 @@ public class BranchOfficeDeletionRequestManager(
     INotificationRecipientResolver recipientResolver,
     IValidator<RequestDeleteDto> requestValidator,
     IValidator<RejectDeletionRequestDto> rejectValidator,
+    IOptions<NotificationFeatureFlags> notificationFlags,
     ILogger<BranchOfficeDeletionRequestManager> logger) : IBranchOfficeDeletionRequestManager
 {
     private const int MaxStageARetries = 3;
@@ -129,6 +133,15 @@ public class BranchOfficeDeletionRequestManager(
         await dbContext.BranchOffices
             .Where(b => b.Id == branchOfficeId)
             .ExecuteUpdateAsync(b => b.SetProperty(x => x.DeletionRequestId, request.Id), ct);
+
+        if (notificationFlags.Value.PublishEnabled)
+        {
+            dbContext.AddDomainEvent(new BranchOfficeApprovalRequestedEvent(
+                request.Id,
+                request.BranchOfficeId,
+                requestedBy));
+            await dbContext.SaveChangesAsync(ct);
+        }
 
         await applicationLogManager.AddLog(
             "Şube silme talebi açıldı.",
@@ -301,6 +314,12 @@ public class BranchOfficeDeletionRequestManager(
             trackedRequest.ApprovedByUserId = approvedBy;
             trackedRequest.ReviewedAt = DateTimeOffset.UtcNow;
 
+            if (notificationFlags.Value.PublishEnabled)
+                ctx.AddDomainEvent(new BranchOfficeApprovalApprovedEvent(
+                    requestId,
+                    sourceId,
+                    approvedBy));
+
             await ctx.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }
@@ -394,6 +413,13 @@ public class BranchOfficeDeletionRequestManager(
         await dbContext.BranchOffices
             .Where(b => b.Id == request.BranchOfficeId)
             .ExecuteUpdateAsync(b => b.SetProperty(x => x.DeletionRequestId, (int?)null), ct);
+
+        if (notificationFlags.Value.PublishEnabled)
+            dbContext.AddDomainEvent(new BranchOfficeApprovalRejectedEvent(
+                requestId,
+                request.BranchOfficeId,
+                rejectedBy,
+                reason ?? string.Empty));
 
         await dbContext.SaveChangesAsync(ct);
 
