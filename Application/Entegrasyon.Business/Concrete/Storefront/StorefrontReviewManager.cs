@@ -1,13 +1,17 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Storefront;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.Concrete.Storefront;
 
 public class StorefrontReviewManager(
-    IDbContextFactory<IntegrationDbContext> contextFactory) : IStorefrontReviewManager
+    IDbContextFactory<IntegrationDbContext> contextFactory,
+    IOptions<NotificationFeatureFlags> notificationFlags) : IStorefrontReviewManager
 {
     public async Task<IDataResult<List<StorefrontReview>>> GetProductReviewsAsync(int tenantId, Guid productId)
     {
@@ -56,6 +60,10 @@ public class StorefrontReviewManager(
         };
 
         dbContext.StorefrontReviews.Add(review);
+
+        if (notificationFlags.Value.PublishEnabled)
+            dbContext.AddDomainEvent(new StorefrontReviewSubmittedEvent(review.Id, productId, rating));
+
         await dbContext.SaveChangesAsync();
 
         return new SuccessDataResult<StorefrontReview>(review, "Yorumunuz basariyla gonderildi. Onaylandiktan sonra yayinlanacaktir.");

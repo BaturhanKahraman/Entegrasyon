@@ -11,7 +11,7 @@ public class StorefrontQnAManagerTests : BaseTest
 
     public StorefrontQnAManagerTests()
     {
-        _sut = new StorefrontQnAManager(mockContextFactory.Object);
+        _sut = new StorefrontQnAManager(mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
     }
 
     [Fact]

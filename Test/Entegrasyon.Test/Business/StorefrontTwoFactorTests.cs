@@ -11,7 +11,7 @@ public class StorefrontTwoFactorTests : BaseTest
 
     public StorefrontTwoFactorTests()
     {
-        _sut = new StorefrontAuthManager(mockContextFactory.Object);
+        _sut = new StorefrontAuthManager(mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
     }
 
     [Fact]

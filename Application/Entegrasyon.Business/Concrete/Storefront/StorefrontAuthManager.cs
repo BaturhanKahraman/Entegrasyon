@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Storefront;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Utilities;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
@@ -8,11 +10,13 @@ using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.Concrete.Storefront;
 
 public class StorefrontAuthManager(
-    IDbContextFactory<IntegrationDbContext> contextFactory) : IStorefrontAuthManager
+    IDbContextFactory<IntegrationDbContext> contextFactory,
+    IOptions<NotificationFeatureFlags> notificationFlags) : IStorefrontAuthManager
 {
     public async Task<IDataResult<StorefrontCustomerAuth>> RegisterAsync(StorefrontRegisterDto dto)
     {
@@ -65,6 +69,10 @@ public class StorefrontAuthManager(
         };
 
         dbContext.StorefrontCustomerAuths.Add(auth);
+
+        if (notificationFlags.Value.PublishEnabled)
+            dbContext.AddDomainEvent(new StorefrontNewCustomerEvent(customer.Id, dto.Email));
+
         await dbContext.SaveChangesAsync();
 
         return new SuccessDataResult<StorefrontCustomerAuth>(auth, "Kayit basarili.");

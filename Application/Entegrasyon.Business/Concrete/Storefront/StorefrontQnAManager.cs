@@ -1,13 +1,17 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Storefront;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.Concrete.Storefront;
 
 public class StorefrontQnAManager(
-    IDbContextFactory<IntegrationDbContext> contextFactory) : IStorefrontQnAManager
+    IDbContextFactory<IntegrationDbContext> contextFactory,
+    IOptions<NotificationFeatureFlags> notificationFlags) : IStorefrontQnAManager
 {
     public async Task<IDataResult<List<StorefrontProductQuestion>>> GetProductQuestionsAsync(int tenantId, Guid productId)
     {
@@ -41,6 +45,10 @@ public class StorefrontQnAManager(
         };
 
         dbContext.StorefrontProductQuestions.Add(entity);
+
+        if (notificationFlags.Value.PublishEnabled)
+            dbContext.AddDomainEvent(new StorefrontProductQuestionEvent(entity.Id, productId, customerId));
+
         await dbContext.SaveChangesAsync();
 
         return new SuccessResult("Sorunuz basariyla gonderildi.");

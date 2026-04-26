@@ -21,7 +21,7 @@ public class StorefrontReviewManagerTests
             .Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(_mockDbContext.Object);
 
-        _sut = new StorefrontReviewManager(_mockContextFactory.Object);
+        _sut = new StorefrontReviewManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
     }
 
     [Fact]

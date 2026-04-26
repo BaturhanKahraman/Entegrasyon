@@ -205,7 +205,7 @@ public class StorefrontFaz2Tests
             .ReturnsDbSet(new List<StorefrontLoginHistory>());
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object);
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act & Assert — should not throw
         await manager.RecordLoginAttemptAsync(1, "192.168.1.1", "Mozilla/5.0", true);
@@ -234,7 +234,7 @@ public class StorefrontFaz2Tests
         _mockDbContext.Setup(x => x.StorefrontLoginHistories)
             .ReturnsDbSet(history);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object);
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.GetLoginHistoryAsync(1, 20);
@@ -278,7 +278,7 @@ public class StorefrontFaz2Tests
         _mockDbContext.Setup(x => x.StorefrontLoginHistories)
             .ReturnsDbSet(new List<StorefrontLoginHistory>());
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object);
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.ExportCustomerDataAsync(1, 10);
