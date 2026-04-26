@@ -1,10 +1,12 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Entegrasyon.Test.Pazarama;
@@ -19,11 +21,15 @@ public class PazaramaOrderImportTests : Entegrasyon.UnitTest.BaseTest
     private readonly Mock<INotificationManager> _mockNotificationManager = new();
     private readonly Mock<ILogger<OrderManager>> _mockLogger = new();
 
+    private static readonly IOptions<NotificationFeatureFlags> _disabledFlags =
+        Options.Create(new NotificationFeatureFlags { PublishEnabled = false });
+
     private OrderManager CreateSut() => new(
         mockContextFactory.Object,
         _mockOfficeStockManager.Object,
         _mockNotificationManager.Object,
-        _mockLogger.Object);
+        _mockLogger.Object,
+        _disabledFlags);
 
     // -----------------------------------------------------------------------
     // Test 1: Import Order.MarketPlaceId == 5 olmalı

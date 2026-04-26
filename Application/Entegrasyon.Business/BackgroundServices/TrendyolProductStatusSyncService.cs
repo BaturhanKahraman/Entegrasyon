@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Marketplace;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Logs;
@@ -7,6 +9,7 @@ using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -19,7 +22,8 @@ namespace Entegrasyon.Business.BackgroundServices;
 public class TrendyolProductStatusSyncService(
     IServiceScopeFactory scopeFactory,
     ITenantRegistry tenantRegistry,
-    ILogger<TrendyolProductStatusSyncService> logger)
+    ILogger<TrendyolProductStatusSyncService> logger,
+    IOptions<NotificationFeatureFlags> notificationFlags)
     : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     protected override TimeSpan PollInterval => TimeSpan.FromMinutes(5);
@@ -96,6 +100,14 @@ public class TrendyolProductStatusSyncService(
                     await activityLogger.LogAsync(pm.ProductId, ProductActivityType.Rejected,
                         $"Trendyol tarafından reddedildi: {pm.StatusMessage}",
                         ProductActivityStatus.Error, marketplaceName: "Trendyol");
+
+                    if (notificationFlags.Value.PublishEnabled)
+                    {
+                        dbContext.AddDomainEvent(new MarketplaceProductRejectedEvent(
+                            marketPlaceId: TrendyolMarketPlaceId,
+                            productId: pm.ProductId,
+                            rejectionReason: pm.StatusMessage ?? string.Empty));
+                    }
                 }
 
                 // Rejected → Published recovery: Trendyol'da tekrar onaylanmışsa
@@ -111,6 +123,14 @@ public class TrendyolProductStatusSyncService(
                         "Trendyol tarafından yeniden onaylandı (önceki red kaldırıldı)",
                         ProductActivityStatus.Success, marketplaceName: "Trendyol",
                         referenceId: content.ContentId?.ToString());
+
+                    if (notificationFlags.Value.PublishEnabled)
+                    {
+                        dbContext.AddDomainEvent(new MarketplaceProductApprovedEvent(
+                            marketPlaceId: TrendyolMarketPlaceId,
+                            productId: pm.ProductId,
+                            marketplaceProductCode: content.ContentId?.ToString() ?? string.Empty));
+                    }
                 }
 
                 if (content.Approved && pm.IsApproved != true)
@@ -119,6 +139,14 @@ public class TrendyolProductStatusSyncService(
                         "Trendyol tarafından onaylandı",
                         ProductActivityStatus.Success, marketplaceName: "Trendyol",
                         referenceId: content.ContentId?.ToString());
+
+                    if (notificationFlags.Value.PublishEnabled)
+                    {
+                        dbContext.AddDomainEvent(new MarketplaceProductApprovedEvent(
+                            marketPlaceId: TrendyolMarketPlaceId,
+                            productId: pm.ProductId,
+                            marketplaceProductCode: content.ContentId?.ToString() ?? string.Empty));
+                    }
                 }
 
                 if (content.Archived && pm.IsArchived != true)

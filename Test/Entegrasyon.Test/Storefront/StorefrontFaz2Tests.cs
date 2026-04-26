@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Storefront;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Customers;
@@ -10,6 +11,7 @@ using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.UnitTest.Storefront;
 
@@ -68,7 +70,8 @@ public class StorefrontFaz2Tests
             _mockContextFactory.Object,
             Mock.Of<IOfficeStockManager>(),
             Mock.Of<INotificationManager>(),
-            Mock.Of<ILogger<OrderManager>>());
+            Mock.Of<ILogger<OrderManager>>(),
+            Options.Create(new NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.GetPreviouslyPurchasedProductsAsync(1, 24);

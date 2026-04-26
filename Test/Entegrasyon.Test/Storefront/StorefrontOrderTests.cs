@@ -1,11 +1,13 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.UnitTest.Storefront;
 
@@ -36,7 +38,8 @@ public class StorefrontOrderTests
             _mockContextFactory.Object,
             _mockStockManager.Object,
             _mockNotificationManager.Object,
-            Mock.Of<ILogger<OrderManager>>());
+            Mock.Of<ILogger<OrderManager>>(),
+            Options.Create(new NotificationFeatureFlags { PublishEnabled = false }));
     }
 
     [Fact]

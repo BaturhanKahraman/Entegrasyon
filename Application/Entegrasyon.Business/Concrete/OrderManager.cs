@@ -1,6 +1,8 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Marketplace;
 using Entegrasyon.Business.Concrete.Pazarama;
 using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.N11;
@@ -12,6 +14,7 @@ using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Entegrasyon.UnitTest")]
@@ -27,7 +30,8 @@ public class OrderManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IOfficeStockManager officeStockManager,
     INotificationManager notificationManager,
-    ILogger<OrderManager> logger) : IOrderManager
+    ILogger<OrderManager> logger,
+    IOptions<NotificationFeatureFlags> notificationFlags) : IOrderManager
 {
     // TODO Multi-tenant: Lock key'lere tenantId dahil et: (tenantId * 10000) + marketplaceImportId
     // Şu an single-tenant olduğu için sabit key'ler yeterli.
@@ -540,6 +544,20 @@ public class OrderManager(
 
             order.OrderItems = orderItems;
             dbContext.Orders.Add(order);
+
+            if (notificationFlags.Value.PublishEnabled)
+            {
+                var customerName = string.Join(" ",
+                    new[] { pkg.CustomerInfo?.FirstName, pkg.CustomerInfo?.LastName }
+                        .Where(s => !string.IsNullOrWhiteSpace(s)));
+                dbContext.AddDomainEvent(new MarketplaceOrderReceivedEvent(
+                    marketPlaceId: TrendyolMarketPlaceId,
+                    orderId: pkg.ShipmentPackageId,
+                    orderNumber: pkg.OrderNumber ?? string.Empty,
+                    customerName: customerName,
+                    amount: pkg.GrossAmount));
+            }
+
             importedCount++;
         }
 

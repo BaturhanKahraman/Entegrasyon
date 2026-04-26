@@ -1,7 +1,9 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
+using Entegrasyon.Business.Channels.Events.Marketplace;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete.Pazarama;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
@@ -10,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
 
 namespace Entegrasyon.Business.BackgroundServices;
@@ -22,7 +25,8 @@ namespace Entegrasyon.Business.BackgroundServices;
 public class TrendyolStockPriceSyncService(
     EventChannel<StockPriceChangedEvent> channel,
     IServiceScopeFactory scopeFactory,
-    ILogger<TrendyolStockPriceSyncService> logger) : BackgroundService
+    ILogger<TrendyolStockPriceSyncService> logger,
+    IOptions<NotificationFeatureFlags> notificationFlags) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -44,7 +48,7 @@ public class TrendyolStockPriceSyncService(
                 }
                 tenantContext.Initialize(tenant);
 
-                await HandleTrendyolSyncAsync(scope.ServiceProvider, evt, stoppingToken);
+                await HandleTrendyolSyncAsync(scope.ServiceProvider, evt, stoppingToken, notificationFlags.Value);
                 await HandlePazaramaSyncAsync(scope.ServiceProvider, evt, stoppingToken);
             }
             catch (Exception ex)
@@ -55,7 +59,7 @@ public class TrendyolStockPriceSyncService(
         }
     }
 
-    private async Task HandleTrendyolSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken)
+    private async Task HandleTrendyolSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken, NotificationFeatureFlags flags)
     {
         var dbContext = services.GetRequiredService<IntegrationDbContext>();
         var stockPriceService = services.GetRequiredService<ITrendyolStockPriceService>();
@@ -110,7 +114,18 @@ public class TrendyolStockPriceSyncService(
         if (result.Success)
             logger.LogInformation("Stock/price update sent to Trendyol for variant {Barcode}", variant.Barcode);
         else
+        {
             logger.LogWarning("Stock/price update failed for variant {Barcode}: {Message}", variant.Barcode, result.Message);
+
+            if (flags.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new MarketplaceStockSyncFailedEvent(
+                    marketPlaceId: TrendyolMarketPlaceId,
+                    productId: evt.ProductId,
+                    error: result.Message ?? string.Empty));
+                await dbContext.SaveChangesAsync(stoppingToken);
+            }
+        }
     }
 
     private async Task HandlePazaramaSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken)
