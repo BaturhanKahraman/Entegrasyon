@@ -1,53 +1,189 @@
-@model IEnumerable<Entegrasyon.Entity.Notifications.Notification>
+@using Entegrasyon.Entity.Notifications
+@model IList<Notification>
+@{
+    var tab = ViewBag.Tab as string ?? "all";
+    var category = ViewBag.Category as NotificationCategory?;
+    var severity = ViewBag.Severity as NotificationSeverity?;
+    var userId = (Guid)ViewBag.UserId;
 
-<div class="d-flex justify-content-end mb-3">
-    <div class="btn-list">
-        <a href="/notifications?onlyUnread=@(!((bool)ViewBag.OnlyUnread))"
-           class="btn btn-outline-secondary btn-sm">
-            @(((bool)ViewBag.OnlyUnread) ? "Tumunu Goster" : "Sadece Okunmamis")
-        </a>
-        <button class="btn btn-outline-primary btn-sm"
-                hx-post="/notifications/read-all"
-                hx-swap="none">
-            Tumunu Okundu Isaretle
-        </button>
+    bool HasUnread() => Model.Any(n =>
+        n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsRead));
+
+    string SeverityColor(NotificationSeverity s) => s switch
+    {
+        NotificationSeverity.Error   => "red",
+        NotificationSeverity.Warning => "yellow",
+        NotificationSeverity.Success => "green",
+        _                            => "blue"
+    };
+
+    string CategoryLabel(NotificationCategory c) => c switch
+    {
+        NotificationCategory.Sistem    => "Sistem",
+        NotificationCategory.Pazaryeri => "Pazaryeri",
+        NotificationCategory.Sipariş   => "Sipariş",
+        NotificationCategory.Stok      => "Stok",
+        NotificationCategory.Urun      => "Ürün",
+        NotificationCategory.Magaza    => "Mağaza",
+        _                              => c.ToString()
+    };
+
+    string SeverityLabel(NotificationSeverity s) => s switch
+    {
+        NotificationSeverity.Info    => "Bilgi",
+        NotificationSeverity.Warning => "Uyarı",
+        NotificationSeverity.Error   => "Hata",
+        NotificationSeverity.Success => "Başarılı",
+        _                            => s.ToString()
+    };
+}
+
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <h2 class="page-title">Bildirimler</h2>
+        </div>
+        @if (HasUnread())
+        {
+            <div class="col-auto ms-auto">
+                <button class="btn btn-primary"
+                        hx-post="/notifications/read-all"
+                        hx-swap="none"
+                        hx-on::after-request="window.location.reload()">
+                    Tümünü okundu işaretle
+                </button>
+            </div>
+        }
     </div>
 </div>
 
-        @if (Model.Any())
-        {
-            <div class="card">
-                <div class="list-group list-group-flush">
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+                    <li class="nav-item">
+                        <a class="nav-link @(tab == "all" ? "active" : "")"
+                           asp-action="Index"
+                           asp-route-tab="all"
+                           asp-route-category="@(category.HasValue ? category.Value.ToString() : "")"
+                           asp-route-severity="@(severity.HasValue ? severity.Value.ToString() : "")">
+                            Tümü
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(tab == "unread" ? "active" : "")"
+                           asp-action="Index"
+                           asp-route-tab="unread"
+                           asp-route-category="@(category.HasValue ? category.Value.ToString() : "")"
+                           asp-route-severity="@(severity.HasValue ? severity.Value.ToString() : "")">
+                            Okunmamış
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(tab == "read" ? "active" : "")"
+                           asp-action="Index"
+                           asp-route-tab="read"
+                           asp-route-category="@(category.HasValue ? category.Value.ToString() : "")"
+                           asp-route-severity="@(severity.HasValue ? severity.Value.ToString() : "")">
+                            Okundu
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body border-bottom py-3">
+                <form method="get" asp-action="Index" class="row g-2 align-items-end">
+                    <input type="hidden" name="tab" value="@tab" />
+                    <div class="col-md-3">
+                        <label class="form-label">Kategori</label>
+                        <select name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tüm kategoriler</option>
+                            @foreach (var c in Enum.GetValues<NotificationCategory>())
+                            {
+                                if (category == c)
+                                {
+                                    <option value="@c" selected>@CategoryLabel(c)</option>
+                                }
+                                else
+                                {
+                                    <option value="@c">@CategoryLabel(c)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Önem derecesi</label>
+                        <select name="severity" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tüm önem dereceleri</option>
+                            @foreach (var s in Enum.GetValues<NotificationSeverity>())
+                            {
+                                if (severity == s)
+                                {
+                                    <option value="@s" selected>@SeverityLabel(s)</option>
+                                }
+                                else
+                                {
+                                    <option value="@s">@SeverityLabel(s)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    @if (category.HasValue || severity.HasValue)
+                    {
+                        <div class="col-auto">
+                            <a asp-action="Index" asp-route-tab="@tab" class="btn btn-outline-secondary">
+                                Filtreleri temizle
+                            </a>
+                        </div>
+                    }
+                </form>
+            </div>
+
+            @if (Model.Count == 0)
+            {
+                <div class="card-body">
+                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                             {
+                                 Title = "Bildirim yok",
+                                 Subtitle = "Seçilen filtrelerle eşleşen bildirim bulunamadı."
+                             }'/>
+                </div>
+            }
+            else
+            {
+                <div class="list-group list-group-flush list-group-hoverable">
                     @foreach (var notification in Model)
                     {
-                        <div class="list-group-item @(!notification.IsRead ? "list-group-item-action" : "")" id="notification-@notification.Id">
+                        var junction = notification.NotificationsUsers.FirstOrDefault(nu => nu.ApplicationUserId == userId);
+                        var isRead = junction?.IsRead ?? false;
+
+                        var avatarColor = SeverityColor(notification.Severity);
+
+                        <div class="list-group-item @(!isRead ? "fw-semibold" : "")" id="notification-@notification.Id">
                             <div class="row align-items-center">
                                 <div class="col-auto">
-                                    @{
-                                        var severityClass = notification.Severity switch
-                                        {
-                                            Entegrasyon.Entity.Notifications.NotificationSeverity.Error => "bg-red",
-                                            Entegrasyon.Entity.Notifications.NotificationSeverity.Warning => "bg-yellow",
-                                            Entegrasyon.Entity.Notifications.NotificationSeverity.Success => "bg-green",
-                                            _ => "bg-blue"
-                                        };
-                                    }
-                                    <span class="avatar avatar-sm @severityClass text-white">
+                                    <span class="avatar avatar-sm bg-@avatarColor text-white">
                                         <i class="ti ti-bell"></i>
                                     </span>
                                 </div>
-                                <div class="col">
-                                    <div class="d-flex justify-content-between">
-                                        <strong class="@(!notification.IsRead ? "" : "text-secondary")">
-                                            @notification.Header
-                                        </strong>
-                                        <small class="text-secondary">@notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                <div class="col text-truncate">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="@(!isRead ? "" : "text-secondary")">@notification.Header</span>
+                                        <span class="ms-auto text-secondary text-nowrap small">
+                                            @notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                        </span>
                                     </div>
-                                    <div class="text-secondary mt-1">@notification.Content</div>
+                                    <div class="text-secondary mt-1 text-truncate">@notification.Content</div>
+                                    <div class="mt-1">
+                                        <span class="badge badge-outline text-@avatarColor me-1">@SeverityLabel(notification.Severity)</span>
+                                        <span class="badge badge-outline text-secondary">@CategoryLabel(notification.Category)</span>
+                                    </div>
                                 </div>
                                 <div class="col-auto">
                                     <div class="btn-list flex-nowrap">
-                                        @if (!notification.IsRead)
+                                        @if (!isRead)
                                         {
                                             <button class="btn btn-sm btn-outline-primary"
                                                     hx-post="/notifications/@notification.Id/read"
@@ -58,13 +194,15 @@
                                         }
                                         @if (!string.IsNullOrEmpty(notification.ActionUrl))
                                         {
-                                            <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary">Git</a>
+                                            <a href="@notification.ActionUrl" class="btn btn-sm btn-outline-secondary">
+                                                Git
+                                            </a>
                                         }
                                         <button class="btn btn-sm btn-outline-danger"
                                                 hx-post="/notifications/@notification.Id/dismiss"
                                                 hx-target="#notification-@notification.Id"
                                                 hx-swap="outerHTML swap:300ms">
-                                            Kaldir
+                                            Kaldır
                                         </button>
                                     </div>
                                 </div>
@@ -72,18 +210,7 @@
                         </div>
                     }
                 </div>
-            </div>
-        }
-        else
-        {
-            <div class="card">
-                <div class="card-body">
-                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
-                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
-                             {
-                                 Title = "Bildirim yok",
-                                 Subtitle = "Henüz bildiriminiz bulunmuyor."
-                             }'/>
-                </div>
-            </div>
-        }
+            }
+        </div>
+    </div>
+</div>

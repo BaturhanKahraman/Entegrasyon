@@ -14,15 +14,25 @@ public class NotificationController(
     INotificationRecipientResolver recipientResolver) : Controller
 {
     [HttpGet("/notifications")]
-    public async Task<IActionResult> Index(bool onlyUnread = false)
+    public async Task<IActionResult> Index(
+        string? tab = "all",
+        NotificationCategory? category = null,
+        NotificationSeverity? severity = null)
     {
         ViewData.SetPageTitle("Bildirimler");
         ViewData.SetActiveNav("notifications");
 
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var notifications = await notificationManager.GetNotificationsForUser(userId, onlyUnread);
+        var notifications = await notificationManager.GetNotificationsPageAsync(
+            userId,
+            tab ?? "all",
+            category,
+            severity);
 
-        ViewBag.OnlyUnread = onlyUnread;
+        ViewBag.Tab = tab ?? "all";
+        ViewBag.Category = category;
+        ViewBag.Severity = severity;
+        ViewBag.UserId = userId;
         return View(notifications);
     }
 

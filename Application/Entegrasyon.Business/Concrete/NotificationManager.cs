@@ -154,6 +154,36 @@ public sealed class NotificationManager(
                 .SetProperty(nu => nu.DismissedAt, DateTimeOffset.UtcNow));
     }
 
+    public async Task<List<Notification>> GetNotificationsPageAsync(
+        Guid userId,
+        string tab = "all",
+        NotificationCategory? category = null,
+        NotificationSeverity? severity = null)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var query = dbContext.Notifications
+            .Include(n => n.NotificationsUsers.Where(nu => nu.ApplicationUserId == userId))
+            .Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsDismissed));
+
+        query = tab switch
+        {
+            "unread" => query.Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && !nu.IsRead)),
+            "read"   => query.Where(n => n.NotificationsUsers.Any(nu => nu.ApplicationUserId == userId && nu.IsRead)),
+            _        => query
+        };
+
+        if (category.HasValue)
+            query = query.Where(n => n.Category == category.Value);
+
+        if (severity.HasValue)
+            query = query.Where(n => n.Severity == severity.Value);
+
+        return await query
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<List<Notification>> GetAllNotificationsAsync(int take = 200)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
