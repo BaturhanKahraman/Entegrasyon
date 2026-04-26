@@ -1,11 +1,82 @@
-@model int
+@using Entegrasyon.Entity.Notifications
+@using Entegrasyon.MVC.Shared.ViewComponents
+@model NotificationBellViewModel
 
-<div class="nav-item" id="notification-bell">
-    <a href="/notifications" class="nav-link px-0" title="Bildirimler">
+@{
+    var unreadCount = Model.UnreadCount;
+    var notifications = Model.Notifications;
+}
+
+<div class="nav-item dropdown d-none d-md-flex">
+    <a href="#"
+       class="nav-link px-0"
+       data-bs-toggle="dropdown"
+       data-notification-bell
+       data-unread-count="@unreadCount"
+       aria-label="Bildirimler"
+       role="button"
+       title="Bildirimler">
         <i class="ti ti-bell fs-2"></i>
-        @if (Model > 0)
-        {
-            <span class="badge bg-red" id="notification-badge"></span>
-        }
+        <span data-notification-badge
+              class="badge bg-red @(unreadCount == 0 ? "d-none" : "")">
+            @(unreadCount > 99 ? "99+" : unreadCount.ToString())
+        </span>
     </a>
+    <div class="dropdown-menu dropdown-menu-end dropdown-menu-card" style="width: 400px;">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h3 class="card-title">Bildirimler</h3>
+                @if (unreadCount > 0)
+                {
+                    <form asp-controller="Notification" asp-action="MarkAllAsRead" method="post" class="ms-auto">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-ghost-primary">Tümünü okundu işaretle</button>
+                    </form>
+                }
+            </div>
+            <div class="list-group list-group-flush list-group-hoverable"
+                 data-notification-dropdown-list
+                 style="max-height: 400px; overflow-y: auto;">
+                @if (!notifications.Any())
+                {
+                    <div class="list-group-item text-center text-secondary py-4" data-empty-state>
+                        Henüz bildiriminiz yok
+                    </div>
+                }
+                else
+                {
+                    @foreach (var n in notifications)
+                    {
+                        <a href="@(string.IsNullOrEmpty(n.ActionUrl) ? "/notifications" : n.ActionUrl)"
+                           class="list-group-item list-group-item-action"
+                           data-notification-id="@n.Id">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <span class="status-dot bg-@SeverityColor(n.Severity)"></span>
+                                </div>
+                                <div class="col text-truncate">
+                                    <strong>@n.Header</strong>
+                                    <div class="text-secondary small text-truncate">@n.Content</div>
+                                    <div class="text-muted small">@n.CreatedAt.ToString("dd MMM HH:mm")</div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                }
+            </div>
+            <div class="card-footer text-center">
+                <a href="/notifications" class="btn btn-link">Tümünü gör</a>
+            </div>
+        </div>
+    </div>
 </div>
+
+@functions {
+    static string SeverityColor(NotificationSeverity s) => s switch
+    {
+        NotificationSeverity.Error => "red",
+        NotificationSeverity.Warning => "yellow",
+        NotificationSeverity.Success => "green",
+        _ => "blue"
+    };
+}

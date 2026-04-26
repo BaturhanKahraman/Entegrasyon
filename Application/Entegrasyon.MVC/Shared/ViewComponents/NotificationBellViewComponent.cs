@@ -1,8 +1,13 @@
 using System.Security.Claims;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity.Notifications;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entegrasyon.MVC.Shared.ViewComponents;
+
+public sealed record NotificationBellViewModel(
+    int UnreadCount,
+    IReadOnlyList<Notification> Notifications);
 
 public class NotificationBellViewComponent(IServiceScopeFactory scopeFactory) : ViewComponent
 {
@@ -13,14 +18,13 @@ public class NotificationBellViewComponent(IServiceScopeFactory scopeFactory) : 
         var notificationManager = scope.ServiceProvider.GetRequiredService<INotificationManager>();
 
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        int unreadCount = 0;
 
-        if (userId is not null && Guid.TryParse(userId, out var uid))
+        if (userId is null || !Guid.TryParse(userId, out var uid))
         {
-            var notifications = await notificationManager.GetNotificationsForUser(uid, onlyUnread: true);
-            unreadCount = notifications.Count();
+            return View(new NotificationBellViewModel(0, []));
         }
 
-        return View(unreadCount);
+        var notifications = (await notificationManager.GetNotificationsForUser(uid, onlyUnread: true, take: 10)).ToList();
+        return View(new NotificationBellViewModel(notifications.Count, notifications));
     }
 }
