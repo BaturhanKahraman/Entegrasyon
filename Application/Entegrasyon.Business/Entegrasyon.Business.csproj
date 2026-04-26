@@ -14,6 +14,7 @@
     <PackageReference Include="BinaryKits.Zpl.Label" />
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="Iyzipay" />
+    <PackageReference Include="Lib.Net.Http.WebPush" />
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Riok.Mapperly" />
     <PackageReference Include="BCrypt.Net-Next" />

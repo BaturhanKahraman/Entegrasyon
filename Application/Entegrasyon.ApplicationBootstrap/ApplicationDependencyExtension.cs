@@ -476,6 +476,10 @@ namespace Entegrasyon.ApplicationBootstrap
                 services.Configure<Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags>(
                     configuration.GetSection(Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags.SectionName));
 
+                // Task 5.1: Web Push VAPID config (admin dashboard)
+                services.Configure<Entegrasyon.Business.Notifications.WebPush.WebPushOptions>(
+                    configuration.GetSection(Entegrasyon.Business.Notifications.WebPush.WebPushOptions.SectionName));
+
                 // Task 3.1: ICurrentUserContext — fallback null-object; MVC katmanı Program.cs'de override eder
                 services.TryAddScoped<Entegrasyon.Business.Abstract.ICurrentUserContext,
                     Entegrasyon.Business.Concrete.Auth.NullCurrentUserContext>();
