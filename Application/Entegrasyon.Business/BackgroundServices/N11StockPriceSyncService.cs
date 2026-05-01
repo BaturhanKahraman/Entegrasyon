@@ -1,4 +1,6 @@
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Channels.Events.Marketplace;
+using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -6,6 +8,7 @@ using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.BackgroundServices;
 
@@ -16,7 +19,8 @@ namespace Entegrasyon.Business.BackgroundServices;
 public class N11StockPriceSyncService(
     IServiceScopeFactory scopeFactory,
     ITenantRegistry tenantRegistry,
-    ILogger<N11StockPriceSyncService> logger)
+    ILogger<N11StockPriceSyncService> logger,
+    IOptions<NotificationFeatureFlags> notificationFlags)
     : TenantAwarePollingService(scopeFactory, tenantRegistry, logger)
 {
     private const int N11MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId;
@@ -75,12 +79,37 @@ public class N11StockPriceSyncService(
             else
             {
                 errorCount++;
+                var flags = notificationFlags.Value;
+
                 if (!priceResult.Success)
+                {
                     logger.LogWarning("N11 price sync başarısız: ProductId={ProductId}, {Message}, tenant {TenantId}",
                         product.Id, priceResult.Message, tenantId);
+
+                    if (flags.PublishEnabled)
+                    {
+                        dbContext.AddDomainEvent(new MarketplacePriceUpdateFailedEvent(
+                            marketPlaceId: N11MarketPlaceId,
+                            productId: product.Id,
+                            error: priceResult.Message ?? string.Empty));
+                        await dbContext.SaveChangesAsync(ct);
+                    }
+                }
+
                 if (!stockResult.Success)
+                {
                     logger.LogWarning("N11 stock sync başarısız: ProductId={ProductId}, {Message}, tenant {TenantId}",
                         product.Id, stockResult.Message, tenantId);
+
+                    if (flags.PublishEnabled)
+                    {
+                        dbContext.AddDomainEvent(new MarketplaceStockSyncFailedEvent(
+                            marketPlaceId: N11MarketPlaceId,
+                            productId: product.Id,
+                            error: stockResult.Message ?? string.Empty));
+                        await dbContext.SaveChangesAsync(ct);
+                    }
+                }
             }
         }
 

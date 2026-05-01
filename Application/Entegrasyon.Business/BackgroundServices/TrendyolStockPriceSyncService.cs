@@ -49,7 +49,7 @@ public class TrendyolStockPriceSyncService(
                 tenantContext.Initialize(tenant);
 
                 await HandleTrendyolSyncAsync(scope.ServiceProvider, evt, stoppingToken, notificationFlags.Value);
-                await HandlePazaramaSyncAsync(scope.ServiceProvider, evt, stoppingToken);
+                await HandlePazaramaSyncAsync(scope.ServiceProvider, evt, stoppingToken, notificationFlags.Value);
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ public class TrendyolStockPriceSyncService(
         }
     }
 
-    private async Task HandlePazaramaSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken)
+    private async Task HandlePazaramaSyncAsync(IServiceProvider services, StockPriceChangedEvent evt, CancellationToken stoppingToken, NotificationFeatureFlags flags)
     {
         var dbContext = services.GetRequiredService<IntegrationDbContext>();
         var stockPriceService = services.GetRequiredService<IPazaramaStockPriceService>();
@@ -187,12 +187,34 @@ public class TrendyolStockPriceSyncService(
         if (stockResult.Success)
             logger.LogInformation("Stock update sent to Pazarama for variant {Barcode}", variant.Barcode);
         else
+        {
             logger.LogWarning("Stock update failed for Pazarama variant {Barcode}: {Message}", variant.Barcode, stockResult.Message);
+
+            if (flags.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new MarketplaceStockSyncFailedEvent(
+                    marketPlaceId: PazaramaMarketPlaceId,
+                    productId: evt.ProductId,
+                    error: stockResult.Message ?? string.Empty));
+                await dbContext.SaveChangesAsync(stoppingToken);
+            }
+        }
 
         var priceResult = await stockPriceService.UpdatePriceAsync(priceItems);
         if (priceResult.Success)
             logger.LogInformation("Price update sent to Pazarama for variant {Barcode}", variant.Barcode);
         else
+        {
             logger.LogWarning("Price update failed for Pazarama variant {Barcode}: {Message}", variant.Barcode, priceResult.Message);
+
+            if (flags.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new MarketplacePriceUpdateFailedEvent(
+                    marketPlaceId: PazaramaMarketPlaceId,
+                    productId: evt.ProductId,
+                    error: priceResult.Message ?? string.Empty));
+                await dbContext.SaveChangesAsync(stoppingToken);
+            }
+        }
     }
 }
