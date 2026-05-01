@@ -275,6 +275,17 @@ public class OrderManager(
 
             order.OrderItems = orderItems;
             dbContext.Orders.Add(order);
+
+            if (notificationFlags.Value.PublishEnabled)
+            {
+                dbContext.AddDomainEvent(new MarketplaceOrderReceivedEvent(
+                    marketPlaceId: PazaramaMarketPlaceId,
+                    orderId: dto.OrderNumber,
+                    orderNumber: dto.OrderNumber.ToString(),
+                    customerName: dto.CustomerName ?? string.Empty,
+                    amount: dto.OrderAmount));
+            }
+
             importedCount++;
         }
 
@@ -390,12 +401,26 @@ public class OrderManager(
                 {
                     await DecreaseStockForMarketplaceOrder(
                         warehouseIds, productVariantId.Value, item.Quantity,
-                        dto.OrderNumber);
+                        dto.OrderNumber ?? string.Empty);
                 }
             }
 
             order.OrderItems = orderItems;
             dbContext.Orders.Add(order);
+
+            if (notificationFlags.Value.PublishEnabled)
+            {
+                var customerName = string.Join(" ",
+                    new[] { dto.Buyer?.FirstName, dto.Buyer?.LastName }
+                        .Where(s => !string.IsNullOrWhiteSpace(s)));
+                dbContext.AddDomainEvent(new MarketplaceOrderReceivedEvent(
+                    marketPlaceId: N11MarketPlaceId,
+                    orderId: dto.Id,
+                    orderNumber: dto.OrderNumber ?? string.Empty,
+                    customerName: customerName,
+                    amount: dto.TotalAmount));
+            }
+
             importedCount++;
         }
 
