@@ -74,6 +74,7 @@ namespace Entegrasyon.ApplicationBootstrap
                         "Entegrasyon.Business.Concrete.Printing",
                         "Entegrasyon.Business.Concrete.Search",
                         "Entegrasyon.Business.Concrete.Shipping",
+                        "Entegrasyon.Business.Concrete.Stock",
                         "Entegrasyon.Business.Concrete.Storefront",
                         "Entegrasyon.Business.Notifications"
                     )
@@ -117,6 +118,7 @@ namespace Entegrasyon.ApplicationBootstrap
             //services.AddScoped<DbContext,IntegrationDbContext>();
 
             services.AddSingleton<IRandomGenerator, RandomGenerator>();
+            services.AddSingleton<IPrintBatchProgressBroadcaster, Entegrasyon.Business.Concrete.Printing.PrintBatchProgressBroadcaster>();
             //services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
 
             // Mapperly mappers (singletons — stateless source-generated mappers)
@@ -411,15 +413,10 @@ namespace Entegrasyon.ApplicationBootstrap
 
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
         {
-            // Task 0.13/0.14: InProcessEventDispatcher as hosted service
-            // Channel<BaseEvent> is registered in AddNotification() (always runs, dev + prod)
-            // so it is always available when InProcessEventDispatcher needs it here.
-            services.AddSingleton<InProcessEventDispatcher>();
-            services.AddHostedService(sp => sp.GetRequiredService<InProcessEventDispatcher>());
-
-            // Task 0.12: OutboxDispatcher — LISTEN/NOTIFY + retry + dead-letter
-            services.AddSingleton<OutboxDispatcher>();
-            services.AddHostedService(sp => sp.GetRequiredService<OutboxDispatcher>());
+            // NOTE: Notification dispatcher'ları (InProcessEventDispatcher, OutboxDispatcher) artık
+            // AddNotification() içinde register ediliyor — AddBackgroundServices() Development'ta
+            // bypass'lanır ama notification akışı her iki ortamda da çalışmalı (multi-device read sync,
+            // bell badge updates vb. dev'de de gerekli). Marketplace polling servisleri burada kalır.
 
             services.AddHostedService<CategoryImportBackgroundService>();
             services.AddHostedService<TrendyolProductPublishBackgroundService>();
@@ -518,6 +515,15 @@ namespace Entegrasyon.ApplicationBootstrap
 
             // Task 0.14: IEventBus — Scoped because InMemoryEventBus depends on ITenantContext (Scoped)
             services.AddScoped<IEventBus, InMemoryEventBus>();
+
+            // Bug fix (smoke-test): Notification dispatcher'ları AddNotification içinde register edilmeli
+            // çünkü AddBackgroundServices Development'ta bypass'lanıyor ama notification akışı (bell badge,
+            // multi-device read sync, outbox→handler→bildirim) dev'de de çalışmalı.
+            services.AddSingleton<InProcessEventDispatcher>();
+            services.AddHostedService(sp => sp.GetRequiredService<InProcessEventDispatcher>());
+
+            services.AddSingleton<OutboxDispatcher>();
+            services.AddHostedService(sp => sp.GetRequiredService<OutboxDispatcher>());
 
             // Task 2.3: IDomainEventHandler<T> — Scrutor auto-registration for all notification handlers
             services.Scan(scan => scan

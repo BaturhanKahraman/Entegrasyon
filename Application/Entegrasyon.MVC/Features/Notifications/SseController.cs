@@ -13,7 +13,7 @@ namespace Entegrasyon.MVC.Features.Notifications;
 public sealed class SseController(ISseConnectionRegistry registry, ILogger<SseController> logger) : Controller
 {
     [HttpGet("/events/notifications")]
-    public ServerSentEventsResult<SseNotificationPayload> StreamNotifications(HttpContext httpContext)
+    public ServerSentEventsResult<SseNotificationPayload> StreamNotifications()
     {
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdRaw, out var userId))
@@ -23,7 +23,9 @@ public sealed class SseController(ISseConnectionRegistry registry, ILogger<SseCo
             return TypedResults.ServerSentEvents(EmptyStream());
         }
 
-        return TypedResults.ServerSentEvents(Stream(userId, httpContext.RequestAborted));
+        // NOTE: Use the controller's built-in HttpContext property — DO NOT add an
+        // `HttpContext httpContext` parameter; MVC tries to model-bind that and crashes.
+        return TypedResults.ServerSentEvents(Stream(userId, HttpContext.RequestAborted));
     }
 
     private static async IAsyncEnumerable<SseItem<SseNotificationPayload>> EmptyStream()

@@ -18,11 +18,13 @@ namespace Entegrasyon.Business.Channels;
 /// batch çekme, exponential-backoff retry ve dead-letter desteği.
 /// </summary>
 public sealed class OutboxDispatcher(
-    IDbContextFactory<IntegrationDbContext> contextFactory,
     IServiceScopeFactory scopeFactory,
     IOptions<OutboxDispatchOptions> options,
     ILogger<OutboxDispatcher> logger) : BackgroundService
 {
+    // Singleton DbContext factory inject etmek scope-validation hatasına yol açıyordu;
+    // ihtiyaç olduğunda scope açıp oradan resolve ediyoruz (notification-aware,
+    // dev/prod ayrım gözetmeksizin çalışır).
     private readonly OutboxDispatchOptions _opts = options.Value;
 
     // BaseEvent assembly'sindeki tüm concrete event tiplerini name→Type cache'le.
@@ -46,7 +48,9 @@ public sealed class OutboxDispatcher(
         {
             try
             {
-                await using var db = await contextFactory.CreateDbContextAsync(stoppingToken);
+                await using var listenScope = scopeFactory.CreateAsyncScope();
+                var listenFactory = listenScope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+                await using var db = await listenFactory.CreateDbContextAsync(stoppingToken);
                 var conn = (NpgsqlConnection)db.Database.GetDbConnection();
                 await conn.OpenAsync(stoppingToken);
 
@@ -95,19 +99,22 @@ public sealed class OutboxDispatcher(
     /// </summary>
     public async Task DispatchPendingAsync(CancellationToken ct)
     {
-        await using var db = await contextFactory.CreateDbContextAsync(ct);
+        await using var pendingScope = scopeFactory.CreateAsyncScope();
+        var pendingFactory = pendingScope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+        await using var db = await pendingFactory.CreateDbContextAsync(ct);
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
         // FromSql ile FormattableString kullan — EF Core SQL injection koruması.
         // Enum int cast ve BatchSize sabit değerler olduğundan parameterize edilebilir.
         int pendingStatus = (int)OutboxStatus.Pending;
         int batchSize = _opts.BatchSize;
+        // Tablo adı snake_case (notification_outbox), ama column'lar EF default'u olarak quoted-PascalCase.
         var pending = await db.NotificationOutbox
             .FromSql($"""
                 SELECT * FROM notification_outbox
-                WHERE status = {pendingStatus}
-                  AND (next_retry_at IS NULL OR next_retry_at <= NOW())
-                ORDER BY created_at
+                WHERE "Status" = {pendingStatus}
+                  AND ("NextRetryAt" IS NULL OR "NextRetryAt" <= NOW())
+                ORDER BY "CreatedAt"
                 LIMIT {batchSize}
                 FOR UPDATE SKIP LOCKED
                 """)
