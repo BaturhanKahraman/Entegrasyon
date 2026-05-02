@@ -33,7 +33,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="subheader">Toplam Gelir</div>
-                        <div class="h1 mb-0">@Model.Summary.TotalRevenue.ToString("C2")</div>
+                        <div class="h1 mb-0">@Model.Summary.TotalRevenue.ToMoney()</div>
                     </div>
                 </div>
             </div>
@@ -41,7 +41,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="subheader">Ortalama Sipariş</div>
-                        <div class="h1 mb-0">@Model.Summary.AverageOrderValue.ToString("C2")</div>
+                        <div class="h1 mb-0">@Model.Summary.AverageOrderValue.ToMoney()</div>
                     </div>
                 </div>
             </div>
@@ -89,7 +89,7 @@
                                 <td>@p.ProductTitle</td>
                                 <td class="text-secondary">@p.VariantTitle</td>
                                 <td>@p.QuantitySold</td>
-                                <td>@p.Revenue.ToString("C2")</td>
+                                <td>@p.Revenue.ToMoney()</td>
                             </tr>
                         }
                     </tbody>

@@ -54,7 +54,7 @@
                             <tr>
                                 <td>@p.ProductName</td>
                                 <td>@p.TotalSold</td>
-                                <td>@p.TotalRevenue.ToString("C2")</td>
+                                <td>@p.TotalRevenue.ToMoney()</td>
                                 <td>
                                     <span class="badge @(p.ReturnRate > 5 ? "bg-red-lt" : "bg-green-lt")">
                                         %@p.ReturnRate.ToString("F1")

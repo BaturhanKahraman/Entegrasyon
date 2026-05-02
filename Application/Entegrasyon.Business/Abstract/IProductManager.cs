@@ -1,3 +1,4 @@
+using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
 using Entegrasyon.Entity.Dtos.Storefront;
@@ -28,6 +29,12 @@ public interface IProductService
     // Other
     Task<IDataResult<ProductDetailDto>> GetProductDetailById(Guid productId);
     Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto);
+
+    /// <summary>
+    /// POS ürün arama — fuzzy (pg_trgm similarity) + barkod exact + tsquery.
+    /// Varyantları tek seferde getirir; kullanıcı hangi varyantı seçtiğini görebilir.
+    /// </summary>
+    Task<IDataResult<POSProductSearchResultDto>> SearchPOSProductsAsync(int branchOfficeId, string query, int limit = 10);
     Task<IResult> SoftDeleteProduct(Guid id);
     Task<int> GetProductCountByCategoryId(int categoryId);
     Task<bool> HasSoldProductsInCategory(int categoryId);

@@ -98,30 +98,12 @@
     <MudItem xs="12" md="6">
         <MudCard>
             <MudCardContent>
-                <MudText Typo="Typo.h6" Class="mb-3">PrintAgent</MudText>
-
-                <div class="d-flex justify-space-between my-2">
-                    <MudText>Durum:</MudText>
-                    @if (_printAgentService.IsRunning)
-                    {
-                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Calisiyor (port @_printAgentService.Port)</MudChip>
-                    }
-                    else
-                    {
-                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Durmus</MudChip>
-                    }
-                </div>
+                <MudText Typo="Typo.h6" Class="mb-3">Yazdırma Agent'ı</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Yazdırma istekleri tarayıcıdan <code>entegrasyon-print://</code> deep-link'i ile bu uygulamaya yönlendirilir.
+                    Ayrı bir agent kurulumu gerekmez.
+                </MudText>
             </MudCardContent>
-            <MudCardActions>
-                @if (_printAgentService.IsRunning)
-                {
-                    <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="StopPrintAgent">Durdur</MudButton>
-                }
-                else
-                {
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartPrintAgent">Baslat</MudButton>
-                }
-            </MudCardActions>
         </MudCard>
     </MudItem>
 

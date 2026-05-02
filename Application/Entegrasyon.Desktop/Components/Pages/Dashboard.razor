@@ -95,17 +95,6 @@
                     <MudText Typo="Typo.h5">@_productCount</MudText>
                 </div>
 
-                <div class="d-flex justify-space-between my-2">
-                    <MudText>PrintAgent:</MudText>
-                    @if (_printAgentService.IsRunning)
-                    {
-                        <MudChip T="string" Color="Color.Success" Size="Size.Small">Calisiyor</MudChip>
-                    }
-                    else
-                    {
-                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Durmus</MudChip>
-                    }
-                </div>
             </MudCardContent>
         </MudCard>
     </MudItem>

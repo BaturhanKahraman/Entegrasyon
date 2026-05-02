@@ -65,6 +65,7 @@ public class PosSettings
     public int PrintAgentPort { get; set; } = 19100;
     public string StoreName { get; set; } = "Magaza";
     public string? BranchOfficeId { get; set; }
+    public string? SalePersonId { get; set; }
 
     /// <summary>
     /// Velopack güncelleme kaynağı URL'si.

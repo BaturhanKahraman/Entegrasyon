@@ -183,6 +183,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<Entegrasyon.Entity.Devices.DeviceInviteCode> DeviceInviteCodes { get; set; }
     public virtual DbSet<Entegrasyon.Entity.Printing.PrintBatch> PrintBatches { get; set; }
     public virtual DbSet<Entegrasyon.Entity.Printing.PrintBatchItem> PrintBatchItems { get; set; }
+    public virtual DbSet<Entegrasyon.Entity.Stock.NegativeStockIncident> NegativeStockIncidents { get; set; }
     public virtual DbSet<WebhookSubscription> WebhookSubscriptions { get; set; }
     public virtual DbSet<WebhookDeliveryLog> WebhookDeliveryLogs { get; set; }
     public virtual DbSet<ReturnProduct> ReturnProducts { get; set; }

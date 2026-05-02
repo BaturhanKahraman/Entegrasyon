@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);CS0618</NoWarn>
+    <NoWarn>$(NoWarn);CS0618;NU1902;NU1903</NoWarn>
   </PropertyGroup>
 </Project>

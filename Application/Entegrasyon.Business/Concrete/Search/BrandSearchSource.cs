@@ -10,7 +10,7 @@ public sealed class BrandSearchSource(IDbContextFactory<IntegrationDbContext> co
     public string SourceKey => "brands";
     public string Label => "Markalar";
     public string Icon => "ti-award";
-    public string? RequiredPermission => "Permissions.Brands.View";
+    public string? RequiredPermission => null;
 
     public async Task<IReadOnlyList<SearchHitDto>> SearchAsync(string query, int limit, CancellationToken ct = default)
     {
@@ -20,19 +20,30 @@ public sealed class BrandSearchSource(IDbContextFactory<IntegrationDbContext> co
         var q = query.Trim();
         var pattern = $"%{q}%";
 
+        // IX_Brands_Name_Trgm (AddBrandNameTrigramIndex migration) ile similarity hızlı.
         var hits = await db.Brands
             .AsNoTracking()
-            .Where(b => EF.Functions.ILike(b.Name, pattern))
-            .OrderBy(b => b.Name.Length)
+            .Where(b => !b.IsDeleted && (
+                EF.Functions.ILike(b.Name, pattern) ||
+                EF.Functions.TrigramsSimilarity(b.Name, q) > 0.2
+            ))
+            .OrderByDescending(b => EF.Functions.TrigramsSimilarity(b.Name, q))
             .Take(limit)
+            .Select(b => new
+            {
+                b.Id,
+                b.Name,
+                Score = EF.Functions.TrigramsSimilarity(b.Name, q)
+            })
+            .ToListAsync(ct);
+
+        return hits
             .Select(b => new SearchHitDto(
                 Title: b.Name,
                 Subtitle: null,
                 Url: $"/brands/{b.Id}",
-                Score: 0.65,
+                Score: Math.Clamp(0.3 + b.Score * 0.6, 0.3, 0.95),
                 Badge: null))
-            .ToListAsync(ct);
-
-        return hits;
+            .ToList();
     }
 }

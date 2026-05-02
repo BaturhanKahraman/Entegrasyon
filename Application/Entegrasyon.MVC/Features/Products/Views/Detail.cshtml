@@ -35,9 +35,15 @@
             <i class="ti ti-discount-2 icon"></i>
             Indirim Uygula
         </a>
-        <a href="/products/@Model.Id/barcode" class="btn btn-outline-info" target="_blank">
+        <button type="button" class="btn btn-outline-info"
+                onclick="window.printAgent && window.printAgent.printVariants(@Json.Serialize(Model.ProductVariantsDetails?.Select(v => v.Id).ToList() ?? new List<Guid>()), 1)">
             <i class="ti ti-barcode icon"></i>
-            Barkod Yazdir
+            Barkod Yazdır (Agent)
+        </button>
+        <a href="/products/@Model.Id/barcode" class="btn btn-ghost-secondary" target="_blank"
+           title="ZPL dosyasını indir (yedek yöntem)">
+            <i class="ti ti-download icon"></i>
+            ZPL İndir
         </a>
         <a href="/products" class="btn btn-outline-secondary">
             Listeye Don
@@ -146,7 +152,7 @@
         }
 
         <!-- Variants -->
-        @if (Model.ProductVariantsDetails.Any())
+        @if (Model.ProductVariantsDetails?.Any() == true)
         {
             <div class="card mt-3">
                 <div class="card-header">

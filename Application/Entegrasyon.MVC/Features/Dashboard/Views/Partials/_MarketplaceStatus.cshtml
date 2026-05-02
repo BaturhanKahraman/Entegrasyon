@@ -31,11 +31,11 @@
                     {
                         <tr>
                             <td>@mp.Name</td>
-                            <td class="text-center"><span class="badge bg-success">@mp.SyncedCount</span></td>
+                            <td class="text-center"><span class="badge bg-success text-white">@mp.SyncedCount</span></td>
                             <td class="text-center">
                                 @if (mp.PendingCount > 0)
                                 {
-                                    <span class="badge bg-warning">@mp.PendingCount</span>
+                                    <span class="badge bg-warning text-white">@mp.PendingCount</span>
                                 }
                                 else
                                 {
@@ -45,7 +45,7 @@
                             <td class="text-center">
                                 @if (mp.FailedCount > 0)
                                 {
-                                    <span class="badge bg-danger">@mp.FailedCount</span>
+                                    <span class="badge bg-danger text-white">@mp.FailedCount</span>
                                 }
                                 else
                                 {

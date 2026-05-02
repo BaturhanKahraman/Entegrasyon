@@ -35,8 +35,13 @@ public sealed class GlobalSearchManager(IEnumerable<ISearchSource> sources) : IG
                 var hits = await s.SearchAsync(query, perSourceLimit, ct);
                 return new SearchGroupDto(s.SourceKey, s.Label, s.Icon, hits);
             }
-            catch
+            catch (Exception ex)
             {
+                Trace.TraceError(
+                    "Global search source '{0}' failed for query '{1}': {2}",
+                    s.SourceKey,
+                    query,
+                    ex);
                 // Tek bir kaynağın hatası diğerlerini engellemesin
                 return new SearchGroupDto(s.SourceKey, s.Label, s.Icon, []);
             }

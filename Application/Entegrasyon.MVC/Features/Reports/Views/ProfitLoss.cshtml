@@ -25,7 +25,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="subheader">Gelir</div>
-                        <div class="h1 mb-0 text-green">@Model.Revenue.ToString("C2")</div>
+                        <div class="h1 mb-0 text-green">@Model.Revenue.ToMoney()</div>
                     </div>
                 </div>
             </div>
@@ -34,7 +34,7 @@
                     <div class="card-body">
                         <div class="subheader">Net Kar</div>
                         <div class="h1 mb-0 @(Model.NetProfit >= 0 ? "text-green" : "text-red")">
-                            @Model.NetProfit.ToString("C2")
+                            @Model.NetProfit.ToMoney()
                         </div>
                     </div>
                 </div>
@@ -58,19 +58,19 @@
                 <div class="datagrid">
                     <div class="datagrid-item">
                         <div class="datagrid-title">Ürün Maliyeti</div>
-                        <div class="datagrid-content">@Model.CostOfGoods.ToString("C2")</div>
+                        <div class="datagrid-content">@Model.CostOfGoods.ToMoney()</div>
                     </div>
                     <div class="datagrid-item">
                         <div class="datagrid-title">Pazaryeri Komisyonu</div>
-                        <div class="datagrid-content">@Model.MarketplaceCommission.ToString("C2")</div>
+                        <div class="datagrid-content">@Model.MarketplaceCommission.ToMoney()</div>
                     </div>
                     <div class="datagrid-item">
                         <div class="datagrid-title">Kargo Gideri</div>
-                        <div class="datagrid-content">@Model.CargoExpense.ToString("C2")</div>
+                        <div class="datagrid-content">@Model.CargoExpense.ToMoney()</div>
                     </div>
                     <div class="datagrid-item">
                         <div class="datagrid-title">Vergi</div>
-                        <div class="datagrid-content">@Model.TaxAmount.ToString("C2")</div>
+                        <div class="datagrid-content">@Model.TaxAmount.ToMoney()</div>
                     </div>
                 </div>
             </div>
@@ -96,10 +96,10 @@
                         {
                             <tr>
                                 <td>@mp.MarketPlaceName</td>
-                                <td>@mp.Revenue.ToString("C2")</td>
-                                <td>@mp.Commission.ToString("C2")</td>
+                                <td>@mp.Revenue.ToMoney()</td>
+                                <td>@mp.Commission.ToMoney()</td>
                                 <td class="@(mp.NetProfit >= 0 ? "text-green" : "text-red")">
-                                    @mp.NetProfit.ToString("C2")
+                                    @mp.NetProfit.ToMoney()
                                 </td>
                             </tr>
                         }

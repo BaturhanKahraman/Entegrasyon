@@ -36,6 +36,13 @@ namespace Entegrasyon.Entity.Sales
         public SaleSource SaleSource { get; set; }
         public SaleStatus SaleStatus { get; set; } = SaleStatus.Completed;
 
+        /// <summary>Offline POS senkronu için idempotency anahtarı (UUID v4). Online satışlarda null.</summary>
+        [StringLength(64)]
+        public string? IdempotencyKey { get; set; }
+
+        /// <summary>Satışın gerçekleştiği zaman (offline'da local time, sonra UTC'ye dönüştürülür). Null ise SaleDate kullanılır.</summary>
+        public DateTimeOffset? OccurredAt { get; set; }
+
         [StringLength(500)]
         public string? Note { get; set; }
 

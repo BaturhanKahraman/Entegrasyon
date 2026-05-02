@@ -196,6 +196,19 @@ builder.Services.AddRateLimiter(options =>
                 });
     });
 
+    // Device register — per IP. Invite-code brute-force'a karşı agresif limit.
+    options.AddPolicy("device-register", context =>
+    {
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return System.Threading.RateLimiting.RateLimitPartition
+            .GetFixedWindowLimiter(ip, _ =>
+                new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(15)
+                });
+    });
+
     options.OnRejected = async (context, ct) =>
     {
         context.HttpContext.Response.StatusCode = 429;

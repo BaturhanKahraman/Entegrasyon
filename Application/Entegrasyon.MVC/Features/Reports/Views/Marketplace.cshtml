@@ -55,9 +55,9 @@
                                 <tr>
                                     <td><strong>@mp.MarketplaceName</strong></td>
                                     <td>@mp.TotalOrders</td>
-                                    <td>@mp.TotalRevenue.ToString("C2")</td>
-                                    <td>@mp.CommissionPaid.ToString("C2")</td>
-                                    <td>@mp.AverageOrderValue.ToString("C2")</td>
+                                    <td>@mp.TotalRevenue.ToMoney()</td>
+                                    <td>@mp.CommissionPaid.ToMoney()</td>
+                                    <td>@mp.AverageOrderValue.ToMoney()</td>
                                 </tr>
                             }
                         </tbody>

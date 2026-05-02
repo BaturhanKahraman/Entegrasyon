@@ -9,7 +9,6 @@ public partial class Dashboard
 {
     [Inject] private SyncService _syncService { get; set; } = default!;
     [Inject] private OfflineSaleService _saleService { get; set; } = default!;
-    [Inject] private PrintAgentHostedService _printAgentService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     private DailySalesSummary _summary = new(0, 0, 0, 0);

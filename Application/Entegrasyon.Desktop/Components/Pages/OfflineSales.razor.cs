@@ -131,7 +131,40 @@ public partial class OfflineSales
                 c.ProductId, c.Quantity, c.UnitPrice, c.DiscountPercent, c.VatRate
             )).ToList();
 
+            // İlk deneme — preventive warning var mı?
             var result = await SaleService.CompleteSaleAsync(items, _paymentMethod, null);
+
+            // Stok uyarısı varsa kullanıcıya göster + override iste
+            if (!result.Success && result.Warnings is { Count: > 0 } warnings)
+            {
+                var lines = warnings.Select(w =>
+                {
+                    var ageMin = (DateTimeOffset.UtcNow - w.LastSyncedAt).TotalMinutes;
+                    var ageText = w.LastSyncedAt == DateTimeOffset.MinValue
+                        ? "(senkron yok)"
+                        : $"(son senkron: {ageMin:F0} dk önce)";
+                    return $"• {w.ProductTitle} — istenen {w.RequestedQuantity}, lokal stok {w.StockBefore} {ageText}";
+                });
+                var msg = "Aşağıdaki ürünlerde lokal cache'e göre stok yetersiz:\n\n"
+                          + string.Join("\n", lines)
+                          + "\n\nYine de satışı tamamlamak istiyor musunuz? "
+                          + "Senkron sırasında oversell tespit edilirse admin paneline bildirim gider.";
+
+                var confirm = await DialogService.ShowMessageBox(
+                    "Stok Uyarısı",
+                    msg,
+                    yesText: "Yine de Sat",
+                    cancelText: "İptal");
+
+                if (confirm != true)
+                {
+                    Snackbar.Add("Satış iptal edildi.", Severity.Info);
+                    return;
+                }
+
+                // Override ile tekrar dene
+                result = await SaleService.CompleteSaleAsync(items, _paymentMethod, null, forceOverride: true);
+            }
 
             if (result.Success)
             {

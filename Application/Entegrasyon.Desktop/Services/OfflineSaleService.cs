@@ -34,12 +34,59 @@ public class OfflineSaleService(
     }
 
     /// <summary>
+    /// Lokal cache'te stoğu yetersiz kalemleri bulur. UI satıştan ÖNCE çağırarak
+    /// kullanıcıyı uyarmalı; kullanıcı override ederse CompleteSaleAsync(forceOverride=true)
+    /// ile devam edilir.
+    /// </summary>
+    public async Task<List<OversellWarning>> DetectOversellAsync(List<OfflineSaleItemDto> items)
+    {
+        var warnings = new List<OversellWarning>();
+        foreach (var item in items)
+        {
+            var product = await db.Products.FindAsync(item.ProductId);
+            if (product is null)
+            {
+                warnings.Add(new OversellWarning(
+                    item.ProductId, "<bilinmeyen>", "<bilinmeyen>",
+                    StockBefore: 0, RequestedQuantity: item.Quantity,
+                    LastSyncedAt: DateTimeOffset.MinValue,
+                    Reason: "Ürün lokal cache'te bulunamadı."));
+                continue;
+            }
+            if (product.StockQuantity - item.Quantity < 0)
+            {
+                warnings.Add(new OversellWarning(
+                    item.ProductId, product.Title, product.Barcode,
+                    StockBefore: product.StockQuantity,
+                    RequestedQuantity: item.Quantity,
+                    LastSyncedAt: product.LastSyncedAt,
+                    Reason: "Lokal stok yetersiz; senkron sırasında oversell olayı oluşabilir."));
+            }
+        }
+        return warnings;
+    }
+
+    /// <summary>
     /// Complete an offline sale: save to SQLite, decrease local stock, add to sync queue.
     /// </summary>
-    public async Task<OfflineSaleResult> CompleteSaleAsync(List<OfflineSaleItemDto> items, string paymentMethod, string? customerInfo)
+    public async Task<OfflineSaleResult> CompleteSaleAsync(
+        List<OfflineSaleItemDto> items,
+        string paymentMethod,
+        string? customerInfo,
+        bool forceOverride = false)
     {
         if (items.Count == 0)
             return new OfflineSaleResult(false, "Sepet bos");
+
+        if (!forceOverride)
+        {
+            var warnings = await DetectOversellAsync(items);
+            if (warnings.Count > 0)
+            {
+                logger.LogWarning("Preventive oversell warning blocked sale: {Count} items", warnings.Count);
+                return new OfflineSaleResult(false, "Stok uyarısı — lütfen onaylayın.", null, warnings);
+            }
+        }
 
         var sale = new OfflineSale
         {
@@ -164,6 +211,19 @@ public record OfflineSaleItemDto(
     int DiscountPercent,
     decimal VatRate);
 
-public record OfflineSaleResult(bool Success, string Message, Guid? SaleId = null);
+public record OfflineSaleResult(
+    bool Success,
+    string Message,
+    Guid? SaleId = null,
+    IReadOnlyList<OversellWarning>? Warnings = null);
+
+public record OversellWarning(
+    Guid ProductId,
+    string ProductTitle,
+    string Barcode,
+    int StockBefore,
+    int RequestedQuantity,
+    DateTimeOffset LastSyncedAt,
+    string Reason);
 
 public record DailySalesSummary(int Count, decimal TotalRevenue, int SyncedCount, int PendingCount);

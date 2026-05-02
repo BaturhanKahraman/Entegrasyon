@@ -213,14 +213,6 @@ public class SettingsController(
         return RedirectToAction(nameof(Printing));
     }
 
-    [HttpGet("/settings/desktop")]
-    public IActionResult Desktop()
-    {
-        ViewData.SetPageTitle("Masaustu Uygulama");
-        ViewData.SetActiveNav("settings");
-        return View();
-    }
-
     [HttpGet("/settings/tax")]
     public async Task<IActionResult> Tax()
     {

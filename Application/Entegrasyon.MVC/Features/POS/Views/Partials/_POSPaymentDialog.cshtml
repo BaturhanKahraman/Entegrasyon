@@ -21,7 +21,7 @@
                         <div class="col-md-4">
                             <div class="card card-sm bg-muted-lt">
                                 <div class="card-body text-center">
-                                    <div class="text-muted small">Ara Toplam</div>
+                                    <div class="text-muted small">Ara Toplam (KDV hariç)</div>
                                     <div class="fw-bold">@Model.Subtotal.ToString("C2", tr)</div>
                                 </div>
                             </div>
@@ -37,7 +37,7 @@
                         <div class="col-md-4">
                             <div class="card card-sm bg-green-lt">
                                 <div class="card-body text-center">
-                                    <div class="text-muted small">Toplam</div>
+                                    <div class="text-muted small">Toplam (KDV dahil)</div>
                                     <div class="fw-bold fs-3" id="pos-grand-total" data-amount="@Model.GrandTotal.ToString(System.Globalization.CultureInfo.InvariantCulture)">@Model.GrandTotal.ToString("C2", tr)</div>
                                 </div>
                             </div>

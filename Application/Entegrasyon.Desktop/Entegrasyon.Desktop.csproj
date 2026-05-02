@@ -8,27 +8,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!-- PrintAgentHostedService uses WebApplication.CreateBuilder() -->
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Photino.Blazor" />
     <PackageReference Include="Velopack" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="MudBlazor" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Shared Entity/DTO project -->
     <ProjectReference Include="..\Entegrasyon.Entity\Entegrasyon.Entity.csproj" />
-
-    <!-- PrintAgent Contracts (printer DTOs) -->
     <ProjectReference Include="..\..\Agent\Entegrasyon.PrintAgent.Contracts\Entegrasyon.PrintAgent.Contracts.csproj" />
-
-    <!-- Full PrintAgent project (PrintService, transports, configuration) -->
-    <ProjectReference Include="..\..\Agent\Entegrasyon.PrintAgent\Entegrasyon.PrintAgent.csproj" />
   </ItemGroup>
 
 </Project>

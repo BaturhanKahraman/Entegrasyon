@@ -1,17 +1,151 @@
-        <div class="row">
-            <div class="col-md-3">
-                <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
-            </div>
-            <div class="col-md-9">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="empty">
-                            <p class="empty-title">Masaustu Uygulama Ayarlari</p>
-                            <p class="empty-subtitle text-secondary">
-                                Masaustu uygulama ayarlari sayfasi gelistirme asamasindadir.
-                            </p>
-                        </div>
-                    </div>
+@model Entegrasyon.MVC.Features.Devices.DesktopSettingsVm
+
+<div class="row">
+    <div class="col-md-3">
+        <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
+    </div>
+    <div class="col-md-9">
+
+        @if (!string.IsNullOrEmpty(Model.NewlyIssuedInviteCode))
+        {
+            <div class="alert alert-important alert-warning" role="alert">
+                <h4 class="alert-title">Yeni Davet Kodu Oluşturuldu</h4>
+                <p class="mb-2">
+                    Bu kodu kurulum sırasında masaüstü uygulamasına girin. Kod <strong>tek kullanımlık</strong> ve
+                    24 saat sonra geçersiz olur.
+                </p>
+                <div class="d-flex align-items-center gap-2">
+                    <code class="fs-3 p-2 bg-yellow-lt rounded">@Model.NewlyIssuedInviteCode</code>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="navigator.clipboard.writeText('@Model.NewlyIssuedInviteCode')">
+                        Kopyala
+                    </button>
                 </div>
             </div>
+        }
+
+        <!-- Kayıtlı Cihazlar -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Kayıtlı Cihazlar</h3>
+                <div class="card-actions">
+                    <form method="post" action="/settings/desktop/invite-codes/create" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            Yeni Davet Kodu Oluştur
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @if (Model.Devices.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Cihaz Adı</th>
+                                <th>İşletim Sistemi</th>
+                                <th>Hostname</th>
+                                <th>Anahtar</th>
+                                <th>Durum</th>
+                                <th>Son Erişim</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var device in Model.Devices)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@device.Name</td>
+                                    <td>@device.OS</td>
+                                    <td class="text-secondary">@device.Hostname</td>
+                                    <td><code>@device.KeyPrefix…</code></td>
+                                    <td>
+                                        @if (device.IsRevoked)
+                                        {
+                                            <span class="badge bg-red-lt">İptal edildi</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-green-lt">Aktif</span>
+                                        }
+                                    </td>
+                                    <td class="text-secondary">
+                                        @(device.LastSeenAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")
+                                    </td>
+                                    <td class="text-end">
+                                        @if (!device.IsRevoked)
+                                        {
+                                            <form method="post" action="/settings/desktop/devices/@device.Id/revoke"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('@($"{device.Name} cihazını iptal etmek istediğinize emin misiniz?")')">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-ghost-danger btn-sm">
+                                                    İptal Et
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="empty py-3">
+                        <p class="empty-title">Henüz kayıtlı cihaz yok</p>
+                        <p class="empty-subtitle text-secondary">
+                            Masaüstü uygulamayı kurulum sırasında bağlamak için bir davet kodu oluşturun.
+                        </p>
+                    </div>
+                </div>
+            }
         </div>
+
+        <!-- Aktif Davet Kodları -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Aktif Davet Kodları</h3>
+            </div>
+            @if (Model.ActiveInviteCodes.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Kod</th>
+                                <th>Son Geçerlilik</th>
+                                <th>Oluşturulma</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var code in Model.ActiveInviteCodes)
+                            {
+                                <tr>
+                                    <td><code>@code.Code</code></td>
+                                    <td>@code.ExpiresAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td class="text-secondary">@code.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="empty py-3">
+                        <p class="empty-title">Aktif davet kodu yok</p>
+                        <p class="empty-subtitle text-secondary">
+                            Tek kullanımlık kodlar 24 saat geçerlidir; kullanılan veya süresi dolan kodlar bu listede görünmez.
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

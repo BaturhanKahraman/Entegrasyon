@@ -17,6 +17,7 @@ public class SyncService : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly SettingsService _settingsService;
+    private readonly DeviceCredentialStore _credentialStore;
     private readonly ILogger<SyncService> _logger;
     private readonly HttpClient _httpClient;
     private Timer? _syncTimer;
@@ -35,10 +36,12 @@ public class SyncService : IDisposable
     public SyncService(
         IServiceProvider serviceProvider,
         SettingsService settingsService,
+        DeviceCredentialStore credentialStore,
         ILogger<SyncService> logger)
     {
         _serviceProvider = serviceProvider;
         _settingsService = settingsService;
+        _credentialStore = credentialStore;
         _logger = logger;
         _httpClient = new HttpClient();
 
@@ -182,74 +185,88 @@ public class SyncService : IDisposable
     }
 
     /// <summary>
-    /// Push offline sales from SyncQueue to server (FIFO order).
+    /// Push offline sales to /api/offline-sales/sync. Tek-batch envelope ile gönderilir;
+    /// server idempotency-key bazlı işler. Bearer dev_xxx auth kullanılır.
     /// </summary>
     public async Task<SyncResult> PushSalesAsync()
     {
         if (!IsOnline)
             return new SyncResult(false, "Offline — sync not possible");
 
+        var credentials = _credentialStore.TryLoad();
+        if (credentials is null)
+            return new SyncResult(false, "Cihaz kayıtlı değil — credentials.json yok.");
+
         var settings = _settingsService.Settings;
+        if (!int.TryParse(settings.BranchOfficeId, out var branchOfficeId))
+            return new SyncResult(false, "BranchOfficeId ayarlı değil.");
+        if (!Guid.TryParse(settings.SalePersonId, out var salePersonId))
+            return new SyncResult(false, "SalePersonId ayarlı değil.");
 
         try
         {
             using var scope = _serviceProvider.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<OfflineDbContext>();
 
-            var pendingEntries = await db.SyncQueue
-                .Where(q => !q.IsSynced && q.EntityType == nameof(OfflineSale))
-                .OrderBy(q => q.CreatedAt)
+            var pendingSales = await db.Sales
+                .Include(s => s.Items)
+                .Where(s => !s.IsSynced)
+                .OrderBy(s => s.CreatedAt)
                 .ToListAsync();
 
-            if (pendingEntries.Count == 0)
-                return new SyncResult(true, "No pending sales to sync", 0);
+            if (pendingSales.Count == 0)
+                return new SyncResult(true, "Senkronize edilecek satış yok.", 0);
 
-            ConfigureHttpClient(settings);
-            var syncedCount = 0;
+            var dtos = pendingSales.Select(s => new OfflineSaleSyncDto(
+                IdempotencyKey: s.Id.ToString("N"),
+                OccurredAt: s.SaleDate,
+                BranchOfficeId: branchOfficeId,
+                SalePersonId: salePersonId,
+                CustomerId: null,
+                GeneralDiscount: 0m,
+                PaymentMethod: s.PaymentMethod,
+                Items: s.Items.Select(i => new OfflineSaleItemSyncDto(
+                    ProductVariantId: i.ProductId,
+                    Quantity: i.Quantity,
+                    UnitPrice: i.UnitPrice,
+                    DiscountPercent: i.DiscountPercent)).ToList()
+            )).ToList();
 
-            foreach (var entry in pendingEntries)
+            ConfigureHttpClient(credentials);
+            var url = $"{credentials.ServerBaseUrl.TrimEnd('/')}/api/offline-sales/sync";
+            var response = await _httpClient.PostAsJsonAsync(url, new { sales = dtos });
+
+            if (!response.IsSuccessStatusCode)
             {
-                try
-                {
-                    var url = $"{settings.ServerUrl}/api/sync/sales";
-                    var content = new StringContent(entry.Payload, System.Text.Encoding.UTF8,
-                        new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
-                    var response = await _httpClient.PostAsync(url, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        entry.IsSynced = true;
-                        entry.SyncedAt = DateTimeOffset.UtcNow;
-                        entry.ErrorMessage = null;
-                        syncedCount++;
-
-                        // Mark the sale as synced too
-                        var sale = await db.Sales.FindAsync(entry.EntityId);
-                        if (sale is not null)
-                        {
-                            sale.IsSynced = true;
-                            sale.SyncedAt = DateTimeOffset.UtcNow;
-                        }
-                    }
-                    else
-                    {
-                        var errorBody = await response.Content.ReadAsStringAsync();
-                        entry.ErrorMessage = $"HTTP {response.StatusCode}: {errorBody}";
-                        entry.RetryCount++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    entry.ErrorMessage = ex.Message;
-                    entry.RetryCount++;
-                }
+                var body = await response.Content.ReadAsStringAsync();
+                return new SyncResult(false, $"HTTP {response.StatusCode}: {body}");
             }
 
-            await db.SaveChangesAsync();
-            PendingCount = pendingEntries.Count - syncedCount;
+            var syncResp = await response.Content.ReadFromJsonAsync<SyncResponseDto>();
+            if (syncResp is null)
+                return new SyncResult(false, "Sunucudan boş yanıt.");
 
-            _logger.LogInformation("Pushed {Synced}/{Total} sales to server", syncedCount, pendingEntries.Count);
-            return new SyncResult(true, $"{syncedCount}/{pendingEntries.Count} sale(s) synced", syncedCount);
+            // Mark synced + record any incident references
+            var byKey = pendingSales.ToDictionary(s => s.Id.ToString("N"), s => s);
+            var oversoldCount = 0;
+            foreach (var r in syncResp.Results)
+            {
+                if (!byKey.TryGetValue(r.IdempotencyKey, out var sale)) continue;
+                if (r.Status == "ok" || r.Status == "oversold" || r.Status == "duplicate")
+                {
+                    sale.IsSynced = true;
+                    sale.SyncedAt = DateTimeOffset.UtcNow;
+                    if (r.Status == "oversold") oversoldCount++;
+                }
+            }
+            await db.SaveChangesAsync();
+            PendingCount = pendingSales.Count(s => !s.IsSynced);
+
+            var msg = oversoldCount > 0
+                ? $"{syncResp.Results.Count} senkronize, {oversoldCount} tanesi oversell — admin paneline incident gitti."
+                : $"{syncResp.Results.Count} satış senkronize.";
+            _logger.LogInformation("PushSales: {Msg}", msg);
+            return new SyncResult(true, msg, syncResp.Results.Count);
         }
         catch (Exception ex)
         {
@@ -303,8 +320,17 @@ public class SyncService : IDisposable
     private void ConfigureHttpClient(PosSettings settings)
     {
         _httpClient.DefaultRequestHeaders.Clear();
+        // Catalog pull yine X-Api-Key kullanıyor (eski kontrat); offline-sales/sync
+        // ayrıca Bearer auth ile çağrılır (ConfigureHttpClient(DeviceCredentials)).
         if (!string.IsNullOrEmpty(settings.ApiKey))
             _httpClient.DefaultRequestHeaders.Add("X-Api-Key", settings.ApiKey);
+    }
+
+    private void ConfigureHttpClient(DeviceCredentials credentials)
+    {
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", credentials.DeviceApiKey);
     }
 
     public void Dispose()
@@ -316,6 +342,26 @@ public class SyncService : IDisposable
 }
 
 public record SyncResult(bool Success, string Message, int? AffectedCount = null);
+
+public record OfflineSaleSyncDto(
+    string IdempotencyKey,
+    DateTimeOffset OccurredAt,
+    int BranchOfficeId,
+    Guid SalePersonId,
+    int? CustomerId,
+    decimal GeneralDiscount,
+    string PaymentMethod,
+    List<OfflineSaleItemSyncDto> Items);
+
+public record OfflineSaleItemSyncDto(
+    Guid ProductVariantId,
+    int Quantity,
+    decimal UnitPrice,
+    double DiscountPercent);
+
+public record SyncResponseDto(List<SyncResultDto> Results);
+
+public record SyncResultDto(string IdempotencyKey, string Status, Guid? SaleId, int? IncidentId, string? Message);
 
 /// <summary>
 /// DTO for product data received from server sync endpoint.

@@ -9,7 +9,6 @@ public partial class SettingsPage
     [Inject] private SettingsService _settingsService { get; set; } = default!;
     [Inject] private SyncService _syncService { get; set; } = default!;
     [Inject] private OfflineSaleService _saleService { get; set; } = default!;
-    [Inject] private PrintAgentHostedService _printAgentService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     private PosSettings _settings = new();
@@ -40,32 +39,6 @@ public partial class SettingsPage
         finally
         {
             _saving = false;
-        }
-    }
-
-    private async Task StartPrintAgent()
-    {
-        try
-        {
-            await _printAgentService.StartAsync();
-            Snackbar.Add($"PrintAgent baslatildi (port {_printAgentService.Port})", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"PrintAgent baslatma hatasi: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task StopPrintAgent()
-    {
-        try
-        {
-            await _printAgentService.StopAsync();
-            Snackbar.Add("PrintAgent durduruldu", Severity.Info);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"PrintAgent durdurma hatasi: {ex.Message}", Severity.Error);
         }
     }
 }
