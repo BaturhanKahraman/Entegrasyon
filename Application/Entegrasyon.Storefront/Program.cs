@@ -7,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddCustomDbContext(builder.Configuration);
+builder.Services.AddStorageServices(builder.Configuration); // MinIO + ImageSharp (IMinioFileStorage, IImageProcessingService)
+builder.Services.AddHttpContextAccessor(); // ApplicationLogManager vb. icin
+builder.Services.AddHttpClient(); // IHttpClientFactory
+builder.Services.AddNotification(); // Channel<BaseEvent> + email/sms senders (NotificationManager)
+builder.Services.AddHybridCache(); // HybridCache (BrandService vb.)
 builder.Services.AddStorefrontServices(); // will fail until Task 7, that's OK
 
 // Response compression (Brotli + GZip)
@@ -41,7 +46,7 @@ else
 // Health checks
 builder.Services.AddHealthChecks();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+var authBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/giris";
@@ -52,20 +57,43 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.Name = "Storefront.Auth";
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
-    })
-    .AddGoogle(options =>
+    });
+
+// Harici saglayicilar yalnizca yapilandirilmissa eklenir (bos ClientId crash'e yol acar)
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+if (!string.IsNullOrWhiteSpace(googleClientId))
+{
+    authBuilder.AddGoogle(options =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+        options.ClientId = googleClientId;
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
         options.CallbackPath = "/signin-google";
-    })
-    .AddFacebook(options =>
+    });
+}
+var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+if (!string.IsNullOrWhiteSpace(facebookAppId))
+{
+    authBuilder.AddFacebook(options =>
     {
-        options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "";
+        options.AppId = facebookAppId;
         options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "";
         options.CallbackPath = "/signin-facebook";
     });
-builder.Services.AddControllersWithViews();
+}
+builder.Services.AddControllersWithViews()
+    .ConfigureApplicationPartManager(apm =>
+    {
+        // Storefront SADECE kendi controller'larini kullanmali. Referans edilen
+        // AdminPanel/MVC assembly'lerinden gelen controller'lar (orn. AuthController.Login)
+        // ayni URL'lere maplenip AmbiguousMatchException'a yol aciyor.
+        foreach (var part in apm.ApplicationParts
+                     .OfType<Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart>()
+                     .Where(p => p.Name is "Entegrasyon.AdminPanel" or "Entegrasyon.MVC")
+                     .ToList())
+        {
+            apm.ApplicationParts.Remove(part);
+        }
+    });
 builder.Services.AddResponseCaching();
 builder.Services.AddMemoryCache();
 builder.Services.AddSession(options =>
