@@ -1,3 +1,4 @@
+using Entegrasyon.MVC.Infrastructure.Validation;
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +27,7 @@ using OpenTelemetry.Logs;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── MVC + Feature Folders ────────────────────────────────────────────────
+// (Türkçe doğrulama mesajları)
 builder.Services.AddControllersWithViews(options =>
 {
     // Global CSRF protection — all POST/PUT/DELETE auto-validated
@@ -34,6 +36,20 @@ builder.Services.AddControllersWithViews(options =>
     // Custom filters
     options.Filters.Add<TenantActionFilter>();
     options.Filters.Add<AutoValidationFilter>();
+
+    // Türkçe doğrulama mesajları (implicit required dahil)
+    options.ModelMetadataDetailsProviders.Add(new TurkishValidationMetadataProvider());
+
+    // Model binding (tip/parse) hata mesajları — Türkçe
+    var mp = options.ModelBindingMessageProvider;
+    mp.SetValueIsInvalidAccessor(v => $"'{v}' değeri geçersiz.");
+    mp.SetValueMustNotBeNullAccessor(_ => "Bu alan boş olamaz.");
+    mp.SetMissingBindRequiredValueAccessor(f => $"'{f}' alanı için değer gönderilmedi.");
+    mp.SetMissingKeyOrValueAccessor(() => "Bir değer gereklidir.");
+    mp.SetAttemptedValueIsInvalidAccessor((v, f) => $"'{v}' değeri '{f}' alanı için geçersiz.");
+    mp.SetUnknownValueIsInvalidAccessor(f => $"'{f}' alanına gönderilen değer geçersiz.");
+    mp.SetValueMustBeANumberAccessor(f => $"'{f}' alanı bir sayı olmalıdır.");
+    mp.SetNonPropertyValueMustBeANumberAccessor(() => "Değer bir sayı olmalıdır.");
 })
 .AddSessionStateTempDataProvider();
 
@@ -244,6 +260,7 @@ builder.Services.AddNotification();
 // TODO: MVC-specific notification delivery servisi eklenecek
 
 // ── Exception Handling ───────────────────────────────────────────────────
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();
 builder.Services.AddExceptionHandler<HtmxExceptionHandler>();
 builder.Services.AddProblemDetails(options =>

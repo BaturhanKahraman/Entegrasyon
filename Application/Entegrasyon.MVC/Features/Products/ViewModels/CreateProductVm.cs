@@ -4,8 +4,8 @@ public class CreateProductVm
 {
     // Step 1: General
     public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public string StockCode { get; set; } = "";
+    public string? Description { get; set; }
+    public string? StockCode { get; set; }
     public string? Season { get; set; }
     public string? Year { get; set; }
     public int BrandId { get; set; }

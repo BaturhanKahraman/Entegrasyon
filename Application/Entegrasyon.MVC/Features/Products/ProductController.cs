@@ -6,6 +6,8 @@ using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Attributes;
 using Entegrasyon.Entity.Dtos.Product;
 using Entegrasyon.Entity.Dtos.Product.ProductVariant;
+using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Results;
 using Entegrasyon.MVC.Features.Products.ViewModels;
 using Entegrasyon.Entity.Dtos.Product.Discount;
 using Entegrasyon.Entity.Dtos.BulkOperations;
@@ -444,8 +446,8 @@ public class ProductController(
         var dto = new AddProductDto
         {
             Title = vm.Title,
-            Description = vm.Description,
-            StockCode = vm.StockCode,
+            Description = vm.Description ?? "",
+            StockCode = vm.StockCode ?? "",
             Season = vm.Season,
             Year = vm.Year,
             BrandId = vm.BrandId,
@@ -483,7 +485,31 @@ public class ProductController(
             }).ToList()
         };
 
-        var result = await productService.AddProduct(dto);
+        // Bug #3 fix: AddProduct, validation hatasında FluentValidation.ValidationException
+        // fırlatıyordu → yakalanmayıp HTTP 500'e dönüşüyordu (kullanıcı 6 adımı doldurduktan
+        // sonra hata sayfası görüyordu). Artık exception'ı yakalayıp aşağıdaki mevcut dostça
+        // hata yoluna (Step 5 review + banner) bağlıyoruz; girilen veri session'da korunur.
+        IDataResult<Product> result;
+        try
+        {
+            result = await productService.AddProduct(dto);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            var msg = string.Join(" • ", ex.Errors
+                .Select(e => e.ErrorMessage)
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct());
+            ViewBag.WizardError = string.IsNullOrWhiteSpace(msg)
+                ? "Ürün kaydedilemedi. Lütfen varyant fiyatı ve stok bilgilerini kontrol edin."
+                : msg;
+
+            if (Request.IsHtmx())
+                return PartialView("Partials/_CreateStep5Review", vm);
+
+            TempData.SetError((string)ViewBag.WizardError);
+            return RedirectToAction(nameof(Create));
+        }
 
         if (result.Success)
         {
