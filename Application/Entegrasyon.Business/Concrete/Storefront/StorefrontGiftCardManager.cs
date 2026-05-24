@@ -37,7 +37,10 @@ public class StorefrontGiftCardManager(
             Status = GiftCardStatus.Active
         };
 
+        // Bug #6 fix: Gift card ÖNCE kaydedilmeli ki Id üretilsin; aksi halde transaction
+        // GiftCardId=0 ile eklenip FK ihlaline (23503) yol açıyordu.
         dbContext.StorefrontGiftCards.Add(giftCard);
+        await dbContext.SaveChangesAsync();
 
         var transaction = new StorefrontGiftCardTransaction
         {
@@ -49,11 +52,6 @@ public class StorefrontGiftCardManager(
         };
 
         dbContext.StorefrontGiftCardTransactions.Add(transaction);
-        await dbContext.SaveChangesAsync();
-
-        // Fix up FK after save (EF Core will set Id)
-        transaction.GiftCardId = giftCard.Id;
-        dbContext.StorefrontGiftCardTransactions.Update(transaction);
         await dbContext.SaveChangesAsync();
 
         return new SuccessDataResult<StorefrontGiftCard>(giftCard, "Hediye karti basariyla olusturuldu.");
