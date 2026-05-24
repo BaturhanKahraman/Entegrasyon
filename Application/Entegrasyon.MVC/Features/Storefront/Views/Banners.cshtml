@@ -10,6 +10,7 @@
                 <form method="post" action="/settings/storefront/banners"
                       hx-post="/settings/storefront/banners" hx-swap="none"
                       hx-on::after-request="if(event.detail.successful) this.reset()">
+                    @Html.AntiForgeryToken()
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label required">Baslik</label>

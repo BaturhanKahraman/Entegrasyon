@@ -41,6 +41,7 @@
                         <div class="card-body">
                             <form id="legal-form" method="post" action="/settings/storefront/legal"
                                   hx-post="/settings/storefront/legal" hx-swap="none">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="fieldName" id="legal-field-name" value="AboutHtml" />
                                 <div class="mb-3">
                                     <textarea name="htmlContent" id="legal-editor" class="form-control" rows="20"

@@ -35,6 +35,7 @@
                     <!-- General Tab -->
                     <div class="tab-pane active show" id="tab-general">
                         <form method="post" action="/categories/@Model.Category.Id/edit">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="Id" value="@Model.Category.Id" />
                             <input type="hidden" name="IsImported" value="@Model.Category.IsImported" />
 

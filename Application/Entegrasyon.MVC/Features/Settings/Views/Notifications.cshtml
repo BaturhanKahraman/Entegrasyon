@@ -6,6 +6,7 @@
             </div>
             <div class="col-md-9">
                 <form method="post" action="/settings/notifications">
+                    @Html.AntiForgeryToken()
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Bildirim Ayarlari</h3>

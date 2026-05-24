@@ -8,6 +8,7 @@
                 <button type="button" class="btn-close" onclick="closeDiscountModal()"></button>
             </div>
             <form method="post" action="/products/@Model.ProductId/discount">
+                @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <!-- Discount Percentage -->
                     <div class="mb-3">

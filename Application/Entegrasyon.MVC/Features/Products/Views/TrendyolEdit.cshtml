@@ -110,6 +110,7 @@
             @* Section 2: Override Form + Update *@
             <div class="col-lg-6">
                 <form method="post" action="/products/@Model.ProductId/sync/trendyol/edit">
+                    @Html.AntiForgeryToken()
                     @if (!string.IsNullOrEmpty(Model.ReturnUrl))
                     {
                         <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />

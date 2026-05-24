@@ -13,6 +13,7 @@
 
         <form method="post" action="/settings/storefront"
               hx-post="/settings/storefront" hx-swap="none">
+            @Html.AntiForgeryToken()
 
             @* ── Genel Bilgiler ─────────────────────────────────────── *@
             <div class="card mb-3">

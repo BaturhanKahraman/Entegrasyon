@@ -21,6 +21,7 @@
                 <div class="card-body">
                     <form method="post" action="/settings/storefront"
                           hx-post="/settings/storefront" hx-swap="none">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="Id" value="@Model.Id" />
                         <input type="hidden" name="StoreName" value="@Model.StoreName" />
                         <input type="hidden" name="CompanyName" value="@Model.CompanyName" />

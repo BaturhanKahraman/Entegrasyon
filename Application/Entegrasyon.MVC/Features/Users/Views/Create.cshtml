@@ -8,6 +8,7 @@
 </div>
 
         <form method="post" action="/users/create">
+            @Html.AntiForgeryToken()
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Kullanıcı Bilgileri</h3>

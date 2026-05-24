@@ -8,6 +8,7 @@
                     </div>
                     <div class="card-body">
                         <form method="post" action="/admin/notifications/send">
+                            @Html.AntiForgeryToken()
                             <div class="mb-3">
                                 <label class="form-label">Baslik</label>
                                 <input type="text" class="form-control" name="title" placeholder="Bildirim basligi" required />

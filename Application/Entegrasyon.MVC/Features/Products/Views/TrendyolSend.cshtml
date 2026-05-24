@@ -104,6 +104,7 @@
             @* Section 2: Override Form + Send *@
             <div class="col-lg-6">
                 <form method="post" action="/products/@Model.ProductId/sync/trendyol/send">
+                    @Html.AntiForgeryToken()
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Gonderim Ayarlari</h3>

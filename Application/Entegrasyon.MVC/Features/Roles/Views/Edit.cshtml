@@ -13,6 +13,7 @@
 </div>
 
         <form method="post" action="/roles/@Model.Id/edit">
+            @Html.AntiForgeryToken()
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Rol Bilgileri</h3>

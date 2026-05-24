@@ -8,6 +8,7 @@
 </div>
 
         <form method="post" action="/users/@Model.Id/edit">
+            @Html.AntiForgeryToken()
             <input type="hidden" name="Id" value="@Model.Id"/>
             <div class="card">
                 <div class="card-header">
