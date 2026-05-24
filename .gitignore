@@ -383,3 +383,6 @@ docs/trendyol/attributes-snapshot.json
 .remember/tmp/save-session.pid
 Application/Entegrasyon.MVC/teamviewer.x86_64.rpm
 .remember/tmp/save-session.pid
+
+# graphify knowledge graph output (locally regenerated via `graphify update .`)
+graphify-out/
