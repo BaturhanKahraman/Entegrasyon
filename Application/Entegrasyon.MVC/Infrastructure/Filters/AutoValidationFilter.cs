@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Infrastructure.Filters;
 
@@ -40,8 +41,20 @@ public class AutoValidationFilter : IActionFilter
             }
             else
             {
-                // Normal → aynı view döndür
-                context.Result = controller.View(model);
+                // Bug fix: View(model) action'ın default view'ını input DTO/null ile render
+                // ediyordu; view GET'in yüklediği zengin modele bağımlıysa NRE/500 oluyordu
+                // (örn. Customer Edit, "Vm" yerine "Dto" parametresi -> model=null -> @Model.Id).
+                // PRG: validation mesajını TempData'ya yaz, geldiği sayfaya geri yönlendir.
+                var messages = string.Join(" • ", context.ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Distinct());
+                controller.TempData.SetError(string.IsNullOrWhiteSpace(messages)
+                    ? "Lütfen formu kontrol edip tekrar deneyin."
+                    : messages);
+                var back = context.HttpContext.Request.Headers.Referer.FirstOrDefault();
+                context.Result = new RedirectResult(string.IsNullOrWhiteSpace(back) ? "/" : back);
             }
         }
     }
