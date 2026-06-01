@@ -93,6 +93,11 @@ public sealed class StorefrontSettings : BaseEntity
     public int LoyaltyWelcomeBonus { get; set; } = 50;
     public int LoyaltyReviewBonus { get; set; } = 50;
     public int LoyaltyReferralBonus { get; set; } = 200;
+    public int LoyaltyBirthdayBonus { get; set; } = 500;
+
+    // Loyalty Tier Thresholds (puan eşikleri)
+    public int LoyaltyTierSilverMin { get; set; } = 2000;
+    public int LoyaltyTierGoldMin { get; set; } = 5000;
 
     // Abandoned Cart Recovery
     public bool AbandonedCartRecoveryEnabled { get; set; }

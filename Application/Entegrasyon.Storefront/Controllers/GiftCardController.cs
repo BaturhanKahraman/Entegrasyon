@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Entegrasyon.Business.Abstract;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Entegrasyon.Storefront.Controllers;
 
@@ -47,6 +48,7 @@ public class GiftCardController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("balance-check")]
     public async Task<IActionResult> Balance(string code)
     {
         ViewBag.SeoTitle = $"Hediye Karti Sorgula | {tenant.Settings.StoreName}";

@@ -11,6 +11,9 @@ namespace Entegrasyon.Entity.Customers
         public string? Name { get; set; }
         public string? Surname { get; set; }
         public string? FullName { get; set; }
+        public DateOnly? BirthDate { get; set; }
+        public string? Gender { get; set; }
+        public string? AvatarUrl { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTimeOffset? DeactivatedAt { get; set; }
         public string? DeactivationReason { get; set; }

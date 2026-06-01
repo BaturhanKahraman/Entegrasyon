@@ -1,10 +1,14 @@
 using System.Security.Claims;
 using System.Text;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.FileStorage;
 using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Storefront;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Entegrasyon.Storefront.Controllers;
 
@@ -16,16 +20,29 @@ public class AccountController(
     IStorefrontReturnManager returnManager,
     IStorefrontLoyaltyManager loyaltyManager,
     IStorefrontReferralManager referralManager,
-    IStorefrontWalletManager walletManager) : Controller
+    IStorefrontWalletManager walletManager,
+    IStorefrontAddressManager addressManager,
+    IMinioFileStorage fileStorage) : Controller
 {
     private int GetCustomerId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
     private int GetAuthId() => int.Parse(User.FindFirst("AuthId")!.Value);
+
+    // Tüm hesap sayfalarında _AccountSidebar partial'ı CustomerName + CustomerTier okur.
+    // Her action'da tek tek set etmek yerine burada merkezi olarak claim'lerden doldurulur;
+    // böylece sidebar hiçbir sayfada "Ayşe Yılmaz / Bronze Üye" demo verisine düşmez.
+    // NOT: Üyelik kademesi (tier) için henüz backend alanı yok — backend-gaps "MembershipTier"
+    // claim'ini login'de set ederse buradan otomatik okunur, yoksa nötr "Üye" gösterilir.
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        ViewBag.CustomerName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Üye";
+        ViewBag.CustomerTier = User.FindFirst("MembershipTier")?.Value ?? "Üye";
+        base.OnActionExecuting(context);
+    }
 
     public async Task<IActionResult> Index()
     {
         var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
         ViewBag.Auth = authResult.Data;
-        ViewBag.CustomerName = User.FindFirst(ClaimTypes.Name)?.Value;
         return View();
     }
 
@@ -35,28 +52,72 @@ public class AccountController(
         var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
         if (!authResult.Success) return RedirectToAction("Index");
         var auth = authResult.Data;
-        ViewBag.Profile = new StorefrontProfileDto(auth.Customer.Name!, auth.Customer.Surname!, auth.Customer.PhoneNumber);
+        var customer = auth.Customer;
+
+        ViewBag.Name = customer?.Name;
+        ViewBag.Surname = customer?.Surname;
         ViewBag.Email = auth.Email;
+        ViewBag.Phone = customer?.PhoneNumber;
+        ViewBag.BirthDate = customer?.BirthDate?.ToString("yyyy-MM-dd");
+        ViewBag.Gender = customer?.Gender;
+        ViewBag.NewsletterOptIn = auth.MarketingConsent;
+        ViewBag.AvatarUrl = customer?.AvatarUrl;
+        ViewBag.EmailConfirmed = auth.EmailConfirmed;
         return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Profile(StorefrontProfileDto dto)
+    public async Task<IActionResult> Profile(StorefrontProfileDto dto, IFormFile? avatar)
     {
-        var result = await authManager.UpdateProfileAsync(GetCustomerId(), dto);
-        ViewBag.Profile = dto;
+        var customerId = GetCustomerId();
+
+        // Avatar yüklenmişse MinIO'ya kaydet, public URL'i DTO'ya ekle.
+        if (avatar is { Length: > 0 })
+        {
+            var ext = Path.GetExtension(avatar.FileName);
+            var objectName = $"avatars/{tenant.TenantId}/{customerId}-{Guid.NewGuid():N}{ext}";
+            await using var stream = avatar.OpenReadStream();
+            await fileStorage.UploadAsync(stream, objectName, avatar.ContentType);
+            dto = dto with { AvatarUrl = fileStorage.GetPublicUrl(objectName) };
+        }
+
+        var result = await authManager.UpdateProfileAsync(tenant.TenantId, customerId, dto);
+        TempData[result.Success ? "ProfileSuccess" : "ProfileError"] = result.Message;
+        return RedirectToAction(nameof(Profile));
+    }
+
+    [HttpGet("/hesabim/e-posta-degistir")]
+    public async Task<IActionResult> ChangeEmail()
+    {
         var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
         ViewBag.Email = authResult.Data?.Email;
-        ViewBag.Success = result.Success;
-        ViewBag.Error = result.Success ? null : result.Message;
         return View();
     }
 
-    [HttpGet]
+    [HttpPost("/hesabim/e-posta-degistir")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeEmail(string newEmail, string currentPassword)
+    {
+        var result = await authManager.RequestEmailChangeAsync(
+            tenant.TenantId, GetAuthId(), newEmail, currentPassword);
+
+        if (result.Success)
+        {
+            TempData["ProfileSuccess"] = result.Message;
+            return RedirectToAction(nameof(Profile));
+        }
+
+        TempData["ProfileError"] = result.Message;
+        var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
+        ViewBag.Email = authResult.Data?.Email;
+        return View();
+    }
+
+    [HttpGet("/hesabim/sifre")]
     public IActionResult ChangePassword() => View();
 
-    [HttpPost]
+    [HttpPost("/hesabim/sifre")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
     {
@@ -202,10 +263,42 @@ public class AccountController(
         return View();
     }
 
-    public IActionResult Addresses()
+    public async Task<IActionResult> Addresses()
     {
-        ViewBag.PageTitle = "Adreslerim";
+        var result = await addressManager.GetCustomerAddressesAsync(tenant.TenantId, GetCustomerId());
+        ViewBag.Addresses = result.Data ?? new List<Entity.Storefront.StorefrontAddress>();
         return View();
+    }
+
+    [HttpPost("/hesabim/adres-kaydet")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveAddress(StorefrontAddressDto dto)
+    {
+        var customerId = GetCustomerId();
+        var result = dto.Id > 0
+            ? await addressManager.UpdateAsync(tenant.TenantId, customerId, dto.Id, dto)
+            : await addressManager.AddAsync(tenant.TenantId, customerId, dto);
+
+        TempData[result.Success ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Addresses));
+    }
+
+    [HttpPost("/hesabim/adres-sil")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAddress(int id)
+    {
+        var result = await addressManager.DeleteAsync(tenant.TenantId, GetCustomerId(), id);
+        TempData[result.Success ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Addresses));
+    }
+
+    [HttpPost("/hesabim/adres-varsayilan")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetDefaultAddress(int id)
+    {
+        var result = await addressManager.SetDefaultAsync(tenant.TenantId, GetCustomerId(), id);
+        TempData[result.Success ? "Success" : "Error"] = result.Message;
+        return RedirectToAction(nameof(Addresses));
     }
 
     [HttpGet("/hesabim/tekrar-satin-al")]
@@ -235,9 +328,48 @@ public class AccountController(
     [HttpGet("/hesabim/guvenlik")]
     public async Task<IActionResult> Security()
     {
+        var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
+        var auth = authResult.Data;
+
         var historyResult = await authManager.GetLoginHistoryAsync(GetAuthId());
         ViewBag.LoginHistory = historyResult.Data ?? [];
+
+        ViewBag.TwoFactorEnabled = auth?.TwoFactorEnabled ?? false;
+        ViewBag.TwoFactorMethod = "Authenticator uygulaması";
+        ViewBag.LoginAlerts = auth?.LoginAlertsEnabled ?? true;
+        ViewBag.LastPasswordChange = auth?.LastPasswordChangedAt; // DateTimeOffset? — view formatlar
         return View();
+    }
+
+    [HttpPost("/hesabim/giris-bildirimleri")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleLoginAlerts(bool enabled)
+    {
+        var result = await authManager.SetLoginAlertsAsync(GetAuthId(), enabled);
+        TempData[result.Success ? "ProfileSuccess" : "ProfileError"] = result.Message;
+        return RedirectToAction(nameof(Security));
+    }
+
+    [HttpPost("/hesabim/hesabimi-sil")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAccount(string password, string confirmation)
+    {
+        if (!string.Equals(confirmation?.Trim(), "SIL", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["ProfileError"] = "Hesabı silmek için onay kutusuna 'SIL' yazmalısınız.";
+            return RedirectToAction(nameof(Security));
+        }
+
+        var result = await authManager.DeleteAccountAsync(tenant.TenantId, GetAuthId(), password);
+        if (!result.Success)
+        {
+            TempData["ProfileError"] = result.Message;
+            return RedirectToAction(nameof(Security));
+        }
+
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        TempData["Success"] = "Hesabınız silindi. İlginiz için teşekkür ederiz.";
+        return Redirect("/");
     }
 
     [HttpGet("/hesabim/veri-indir")]
@@ -285,8 +417,36 @@ public class AccountController(
         var walletResult = await walletManager.GetOrCreateWalletAsync(tenant.TenantId, customerId);
         var transactionsResult = await walletManager.GetTransactionsAsync(tenant.TenantId, customerId);
 
+        var transactions = transactionsResult.Data ?? new List<Entity.Storefront.StorefrontWalletTransaction>();
+
+        // Mini istatistikler: HTML 3 kart (Toplam Yüklenen / Harcanan / Cashback).
+        // Doğrudan enum eşlemesi: TopUp→yükleme, Cashback→cashback, OrderPayment→harcama.
+        // Promotion (legacy/backward-compat) genel "yükleme" sayılır; Refund istatistiğe girmez
+        // (iade gerçek bir yükleme/harcama değil, ayrı kategoride gösterilir).
+        decimal totalLoaded = 0m, totalSpent = 0m, totalCashback = 0m;
+        foreach (var t in transactions)
+        {
+            switch (t.TransactionType)
+            {
+                case Entity.Storefront.WalletTransactionType.TopUp:
+                case Entity.Storefront.WalletTransactionType.Promotion:
+                    totalLoaded += t.Amount;
+                    break;
+                case Entity.Storefront.WalletTransactionType.Cashback:
+                    totalCashback += t.Amount;
+                    break;
+                case Entity.Storefront.WalletTransactionType.OrderPayment:
+                    totalSpent += Math.Abs(t.Amount);
+                    break;
+                // Refund: istatistiklerde sayılmaz.
+            }
+        }
+
         ViewBag.Wallet = walletResult.Data;
-        ViewBag.Transactions = transactionsResult.Data ?? new List<Entity.Storefront.StorefrontWalletTransaction>();
+        ViewBag.Transactions = transactions;
+        ViewBag.TotalLoaded = totalLoaded;
+        ViewBag.TotalSpent = totalSpent;
+        ViewBag.TotalCashback = totalCashback;
         return View();
     }
 

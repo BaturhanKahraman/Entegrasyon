@@ -1,14 +1,48 @@
-@section Head {
-    <seo-meta title="@ViewBag.Title" description="@ViewBag.SeoDescription" />
+@{
+    var title = ViewBag.Title as string ?? "Sayfa";
+    var contentHtml = ViewBag.ContentHtml as string;
+    ViewData["Title"] = title;
+    if (ViewBag.SeoDescription is string seo && !string.IsNullOrWhiteSpace(seo))
+    {
+        ViewData["SeoDescription"] = seo;
+    }
 }
 
-<section class="py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <article>
-            <h1 class="text-3xl font-bold text-gray-900 mb-8">@ViewBag.Title</h1>
-            <div class="prose prose-lg max-w-none text-gray-700">
-                @Html.Raw(ViewBag.ContentHtml)
-            </div>
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
+
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-5 flex items-center gap-2">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">@title</span>
+    </nav>
+
+    <header class="mb-8 pb-8 border-b border-cream-300">
+        <h1 class="font-heading text-4xl sm:text-5xl text-charcoal">@title</h1>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(contentHtml))
+    {
+        <article class="cms-content">
+            @Html.Raw(contentHtml)
         </article>
+    }
+    else
+    {
+        <div class="bg-cream rounded-3xl py-16 px-6 text-center">
+            <p class="text-muted">Bu sayfanın içeriği henüz eklenmemiş.</p>
+        </div>
+    }
+
+    @* contact CTA *@
+    <div class="mt-12 bg-cream rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <p class="font-heading text-xl text-charcoal">Yardım mı gerekiyor?</p>
+            <p class="text-muted text-sm mt-1">Aklınıza takılan her şey için ekibimiz bir tık uzağınızda.</p>
+        </div>
+        <a href="/iletisim" class="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">
+            İletişime Geç
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
     </div>
-</section>
+
+</main>

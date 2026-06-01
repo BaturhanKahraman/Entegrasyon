@@ -1,139 +1,168 @@
 @using Entegrasyon.Entity.Dtos.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
-@section Head {
-    <seo-meta title="Sipariş Takip Sonucu | @Tenant.Settings.StoreName" />
-}
-
+@using System.Globalization
 @{
     var order = ViewBag.Order as StorefrontOrderDetailDto;
+    var tr = new CultureInfo("tr-TR");
+    ViewData["Title"] = order is not null ? $"Sipariş {order.OrderNumber}" : "Kargo Takip Sonucu";
+
+    var steps = new[] { "Alindi", "Hazirlaniyor", "Kargoda", "Teslim Edildi" };
+    var stepLabels = new[] { "Sipariş Alındı", "Hazırlanıyor", "Kargoda", "Teslim Edildi" };
+    var isCancelled = order is not null && (order.Status == "Iptal Edildi" || order.Status == "Iade Edildi");
+    var currentStep = order is null ? -1 : Array.IndexOf(steps, order.Status);
 }
 
-<div class="max-w-3xl mx-auto px-4 py-12">
-    <!-- Search again -->
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <form method="get" action="/Sipariş-takip/sonuc" class="flex flex-col sm:flex-row gap-3">
-            <input type="text" name="orderNumber" placeholder="Sipariş numarasi"
-                   value="@order?.OrderNumber"
-                   required
-                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" />
-            <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:opacity-90 font-medium cursor-pointer border-0">
-                Sorgula
-            </button>
-        </form>
-    </div>
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 lg:py-12">
 
-    @if (order is not null)
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-5 flex items-center gap-2">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <a href="/Sipariş-takip" class="hover:text-primary transition">Kargo Takip</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">Sonuç</span>
+    </nav>
+
+    @if (order is null)
     {
-        <!-- Status Card -->
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        @* EMPTY STATE *@
+        <div class="bg-cream rounded-3xl py-16 px-6 text-center">
+            <svg viewBox="0 0 64 64" width="68" height="68" class="mx-auto mb-4" fill="none" stroke="#FF8FB1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="18" width="36" height="26" rx="3"/><path d="M44 26h8l4 6v12h-12"/><circle cx="18" cy="48" r="4"/><circle cx="44" cy="48" r="4"/></svg>
+            <h3 class="font-heading text-2xl text-charcoal">Kayıt bulunamadı</h3>
+            <p class="text-muted mt-2 max-w-sm mx-auto">Girdiğiniz numarayla eşleşen bir gönderi yok. Lütfen numarayı kontrol edip tekrar deneyin.</p>
+            <a href="/Sipariş-takip" class="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Tekrar Dene</a>
+        </div>
+    }
+    else
+    {
+        @* STATUS CARD *@
+        <div class="bg-cream rounded-3xl p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
                 <div>
-                    <h1 class="text-xl font-bold text-gray-900">Sipariş #@order.OrderNumber</h1>
-                    <p class="text-sm text-gray-500">@order.OrderDate.ToString("dd MMMM yyyy, HH:mm")</p>
-                </div>
-                @{
-                    var statusBadge = order.Status switch
+                    @if (!string.IsNullOrWhiteSpace(order.CargoProvider))
                     {
-                        "Alindi" => "bg-blue-100 text-blue-700",
-                        "Hazirlaniyor" => "bg-yellow-100 text-yellow-700",
-                        "Kargoda" => "bg-orange-100 text-orange-700",
-                        "Teslim Edildi" => "bg-green-100 text-green-700",
-                        "Iptal Edildi" => "bg-red-100 text-red-700",
-                        "Iade Edildi" => "bg-purple-100 text-purple-700",
-                        _ => "bg-gray-100 text-gray-700"
-                    };
-                }
-                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium @statusBadge self-start">@order.Status</span>
-            </div>
-
-            <!-- Status Timeline -->
-            <div class="flex items-center gap-1 overflow-x-auto pb-2">
-                @{
-                    var steps = new[] { "Alindi", "Hazirlaniyor", "Kargoda", "Teslim Edildi" };
-                    var currentIdx = Array.IndexOf(steps, order.Status);
-                    var isCancelled = order.Status == "Iptal Edildi" || order.Status == "Iade Edildi";
-                }
-                @for (var i = 0; i < steps.Length; i++)
-                {
-                    var isActive = !isCancelled && i <= currentIdx;
-                    var dotClass = isActive ? "bg-primary" : "bg-gray-300";
-                    var lineClass = isActive ? "bg-primary" : "bg-gray-200";
-                    var textClass = isActive ? "text-primary font-medium" : "text-gray-400";
-
-                    <div class="flex items-center">
-                        <div class="flex flex-col items-center">
-                            <div class="w-3 h-3 rounded-full @dotClass"></div>
-                            <span class="text-xs mt-1 whitespace-nowrap @textClass">@steps[i]</span>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-white font-heading text-lg text-charcoal border border-cream-300">@order.CargoProvider</span>
                         </div>
-                        @if (i < steps.Length - 1)
-                        {
-                            <div class="w-12 h-0.5 @lineClass mx-1 mt-[-12px]"></div>
-                        }
-                    </div>
-                }
-                @if (isCancelled)
-                {
-                    <div class="flex items-center">
-                        <div class="w-12 h-0.5 bg-red-300 mx-1 mt-[-12px]"></div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <span class="text-xs mt-1 whitespace-nowrap text-red-600 font-medium">@order.Status</span>
-                        </div>
-                    </div>
-                }
+                    }
+                    <p class="text-xs uppercase tracking-wide text-muted mt-4">Sipariş No</p>
+                    <p class="font-mono text-lg text-charcoal">@order.OrderNumber</p>
+                    @if (!string.IsNullOrWhiteSpace(order.TrackingNumber))
+                    {
+                        <p class="text-xs uppercase tracking-wide text-muted mt-3">Takip No</p>
+                        <p class="font-mono text-sm text-charcoal">@order.TrackingNumber</p>
+                    }
+                    <p class="text-sm text-muted mt-3 flex items-center gap-2">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        Sipariş tarihi: <span class="text-charcoal font-medium">@order.OrderDate.ToString("d MMMM yyyy", tr)</span>
+                    </p>
+                </div>
+                <div class="shrink-0">
+                    <span class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold @(isCancelled ? "bg-danger/10 text-danger" : "bg-accent/25 text-warning")">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M21 3 9 15"/><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>
+                        @order.Status
+                    </span>
+                </div>
             </div>
         </div>
 
-        <!-- Tracking Info -->
-        @if (!string.IsNullOrEmpty(order.TrackingNumber))
+        @if (isCancelled)
         {
-            <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-3">Kargo Bilgileri</h2>
-                <div class="space-y-2 text-sm">
-                    @if (!string.IsNullOrEmpty(order.CargoProvider))
+            <div class="bg-white border border-cream-300 rounded-3xl p-6 sm:p-8 mt-6 flex items-start gap-3">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E27D7D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6M9 9l6 6"/></svg>
+                <p class="text-sm text-charcoal/80 leading-relaxed">Bu sipariş <span class="font-medium text-charcoal">@order.Status.ToLower(tr)</span>. Sorularınız için <a href="/iletisim" class="text-primary font-medium hover:underline">bize ulaşın</a>.</p>
+            </div>
+        }
+        else
+        {
+            @* VERTICAL TIMELINE *@
+            <div class="bg-white border border-cream-300 rounded-3xl p-6 sm:p-8 mt-6">
+                <h2 class="font-heading text-xl text-charcoal mb-6">Kargo Yolculuğu</h2>
+                <ol class="relative">
+                    @for (var i = 0; i < steps.Length; i++)
                     {
-                        <div class="flex justify-between">
-                            <span class="text-gray-500">Kargo Firmasi</span>
-                            <span class="font-medium">@order.CargoProvider</span>
-                        </div>
+                        var isLast = i == steps.Length - 1;
+                        var done = i < currentStep || (currentStep == steps.Length - 1 && i == currentStep);
+                        var active = i == currentStep && !done;
+                        var ring = done ? "bg-success text-white" : active ? "bg-primary text-white pulse-ring" : "bg-cream-300 text-muted";
+                        var line = i < currentStep ? "bg-success" : "bg-cream-300";
+                        <li class="relative flex gap-4 @(isLast ? "" : "pb-7")">
+                            @if (!isLast)
+                            {
+                                <span class="absolute left-[15px] top-8 bottom-0 w-0.5 @line"></span>
+                            }
+                            <span class="relative z-10 w-8 h-8 rounded-full @ring flex items-center justify-center shrink-0">
+                                @if (done)
+                                {
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+                                }
+                                else if (active)
+                                {
+                                    <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                                }
+                                else
+                                {
+                                    <span class="w-2 h-2 rounded-full bg-muted/60"></span>
+                                }
+                            </span>
+                            <div class="pt-0.5 flex-1 @(active || done ? "" : "opacity-60")">
+                                <p class="font-semibold text-charcoal">
+                                    @stepLabels[i]
+                                    @if (active)
+                                    {
+                                        <span class="ml-1 text-[11px] font-semibold text-primary align-middle">• Şu an</span>
+                                    }
+                                </p>
+                            </div>
+                        </li>
                     }
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Takip No</span>
-                        <span class="font-mono font-medium">@order.TrackingNumber</span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(order.TrackingLink))
-                    {
-                        <div class="mt-3">
-                            <a href="@order.TrackingLink" target="_blank" rel="noopener"
-                               class="inline-block px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 no-underline text-sm">
-                                Kargo Takip Sayfasina Git &rarr;
-                            </a>
-                        </div>
-                    }
-                </div>
+                </ol>
+
+                @if (!string.IsNullOrWhiteSpace(order.TrackingLink))
+                {
+                    <a href="@order.TrackingLink" target="_blank" rel="noopener" class="mt-6 inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">
+                        Kargo Firmasında Takip Et
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+                    </a>
+                }
             </div>
         }
 
-        <!-- Items -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Sipariş Icerigi</h2>
-            <div class="divide-y divide-gray-100">
+        @* ORDER ITEMS *@
+        <div class="bg-white border border-cream-300 rounded-3xl mt-6 overflow-hidden">
+            <h2 class="font-heading text-xl text-charcoal px-6 sm:px-8 pt-6 pb-2">Sipariş İçeriği</h2>
+            <div class="divide-y divide-cream-300">
                 @foreach (var item in order.Items)
                 {
-                    <div class="flex items-center justify-between py-3">
-                        <div>
-                            <p class="font-medium text-gray-900">@item.ProductTitle</p>
-                            <p class="text-xs text-gray-500">@item.Quantity adet x @item.UnitPrice.ToString("N2") TL</p>
+                    <div class="flex items-center gap-4 px-6 sm:px-8 py-4">
+                        <div class="ph w-14 h-14 rounded-xl bg-cream overflow-hidden shrink-0" data-ph="ürün">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            {
+                                <img class="photo" loading="lazy" alt="@item.ProductTitle" src="@item.ImageUrl" />
+                            }
                         </div>
-                        <div class="font-medium text-gray-900">@item.LineTotal.ToString("N2") TL</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-charcoal text-sm line-clamp-2 leading-snug">@item.ProductTitle</p>
+                            <p class="text-xs text-muted mt-0.5">@item.Quantity adet × @item.UnitPrice.ToString("N2", tr)₺</p>
+                        </div>
+                        <p class="font-semibold text-charcoal text-sm whitespace-nowrap">@item.LineTotal.ToString("N2", tr)₺</p>
                     </div>
                 }
             </div>
-            <div class="border-t border-gray-200 pt-3 mt-3 flex justify-between font-bold text-lg">
-                <span>Toplam</span>
-                <span>@order.Total.ToString("N2") TL</span>
+            <div class="px-6 sm:px-8 py-4 border-t border-cream-300 bg-cream/40 space-y-2 text-sm">
+                <div class="flex items-center justify-between text-charcoal/80"><span>Ara Toplam</span><span>@order.SubTotal.ToString("N2", tr)₺</span></div>
+                @if (order.DiscountAmount > 0)
+                {
+                    <div class="flex items-center justify-between text-success"><span>İndirim</span><span>−@order.DiscountAmount.ToString("N2", tr)₺</span></div>
+                }
+                <div class="flex items-center justify-between text-charcoal/80"><span>Kargo</span><span>@(order.ShippingCost > 0 ? $"{order.ShippingCost.ToString("N2", tr)}₺" : "Ücretsiz")</span></div>
+                <div class="flex items-center justify-between font-semibold text-charcoal text-base pt-2 border-t border-cream-300"><span>Toplam</span><span>@order.Total.ToString("N2", tr)₺</span></div>
             </div>
         </div>
+
+        <div class="mt-7 text-center">
+            <a href="/Sipariş-takip" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                Başka bir sipariş sorgula
+            </a>
+        </div>
     }
-</div>
+</main>

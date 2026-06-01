@@ -1,55 +1,132 @@
-@using Entegrasyon.Entity.Dtos.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
 @{
-    var products = ViewBag.Products as Entegrasyon.Entity.Pageable<StorefrontProductCardDto>;
-    var pageTitle = (ViewBag.PageTitle as string) ?? "Tum Urunler";
+    ViewData["Title"] = ViewBag.CategoryName as string ?? "Kız Elbise";
+    var categoryName = ViewBag.CategoryName as string ?? "Kız Elbise";
+    var categorySlogan = ViewBag.CategorySlogan as string ?? "Tatlı baskılar, yumuşak kumaşlar";
+    var categoryDescription = ViewBag.CategoryDescription as string ?? "Minik prensesiniz için özenle seçtik — her güne, her ana uygun elbiseler.";
+    var categoryImage = ViewBag.CategoryImage as string ?? "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=700&q=80";
 }
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 pb-24 lg:pb-12">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    @await Html.PartialAsync("_Breadcrumb")
+    @* ============ BREADCRUMB ============ *@
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-6 flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <a href="/kategori/kiz" class="hover:text-primary transition">Kız</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">@categoryName</span>
+    </nav>
 
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">@pageTitle</h1>
+    @* ============ KATEGORI HERO ============ *@
+    <div class="bg-cream rounded-3xl mb-8 overflow-hidden">
+        <div class="grid sm:grid-cols-2 items-center gap-6 px-6 sm:px-8 py-8 sm:py-10">
+            <div>
+                <h1 class="font-heading text-3xl sm:text-4xl text-charcoal">@categoryName</h1>
+                <p class="font-heading italic text-lg text-primary mt-2">@categorySlogan</p>
+                <p class="text-muted mt-3 max-w-sm leading-relaxed">@categoryDescription</p>
+            </div>
+            <div class="ph aspect-[4/3] rounded-2xl overflow-hidden bg-primary/15">
+                <img class="photo" loading="lazy" alt="@categoryName" src="@categoryImage" />
+            </div>
+        </div>
+    </div>
 
-    <div class="flex flex-col lg:flex-row gap-6">
-        @* Filter Sidebar *@
-        <aside class="w-full lg:w-1/4 flex-shrink-0">
-            @await Html.PartialAsync("_FilterSidebar")
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+
+        @* ============ DESKTOP SIDEBAR ============ *@
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <div class="bg-white border border-cream-300 rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-charcoal">Filtreler</h2>
+                    <button type="button" data-clear-filters class="text-sm text-primary hover:underline">Temizle</button>
+                </div>
+                <div id="sidebarFilters"></div>
+            </div>
         </aside>
 
-        @* Product Grid *@
-        <div class="w-full lg:w-3/4">
-            @if (products != null && products.HasItem)
-            {
-                <p class="text-sm text-gray-500 mb-4">
-                    @products.TotalItemCount urun bulundu
-                </p>
-
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                    @foreach (var product in products.Items)
-                    {
-                        @await Html.PartialAsync("_ProductCard", product)
-                    }
+        @* ============ MAIN COLUMN ============ *@
+        <div>
+            @* Top bar — sonuç sayısı + sıralama + görünüm *@
+            <div class="flex items-center justify-between gap-4 mb-6">
+                <div>
+                    <p class="font-semibold text-charcoal"><span id="resultCount">96</span> ürün</p>
+                    <p class="text-xs text-muted mt-0.5">1-24 arası gösteriliyor</p>
                 </div>
-
-                @await Html.PartialAsync("_Pagination")
-            }
-            else
-            {
-                <div class="text-center py-16">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                    </svg>
-                    <p class="text-gray-500 text-lg mb-4">Bu kriterlere uygun urun bulunamadi.</p>
-                    <a href="@Context.Request.Path" class="text-primary hover:underline font-medium">
-                        Filtreleri temizle
-                    </a>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <button type="button" id="sortBtn" data-sort-toggle class="flex items-center gap-2 px-4 py-2.5 rounded-full border border-cream-300 text-sm font-medium text-charcoal hover:border-primary transition whitespace-nowrap">
+                            <span class="text-muted">Sırala:</span> <span id="sortLabel">Önerilen</span>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div id="sortMenu" class="hidden absolute right-0 mt-2 w-60 bg-white border border-cream-300 rounded-2xl shadow-md py-2 z-30"></div>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-1 border border-cream-300 rounded-full p-1" role="group" aria-label="Görünüm">
+                        <button type="button" data-cols="2" aria-label="2 sütun" class="viewBtn w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-charcoal"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/></svg></button>
+                        <button type="button" data-cols="3" aria-label="3 sütun" class="viewBtn w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-charcoal"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="16" rx="1"/><rect x="16.5" y="4" width="4.5" height="16" rx="1"/></svg></button>
+                        <button type="button" data-cols="4" aria-label="4 sütun" class="viewBtn w-8 h-8 rounded-full flex items-center justify-center text-muted hover:text-charcoal"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="3.5" height="16" rx="1"/><rect x="7.5" y="4" width="3.5" height="16" rx="1"/><rect x="13" y="4" width="3.5" height="16" rx="1"/><rect x="18.5" y="4" width="3.5" height="16" rx="1"/></svg></button>
+                    </div>
                 </div>
-            }
+            </div>
+
+            @* Product grid *@
+            <div id="catGrid" class="grid-fade grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+
+            @* Empty state (hidden) *@
+            <div id="emptyState" class="hidden bg-cream rounded-3xl py-16 px-6 text-center">
+                <svg viewBox="0 0 64 64" width="72" height="72" class="mx-auto mb-4" fill="none" stroke="#FF8FB1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="10" y="22" width="44" height="32" rx="4"/><path d="M10 30h44"/><path d="M24 22V16a8 8 0 0 1 16 0v6"/><path d="M26 42h12"/></svg>
+                <h3 class="font-heading text-2xl text-charcoal">Aradığınız ürünü bulamadık</h3>
+                <p class="text-muted mt-2">Filtreleri biraz daha geniş tutmayı deneyin.</p>
+                <button type="button" data-clear-filters class="mt-5 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Filtreleri Temizle</button>
+            </div>
+
+            @* Pagination *@
+            <nav class="mt-12 flex items-center justify-center gap-2" aria-label="Sayfalama">
+                <button type="button" disabled class="px-4 h-10 rounded-full border border-cream-300 text-sm text-charcoal opacity-50 cursor-not-allowed flex items-center gap-1">‹ Önceki</button>
+                <button type="button" class="w-10 h-10 rounded-full bg-primary text-white font-semibold" aria-current="page">1</button>
+                <button type="button" data-page="2" class="w-10 h-10 rounded-full border border-cream-300 hover:bg-cream transition">2</button>
+                <button type="button" data-page="3" class="w-10 h-10 rounded-full border border-cream-300 hover:bg-cream transition">3</button>
+                <button type="button" data-page="4" class="w-10 h-10 rounded-full border border-cream-300 hover:bg-cream transition">4</button>
+                <button type="button" data-page="2" class="px-4 h-10 rounded-full border border-cream-300 text-sm text-charcoal hover:bg-cream transition flex items-center gap-1">Sonraki ›</button>
+            </nav>
         </div>
     </div>
 </div>
+
+@* ============ MOBİL FİLTRE BAR ============ *@
+<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-cream-300 p-3">
+    <button type="button" data-filter-drawer-open class="w-full py-3.5 rounded-full bg-charcoal text-white font-semibold flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+        Filtrele &amp; Sırala
+    </button>
+</div>
+
+@* ============ MOBİL FİLTRE DRAWER ============ *@
+<div id="filterDrawer" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-filter-drawer-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div id="filterSheet" class="absolute bottom-0 inset-x-0 max-h-[88vh] bg-white rounded-t-3xl flex flex-col">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-cream-300">
+            <h2 class="font-semibold text-charcoal text-lg">Filtrele &amp; Sırala</h2>
+            <button type="button" data-filter-drawer-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="flex-1 overflow-y-auto px-5 py-5">
+            <div class="mb-5">
+                <p class="font-semibold text-charcoal text-sm mb-3">Sıralama</p>
+                <div id="drawerSort" class="flex flex-wrap gap-2"></div>
+            </div>
+            <div class="border-t border-cream-300 pt-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-charcoal">Filtreler</h3>
+                    <button type="button" data-clear-filters class="text-sm text-primary hover:underline">Temizle</button>
+                </div>
+                <div id="drawerFilters"></div>
+            </div>
+        </div>
+        <div class="p-4 border-t border-cream-300">
+            <button type="button" data-filter-drawer-close class="w-full py-3.5 rounded-full bg-primary text-white font-semibold">Uygula (<span id="applyCount">45</span> ürün)</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/category.js" asp-append-version="true"></script>
+}

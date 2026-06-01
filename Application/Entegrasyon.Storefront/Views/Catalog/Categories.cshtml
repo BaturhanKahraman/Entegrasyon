@@ -1,62 +1,121 @@
 @model List<Entegrasyon.Entity.Dtos.Storefront.CategoryTreeDto>
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    ViewData["Title"] = "Tüm Kategoriler";
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
+    // Backend (categoryService.GetCategoryTreeAsync) boş dönerse dev'de sayfa boş görünmesin diye sample fallback.
+    // TODO: Kategori ağacı seed edildiğinde bu fallback kaldırılabilir.
+    var tree = (Model is { Count: > 0 })
+        ? Model
+        : new List<Entegrasyon.Entity.Dtos.Storefront.CategoryTreeDto>
+        {
+            new(1, "Kız", "kiz", 0, new()
+            {
+                new(11, "Elbise", "kiz-elbise", 0, new()),
+                new(12, "Tişört & Body", "kiz-tisort-body", 0, new()),
+                new(13, "Tunik & Salopet", "kiz-tunik-salopet", 0, new()),
+                new(14, "Etek & Şort", "kiz-etek-sort", 0, new()),
+                new(15, "Tayt & Pantolon", "kiz-tayt-pantolon", 0, new()),
+                new(16, "Mont & Yelek", "kiz-mont-yelek", 0, new()),
+            }),
+            new(2, "Erkek", "erkek", 0, new()
+            {
+                new(21, "Tişört & Body", "erkek-tisort-body", 0, new()),
+                new(22, "Sweat & Hırka", "erkek-sweat-hirka", 0, new()),
+                new(23, "Gömlek", "erkek-gomlek", 0, new()),
+                new(24, "Şort & Bermuda", "erkek-sort-bermuda", 0, new()),
+                new(25, "Eşofman & Pantolon", "erkek-esofman-pantolon", 0, new()),
+                new(26, "Mont & Kaban", "erkek-mont-kaban", 0, new()),
+            }),
+            new(3, "Bebek", "bebek", 0, new()
+            {
+                new(31, "Zıbın & Body", "bebek-zibin-body", 0, new()),
+                new(32, "Tulum", "bebek-tulum", 0, new()),
+                new(33, "Hastane Çıkışı", "bebek-hastane-cikisi", 0, new()),
+                new(34, "Battaniye & Uyku", "bebek-battaniye-uyku", 0, new()),
+                new(35, "Şapka & Çorap", "bebek-sapka-corap", 0, new()),
+                new(36, "Yeni Doğan Setleri", "bebek-yeni-dogan-setleri", 0, new()),
+            }),
+        };
+
+    // Tema duyarlı renk paleti — index'e göre döner (CSS değişkenleri _Layout'ta tenant ayarından geliyor).
+    var palettes = new[]
+    {
+        new { Panel = "bg-primary/10",   Title = "text-primary",   Stroke = "var(--color-primary)" },
+        new { Panel = "bg-secondary/15", Title = "text-secondary", Stroke = "var(--color-secondary)" },
+        new { Panel = "bg-accent/20",    Title = "text-warning",   Stroke = "var(--color-accent)" },
+    };
+    // Kız (elbise), Erkek (tişört), Bebek (bebek) ikonları — index % 3 ile döner.
+    var icons = new[]
+    {
+        "<path d=\"M9 3h6l-1.2 3.2a3 3 0 0 0 .3 2.7L18 14a2 2 0 0 1-1.7 3H7.7A2 2 0 0 1 6 14l3.9-5.1a3 3 0 0 0 .3-2.7L9 3Z\"/><path d=\"M9 3h6\"/>",
+        "<path d=\"M8 3 4 6l2 3 2-1.5V21h8V7.5L18 9l2-3-4-3-2 2a3 3 0 0 1-4 0L8 3Z\"/>",
+        "<circle cx=\"12\" cy=\"5\" r=\"2.4\"/><path d=\"M7 21v-4a5 5 0 0 1 10 0v4Z\"/><path d=\"M9 11.5c1.8 1.2 4.2 1.2 6 0\"/>",
+    };
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    @await Html.PartialAsync("_Breadcrumb")
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Kategoriler</h1>
+    @* ============ BREADCRUMB ============ *@
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-6 flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">Kategoriler</span>
+    </nav>
 
-    @if (Model.Count == 0)
-    {
-        <div class="text-center py-16">
-            <p class="text-gray-500 text-lg">Henuz kategori bulunmamaktadir.</p>
-        </div>
-    }
-    else
-    {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach (var category in Model)
-            {
-                <div class="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-                    <a href="/kategori/@category.SeoSlug" class="block">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-1 hover:text-primary transition-colors">
-                            @category.Name
-                        </h2>
-                        <p class="text-sm text-gray-500 mb-3">@category.ProductCount urun</p>
-                    </a>
+    @* ============ PAGE HEADING ============ *@
+    <div class="max-w-2xl mb-8 lg:mb-10">
+        <h1 class="font-heading text-4xl sm:text-5xl text-charcoal leading-tight">Tüm Kategoriler</h1>
+        <p class="text-muted mt-3 leading-relaxed">Minik dolaplar için her şey burada. Kız, Erkek ve Bebek koleksiyonlarındaki tüm kategorilere göz atın.</p>
+    </div>
 
-                    @if (category.Children.Count > 0)
-                    {
-                        <div class="border-t border-gray-100 pt-3">
-                            <ul class="space-y-1">
-                                @foreach (var child in category.Children.Take(6))
-                                {
-                                    <li>
-                                        <a href="/kategori/@category.SeoSlug/@child.SeoSlug"
-                                           class="text-sm text-gray-600 hover:text-primary transition-colors">
-                                            @child.Name
-                                            <span class="text-gray-400 text-xs">(@child.ProductCount)</span>
-                                        </a>
-                                    </li>
-                                }
-                                @if (category.Children.Count > 6)
-                                {
-                                    <li>
-                                        <a href="/kategori/@category.SeoSlug"
-                                           class="text-sm text-primary font-medium hover:underline">
-                                            +@(category.Children.Count - 6) daha...
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    }
+    @* ============ GROUP CARDS ============ *@
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (var i = 0; i < tree.Count; i++)
+        {
+            var group = tree[i];
+            var p = palettes[i % palettes.Length];
+            var icon = icons[i % icons.Length];
+            var groupUrl = string.IsNullOrWhiteSpace(group.SeoSlug) ? "#" : $"/kategori/{group.SeoSlug}";
+
+            <article class="group-card bg-white border border-cream-300 rounded-3xl p-6 sm:p-7 flex flex-col">
+                <div class="flex items-center gap-4 mb-5">
+                    <span class="w-14 h-14 rounded-2xl @p.Panel flex items-center justify-center shrink-0">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="@p.Stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(icon)</svg>
+                    </span>
+                    <div>
+                        <h2 class="font-heading text-2xl @p.Title leading-none">@group.Name</h2>
+                        <p class="text-xs text-muted mt-1.5">@group.Children.Count kategori</p>
+                    </div>
                 </div>
-            }
-        </div>
-    }
+
+                @if (group.Children.Count > 0)
+                {
+                    <ul class="grid grid-cols-2 gap-x-5 gap-y-0 flex-1">
+                        @foreach (var child in group.Children)
+                        {
+                            var childUrl = (!string.IsNullOrWhiteSpace(group.SeoSlug) && !string.IsNullOrWhiteSpace(child.SeoSlug))
+                                ? $"/kategori/{group.SeoSlug}/{child.SeoSlug}"
+                                : "#";
+                            <li>
+                                <a href="@childUrl" class="group/sub flex items-center justify-between gap-2 py-1.5 text-sm text-charcoal/80 hover:text-charcoal transition">
+                                    <span class="truncate">@child.Name</span>
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-cream-300 group-hover/sub:text-current group-hover/sub:translate-x-0.5 transition" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="flex-1"></div>
+                }
+
+                <a href="@groupUrl" class="mt-5 pt-4 border-t border-cream-300 inline-flex items-center justify-between gap-2 text-sm font-semibold @p.Title hover:gap-3 transition-all">
+                    <span class="inline-flex items-center gap-2">Tümünü Gör</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </article>
+        }
+    </div>
+
 </div>

@@ -17,6 +17,8 @@ public sealed class StorefrontCustomerAuth : BaseEntity
     public string? PasswordResetToken { get; set; }
     public DateTimeOffset? PasswordResetTokenExpiresAt { get; set; }
     public DateTimeOffset? LastLoginAt { get; set; }
+    public DateTimeOffset? LastPasswordChangedAt { get; set; }
+    public bool LoginAlertsEnabled { get; set; } = true;
     public int LoginFailedCount { get; set; }
     public DateTimeOffset? LockedUntil { get; set; }
     public bool MarketingConsent { get; set; }

@@ -11,4 +11,7 @@ public interface IStorefrontLoyaltyManager
     Task<IResult> RedeemPointsAsync(int tenantId, int customerId, int points, string? referenceId);
     Task<IDataResult<List<StorefrontLoyaltyTransaction>>> GetTransactionsAsync(int tenantId, int customerId, int count = 20);
     Task<LoyaltyDashboardDto> GetDashboardAsync(int tenantId);
+
+    /// <summary>Müşterinin güncel puanına göre üyelik kademesini döner: "Bronze" / "Silver" / "Gold".</summary>
+    Task<string> GetTierAsync(int tenantId, int customerId);
 }

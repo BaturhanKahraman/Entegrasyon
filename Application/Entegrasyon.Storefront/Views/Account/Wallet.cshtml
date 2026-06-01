@@ -1,72 +1,262 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Storefront
+@using System.Globalization
 @{
-    var wallet = ViewBag.Wallet as Entegrasyon.Entity.Storefront.StorefrontWallet;
-    var transactions = ViewBag.Transactions as List<Entegrasyon.Entity.Storefront.StorefrontWalletTransaction>
-        ?? new List<Entegrasyon.Entity.Storefront.StorefrontWalletTransaction>();
+    ViewData["Title"] = "Cüzdanım";
+
+    var wallet = ViewBag.Wallet as StorefrontWallet;
+    var transactions = ViewBag.Transactions as List<StorefrontWalletTransaction> ?? new List<StorefrontWalletTransaction>();
+    var totalLoaded = (decimal)(ViewBag.TotalLoaded ?? 0m);
+    var totalSpent = (decimal)(ViewBag.TotalSpent ?? 0m);
+    var totalCashback = (decimal)(ViewBag.TotalCashback ?? 0m);
+
+    var balance = wallet?.Balance ?? 0m;
+    var tr = new CultureInfo("tr-TR");
+
+    string CategoryOf(StorefrontWalletTransaction t) => t.TransactionType switch
+    {
+        WalletTransactionType.TopUp => "yukleme",
+        WalletTransactionType.OrderPayment => "harcama",
+        WalletTransactionType.Refund => "iade",
+        WalletTransactionType.Cashback => "cashback",
+        WalletTransactionType.Promotion => "yukleme", // backward-compat: genel yükleme kategorisi
+        _ => t.Amount < 0 ? "harcama" : "yukleme"
+    };
+
+    var categories = new[]
+    {
+        new { Key = "all",      Label = "Tümü" },
+        new { Key = "yukleme",  Label = "Yükleme" },
+        new { Key = "harcama",  Label = "Harcama" },
+        new { Key = "iade",     Label = "İade" },
+        new { Key = "cashback", Label = "Cashback" },
+    };
+
+    int CountFor(string key) => key == "all"
+        ? transactions.Count
+        : transactions.Count(t => CategoryOf(t) == key);
+
+    string CategoryLabel(string c) => c switch
+    {
+        "yukleme"  => "Yükleme",
+        "harcama"  => "Harcama",
+        "iade"     => "İade",
+        "cashback" => "Cashback",
+        _          => "Hareket",
+    };
+
+    string CategoryBg(string c) => c switch
+    {
+        "yukleme"  => "bg-success/15 text-success",
+        "harcama"  => "bg-primary/10 text-primary",
+        "iade"     => "bg-secondary/20 text-secondary",
+        "cashback" => "bg-warning/20 text-warning",
+        _          => "bg-cream text-muted",
+    };
+
+    string CategoryIcon(string c) => c switch
+    {
+        "yukleme"  => "<path d=\"M12 19V5M5 12l7-7 7 7\"/>",
+        "harcama"  => "<path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\"/><path d=\"M3 6h18\"/><path d=\"M16 10a4 4 0 0 1-8 0\"/>",
+        "iade"     => "<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h11a5 5 0 0 1 0 10h-1\"/>",
+        "cashback" => "<path d=\"m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z\"/>",
+        _          => "<circle cx=\"12\" cy=\"12\" r=\"10\"/>",
+    };
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex flex-col md:flex-row gap-8">
-        <div class="w-full md:w-64 flex-shrink-0">
-            @await Html.PartialAsync("_AccountSidebar", "Wallet")
-        </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-        <div class="flex-1">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Cuzdanim</h1>
+    @* mobil hesap trigger *@
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">AY</span>
+            <span class="font-medium text-charcoal">Cüzdanım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-            @* Balance Card *@
-            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white mb-8">
-                <p class="text-blue-200 text-sm mb-1">Mevcut Bakiye</p>
-                <p class="text-4xl font-bold">@(wallet?.Balance.ToString("N2") ?? "0,00") TL</p>
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("wallet")' />
+        </aside>
+
+        <div>
+            @* heading *@
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">Cüzdanım</h1>
+                <p class="text-muted mt-1.5">Bakiyeni yönet, yükle ve harcamalarını takip et.</p>
             </div>
 
-            @* Transactions *@
-            <div class="bg-white rounded-lg border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Islem Gecmisi</h2>
+            @* bakiye kartı (gradient) *@
+            <div class="wallet-grad relative overflow-hidden rounded-3xl px-7 py-12 lg:px-9 mb-6 text-white shadow-[0_18px_40px_-12px_rgba(255,143,177,.55)]">
+                <div class="pointer-events-none absolute -top-16 -right-10 w-64 h-64 rounded-full bg-white/20 blur-2xl"></div>
+                <div class="pointer-events-none absolute -bottom-24 -left-8 w-56 h-56 rounded-full bg-white/10 blur-2xl"></div>
+                <svg class="pointer-events-none absolute top-5 right-6 w-40 h-40 opacity-30" viewBox="0 0 160 160" fill="white" aria-hidden="true">
+                    <path d="M120 14l4.2 9.4 9.8 1.3-7.2 6.8 1.8 9.7-8.6-4.6-8.6 4.6 1.8-9.7-7.2-6.8 9.8-1.3z"/>
+                    <path d="M44 30l2.6 5.9 6.1.8-4.5 4.3 1.1 6.1-5.4-2.9-5.4 2.9 1.1-6.1-4.5-4.3 6.1-.8z"/>
+                    <circle cx="92" cy="58" r="3.5"/>
+                    <circle cx="70" cy="92" r="2.5"/>
+                </svg>
+
+                <div class="relative">
+                    <p class="text-sm font-medium text-white/85">Cüzdan Bakiyesi</p>
+                    <p class="font-heading text-5xl lg:text-6xl leading-none mt-2">@balance.ToString("N2", tr)₺</p>
+
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        @* V1: Bakiye Yükle / Çek endpoint'leri henüz tanımlı değil. JS toast ile bilgi verir. *@
+                        <button type="button" data-wallet-action="topup" class="inline-flex items-center gap-2 rounded-full bg-white text-primary px-5 py-2.5 text-sm font-semibold hover:bg-white/90 transition">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            Bakiye Yükle
+                        </button>
+                        <button type="button" data-wallet-action="withdraw" class="inline-flex items-center gap-2 rounded-full border border-white/70 text-white px-5 py-2.5 text-sm font-semibold hover:bg-white/15 transition">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+                            Çek
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @* mini istatistikler *@
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white border border-cream-300 rounded-2xl p-5">
+                    <span class="w-10 h-10 rounded-xl bg-secondary/20 text-secondary flex items-center justify-center mb-3">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    </span>
+                    <p class="text-sm text-muted">Toplam Yüklenen</p>
+                    <p class="font-heading text-2xl text-charcoal mt-0.5">@totalLoaded.ToString("N0", tr)₺</p>
+                </div>
+                <div class="bg-white border border-cream-300 rounded-2xl p-5">
+                    <span class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                    </span>
+                    <p class="text-sm text-muted">Toplam Harcanan</p>
+                    <p class="font-heading text-2xl text-charcoal mt-0.5">@totalSpent.ToString("N0", tr)₺</p>
+                </div>
+                <div class="bg-success/10 border border-success/20 rounded-2xl p-5">
+                    <span class="w-10 h-10 rounded-xl bg-white text-success flex items-center justify-center mb-3">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z"/></svg>
+                    </span>
+                    <p class="text-sm text-muted">Kazanılan Cashback</p>
+                    <p class="font-heading text-2xl text-success mt-0.5">+@totalCashback.ToString("N0", tr)₺</p>
+                </div>
+            </div>
+
+            @* hareketler *@
+            <div class="bg-white border border-cream-300 rounded-2xl mb-8">
+                <div class="px-5 sm:px-6 py-5 border-b border-cream-300">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <h2 class="font-heading text-lg text-charcoal">Hareketler</h2>
+                        <span class="text-xs text-muted whitespace-nowrap">Son @transactions.Count hareket</span>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+                        @foreach (var c in categories)
+                        {
+                            <button type="button" data-txn-filter="@c.Key" class="chip flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition @(c.Key == "all" ? "chip-active" : "border-cream-300 text-charcoal hover:border-primary hover:text-primary")">
+                                @c.Label
+                                <span class="chip-count text-[11px] font-semibold px-1.5 py-0.5 rounded-full @(c.Key == "all" ? "" : "bg-cream text-muted")">@CountFor(c.Key)</span>
+                            </button>
+                        }
+                    </div>
                 </div>
 
-                @if (transactions.Count > 0)
+                @if (transactions.Count == 0)
                 {
-                    <div class="divide-y divide-gray-100">
-                        @foreach (var tx in transactions)
-                        {
-                            var isCredit = tx.Amount > 0;
-                            <div class="px-6 py-4 flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center @(isCredit ? "bg-green-100" : "bg-red-100")">
-                                        @if (isCredit)
-                                        {
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-                                            </svg>
-                                        }
-                                        else
-                                        {
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
-                                            </svg>
-                                        }
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">@(tx.Description ?? tx.TransactionType.ToString())</p>
-                                        <p class="text-xs text-gray-500">@tx.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
-                                    </div>
-                                </div>
-                                <span class="font-semibold @(isCredit ? "text-green-600" : "text-red-600")">
-                                    @(isCredit ? "+" : "")@tx.Amount.ToString("N2") TL
-                                </span>
-                            </div>
-                        }
+                    <div class="px-6 py-16 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-cream flex items-center justify-center mx-auto mb-4 text-muted">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1"/><path d="M19 7V5a2 2 0 0 0-2-2H6"/></svg>
+                        </div>
+                        <p class="font-medium text-charcoal">Henüz hareket yok</p>
+                        <p class="text-sm text-muted mt-1">İlk işleminizden sonra burada görünecek.</p>
                     </div>
                 }
                 else
                 {
-                    <div class="px-6 py-12 text-center text-gray-500">
-                        <p>Henuz islem gecmisiniz bulunmuyor.</p>
+                    <div id="txnList" class="divide-y divide-cream-300">
+                        @foreach (var t in transactions)
+                        {
+                            var cat = CategoryOf(t);
+                            var sign = t.Amount >= 0 ? "+" : "−";
+                            var amtClass = cat == "harcama" ? "text-charcoal" : "text-success";
+                            var refLabel = string.IsNullOrWhiteSpace(t.ReferenceId) ? null : t.ReferenceId;
+                            <details class="txn-row group" data-cat="@cat">
+                                <summary class="flex items-center gap-4 px-5 sm:px-6 py-4 cursor-pointer hover:bg-cream/40 transition">
+                                    <span class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 @CategoryBg(cat)">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="@(cat == "cashback" ? "currentColor" : "none")" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(CategoryIcon(cat))</svg>
+                                    </span>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-charcoal text-sm truncate">@(t.Description ?? CategoryLabel(cat))</p>
+                                        <p class="text-xs text-muted">@t.CreatedAt.ToString("d MMMM yyyy · HH:mm", tr) · @CategoryLabel(cat)</p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <p class="font-semibold text-sm whitespace-nowrap @amtClass">@sign@Math.Abs(t.Amount).ToString("N2", tr)₺</p>
+                                        @if (refLabel != null)
+                                        {
+                                            <p class="text-[11px] text-muted mt-0.5">@refLabel</p>
+                                        }
+                                    </div>
+                                    <svg class="txn-caret w-4 h-4 text-muted ml-1 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                </summary>
+                                <div class="txn-detail">
+                                    <div>
+                                        <div class="px-5 sm:px-6 pb-4 -mt-1">
+                                            <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm bg-cream/40 rounded-xl p-4">
+                                                <div>
+                                                    <dt class="text-xs text-muted">İşlem No</dt>
+                                                    <dd class="font-medium text-charcoal mt-0.5">@(refLabel ?? $"CZ-{t.Id}")</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-xs text-muted">Bakiye Önce</dt>
+                                                    <dd class="font-medium text-charcoal mt-0.5">@t.BalanceBefore.ToString("N2", tr)₺</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-xs text-muted">Bakiye Sonra</dt>
+                                                    <dd class="font-medium text-charcoal mt-0.5">@t.BalanceAfter.ToString("N2", tr)₺</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-xs text-muted">Durum</dt>
+                                                    <dd class="mt-0.5"><span class="inline-block text-[11px] font-medium bg-success/15 text-success px-2 py-0.5 rounded-full">Tamamlandı</span></dd>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        }
+                    </div>
+                    <div id="txnEmpty" class="hidden px-6 py-14 text-center">
+                        <p class="text-sm text-muted">Bu türde henüz bir hareket yok.</p>
                     </div>
                 }
+            </div>
+
+            @* yardım *@
+            <div class="bg-primary/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="w-10 h-10 rounded-xl bg-white text-primary flex items-center justify-center shrink-0">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                    </span>
+                    <p class="text-sm font-medium text-charcoal">Cüzdan iadeleri ve para çekme hakkında sorunuz mu var?</p>
+                </div>
+                <div class="flex gap-2.5">
+                    <a href="/iletisim" class="px-4 py-2.5 rounded-full bg-success text-white text-sm font-semibold hover:bg-success/90 transition">WhatsApp</a>
+                    <a href="/iletisim" class="px-4 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:bg-white transition">İletişim</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@* mobil hesap sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("wallet")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/cuzdanim.js" asp-append-version="true"></script>
+}

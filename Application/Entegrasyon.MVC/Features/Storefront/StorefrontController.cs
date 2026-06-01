@@ -24,6 +24,7 @@ public class StorefrontController(
     ISellerCommissionManager sellerCommissionManager,
     IStorefrontAbandonedCartManager abandonedCartManager,
     IStorefrontWalletManager walletManager,
+    IStorefrontLoyaltyManager loyaltyManager,
     IStorefrontWishlistManager wishlistManager,
     IStorefrontStockNotificationManager stockNotificationManager,
     IStorefrontSearchHistoryManager searchHistoryManager,
@@ -613,6 +614,57 @@ public class StorefrontController(
             TempData.SetError(result.Message ?? "Yukleme basarisiz.");
 
         return RedirectToAction(nameof(WalletDetail), new { id });
+    }
+
+    // ── Loyalty ──────────────────────────────────────────────────────────
+
+    [HttpGet("/storefront/loyalty")]
+    public async Task<IActionResult> Loyalty()
+    {
+        ViewData.SetPageTitle("Sadakat Programi");
+        ViewData.SetActiveNav("storefront-loyalty");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Sadakat Programi", null));
+
+        var dashboard = await loyaltyManager.GetDashboardAsync(TenantId);
+        var vm = new LoyaltyVm { Dashboard = dashboard };
+        return HtmxView(vm);
+    }
+
+    [HttpGet("/storefront/loyalty/{id:int}")]
+    public async Task<IActionResult> LoyaltyCustomer(int id)
+    {
+        ViewData.SetPageTitle($"Sadakat Detayi - #{id}");
+        ViewData.SetActiveNav("storefront-loyalty");
+        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Sadakat Programi", "/storefront/loyalty"), ($"#{id}", null));
+
+        var balanceResult = await loyaltyManager.GetBalanceAsync(TenantId, id);
+        var txResult = await loyaltyManager.GetTransactionsAsync(TenantId, id);
+
+        var vm = new LoyaltyCustomerVm
+        {
+            CustomerId = id,
+            Balance = balanceResult.Data ?? new StorefrontLoyaltyPoints { CustomerId = id, TenantId = TenantId },
+            Transactions = txResult.Data ?? []
+        };
+
+        return HtmxView(vm);
+    }
+
+    [HttpPost("/storefront/loyalty/{id:int}/credit")]
+    public async Task<IActionResult> CreditLoyalty(int id, int points, string? description)
+    {
+        var result = await loyaltyManager.EarnPointsAsync(
+            TenantId, id, points,
+            type: "ManualAdjust",
+            referenceId: null,
+            description: description);
+
+        if (result.Success)
+            TempData.SetSuccess($"{points} puan musteriye eklendi.");
+        else
+            TempData.SetError(result.Message ?? "Puan ekleme basarisiz.");
+
+        return RedirectToAction(nameof(LoyaltyCustomer), new { id });
     }
 
     // ── Wishlists ─────────────────────────────────────────────────────────

@@ -1,104 +1,199 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Storefront
+@using System.Globalization
 @{
-    var loginHistory = ViewBag.LoginHistory as List<Entegrasyon.Entity.Storefront.StorefrontLoginHistory> ?? new();
+    ViewData["Title"] = "Güvenlik";
+
+    // Gerçek veri controller'dan ViewBag ile gelir.
+    var lastPasswordChangedAt = ViewBag.LastPasswordChange as DateTimeOffset?;
+    var lastPasswordChange = lastPasswordChangedAt.HasValue
+        ? lastPasswordChangedAt.Value.ToLocalTime().ToString("d MMMM yyyy", new CultureInfo("tr-TR"))
+        : "Hiç değiştirilmedi";
+    var twoFactorEnabled = ViewBag.TwoFactorEnabled as bool? ?? false;
+    var twoFactorMethod = ViewBag.TwoFactorMethod as string ?? "Authenticator uygulaması";
+    var loginAlerts = ViewBag.LoginAlerts as bool? ?? true;
+    var loginHistory = ViewBag.LoginHistory as List<StorefrontLoginHistory> ?? new List<StorefrontLoginHistory>();
+    var customerName = ViewBag.CustomerName as string ?? "Üye";
+    var initials = string.IsNullOrWhiteSpace(customerName)
+        ? "?"
+        : string.Concat(customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+    var tr = new CultureInfo("tr-TR");
+
+    var securitySuccess = TempData["ProfileSuccess"] as string;
+    var securityError = TempData["ProfileError"] as string;
 }
 
-@section Head {
-    <seo-meta title="Guvenlik | @Tenant.Settings.StoreName" />
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        @await Html.PartialAsync("_AccountSidebar", "Security")
-    </aside>
-    <div class="flex-1">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Guvenlik</h1>
+    @* mobile account trigger *@
+    <button type="button" data-open-acc class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">@initials</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-            @* KVKK Data Export *@
-            <div class="mb-8 p-4 border border-gray-200 rounded-lg">
-                <h2 class="text-lg font-semibold text-gray-900 mb-2">KVKK Veri Indirme</h2>
-                <p class="text-sm text-gray-600 mb-3">
-                    KVKK kapsaminda kisisel verilerinizin bir kopyasini JSON formatinda indirebilirsiniz.
-                </p>
-                <a href="/hesabim/veri-indir" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors no-underline">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                    Verilerimi Indir
-                </a>
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("security")' />
+        </aside>
+
+        <div>
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">Güvenlik</h1>
+                <p class="text-muted mt-1.5 text-sm">Hesabınızın korunması için giriş ve doğrulama ayarlarınızı yönetin.</p>
             </div>
 
-            @* Login History *@
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Oturum Gecmisi</h2>
+            @if (!string.IsNullOrWhiteSpace(securitySuccess))
+            {
+                <div class="mb-5 rounded-2xl bg-success/10 border border-success/30 text-success text-sm px-4 py-3" role="status">@securitySuccess</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(securityError))
+            {
+                <div class="mb-5 rounded-2xl bg-danger/10 border border-danger/30 text-danger text-sm px-4 py-3" role="alert">@securityError</div>
+            }
 
-            @if (loginHistory.Count == 0)
-            {
-                <p class="text-gray-500 text-sm">Henuz oturum gecmisi bulunmuyor.</p>
-            }
-            else
-            {
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-200 text-left text-gray-500">
-                                <th class="pb-3 pr-4 font-medium">Tarih</th>
-                                <th class="pb-3 pr-4 font-medium">IP Adresi</th>
-                                <th class="pb-3 pr-4 font-medium">Cihaz</th>
-                                <th class="pb-3 font-medium">Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var entry in loginHistory)
-                            {
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-3 pr-4 text-gray-900">@entry.LoginAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td class="py-3 pr-4 text-gray-600">@MaskIpAddress(entry.IpAddress)</td>
-                                    <td class="py-3 pr-4 text-gray-600">@(entry.DeviceType ?? "Bilinmiyor")</td>
-                                    <td class="py-3">
-                                        @if (entry.IsSuccessful)
-                                        {
-                                            <span class="inline-flex items-center gap-1 text-green-600">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                                </svg>
-                                                Basarili
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="inline-flex items-center gap-1 text-red-500">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                                </svg>
-                                                Basarisiz
-                                            </span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            <div class="space-y-4">
+                @* password *@
+                <div class="rounded-2xl border border-cream-300 p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <span class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-charcoal">Şifre</h3>
+                        <p class="text-sm text-muted mt-0.5">Son değişiklik: @lastPasswordChange</p>
+                    </div>
+                    <a href="/hesabim/sifre" class="shrink-0 inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">Şifreyi Değiştir</a>
                 </div>
-            }
+
+                @* 2FA *@
+                <div class="rounded-2xl border border-cream-300 p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <span class="w-11 h-11 rounded-xl bg-secondary/20 text-secondary flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></span>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-semibold text-charcoal">İki Aşamalı Doğrulama</h3>
+                                @if (twoFactorEnabled)
+                                {
+                                    <span class="text-[11px] font-medium bg-success/15 text-success px-2.5 py-0.5 rounded-full">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="text-[11px] font-medium bg-muted/15 text-muted px-2.5 py-0.5 rounded-full">Kapalı</span>
+                                }
+                            </div>
+                            <p class="text-sm text-muted mt-0.5">@(twoFactorEnabled ? $"Yöntem: {twoFactorMethod}" : "Hesabınızı ekstra bir adımla koruyun.")</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="/hesabim/guvenlik/2fa" class="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">@(twoFactorEnabled ? "Yapılandır" : "Etkinleştir")</a>
+                            @if (twoFactorEnabled)
+                            {
+                                <form asp-controller="Account" asp-action="DisableTwoFactor" method="post">
+                                    <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-danger/40 text-sm font-semibold text-danger hover:bg-danger/5 transition">Kapat</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* login alerts *@
+                <div class="rounded-2xl border border-cream-300 p-6">
+                    <div class="flex items-center justify-between gap-4">
+                        <span>
+                            <span class="block font-semibold text-charcoal">Giriş bildirimleri</span>
+                            <span class="block text-sm text-muted mt-0.5">Yeni bir cihazdan giriş yapıldığında e-posta ile uyarılın.</span>
+                        </span>
+                        <form asp-controller="Account" asp-action="ToggleLoginAlerts" method="post" data-autosubmit>
+                            @* Switch toggle edilince guvenlik.js bu formu submit eder; tercih sunucuda saklanır. *@
+                            <input type="hidden" name="enabled" value="@((!loginAlerts).ToString().ToLowerInvariant())" />
+                            <span class="switch" data-on="@(loginAlerts ? "1" : "0")" data-toggle-switch data-toast-on="Giriş bildirimleri açıldı" data-toast-off="Giriş bildirimleri kapatıldı" role="switch" aria-checked="@(loginAlerts ? "true" : "false")" tabindex="0"></span>
+                        </form>
+                    </div>
+                </div>
+
+                @* recent login activity (LoginHistory) *@
+                <div class="rounded-2xl border border-cream-300 p-6">
+                    <h3 class="font-semibold text-charcoal mb-1">Son Giriş Hareketleri</h3>
+                    <p class="text-sm text-muted mb-4">Hesabınıza yapılan son giriş denemeleri.</p>
+                    @if (loginHistory.Count == 0)
+                    {
+                        <p class="text-sm text-muted">Henüz kayıtlı giriş hareketi yok.</p>
+                    }
+                    else
+                    {
+                        <div class="divide-y divide-cream-300">
+                            @foreach (var h in loginHistory.Take(8))
+                            {
+                                <div class="flex items-center gap-3 py-3.5 first:pt-0 last:pb-0">
+                                    <span class="w-10 h-10 rounded-xl bg-cream text-charcoal/70 flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg></span>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-charcoal text-sm flex items-center gap-2">
+                                            @(string.IsNullOrWhiteSpace(h.DeviceType) ? "Bilinmeyen cihaz" : h.DeviceType)
+                                            @if (h.IsSuccessful)
+                                            {
+                                                <span class="text-[11px] font-medium bg-success/15 text-success px-2 py-0.5 rounded-full">Başarılı</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-[11px] font-medium bg-danger/15 text-danger px-2 py-0.5 rounded-full">Başarısız</span>
+                                            }
+                                        </p>
+                                        <p class="text-xs text-muted mt-0.5">@(h.IpAddress ?? "-") · @h.LoginAt.ToLocalTime().ToString("d MMM yyyy HH:mm", tr)</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @* data & account *@
+                <div class="rounded-2xl border border-cream-300 p-6">
+                    <h3 class="font-semibold text-charcoal mb-1">Veri &amp; Hesap</h3>
+                    <p class="text-sm text-muted mb-4">Verilerinizin bir kopyasını alın veya hesabınızı kalıcı olarak kapatın.</p>
+                    <div class="flex flex-wrap gap-3">
+                        <a asp-controller="Account" asp-action="ExportData" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                            Verilerimi indir
+                        </a>
+                        <button type="button" data-open-delacc class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-danger/40 text-sm font-semibold text-danger hover:bg-danger/5 transition">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                            Hesabımı sil
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-@functions {
-    static string MaskIpAddress(string? ip)
-    {
-        if (string.IsNullOrEmpty(ip)) return "Bilinmiyor";
-        var parts = ip.Split('.');
-        if (parts.Length == 4)
-            return $"{parts[0]}.{parts[1]}.x.x";
-        // IPv6 or other — mask last segments
-        if (ip.Contains(':'))
-        {
-            var segments = ip.Split(':');
-            if (segments.Length >= 4)
-                return string.Join(":", segments.Take(2)) + ":x:x";
-        }
-        return ip;
-    }
+@* mobile account sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-close-acc class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-close-acc aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("security")' />
+    </div>
+</div>
+
+@* delete account modal *@
+<div id="delAccModal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div data-close-delacc class="absolute inset-0 bg-charcoal/45"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-xl">
+        <form asp-controller="Account" asp-action="DeleteAccount" method="post" class="p-6">
+            <span class="w-12 h-12 rounded-full bg-danger/10 text-danger flex items-center justify-center mb-4"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+            <h2 class="font-heading text-xl text-charcoal">Hesabınızı silmek üzeresiniz</h2>
+            <p class="text-sm text-muted mt-2 leading-relaxed">Bu işlem geri alınamaz. Tüm sipariş geçmişiniz, kuponlarınız ve sadakat puanlarınız kalıcı olarak silinir. Devam etmek için mevcut şifrenizi girin ve aşağıya <span class="font-mono font-semibold text-charcoal">SIL</span> yazın.</p>
+            <input id="delPassword" name="password" type="password" placeholder="Mevcut şifreniz" required autocomplete="current-password" class="mt-4 w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-danger" />
+            <input id="delConfirm" name="confirmation" type="text" placeholder="SIL" data-del-confirm autocomplete="off" class="mt-3 w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-danger" />
+            <div class="flex gap-2 mt-5">
+                <button id="delBtn" type="submit" disabled class="px-6 py-2.5 rounded-full bg-danger text-white text-sm font-semibold hover:bg-danger/90 transition disabled:opacity-40 disabled:cursor-not-allowed">Hesabımı Sil</button>
+                <button type="button" data-close-delacc class="px-6 py-2.5 rounded-full border border-cream-300 text-sm text-charcoal hover:bg-cream transition">Vazgeç</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/guvenlik.js" asp-append-version="true"></script>
 }

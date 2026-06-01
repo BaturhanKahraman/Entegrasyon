@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ürün görseli yok">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAF6F0"/>
+      <stop offset="1" stop-color="#E8DFD2"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="300" fill="url(#bg)"/>
+  <g stroke="#C8BBA9" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(95 115)">
+    <rect x="0" y="0" width="50" height="50" rx="6"/>
+    <circle cx="17" cy="17" r="5"/>
+    <path d="M2 42l13-13 12 12 8-8 13 13"/>
+  </g>
+  <text x="120" y="210" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#7B8794" text-anchor="middle" letter-spacing="0.5">Görsel yok</text>
+</svg>

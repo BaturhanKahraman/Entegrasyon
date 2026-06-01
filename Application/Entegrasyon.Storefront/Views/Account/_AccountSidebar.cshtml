@@ -1,21 +1,107 @@
 @model string
+@*
+    Hesap sayfaları sidebar partial.
+    @Model = aktif menü key (dashboard|orders|returns|buyagain|wishlist|wallet|loyalty|referral|profile|addresses|security|password|twofa).
+    Kullanım: <partial name="_AccountSidebar" model="@("dashboard")" />
+*@
 @{
-    string active = Model ?? "";
+    var active = Model ?? "dashboard";
+    // CustomerName / CustomerTier AccountController.OnActionExecuting'de claim'lerden doldurulur.
+    // Buradaki fallback yalnızca güvenlik amaçlı nötr değer (demo "Ayşe Yılmaz" KULLANILMAZ).
+    var customerName = ViewBag.CustomerName as string ?? "Üye";
+    var customerTier = ViewBag.CustomerTier as string ?? "Üye";
+    var initials = string.Concat(customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+
+    var sections = new[]
+    {
+        new {
+            Label = "Hesabım",
+            Items = new[]
+            {
+                new { Key = "dashboard", Label = "Özet",        Icon = "grid",   Href = "/hesabim" },
+                new { Key = "orders",    Label = "Siparişlerim", Icon = "bag",    Href = "/hesabim/siparislerim" },
+                new { Key = "returns",   Label = "İadeler",      Icon = "rotate", Href = "/hesabim/iadelerim" },
+                new { Key = "buyagain",  Label = "Yine Al",      Icon = "repeat", Href = "/hesabim/tekrar-satin-al" },
+                new { Key = "wishlist",  Label = "Favorilerim",  Icon = "heart",  Href = "/favorilerim" },
+            }
+        },
+        new {
+            Label = "Cüzdan & Puan",
+            Items = new[]
+            {
+                new { Key = "wallet",   Label = "Cüzdanım",          Icon = "wallet", Href = "/hesabim/cuzdanim" },
+                new { Key = "loyalty",  Label = "Sadakat Puanları",  Icon = "star",   Href = "/hesabim/puan-programi" },
+                new { Key = "referral", Label = "Davet Et",          Icon = "gift",   Href = "/hesabim/arkadasini-getir" },
+            }
+        },
+        new {
+            Label = "Ayarlar",
+            Items = new[]
+            {
+                new { Key = "profile",   Label = "Profil Bilgileri",        Icon = "user",   Href = "/hesabim/profil" },
+                new { Key = "addresses", Label = "Adreslerim",              Icon = "pin",    Href = "/hesabim/adresler" },
+                new { Key = "security",  Label = "Güvenlik",                Icon = "shield", Href = "/hesabim/guvenlik" },
+                new { Key = "password",  Label = "Şifre Değiştir",          Icon = "lock",   Href = "/hesabim/sifre" },
+                new { Key = "twofa",     Label = "İki Aşamalı Doğrulama",   Icon = "phone",  Href = "/hesabim/guvenlik/2fa" },
+            }
+        },
+    };
+
+    var icons = new Dictionary<string, string>
+    {
+        ["grid"]   = "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/>",
+        ["bag"]    = "<path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\"/><path d=\"M3 6h18\"/><path d=\"M16 10a4 4 0 0 1-8 0\"/>",
+        ["rotate"] = "<path d=\"M3 12a9 9 0 1 0 3-6.7L3 8\"/><path d=\"M3 3v5h5\"/>",
+        ["repeat"] = "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>",
+        ["heart"]  = "<path d=\"M19 14c1.5-1.5 3-3.2 3-5.5A4.5 4.5 0 0 0 12 5.5 4.5 4.5 0 0 0 2 8.5C2 10.8 3.5 12.5 5 14l7 7Z\"/>",
+        ["wallet"] = "<path d=\"M19 7H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1\"/><path d=\"M16 12h.01\"/><path d=\"M19 7V5a2 2 0 0 0-2-2H6\"/>",
+        ["star"]   = "<path d=\"m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z\"/>",
+        ["gift"]   = "<rect x=\"3\" y=\"8\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M12 8v13M3 12h18M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8\"/>",
+        ["user"]   = "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21a8 8 0 0 1 16 0\"/>",
+        ["pin"]    = "<path d=\"M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>",
+        ["shield"] = "<path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z\"/>",
+        ["lock"]   = "<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>",
+        ["phone"]  = "<rect x=\"5\" y=\"2\" width=\"14\" height=\"20\" rx=\"2\"/><path d=\"M12 18h.01\"/>",
+    };
 }
 
-<nav class="bg-white rounded-lg shadow p-4 space-y-1">
-    <a href="/hesabim" class="block px-3 py-2 rounded @(active == "Index" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Hesap Ozeti</a>
-    <a href="/hesabim/Profile" class="block px-3 py-2 rounded @(active == "Profile" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Profilim</a>
-    <a href="/hesabim/Orders" class="block px-3 py-2 rounded @(active == "Orders" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Siparişlerim</a>
-    <a href="/hesabim/tekrar-satin-al" class="block px-3 py-2 rounded @(active == "BuyAgain" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Tekrar Satin Al</a>
-    <a href="/favorilerim" class="block px-3 py-2 rounded @(active == "Wishlist" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Favorilerim</a>
-    <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded @(active == "Returns" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Iadelerim</a>
-    <a href="/hesabim/Addresses" class="block px-3 py-2 rounded @(active == "Addresses" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Adreslerim</a>
-    <a href="/hesabim/puan-programi" class="block px-3 py-2 rounded @(active == "LoyaltyPoints" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Puan Programi</a>
-    <a href="/hesabim/arkadasini-getir" class="block px-3 py-2 rounded @(active == "Referral" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Arkadasini Getir</a>
-    <a href="/hesabim/cuzdanim" class="block px-3 py-2 rounded @(active == "Wallet" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Cuzdanim</a>
-    <a href="/hesabim/guvenlik" class="block px-3 py-2 rounded @(active == "Security" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Guvenlik</a>
-    <a href="/hesabim/guvenlik/2fa" class="block px-3 py-2 rounded @(active == "TwoFactorSetup" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Iki Faktorlu Dogrulama</a>
-    <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded @(active == "ChangePassword" ? "bg-gray-50 font-medium text-primary" : "hover:bg-gray-50 text-gray-700") no-underline">Sifre Degistir</a>
-    <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
-</nav>
+<div class="bg-white border border-cream-300 rounded-2xl p-5">
+    <div class="flex items-center gap-3 pb-4 mb-4 border-b border-cream-300">
+        <span class="w-12 h-12 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold">@initials</span>
+        <div class="min-w-0">
+            <p class="font-medium text-charcoal truncate">@customerName</p>
+            <span class="inline-block mt-0.5 text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">@customerTier</span>
+        </div>
+    </div>
+    <a href="/hesabim/profil" class="block text-xs text-primary hover:underline px-3 mb-4">Profili Düzenle</a>
+
+    <div class="space-y-5">
+        @foreach (var group in sections)
+        {
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-muted px-3 mb-1.5">@group.Label</p>
+                <nav class="space-y-0.5">
+                    @foreach (var item in group.Items)
+                    {
+                        var on = item.Key == active;
+                        var cls = on
+                            ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
+                            : "text-charcoal hover:bg-cream border-l-2 border-transparent";
+                        var fill = item.Icon == "star" ? "currentColor" : "none";
+                        <a href="@item.Href" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition @cls">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="@fill" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(icons[item.Icon])</svg>
+                            @item.Label
+                        </a>
+                    }
+                </nav>
+            </div>
+        }
+    </div>
+
+    <form asp-controller="Auth" asp-action="Logout" method="post" class="mt-5 pt-4 border-t border-cream-300">
+        <button type="submit" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-danger/40 text-danger text-sm font-medium hover:bg-danger/5 transition">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            Çıkış Yap
+        </button>
+    </form>
+</div>

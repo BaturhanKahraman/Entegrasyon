@@ -4,6 +4,7 @@ using Entegrasyon.Entity.Dtos.Storefront;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Entegrasyon.Storefront.Controllers;
 
@@ -11,7 +12,8 @@ public class AuthController(
     IStorefrontTenantContext tenant,
     IStorefrontAuthManager authManager,
     IStorefrontEmailService emailService,
-    IStorefrontReferralManager referralManager) : Controller
+    IStorefrontReferralManager referralManager,
+    IStorefrontLoyaltyManager loyaltyManager) : Controller
 {
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
@@ -23,6 +25,7 @@ public class AuthController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login(StorefrontLoginDto dto, string? returnUrl = null)
     {
         if (User.Identity?.IsAuthenticated == true) return Redirect("/");
@@ -70,13 +73,15 @@ public class AuthController(
             return Redirect("/giris/2fa");
         }
 
+        var tier = await loyaltyManager.GetTierAsync(auth.TenantId, auth.CustomerId);
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, auth.CustomerId.ToString()),
             new(ClaimTypes.Email, auth.Email),
             new(ClaimTypes.Name, auth.Customer.FullName ?? $"{auth.Customer.Name} {auth.Customer.Surname}"),
             new("TenantId", auth.TenantId.ToString()),
-            new("AuthId", auth.Id.ToString())
+            new("AuthId", auth.Id.ToString()),
+            new("MembershipTier", tier)
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -104,6 +109,7 @@ public class AuthController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Register(StorefrontRegisterDto dto, string? referralCode = null)
     {
         if (User.Identity?.IsAuthenticated == true) return Redirect("/");
@@ -125,13 +131,15 @@ public class AuthController(
 
         // Auto login after register
         var auth = result.Data;
+        var tier = await loyaltyManager.GetTierAsync(auth.TenantId, auth.CustomerId);
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, auth.CustomerId.ToString()),
             new(ClaimTypes.Email, auth.Email),
             new(ClaimTypes.Name, $"{dto.Name} {dto.Surname}"),
             new("TenantId", auth.TenantId.ToString()),
-            new("AuthId", auth.Id.ToString())
+            new("AuthId", auth.Id.ToString()),
+            new("MembershipTier", tier)
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
@@ -156,6 +164,7 @@ public class AuthController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("password")]
     public async Task<IActionResult> ForgotPassword(string email)
     {
         var resetResult = await authManager.RequestPasswordResetAsync(tenant.TenantId, email);
@@ -181,6 +190,7 @@ public class AuthController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("password")]
     public async Task<IActionResult> ResetPassword(string token, string password, string confirmPassword)
     {
         if (password != confirmPassword)
@@ -245,13 +255,15 @@ public class AuthController(
         var auth = result.Data;
 
         // Sign in with application cookie
+        var tier = await loyaltyManager.GetTierAsync(auth.TenantId, auth.CustomerId);
         var appClaims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, auth.CustomerId.ToString()),
             new(ClaimTypes.Email, auth.Email),
             new(ClaimTypes.Name, $"{name} {surname}".Trim()),
             new("TenantId", auth.TenantId.ToString()),
-            new("AuthId", auth.Id.ToString())
+            new("AuthId", auth.Id.ToString()),
+            new("MembershipTier", tier)
         };
 
         var identity = new ClaimsIdentity(appClaims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -265,13 +277,37 @@ public class AuthController(
         return Redirect(returnUrl ?? "/");
     }
 
+    [HttpGet]
     public async Task<IActionResult> ConfirmEmail(string? token)
     {
         if (string.IsNullOrEmpty(token))
-            return View(model: (object)"Gecersiz link.");
+        {
+            ViewBag.State = "invalid";
+            ViewBag.Message = "Geçersiz link.";
+            return View();
+        }
 
         var result = await authManager.ConfirmEmailAsync(tenant.TenantId, token);
-        return View(model: result.Success ? (object)"Email adresiniz dogrulandi!" : result.Message);
+        // V1: tüm başarısız sonuçları "expired" say (token süresi en yaygın). İleride manager
+        // ErrorCode (TokenExpired/TokenInvalid) ile dönerse burada ayrıştırılır.
+        ViewBag.State = result.Success ? "success" : "expired";
+        ViewBag.Message = result.Success ? "E-posta adresiniz doğrulandı!" : result.Message;
+        return View();
+    }
+
+    [HttpPost("/auth/yeni-dogrulama-maili")]
+    [ValidateAntiForgeryToken]
+    [EnableRateLimiting("email-confirm")]
+    public async Task<IActionResult> ResendConfirmation(string email)
+    {
+        var result = await authManager.ResendEmailConfirmationAsync(tenant.TenantId, email);
+
+        if (result.Success)
+            TempData["LoginInfo"] = result.Message;
+        else
+            TempData["LoginError"] = result.Message;
+
+        return RedirectToAction(nameof(Login));
     }
 
     [HttpGet]
@@ -323,13 +359,15 @@ public class AuthController(
         HttpContext.Session.Remove("Pending2FA_RememberMe");
 
         // Sign in
+        var tier = await loyaltyManager.GetTierAsync(tenantId.Value, customerId.Value);
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, customerId.Value.ToString()),
             new(ClaimTypes.Email, email),
             new(ClaimTypes.Name, name),
             new("TenantId", tenantId.Value.ToString()),
-            new("AuthId", authId.Value.ToString())
+            new("AuthId", authId.Value.ToString()),
+            new("MembershipTier", tier)
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

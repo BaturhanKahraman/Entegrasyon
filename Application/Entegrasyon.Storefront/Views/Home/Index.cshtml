@@ -1,155 +1,370 @@
 @using Entegrasyon.Entity.Dtos.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
-}
-
 @{
-    var banners = ViewBag.Banners as List<StorefrontBanner> ?? new List<StorefrontBanner>();
-    var topCategories = ViewBag.TopCategories as List<CategoryTreeDto> ?? new List<CategoryTreeDto>();
-    var newProducts = ViewBag.NewProducts as List<StorefrontProductCardDto> ?? new List<StorefrontProductCardDto>();
-    var bestSellers = ViewBag.BestSellers as List<StorefrontProductCardDto> ?? new List<StorefrontProductCardDto>();
+    ViewData["Title"] = "Anasayfa";
+    var newProducts = (ViewBag.NewProducts as List<StorefrontProductCardDto>) ?? new List<StorefrontProductCardDto>();
+
+    var ages = new[]
+    {
+        new { Label = "0-3 ay",    Tint = "bg-primary/15",   Img = "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "3-6 ay",    Tint = "bg-secondary/20", Img = "https://images.unsplash.com/photo-1622290291720-ac961c43ee30?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "6-12 ay",   Tint = "bg-accent/25",    Img = "https://images.unsplash.com/photo-1622290319146-7b63df48a635?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "1-2 yaş",   Tint = "bg-primary/15",   Img = "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "2-4 yaş",   Tint = "bg-secondary/20", Img = "https://images.unsplash.com/photo-1541580621-cb65cc53084b?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "4-6 yaş",   Tint = "bg-accent/25",    Img = "https://images.unsplash.com/photo-1502451885777-16c98b07834a?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "6-8 yaş",   Tint = "bg-primary/15",   Img = "https://images.unsplash.com/photo-1604482858862-1db908a653e4?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "8-10 yaş",  Tint = "bg-secondary/20", Img = "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "10-12 yaş", Tint = "bg-accent/25",    Img = "https://images.unsplash.com/photo-1590995385808-7eb142fde16a?auto=format&fit=crop&w=320&q=80" },
+        new { Label = "12-14 yaş", Tint = "bg-primary/15",   Img = "https://images.unsplash.com/photo-1611428813653-aa606c998586?auto=format&fit=crop&w=320&q=80" },
+    };
+
+    var testimonials = new[]
+    {
+        new { Name = "Elif K.",  Order = "8421", Text = "Kumaş kalitesi gerçekten çok iyi, kızım pamuklu elbiseyi hiç çıkarmak istemiyor. Kargo da bir günde geldi." },
+        new { Name = "Burak T.", Order = "8398", Text = "Beden tablosu sayesinde doğru bedeni ilk seferde aldım. İade derdi yaşamadım, çok memnunuz." },
+        new { Name = "Selin A.", Order = "8455", Text = "Hastane çıkışı seti hem çok şirin hem de cilde çok yumuşak geldi. Hediye olarak da aldım, herkes bayıldı." },
+    };
+
+    var instaImages = new[]
+    {
+        "https://images.unsplash.com/photo-1541580621-cb65cc53084b?auto=format&fit=crop&w=360&q=80",
+        "https://images.unsplash.com/photo-1634188157846-c6e3bdf99420?auto=format&fit=crop&w=360&q=80",
+        "https://images.unsplash.com/photo-1611428813653-aa606c998586?auto=format&fit=crop&w=360&q=80",
+        "https://images.unsplash.com/photo-1620774760711-caa4c94d683a?auto=format&fit=crop&w=360&q=80",
+        "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=360&q=80",
+        "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=360&q=80",
+    };
+
+    var sampleProducts = new[]
+    {
+        new { Title = "Çiçekli Fitilli Kadife Elbise", Brand = "Zekids",   Price = "449₺", Old = (string?)"599₺", Sizes = "2-6 yaş",  Badge = "new",  Tint = "bg-primary/20",   Img = "https://images.unsplash.com/photo-1560506840-ec148e82a604?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Organik Pamuk Body Seti (3'lü)", Brand = "Minimini", Price = "329₺", Old = (string?)null, Sizes = "0-12 ay", Badge = "best", Tint = "bg-secondary/25", Img = "https://images.unsplash.com/photo-1622290291720-ac961c43ee30?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Kapüşonlu Yumuşak Sweat",        Brand = "Zekids",   Price = "279₺", Old = (string?)"359₺", Sizes = "4-10 yaş", Badge = "sale", Tint = "bg-accent/30",    Img = "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Salopet Kot Tulum",              Brand = "Pamuk",    Price = "389₺", Old = (string?)null, Sizes = "1-5 yaş",  Badge = "new",  Tint = "bg-secondary/20", Img = "https://images.unsplash.com/photo-1632337950445-ba446cb0e26f?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Tavşan Desenli Pijama Takımı",   Brand = "Uykucu",   Price = "259₺", Old = (string?)"319₺", Sizes = "2-8 yaş",  Badge = "sale", Tint = "bg-primary/15",   Img = "https://images.unsplash.com/photo-1622290319146-7b63df48a635?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Fırfırlı Yazlık Tunik",          Brand = "Zekids",   Price = "199₺", Old = (string?)null, Sizes = "3-7 yaş",  Badge = "new",  Tint = "bg-accent/25",    Img = "https://images.unsplash.com/photo-1604482858862-1db908a653e4?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Hastane Çıkışı 5'li Set",        Brand = "Minimini", Price = "699₺", Old = (string?)"849₺", Sizes = "0-3 ay",   Badge = "best", Tint = "bg-primary/20",   Img = "https://images.unsplash.com/photo-1632337948797-ba161d29532b?auto=format&fit=crop&w=500&q=80" },
+        new { Title = "Çizgili Bisiklet Yaka Tişört",   Brand = "Pamuk",    Price = "149₺", Old = (string?)null, Sizes = "4-12 yaş", Badge = "new",  Tint = "bg-secondary/25", Img = "https://images.unsplash.com/photo-1560859259-fcf2b952aed8?auto=format&fit=crop&w=500&q=80" },
+    };
 }
 
-@* Hero Banner Section *@
-@if (banners.Count > 0)
-{
-    <section class="relative">
-        <div class="w-full overflow-hidden">
-            @foreach (var banner in banners)
-            {
-                <div class="relative">
-                    <img src="@banner.ImageUrl" alt="@banner.Title" loading="lazy" class="w-full h-auto object-cover" />
-                    @if (!string.IsNullOrWhiteSpace(banner.LinkUrl))
-                    {
-                        <a href="@banner.LinkUrl" class="absolute inset-0" aria-label="@banner.Title"></a>
-                    }
+@* ============ HERO ============ *@
+<section class="bg-gradient-to-b from-cream to-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+        <div class="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+            <div class="order-2 lg:order-1 text-center lg:text-left">
+                <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Yeni İlkbahar Koleksiyonu
+                </span>
+                <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-charcoal">
+                    Çocukluğun büyüsünü <span class="italic text-primary">giydir</span>
+                </h1>
+                <p class="mt-5 text-base lg:text-lg text-muted max-w-md mx-auto lg:mx-0 leading-relaxed">
+                    0–14 yaş minikler için yumuşak kumaşlar, neşeli renkler. Minik dolaplara büyük ilham.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
+                    <a href="#yeni" class="px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition shadow-sm">Yeni Gelenler</a>
+                    <a href="/kategori/outlet" class="px-7 py-3.5 rounded-full border border-cream-300 text-charcoal font-semibold hover:border-primary hover:text-primary transition">Outlet'i Keşfet</a>
                 </div>
-            }
-        </div>
-    </section>
-}
+                <div class="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-muted">
+                    <span class="flex items-center gap-2"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4CAF89" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> %100 pamuk</span>
+                    <span class="flex items-center gap-2"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4CAF89" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> 30 gün iade</span>
+                </div>
+            </div>
 
-@* Trust Badges *@
-<section class="py-8 bg-gray-50 border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div class="flex flex-col items-center text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span class="font-medium text-sm text-gray-700">Hizli Kargo</span>
-            </div>
-            <div class="flex flex-col items-center text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                <span class="font-medium text-sm text-gray-700">Guvenli Odeme</span>
-            </div>
-            <div class="flex flex-col items-center text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span class="font-medium text-sm text-gray-700">Kolay Iade</span>
-            </div>
-            <div class="flex flex-col items-center text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span class="font-medium text-sm text-gray-700">7/24 Destek</span>
+            <div class="order-1 lg:order-2 relative">
+                <div class="rounded-3xl p-2.5 bg-gradient-to-br from-primary/30 via-accent/25 to-secondary/30">
+                    <div class="ph aspect-[4/5] sm:aspect-[16/13] rounded-[1.25rem] bg-secondary/30" data-ph="mutlu çocuk · oyun anı">
+                        <img class="photo" loading="lazy" alt="Neşeli çocuk" src="https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=900&q=80" />
+                    </div>
+                </div>
+                <div class="sticker absolute -top-4 -right-2 sm:-right-4 bg-accent text-charcoal font-heading font-semibold text-sm sm:text-base px-4 py-3 rounded-2xl rotate-[-8deg]">
+                    %30'a varan<br/><span class="text-lg">indirim</span>
+                </div>
+                <div class="absolute -bottom-4 -left-2 sm:-left-4 bg-white rounded-2xl shadow-md px-4 py-3 flex items-center gap-3">
+                    <div class="ph w-10 h-10 rounded-xl bg-primary/20" data-ph="">
+                        <img class="photo" loading="lazy" alt="" src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=120&q=80" />
+                    </div>
+                    <div class="text-xs leading-tight">
+                        <p class="font-semibold text-charcoal">12.400+ mutlu aile</p>
+                        <p class="text-muted">★★★★★ 4.9 puan</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-@* Welcome Section *@
-<section class="py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">@Tenant.Settings.StoreName</h1>
-        @if (!string.IsNullOrWhiteSpace(Tenant.Settings.StoreSlogan))
+@* ============ YAŞA GÖRE ============ *@
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
+    <div class="flex items-end justify-between mb-8">
+        <div>
+            <h2 class="font-heading text-2xl lg:text-3xl text-charcoal">Yaşa göre seçin</h2>
+            <p class="text-muted mt-1.5 text-sm lg:text-base">Doğru beden, doğru yaş için özenle ayrıldı.</p>
+        </div>
+        <a href="/kategoriler" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all whitespace-nowrap">Tümü <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <div class="flex sm:grid sm:grid-cols-5 lg:grid-cols-10 gap-4 sm:gap-5 overflow-x-auto no-scrollbar snap-x pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+        @foreach (var age in ages)
         {
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">@Tenant.Settings.StoreSlogan</p>
+            <a href="/kategori/yas/@age.Label.Replace(" ", "-").ToLower()" class="group shrink-0 w-28 sm:w-auto snap-start text-center">
+                <div class="ph aspect-square rounded-3xl overflow-hidden @age.Tint group-hover:scale-105 group-hover:shadow-md transition duration-300" data-ph="">
+                    <img class="photo" loading="lazy" alt="@age.Label" src="@age.Img" />
+                </div>
+                <p class="mt-2.5 text-sm font-medium text-charcoal">@age.Label</p>
+            </a>
         }
     </div>
 </section>
 
-@* One Cikan Kategoriler *@
-@if (topCategories.Count > 0)
-{
-    <section class="py-12 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">One Cikan Kategoriler</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                @foreach (var cat in topCategories)
-                {
-                    <a href="/kategori/@cat.SeoSlug"
-                       class="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow text-center no-underline">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-1">@cat.Name</h3>
-                        <p class="text-sm text-gray-500">@cat.ProductCount urun</p>
+@* ============ CİNSİYET ============ *@
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 lg:pb-8">
+    <div class="grid sm:grid-cols-3 gap-5">
+        <a href="/kategori/kiz" class="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4]">
+            <div class="ph absolute inset-0 bg-primary/30" data-ph="kız · model">
+                <img class="photo" loading="lazy" alt="Kız çocuk modeli" src="https://images.unsplash.com/photo-1590995385808-7eb142fde16a?auto=format&fit=crop&w=700&q=80" />
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal/45 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-6 text-white">
+                <h3 class="font-heading text-2xl mb-1">Kız</h3>
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all">Keşfet <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+        </a>
+        <a href="/kategori/erkek" class="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4]">
+            <div class="ph absolute inset-0 bg-secondary/35" data-ph="erkek · model">
+                <img class="photo" loading="lazy" alt="Erkek çocuk modeli" src="https://images.unsplash.com/photo-1502451885777-16c98b07834a?auto=format&fit=crop&w=700&q=80" />
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal/45 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-6 text-white">
+                <h3 class="font-heading text-2xl mb-1">Erkek</h3>
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all">Keşfet <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+        </a>
+        <a href="/kategori/unisex" class="group relative rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-[3/4]">
+            <div class="ph absolute inset-0 bg-accent/35" data-ph="unisex · model">
+                <img class="photo" loading="lazy" alt="Çocuklar" src="https://images.unsplash.com/photo-1634188157846-c6e3bdf99420?auto=format&fit=crop&w=700&q=80" />
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal/45 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-6 text-white">
+                <h3 class="font-heading text-2xl mb-1">Unisex</h3>
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all">Keşfet <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+        </a>
+    </div>
+</section>
+
+@* ============ YENİ GELENLER ============ *@
+<section id="yeni" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+    <div class="flex items-end justify-between mb-8">
+        <div>
+            <h2 class="font-heading text-2xl lg:text-3xl text-charcoal">Bu Hafta Eklediklerimiz</h2>
+            <p class="text-muted mt-1.5 text-sm lg:text-base">Yeni sezonun ilk minik parçaları.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" data-carousel-scroll="prev" data-carousel-target="newScroll" aria-label="Önceki" class="hidden sm:flex w-10 h-10 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button type="button" data-carousel-scroll="next" data-carousel-target="newScroll" aria-label="Sonraki" class="hidden sm:flex w-10 h-10 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <a href="/kategori/yeni-gelenler" class="ml-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all whitespace-nowrap">Tümü <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+    </div>
+    <div id="newScroll" class="grid grid-flow-col auto-cols-[68%] sm:auto-cols-[40%] md:auto-cols-[30%] lg:grid-cols-4 lg:grid-flow-row gap-4 sm:gap-6 overflow-x-auto lg:overflow-visible no-scrollbar snap-x scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
+        @if (newProducts.Count > 0)
+        {
+            foreach (var product in newProducts)
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        }
+        else
+        {
+            foreach (var p in sampleProducts)
+            {
+                <div class="group snap-start">
+                    <a href="#" class="block" aria-label="@p.Title, @p.Price">
+                        <div class="ph relative aspect-[4/5] rounded-2xl @p.Tint overflow-hidden" data-ph="ürün görseli">
+                            <img class="photo" loading="lazy" alt="@p.Title" src="@p.Img" />
+                            <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                                @if (p.Badge == "new")  { <span class="px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-semibold">Yeni</span> }
+                                @if (p.Badge == "best") { <span class="px-2.5 py-1 rounded-full bg-accent text-charcoal text-[11px] font-semibold">Çok Satan</span> }
+                                @if (p.Badge == "sale") { <span class="px-2.5 py-1 rounded-full bg-success text-white text-[11px] font-semibold">İndirim</span> }
+                            </div>
+                            <button type="button" data-wishlist-toggle data-on="0" aria-label="Favorilere ekle" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-charcoal hover:text-primary transition shadow-sm">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A4.5 4.5 0 0 0 12 5.5 4.5 4.5 0 0 0 2 8.5C2 10.8 3.5 12.5 5 14l7 7Z"/></svg>
+                            </button>
+                            <div class="absolute inset-x-3 bottom-3 translate-y-[130%] group-hover:translate-y-0 transition duration-300">
+                                <span class="block w-full text-center bg-white text-charcoal text-sm font-semibold py-2.5 rounded-full shadow-sm">Hızlı Bakış</span>
+                            </div>
+                        </div>
                     </a>
-                }
-            </div>
-        </div>
-    </section>
-}
-
-@* Yeni Urunler *@
-@if (newProducts.Count > 0)
-{
-    <section class="py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Yeni Urunler</h2>
-                <a href="/yeni-urunler" class="text-primary hover:underline text-sm font-medium">Tumunu Gor &gt;</a>
-            </div>
-            <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory">
-                @foreach (var product in newProducts)
-                {
-                    <div class="flex-none w-56 snap-start">
-                        @await Html.PartialAsync("_ProductCard", product)
+                    <div class="mt-3">
+                        <p class="text-xs text-muted">@p.Brand</p>
+                        <a href="#" class="block font-medium text-charcoal line-clamp-2 leading-snug mt-0.5 hover:text-primary transition">@p.Title</a>
+                        <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-cream text-[11px] text-muted">@p.Sizes</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            @if (!string.IsNullOrEmpty(p.Old)) { <span class="text-sm text-muted line-through">@p.Old</span> }
+                            <span class="text-lg font-semibold text-primary">@p.Price</span>
+                        </div>
                     </div>
-                }
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@* ============ KOLEKSİYONLAR ============ *@
+<section class="bg-cream">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <h2 class="font-heading text-2xl lg:text-3xl text-charcoal text-center mb-3">Editörün seçtikleri</h2>
+        <p class="text-muted text-center mb-10 text-sm lg:text-base">Her ana özel, özenle hazırlanmış koleksiyonlar.</p>
+        <div class="grid md:grid-cols-3 gap-6">
+            <a href="/koleksiyon/okula-donus" class="group rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition">
+                <div class="ph aspect-[16/11] bg-secondary/25" data-ph="okula dönüş">
+                    <img class="photo" loading="lazy" alt="Okula dönüş" src="https://images.unsplash.com/photo-1725147874938-7904e3362841?auto=format&fit=crop&w=700&q=80" />
+                </div>
+                <div class="p-6">
+                    <h3 class="font-heading text-xl text-charcoal">Okula Dönüş</h3>
+                    <p class="text-sm text-muted mt-2 leading-relaxed">Dayanıklı, rahat ve şık. İlk zilin telaşına hazır parçalar.</p>
+                    <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">Koleksiyonu Gör <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                </div>
+            </a>
+            <a href="/koleksiyon/dogum-gunu" class="group rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition">
+                <div class="ph aspect-[16/11] bg-primary/20" data-ph="doğum günü setleri">
+                    <img class="photo" loading="lazy" alt="Doğum günü" src="https://images.unsplash.com/photo-1620774760711-caa4c94d683a?auto=format&fit=crop&w=700&q=80" />
+                </div>
+                <div class="p-6">
+                    <h3 class="font-heading text-xl text-charcoal">Doğum Günü Setleri</h3>
+                    <p class="text-sm text-muted mt-2 leading-relaxed">O özel günün fotoğraflarında parlayacak özel kombinler.</p>
+                    <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">Koleksiyonu Gör <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                </div>
+            </a>
+            <a href="/koleksiyon/pijama" class="group rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition">
+                <div class="ph aspect-[16/11] bg-accent/30" data-ph="pijama geceleri">
+                    <img class="photo" loading="lazy" alt="Pijama" src="https://images.unsplash.com/photo-1566454544259-f4b94c3d758c?auto=format&fit=crop&w=700&q=80" />
+                </div>
+                <div class="p-6">
+                    <h3 class="font-heading text-xl text-charcoal">Pijama Geceleri</h3>
+                    <p class="text-sm text-muted mt-2 leading-relaxed">Tatlı rüyalar için yumuşacık pamuklu pijama takımları.</p>
+                    <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">Koleksiyonu Gör <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+@* ============ TRUST BAND ============ *@
+<section class="bg-white border-y border-cream-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.3a2 2 0 0 0-.6-1.4L18 9h-4v8h2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm text-charcoal">Kargo Bedava</p>
+                    <p class="text-xs text-muted mt-0.5">500₺ üzeri siparişte</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-secondary/15 flex items-center justify-center text-secondary shrink-0">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm text-charcoal">30 Gün İade</p>
+                    <p class="text-xs text-muted mt-0.5">Koşulsuz, ücretsiz</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-success/15 flex items-center justify-center text-success shrink-0">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm text-charcoal">Güvenli Ödeme</p>
+                    <p class="text-xs text-muted mt-0.5">256-bit SSL koruma</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-accent/25 flex items-center justify-center text-warning shrink-0">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm text-charcoal">WhatsApp Destek</p>
+                    <p class="text-xs text-muted mt-0.5">Hafta içi 09:00–18:00</p>
+                </div>
             </div>
         </div>
-    </section>
-}
+    </div>
+</section>
 
-@* Cok Satanlar *@
-@if (bestSellers.Count > 0)
-{
-    <section class="py-12 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Cok Satanlar</h2>
-                <a href="/cok-satanlar" class="text-primary hover:underline text-sm font-medium">Tumunu Gor &gt;</a>
-            </div>
-            <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory">
-                @foreach (var product in bestSellers)
-                {
-                    <div class="flex-none w-56 snap-start">
-                        @await Html.PartialAsync("_ProductCard", product)
+@* ============ YORUMLAR ============ *@
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+    <h2 class="font-heading text-2xl lg:text-3xl text-charcoal text-center mb-3">Annelerin &amp; babaların sözü</h2>
+    <p class="text-muted text-center mb-10 text-sm lg:text-base">12.000'den fazla aileye dokunduk.</p>
+    <div class="grid md:grid-cols-3 gap-6">
+        @foreach (var t in testimonials)
+        {
+            <div class="bg-cream rounded-3xl p-7">
+                <div class="flex gap-0.5 text-accent mb-4" aria-label="5 yıldız">
+                    @for (var i = 0; i < 5; i++)
+                    {
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z"/></svg>
+                    }
+                </div>
+                <p class="text-charcoal/85 leading-relaxed">"@t.Text"</p>
+                <div class="mt-5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center font-semibold text-primary text-sm">@t.Name.Substring(0, 1)</div>
+                    <div class="text-sm">
+                        <p class="font-semibold text-charcoal">@t.Name</p>
+                        <p class="text-muted text-xs">Sipariş #@(t.Order)'ten</p>
                     </div>
-                }
+                </div>
             </div>
-        </div>
-    </section>
-}
+        }
+    </div>
+</section>
 
-@* Newsletter Section *@
-@if (Tenant.Settings.NewsletterEnabled)
-{
-    <section class="py-12 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-xl mx-auto text-center">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Bultenimize Abone Olun</h2>
-                <p class="text-gray-600 mb-6">Kampanya ve yeni urunlerden haberdar olun.</p>
-                <form class="flex flex-col sm:flex-row gap-3">
-                    <input type="email" placeholder="E-posta adresiniz" required
-                           class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    <button type="submit" class="btn-primary">Abone Ol</button>
-                </form>
-            </div>
+@* ============ INSTAGRAM ============ *@
+<section class="bg-cream">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <div class="text-center mb-8">
+            <h2 class="font-heading text-2xl lg:text-3xl text-charcoal">@@zekidsbebe</h2>
+            <p class="text-muted mt-1.5 text-sm lg:text-base">#zekidsbebe ile siz de aramıza katılın.</p>
         </div>
-    </section>
+        <div class="grid grid-cols-3 lg:grid-cols-6 gap-3">
+            @foreach (var img in instaImages)
+            {
+                <a href="#" class="ph group relative aspect-square rounded-2xl overflow-hidden bg-cream" data-ph="#zekidsbebe">
+                    <img class="photo" loading="lazy" alt="#zekidsbebe" src="@img" />
+                    <div class="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 group-hover:opacity-100 transition" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff" stroke="none"/></svg>
+                    </div>
+                </a>
+            }
+        </div>
+        <div class="text-center mt-8">
+            <a href="https://instagram.com/zekidsbebe" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white border border-cream-300 font-semibold text-charcoal hover:border-primary hover:text-primary transition">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                Bizi Instagram'da takip edin
+            </a>
+        </div>
+    </div>
+</section>
+
+@* ============ NEWSLETTER ============ *@
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+    <div class="bg-primary/10 rounded-3xl max-w-4xl mx-auto px-6 sm:px-12 py-12 text-center">
+        <h2 class="font-heading text-2xl lg:text-3xl text-charcoal">Yenilikler kutunuza gelsin</h2>
+        <p class="text-muted mt-3 max-w-md mx-auto">Hemen abone olun, ilk alışverişinizde <span class="font-semibold text-primary">%10 indirim</span> hediyemiz olsun.</p>
+        <form id="newsletterForm" action="/bulten/abone-ol" method="post" class="mt-7 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            @Html.AntiForgeryToken()
+            <input type="email" name="email" required placeholder="E-posta adresiniz" class="flex-1 px-5 py-3.5 rounded-full border border-cream-300 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
+            <button type="submit" class="px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition shadow-sm whitespace-nowrap">Abone Ol</button>
+        </form>
+        <p id="subMsg" class="hidden mt-4 text-sm text-success font-medium">Teşekkürler! İndirim kodunuz e-postanıza gönderildi.</p>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/home.js" asp-append-version="true"></script>
 }

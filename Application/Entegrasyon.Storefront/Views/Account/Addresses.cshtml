@@ -1,32 +1,163 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Storefront
+@{
+    ViewData["Title"] = "Adreslerim";
 
-@section Head {
-    <seo-meta title="Adreslerim | @Tenant.Settings.StoreName" />
+    var addresses = ViewBag.Addresses as List<StorefrontAddress> ?? new List<StorefrontAddress>();
+
+    var pinIcon = "<path d=\"M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>";
+
+    // Açık adres + mahalle/ilçe/il + posta kodu → çok satırlı görünüm
+    string ComposeLine(StorefrontAddress a)
+    {
+        var locParts = new[] { a.Neighborhood, a.District, a.City }
+            .Where(p => !string.IsNullOrWhiteSpace(p));
+        var loc = string.Join(" / ", locParts);
+        if (!string.IsNullOrWhiteSpace(a.PostalCode)) loc = $"{loc} {a.PostalCode}".Trim();
+        return string.IsNullOrWhiteSpace(loc) ? a.AddressLine : $"{a.AddressLine}\n{loc}";
+    }
 }
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
-            <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
-            <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparişlerim</a>
-            <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Iadelerim</a>
-            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Adreslerim</a>
-            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
-            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
-        </nav>
-    </aside>
-    <div class="flex-1">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Adreslerim</h1>
+@section Head {
+    <style>
+        .modal-card { animation: modalIn .22s cubic-bezier(.2,.7,.3,1) forwards; }
+        @@keyframes modalIn {
+            from { opacity: 0; transform: translateY(14px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+}
 
-            <div class="text-center py-12">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <p class="text-gray-500">Henuz kayitli adresiniz bulunmuyor.</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+
+    @* mobile account trigger *@
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">AY</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("addresses")' />
+        </aside>
+
+        <div>
+            @* header row *@
+            <div class="flex items-center justify-between gap-4 mb-7">
+                <div>
+                    <h1 class="font-heading text-3xl text-charcoal">Adreslerim</h1>
+                    <p class="text-muted mt-1.5 text-sm">Teslimat ve fatura adreslerinizi yönetin.</p>
+                </div>
+                <button type="button" data-addr-open class="shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    <span class="hidden sm:inline">Yeni Adres</span>
+                </button>
+            </div>
+
+            @* address grid *@
+            @if (addresses.Count == 0)
+            {
+                <div class="rounded-2xl border border-dashed border-cream-300 p-10 text-center bg-white">
+                    <span class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(pinIcon)</svg></span>
+                    <h3 class="font-semibold text-charcoal">Henüz adres eklemediniz</h3>
+                    <p class="text-muted text-sm mt-1">Hızlı teslimat için bir adres ekleyin.</p>
+                    <button type="button" data-addr-open class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Yeni Adres Ekle</button>
+                </div>
+            }
+            <div id="addrGrid" class="grid md:grid-cols-2 gap-4">
+                @foreach (var a in addresses)
+                {
+                    var isDefault = a.IsDefault;
+                    <div class="relative rounded-2xl border border-cream-300 p-6 bg-white transition hover:shadow-md"
+                         data-addr-card
+                         data-addr-id="@a.Id"
+                         data-addr-label="@a.Label"
+                         data-addr-name="@a.FullName"
+                         data-addr-phone="@a.Phone"
+                         data-addr-line="@a.AddressLine"
+                         data-addr-city="@a.City"
+                         data-addr-district="@a.District"
+                         data-addr-neighborhood="@a.Neighborhood"
+                         data-addr-postalcode="@a.PostalCode"
+                         data-addr-default="@(isDefault ? "1" : "0")">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(pinIcon)</svg></span>
+                            <h3 class="font-semibold text-charcoal text-lg">@a.Label</h3>
+                            @if (isDefault)
+                            {
+                                <span data-default-badge class="text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">Varsayılan</span>
+                            }
+                        </div>
+                        <p class="text-sm font-medium text-charcoal">@a.FullName</p>
+                        <p class="text-sm text-muted mt-1 leading-relaxed whitespace-pre-line">@ComposeLine(a)</p>
+                        @if (!string.IsNullOrWhiteSpace(a.Phone))
+                        {
+                            <p class="text-sm text-charcoal mt-2 font-mono tracking-tight">@a.Phone</p>
+                        }
+                        <div class="flex items-center justify-end gap-3 mt-5 pt-4 border-t border-cream-300 text-sm">
+                            @if (!isDefault)
+                            {
+                                <form asp-controller="Account" asp-action="SetDefaultAddress" method="post" class="inline">
+                                    <input type="hidden" name="id" value="@a.Id" />
+                                    <button type="submit" class="font-medium text-charcoal hover:text-primary transition">Varsayılan Yap</button>
+                                </form>
+                            }
+                            <button type="button" data-addr-edit class="font-medium text-primary hover:underline">Düzenle</button>
+                            <form asp-controller="Account" asp-action="DeleteAddress" method="post" class="inline" onsubmit="return confirm('Bu adresi silmek istediğinize emin misiniz?');">
+                                <input type="hidden" name="id" value="@a.Id" />
+                                <button type="submit" class="font-medium text-danger hover:underline">Sil</button>
+                            </form>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
+
+@* mobile account sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("addresses")' />
+    </div>
+</div>
+
+@* ============ ADDRESS MODAL ============ *@
+<div id="addrModal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div data-addr-close class="absolute inset-0 bg-charcoal/45"></div>
+    <div class="modal-card relative bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-xl max-h-[92vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-cream-300">
+            <h2 id="addrModalTitle" class="font-heading text-xl text-charcoal">Yeni Adres</h2>
+            <button type="button" data-addr-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <form asp-controller="Account" asp-action="SaveAddress" method="post" class="p-6">
+            <input type="hidden" name="Id" id="af_id" value="" />
+            <div class="grid sm:grid-cols-2 gap-3">
+                <input id="af_label" name="Label" type="text" placeholder="Adres etiketi (Ev, İş…)" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                <input id="af_name" name="FullName" type="text" placeholder="Ad Soyad" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                <input id="af_phone" name="Phone" type="text" inputmode="numeric" data-mask-phone placeholder="0(5XX) XXX XX XX" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                <input id="af_zip" name="PostalCode" type="text" inputmode="numeric" data-mask-digits="5" placeholder="Posta Kodu" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                <select id="af_il" name="City" data-il-select class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white text-charcoal"><option value="">İl seçin</option></select>
+                <select id="af_ilce" name="District" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white text-charcoal"><option value="">İlçe seçin</option></select>
+                <input id="af_mahalle" name="Neighborhood" type="text" placeholder="Mahalle" class="sm:col-span-2 px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                <textarea id="af_full" name="AddressLine" placeholder="Açık adres (cadde, sokak, no, daire)" rows="2" class="sm:col-span-2 px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary resize-none"></textarea>
+            </div>
+            <label class="flex items-center gap-2 mt-3 text-sm text-charcoal cursor-pointer"><input id="af_default" name="IsDefault" value="true" type="checkbox" class="w-4 h-4 rounded accent-[#FF8FB1]" /> Varsayılan adres yap</label>
+            <div class="flex gap-2 mt-5">
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Kaydet</button>
+                <button type="button" data-addr-close class="px-6 py-2.5 rounded-full border border-cream-300 text-sm text-charcoal hover:bg-cream transition">İptal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/adresler.js" asp-append-version="true"></script>
+}

@@ -1,124 +1,262 @@
 @model List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductDetailDto>
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Dtos.Storefront
+@{
+    ViewData["Title"] = "Ürünleri Karşılaştır";
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" description="@ViewBag.SeoDescription" />
+    var products = (Model ?? new List<StorefrontProductDetailDto>()).Take(4).ToList();
+    var breadcrumbs = ViewBag.Breadcrumbs as List<BreadcrumbItemDto>;
+    const int MAX = 4;
+
+    string Slug(StorefrontProductDetailDto p) => string.IsNullOrWhiteSpace(p.SeoSlug) ? p.Id.ToString() : p.SeoSlug!;
+    string? FirstImage(StorefrontProductDetailDto p) => p.Variants?
+        .SelectMany(v => v.ImageUrls ?? new List<string>())
+        .FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+    int TotalStock(StorefrontProductDetailDto p) => p.Variants?.Sum(v => v.Stock) ?? 0;
+    Guid? FirstInStockVariant(StorefrontProductDetailDto p) =>
+        p.Variants?.FirstOrDefault(v => v.Stock > 0)?.Id ?? p.Variants?.FirstOrDefault()?.Id;
+
+    // Karşılaştırma matrisi: tüm ürünlerin özelliklerinin birleşimi (ilk görülme sırası korunur).
+    var attrDefs = products
+        .SelectMany(p => p.Attributes ?? new List<StorefrontAttributeDto>())
+        .GroupBy(a => a.Key)
+        .Select(g => new { g.Key, Label = g.First().HumanizedKey })
+        .ToList();
+
+    string? AttrValue(StorefrontProductDetailDto p, string key) =>
+        p.Attributes?.FirstOrDefault(a => a.Key == key)?.Value;
+
+    // Bir satırdaki değerler farklıysa vurgula (koyu yazı + hafif arka plan).
+    bool RowDiffers(Func<StorefrontProductDetailDto, string?> selector) =>
+        products.Select(selector).Select(v => v ?? "—").Distinct().Count() > 1;
+
+    var colWidth = products.Count > 0 ? $"width:{Math.Floor(72.0 / products.Count)}%" : "";
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    @await Html.PartialAsync("_Breadcrumb")
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10" data-compare-page>
 
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Urun Karsilastirma</h1>
+    @* ===== sayfa başlığı ===== *@
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-2">
+        <div>
+            <nav class="flex items-center gap-1.5 text-xs text-muted mb-2">
+                @if (breadcrumbs is { Count: > 0 })
+                {
+                    for (var i = 0; i < breadcrumbs.Count; i++)
+                    {
+                        var crumb = breadcrumbs[i];
+                        var isLast = i == breadcrumbs.Count - 1;
+                        if (isLast || string.IsNullOrWhiteSpace(crumb.Url))
+                        {
+                            <span class="text-charcoal">@crumb.Name</span>
+                        }
+                        else
+                        {
+                            <a href="@crumb.Url" class="hover:text-primary transition">@crumb.Name</a>
+                            <span>/</span>
+                        }
+                    }
+                }
+                else
+                {
+                    <a href="/" class="hover:text-primary transition">Anasayfa</a>
+                    <span>/</span>
+                    <span class="text-charcoal">Karşılaştır</span>
+                }
+            </nav>
+            <h1 class="font-heading text-3xl text-charcoal">Ürünleri Karşılaştır</h1>
+            <p class="text-muted mt-1.5 text-sm">En fazla @MAX ürünü yan yana inceleyin. Farklı özellikler <span class="text-charcoal font-medium">koyu</span> vurgulanır.</p>
+        </div>
+        @if (products.Count > 0)
+        {
+            <button type="button" data-compare-clear class="hidden sm:inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:border-danger hover:text-danger transition">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Listeyi temizle
+            </button>
+        }
+    </div>
 
-    @if (Model.Count == 0)
+    @if (products.Count < 2)
     {
-        <div class="text-center py-16">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-            </svg>
-            <p class="text-gray-500 text-lg mb-4">Karsilastirilacak urun secilmedi.</p>
-            <p class="text-gray-400 text-sm mb-6">Urun kartlarindaki karsilastirma butonunu kullanarak en fazla 4 urun ekleyebilirsiniz.</p>
-            <a href="/urunler" class="btn-primary px-6 py-2 inline-block">Urunlere Git</a>
+        @* ===== TEK ÜRÜN (tek kart göster) ===== *@
+        @if (products.Count == 1)
+        {
+            var p = products[0];
+            var img = FirstImage(p);
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-7">
+                <div class="relative bg-white border border-cream-300 rounded-2xl p-3 flex flex-col">
+                    <button type="button" data-compare-remove data-product-id="@p.Id" aria-label="Listeden çıkar"
+                            class="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 border border-cream-300 flex items-center justify-center text-muted hover:text-danger hover:border-danger transition">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                    <a href="/urun/@Slug(p)" class="ph block aspect-square rounded-2xl bg-cream overflow-hidden">
+                        @if (!string.IsNullOrWhiteSpace(img))
+                        {
+                            <img class="photo" loading="lazy" alt="@p.Title" src="@img" />
+                        }
+                    </a>
+                    <a href="/urun/@Slug(p)" class="block font-medium text-charcoal text-sm leading-snug line-clamp-2 mt-3 min-h-[2.5em] hover:text-primary transition">@p.Title</a>
+                    <p class="text-primary font-semibold mt-1.5">@p.MinPrice.ToString("N0")₺</p>
+                </div>
+            </div>
+        }
+
+        @* ===== BOŞ DURUM ===== *@
+        <div class="mt-2">
+            <div class="bg-cream rounded-3xl py-16 px-6 text-center flex flex-col items-center justify-center">
+                <svg viewBox="0 0 120 120" width="124" height="124" class="mb-5" fill="none" aria-hidden="true">
+                    <rect x="16" y="30" width="38" height="60" rx="8" fill="#fff" stroke="#FF8FB1" stroke-width="3"/>
+                    <rect x="66" y="30" width="38" height="60" rx="8" fill="#fff" stroke="#E8DFD2" stroke-width="3" stroke-dasharray="5 6"/>
+                    <path d="M85 52v16M77 60h16" stroke="#8FCBE8" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="24" y="42" width="22" height="14" rx="4" fill="#FFE3EC"/>
+                    <path d="M24 64h22M24 72h14" stroke="#FF8FB1" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <h3 class="font-heading text-2xl text-charcoal">
+                    @(products.Count == 0 ? "Karşılaştıracak ürün eklemediniz" : "Karşılaştırmak için bir ürün daha ekleyin")
+                </h3>
+                <p class="text-muted mt-2 max-w-sm">Karşılaştırmaya başlamak için en az 2 ürün ekleyin. Ürün kartlarındaki karşılaştır simgesini kullanabilirsiniz.</p>
+                <a href="/kategoriler" class="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    Kataloğa göz at
+                </a>
+            </div>
         </div>
     }
     else
     {
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
+        @* ===== STICKY ÜST KART SATIRI ===== *@
+        <div class="sticky lg:top-20 z-30 bg-white py-4 -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-cream-300">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                @foreach (var p in products)
+                {
+                    var img = FirstImage(p);
+                    var inStock = TotalStock(p) > 0;
+                    var variantId = FirstInStockVariant(p);
+                    <div class="relative bg-white border border-cream-300 rounded-2xl p-3 flex flex-col">
+                        <button type="button" data-compare-remove data-product-id="@p.Id" aria-label="Listeden çıkar"
+                                class="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-full bg-white/90 border border-cream-300 flex items-center justify-center text-muted hover:text-danger hover:border-danger transition">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                        </button>
+                        <a href="/urun/@Slug(p)" class="ph block aspect-square rounded-2xl bg-cream overflow-hidden">
+                            @if (!string.IsNullOrWhiteSpace(img))
+                            {
+                                <img class="photo @(inStock ? "" : "grayscale opacity-70")" loading="lazy" alt="@p.Title" src="@img" />
+                            }
+                        </a>
+                        <a href="/urun/@Slug(p)" class="block font-medium text-charcoal text-sm leading-snug line-clamp-2 mt-3 min-h-[2.5em] hover:text-primary transition">@p.Title</a>
+                        <p class="text-primary font-semibold mt-1.5">@p.MinPrice.ToString("N0")₺</p>
+                        @if (inStock)
+                        {
+                            <button type="button" data-compare-add-cart data-variant-id="@variantId" data-product-name="@p.Title"
+                                    class="mt-2.5 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-full border border-primary text-primary text-xs sm:text-sm font-semibold hover:bg-primary/5 transition">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                Sepete Ekle
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="mt-2.5 w-full inline-flex items-center justify-center py-2 rounded-full bg-cream text-muted text-xs sm:text-sm font-semibold">Tükendi</span>
+                        }
+                    </div>
+                }
+                @* boş "+ Ürün Ekle" slotları *@
+                @for (var i = products.Count; i < MAX; i++)
+                {
+                    <a href="/kategoriler" class="rounded-2xl border-2 border-dashed border-cream-300 hover:border-primary text-muted hover:text-primary transition flex flex-col items-center justify-center gap-2 min-h-[200px] p-3">
+                        <span class="w-11 h-11 rounded-full bg-cream flex items-center justify-center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+                        <span class="text-sm font-semibold">Ürün Ekle</span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        @* ===== KARŞILAŞTIRMA MATRİSİ ===== *@
+        <div class="mt-7 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <table class="w-full border-collapse min-w-[640px]">
                 <thead>
                     <tr>
-                        <th class="p-4 text-left text-sm font-medium text-gray-500 bg-gray-50 w-32"></th>
-                        @foreach (var product in Model)
+                        <th class="text-left align-bottom p-0"><div class="sticky left-0 bg-white"></div></th>
+                        @foreach (var p in products)
                         {
-                            <th class="p-4 text-center bg-gray-50 min-w-[200px]">
-                                <a href="/urun/@product.SeoSlug" class="hover:text-primary">
-                                    @{
-                                        var img = product.Variants.FirstOrDefault()?.ImageUrls.FirstOrDefault();
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(img))
-                                    {
-                                        <img src="@img" alt="@product.Title" class="w-32 h-32 object-contain mx-auto mb-2 rounded" />
-                                    }
-                                    <span class="text-sm font-semibold text-gray-900 line-clamp-2">@product.Title</span>
-                                </a>
-                                <button onclick="removeFromCompare('@product.Id')"
-                                        class="mt-2 text-xs text-red-500 hover:text-red-700">
-                                    Kaldir
-                                </button>
-                            </th>
+                            <th class="text-left font-medium text-charcoal text-sm px-4 pb-3 align-bottom" style="@colWidth">@p.Title</th>
                         }
                     </tr>
                 </thead>
                 <tbody>
-                    @* Price *@
-                    <tr class="border-b border-gray-100">
-                        <td class="p-4 text-sm font-medium text-gray-600">Fiyat</td>
-                        @foreach (var product in Model)
-                        {
-                            var fv = product.Variants.FirstOrDefault();
-                            <td class="p-4 text-center">
-                                <span class="text-lg font-bold text-primary">@product.MinPrice.ToString("N2") TL</span>
-                            </td>
-                        }
-                    </tr>
-
-                    @* Brand *@
-                    <tr class="border-b border-gray-100 bg-gray-50/50">
-                        <td class="p-4 text-sm font-medium text-gray-600">Marka</td>
-                        @foreach (var product in Model)
-                        {
-                            <td class="p-4 text-center text-sm text-gray-900">@(product.BrandName ?? "-")</td>
-                        }
-                    </tr>
-
-                    @* Stock *@
-                    <tr class="border-b border-gray-100">
-                        <td class="p-4 text-sm font-medium text-gray-600">Stok</td>
-                        @foreach (var product in Model)
-                        {
-                            var totalStock = product.Variants.Sum(v => v.Stock);
-                            <td class="p-4 text-center text-sm @(totalStock > 0 ? "text-green-600" : "text-red-500")">
-                                @(totalStock > 0 ? "Stokta var" : "Stokta yok")
-                            </td>
-                        }
-                    </tr>
-
-                    @* Attributes - collect all unique keys *@
                     @{
-                        var allKeys = Model
-                            .SelectMany(p => p.Attributes)
-                            .Select(a => a.HumanizedKey)
-                            .Distinct()
-                            .ToList();
+                        var brandDiff = RowDiffers(p => p.BrandName);
                     }
-                    @foreach (var key in allKeys)
+                    <tr class="border-t border-cream-300">
+                        <th scope="row" class="text-left font-semibold text-charcoal text-sm px-4 py-3.5 align-top whitespace-nowrap">Marka</th>
+                        @foreach (var p in products)
+                        {
+                            <td class="px-4 py-3.5 text-sm align-top @(brandDiff ? "bg-primary/[0.04]" : "")">
+                                <span class="@(brandDiff ? "font-semibold text-charcoal" : "text-charcoal/80")">@(string.IsNullOrWhiteSpace(p.BrandName) ? "—" : p.BrandName)</span>
+                            </td>
+                        }
+                    </tr>
+
+                    @{
+                        var catDiff = RowDiffers(p => p.CategoryName);
+                    }
+                    <tr class="border-t border-cream-300">
+                        <th scope="row" class="text-left font-semibold text-charcoal text-sm px-4 py-3.5 align-top whitespace-nowrap">Kategori</th>
+                        @foreach (var p in products)
+                        {
+                            <td class="px-4 py-3.5 text-sm align-top @(catDiff ? "bg-primary/[0.04]" : "")">
+                                <span class="@(catDiff ? "font-semibold text-charcoal" : "text-charcoal/80")">@(string.IsNullOrWhiteSpace(p.CategoryName) ? "—" : p.CategoryName)</span>
+                            </td>
+                        }
+                    </tr>
+
+                    @foreach (var attr in attrDefs)
                     {
-                        <tr class="border-b border-gray-100">
-                            <td class="p-4 text-sm font-medium text-gray-600">@key</td>
-                            @foreach (var product in Model)
+                        var diff = RowDiffers(p => AttrValue(p, attr.Key));
+                        <tr class="border-t border-cream-300">
+                            <th scope="row" class="text-left font-semibold text-charcoal text-sm px-4 py-3.5 align-top whitespace-nowrap">@attr.Label</th>
+                            @foreach (var p in products)
                             {
-                                var attrVal = product.Attributes.FirstOrDefault(a => a.HumanizedKey == key);
-                                <td class="p-4 text-center text-sm text-gray-900">@(attrVal?.Value ?? "-")</td>
+                                var val = AttrValue(p, attr.Key);
+                                <td class="px-4 py-3.5 text-sm align-top @(diff ? "bg-primary/[0.04]" : "")">
+                                    <span class="@(diff ? "font-semibold text-charcoal" : "text-charcoal/80")">@(string.IsNullOrWhiteSpace(val) ? "—" : val)</span>
+                                </td>
                             }
                         </tr>
                     }
+
+                    @* fiyat satırı *@
+                    <tr class="border-t border-cream-300 bg-cream/40">
+                        <th scope="row" class="text-left font-semibold text-charcoal text-sm px-4 py-3.5 align-top">Fiyat</th>
+                        @foreach (var p in products)
+                        {
+                            <td class="px-4 py-3.5 align-top"><span class="text-lg font-semibold text-primary">@p.MinPrice.ToString("N0")₺</span></td>
+                        }
+                    </tr>
+
+                    @* aksiyon satırı *@
+                    <tr class="border-t border-cream-300">
+                        <th scope="row" class="px-4 py-4"></th>
+                        @foreach (var p in products)
+                        {
+                            var inStock = TotalStock(p) > 0;
+                            var variantId = FirstInStockVariant(p);
+                            <td class="px-4 py-4 align-top">
+                                @if (inStock)
+                                {
+                                    <button type="button" data-compare-add-cart data-variant-id="@variantId" data-product-name="@p.Title"
+                                            class="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Sepete Ekle</button>
+                                }
+                                else
+                                {
+                                    <span class="block w-full text-center py-2.5 rounded-full bg-cream text-muted text-sm font-semibold">Tükendi</span>
+                                }
+                            </td>
+                        }
+                    </tr>
                 </tbody>
             </table>
         </div>
     }
-</div>
+</main>
 
 @section Scripts {
-    <script src="~/js/compare.js"></script>
-    <script>
-        function removeFromCompare(productId) {
-            if (window.ProductCompare) {
-                window.ProductCompare.remove(productId);
-                // Rebuild URL without this product
-                var items = window.ProductCompare.get();
-                var ids = items.map(function(p) { return p.id; }).join(',');
-                window.location.href = '/karsilastir' + (ids ? '?ids=' + ids : '');
-            }
-        }
-    </script>
+    <script src="~/js/compare.js" asp-append-version="true"></script>
 }

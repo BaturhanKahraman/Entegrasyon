@@ -283,6 +283,7 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontBanner> StorefrontBanners { get; set; }
     public virtual DbSet<StorefrontPage> StorefrontPages { get; set; }
     public virtual DbSet<StorefrontCustomerAuth> StorefrontCustomerAuths { get; set; }
+    public virtual DbSet<StorefrontAddress> StorefrontAddresses { get; set; }
     public virtual DbSet<Cart> Carts { get; set; }
     public virtual DbSet<CartItem> CartItems { get; set; }
     public virtual DbSet<StorefrontPaymentConfig> StorefrontPaymentConfigs { get; set; }

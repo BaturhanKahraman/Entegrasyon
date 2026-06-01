@@ -1,117 +1,153 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 @{
-    var twoFactorEnabled = (bool)(ViewBag.TwoFactorEnabled ?? false);
-    var qrCodeUri = ViewBag.QrCodeUri as string;
-    var showVerification = (bool)(ViewBag.ShowVerification ?? false);
-    var recoveryCodes = ViewBag.RecoveryCodes as List<string>;
+    ViewData["Title"] = "İki Aşamalı Doğrulama";
+
+    var secretKey = ViewBag.SecretKey as string ?? "JBSW Y3DP EHPK 3PXP";
+
+    // Gerçek QR URL/URI varsa görsel olarak kullan; yoksa dekoratif grid (JS) çizilir.
+    var qrSource = (ViewBag.QrCodeUrl as string) ?? (ViewBag.QrCodeUri as string);
+    var qrIsImage = !string.IsNullOrWhiteSpace(qrSource)
+        && (qrSource.StartsWith("data:") || qrSource.StartsWith("http"));
+
+    var recoveryCodes = (ViewBag.RecoveryCodes as IEnumerable<string>)?.ToList()
+        ?? new List<string> { "A1B2-C3D4", "E5F6-G7H8", "J9K1-L2M3", "N4P5-Q6R7", "S8T9-U1V2", "W3X4-Y5Z6", "B7C8-D9E1", "F2G3-H4J5", "K6L7-M8N9", "P1Q2-R3S4" };
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex flex-col md:flex-row gap-8">
-        <div class="w-full md:w-64 flex-shrink-0">
-            @await Html.PartialAsync("_AccountSidebar", "TwoFactorSetup")
-        </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
 
-        <div class="flex-1">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Iki Faktorlu Dogrulama (2FA)</h1>
+        @* ---- SIDEBAR ---- *@
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("twofa")' />
+        </aside>
+        <details class="lg:hidden mb-5 bg-white border border-cream-300 rounded-2xl">
+            <summary class="flex items-center justify-between px-5 py-3.5 cursor-pointer list-none">
+                <span class="font-medium text-charcoal">Hesabım Menüsü</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="px-3 pb-3">
+                <partial name="_AccountSidebar" model='@("twofa")' />
+            </div>
+        </details>
 
-            @if (TempData["Success"] is string successMsg)
-            {
-                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">@successMsg</div>
-            }
-            @if (TempData["Error"] is string errorMsg)
-            {
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">@errorMsg</div>
-            }
+        @* ---- MAIN ---- *@
+        <div>
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">İki Aşamalı Doğrulama</h1>
+                <p class="text-muted mt-1.5 text-sm">Hesabınıza fazladan bir güvenlik katmanı ekleyin.</p>
+            </div>
 
-            @if (recoveryCodes is not null && recoveryCodes.Count > 0)
-            {
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-                    <h3 class="text-lg font-bold text-yellow-800 mb-2">Kurtarma Kodlari</h3>
-                    <p class="text-sm text-yellow-700 mb-4">Bu kodlari guvenli bir yerde saklayin. Her kod yalnizca bir kez kullanilabilir.</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        @foreach (var code in recoveryCodes)
-                        {
-                            <code class="bg-white px-3 py-2 rounded border text-center font-mono text-sm">@code</code>
-                        }
+            @* stepper (JS doldurur) *@
+            <ol data-stepper class="flex items-center mb-8"></ol>
+
+            <div class="rounded-2xl border border-cream-300 p-6 sm:p-8">
+
+                @* STEP 1: yöntem *@
+                <div data-panel="1" class="wz-panel">
+                    <h2 class="font-heading text-xl text-charcoal mb-1">Yöntem Seçin</h2>
+                    <p class="text-sm text-muted mb-5">Girişlerinizi nasıl doğrulamak istersiniz?</p>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <label class="method-card relative block border-2 border-primary bg-primary/5 rounded-2xl p-5 cursor-pointer transition" data-tfa-method="auth">
+                            <input type="radio" name="TwoFactorMethod" value="auth" class="sr-only" checked />
+                            <span class="absolute top-4 right-4 text-[11px] font-medium bg-primary text-white px-2.5 py-0.5 rounded-full">Önerilen</span>
+                            <span class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></span>
+                            <p class="font-semibold text-charcoal">Authenticator uygulaması</p>
+                            <p class="text-sm text-muted mt-1">Telefon uygulamanızla çalışır, internet gerektirmez.</p>
+                        </label>
+                        <label class="method-card relative block border-2 border-cream-300 rounded-2xl p-5 cursor-pointer transition" data-tfa-method="sms">
+                            <input type="radio" name="TwoFactorMethod" value="sms" class="sr-only" />
+                            <span class="w-11 h-11 rounded-xl bg-secondary/20 text-secondary flex items-center justify-center mb-3"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></span>
+                            <p class="font-semibold text-charcoal">SMS ile</p>
+                            <p class="text-sm text-muted mt-1">Telefon numaranıza kısa mesajla kod gönderilir.</p>
+                        </label>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="button" data-go-step="2" class="px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Devam Et</button>
                     </div>
                 </div>
-            }
 
-            <div class="bg-white rounded-lg border border-gray-200 p-6">
-                @if (twoFactorEnabled)
-                {
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">2FA Aktif</h3>
-                            <p class="text-sm text-gray-500">Hesabiniz iki faktorlu dogrulama ile korunuyor.</p>
-                        </div>
-                    </div>
-
-                    <form method="post" action="/hesabim/guvenlik/2fa/devre-disi" class="mt-4">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-3">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Devre disi birakmak icin dogrulama kodu</label>
-                            <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
-                                   class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                        </div>
-                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">Devre Disi Birak</button>
-                    </form>
-                }
-                else if (showVerification && !string.IsNullOrEmpty(qrCodeUri))
-                {
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">QR Kodu Tarayin</h3>
-                    <p class="text-sm text-gray-500 mb-4">Google Authenticator veya benzeri bir uygulama ile asagidaki QR kodu tarayin, ardindan dogrulama kodunu girin.</p>
-
-                    <div class="flex flex-col items-center gap-4 mb-6">
-                        <div class="bg-white p-4 border rounded-lg" id="qrcode"></div>
-                        <p class="text-xs text-gray-400 break-all max-w-sm text-center">@qrCodeUri</p>
-                    </div>
-
-                    <form method="post" action="/hesabim/guvenlik/2fa/dogrula">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">6 Haneli Dogrulama Kodu</label>
-                            <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autofocus
-                                   class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                        </div>
-                        <button type="submit" class="btn-primary px-6 py-2">Etkinlestir</button>
-                    </form>
-
-                    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-                    <script>
-                        new QRCode(document.getElementById("qrcode"), {
-                            text: "@Html.Raw(qrCodeUri)",
-                            width: 200,
-                            height: 200
-                        });
-                    </script>
-                }
-                else
-                {
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">2FA Pasif</h3>
-                            <p class="text-sm text-gray-500">Hesabinizi daha guvenli hale getirmek icin iki faktorlu dogrulamayi etkinlestirin.</p>
+                @* STEP 2: kurulum *@
+                <div data-panel="2" class="wz-panel hidden">
+                    <h2 class="font-heading text-xl text-charcoal mb-1">Kurulum</h2>
+                    <p data-setup-desc class="text-sm text-muted mb-5">Google Authenticator, Authy veya 1Password gibi uygulamanızla QR kodu tarayın.</p>
+                    <div data-setup="auth">
+                        <div class="flex flex-col items-center">
+                            <div class="bg-white border border-cream-300 rounded-2xl p-6">
+                                @if (qrIsImage)
+                                {
+                                    <img src="@qrSource" alt="2FA QR kodu" width="184" height="184" class="block" />
+                                }
+                                else
+                                {
+                                    <div data-qr class="grid" style="width:184px;height:184px;grid-template-columns:repeat(23,1fr);gap:0"></div>
+                                }
+                            </div>
+                            <p class="text-sm text-muted mt-5 mb-2">QR kodu taranamadı mı? Anahtarı elle girin:</p>
+                            <button type="button" data-copy-secret class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cream font-mono text-sm text-charcoal hover:bg-cream-300 transition">
+                                <span data-secret>@secretKey</span>
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
                         </div>
                     </div>
+                    <div data-setup="sms" class="hidden max-w-sm">
+                        <label class="block text-sm font-medium text-charcoal mb-1.5">Telefon numaranız</label>
+                        <input type="text" inputmode="numeric" placeholder="0(5XX) XXX XX XX" data-mask-phone class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                        <button type="button" data-send-code class="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">Kod gönder</button>
+                    </div>
+                    <div class="flex justify-between mt-7">
+                        <button type="button" data-go-step="1" class="px-6 py-3 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:bg-cream transition">Geri</button>
+                        <button type="button" data-go-step="3" class="px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Devam Et</button>
+                    </div>
+                </div>
 
-                    <form method="post" action="/hesabim/guvenlik/2fa/etkinlestir" class="mt-4">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn-primary px-6 py-2">2FA Etkinlestir</button>
-                    </form>
-                }
+                @* STEP 3: doğrula *@
+                <div data-panel="3" class="wz-panel hidden">
+                    <h2 class="font-heading text-xl text-charcoal mb-1">Doğrula</h2>
+                    <p class="text-sm text-muted mb-6">Uygulamanızda görünen 6 haneli kodu girin.</p>
+                    <div data-otp-input class="flex items-center gap-2 sm:gap-3"></div>
+                    <p class="text-sm text-muted mt-4">Kod gelmedi mi? <button type="button" data-send-code class="font-medium text-primary hover:underline">Tekrar gönder</button></p>
+                    <div class="flex justify-between mt-7">
+                        <button type="button" data-go-step="2" class="px-6 py-3 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:bg-cream transition">Geri</button>
+                        <button type="button" data-go-step="4" class="px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Doğrula</button>
+                    </div>
+                </div>
+
+                @* STEP 4: yedek kodlar *@
+                <div data-panel="4" class="wz-panel hidden">
+                    <h2 class="font-heading text-xl text-charcoal mb-1">Yedek Kodlar</h2>
+                    <p class="text-sm text-muted mb-5">Telefonunuza erişemediğinizde bu kodlarla giriş yapabilirsiniz.</p>
+                    <div data-codes class="grid grid-cols-2 gap-3">
+                        @foreach (var code in recoveryCodes)
+                        {
+                            <div class="bg-cream rounded-lg p-3 font-mono text-sm text-center tracking-wider text-charcoal">@code</div>
+                        }
+                    </div>
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        <button type="button" data-download-codes class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                            İndir (.txt)
+                        </button>
+                        <button type="button" data-copy-codes class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            Kopyala
+                        </button>
+                    </div>
+                    <div class="mt-5 rounded-xl bg-warning/10 p-4 flex items-start gap-3">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#F2B544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+                        <p class="text-sm text-charcoal/80 leading-relaxed">Bu kodları güvenli bir yerde saklayın. Telefonunuza erişiminiz olmadığında bunlara ihtiyaç duyacaksınız. Her kod yalnızca bir kez kullanılabilir.</p>
+                    </div>
+                    <div class="flex justify-between mt-7">
+                        <button type="button" data-go-step="3" class="px-6 py-3 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:bg-cream transition">Geri</button>
+                        <form asp-controller="Account" asp-action="EnableTwoFactor" method="post">
+                            <button type="submit" class="px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">2FA'yı Aktifleştir</button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/2fa.js" asp-append-version="true"></script>
+}
