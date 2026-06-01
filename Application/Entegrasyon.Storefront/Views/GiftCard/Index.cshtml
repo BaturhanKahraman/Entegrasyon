@@ -1,81 +1,149 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 @{
+    ViewData["Title"] = "Hediye Çeki Satın Al";
     var error = ViewBag.Error as string;
+    var themes = new[]
+    {
+        new { Name = "Doğum Günü",       Grad = "linear-gradient(135deg,#FF8FB1,#FFD56B)" },
+        new { Name = "Bebek Hoş Geldin", Grad = "linear-gradient(135deg,#8FCBE8,#C7EBD6)" },
+        new { Name = "Bayram",           Grad = "linear-gradient(135deg,#4CAF89,#8FCBE8)" },
+        new { Name = "Açılış",           Grad = "linear-gradient(135deg,#FFD56B,#FF8FB1)" },
+        new { Name = "Sevgiyle",         Grad = "linear-gradient(135deg,#E27D7D,#FF8FB1)" },
+        new { Name = "Yeni Yıl",         Grad = "linear-gradient(135deg,#2C3E50,#8FCBE8)" },
+    };
+    var amounts = new[] { 100, 250, 500, 1000, 2500 };
 }
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" />
-}
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
 
-<div class="max-w-3xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold text-gray-900 mb-2">Hediye Karti</h1>
-    <p class="text-gray-600 mb-8">Sevdiklerinize alisveris hediyesi gonderin.</p>
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-5 flex items-center gap-2">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">Hediye Çeki</span>
+    </nav>
 
     @if (!string.IsNullOrWhiteSpace(error))
     {
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            @error
-        </div>
+        <div class="rounded-2xl bg-danger/10 border border-danger/30 text-danger px-5 py-4 mb-6" role="alert">@error</div>
     }
 
-    <form method="post" class="space-y-6">
-        @Html.AntiForgeryToken()
-
-        <div class="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Tutar Secin</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                <label class="cursor-pointer">
-                    <input type="radio" name="amount" value="50" class="peer sr-only" checked />
-                    <div class="text-center py-3 border-2 border-gray-200 rounded-lg peer-checked:border-primary peer-checked:bg-blue-50 transition-colors font-semibold text-gray-700">
-                        50 TL
-                    </div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="amount" value="100" class="peer sr-only" />
-                    <div class="text-center py-3 border-2 border-gray-200 rounded-lg peer-checked:border-primary peer-checked:bg-blue-50 transition-colors font-semibold text-gray-700">
-                        100 TL
-                    </div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="amount" value="200" class="peer sr-only" />
-                    <div class="text-center py-3 border-2 border-gray-200 rounded-lg peer-checked:border-primary peer-checked:bg-blue-50 transition-colors font-semibold text-gray-700">
-                        200 TL
-                    </div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="amount" value="500" class="peer sr-only" />
-                    <div class="text-center py-3 border-2 border-gray-200 rounded-lg peer-checked:border-primary peer-checked:bg-blue-50 transition-colors font-semibold text-gray-700">
-                        500 TL
-                    </div>
-                </label>
+    @* HERO *@
+    <div class="bg-primary/10 rounded-3xl p-7 sm:p-10 relative overflow-hidden">
+        <div class="grid sm:grid-cols-[1fr_auto] items-center gap-8">
+            <div class="relative z-10 max-w-md">
+                <span class="inline-block whitespace-nowrap text-xs uppercase tracking-wide text-primary font-semibold bg-white/70 rounded-full px-3 py-1 mb-4">Hediye Çeki</span>
+                <h1 class="font-heading text-3xl sm:text-4xl text-charcoal leading-tight">Zekids Bebe<br/>Hediye Çeki</h1>
+                <p class="text-muted mt-3 leading-relaxed">Sevdiklerinize özel hediye çekiyle alışveriş özgürlüğü hediye edin. Anında e-posta ile teslim.</p>
             </div>
-        </div>
-
-        <div class="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Alici Bilgileri (Opsiyonel)</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alici Adi</label>
-                    <input type="text" name="recipientName" placeholder="Alicinin adi"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alici E-posta</label>
-                    <input type="email" name="recipientEmail" placeholder="Alicinin e-posta adresi"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mesajiniz</label>
-                    <textarea name="message" rows="3" placeholder="Iyi ki varsin!"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
+            <div class="relative h-44 sm:h-52 w-full sm:w-72 mx-auto">
+                <div class="absolute inset-0 rounded-2xl gc rotate-[-3deg] bg-gradient-to-br from-primary via-[#ff9fc0] to-accent p-5 flex flex-col justify-between text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="font-heading italic text-xl">Zekids Bebe</span>
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-[11px] uppercase tracking-wide text-white/80">Hediye Çeki</p>
+                        <p class="font-heading text-3xl">250₺</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <button type="submit" class="btn-primary w-full py-3">Hediye Karti Olustur</button>
+    <form asp-controller="GiftCard" asp-action="Index" method="post" data-giftcard-form>
+        <input type="hidden" name="amount" id="gcAmount" value="250" />
+
+        @* STEP 1: theme (görsel önizleme — sunucuya gönderilmez) *@
+        <section class="mt-10">
+            <h2 class="font-heading text-2xl text-charcoal">1 · Tasarım Seç</h2>
+            <p class="text-sm text-muted mt-1 mb-4">Hediyenize uygun temayı seçin. (Önizleme amaçlı)</p>
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1 snap-x" data-gc-themes>
+                @for (var i = 0; i < themes.Length; i++)
+                {
+                    var t = themes[i];
+                    <button type="button" data-gc-theme="@i" data-grad="@t.Grad" data-name="@t.Name" class="gc-theme snap-start shrink-0 w-36 text-left">
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden ring-2 @(i == 0 ? "ring-primary" : "ring-transparent") transition relative flex items-end p-3" style="background-image:@t.Grad">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent"></div>
+                            <span class="relative font-heading italic text-white text-sm">Zekids</span>
+                        </div>
+                        <p class="text-sm font-medium text-charcoal mt-2 px-0.5">@t.Name</p>
+                    </button>
+                }
+            </div>
+        </section>
+
+        @* STEP 2: amount *@
+        <section class="mt-10">
+            <h2 class="font-heading text-2xl text-charcoal">2 · Tutar Seç</h2>
+            <p class="text-sm text-muted mt-1 mb-4">Hazır tutarlardan seçin ya da kendiniz girin.</p>
+            <div class="flex flex-wrap gap-3 items-center" data-gc-amounts>
+                @foreach (var a in amounts)
+                {
+                    <button type="button" data-gc-amount="@a" class="gc-amt rounded-full border px-5 py-2 text-sm font-medium transition @(a == 250 ? "bg-primary text-white border-primary" : "border-cream-300 text-charcoal hover:border-primary")">@a.ToString("N0")₺</button>
+                }
+            </div>
+            <div class="mt-4 max-w-xs">
+                <label class="block text-sm font-semibold text-charcoal mb-1.5" for="gcCustom">Özel tutar (₺)</label>
+                <input id="gcCustom" type="number" min="50" max="10000" step="10" placeholder="Örn. 750" class="w-full px-3.5 py-2.5 rounded-xl border border-cream-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
+                <p class="text-xs text-muted mt-1.5">50₺ – 10.000₺ arası</p>
+            </div>
+        </section>
+
+        @* STEP 3: recipient *@
+        <section class="mt-10">
+            <h2 class="font-heading text-2xl text-charcoal">3 · Alıcı Bilgileri</h2>
+            <p class="text-sm text-muted mt-1 mb-4">Çeki kime göndereceğimizi söyleyin. Boş bırakırsanız kod size verilir.</p>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-charcoal mb-1.5" for="rName">Alıcı Ad Soyad</label>
+                    <input id="rName" name="recipientName" type="text" placeholder="Örn. Ayşe Yılmaz" class="w-full px-3.5 py-2.5 rounded-xl border border-cream-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" data-gc-name />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-charcoal mb-1.5" for="rEmail">Alıcı E-posta</label>
+                    <input id="rEmail" name="recipientEmail" type="email" placeholder="ornek@@eposta.com" class="w-full px-3.5 py-2.5 rounded-xl border border-cream-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition" />
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-semibold text-charcoal mb-1.5" for="rMessage">Mesajınız</label>
+                <textarea id="rMessage" name="message" rows="3" maxlength="200" placeholder="Birkaç güzel söz ekleyin…" class="w-full px-3.5 py-2.5 rounded-xl border border-cream-300 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition resize-none" data-gc-message data-char-count="gcMsgCount"></textarea>
+                <p class="text-right text-xs text-muted mt-1.5"><span id="gcMsgCount">0</span> / 200</p>
+            </div>
+        </section>
+
+        @* STEP 4: preview *@
+        <section class="mt-10">
+            <h2 class="font-heading text-2xl text-charcoal">4 · Önizleme</h2>
+            <p class="text-sm text-muted mt-1 mb-4">Alıcının göreceği çek aşağıdaki gibi görünecek.</p>
+            <div class="flex justify-center">
+                <div class="w-full max-w-md aspect-[16/10] rounded-3xl gc p-7 flex flex-col justify-between text-white relative overflow-hidden transition-all duration-300" data-gc-preview style="background-image: linear-gradient(135deg, #FF8FB1, #FFD56B);">
+                    <div class="flex items-start justify-between">
+                        <span class="font-heading italic text-2xl">Zekids Bebe</span>
+                        <span data-gc-pv-theme class="text-[11px] uppercase tracking-wide bg-white/25 rounded-full px-3 py-1">Doğum Günü</span>
+                    </div>
+                    <div>
+                        <p class="text-[11px] uppercase tracking-wide text-white/80">Sevgili</p>
+                        <p data-gc-pv-name class="font-heading text-2xl leading-tight">Alıcı adı</p>
+                        <p data-gc-pv-message class="text-sm text-white/90 mt-1.5 leading-snug line-clamp-2">Mesajınız burada görünecek.</p>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <span class="font-mono text-xs text-white/80 tracking-wider">ZBGC-•••• -••••</span>
+                        <span data-gc-pv-amount class="font-heading text-3xl">250₺</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* CTA *@
+        <div class="mt-10">
+            <button type="submit" class="w-full py-4 rounded-full bg-primary text-white font-semibold text-lg hover:bg-primary/90 transition flex items-center justify-center gap-2">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                Hediye Çekini Oluştur · <span data-gc-cta-amount>250₺</span>
+            </button>
+            <p class="text-center text-xs text-muted mt-3">Hediye çekleri iade edilemez · 24 ay geçerlidir</p>
+        </div>
     </form>
 
-    <div class="mt-8 text-center">
-        <a href="/hediye-karti-sorgula" class="text-primary hover:underline text-sm no-underline">Hediye karti bakiyesi sorgula</a>
-    </div>
-</div>
+</main>
+
+@section Scripts {
+    <script src="~/js/gift-card.js" asp-append-version="true"></script>
+}

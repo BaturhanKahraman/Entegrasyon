@@ -1,337 +1,136 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 @{
-    var cart = ViewBag.Cart as Entegrasyon.Entity.Dtos.Storefront.CartDto;
-    var freeShippingThreshold = (decimal)ViewBag.FreeShippingThreshold;
+    ViewData["Title"] = "Sepetim";
 }
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" />
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">Sepetim</h1>
+    @* ============ BREADCRUMB ============ *@
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-5 flex items-center gap-2">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">Sepetim</span>
+    </nav>
 
-    @if (cart == null || cart.ItemCount == 0)
-    {
-        <div class="text-center py-16">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-            </svg>
-            <p class="text-gray-500 text-lg mb-6">Sepetiniz bos</p>
-            <a href="/urunler" class="btn-primary inline-block px-8 py-3 no-underline">Alisverise Basla</a>
-        </div>
-    }
-    else
-    {
-        <div class="flex flex-col lg:flex-row gap-8">
-            @* Cart Items *@
-            <div class="flex-1">
-                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    @* Header *@
-                    <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-sm font-medium text-gray-500 border-b">
-                        <div class="col-span-6">Urun</div>
-                        <div class="col-span-2 text-center">Birim Fiyat</div>
-                        <div class="col-span-2 text-center">Adet</div>
-                        <div class="col-span-2 text-right">Toplam</div>
-                    </div>
+    <h1 class="font-heading text-3xl lg:text-4xl text-charcoal mb-7">Sepetim <span class="text-muted text-2xl">(<span id="cartCount">3</span> ürün)</span></h1>
 
-                    @* Items *@
-                    <div id="cart-items">
-                        @foreach (var item in cart.Items)
-                        {
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 items-center cart-item" data-variant-id="@item.ProductVariantId">
-                                @* Product Info *@
-                                <div class="col-span-6 flex items-center gap-4">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                                        {
-                                            <img src="@item.ImageUrl" alt="@item.ProductTitle" class="w-full h-full object-cover" />
-                                        }
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900 text-sm">@item.ProductTitle</p>
-                                        @if (!string.IsNullOrWhiteSpace(item.VariantInfo))
-                                        {
-                                            <p class="text-xs text-gray-500 mt-1">@item.VariantInfo</p>
-                                        }
-                                    </div>
-                                </div>
+    @* ============ CART AREA ============ *@
+    <div id="cartArea" class="grid lg:grid-cols-3 gap-8">
 
-                                @* Unit Price *@
-                                <div class="col-span-2 text-center text-sm text-gray-600">
-                                    <span class="md:hidden text-gray-400">Birim: </span>
-                                    <span class="item-unit-price">@item.UnitPrice.ToString("N2")</span> TL
-                                </div>
+        @* Sol *@
+        <div class="lg:col-span-2">
 
-                                @* Quantity *@
-                                <div class="col-span-2 flex items-center justify-center">
-                                    <div class="flex items-center border border-gray-300 rounded-lg">
-                                        <button onclick="updateQuantity('@item.ProductVariantId', @(item.Quantity - 1))"
-                                                class="px-2 py-1 text-gray-600 hover:text-gray-900 text-sm" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
-                                        <span class="w-10 text-center text-sm item-quantity">@item.Quantity</span>
-                                        <button onclick="updateQuantity('@item.ProductVariantId', @(item.Quantity + 1))"
-                                                class="px-2 py-1 text-gray-600 hover:text-gray-900 text-sm" @(item.Quantity >= item.AvailableStock ? "disabled" : "")>+</button>
-                                    </div>
-                                </div>
+            @* Free shipping progress *@
+            <div id="freeShip" class="rounded-2xl p-4 mb-6"></div>
 
-                                @* Line Total + Actions *@
-                                <div class="col-span-2 flex items-center justify-end gap-2">
-                                    <span class="font-semibold text-gray-900 text-sm item-line-total">@item.LineTotal.ToString("N2") TL</span>
-                                    @if (User.Identity?.IsAuthenticated == true)
-                                    {
-                                        <button onclick="saveForLater('@item.ProductVariantId')" class="text-gray-400 hover:text-blue-500 transition-colors" title="Sonra Al">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                                            </svg>
-                                        </button>
-                                    }
-                                    <button onclick="removeItem('@item.ProductVariantId')" class="text-gray-400 hover:text-red-500 transition-colors" title="Kaldir">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                @* Saved Items Section *@
-                @{
-                    var savedItems = ViewBag.SavedItems as List<Entegrasyon.Entity.Dtos.Storefront.SavedCartItemDto> ?? new();
-                }
-                @if (savedItems.Count > 0)
-                {
-                    <div class="mt-4 bg-white rounded-lg border border-gray-200 p-4">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Sonra Almak Istedikleriniz</h3>
-                        <div class="space-y-3">
-                            @foreach (var saved in savedItems)
-                            {
-                                <div class="flex items-center gap-4 py-2 border-b border-gray-100 last:border-0">
-                                    <div class="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                                        @if (!string.IsNullOrWhiteSpace(saved.ImageUrl))
-                                        {
-                                            <img src="@saved.ImageUrl" alt="@saved.ProductTitle" class="w-full h-full object-cover" />
-                                        }
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">@saved.ProductTitle</p>
-                                        <div class="flex items-center gap-2 text-sm">
-                                            @if (saved.CurrentPrice != saved.OriginalPrice)
-                                            {
-                                                <span class="text-gray-400 line-through">@saved.OriginalPrice.ToString("N2") TL</span>
-                                            }
-                                            <span class="font-semibold text-gray-900">@saved.CurrentPrice.ToString("N2") TL</span>
-                                        </div>
-                                    </div>
-                                    <button onclick="moveToCart('@saved.ProductVariantId')"
-                                            class="px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap">
-                                        Sepete Tasi
-                                    </button>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-
-                @* Coupon Code Section *@
-                <div class="mt-4 bg-white rounded-lg border border-gray-200 p-4">
-                    <div id="coupon-section">
-                        @if (!string.IsNullOrWhiteSpace(cart.CouponCode))
-                        {
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span class="text-sm font-medium text-green-700">Kupon uygulandi: <strong>@cart.CouponCode</strong></span>
-                                </div>
-                                <button onclick="removeCoupon()" class="text-sm text-red-500 hover:text-red-700 font-medium">Kaldır</button>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="flex gap-2">
-                                <input type="text" id="coupon-input" placeholder="Kupon kodunuz" maxlength="20"
-                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                                <button onclick="applyCoupon()" id="coupon-btn"
-                                        class="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
-                                    Uygula
-                                </button>
-                            </div>
-                            <p id="coupon-error" class="text-xs text-red-500 mt-1 hidden"></p>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            @* Order Summary Sidebar *@
-            <div class="w-full lg:w-80">
-                <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">Sipariş Ozeti</h2>
-
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Ara Toplam</span>
-                            <span id="summary-subtotal">@cart.SubTotal.ToString("N2") TL</span>
-                        </div>
-                        @if (cart.DiscountAmount > 0)
-                        {
-                            <div class="flex justify-between text-green-600">
-                                <span>Kupon Indirimi</span>
-                                <span id="summary-discount">-@cart.DiscountAmount.ToString("N2") TL</span>
-                            </div>
-                        }
-                        <div class="flex justify-between text-gray-600">
-                            <span>Kargo</span>
-                            <span id="summary-shipping">
-                                @if (cart.ShippingCost == 0)
-                                {
-                                    <span class="text-green-600 font-medium">Ucretsiz</span>
-                                }
-                                else
-                                {
-                                    @cart.ShippingCost.ToString("N2") <text>TL</text>
-                                }
-                            </span>
-                        </div>
-                        <hr />
-                        <div class="flex justify-between font-bold text-gray-900 text-base">
-                            <span>Genel Toplam</span>
-                            <span id="summary-total">@cart.GrandTotal.ToString("N2") TL</span>
-                        </div>
-                    </div>
-
-                    @if (freeShippingThreshold > 0 && cart.SubTotal < freeShippingThreshold)
-                    {
-                        <div id="free-shipping-info" class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-                            @((freeShippingThreshold - cart.SubTotal).ToString("N2")) TL daha ekleyin, <strong>ucretsiz kargo</strong> firsatindan yararlanin!
-                        </div>
-                    }
-
-                    <div class="mt-6">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <a href="/odeme" class="btn-primary block text-center py-3 no-underline">Odemeye Gec</a>
-                        }
-                        else
-                        {
-                            <a href="/giris?returnUrl=/sepet" class="btn-primary block text-center py-3 no-underline">Odemeye Gec</a>
-                            <p class="text-xs text-gray-500 text-center mt-2">Odeme icin giris yapmaniz gerekiyor</p>
-                        }
-                    </div>
-
-                    <a href="/urunler" class="block text-center text-sm text-primary hover:underline mt-4 no-underline">Alisverise Devam Et</a>
+            @* Items *@
+            <div class="bg-white border border-cream-300 rounded-2xl overflow-hidden">
+                <div id="cartItems"></div>
+                <div class="flex items-center justify-between px-6 py-4 bg-cream/50 text-sm">
+                    <button type="button" data-clear-cart class="text-muted hover:text-danger transition flex items-center gap-1.5">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        Tümünü kaldır
+                    </button>
+                    <a href="/kategori/yeni-gelenler" class="text-primary font-medium hover:underline flex items-center gap-1.5">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>
+                        Alışverişe devam et
+                    </a>
                 </div>
             </div>
         </div>
-    }
+
+        @* Sağ özet *@
+        <div class="lg:col-span-1">
+            <div class="bg-cream rounded-2xl p-6 lg:sticky lg:top-24">
+                <h2 class="font-heading text-xl text-charcoal mb-5">Sipariş Özeti</h2>
+
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between"><span class="text-muted">Ara toplam</span><span id="subTotal" class="text-charcoal font-medium">996₺</span></div>
+                    <div class="flex justify-between"><span class="text-muted">Kargo</span><span id="shipVal" class="text-success font-medium">Bedava</span></div>
+                    <div class="flex justify-between"><span class="text-muted">Sadakat indirimi</span><span class="text-success font-medium">−50₺</span></div>
+                    <div id="couponRow" class="hidden flex justify-between"><span class="text-muted">Kupon (<span id="couponName"></span>)</span><span id="couponAmt" class="text-success font-medium">−50₺</span></div>
+                    <div id="giftRow" class="hidden flex justify-between"><span class="text-muted">Hediye kartı</span><span id="giftAmt" class="text-success font-medium">−100₺</span></div>
+                </div>
+
+                <div class="border-t border-cream-300 my-4"></div>
+
+                <div class="flex items-baseline justify-between mb-5">
+                    <span class="font-bold text-lg text-charcoal">Toplam</span>
+                    <span id="totalVal" class="text-2xl font-semibold text-primary">946₺</span>
+                </div>
+
+                @* Kupon *@
+                <details class="mb-2 border border-cream-300 rounded-xl bg-white px-4 py-3">
+                    <summary class="flex items-center justify-between cursor-pointer text-sm font-medium text-charcoal">Kupon kodunuz var mı?
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-muted" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="mt-3">
+                        <div class="flex gap-2">
+                            <input id="couponInput" type="text" placeholder="Örn. BAHAR50" class="flex-1 px-3 py-2 rounded-lg border border-cream-300 text-sm outline-none focus:border-primary uppercase placeholder:normal-case" />
+                            <button type="button" data-apply-coupon class="px-4 py-2 rounded-lg bg-charcoal text-white text-sm font-medium hover:bg-charcoal/90 transition">Uygula</button>
+                        </div>
+                        <div id="couponChip" class="hidden mt-2"></div>
+                    </div>
+                </details>
+
+                @* Hediye kartı *@
+                <details class="mb-5 border border-cream-300 rounded-xl bg-white px-4 py-3">
+                    <summary class="flex items-center justify-between cursor-pointer text-sm font-medium text-charcoal">Hediye kartı kullan
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-muted" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </summary>
+                    <div class="mt-3">
+                        <div class="flex gap-2">
+                            <input id="giftInput" type="text" placeholder="Hediye kartı kodu" class="flex-1 px-3 py-2 rounded-lg border border-cream-300 text-sm outline-none focus:border-primary uppercase placeholder:normal-case" />
+                            <button type="button" data-apply-gift class="px-4 py-2 rounded-lg bg-charcoal text-white text-sm font-medium hover:bg-charcoal/90 transition">Uygula</button>
+                        </div>
+                        <div id="giftChip" class="hidden mt-2"></div>
+                    </div>
+                </details>
+
+                <a href="/odeme" class="w-full py-4 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition shadow-[0_10px_24px_-6px_rgba(255,143,177,.6)] flex items-center justify-center gap-2">
+                    Ödemeye Geç
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+
+                <div class="flex items-center justify-center gap-2 mt-4">
+                    <span class="inline-flex items-center gap-1 text-[11px] text-muted"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#4CAF89" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>SSL</span>
+                    <span class="px-2 py-0.5 rounded bg-white border border-cream-300 text-[10px] font-semibold text-charcoal tracking-wide">VISA</span>
+                    <span class="px-2 py-0.5 rounded bg-white border border-cream-300 text-[10px] font-semibold text-charcoal tracking-wide">Mastercard</span>
+                    <span class="px-2 py-0.5 rounded bg-white border border-cream-300 text-[10px] font-semibold text-charcoal tracking-wide">TROY</span>
+                </div>
+
+                <p class="text-[11px] text-muted text-center mt-3 leading-relaxed">KDV dahildir. Aynı gün kargoda ise yarın elinizde.</p>
+            </div>
+        </div>
+    </div>
+
+    @* ============ BOŞ SEPET ============ *@
+    <div id="emptyCart" class="hidden bg-cream rounded-3xl py-16 px-6 text-center max-w-xl mx-auto">
+        <svg viewBox="0 0 64 64" width="84" height="84" class="mx-auto mb-5" fill="none" stroke="#FF8FB1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20h32l-3 30a4 4 0 0 1-4 3.5H23a4 4 0 0 1-4-3.5Z"/><path d="M24 20a8 8 0 0 1 16 0"/><circle cx="26" cy="38" r="1.5" fill="#FF8FB1"/><circle cx="38" cy="38" r="1.5" fill="#FF8FB1"/><path d="M27 45c1.5 1.5 3.2 2 5 2s3.5-.5 5-2"/></svg>
+        <h2 class="font-heading text-2xl text-charcoal">Sepetiniz henüz boş</h2>
+        <p class="text-muted mt-2">Birbirinden tatlı ürünler sizi bekliyor.</p>
+        <a href="/kategori/yeni-gelenler" class="inline-block mt-6 px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Alışverişe Başla</a>
+        <div class="mt-3"><a href="/favorilerim" class="text-sm text-primary hover:underline">Favorilerimi gör</a></div>
+    </div>
+
+    @* ============ ÖNERİLER ============ *@
+    <section class="mt-16 lg:mt-20">
+        <div class="flex items-end justify-between mb-6">
+            <h2 class="font-heading text-2xl lg:text-3xl text-charcoal">Birlikte iyi gider</h2>
+            <div class="flex items-center gap-2">
+                <button type="button" data-carousel-scroll="prev" data-carousel-target="recScroll" aria-label="Önceki" class="hidden sm:flex w-10 h-10 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+                <button type="button" data-carousel-scroll="next" data-carousel-target="recScroll" aria-label="Sonraki" class="hidden sm:flex w-10 h-10 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            </div>
+        </div>
+        <div id="recScroll" class="grid grid-flow-col auto-cols-[68%] sm:auto-cols-[40%] md:auto-cols-[30%] lg:auto-cols-[23.5%] gap-4 sm:gap-6 overflow-x-auto no-scrollbar snap-x scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0"></div>
+    </section>
+</div>
+
+@* ============ UNDO BAR ============ *@
+<div id="undoBar" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] bg-charcoal text-white text-sm px-5 py-3 rounded-full shadow-md flex items-center gap-4">
+    <span id="undoMsg">Üründen kaldırıldı</span>
+    <button type="button" data-undo-remove class="font-semibold text-accent hover:underline">Geri Al</button>
 </div>
 
 @section Scripts {
-<script>
-    function updateQuantity(variantId, quantity) {
-        if (quantity < 1) return;
-        fetch('/api/sepet/Guncelle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productVariantId: variantId, quantity: quantity })
-        }).then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success) { location.reload(); }
-            else { alert(d.message || 'Bir hata olustu'); }
-        }).catch(function() { alert('Bir hata olustu'); });
-    }
-
-    function removeItem(variantId) {
-        fetch('/api/sepet/Sil', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productVariantId: variantId, quantity: 0 })
-        }).then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success) { location.reload(); }
-        }).catch(function() { alert('Bir hata olustu'); });
-    }
-
-    function applyCoupon() {
-        var input = document.getElementById('coupon-input');
-        var errorEl = document.getElementById('coupon-error');
-        var btn = document.getElementById('coupon-btn');
-        var code = input.value.trim();
-
-        if (!code) {
-            errorEl.textContent = 'Lutfen bir kupon kodu girin.';
-            errorEl.classList.remove('hidden');
-            return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = 'Kontrol ediliyor...';
-        errorEl.classList.add('hidden');
-
-        fetch('/api/sepet/KuponUygula', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code })
-        }).then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success) {
-                location.reload();
-            } else {
-                errorEl.textContent = d.message || 'Gecersiz kupon kodu.';
-                errorEl.classList.remove('hidden');
-                btn.disabled = false;
-                btn.textContent = 'Uygula';
-            }
-        }).catch(function() {
-            errorEl.textContent = 'Bir hata olustu. Lutfen tekrar deneyin.';
-            errorEl.classList.remove('hidden');
-            btn.disabled = false;
-            btn.textContent = 'Uygula';
-        });
-    }
-
-    function removeCoupon() {
-        fetch('/api/sepet/KuponKaldir', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        }).then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success) { location.reload(); }
-        }).catch(function() { alert('Bir hata olustu'); });
-    }
-
-    function saveForLater(variantId) {
-        fetch('/api/sepet/SonraAl', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productVariantId: variantId, quantity: 0 })
-        }).then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success) { location.reload(); }
-            else { alert(d.message || 'Bir hata olustu'); }
-        }).catch(function() { alert('Bir hata olustu'); });
-    }
-
-    function moveToCart(variantId) {
-        fetch('/api/sepet/SepeteTasi', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productVariantId: variantId, quantity: 0 })
-        }).then(function(r) { return r.json(); })
-        .then(function(d) {
-            if (d.success) { location.reload(); }
-            else { alert(d.message || 'Bir hata olustu'); }
-        }).catch(function() { alert('Bir hata olustu'); });
-    }
-
-    // Allow pressing Enter in coupon input
-    var couponInput = document.getElementById('coupon-input');
-    if (couponInput) {
-        couponInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { applyCoupon(); }
-        });
-    }
-</script>
+    <script src="~/js/cart.js" asp-append-version="true"></script>
 }

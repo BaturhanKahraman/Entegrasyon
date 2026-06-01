@@ -136,8 +136,49 @@
         }
     };
 
-    // Render bar on page load
+    // Render bar on page load (karşılaştırma sayfasında gizli — orada zaten tam tablo var)
     document.addEventListener('DOMContentLoaded', function() {
-        ProductCompare.renderBar();
+        if (!document.querySelector('[data-compare-page]')) {
+            ProductCompare.renderBar();
+        }
+    });
+
+    // ===== Karşılaştırma sayfası (server-rendered /karsilastir?ids=...) =====
+    // Sayfa server'da Model'den render edilir; ids URL'i tek doğruluk kaynağıdır.
+    // Çıkar/temizle butonları ids listesini güncelleyip yeniden yükler; sepet butonu
+    // (storefront genelindeki davranışla tutarlı) şimdilik toast gösterir.
+    document.addEventListener('DOMContentLoaded', function() {
+        var page = document.querySelector('[data-compare-page]');
+        if (!page) return;
+
+        function currentIds() {
+            var raw = new URLSearchParams(window.location.search).get('ids');
+            return raw ? raw.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+        }
+        function goWith(ids) {
+            window.location.href = ids.length ? '/karsilastir?ids=' + ids.join(',') : '/karsilastir';
+        }
+
+        page.querySelectorAll('[data-compare-remove]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var id = btn.getAttribute('data-product-id');
+                ProductCompare.remove(id);
+                goWith(currentIds().filter(function(x) { return x !== id; }));
+            });
+        });
+
+        page.querySelectorAll('[data-compare-clear]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                ProductCompare.clear();
+                window.location.href = '/karsilastir';
+            });
+        });
+
+        page.querySelectorAll('[data-compare-add-cart]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var name = btn.getAttribute('data-product-name') || 'Ürün';
+                if (window.toast) window.toast(name + ' sepete eklendi');
+            });
+        });
     });
 })();

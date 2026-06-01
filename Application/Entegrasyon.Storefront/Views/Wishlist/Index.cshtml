@@ -1,88 +1,178 @@
-@using Entegrasyon.Entity.Storefront
-@using Entegrasyon.Entity.Dtos.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" />
-}
-
 @{
-    var items = ViewBag.WishlistItems as List<StorefrontWishlistItem> ?? new List<StorefrontWishlistItem>();
+    ViewData["Title"] = "Favorilerim";
+
+    var customerName = ViewBag.CustomerName as string ?? "Ayşe Yılmaz";
+    var initials = string.Concat(customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+
+    // Görsel havuzu (Unsplash) — gerçek veriye bağlanınca ViewBag.WishlistItems doldurulacak.
+    string Img(string id, int w = 600) => $"https://images.unsplash.com/photo-{id}?auto=format&fit=crop&w={w}&q=80";
+
+    var sample = new[]
+    {
+        new { Name = "Çiçekli Yazlık Elbise",        Brand = "Zekids",   Category = "Kız · Elbise",    Price = "249₺", OldPrice = "329₺", Img = "1620774760711-caa4c94d683a", InStock = true,  Badge = "%24" },
+        new { Name = "Pamuklu Body Seti (3'lü)",      Brand = "Minik",    Category = "Bebek · Body",    Price = "199₺", OldPrice = "",     Img = "1604482858862-1db908a653e4", InStock = true,  Badge = "Yeni" },
+        new { Name = "Salopet Kot Pantolon",          Brand = "Zekids",   Category = "Erkek · Salopet", Price = "179₺", OldPrice = "",     Img = "1622290291468-a28f7a7dc6a8", InStock = true,  Badge = "" },
+        new { Name = "Kapüşonlu Sweat",               Brand = "Pofuduk",  Category = "Kız · Sweat",     Price = "229₺", OldPrice = "279₺", Img = "1566454544259-f4b94c3d758c", InStock = false, Badge = "%18" },
+        new { Name = "Yumuşak Patik Çorap",           Brand = "Minik",    Category = "Bebek · Çorap",   Price = "89₺",  OldPrice = "",     Img = "1632337950445-ba446cb0e26f", InStock = true,  Badge = "" },
+        new { Name = "Tüllü Doğum Günü Elbisesi",     Brand = "Zekids",   Category = "Kız · Elbise",    Price = "349₺", OldPrice = "429₺", Img = "1622290319146-7b63df48a635", InStock = true,  Badge = "%19" },
+        new { Name = "Organik Pijama Takımı",         Brand = "Pofuduk",  Category = "Unisex · Pijama", Price = "159₺", OldPrice = "",     Img = "1590995385808-7eb142fde16a", InStock = true,  Badge = "Yeni" },
+        new { Name = "Desenli Tulum",                 Brand = "Minik",    Category = "Bebek · Tulum",   Price = "199₺", OldPrice = "239₺", Img = "1560506840-ec148e82a604",  InStock = true,  Badge = "%17" }
+    };
+
+    var items = sample;
+    var count = items.Length;
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Favorilerim</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-    @if (items.Count == 0)
-    {
-        <div class="text-center py-16">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            <p class="text-gray-500 mb-4">Henuz favori urun eklemediniz.</p>
-            <a href="/urunler" class="btn-primary inline-block">Urunlere Goz At</a>
-        </div>
-    }
-    else
-    {
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            @foreach (var item in items)
-            {
-                <div class="relative group">
-                    <a href="/urun/@item.Product?.SeoSlug" class="block bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
-                        <div class="relative aspect-square overflow-hidden bg-gray-100">
-                            @{
-                                var firstImage = item.Product?.ProductVariants?.FirstOrDefault()?.Images?.FirstOrDefault()?.Src;
-                            }
-                            @if (!string.IsNullOrWhiteSpace(firstImage))
+    <!-- mobile account trigger -->
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">@initials</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("wishlist")' />
+        </aside>
+
+        <div>
+            <!-- header row -->
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-7">
+                <div>
+                    <h1 class="font-heading text-3xl text-charcoal">Favorilerim <span data-wish-title-count class="text-muted font-body text-xl font-normal">(@count ürün)</span></h1>
+                    <p class="text-muted mt-1.5 text-sm">Beğendiğiniz parçaları tek listede toplayın, fiyat düştüğünde haberdar olun.</p>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <!-- share dropdown -->
+                    <div class="relative">
+                        <button type="button" data-share-toggle class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:border-primary hover:text-primary transition">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+                            <span class="hidden sm:inline">Listeyi Paylaş</span>
+                        </button>
+                        <div data-share-menu class="hidden absolute right-0 mt-2 w-56 bg-white border border-cream-300 rounded-2xl shadow-md p-1.5 z-30">
+                            <button type="button" data-share-copy class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-charcoal hover:bg-cream transition text-left">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+                                Bağlantıyı kopyala
+                            </button>
+                            <a href="https://wa.me/?text=Zekids%20Bebe%20favori%20listeme%20g%C3%B6z%20at%C4%B1n" target="_blank" rel="noopener" data-share-close class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-charcoal hover:bg-cream transition text-left">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#4CAF89" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/></svg>
+                                WhatsApp'ta paylaş
+                            </a>
+                        </div>
+                    </div>
+                    <!-- add all in-stock -->
+                    <button type="button" data-add-all class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-primary text-primary text-sm font-semibold hover:bg-primary/5 transition">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        <span class="hidden sm:inline">Tümünü Sepete Ekle</span>
+                        <span class="sm:hidden">Sepete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- grid -->
+            <div data-wish-grid class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                @{ var i = 0; }
+                @foreach (var p in items)
+                {
+                    i++;
+                    var isDiscount = !string.IsNullOrEmpty(p.Badge) && p.Badge.StartsWith("%");
+                    <div class="group" data-wish-card>
+                        <div class="ph relative aspect-[4/5] rounded-2xl bg-cream overflow-hidden" data-ph="ürün görseli">
+                            <img class="photo" loading="lazy" alt="@p.Name" src="@Img(p.Img)" onerror="this.onerror=null;this.src='/img/placeholder.svg'" />
+
+                            <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                                @if (p.Badge == "Yeni")
+                                {
+                                    <span class="px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-semibold">Yeni</span>
+                                }
+                                else if (isDiscount)
+                                {
+                                    <span class="px-2.5 py-1 rounded-full bg-success text-white text-[11px] font-semibold">@p.Badge</span>
+                                }
+                            </div>
+
+                            <button type="button" data-wishlist-toggle data-on="1" data-product-id="@i" aria-label="Favorilerden çıkar"
+                                    class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-primary hover:text-primary transition shadow-sm">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A4.5 4.5 0 0 0 12 5.5 4.5 4.5 0 0 0 2 8.5C2 10.8 3.5 12.5 5 14l7 7Z"/></svg>
+                            </button>
+
+                            @if (!p.InStock)
                             {
-                                <img src="@firstImage" alt="@item.Product?.Title" loading="lazy"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            }
-                            else
-                            {
-                                <div class="w-full h-full flex items-center justify-center text-gray-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                                <div class="absolute inset-0 bg-white/60 flex items-center justify-center">
+                                    <span class="px-4 py-1.5 rounded-full bg-charcoal text-white text-sm font-semibold">Stokta Yok</span>
                                 </div>
                             }
                         </div>
-                        <div class="p-3">
-                            <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem]">@item.Product?.Title</h3>
+                        <div class="mt-3">
+                            <p class="text-xs text-muted">@p.Brand</p>
+                            <a href="/urun/@i" class="block font-medium text-charcoal line-clamp-2 leading-snug mt-0.5 hover:text-primary transition">@p.Name</a>
+                            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-cream text-[11px] text-muted">@p.Category</span>
+                            <div class="mt-2 flex items-baseline gap-2">
+                                @if (!string.IsNullOrEmpty(p.OldPrice))
+                                {
+                                    <span class="text-sm text-muted line-through">@p.OldPrice</span>
+                                }
+                                <span class="text-lg font-semibold text-primary">@p.Price</span>
+                            </div>
+                            @if (p.InStock)
+                            {
+                                <button type="button" data-add-cart class="mt-3 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                    Sepete Ekle
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" data-notify-stock class="mt-3 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:border-primary hover:text-primary transition">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+                                    Gelince Haber Ver
+                                </button>
+                            }
                         </div>
+                    </div>
+                }
+            </div>
+
+            <!-- empty -->
+            <div data-wish-empty class="hidden">
+                <div class="bg-cream rounded-3xl py-16 px-6 text-center flex flex-col items-center justify-center">
+                    <svg viewBox="0 0 120 120" width="132" height="132" class="mb-5" fill="none" aria-hidden="true">
+                        <circle cx="60" cy="60" r="54" fill="#fff"/>
+                        <circle cx="60" cy="60" r="54" stroke="#E8DFD2" stroke-width="2" stroke-dasharray="5 7"/>
+                        <path d="M60 86s-26-15-26-34a13.5 13.5 0 0 1 26-4 13.5 13.5 0 0 1 26 4c0 19-26 34-26 34Z" fill="#FFE3EC" stroke="#FF8FB1" stroke-width="3" stroke-linejoin="round"/>
+                        <path d="M52 50a6 6 0 0 1 8-2" stroke="#FF8FB1" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="92" cy="38" r="4" fill="#FFD56B"/>
+                        <circle cx="28" cy="44" r="3" fill="#8FCBE8"/>
+                        <circle cx="34" cy="86" r="3.5" fill="#FFD56B"/>
+                    </svg>
+                    <h3 class="font-heading text-2xl text-charcoal">Favoriler listeniz boş</h3>
+                    <p class="text-muted mt-2 max-w-sm">Beğendiğiniz ürünlerdeki kalbe dokunun; hepsi burada sizi beklesin.</p>
+                    <a href="/kategori" class="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        Alışverişe Başla
                     </a>
-                    <button onclick="removeFromWishlist('@item.ProductId', this)"
-                            class="absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow hover:bg-red-50 transition-colors"
-                            title="Favorilerden cikar">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
                 </div>
-            }
+            </div>
         </div>
-    }
+    </div>
+</div>
+
+<!-- mobile account sheet -->
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("wishlist")' />
+    </div>
 </div>
 
 @section Scripts {
-    <script>
-        function removeFromWishlist(productId, btn) {
-            fetch('/api/favori/Sil', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId: productId })
-            }).then(function(r) { return r.json(); })
-            .then(function(d) {
-                if (d.success) {
-                    var card = btn.closest('.relative.group');
-                    if (card) card.remove();
-                    var grid = document.querySelector('.grid');
-                    if (grid && grid.children.length === 0) {
-                        location.reload();
-                    }
-                }
-            });
-        }
-    </script>
+    <script src="~/js/favorilerim.js" asp-append-version="true"></script>
 }

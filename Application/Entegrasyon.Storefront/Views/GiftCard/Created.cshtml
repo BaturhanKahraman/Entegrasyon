@@ -1,48 +1,79 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Storefront
+@using System.Globalization
 @{
-    var giftCard = ViewBag.GiftCard as Entegrasyon.Entity.Storefront.StorefrontGiftCard;
+    ViewData["Title"] = "Hediye Çekiniz Hazır";
+    var card = ViewBag.GiftCard as StorefrontGiftCard;
+    var tr = new CultureInfo("tr-TR");
+    var recipient = card?.RecipientName;
 }
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" />
-}
+<main class="max-w-2xl mx-auto px-4 sm:px-6 py-14 lg:py-16 text-center">
 
-<div class="max-w-lg mx-auto px-4 py-8 text-center">
-    <div class="bg-white rounded-lg border border-gray-200 p-8">
-        <div class="mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-            </svg>
+    <div class="w-20 h-20 rounded-full bg-success/15 text-success flex items-center justify-center mx-auto pop" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>
+    </div>
+
+    <h1 class="font-heading text-4xl text-charcoal mt-6">Hediye Çekiniz Hazır</h1>
+    <p class="text-muted mt-3 leading-relaxed">
+        @if (card is not null && !string.IsNullOrWhiteSpace(card.RecipientEmail))
+        {
+            <text><span class="text-charcoal font-medium">@(string.IsNullOrWhiteSpace(recipient) ? card.RecipientEmail : recipient)</span> adresine gönderildi.</text>
+        }
+        else
+        {
+            <text>Aşağıdaki kodu hediye etmek istediğiniz kişiyle paylaşabilirsiniz.</text>
+        }
+    </p>
+
+    @if (card is not null)
+    {
+        @* big cheque preview *@
+        <div class="mt-9 flex justify-center">
+            <div class="w-full max-w-md aspect-[16/10] rounded-3xl gc p-7 flex flex-col justify-between text-white text-left relative overflow-hidden" style="background-image: linear-gradient(135deg,#FF8FB1,#FFD56B);">
+                <div class="flex items-start justify-between">
+                    <span class="font-heading italic text-2xl">Zekids Bebe</span>
+                    <span class="text-[11px] uppercase tracking-wide bg-white/25 rounded-full px-3 py-1">Hediye Çeki</span>
+                </div>
+                <div>
+                    <p class="text-[11px] uppercase tracking-wide text-white/80">Sevgili</p>
+                    <p class="font-heading text-2xl leading-tight">@(string.IsNullOrWhiteSpace(recipient) ? "Değerli müşterimiz" : recipient)</p>
+                    @if (!string.IsNullOrWhiteSpace(card.SenderMessage))
+                    {
+                        <p class="text-sm text-white/90 mt-1 leading-snug line-clamp-2">@card.SenderMessage</p>
+                    }
+                </div>
+                <div class="flex items-end justify-between">
+                    <span class="font-mono text-xs text-white/85 tracking-wider">@card.Code</span>
+                    <span class="font-heading text-3xl">@card.InitialAmount.ToString("N0", tr)₺</span>
+                </div>
+            </div>
         </div>
 
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Hediye Karti Hazir!</h1>
-
-        @if (giftCard is not null)
-        {
-            <p class="text-gray-600 mb-6">Hediye karti kodunuzu asagida bulabilirsiniz.</p>
-
-            <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6">
-                <p class="text-sm text-gray-500 mb-2">Hediye Karti Kodu</p>
-                <p id="gift-code" class="text-2xl font-mono font-bold text-gray-900 tracking-wider">@giftCard.Code</p>
-                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('gift-code').textContent)"
-                        class="mt-3 text-sm text-primary hover:underline">
-                    Kodu Kopyala
+        @* code box + copy *@
+        <div class="mt-8 bg-white border border-cream-300 rounded-2xl p-5 sm:p-6 max-w-md mx-auto">
+            <p class="text-xs uppercase tracking-wide text-muted mb-2">Çek Kodu</p>
+            <div class="flex items-center justify-between gap-3 bg-cream rounded-xl px-4 py-3">
+                <span class="font-mono text-lg text-charcoal tracking-wider">@card.Code</span>
+                <button type="button" data-copy-giftcode data-code="@card.Code" class="shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Kopyala
                 </button>
             </div>
-
-            <div class="text-sm text-gray-600 space-y-1">
-                <p>Tutar: <strong>@giftCard.InitialAmount.ToString("N2") TL</strong></p>
-                <p>Gecerlilik: <strong>@giftCard.ExpiresAt.ToLocalTime().ToString("dd.MM.yyyy")</strong></p>
-                @if (!string.IsNullOrWhiteSpace(giftCard.RecipientName))
-                {
-                    <p>Alici: <strong>@giftCard.RecipientName</strong></p>
-                }
-            </div>
-        }
-
-        <div class="mt-8 space-y-3">
-            <a href="/" class="block btn-primary py-2 no-underline">Alisverise Devam Et</a>
-            <a href="/hediye-karti" class="block text-sm text-primary hover:underline no-underline">Baska Hediye Karti Olustur</a>
+            <p class="text-xs text-muted mt-3 flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                Son kullanma: <span class="text-charcoal font-medium">@card.ExpiresAt.ToString("d MMMM yyyy", tr)</span>
+            </p>
         </div>
+    }
+
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="/hediye-karti" class="w-full sm:w-auto px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Başka Çek Al</a>
+        <a href="/hediye-karti-sorgula" class="w-full sm:w-auto px-7 py-3.5 rounded-full border border-cream-300 text-charcoal font-semibold hover:border-primary transition">Bakiye Sorgula</a>
+        <a href="/" class="w-full sm:w-auto px-7 py-3.5 rounded-full border border-cream-300 text-charcoal font-semibold hover:border-primary transition">Anasayfa</a>
     </div>
-</div>
+
+</main>
+
+@section Scripts {
+    <script src="~/js/gift-card.js" asp-append-version="true"></script>
+}

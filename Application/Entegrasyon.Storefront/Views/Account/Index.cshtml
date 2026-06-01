@@ -1,55 +1,121 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@{
+    ViewData["Title"] = "Hesabım";
 
-@section Head {
-    <seo-meta title="Hesabim | @Tenant.Settings.StoreName" />
+    var customerName = ViewBag.CustomerName as string ?? "Ayşe Yılmaz";
+    var firstName = customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? customerName;
+    var tier = ViewBag.CustomerTier as string ?? "Bronze";
+    var membershipYears = ViewBag.MembershipYears as string ?? "2 yıldır bizimlesiniz";
+    var initials = string.Concat(customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
 }
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        @await Html.PartialAsync("_AccountSidebar", "Index")
-    </aside>
-    <div class="flex-1">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Hos geldin, @ViewBag.CustomerName!</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="/hesabim/Orders" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Siparişlerim</h3>
-                    <p class="text-sm text-gray-600">Siparişlerinizi goruntuleyin ve takip edin.</p>
-                </a>
-                <a href="/hesabim/Profile" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Profilim</h3>
-                    <p class="text-sm text-gray-600">Kisisel bilgilerinizi duzenleyin.</p>
-                </a>
-                <a href="/hesabim/iadelerim" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Iadelerim</h3>
-                    <p class="text-sm text-gray-600">Iade taleplerinizi goruntuleyin.</p>
-                </a>
-                <a href="/hesabim/Addresses" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Adreslerim</h3>
-                    <p class="text-sm text-gray-600">Teslimat adreslerinizi yonetin.</p>
-                </a>
-                <a href="/hesabim/tekrar-satin-al" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Tekrar Satin Al</h3>
-                    <p class="text-sm text-gray-600">Daha once aldiginiz urunleri tekrar Sipariş verin.</p>
-                </a>
-                <a href="/hesabim/guvenlik" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Guvenlik</h3>
-                    <p class="text-sm text-gray-600">Oturum gecmisi ve veri indirme.</p>
-                </a>
-                <a href="/hesabim/puan-programi" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Puan Programi</h3>
-                    <p class="text-sm text-gray-600">Puanlarinizi gorun ve kullanin.</p>
-                </a>
-                <a href="/hesabim/arkadasini-getir" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Arkadasini Getir</h3>
-                    <p class="text-sm text-gray-600">Arkadaslarinizi davet edin, puan kazanin.</p>
-                </a>
-                <a href="/hesabim/ChangePassword" class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 no-underline">
-                    <h3 class="font-semibold text-gray-900 mb-1">Sifre Degistir</h3>
-                    <p class="text-sm text-gray-600">Hesap sifrenizi guncelleyin.</p>
-                </a>
+    <!-- mobile account trigger -->
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">@initials</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("dashboard")' />
+        </aside>
+
+        <div>
+            <!-- greeting -->
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">Merhaba @firstName</h1>
+                <p class="text-muted mt-1.5">Üyelik: <span class="text-charcoal font-medium">@tier</span> · @membershipYears</p>
+            </div>
+
+            <!-- quick cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="rounded-2xl p-5 bg-primary/10">
+                    <div class="w-9 h-9 rounded-xl bg-white/70 text-primary flex items-center justify-center mb-3"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+                    <p class="text-2xl font-semibold text-charcoal">2</p>
+                    <p class="text-xs text-muted mt-0.5 mb-2">Aktif sipariş · 1 kargoda</p>
+                    <a href="/hesabim/siparislerim" class="text-xs font-medium text-primary hover:underline">Tümünü gör →</a>
+                </div>
+                <div class="rounded-2xl p-5 bg-secondary/15">
+                    <div class="w-9 h-9 rounded-xl bg-white/70 text-secondary flex items-center justify-center mb-3"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1"/><path d="M16 12h.01"/><path d="M19 7V5a2 2 0 0 0-2-2H6"/></svg></div>
+                    <p class="text-2xl font-semibold text-charcoal">250₺</p>
+                    <p class="text-xs text-muted mt-0.5 mb-2">Cüzdan bakiyesi</p>
+                    <a href="/hesabim/cuzdanim" class="text-xs font-medium text-primary hover:underline">Detay →</a>
+                </div>
+                <div class="rounded-2xl p-5 bg-accent/20">
+                    <div class="w-9 h-9 rounded-xl bg-white/70 text-warning flex items-center justify-center mb-3"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z"/></svg></div>
+                    <p class="text-2xl font-semibold text-charcoal">1.250</p>
+                    <div class="h-1.5 rounded-full bg-white/60 overflow-hidden mt-2 mb-1.5"><div class="h-full bg-warning rounded-full" style="width:62%"></div></div>
+                    <p class="text-[11px] text-muted">Silver'a 750 puan kaldı</p>
+                </div>
+                <div class="rounded-2xl p-5 bg-success/10">
+                    <div class="w-9 h-9 rounded-xl bg-white/70 text-success flex items-center justify-center mb-3"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A4.5 4.5 0 0 0 12 5.5 4.5 4.5 0 0 0 2 8.5C2 10.8 3.5 12.5 5 14l7 7Z"/></svg></div>
+                    <p class="text-2xl font-semibold text-charcoal">8</p>
+                    <p class="text-xs text-muted mt-0.5 mb-2">Favori ürün</p>
+                    <a href="/favorilerim" class="text-xs font-medium text-primary hover:underline">Tümünü gör →</a>
+                </div>
+            </div>
+
+            <!-- coupons -->
+            <div class="bg-cream rounded-2xl p-6 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-heading text-lg text-charcoal">Aktif Kuponlarınız</h2>
+                    <a href="#" class="text-sm font-medium text-primary hover:underline">Tümü →</a>
+                </div>
+                <div id="coupons" class="flex gap-4 overflow-x-auto no-scrollbar pb-1"></div>
+            </div>
+
+            <!-- recent orders -->
+            <div class="bg-white border border-cream-300 rounded-2xl mb-8">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-cream-300">
+                    <h2 class="font-heading text-lg text-charcoal">Son Siparişler</h2>
+                    <a href="/hesabim/siparislerim" class="text-sm font-medium text-primary hover:underline">Tümünü gör →</a>
+                </div>
+                <div id="recentOrders" class="divide-y divide-cream-300"></div>
+            </div>
+
+            <!-- recommendations -->
+            <section class="mb-8">
+                <div class="flex items-end justify-between mb-5">
+                    <h2 class="font-heading text-xl text-charcoal">Bunlar ilginizi çekebilir</h2>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-carousel-scroll="prev" data-carousel-target="recScroll" aria-label="Önceki" class="hidden sm:flex w-9 h-9 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+                        <button type="button" data-carousel-scroll="next" data-carousel-target="recScroll" aria-label="Sonraki" class="hidden sm:flex w-9 h-9 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+                    </div>
+                </div>
+                <div id="recScroll" class="grid grid-flow-col auto-cols-[60%] sm:auto-cols-[38%] md:auto-cols-[30%] lg:auto-cols-[23.5%] gap-4 sm:gap-5 overflow-x-auto no-scrollbar snap-x scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0"></div>
+            </section>
+
+            <!-- help -->
+            <div class="bg-primary/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="w-10 h-10 rounded-xl bg-white text-primary flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
+                    <p class="text-sm font-medium text-charcoal">Sorun mu yaşıyorsunuz? Size yardımcı olalım.</p>
+                </div>
+                <div class="flex gap-2.5">
+                    <a href="#" class="px-4 py-2.5 rounded-full bg-success text-white text-sm font-semibold hover:bg-success/90 transition">WhatsApp</a>
+                    <a href="#" class="px-4 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:bg-white transition">İletişim</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- mobile account sheet -->
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("dashboard")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/hesabim.js" asp-append-version="true"></script>
+}

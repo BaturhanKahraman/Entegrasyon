@@ -1,6 +1,8 @@
+using System.Threading.RateLimiting;
 using Entegrasyon.ApplicationBootstrap;
 using Entegrasyon.Storefront.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -104,6 +106,64 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Rate limiting — kötüye kullanım yüzeylerinde IP-bazlı sliding window.
+// Politikalar (controller'larda [EnableRateLimiting("name")] ile etkinleştirilir):
+//   - "auth"          : Login + Register POST   → 5/dakika/IP
+//   - "password"      : ForgotPassword + ResetPassword POST → 3/dakika/IP
+//   - "email-confirm" : ResendConfirmation POST → 3/saat/IP
+//   - "balance-check" : GiftCard.Balance POST   → 5/dakika/IP
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    static string IpKey(HttpContext ctx) =>
+        ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+    options.AddPolicy("auth", ctx => RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: IpKey(ctx),
+        factory: _ => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 6,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        }));
+
+    options.AddPolicy("password", ctx => RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: IpKey(ctx),
+        factory: _ => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 3,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 6,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        }));
+
+    options.AddPolicy("email-confirm", ctx => RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: IpKey(ctx),
+        factory: _ => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 3,
+            Window = TimeSpan.FromHours(1),
+            SegmentsPerWindow = 6,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        }));
+
+    options.AddPolicy("balance-check", ctx => RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: IpKey(ctx),
+        factory: _ => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 6,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        }));
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -128,6 +188,7 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseStatusCodePagesWithReExecute("/hata/{0}");
 
 app.MapControllerRoute("home", "/",
@@ -234,26 +295,6 @@ app.MapControllerRoute("compare", "/karsilastir",
     new { controller = "Compare", action = "Index" });
 app.MapControllerRoute("stockNotifyApi", "/api/stok-bildirim",
     new { controller = "StockNotification", action = "Subscribe" });
-app.MapControllerRoute("sellerRegister", "/satici/kayit",
-    new { controller = "Seller", action = "Register" });
-app.MapControllerRoute("sellerPanel", "/satici/{action=Panel}",
-    new { controller = "Seller" });
-app.MapControllerRoute("sellerOrders", "/satici/Siparişlerim",
-    new { controller = "Seller", action = "Orders" });
-app.MapControllerRoute("sellerOrderDetail", "/satici/Sipariş/{id}",
-    new { controller = "Seller", action = "OrderDetail" });
-app.MapControllerRoute("sellerBalance", "/satici/bakiye",
-    new { controller = "Seller", action = "Balance" });
-app.MapControllerRoute("sellerPayout", "/satici/odeme-talebi",
-    new { controller = "Seller", action = "RequestPayout" });
-app.MapControllerRoute("sellerProducts", "/satici/urunlerim",
-    new { controller = "SellerProduct", action = "Index" });
-app.MapControllerRoute("sellerAddProduct", "/satici/urun-ekle",
-    new { controller = "SellerProduct", action = "Add" });
-app.MapControllerRoute("sellerUpdateProduct", "/satici/urun-guncelle",
-    new { controller = "SellerProduct", action = "Update" });
-app.MapControllerRoute("sellerStore", "/magaza/{slug}",
-    new { controller = "Catalog", action = "SellerStore" });
 app.MapControllerRoute("legal", "/{slug}",
     new { controller = "Page", action = "Show" });
 app.MapControllerRoute("robots", "/robots.txt",

@@ -1,91 +1,87 @@
-@using Entegrasyon.Entity.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
-@section Head {
-    <seo-meta title="Iadelerim | @Tenant.Settings.StoreName" />
-}
-
 @{
-    var returns = ViewBag.Returns as List<StorefrontReturnRequest> ?? new List<StorefrontReturnRequest>();
+    ViewData["Title"] = "İadelerim";
+
+    var customerName = ViewBag.CustomerName as string ?? "Ayşe Yılmaz";
+    var initials = string.Concat(customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
 }
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
-            <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
-            <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparişlerim</a>
-            <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Iadelerim</a>
-            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
-            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
-            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
-        </nav>
-    </aside>
-    <div class="flex-1 space-y-6">
-        @if (TempData["Success"] is string success)
-        {
-            <div class="bg-green-50 text-green-700 p-3 rounded">@success</div>
-        }
-        @if (TempData["Error"] is string error)
-        {
-            <div class="bg-red-50 text-red-700 p-3 rounded">@error</div>
-        }
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-xl font-bold text-gray-900 mb-6">Iade Taleplerim</h1>
+    <!-- mobile account trigger -->
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">@initials</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-            @if (returns.Count == 0)
-            {
-                <p class="text-gray-500">Henuz bir iade talebiniz bulunmamaktadir.</p>
-            }
-            else
-            {
-                <div class="space-y-4">
-                    @foreach (var ret in returns)
-                    {
-                        var statusBadge = ret.Status switch
-                        {
-                            ReturnStatus.Pending => "bg-yellow-100 text-yellow-700",
-                            ReturnStatus.Approved => "bg-green-100 text-green-700",
-                            ReturnStatus.Rejected => "bg-red-100 text-red-700",
-                            ReturnStatus.Completed => "bg-blue-100 text-blue-700",
-                            _ => "bg-gray-100 text-gray-700"
-                        };
-                        var statusText = ret.Status switch
-                        {
-                            ReturnStatus.Pending => "Beklemede",
-                            ReturnStatus.Approved => "Onaylandi",
-                            ReturnStatus.Rejected => "Reddedildi",
-                            ReturnStatus.Completed => "Tamamlandi",
-                            _ => "Bilinmiyor"
-                        };
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                                <div>
-                                    <p class="text-sm text-gray-500">Sipariş: <a href="/hesabim/Sipariş/@ret.OrderId" class="text-primary hover:underline no-underline">@ret.OrderId.ToString()[..8]...</a></p>
-                                    <p class="text-sm text-gray-500">Tarih: @ret.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
-                                </div>
-                                <span class="inline-block px-3 py-1 rounded-full text-sm font-medium @statusBadge">@statusText</span>
-                            </div>
-                            <p class="text-sm"><span class="font-medium">Neden:</span> @ret.Reason</p>
-                            @if (!string.IsNullOrWhiteSpace(ret.Description))
-                            {
-                                <p class="text-sm text-gray-600 mt-1">@ret.Description</p>
-                            }
-                            @if (!string.IsNullOrWhiteSpace(ret.ReviewNote))
-                            {
-                                <div class="mt-2 pl-3 border-l-2 border-primary">
-                                    <p class="text-sm text-gray-600"><span class="font-medium">Yanit:</span> @ret.ReviewNote</p>
-                                </div>
-                            }
-                            @if (ret.RefundAmount.HasValue)
-                            {
-                                <p class="text-sm font-medium text-green-600 mt-1">Iade Tutari: @ret.RefundAmount.Value.ToString("N2") TL</p>
-                            }
-                        </div>
-                    }
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("returns")' />
+        </aside>
+
+        <div>
+            <!-- header row -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="font-heading text-3xl text-charcoal">İadelerim</h1>
+                    <p class="text-muted mt-1.5 text-sm">İade taleplerinizi takip edin ve durumlarını görün.</p>
                 </div>
-            }
+                <a href="/hesabim/iade-olustur" class="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-primary text-primary text-sm font-semibold hover:bg-primary/5 transition">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Yeni İade
+                </a>
+            </div>
+
+            <!-- filters -->
+            <div data-return-filters class="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-6"></div>
+
+            <!-- list -->
+            <div data-return-list class="space-y-4"></div>
+
+            <!-- empty -->
+            <div data-returns-empty class="hidden grid md:grid-cols-[1.4fr_1fr] gap-5 items-stretch">
+                <div class="bg-cream rounded-3xl py-14 px-6 text-center flex flex-col items-center justify-center">
+                    <svg viewBox="0 0 24 24" width="64" height="64" class="mb-4" fill="none" stroke="#FF8FB1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                    <h3 class="font-heading text-2xl text-charcoal">Henüz iade talebiniz yok</h3>
+                    <p class="text-muted mt-2 max-w-xs">Teslim aldığınız ürünleri 30 gün içinde ücretsiz iade edebilirsiniz.</p>
+                    <a href="/hesabim/siparislerim" class="inline-block mt-5 px-6 py-3 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Siparişlerime Git</a>
+                </div>
+                <div class="bg-white border border-cream-300 rounded-3xl p-6">
+                    <h4 class="font-heading text-xl text-charcoal mb-4">İade nasıl çalışır?</h4>
+                    <ol class="space-y-4">
+                        <li class="flex gap-3">
+                            <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">1</span>
+                            <p class="text-sm text-charcoal leading-relaxed"><span class="font-medium">Talep oluşturun.</span> Ürün ve sebebi seçin.</p>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">2</span>
+                            <p class="text-sm text-charcoal leading-relaxed"><span class="font-medium">Kargoya verin.</span> Ücretsiz kargo kodu e-postanıza gelir.</p>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">3</span>
+                            <p class="text-sm text-charcoal leading-relaxed"><span class="font-medium">İadenizi alın.</span> Onaydan sonra 3–5 iş günü içinde ücret iadesi yapılır.</p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- mobile account sheet -->
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("returns")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/iadelerim.js" asp-append-version="true"></script>
+}

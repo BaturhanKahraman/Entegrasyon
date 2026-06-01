@@ -1,193 +1,251 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 @{
-    var cart = ViewBag.Cart as Entegrasyon.Entity.Dtos.Storefront.CartDto;
-    var customerName = ViewBag.CustomerName as string ?? "";
-    var error = ViewBag.Error as string;
+    ViewData["Title"] = "Ödeme";
 }
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" />
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 pb-28 lg:pb-12">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">Odeme</h1>
+    <nav aria-label="breadcrumb" class="text-sm text-muted mb-5 flex items-center gap-2">
+        <a href="/" class="hover:text-primary transition">Anasayfa</a>
+        <span class="text-cream-300">›</span>
+        <a href="/sepetim" class="hover:text-primary transition">Sepetim</a>
+        <span class="text-cream-300">›</span>
+        <span class="text-charcoal font-medium">Ödeme</span>
+    </nav>
 
-    @if (!string.IsNullOrWhiteSpace(error))
-    {
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            @error
-        </div>
-    }
+    <div class="grid lg:grid-cols-3 gap-8">
+        @* LEFT *@
+        <div class="lg:col-span-2">
 
-    <form method="post" asp-action="Confirm" asp-controller="Checkout">
-        @Html.AntiForgeryToken()
+            @* Stepper *@
+            <div id="stepper" class="flex items-center justify-between mb-7 px-1"></div>
 
-        <div class="flex flex-col lg:flex-row gap-8">
-            @* Shipping & Billing Form *@
-            <div class="flex-1 space-y-6">
-                @* Shipping Address *@
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">Teslimat Adresi</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-                            <input type="text" name="ShippingFullName" value="@customerName" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+            @* ===== STEP 1: ADRES ===== *@
+            <section id="sec1" class="bg-white border border-cream-300 rounded-2xl mb-4 overflow-hidden">
+                <button type="button" data-go-step="1" class="w-full flex items-center justify-between px-5 sm:px-6 py-4 text-left">
+                    <span class="flex items-center gap-3"><span class="secNum w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold"></span><span class="font-semibold text-charcoal">Teslimat Adresi</span></span>
+                    <span id="sum1" class="hidden text-sm text-primary font-medium">Düzenle</span>
+                </button>
+                <div id="body1" class="px-5 sm:px-6 pb-6">
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <label class="addr-card relative block border-2 rounded-2xl p-4 cursor-pointer transition" data-addr="ev">
+                            <input type="radio" name="address" value="ev" checked data-pick-address="ev" class="sr-only" />
+                            <div class="flex items-center justify-between mb-1.5"><span class="font-semibold text-charcoal">Ev</span><span class="text-[11px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">Varsayılan</span></div>
+                            <p class="text-sm text-charcoal">Ayşe Yılmaz</p>
+                            <p class="text-sm text-muted mt-0.5">0(532) 123 45 67</p>
+                            <p class="text-sm text-muted mt-1 leading-relaxed">Atatürk Mah. Çiçek Sok. No:12 D:4, Kadıköy/İstanbul 34710</p>
+                            <button type="button" data-edit-address="ev" class="mt-2 text-xs text-primary hover:underline">Düzenle</button>
+                        </label>
+                        <label class="addr-card relative block border-2 rounded-2xl p-4 cursor-pointer transition" data-addr="is">
+                            <input type="radio" name="address" value="is" data-pick-address="is" class="sr-only" />
+                            <div class="flex items-center justify-between mb-1.5"><span class="font-semibold text-charcoal">İş</span></div>
+                            <p class="text-sm text-charcoal">Ayşe Yılmaz</p>
+                            <p class="text-sm text-muted mt-0.5">0(532) 123 45 67</p>
+                            <p class="text-sm text-muted mt-1 leading-relaxed">Bağdat Cad. No:55 K:3, Maltepe/İstanbul 34840</p>
+                            <button type="button" data-edit-address="is" class="mt-2 text-xs text-primary hover:underline">Düzenle</button>
+                        </label>
+                    </div>
+
+                    <button type="button" data-toggle-new-addr class="mt-4 w-full border-2 border-dashed border-cream-300 rounded-2xl p-4 text-sm text-muted hover:border-primary hover:text-primary transition flex items-center justify-center gap-2">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Yeni Adres Ekle
+                    </button>
+
+                    <div id="newAddrForm" class="hidden mt-4 border border-cream-300 rounded-2xl p-5 bg-cream/40">
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <input type="text" placeholder="Adres etiketi (Ev, İş…)" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                            <input type="text" placeholder="Ad Soyad" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                            <input type="text" placeholder="0(5XX) XXX XX XX" data-mask-phone class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                            <input type="text" placeholder="Posta Kodu" data-mask-digits="5" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                            <select id="ilSelect" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white text-charcoal"><option value="">İl seçin</option></select>
+                            <select id="ilceSelect" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white text-charcoal"><option value="">İlçe seçin</option></select>
+                            <input type="text" placeholder="Mahalle" class="sm:col-span-2 px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                            <textarea placeholder="Açık adres" rows="2" class="sm:col-span-2 px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white resize-none"></textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-                            <input type="tel" name="ShippingPhone" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Posta Kodu</label>
-                            <input type="text" name="ShippingPostalCode"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Il</label>
-                            <input type="text" name="ShippingCity" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ilce</label>
-                            <input type="text" name="ShippingDistrict" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
-                            <textarea name="ShippingAddress" rows="3" required
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
+                        <label class="flex items-center gap-2 mt-3 text-sm text-charcoal cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded accent-[#FF8FB1]" /> Varsayılan adres yap</label>
+                        <div class="flex gap-2 mt-4">
+                            <button type="button" data-save-new-addr class="px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Kaydet</button>
+                            <button type="button" data-toggle-new-addr class="px-5 py-2.5 rounded-full border border-cream-300 text-sm text-charcoal hover:bg-cream transition">İptal</button>
                         </div>
                     </div>
+
+                    <div class="mt-5 border-t border-cream-300 pt-5">
+                        <p class="text-sm font-semibold text-charcoal mb-2.5">Fatura Tipi</p>
+                        <div class="inline-flex rounded-full border border-cream-300 p-1 mb-3">
+                            <button type="button" data-invoice="bireysel" id="invB" class="seg-active px-4 py-1.5 rounded-full text-sm font-medium transition">Bireysel</button>
+                            <button type="button" data-invoice="kurumsal" id="invK" class="px-4 py-1.5 rounded-full text-sm font-medium text-charcoal transition">Kurumsal</button>
+                        </div>
+                        <div id="kurumsalFields" class="hidden grid sm:grid-cols-2 gap-3 mb-2">
+                            <input type="text" placeholder="Vergi No / TC" data-mask-digits="11" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                            <input type="text" placeholder="Vergi Dairesi" class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white" />
+                        </div>
+                        <label class="flex items-center gap-2.5 text-sm text-charcoal cursor-pointer mt-1">
+                            <span class="switch" data-on="0" data-toggle-switch></span> Faturayı farklı adrese gönder
+                        </label>
+                    </div>
+
+                    <button type="button" data-go-step="2" class="mt-6 w-full sm:w-auto px-8 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Devam Et</button>
                 </div>
+            </section>
 
-                @* Billing Address Toggle *@
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <div class="flex items-center gap-3 mb-4">
-                        <input type="checkbox" id="same-address" name="UseSameAddressForBilling" value="true" checked
-                               class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-                               onchange="document.getElementById('billing-section').classList.toggle('hidden', this.checked)" />
-                        <label for="same-address" class="text-sm font-medium text-gray-700">Fatura adresi teslimat adresi ile ayni</label>
-                    </div>
+            @* ===== STEP 2: KARGO ===== *@
+            <section id="sec2" class="bg-white border border-cream-300 rounded-2xl mb-4 overflow-hidden">
+                <button type="button" data-go-step="2" class="w-full flex items-center justify-between px-5 sm:px-6 py-4 text-left">
+                    <span class="flex items-center gap-3"><span class="secNum w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold"></span><span class="font-semibold text-charcoal">Kargo Yöntemi</span></span>
+                    <span id="sum2" class="hidden text-sm text-primary font-medium">Düzenle</span>
+                </button>
+                <div id="body2" class="hidden px-5 sm:px-6 pb-6">
+                    <div class="space-y-3" id="shipOptions"></div>
 
-                    <div id="billing-section" class="hidden space-y-4">
-                        <h3 class="text-lg font-bold text-gray-900">Fatura Adresi</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad / Firma Unvani</label>
-                                <input type="text" name="BillingFullName"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                    <div class="mt-4 rounded-2xl bg-accent/10 p-5">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="flex items-center gap-2.5 font-medium text-charcoal text-sm"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#F2B544" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8"/></svg> Hediye paketi <span class="text-muted font-normal">+15₺</span></span>
+                            <span class="switch" data-on="0" data-toggle-gift></span>
+                        </label>
+                        <div id="giftPanel" class="hidden mt-4">
+                            <p class="text-sm text-charcoal mb-2">Paket rengi</p>
+                            <div class="flex gap-3 mb-4">
+                                <button type="button" data-gift-color="Pembe" class="giftc w-9 h-9 rounded-full ring-2 ring-primary ring-offset-2" style="background:#FFD0DC" aria-label="Pembe"></button>
+                                <button type="button" data-gift-color="Mavi" class="giftc w-9 h-9 rounded-full" style="background:#B8E0F0" aria-label="Mavi"></button>
+                                <button type="button" data-gift-color="Krem" class="giftc w-9 h-9 rounded-full" style="background:#F3E9D8" aria-label="Krem"></button>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Il</label>
-                                <input type="text" name="BillingCity"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
-                                <textarea name="BillingAddress" rows="3"
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
-                            </div>
+                            <textarea id="giftNote" maxlength="200" placeholder="Hediye notunuz…" rows="2" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white resize-none"></textarea>
+                            <p class="text-right text-xs text-muted mt-1"><span id="giftCount">0</span>/200</p>
                         </div>
                     </div>
+
+                    <button type="button" data-go-step="3" class="mt-6 w-full sm:w-auto px-8 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Devam Et</button>
                 </div>
+            </section>
 
-                @* Order Note *@
-                <div class="bg-white rounded-lg border border-gray-200 p-6">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">Sipariş Notu</h2>
-                    <textarea name="OrderNote" rows="3" placeholder="Siparişizle ilgili eklemek istediginiz bir not var mi?"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
-                </div>
-
-                @* Gift Wrapping *@
-                @if (Tenant.Settings.GiftWrappingEnabled)
-                {
-                    <div class="bg-white rounded-lg border border-gray-200 p-6">
-                        <h2 class="text-lg font-bold text-gray-900 mb-4">Hediye Paketi</h2>
-                        <div class="flex items-center gap-3 mb-4">
-                            <input type="checkbox" id="gift-wrap" name="IsGiftWrapped" value="true"
-                                   class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-                                   onchange="document.getElementById('gift-options').classList.toggle('hidden', !this.checked)" />
-                            <label for="gift-wrap" class="text-sm font-medium text-gray-700">
-                                Hediye paketi istiyorum (+@Tenant.Settings.GiftWrappingFee.ToString("N2") TL)
-                            </label>
-                        </div>
-
-                        <div id="gift-options" class="hidden space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Hediye Mesaji (opsiyonel)</label>
-                                <textarea name="GiftMessage" rows="2" maxlength="500"
-                                          placeholder="Hediye mesajinizi yazin..."
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"></textarea>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" id="hide-invoice" name="HideInvoice" value="true"
-                                       class="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary" />
-                                <label for="hide-invoice" class="text-sm text-gray-700">Fatura gonderilmesin</label>
-                            </div>
-                        </div>
+            @* ===== STEP 3: ÖDEME ===== *@
+            <section id="sec3" class="bg-white border border-cream-300 rounded-2xl mb-4 overflow-hidden">
+                <button type="button" data-go-step="3" class="w-full flex items-center justify-between px-5 sm:px-6 py-4 text-left">
+                    <span class="flex items-center gap-3"><span class="secNum w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold"></span><span class="font-semibold text-charcoal">Ödeme</span></span>
+                </button>
+                <div id="body3" class="hidden px-5 sm:px-6 pb-6">
+                    <div class="flex gap-5 border-b border-cream-300 mb-5">
+                        <button type="button" data-pay-tab="kart" data-pt="kart" class="ptBtn pb-3 text-sm font-semibold border-b-2 border-primary text-charcoal">Kart</button>
+                        <button type="button" data-pay-tab="havale" data-pt="havale" class="ptBtn pb-3 text-sm font-semibold border-b-2 border-transparent text-muted hover:text-charcoal">Havale / EFT</button>
+                        <button type="button" data-pay-tab="kapida" data-pt="kapida" class="ptBtn pb-3 text-sm font-semibold border-b-2 border-transparent text-muted hover:text-charcoal">Kapıda Ödeme</button>
                     </div>
-                }
-            </div>
 
-            @* Order Summary Sidebar *@
-            <div class="w-full lg:w-96">
-                <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">Sipariş Ozeti</h2>
-
-                    @if (cart != null)
-                    {
-                        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                            @foreach (var item in cart.Items)
-                            {
-                                <div class="flex items-center gap-3 text-sm">
-                                    <div class="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                                        {
-                                            <img src="@item.ImageUrl" alt="@item.ProductTitle" class="w-full h-full object-cover" />
-                                        }
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-medium text-gray-900 truncate">@item.ProductTitle</p>
-                                        <p class="text-gray-500">@item.Quantity x @item.UnitPrice.ToString("N2") TL</p>
-                                    </div>
-                                    <span class="font-semibold text-gray-900 flex-shrink-0">@item.LineTotal.ToString("N2") TL</span>
+                    @* KART *@
+                    <div class="payPanel" data-pp="kart">
+                        <div class="space-y-3 max-w-md">
+                            <div class="relative">
+                                <input id="cardNo" type="text" inputmode="numeric" placeholder="0000 0000 0000 0000" data-mask-card class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary pr-16" />
+                                <span id="cardBrand" class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted"></span>
+                            </div>
+                            <input type="text" placeholder="Kart üzerindeki ad" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" inputmode="numeric" placeholder="AA/YY" data-mask-expiry class="px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                                <div class="relative">
+                                    <input id="cvv" type="password" inputmode="numeric" placeholder="CVV" data-mask-digits="3" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary pr-10" />
+                                    <button type="button" data-toggle-cvv aria-label="CVV göster" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                                 </div>
-                            }
+                            </div>
+                            <label class="flex items-center gap-2.5 text-sm text-charcoal cursor-pointer pt-1"><input type="checkbox" checked class="w-4 h-4 rounded accent-[#FF8FB1]" /> 3D Secure ile güvenli öde</label>
+
+                            <div id="taksitWrap" class="hidden pt-2">
+                                <p class="text-sm font-medium text-charcoal mb-2">Taksit seçenekleri</p>
+                                <div id="taksit" class="flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <label class="flex items-center gap-2.5 text-sm text-charcoal cursor-pointer pt-1"><input type="checkbox" class="w-4 h-4 rounded accent-[#FF8FB1]" /> Kartımı bir sonraki alışveriş için kaydet</label>
                         </div>
+                    </div>
 
-                        <hr class="my-4" />
-
-                        <div class="space-y-3 text-sm">
-                            <div class="flex justify-between text-gray-600">
-                                <span>Ara Toplam</span>
-                                <span>@cart.SubTotal.ToString("N2") TL</span>
+                    @* HAVALE *@
+                    <div class="payPanel hidden" data-pp="havale">
+                        <div class="max-w-md bg-cream rounded-2xl p-5 text-sm">
+                            <div class="flex justify-between py-1.5"><span class="text-muted">Banka</span><span class="text-charcoal font-medium">Zekids Bankası</span></div>
+                            <div class="flex justify-between py-1.5"><span class="text-muted">Hesap Sahibi</span><span class="text-charcoal font-medium">Zekids Bebe A.Ş.</span></div>
+                            <div class="flex items-center justify-between py-1.5 border-t border-cream-300 mt-1 pt-2.5">
+                                <span class="text-muted">IBAN</span>
+                                <span class="flex items-center gap-2"><span class="text-charcoal font-medium">TR12 0001 0002 0003 0004 0005 06</span><button type="button" data-copy-iban aria-label="IBAN kopyala" class="text-primary hover:text-primary/70"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></span>
                             </div>
-                            <div class="flex justify-between text-gray-600">
-                                <span>Kargo</span>
-                                @if (cart.ShippingCost == 0)
-                                {
-                                    <span class="text-green-600 font-medium">Ucretsiz</span>
-                                }
-                                else
-                                {
-                                    <span>@cart.ShippingCost.ToString("N2") TL</span>
-                                }
-                            </div>
-                            <hr />
-                            <div class="flex justify-between font-bold text-gray-900 text-base">
-                                <span>Genel Toplam</span>
-                                <span>@cart.GrandTotal.ToString("N2") TL</span>
-                            </div>
+                            <p class="text-xs text-muted mt-3 leading-relaxed">Açıklama kısmına sipariş numaranızı yazın. Ödemeniz onaylandığında siparişiniz hazırlanır (genellikle aynı gün).</p>
                         </div>
-                    }
+                    </div>
 
-                    <button type="submit" class="btn-primary w-full py-3 mt-6">Siparişi Tamamla</button>
+                    @* KAPIDA *@
+                    <div class="payPanel hidden" data-pp="kapida">
+                        <div class="max-w-md bg-cream rounded-2xl p-5 text-sm">
+                            <p class="text-charcoal font-medium">Kapıda kart ile ödeme</p>
+                            <p class="text-muted mt-2 leading-relaxed">Teslimat sırasında kapıda <span class="font-medium text-charcoal">kart ile</span> ödeme yapabilirsiniz. <span class="text-warning font-medium">+10₺ hizmet bedeli</span> uygulanır. Nakit kabul edilmemektedir.</p>
+                        </div>
+                    </div>
 
-                    <a href="/sepet" class="block text-center text-sm text-primary hover:underline mt-3 no-underline">Sepete Don</a>
+                    <div class="mt-6 space-y-2.5 border-t border-cream-300 pt-5">
+                        <label class="flex items-start gap-2.5 text-sm text-charcoal cursor-pointer"><input id="kvkk1" type="checkbox" class="w-4 h-4 mt-0.5 rounded accent-[#FF8FB1]" /> <span><button type="button" data-open-legal="on" class="text-primary hover:underline">Ön Bilgilendirme Formu</button>'nu okudum, onaylıyorum.</span></label>
+                        <label class="flex items-start gap-2.5 text-sm text-charcoal cursor-pointer"><input id="kvkk2" type="checkbox" class="w-4 h-4 mt-0.5 rounded accent-[#FF8FB1]" /> <span><button type="button" data-open-legal="mesafeli" class="text-primary hover:underline">Mesafeli Satış Sözleşmesi</button>'ni okudum, onaylıyorum.</span></label>
+                    </div>
+
+                    <button type="button" data-complete-order class="mt-6 w-full py-4 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition shadow-[0_10px_24px_-6px_rgba(255,143,177,.6)] flex items-center justify-center gap-2">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Siparişi Tamamla
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        @* RIGHT SUMMARY *@
+        <div class="lg:col-span-1">
+            <div class="bg-cream rounded-2xl p-6 lg:sticky lg:top-24">
+                <h2 class="font-heading text-xl text-charcoal mb-4">Sipariş Özeti</h2>
+                <div id="summaryItems" class="space-y-3 max-h-64 overflow-y-auto pr-1 mb-4"></div>
+                <div class="border-t border-cream-300 pt-4 space-y-3 text-sm">
+                    <div class="flex justify-between"><span class="text-muted">Ara toplam</span><span class="text-charcoal font-medium">996₺</span></div>
+                    <div class="flex justify-between"><span class="text-muted">Kargo</span><span id="ckShip" class="text-success font-medium">Bedava</span></div>
+                    <div id="ckGiftRow" class="hidden flex justify-between"><span class="text-muted">Hediye paketi</span><span class="text-charcoal font-medium">+15₺</span></div>
+                </div>
+                <div class="border-t border-cream-300 my-4"></div>
+                <div class="flex items-baseline justify-between mb-5"><span class="font-bold text-lg text-charcoal">Toplam</span><span id="ckTotal" class="text-2xl font-semibold text-primary">996₺</span></div>
+
+                <details class="mb-4 border border-cream-300 rounded-xl bg-white px-4 py-3">
+                    <summary class="flex items-center justify-between cursor-pointer text-sm font-medium text-charcoal">İndirim kuponu <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-muted" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+                    <div class="flex gap-2 mt-3"><input type="text" placeholder="Kupon kodu" class="flex-1 px-3 py-2 rounded-lg border border-cream-300 text-sm outline-none focus:border-primary" /><button type="button" data-coupon-apply class="px-4 py-2 rounded-lg bg-charcoal text-white text-sm font-medium">Uygula</button></div>
+                </details>
+
+                <div class="flex items-center justify-center gap-2">
+                    <span class="inline-flex items-center gap-1 text-[11px] text-muted"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#4CAF89" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>SSL</span>
+                    <span class="px-2 py-0.5 rounded bg-white border border-cream-300 text-[10px] font-semibold text-charcoal tracking-wide">VISA</span>
+                    <span class="px-2 py-0.5 rounded bg-white border border-cream-300 text-[10px] font-semibold text-charcoal tracking-wide">Mastercard</span>
+                    <span class="px-2 py-0.5 rounded bg-white border border-cream-300 text-[10px] font-semibold text-charcoal tracking-wide">TROY</span>
                 </div>
             </div>
         </div>
-    </form>
+    </div>
 </div>
+
+@* MOBILE STICKY BAR *@
+<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-cream-300 px-4 py-3 flex items-center gap-3">
+    <div class="flex-1 leading-tight"><p class="text-xs text-muted">Toplam</p><p id="ckTotalMobile" class="text-lg font-semibold text-primary">996₺</p></div>
+    <button type="button" data-complete-order class="flex-[2] py-3.5 rounded-full bg-primary text-white font-semibold">Siparişi Tamamla</button>
+</div>
+
+@* LEGAL MODAL *@
+<div id="legalModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div data-close-legal class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="relative bg-white rounded-3xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-7 shadow-md">
+        <div class="flex items-start justify-between mb-3"><h2 id="legalTitle" class="font-heading text-xl text-charcoal"></h2><button type="button" data-close-legal aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+        <div id="legalBody" class="text-sm text-charcoal/80 leading-relaxed space-y-3"></div>
+        <button type="button" data-close-legal class="mt-5 w-full py-3 rounded-full bg-primary text-white font-semibold">Okudum, kapat</button>
+    </div>
+</div>
+
+@* SUCCESS OVERLAY (mock — gerçek akışta /odeme/basarili'ya yönlendireceğiz) *@
+<div id="orderSuccess" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-charcoal/50">
+    <div class="relative bg-white rounded-3xl max-w-md w-full p-8 text-center shadow-md">
+        <div class="w-16 h-16 rounded-full bg-success/15 text-success flex items-center justify-center mx-auto mb-4"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <h2 class="font-heading text-2xl text-charcoal">Siparişiniz alındı!</h2>
+        <p class="text-muted mt-2">Sipariş <span class="font-semibold text-charcoal">#ZB-2026-4821</span> · Onay e-postası gönderildi.</p>
+        <div class="flex flex-col gap-2.5 mt-6">
+            <a href="/" class="w-full py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Anasayfaya Dön</a>
+            <a href="/kategori/yeni-gelenler" class="w-full py-3 rounded-full border border-cream-300 text-charcoal font-medium hover:bg-cream transition">Alışverişe Devam</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/checkout.js" asp-append-version="true"></script>
+}

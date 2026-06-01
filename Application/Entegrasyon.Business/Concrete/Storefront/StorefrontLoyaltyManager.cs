@@ -184,4 +184,26 @@ public class StorefrontLoyaltyManager(
         >= 500 => "Gumus",
         _ => "Bronz"
     };
+
+    public async Task<string> GetTierAsync(int tenantId, int customerId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var balance = await dbContext.StorefrontLoyaltyPoints
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.CustomerId == customerId);
+
+        var current = balance?.CurrentBalance ?? 0;
+
+        var settings = await dbContext.StorefrontSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId);
+
+        var silverMin = settings?.LoyaltyTierSilverMin ?? 2000;
+        var goldMin = settings?.LoyaltyTierGoldMin ?? 5000;
+
+        if (current >= goldMin) return "Gold";
+        if (current >= silverMin) return "Silver";
+        return "Bronze";
+    }
 }

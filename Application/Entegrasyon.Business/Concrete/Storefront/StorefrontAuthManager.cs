@@ -16,6 +16,7 @@ namespace Entegrasyon.Business.Concrete.Storefront;
 
 public class StorefrontAuthManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
+    IStorefrontEmailService emailService,
     IOptions<NotificationFeatureFlags> notificationFlags) : IStorefrontAuthManager
 {
     public async Task<IDataResult<StorefrontCustomerAuth>> RegisterAsync(StorefrontRegisterDto dto)
@@ -142,6 +143,55 @@ public class StorefrontAuthManager(
         return new SuccessResult("E-posta dogrulandi.");
     }
 
+    public async Task<IResult> ResendEmailConfirmationAsync(int tenantId, string email)
+    {
+        // 1. Validation: e-posta format kontrolu
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+            return new ErrorResult("Gecerli bir e-posta adresi girin.");
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // 2. Business Rules: kullanici var mi + zaten dogrulanmis mi
+        var auth = await dbContext.StorefrontCustomerAuths
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Email == email);
+
+        if (auth is null)
+            return new ErrorResult("Bu e-posta adresiyle kayitli kullanici bulunamadi.");
+
+        if (auth.EmailConfirmed)
+            return new ErrorResult("E-posta adresiniz zaten dogrulanmis.");
+
+        // 3. Execution: yeni token uret -> kaydet -> dogrulama maili gonder
+        auth.EmailConfirmationToken = GenerateToken();
+        auth.EmailConfirmationTokenExpiresAt = DateTimeOffset.UtcNow.AddHours(24);
+
+        dbContext.StorefrontCustomerAuths.Update(auth);
+        await dbContext.SaveChangesAsync();
+
+        // Magaza adi + domain bilgisi (tenant bazli)
+        var settings = await dbContext.StorefrontSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId);
+
+        var domain = await dbContext.StorefrontDomainMappings
+            .AsNoTracking()
+            .Where(d => d.TenantId == tenantId && d.IsActive)
+            .OrderByDescending(d => d.IsPrimary)
+            .Select(d => d.DomainName)
+            .FirstOrDefaultAsync();
+
+        var storeName = settings?.StoreName ?? "Magaza";
+        var customerName = auth.Customer?.Name
+            ?? auth.Customer?.FullName
+            ?? email;
+
+        await emailService.SendEmailVerificationAsync(
+            email, customerName, auth.EmailConfirmationToken!, storeName, domain ?? "");
+
+        return new SuccessResult("Dogrulama baglantisi e-posta adresinize gonderildi.");
+    }
+
     public async Task<IDataResult<string>> RequestPasswordResetAsync(int tenantId, string email)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
@@ -182,6 +232,7 @@ public class StorefrontAuthManager(
         auth.PasswordSalt = salt;
         auth.PasswordResetToken = null;
         auth.PasswordResetTokenExpiresAt = null;
+        auth.LastPasswordChangedAt = DateTimeOffset.UtcNow;
         auth.LoginFailedCount = 0;
         auth.LockedUntil = null;
 
@@ -207,11 +258,88 @@ public class StorefrontAuthManager(
         HashingHelper.CreatePasswordHash(newPassword, out var hash, out var salt);
         auth.PasswordHash = hash;
         auth.PasswordSalt = salt;
+        auth.LastPasswordChangedAt = DateTimeOffset.UtcNow;
 
         dbContext.StorefrontCustomerAuths.Update(auth);
         await dbContext.SaveChangesAsync();
 
         return new SuccessResult("Sifre basariyla degistirildi.");
+    }
+
+    // KVKK uyumlu hesap kapatma: soft-delete + PII anonimlestirme + acik siparis kontrolu.
+    public async Task<IResult> DeleteAccountAsync(int tenantId, int authId, string password)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var auth = await dbContext.StorefrontCustomerAuths
+            .FirstOrDefaultAsync(x => x.Id == authId && x.TenantId == tenantId);
+
+        if (auth is null)
+            return new ErrorResult("Kullanici bulunamadi.");
+
+        // Business Rule: sifre dogrulamasi
+        if (!HashingHelper.VerifyPasswordHash(password, auth.PasswordHash, auth.PasswordSalt))
+            return new ErrorResult("Sifre hatali.");
+
+        // Business Rule: devam eden siparis varken hesap kapatilamaz
+        var openStatuses = new[]
+        {
+            Entity.Storefront.OrderStatus.Received,
+            Entity.Storefront.OrderStatus.Preparing,
+            Entity.Storefront.OrderStatus.Shipped
+        };
+        var hasOpenOrder = await dbContext.Orders.AnyAsync(o =>
+            o.CustomerId == auth.CustomerId &&
+            o.StorefrontOrderStatus.HasValue &&
+            openStatuses.Contains(o.StorefrontOrderStatus.Value));
+
+        if (hasOpenOrder)
+            return new ErrorResult("Devam eden siparisiniz oldugu icin hesabinizi simdilik kapatamiyoruz. Lutfen siparisleriniz tamamlandiktan sonra tekrar deneyin.");
+
+        // Execution: PII anonimlestir + soft-delete
+        var anonymized = $"deleted-{auth.Id}-{Guid.NewGuid():N}@deleted.local";
+        auth.Email = anonymized;
+        auth.EmailConfirmed = false;
+        auth.EmailConfirmationToken = null;
+        auth.PasswordResetToken = null;
+        auth.TwoFactorEnabled = false;
+        auth.TwoFactorSecret = null;
+        auth.MarketingConsent = false;
+        auth.IsDeleted = true;
+        auth.DeletedAt = DateTimeOffset.UtcNow;
+        dbContext.StorefrontCustomerAuths.Update(auth);
+
+        var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Id == auth.CustomerId);
+        if (customer is not null)
+        {
+            customer.Name = "Silinmis";
+            customer.Surname = "Kullanici";
+            customer.PhoneNumber = null;
+            customer.IsActive = false;
+            customer.DeactivatedAt = DateTimeOffset.UtcNow;
+            customer.DeactivationReason = "Kullanici hesabini sildi (KVKK).";
+            customer.IsDeleted = true;
+            customer.DeletedAt = DateTimeOffset.UtcNow;
+            dbContext.Customers.Update(customer);
+        }
+
+        await dbContext.SaveChangesAsync();
+        return new SuccessResult("Hesabiniz silindi.");
+    }
+
+    public async Task<IResult> SetLoginAlertsAsync(int authId, bool enabled)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var auth = await dbContext.StorefrontCustomerAuths.FirstOrDefaultAsync(x => x.Id == authId);
+        if (auth is null)
+            return new ErrorResult("Kullanici bulunamadi.");
+
+        auth.LoginAlertsEnabled = enabled;
+        dbContext.StorefrontCustomerAuths.Update(auth);
+        await dbContext.SaveChangesAsync();
+
+        return new SuccessResult(enabled ? "Giris bildirimleri acildi." : "Giris bildirimleri kapatildi.");
     }
 
     public async Task<IDataResult<StorefrontCustomerAuth>> GetAuthByCustomerIdAsync(int tenantId, int customerId)
@@ -220,6 +348,7 @@ public class StorefrontAuthManager(
 
         var auth = await dbContext.StorefrontCustomerAuths
             .AsNoTracking()
+            .Include(x => x.Customer)
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.CustomerId == customerId);
 
         if (auth is null)
@@ -228,25 +357,107 @@ public class StorefrontAuthManager(
         return new SuccessDataResult<StorefrontCustomerAuth>(auth);
     }
 
-    public async Task<IResult> UpdateProfileAsync(int customerId, StorefrontProfileDto dto)
+    public async Task<IResult> UpdateProfileAsync(int tenantId, int customerId, StorefrontProfileDto dto)
     {
+        // 1. Validation
+        if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Surname))
+            return new ErrorResult("Ad ve soyad zorunludur.");
+
+        if (dto.BirthDate.HasValue && dto.BirthDate.Value > DateOnly.FromDateTime(DateTime.UtcNow))
+            return new ErrorResult("Dogum tarihi gelecekte olamaz.");
+
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
+        // 2. Business Rules: musteri var mi
         var customer = await dbContext.Customers
             .FirstOrDefaultAsync(x => x.Id == customerId);
 
         if (customer is null)
             return new ErrorResult("Musteri bulunamadi.");
 
+        // 3. Execution: profil alanlari + bulten tercihi (auth.MarketingConsent)
         customer.Name = dto.Name;
         customer.Surname = dto.Surname;
         customer.FullName = $"{dto.Name} {dto.Surname}";
         customer.PhoneNumber = dto.Phone;
+        customer.BirthDate = dto.BirthDate;
+        customer.Gender = dto.Gender;
+        if (!string.IsNullOrWhiteSpace(dto.AvatarUrl))
+            customer.AvatarUrl = dto.AvatarUrl;
 
         dbContext.Customers.Update(customer);
+
+        var auth = await dbContext.StorefrontCustomerAuths
+            .FirstOrDefaultAsync(a => a.TenantId == tenantId && a.CustomerId == customerId);
+        if (auth is not null && auth.MarketingConsent != dto.NewsletterOptIn)
+        {
+            auth.MarketingConsent = dto.NewsletterOptIn;
+            auth.MarketingConsentDate = dto.NewsletterOptIn ? DateTimeOffset.UtcNow : null;
+            dbContext.StorefrontCustomerAuths.Update(auth);
+        }
+
         await dbContext.SaveChangesAsync();
 
         return new SuccessResult("Profil guncellendi.");
+    }
+
+    // V1 basit akis: sifre dogrulanir, e-posta benzersizligi kontrol edilir, yeni adres dogrudan
+    // yazilir + EmailConfirmed=false + yeni token uretilir, dogrulama maili yeni adrese gonderilir.
+    // Kullanici yeni adresteki linke tiklayinca mevcut ConfirmEmail akisi onaylar.
+    public async Task<IResult> RequestEmailChangeAsync(int tenantId, int authId, string newEmail, string currentPassword)
+    {
+        // 1. Validation
+        if (string.IsNullOrWhiteSpace(newEmail) || !newEmail.Contains('@'))
+            return new ErrorResult("Gecerli bir e-posta adresi girin.");
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var auth = await dbContext.StorefrontCustomerAuths
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.Id == authId && x.TenantId == tenantId);
+
+        if (auth is null)
+            return new ErrorResult("Kullanici bulunamadi.");
+
+        // 2. Business Rules
+        if (!HashingHelper.VerifyPasswordHash(currentPassword, auth.PasswordHash, auth.PasswordSalt))
+            return new ErrorResult("Mevcut sifre hatali.");
+
+        if (string.Equals(auth.Email, newEmail, StringComparison.OrdinalIgnoreCase))
+            return new ErrorResult("Yeni e-posta adresi mevcut adresinizle ayni.");
+
+        var emailTaken = await dbContext.StorefrontCustomerAuths
+            .AnyAsync(x => x.TenantId == tenantId && x.Email == newEmail && x.Id != authId);
+        if (emailTaken)
+            return new ErrorResult("Bu e-posta adresi baska bir hesap tarafindan kullaniliyor.");
+
+        // 3. Execution: yeni adres + dogrulama tokeni
+        auth.Email = newEmail;
+        auth.EmailConfirmed = false;
+        auth.EmailConfirmationToken = GenerateToken();
+        auth.EmailConfirmationTokenExpiresAt = DateTimeOffset.UtcNow.AddHours(24);
+
+        dbContext.StorefrontCustomerAuths.Update(auth);
+        await dbContext.SaveChangesAsync();
+
+        var settings = await dbContext.StorefrontSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId);
+
+        var domain = await dbContext.StorefrontDomainMappings
+            .AsNoTracking()
+            .Where(d => d.TenantId == tenantId && d.IsActive)
+            .OrderByDescending(d => d.IsPrimary)
+            .Select(d => d.DomainName)
+            .FirstOrDefaultAsync();
+
+        var storeName = settings?.StoreName ?? "Magaza";
+        var customerName = auth.Customer?.Name ?? auth.Customer?.FullName ?? newEmail;
+
+        await emailService.SendEmailVerificationAsync(
+            newEmail, customerName, auth.EmailConfirmationToken!, storeName, domain ?? "");
+
+        return new SuccessResult("Yeni e-posta adresinize bir dogrulama baglantisi gonderildi.");
     }
 
     public async Task RecordLoginAttemptAsync(int authId, string? ipAddress, string? userAgent, bool isSuccessful, string? failureReason = null)

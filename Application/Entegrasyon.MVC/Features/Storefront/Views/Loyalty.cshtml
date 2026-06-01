@@ -1,0 +1,118 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.LoyaltyVm
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow text-white avatar"><i class="ti ti-users"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Aktif Uye</div>
+                        <div class="text-secondary">@Model.Dashboard.ActiveMembers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green text-white avatar"><i class="ti ti-arrow-up-right"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Kazanim</div>
+                        <div class="text-secondary">@Model.Dashboard.TotalEarnedPoints.ToString("N0")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-red text-white avatar"><i class="ti ti-arrow-down-right"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Harcanan</div>
+                        <div class="text-secondary">@Model.Dashboard.TotalSpentPoints.ToString("N0")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-purple text-white avatar"><i class="ti ti-trending-up"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Bu Ay Kazanilan</div>
+                        <div class="text-secondary">@Model.Dashboard.ThisMonthEarned.ToString("N0")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">En Sadik Musteriler</h3>
+        <div class="card-actions">
+            <span class="badge bg-secondary-lt">@Model.Dashboard.TopMembers.Count kayit</span>
+        </div>
+    </div>
+    @if (Model.Dashboard.TopMembers.Count == 0)
+    {
+        <div class="card-body text-center py-5">
+            <div class="mb-3"><i class="ti ti-star icon-lg text-secondary" style="font-size: 2.5rem;"></i></div>
+            <h3 class="text-secondary">Henuz sadakat uyesi yok</h3>
+            <p class="text-secondary">Musterileriniz puan kazanmaya basladiginda burada listelenecektir.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Musteri</th>
+                        <th class="text-center">Tier</th>
+                        <th class="text-end">Toplam Kazanim</th>
+                        <th class="text-end">Guncel Bakiye</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Model.Dashboard.TopMembers)
+                    {
+                        <tr>
+                            <td>
+                                <span class="avatar avatar-sm me-2 bg-yellow-lt text-yellow">#</span>
+                                <span class="fw-medium">@(m.CustomerName ?? $"Musteri #{m.CustomerId}")</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary-lt">@m.Level</span>
+                            </td>
+                            <td class="text-end text-success fw-bold">@m.TotalEarned.ToString("N0")</td>
+                            <td class="text-end fw-bold">@m.CurrentBalance.ToString("N0")</td>
+                            <td class="text-end">
+                                <a href="/storefront/loyalty/@m.CustomerId" class="btn btn-sm btn-outline-primary">
+                                    <i class="ti ti-eye me-1"></i>Detay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

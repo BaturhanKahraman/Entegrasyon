@@ -1,66 +1,241 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
-@section Head {
-    <seo-meta title="Iade Talebi | @Tenant.Settings.StoreName" />
-}
-
 @{
-    var orderId = ViewBag.OrderId as Guid?;
-    var orderNumber = ViewBag.OrderNumber as string;
+    ViewData["Title"] = "İade Talebi Oluştur";
+
+    var customerName = ViewBag.CustomerName as string ?? "Ayşe Yılmaz";
+    var initials = string.Concat(customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+
+    string Img(string id, int w = 120) => $"https://images.unsplash.com/photo-{id}?auto=format&fit=crop&w={w}&q=80";
+
+    var orderNo = ViewBag.OrderNo as string ?? "ZB-2026-1234";
+    var orderDate = ViewBag.OrderDate as string ?? "23 Mayıs 2026";
+
+    var products = new[]
+    {
+        new { Id = "p1", Name = "Çiçekli Yazlık Elbise",     Variant = "4-5 Yaş · Pembe",  Max = 2, Price = 249, Img = "1620774760711-caa4c94d683a" },
+        new { Id = "p2", Name = "Pamuklu Body Seti (3'lü)",   Variant = "6-9 Ay · Krem",    Max = 1, Price = 199, Img = "1604482858862-1db908a653e4" },
+        new { Id = "p3", Name = "Salopet Kot Pantolon",       Variant = "3-4 Yaş · Mavi",   Max = 1, Price = 179, Img = "1622290291468-a28f7a7dc6a8" },
+        new { Id = "p4", Name = "Yumuşak Patik Çorap",        Variant = "Tek Beden · Sarı", Max = 2, Price = 89,  Img = "1632337950445-ba446cb0e26f" },
+        new { Id = "p5", Name = "Kapüşonlu Sweat",            Variant = "7-8 Yaş · Mint",   Max = 1, Price = 229, Img = "1566454544259-f4b94c3d758c" }
+    };
+
+    var reasons = new[] { "Bedeni uymadı", "Beklediğim gibi değil", "Hasarlı geldi", "Yanlış ürün", "Diğer" };
+
+    var resolutions = new[]
+    {
+        new { Key = "refund",   Title = "İade et",             Sub = "Ücret iadesi yapılır",         Icon = "<path d=\"M19 7H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1\"/><path d=\"M16 12h.01\"/><path d=\"M19 7V5a2 2 0 0 0-2-2H6\"/>" },
+        new { Key = "exchange", Title = "Aynı ürün değişim",   Sub = "Stok varsa yenisi gönderilir", Icon = "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>" }
+    };
 }
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
-            <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
-            <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparişlerim</a>
-            <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Iadelerim</a>
-            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
-            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
-            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
-        </nav>
-    </aside>
-    <div class="flex-1 space-y-6">
-        @if (TempData["Error"] is string error)
-        {
-            <div class="bg-red-50 text-red-700 p-3 rounded">@error</div>
-        }
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-        <div class="bg-white rounded-lg shadow p-6">
-            <a href="/hesabim/Orders" class="text-sm text-gray-500 hover:text-gray-700 no-underline">&larr; Siparişlere Don</a>
-            <h1 class="text-xl font-bold text-gray-900 mt-2 mb-6">Iade Talebi Olustur</h1>
+    <!-- mobile account trigger -->
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">@initials</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-            @if (!string.IsNullOrWhiteSpace(orderNumber))
-            {
-                <p class="text-sm text-gray-600 mb-4">Sipariş No: <strong>@orderNumber</strong></p>
-            }
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("returns")' />
+        </aside>
 
-            <form method="post" action="/hesabim/iade-talebi/@orderId" class="space-y-4">
-                @Html.AntiForgeryToken()
+        <div>
+            <!-- breadcrumb + heading -->
+            <nav class="flex items-center gap-1.5 text-sm text-muted mb-3">
+                <a href="/hesabim/iadelerim" class="hover:text-primary transition">İadelerim</a>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+                <span class="text-charcoal">Yeni İade</span>
+            </nav>
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">İade Talebi Oluştur</h1>
+                <p class="text-muted mt-1.5 text-sm">Sipariş <span class="font-mono text-charcoal">#@orderNo</span> · @orderDate</p>
+            </div>
 
-                <div>
-                    <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Iade Nedeni *</label>
-                    <select name="reason" id="reason" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                        <option value="">Seciniz...</option>
-                        <option value="Urun kusurlu">Urun kusurlu</option>
-                        <option value="Yanlis urun">Yanlis urun</option>
-                        <option value="Beden uymuyor">Beden uymuyor</option>
-                        <option value="Begenmedim">Begenmedim</option>
-                        <option value="Diger">Diger</option>
-                    </select>
+            <form asp-controller="Account" asp-action="CreateReturn" method="post" enctype="multipart/form-data" data-return-form>
+                <input type="hidden" name="OrderNo" value="@orderNo" />
+
+                <div class="md:grid md:grid-cols-3 md:gap-8">
+                    <!-- ===== FORM (col-span-2) ===== -->
+                    <div class="md:col-span-2 space-y-6">
+
+                        <!-- STEP 1: Ürün Seç -->
+                        <section>
+                            <div class="flex items-center gap-2.5 mb-3">
+                                <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">1</span>
+                                <h2 class="font-heading text-xl text-charcoal">Ürün Seç</h2>
+                            </div>
+                            <div class="bg-white border border-cream-300 rounded-2xl divide-y divide-cream-300 overflow-hidden">
+                                @{ var idx = 0; }
+                                @foreach (var p in products)
+                                {
+                                    idx++;
+                                    <div data-item data-price="@p.Price" data-max="@p.Max" class="flex items-start gap-3 sm:gap-4 p-4 transition">
+                                        <input type="checkbox" id="item-@p.Id" name="ItemSelections" value="@p.Id" class="sr-only" data-item-check />
+                                        <label for="item-@p.Id" data-check-box class="mt-1 w-5 h-5 rounded-md border-2 border-cream-300 flex items-center justify-center shrink-0 cursor-pointer transition">
+                                            <svg data-check-icon class="hidden" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+                                        </label>
+                                        <div class="ph w-16 h-20 rounded-xl overflow-hidden bg-cream shrink-0"><img class="photo" loading="lazy" alt="" src="@Img(p.Img)" onerror="this.onerror=null;this.src='/img/placeholder.svg'" /></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-medium text-charcoal leading-snug">@p.Name</p>
+                                            <p class="text-xs text-muted mt-0.5">@p.Variant</p>
+                                            <p class="text-sm font-semibold text-charcoal mt-1.5">@(p.Price)₺ <span class="text-xs font-normal text-muted">/ adet · sipariş: @p.Max</span></p>
+                                            <div data-qty-wrap class="hidden items-center gap-3 mt-3">
+                                                <span class="text-xs text-muted">İade adedi</span>
+                                                <div class="flex items-center gap-2">
+                                                    <button type="button" data-qty-dec aria-label="Azalt" class="w-8 h-8 flex items-center justify-center rounded-lg border border-cream-300 text-charcoal hover:border-primary hover:text-primary transition disabled:opacity-40 disabled:cursor-not-allowed">−</button>
+                                                    <span data-qty-label class="w-6 text-center text-sm font-semibold text-charcoal">@p.Max</span>
+                                                    <button type="button" data-qty-inc aria-label="Artır" class="w-8 h-8 flex items-center justify-center rounded-lg border border-cream-300 text-charcoal hover:border-primary hover:text-primary transition disabled:opacity-40 disabled:cursor-not-allowed">+</button>
+                                                </div>
+                                                <input type="hidden" name="Quantities[@p.Id]" value="@p.Max" data-qty-input />
+                                                <span data-line class="ml-auto text-sm font-semibold text-primary">@(p.Max * p.Price)₺</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+
+                        <!-- STEP 2: İade Sebebi -->
+                        <section>
+                            <div class="flex items-center gap-2.5 mb-3">
+                                <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">2</span>
+                                <h2 class="font-heading text-xl text-charcoal">İade Sebebi</h2>
+                            </div>
+                            <div class="bg-white border border-cream-300 rounded-2xl p-2">
+                                @foreach (var r in reasons)
+                                {
+                                    <label class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-cream transition cursor-pointer">
+                                        <input type="radio" name="Reason" value="@r" class="sr-only" data-reason-radio />
+                                        <span data-radio-dot class="w-5 h-5 rounded-full border-2 border-cream-300 flex items-center justify-center shrink-0">
+                                            <span data-radio-fill class="w-2.5 h-2.5 rounded-full bg-primary opacity-0"></span>
+                                        </span>
+                                        <span class="text-sm text-charcoal">@r</span>
+                                    </label>
+                                }
+                            </div>
+                            <div data-reason-other-wrap class="hidden mt-3">
+                                <textarea name="ReasonNote" rows="3" placeholder="Lütfen iade sebebinizi kısaca açıklayın…" class="w-full px-4 py-3 rounded-2xl border border-cream-300 text-sm outline-none focus:border-primary resize-none"></textarea>
+                            </div>
+                        </section>
+
+                        <!-- STEP 3: Çözüm -->
+                        <section>
+                            <div class="flex items-center gap-2.5 mb-3">
+                                <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">3</span>
+                                <h2 class="font-heading text-xl text-charcoal">Çözüm</h2>
+                            </div>
+                            <div class="grid sm:grid-cols-2 gap-3">
+                                @{ var ri = 0; }
+                                @foreach (var o in resolutions)
+                                {
+                                    ri++;
+                                    <label data-solution-item class="flex items-start gap-3 p-4 rounded-2xl border border-cream-300 bg-white text-left transition cursor-pointer hover:border-primary">
+                                        <input type="radio" name="Solution" value="@o.Key" class="sr-only" data-solution-radio checked="@(ri == 1)" />
+                                        <span data-sol-icon class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-cream text-primary"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(o.Icon)</svg></span>
+                                        <span class="flex-1">
+                                            <span class="block text-sm font-semibold text-charcoal">@o.Title</span>
+                                            <span class="block text-xs text-muted mt-0.5">@o.Sub</span>
+                                        </span>
+                                        <span data-radio-dot class="w-5 h-5 rounded-full border-2 border-cream-300 flex items-center justify-center shrink-0">
+                                            <span data-radio-fill class="w-2.5 h-2.5 rounded-full bg-primary opacity-0"></span>
+                                        </span>
+                                    </label>
+                                }
+                            </div>
+                        </section>
+
+                        <!-- STEP 4: Fotoğraf yükle -->
+                        <section>
+                            <div class="flex items-center gap-2.5 mb-1.5">
+                                <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">4</span>
+                                <h2 class="font-heading text-xl text-charcoal">Fotoğraf Yükle</h2>
+                            </div>
+                            <p class="text-sm text-muted mb-3 pl-9">Hasarlı veya yanlış ürün için fotoğraf eklemeniz süreci hızlandırır. <span class="text-charcoal/60">(opsiyonel)</span></p>
+                            <label data-drop-zone for="photoInput" class="block border-2 border-dashed border-cream-300 rounded-2xl py-12 px-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition">
+                                <svg viewBox="0 0 24 24" width="36" height="36" class="mx-auto mb-3 text-primary" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                                <p class="text-sm font-medium text-charcoal">Fotoğrafları buraya sürükleyin</p>
+                                <p class="text-xs text-muted mt-1">veya seçmek için tıklayın · JPG, PNG · max 5 MB</p>
+                                <input id="photoInput" name="Photos" type="file" accept="image/*" multiple class="hidden" data-photo-input />
+                            </label>
+                            <div data-photo-grid class="hidden grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4"></div>
+                        </section>
+
+                        <!-- STEP 5: İade Adresi -->
+                        <section>
+                            <div class="flex items-center gap-2.5 mb-1.5">
+                                <span class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">5</span>
+                                <h2 class="font-heading text-xl text-charcoal">İade Adresi</h2>
+                            </div>
+                            <p class="text-sm text-muted mb-3 pl-9">Ürünü göndereceğiniz adresi seçin. Kargo görevlisi bu adresten alacaktır.</p>
+                            <div class="bg-white border border-cream-300 rounded-2xl p-5">
+                                <label for="addrSelect" class="block text-xs font-semibold uppercase tracking-wide text-muted mb-2">Mevcut Adres</label>
+                                <select id="addrSelect" name="AddressId" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary bg-white text-charcoal">
+                                    <option value="ev" selected>Ev · Atatürk Mah. Çiçek Sok. No:12 D:4, Kadıköy / İstanbul</option>
+                                    <option value="is">İş · Bağdat Cad. No:55 K:3, Maltepe / İstanbul</option>
+                                    <option value="anneanne">Anneanne · Yeşilköy Mah. Lale Sok. No:8, Bakırköy / İstanbul</option>
+                                </select>
+                                <a href="/hesabim/adresler" class="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-primary hover:underline">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                    Yeni Adres Ekle
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- ===== SUMMARY (col-span-1, sticky) ===== -->
+                    <div class="md:col-span-1 mt-6 md:mt-0">
+                        <div class="lg:sticky lg:top-24">
+                            <div class="bg-cream rounded-2xl p-6">
+                                <h2 class="font-heading text-xl text-charcoal mb-4">İade Özeti</h2>
+
+                                <div data-summary-items class="space-y-3 mb-4"></div>
+                                <p data-summary-empty class="text-sm text-muted py-6 text-center">İade etmek istediğiniz ürünleri seçin.</p>
+
+                                <div class="border-t border-cream-300 pt-4">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm text-muted">Seçilen ürün</span>
+                                        <span data-summary-count class="text-sm font-medium text-charcoal">0 adet</span>
+                                    </div>
+                                    <div class="flex items-baseline justify-between">
+                                        <span class="text-sm font-medium text-charcoal">Tahmini iade tutarı</span>
+                                        <span data-summary-total class="font-heading text-2xl text-primary">0₺</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-start gap-2.5 mt-4 p-3 rounded-xl bg-success/10 text-success">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" class="mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                                    <p class="text-xs leading-relaxed">Kargo ücreti tarafımızca karşılanır. Onaydan sonra 3–5 iş günü içinde ücret iadesi yapılır.</p>
+                                </div>
+
+                                <button type="submit" data-submit-btn class="w-full mt-5 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                                    İade Talebi Oluştur
+                                </button>
+                                <a href="/hesabim/iadelerim" class="block text-center mt-3 text-sm text-muted hover:text-charcoal transition">Vazgeç</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Aciklama</label>
-                    <textarea name="description" id="description" rows="4" maxlength="2000"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                              placeholder="Iade nedeninizi detayli aciklayabilirsiniz..."></textarea>
-                </div>
-
-                <button type="submit" class="btn-primary px-6 py-2">Iade Talebi Gonder</button>
             </form>
         </div>
     </div>
 </div>
+
+<!-- mobile account sheet -->
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("returns")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/iade-olustur.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,124 @@
+@model Entegrasyon.MVC.Features.Storefront.ViewModels.LoyaltyCustomerVm
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto"><span class="bg-yellow text-white avatar"><i class="ti ti-star"></i></span></div>
+                    <div class="col">
+                        <div class="font-weight-medium">Guncel Bakiye</div>
+                        <div class="text-secondary">@Model.Balance.CurrentBalance.ToString("N0") puan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto"><span class="bg-green text-white avatar"><i class="ti ti-arrow-up-right"></i></span></div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Kazanim</div>
+                        <div class="text-secondary">@Model.Balance.TotalEarned.ToString("N0")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto"><span class="bg-red text-white avatar"><i class="ti ti-arrow-down-right"></i></span></div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Harcanan</div>
+                        <div class="text-secondary">@Model.Balance.TotalSpent.ToString("N0")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto"><span class="bg-blue text-white avatar"><i class="ti ti-list"></i></span></div>
+                    <div class="col">
+                        <div class="font-weight-medium">Islem Sayisi</div>
+                        <div class="text-secondary">@Model.Transactions.Count</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Puan Hareketleri</h3>
+            </div>
+            @if (Model.Transactions.Count == 0)
+            {
+                <div class="card-body text-center py-5">
+                    <div class="mb-3"><i class="ti ti-history icon-lg text-secondary" style="font-size: 2.5rem;"></i></div>
+                    <h3 class="text-secondary">Hareket yok</h3>
+                    <p class="text-secondary">Bu musteri henuz puan kazanmadi.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Aciklama</th>
+                                <th>Tur</th>
+                                <th class="text-end">Puan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in Model.Transactions)
+                            {
+                                var positive = t.Points >= 0;
+                                <tr>
+                                    <td class="text-secondary">@t.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@(t.Description ?? "-")</td>
+                                    <td><span class="badge bg-secondary-lt">@t.TransactionType</span></td>
+                                    <td class="text-end fw-bold @(positive ? "text-green" : "text-red")">@(positive ? "+" : "−")@Math.Abs(t.Points).ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Manuel Puan Ekle</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="CreditLoyalty" asp-route-id="@Model.CustomerId" method="post">
+                    <div class="mb-3">
+                        <label class="form-label" for="points">Puan</label>
+                        <input type="number" name="points" id="points" class="form-control" min="1" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Aciklama</label>
+                        <input type="text" name="description" id="description" class="form-control" placeholder="Ornek: Telafi puan" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="ti ti-plus me-1"></i>Puan Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

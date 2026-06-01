@@ -1,47 +1,63 @@
 @model List<Entegrasyon.Entity.Dtos.Storefront.CategoryTreeDto>
-
-@if (Model.Count > 0)
-{
-    <nav class="hidden md:block bg-white border-b border-gray-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ul class="flex items-center gap-1 h-10 text-sm">
-                <li class="relative">
-                    <a href="/kategoriler" class="px-3 py-2 text-gray-700 hover:text-primary font-medium transition-colors">
-                        Tum Kategoriler
-                    </a>
-                </li>
-                <li class="text-gray-300">|</li>
-                @foreach (var category in Model)
-                {
-                    <li class="relative group">
-                        <a href="/kategori/@category.SeoSlug"
-                           class="px-3 py-2 text-gray-600 hover:text-primary transition-colors inline-flex items-center">
-                            @category.Name
-                            @if (category.Children.Count > 0)
-                            {
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            }
-                        </a>
-                        @if (category.Children.Count > 0)
-                        {
-                            <div class="absolute left-0 top-full pt-1 hidden group-hover:block z-40">
-                                <div class="bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-[200px]">
-                                    @foreach (var child in category.Children)
-                                    {
-                                        <a href="/kategori/@category.SeoSlug/@child.SeoSlug"
-                                           class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors no-underline">
-                                            @child.Name
-                                            <span class="text-xs text-gray-400 ml-1">(@child.ProductCount)</span>
-                                        </a>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </li>
-                }
-            </ul>
+@*
+    Çocuk giyim mega menu — 4 sabit ana grup (Kız/Erkek/Bebek/Outlet) + öne çıkan koleksiyon kartı.
+    Tenant'a özel kategori ağacı eklenince Model üzerinden dinamikleştirilebilir.
+*@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-5 gap-8">
+    <div>
+        <h3 class="font-heading text-lg text-primary mb-4">Kız</h3>
+        <ul class="space-y-2.5 text-sm text-charcoal/80">
+            <li><a href="/kategori/kiz/elbise" class="hover:text-primary transition">Elbise</a></li>
+            <li><a href="/kategori/kiz/tisort-body" class="hover:text-primary transition">Tişört &amp; Body</a></li>
+            <li><a href="/kategori/kiz/tunik-salopet" class="hover:text-primary transition">Tunik &amp; Salopet</a></li>
+            <li><a href="/kategori/kiz/etek-sort" class="hover:text-primary transition">Etek &amp; Şort</a></li>
+            <li><a href="/kategori/kiz/tayt-pantolon" class="hover:text-primary transition">Tayt &amp; Pantolon</a></li>
+            <li><a href="/kategori/kiz/mont-yelek" class="hover:text-primary transition">Mont &amp; Yelek</a></li>
+        </ul>
+    </div>
+    <div>
+        <h3 class="font-heading text-lg text-secondary mb-4">Erkek</h3>
+        <ul class="space-y-2.5 text-sm text-charcoal/80">
+            <li><a href="/kategori/erkek/tisort-body" class="hover:text-primary transition">Tişört &amp; Body</a></li>
+            <li><a href="/kategori/erkek/sweat-hirka" class="hover:text-primary transition">Sweat &amp; Hırka</a></li>
+            <li><a href="/kategori/erkek/gomlek" class="hover:text-primary transition">Gömlek</a></li>
+            <li><a href="/kategori/erkek/sort-bermuda" class="hover:text-primary transition">Şort &amp; Bermuda</a></li>
+            <li><a href="/kategori/erkek/esofman-pantolon" class="hover:text-primary transition">Eşofman &amp; Pantolon</a></li>
+            <li><a href="/kategori/erkek/mont-kaban" class="hover:text-primary transition">Mont &amp; Kaban</a></li>
+        </ul>
+    </div>
+    <div>
+        <h3 class="font-heading text-lg text-charcoal mb-4">Bebek</h3>
+        <ul class="space-y-2.5 text-sm text-charcoal/80">
+            <li><a href="/kategori/bebek/zibin-body" class="hover:text-primary transition">Zıbın &amp; Body</a></li>
+            <li><a href="/kategori/bebek/tulum" class="hover:text-primary transition">Tulum</a></li>
+            <li><a href="/kategori/bebek/hastane-cikisi" class="hover:text-primary transition">Hastane Çıkışı</a></li>
+            <li><a href="/kategori/bebek/battaniye-uyku" class="hover:text-primary transition">Battaniye &amp; Uyku</a></li>
+            <li><a href="/kategori/bebek/sapka-corap" class="hover:text-primary transition">Şapka &amp; Çorap</a></li>
+            <li><a href="/kategori/bebek/yeni-dogan-setleri" class="hover:text-primary transition">Yeni Doğan Setleri</a></li>
+        </ul>
+    </div>
+    <div>
+        <h3 class="font-heading text-lg text-danger mb-4">Outlet</h3>
+        <ul class="space-y-2.5 text-sm text-charcoal/80">
+            <li><a href="/kategori/outlet/buyuk-indirim" class="hover:text-primary transition">%50'ye Varan İndirim</a></li>
+            <li><a href="/kategori/outlet/sezon-sonu" class="hover:text-primary transition">Sezon Sonu</a></li>
+            <li><a href="/kategori/outlet/coklu-paketler" class="hover:text-primary transition">Çoklu Paketler</a></li>
+            <li><a href="/kategori/outlet/son-bedenler" class="hover:text-primary transition">Son Bedenler</a></li>
+        </ul>
+    </div>
+    <a href="/koleksiyon/ilkbahar" class="group relative rounded-3xl overflow-hidden bg-primary/15 p-6 flex flex-col justify-end min-h-[220px]">
+        <div class="ph absolute inset-0 bg-primary/25" data-ph="koleksiyon görseli">
+            <img class="photo" loading="lazy" alt="Yeni koleksiyon" src="https://images.unsplash.com/photo-1560506840-ec148e82a604?auto=format&amp;fit=crop&amp;w=600&amp;q=80" />
         </div>
-    </nav>
-}
+        <div class="absolute inset-0 bg-gradient-to-t from-white/95 via-white/60 to-transparent"></div>
+        <div class="relative">
+            <p class="text-xs uppercase tracking-wide text-charcoal/60 mb-1">Yeni Sezon</p>
+            <h4 class="font-heading text-xl text-charcoal mb-3 leading-tight">İlkbahar<br/>Koleksiyonu</h4>
+            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
+                Keşfet
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+        </div>
+    </a>
+</div>

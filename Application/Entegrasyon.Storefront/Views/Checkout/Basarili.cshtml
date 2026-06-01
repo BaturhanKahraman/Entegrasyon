@@ -1,32 +1,98 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 @{
-    var orderId = (Guid)ViewBag.OrderId;
-    var estimatedDays = (int)ViewBag.EstimatedDeliveryDays;
+    ViewData["Title"] = "Siparişiniz Alındı";
+    var orderNumber = ViewBag.OrderNumber as string ?? "ZB-2026-1234";
+    var email = ViewBag.Email as string ?? "musteri@example.com";
+    var estimatedDelivery = ViewBag.EstimatedDelivery as string ?? "4-6 Haziran Çarşamba";
+    var total = ViewBag.Total as string ?? "996₺";
+    var trackingUrl = ViewBag.TrackingUrl as string ?? $"/siparis-takip/{orderNumber}";
 }
 
-@section Head {
-    <seo-meta title="@ViewBag.SeoTitle" />
-}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
 
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-    <div class="bg-white rounded-lg border border-gray-200 p-10">
-        <div class="mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+    <div class="relative text-center">
+        @* confetti — küçük, hafif *@
+        <div class="pointer-events-none absolute inset-x-0 -top-4 h-44 overflow-hidden" aria-hidden="true">
+            <span class="absolute left-[12%] top-6 w-2.5 h-2.5 rounded-full" style="background:#FF8FB1;transform:rotate(15deg)"></span>
+            <span class="absolute left-[22%] top-16 w-2 h-3 rounded-sm" style="background:#8FCBE8;transform:rotate(-20deg)"></span>
+            <span class="absolute left-[34%] top-3 w-2.5 h-2.5 rounded-full" style="background:#FFD56B"></span>
+            <span class="absolute left-[46%] top-20 w-2 h-2 rounded-full" style="background:#8FCBE8"></span>
+            <span class="absolute left-[58%] top-5 w-2.5 h-3 rounded-sm" style="background:#FF8FB1;transform:rotate(25deg)"></span>
+            <span class="absolute left-[68%] top-14 w-2 h-2 rounded-full" style="background:#FFD56B"></span>
+            <span class="absolute left-[78%] top-7 w-2.5 h-2.5 rounded-full" style="background:#8FCBE8;transform:rotate(-15deg)"></span>
+            <span class="absolute left-[88%] top-16 w-2 h-3 rounded-sm" style="background:#FF8FB1;transform:rotate(10deg)"></span>
+            <span class="absolute left-[6%] top-20 w-2 h-2 rounded-full" style="background:#FFD56B"></span>
+            <span class="absolute left-[92%] top-4 w-2 h-2 rounded-full" style="background:#FF8FB1"></span>
         </div>
 
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Siparişiz basariyla alindi!</h1>
-        <p class="text-gray-500 mb-6">Siparişizi en kisa surede hazirlayip kargoya teslim edecegiz.</p>
-
-        <div class="bg-gray-50 rounded-lg p-4 mb-6 text-sm text-gray-600 space-y-2">
-            <p>Sipariş No: <span class="font-semibold text-gray-900">@orderId.ToString("N")[..12].ToUpper()</span></p>
-            <p>Tahmini teslimat: <span class="font-semibold text-gray-900">@estimatedDays is gunu icinde</span></p>
+        <div class="relative w-20 h-20 rounded-full bg-success/15 text-success flex items-center justify-center mx-auto mb-6">
+            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="/" class="btn-primary px-8 py-3 no-underline">Alisverise Devam Et</a>
-            <a href="/hesabim/Orders" class="px-8 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors no-underline">Siparişlerim</a>
+        <h1 class="font-heading text-3xl sm:text-4xl text-charcoal">Siparişiniz alındı, teşekkürler!</h1>
+        <p class="text-muted mt-3 max-w-xl mx-auto leading-relaxed">
+            Sipariş <span class="font-semibold text-charcoal">#@orderNumber</span> onay e-postası <span class="font-medium text-charcoal">@email</span> adresine gönderildi.
+        </p>
+    </div>
+
+    @* info card *@
+    <div class="bg-cream rounded-2xl p-6 my-8">
+        <div class="grid sm:grid-cols-2 gap-6">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                </div>
+                <div>
+                    <p class="text-xs text-muted">Tahmini teslimat</p>
+                    <p class="font-semibold text-charcoal mt-0.5">@estimatedDelivery</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                </div>
+                <div>
+                    <p class="text-xs text-muted">Toplam tutar</p>
+                    <p class="font-semibold text-primary mt-0.5">@total</p>
+                </div>
+            </div>
         </div>
     </div>
+
+    @* tracking band *@
+    <div class="bg-primary/10 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div class="flex items-center gap-3.5 flex-1">
+            <div class="w-11 h-11 rounded-2xl bg-white text-primary flex items-center justify-center shrink-0">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.3a2 2 0 0 0-.6-1.4L18 9h-4v8h2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            </div>
+            <div>
+                <p class="font-semibold text-charcoal text-sm">Siparişiniz hazırlanıyor</p>
+                <p class="text-xs text-muted mt-0.5">Tahmini kargolanma: 1-2 iş günü</p>
+            </div>
+        </div>
+        <a href="@trackingUrl" class="text-center px-5 py-2.5 rounded-full border-2 border-primary text-primary font-semibold text-sm hover:bg-primary/5 transition whitespace-nowrap">Siparişi Takip Et</a>
+    </div>
+
+    @* CTAs *@
+    <div class="mt-8 flex flex-col sm:flex-row sm:justify-center gap-3 sm:gap-4">
+        <a href="/hesabim" class="text-center px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition shadow-sm">Hesabıma Git</a>
+        <a href="/kategori/yeni-gelenler" class="text-center px-7 py-3.5 rounded-full border border-cream-300 text-charcoal font-semibold hover:border-primary hover:text-primary transition">Alışverişe Devam Et</a>
+    </div>
+
+    <p class="text-center text-sm text-muted mt-6">İstediğiniz ürünü bulamadınız mı? <a href="/iletisim" class="text-success font-medium hover:underline">WhatsApp ile sorun</a></p>
+
+    @* recommendations *@
+    <section class="mt-16 lg:mt-20">
+        <div class="flex items-end justify-between mb-6">
+            <h2 class="font-heading text-2xl lg:text-3xl text-charcoal">Bunlar da ilginizi çekebilir</h2>
+            <div class="flex items-center gap-2">
+                <button type="button" data-carousel-scroll="prev" data-carousel-target="recScroll" aria-label="Önceki" class="hidden sm:flex w-10 h-10 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+                <button type="button" data-carousel-scroll="next" data-carousel-target="recScroll" aria-label="Sonraki" class="hidden sm:flex w-10 h-10 rounded-full border border-cream-300 items-center justify-center text-charcoal hover:border-primary hover:text-primary transition"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            </div>
+        </div>
+        <div id="recScroll" class="grid grid-flow-col auto-cols-[68%] sm:auto-cols-[40%] md:auto-cols-[30%] lg:auto-cols-[23.5%] gap-4 sm:gap-6 overflow-x-auto no-scrollbar snap-x scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0"></div>
+    </section>
 </div>
+
+@section Scripts {
+    <script src="~/js/checkout-success.js" asp-append-version="true"></script>
+}

@@ -9,11 +9,15 @@ public interface IStorefrontAuthManager
     Task<IDataResult<StorefrontCustomerAuth>> RegisterAsync(StorefrontRegisterDto dto);
     Task<IDataResult<StorefrontCustomerAuth>> LoginAsync(int tenantId, string email, string password);
     Task<IResult> ConfirmEmailAsync(int tenantId, string token);
+    Task<IResult> ResendEmailConfirmationAsync(int tenantId, string email);
     Task<IDataResult<string>> RequestPasswordResetAsync(int tenantId, string email);
     Task<IResult> ResetPasswordAsync(int tenantId, string token, string newPassword);
     Task<IResult> ChangePasswordAsync(int authId, string currentPassword, string newPassword);
+    Task<IResult> DeleteAccountAsync(int tenantId, int authId, string password);
+    Task<IResult> SetLoginAlertsAsync(int authId, bool enabled);
     Task<IDataResult<StorefrontCustomerAuth>> GetAuthByCustomerIdAsync(int tenantId, int customerId);
-    Task<IResult> UpdateProfileAsync(int customerId, StorefrontProfileDto dto);
+    Task<IResult> UpdateProfileAsync(int tenantId, int customerId, StorefrontProfileDto dto);
+    Task<IResult> RequestEmailChangeAsync(int tenantId, int authId, string newEmail, string currentPassword);
 
     // Login History
     Task RecordLoginAttemptAsync(int authId, string? ipAddress, string? userAgent, bool isSuccessful, string? failureReason = null);

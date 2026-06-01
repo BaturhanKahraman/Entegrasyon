@@ -13,9 +13,7 @@ public class CatalogController(
     IProductService productService,
     ICategoryService categoryService,
     IBrandService brandService,
-    IStorefrontSearchHistoryManager searchHistoryManager,
-    ISellerManager sellerManager,
-    IDbContextFactory<IntegrationDbContext> contextFactory) : Controller
+    IStorefrontSearchHistoryManager searchHistoryManager) : Controller
 {
     [ResponseCache(Duration = 300)]
     public async Task<IActionResult> Categories()
@@ -244,40 +242,6 @@ public class CatalogController(
     {
         var result = await searchHistoryManager.GetPopularSearchesAsync(tenant.TenantId, 10);
         return Json(result.Success ? result.Data : new List<string>());
-    }
-
-    [ResponseCache(Duration = 60)]
-    public async Task<IActionResult> SellerStore(string slug)
-    {
-        if (!tenant.Settings.MarketplaceEnabled) return NotFound();
-
-        if (string.IsNullOrWhiteSpace(slug))
-            return NotFound();
-
-        var sellerResult = await sellerManager.GetSellerBySlugAsync(tenant.TenantId, slug);
-        if (!sellerResult.Success || sellerResult.Data.Status != SellerStatus.Approved)
-            return NotFound();
-
-        var seller = sellerResult.Data;
-
-        await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var sellerProducts = await dbContext.SellerProducts
-            .Include(x => x.Product)
-            .Where(x => x.SellerId == seller.Id && x.IsActive && x.Status == SellerProductStatus.Approved)
-            .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync();
-
-        ViewBag.Seller = seller;
-        ViewBag.SellerProducts = sellerProducts;
-        ViewBag.SeoTitle = $"{seller.StoreName} - {tenant.Settings.StoreName}";
-        ViewBag.SeoDescription = seller.StoreDescription ?? $"{seller.StoreName} magaza sayfasi";
-        ViewBag.Breadcrumbs = new List<BreadcrumbItemDto>
-        {
-            new("Ana Sayfa", "/"),
-            new(seller.StoreName, $"/magaza/{slug}")
-        };
-
-        return View("SellerStore");
     }
 
     private static Entegrasyon.Entity.Pageable<StorefrontProductCardDto> EmptyPage()

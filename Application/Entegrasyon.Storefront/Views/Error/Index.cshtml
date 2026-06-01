@@ -1,90 +1,103 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Dtos.Storefront
 @{
-    Layout = "_Layout";
-    var statusCode = (int)(ViewBag.StatusCode ?? 500);
-    var message = (string)(ViewBag.Message ?? "Beklenmeyen bir hata olustu.");
-    var categories = ViewBag.TopCategories as List<Entegrasyon.Entity.Dtos.Storefront.CategoryTreeDto>;
+    var statusCode = ViewBag.StatusCode as int? ?? 500;
+    var message = ViewBag.Message as string;
+    var topCategories = ViewBag.TopCategories as List<CategoryTreeDto> ?? new List<CategoryTreeDto>();
+    var is404 = statusCode == 404;
+    ViewData["Title"] = is404 ? "Sayfa bulunamadı" : "Bir şeyler ters gitti";
 }
 
-<section class="flex-1 flex items-center justify-center py-16 px-4">
-    <div class="text-center max-w-lg">
-        @if (statusCode == 404)
-        {
-            <p class="text-9xl font-bold text-gray-200 select-none">404</p>
-            <h1 class="text-2xl font-semibold text-gray-800 mt-4">Aradiginiz sayfa bulunamadi</h1>
-            <p class="text-gray-500 mt-2">Sayfa kaldirilmis, adi degistirilmis veya gecici olarak kullanilamaz durumda olabilir.</p>
+<main class="max-w-2xl mx-auto px-4 sm:px-6 py-16 lg:py-20">
 
-            @* Search Box *@
-            <div class="mt-8 max-w-sm mx-auto">
-                <form action="/arama" method="get" class="flex gap-2">
-                    <input type="text" name="q" placeholder="Ne aramistiniz?"
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">Ara</button>
-                </form>
-            </div>
-
-            @* Popular Categories *@
-            @if (categories is { Count: > 0 })
-            {
-                <div class="mt-8">
-                    <p class="text-sm font-medium text-gray-600 mb-3">Populer Kategoriler</p>
-                    <div class="flex flex-wrap justify-center gap-2">
-                        @foreach (var cat in categories)
-                        {
-                            <a href="/kategori/@cat.SeoSlug"
-                               class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-gray-200 transition-colors no-underline">
-                                @cat.Name
-                            </a>
-                        }
-                    </div>
-                </div>
-            }
-
-            <div class="mt-8">
-                <a href="/" class="btn-primary inline-block px-6 py-2.5 no-underline">Ana Sayfaya Don</a>
-            </div>
-        }
-        else if (statusCode == 500)
-        {
-            <div class="mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+    @if (is404)
+    {
+        <div class="text-center">
+            <div class="relative mx-auto w-56 h-48 floaty" aria-hidden="true">
+                <svg viewBox="0 0 220 200" width="100%" height="100%" fill="none">
+                    <path d="M158 36c0 20-16 34-22 40-2 2-2 6 0 8" stroke="#E8DFD2" stroke-width="2" stroke-linecap="round"/>
+                    <ellipse cx="158" cy="30" rx="22" ry="26" fill="#FF8FB1"/>
+                    <ellipse cx="151" cy="22" rx="6" ry="8" fill="#fff" opacity=".4"/>
+                    <path d="M158 56l-4 6h8l-4-6Z" fill="#FF8FB1"/>
+                    <circle cx="78" cy="120" r="46" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                    <circle cx="48" cy="86" r="14" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                    <circle cx="108" cy="86" r="14" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                    <circle cx="48" cy="86" r="6" fill="#FFD0DC"/>
+                    <circle cx="108" cy="86" r="6" fill="#FFD0DC"/>
+                    <circle cx="64" cy="116" r="4.5" fill="#2C3E50"/>
+                    <circle cx="92" cy="116" r="4.5" fill="#2C3E50"/>
+                    <ellipse cx="78" cy="132" rx="9" ry="7" fill="#FFD0DC"/>
+                    <circle cx="78" cy="128" r="3.5" fill="#2C3E50"/>
+                    <path d="M70 140q8 7 16 0" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-semibold text-gray-800">Bir hata olustu</h1>
-            <p class="text-gray-500 mt-2">Kisa surede duzelecektir. Lutfen daha sonra tekrar deneyin.</p>
-
-            @if (!string.IsNullOrWhiteSpace(Tenant.Settings.ContactEmail))
-            {
-                <p class="text-sm text-gray-400 mt-4">
-                    Sorun devam ederse:
-                    <a href="mailto:@Tenant.Settings.ContactEmail" class="text-primary hover:underline">@Tenant.Settings.ContactEmail</a>
-                </p>
-            }
-
-            <div class="mt-8">
-                <a href="/" class="btn-primary inline-block px-6 py-2.5 no-underline">Ana Sayfaya Don</a>
+            <p class="font-heading text-6xl text-cream-300 mt-2">404</p>
+            <h1 class="font-heading text-3xl sm:text-4xl text-charcoal mt-2">Buralarda kimse yok</h1>
+            <p class="text-muted mt-3 max-w-md mx-auto leading-relaxed">@(message ?? "Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir. Hadi sizi güvenli bir yere götürelim.")</p>
+            <div class="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="/" class="w-full sm:w-auto px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition">Anasayfa</a>
+                <a href="/kategoriler" class="w-full sm:w-auto px-7 py-3.5 rounded-full border border-cream-300 text-charcoal font-semibold hover:border-primary transition">Kataloğa Git</a>
             </div>
-        }
-        else if (statusCode == 503)
-        {
-            <div class="mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <div class="relative mx-auto w-56 h-48 floaty" aria-hidden="true">
+                <svg viewBox="0 0 220 200" width="100%" height="100%" fill="none">
+                    <g class="spin-slow" style="transform-origin:150px 60px">
+                        <path d="M150 36v-10M150 84v10M126 60h-10M174 60h10M133 43l-7-7M167 77l7 7M167 43l7-7M133 77l-7 7" stroke="#E8DFD2" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="150" cy="60" r="18" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                        <circle cx="150" cy="60" r="6" fill="#FFD56B"/>
+                    </g>
+                    <circle cx="82" cy="122" r="44" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                    <circle cx="54" cy="90" r="13" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                    <circle cx="110" cy="90" r="13" fill="#FAF6F0" stroke="#E8DFD2" stroke-width="2"/>
+                    <circle cx="54" cy="90" r="5.5" fill="#B8E0F0"/>
+                    <circle cx="110" cy="90" r="5.5" fill="#B8E0F0"/>
+                    <circle cx="69" cy="118" r="4.5" fill="#2C3E50"/>
+                    <circle cx="95" cy="118" r="4.5" fill="#2C3E50"/>
+                    <ellipse cx="82" cy="134" rx="8.5" ry="6.5" fill="#B8E0F0"/>
+                    <circle cx="82" cy="130" r="3.5" fill="#2C3E50"/>
+                    <path d="M74 142q8 6 16 0" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-semibold text-gray-800">Bakim Calismasi</h1>
-            <p class="text-gray-500 mt-2">@message</p>
-            <p class="text-sm text-gray-400 mt-4">Lutfen daha sonra tekrar deneyin.</p>
-        }
-        else
-        {
-            <p class="text-9xl font-bold text-gray-200 select-none">@statusCode</p>
-            <h1 class="text-2xl font-semibold text-gray-800 mt-4">@message</h1>
-            <div class="mt-8">
-                <a href="/" class="btn-primary inline-block px-6 py-2.5 no-underline">Ana Sayfaya Don</a>
+            <p class="font-heading text-6xl text-cream-300 mt-2">@statusCode</p>
+            <h1 class="font-heading text-3xl sm:text-4xl text-charcoal mt-2">Bir şeyler ters gitti</h1>
+            <p class="text-muted mt-3 max-w-md mx-auto leading-relaxed">@(message ?? "Hata kaydedildi, en kısa sürede çözeceğiz. Birkaç dakika içinde tekrar dener misiniz?")</p>
+            <div class="mt-7 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="/" class="w-full sm:w-auto px-7 py-3.5 rounded-full bg-primary text-white font-semibold hover:bg-primary/90 transition inline-flex items-center justify-center gap-2">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+                    Anasayfa
+                </a>
+                <a href="/kategoriler" class="w-full sm:w-auto px-7 py-3.5 rounded-full border border-cream-300 text-charcoal font-semibold hover:border-primary transition">Kataloğa Git</a>
             </div>
-        }
+        </div>
+    }
+
+    @* search card *@
+    <div class="mt-12 bg-cream rounded-3xl p-6 sm:p-7 max-w-lg mx-auto">
+        <p class="font-heading text-lg text-charcoal text-center">Belki şunu mu arıyordunuz?</p>
+        <form action="/arama" method="get" class="mt-4 flex items-center gap-2 bg-white border border-cream-300 rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-primary transition">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" class="shrink-0" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input name="q" type="text" placeholder="Ürün, kategori veya marka arayın…" class="flex-1 min-w-0 text-sm outline-none placeholder:text-muted bg-transparent" />
+            <button type="submit" class="shrink-0 w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition" aria-label="Ara">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+        </form>
     </div>
-</section>
+
+    @if (is404 && topCategories.Count > 0)
+    {
+        <div class="mt-8 text-center">
+            <p class="text-xs uppercase tracking-wide text-muted mb-3">Popüler Kategoriler</p>
+            <div class="flex flex-wrap gap-2 justify-center">
+                @foreach (var cat in topCategories)
+                {
+                    var url = string.IsNullOrWhiteSpace(cat.SeoSlug) ? "/kategoriler" : $"/kategori/{cat.SeoSlug}";
+                    <a href="@url" class="px-4 py-2 rounded-full bg-white border border-cream-300 text-sm text-charcoal hover:border-primary hover:text-primary transition">@cat.Name</a>
+                }
+            </div>
+        </div>
+    }
+
+</main>

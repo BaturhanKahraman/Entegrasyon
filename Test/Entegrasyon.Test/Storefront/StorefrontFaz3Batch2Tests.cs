@@ -36,7 +36,7 @@ public class StorefrontFaz3Batch2Tests
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.ExternalLoginAsync(1, "Google", "google-123", "ali@test.com", "Ali", "Yilmaz");
@@ -70,7 +70,7 @@ public class StorefrontFaz3Batch2Tests
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.ExternalLoginAsync(1, "Facebook", "fb-456", "ali@test.com", "Ali", "Yilmaz");

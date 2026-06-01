@@ -4,7 +4,9 @@ public enum WalletTransactionType
 {
     Refund = 0,
     OrderPayment = 1,
-    Promotion = 2
+    Promotion = 2,
+    TopUp = 3,
+    Cashback = 4
 }
 
 public sealed class StorefrontWalletTransaction : BaseEntity

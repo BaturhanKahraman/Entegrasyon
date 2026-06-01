@@ -1,40 +1,79 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
 @{
-    var products = ViewBag.Products as List<Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto> ?? new();
+    ViewData["Title"] = "Yine Al";
 }
 
-@section Head {
-    <seo-meta title="Tekrar Satin Al | @Tenant.Settings.StoreName" />
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        @await Html.PartialAsync("_AccountSidebar", "BuyAgain")
-    </aside>
-    <div class="flex-1">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Tekrar Satin Al</h1>
+    @* Mobil hesap trigger *@
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">AY</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-            @if (products.Count == 0)
-            {
-                <div class="text-center py-12">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    <p class="text-gray-500">Henuz Sipariş vermediniz.</p>
-                    <a href="/urunler" class="btn-primary inline-block px-6 py-2 mt-4 no-underline">Alisverise Basla</a>
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("buyagain")' />
+        </aside>
+
+        <div>
+            @* page heading *@
+            <div class="mb-6">
+                <nav class="text-xs text-muted mb-2.5 flex items-center gap-1.5">
+                    <a href="/hesabim" class="hover:text-primary transition">Hesabım</a>
+                    <span aria-hidden="true">/</span>
+                    <span class="text-charcoal">Yine Al</span>
+                </nav>
+                <h1 class="font-heading text-3xl text-charcoal">Yine Al</h1>
+                <p class="text-muted mt-1.5">Daha önce sevdiğiniz ürünleri tekrar sipariş edin.</p>
+            </div>
+
+            @* filter chips — JS render *@
+            <div id="chips" class="flex flex-wrap gap-2.5 mb-7"></div>
+
+            @* product grid *@
+            <div id="grid" class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-7 sm:gap-x-5 sm:gap-y-9"></div>
+
+            @* in-filter empty *@
+            <div id="noMatch" class="hidden text-center py-16">
+                <div class="w-14 h-14 rounded-2xl bg-cream flex items-center justify-center mx-auto mb-4 text-muted">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
                 </div>
-            }
-            else
-            {
-                <p class="text-sm text-gray-500 mb-4">Daha once satin aldiginiz urunler</p>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    @foreach (var product in products)
-                    {
-                        @await Html.PartialAsync("_ProductCard", product)
-                    }
+                <p class="font-medium text-charcoal">Bu filtreye uygun ürün yok</p>
+                <p class="text-sm text-muted mt-1">Başka bir filtre deneyin veya tümünü görüntüleyin.</p>
+                <button type="button" data-filter-reset class="mt-4 text-sm font-medium text-primary hover:underline">Tümünü göster</button>
+            </div>
+
+            @* true empty state *@
+            <div id="empty" class="hidden text-center py-20">
+                <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5 text-primary">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
                 </div>
-            }
+                <h2 class="font-heading text-xl text-charcoal">Henüz tekrar alınacak bir şey yok</h2>
+                <p class="text-muted mt-2 max-w-sm mx-auto">İlk siparişinizden sonra burada eski favorileriniz görünecek.</p>
+                <a href="/" class="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">
+                    Alışverişe başla
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
         </div>
     </div>
 </div>
+
+@* Mobil hesap sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("buyagain")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/yine-al.js" asp-append-version="true"></script>
+}

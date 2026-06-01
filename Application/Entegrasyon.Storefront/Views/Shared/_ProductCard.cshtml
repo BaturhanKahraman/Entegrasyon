@@ -1,105 +1,65 @@
 @model Entegrasyon.Entity.Dtos.Storefront.StorefrontProductCardDto
+@{
+    var slug = string.IsNullOrWhiteSpace(Model.SeoSlug) ? Model.Id.ToString() : Model.SeoSlug;
+    var hasDiscount = Model.OldPrice.HasValue && Model.OldPrice.Value > Model.MinPrice;
+    var discountPct = hasDiscount ? (int)Math.Round((1 - (double)(Model.MinPrice / Model.OldPrice!.Value)) * 100) : 0;
+    var isOutOfStock = Model.TotalStock <= 0;
+    var ariaLabel = $"{Model.Title}, {Model.MinPrice:N0}₺";
+}
+<div class="group snap-start">
+    <a href="/urun/@slug" class="block" aria-label="@ariaLabel">
+        <div class="ph relative aspect-[4/5] rounded-2xl bg-cream overflow-hidden" data-ph="ürün görseli">
+            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+            {
+                <img class="photo" loading="lazy" alt="@Model.Title" src="@Model.ImageUrl" />
+            }
 
-<a href="/urun/@Model.SeoSlug" class="group block bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
-    @* Product Image *@
-    <div class="relative aspect-square overflow-hidden bg-gray-100">
-        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
-        {
-            <img src="@Model.ImageUrl"
-                 alt="@Model.Title"
-                 loading="lazy"
-                 decoding="async"
-                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        }
-        else
-        {
-            <div class="w-full h-full flex items-center justify-center text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                @if (Model.IsNew)
+                {
+                    <span class="px-2.5 py-1 rounded-full bg-primary text-white text-[11px] font-semibold">Yeni</span>
+                }
+                @if (hasDiscount)
+                {
+                    <span class="px-2.5 py-1 rounded-full bg-success text-white text-[11px] font-semibold">%@discountPct</span>
+                }
             </div>
-        }
 
-        @* Badges *@
-        <div class="absolute top-2 left-2 flex flex-col gap-1">
-            @if (Model.IsNew)
+            <button type="button" data-wishlist-toggle data-product-id="@Model.Id" data-on="0" aria-label="Favorilere ekle"
+                    class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-charcoal hover:text-primary transition shadow-sm">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A4.5 4.5 0 0 0 12 5.5 4.5 4.5 0 0 0 2 8.5C2 10.8 3.5 12.5 5 14l7 7Z"/></svg>
+            </button>
+
+            @if (isOutOfStock)
             {
-                <span class="bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded">YENI</span>
+                <div class="absolute inset-0 bg-white/60 flex items-center justify-center">
+                    <span class="px-4 py-1.5 rounded-full bg-charcoal text-white text-sm font-semibold">Stokta Yok</span>
+                </div>
             }
-            @if (Model.OldPrice.HasValue && Model.OldPrice > Model.MinPrice)
+            else
             {
-                var discount = (int)Math.Round((1 - Model.MinPrice / Model.OldPrice.Value) * 100);
-                <span class="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded">%@discount</span>
-            }
-            @if (Model.TotalStock >= 1 && Model.TotalStock <= 5)
-            {
-                <span class="bg-orange-500 text-white text-xs font-semibold px-2 py-0.5 rounded">SON STOK</span>
+                <div class="absolute inset-x-3 bottom-3 translate-y-[130%] group-hover:translate-y-0 transition duration-300">
+                    <span class="block w-full text-center bg-white text-charcoal text-sm font-semibold py-2.5 rounded-full shadow-sm">Hızlı Bakış</span>
+                </div>
             }
         </div>
-        @* Compare button *@
-        <button onclick="event.preventDefault();event.stopPropagation();ProductCompare.toggle({id:'@Model.Id',title:'@Html.Raw(Model.Title.Replace("'","\\'"))',slug:'@Model.SeoSlug',image:'@Model.ImageUrl',price:'@Model.MinPrice.ToString("N2")'})"
-                class="absolute top-10 right-2 z-10 bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 hover:bg-blue-50 transition-all"
-                data-compare-id="@Model.Id" title="Karsilastir">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-            </svg>
-        </button>
-        @* Wishlist heart button *@
-        <button onclick="event.preventDefault();event.stopPropagation();toggleWishlist('@Model.Id',this)"
-                class="wishlist-heart absolute top-2 right-2 z-10 bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 hover:bg-red-50 transition-all"
-                data-product-id="@Model.Id" title="Favorilere ekle">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-        </button>
-        @if (Model.TotalStock == 0)
-        {
-            <div class="absolute inset-0 bg-white/60 flex items-center justify-center">
-                <span class="bg-red-500 text-white text-sm font-semibold px-3 py-1 rounded">TUKENDI</span>
-            </div>
-        }
-    </div>
-
-    @* Product Info *@
-    <div class="p-3">
+    </a>
+    <div class="mt-3">
         @if (!string.IsNullOrWhiteSpace(Model.BrandName))
         {
-            <p class="text-xs text-gray-500 mb-1">@Model.BrandName</p>
+            <p class="text-xs text-muted">@Model.BrandName</p>
         }
-
-        <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem]">@Model.Title</h3>
-
-        @* Price *@
-        <div class="flex items-center gap-2">
-            @if (Model.OldPrice.HasValue && Model.OldPrice > Model.MinPrice)
+        <a href="/urun/@slug" class="block font-medium text-charcoal line-clamp-2 leading-snug mt-0.5 hover:text-primary transition">@Model.Title</a>
+        @if (!string.IsNullOrWhiteSpace(Model.CategoryName))
+        {
+            <span class="inline-block mt-2 px-2 py-0.5 rounded-md bg-cream text-[11px] text-muted">@Model.CategoryName</span>
+        }
+        <div class="mt-2 flex items-baseline gap-2">
+            @if (hasDiscount)
             {
-                <span class="text-sm text-gray-400 line-through">@Model.OldPrice?.ToString("N2") TL</span>
-                <span class="text-base font-bold text-primary">@Model.MinPrice.ToString("N2") TL</span>
+                <span class="text-sm text-muted line-through">@Model.OldPrice!.Value.ToString("N0")₺</span>
             }
-            else if (Model.MinPrice != Model.MaxPrice)
-            {
-                <span class="text-base font-bold text-gray-900">@Model.MinPrice.ToString("N2") - @Model.MaxPrice.ToString("N2") TL</span>
-            }
-            else
-            {
-                <span class="text-base font-bold text-gray-900">@Model.MinPrice.ToString("N2") TL</span>
-            }
+            <span class="text-lg font-semibold text-primary">@Model.MinPrice.ToString("N0")₺</span>
         </div>
-
-        @* Stock indicator *@
-        <p class="text-xs mt-1 @(Model.TotalStock > 5 ? "text-green-600" : Model.TotalStock > 0 ? "text-orange-600" : "text-red-500")">
-            @if (Model.TotalStock > 5)
-            {
-                @:Stokta var
-            }
-            else if (Model.TotalStock > 0)
-            {
-                @:Son @Model.TotalStock adet
-            }
-            else
-            {
-                @:Stokta yok
-            }
-        </p>
     </div>
-</a>
+</div>

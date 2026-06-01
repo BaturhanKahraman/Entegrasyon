@@ -1,244 +1,155 @@
-@using Entegrasyon.Entity.Dtos.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@model Entegrasyon.Entity.Orders.Order
+@{
+    ViewData["Title"] = "Sipariş Detayı";
+    var orderNo = ViewBag.OrderNo as string ?? "ZB-2026-1234";
+}
 
 @section Head {
-    <seo-meta title="Sipariş Detayi | @Tenant.Settings.StoreName" />
+    <style>
+        .pulse-ring::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 9999px;
+            border: 2px solid var(--color-primary);
+            animation: pulsering 1.6s ease-out infinite;
+        }
+        @@keyframes pulsering {
+            0% { transform: scale(.8); opacity: .7; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
 }
 
-@{
-    var order = ViewBag.Order as StorefrontOrderDetailDto;
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
-            <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
-            <a href="/hesabim/Profile" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Siparişlerim</a>
-            <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Iadelerim</a>
-            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
-            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
-            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
-        </nav>
-    </aside>
-    <div class="flex-1 space-y-6">
-        @if (TempData["Success"] is string success)
-        {
-            <div class="bg-green-50 text-green-700 p-3 rounded">@success</div>
-        }
-        @if (TempData["Error"] is string error)
-        {
-            <div class="bg-red-50 text-red-700 p-3 rounded">@error</div>
-        }
+    @* mobile account trigger *@
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">AY</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-        @if (order is null)
-        {
-            <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-gray-500">Sipariş bilgisi bulunamadi.</p>
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("orders")' />
+        </aside>
+
+        <div>
+            <nav aria-label="breadcrumb" class="text-sm text-muted mb-4 flex items-center gap-2 flex-wrap">
+                <a href="/hesabim" class="hover:text-primary transition">Hesabım</a><span class="text-cream-300">›</span>
+                <a href="/hesabim/siparislerim" class="hover:text-primary transition">Siparişler</a><span class="text-cream-300">›</span>
+                <span class="text-charcoal font-medium font-mono">#@orderNo</span>
+            </nav>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div>
+                    <h1 class="font-heading text-2xl sm:text-3xl text-charcoal">Sipariş #@orderNo</h1>
+                    <p class="text-sm text-muted mt-1">23 Mayıs 2026 · <span class="text-warning font-medium">Kargoda</span></p>
+                </div>
+                <div class="flex gap-2.5">
+                    <button type="button" data-toast="Fatura indiriliyor" class="px-4 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:bg-cream transition flex items-center gap-2">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+                        Faturayı İndir
+                    </button>
+                    <button type="button" data-toast="İade talebi başlatılıyor" class="px-4 py-2.5 rounded-full border border-primary text-primary text-sm font-semibold hover:bg-primary/5 transition">İade Aç</button>
+                </div>
             </div>
-        }
-        else
-        {
-            <!-- Header -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+
+            @* timeline *@
+            <div class="bg-cream rounded-3xl p-6 sm:p-8 mb-6">
+                @* desktop *@
+                <div class="hidden sm:block">
+                    <div class="flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                        <span class="flex-1 h-0.5 bg-success"></span>
+                        <span class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                        <span class="flex-1 h-0.5 bg-success"></span>
+                        <span class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                        <span class="flex-1 h-0.5 bg-success"></span>
+                        <span data-step-active class="pulse-ring relative w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.3a2 2 0 0 0-.6-1.4L18 9h-4v8h2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span>
+                        <span class="flex-1 h-0.5 bg-cream-300"></span>
+                        <span class="w-8 h-8 rounded-full bg-white border-2 border-cream-300 shrink-0"></span>
+                    </div>
+                    <div class="flex mt-3 text-center">
+                        <div class="flex-1 text-left"><p class="text-sm font-medium text-charcoal">Alındı</p><p class="text-xs text-muted">24 May</p></div>
+                        <div class="flex-1"><p class="text-sm font-medium text-charcoal">Onaylandı</p><p class="text-xs text-muted">24 May</p></div>
+                        <div class="flex-1"><p class="text-sm font-medium text-charcoal">Hazırlanıyor</p><p class="text-xs text-muted">25 May</p></div>
+                        <div class="flex-1"><p class="text-sm font-semibold text-primary">Kargoda</p><p class="text-xs text-muted">26 May</p></div>
+                        <div class="flex-1 text-right"><p class="text-sm font-medium text-muted">Teslim Edildi</p><p class="text-xs text-muted">—</p></div>
+                    </div>
+                </div>
+                @* mobile *@
+                <div class="sm:hidden space-y-0">
+                    <div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="w-0.5 flex-1 bg-success"></span></div><div class="pb-5"><p class="text-sm font-medium text-charcoal">Alındı</p><p class="text-xs text-muted">24 Mayıs</p></div></div>
+                    <div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="w-0.5 flex-1 bg-success"></span></div><div class="pb-5"><p class="text-sm font-medium text-charcoal">Onaylandı</p><p class="text-xs text-muted">24 Mayıs</p></div></div>
+                    <div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full bg-success text-white flex items-center justify-center"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="w-0.5 flex-1 bg-cream-300"></span></div><div class="pb-5"><p class="text-sm font-medium text-charcoal">Hazırlanıyor</p><p class="text-xs text-muted">25 Mayıs</p></div></div>
+                    <div class="flex gap-3"><div class="flex flex-col items-center"><span data-step-active class="pulse-ring relative w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">●</span><span class="w-0.5 flex-1 bg-cream-300"></span></div><div class="pb-5"><p class="text-sm font-semibold text-primary">Kargoda</p><p class="text-xs text-muted">26 Mayıs</p></div></div>
+                    <div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full bg-white border-2 border-cream-300"></span></div><div><p class="text-sm font-medium text-muted">Teslim Edildi</p><p class="text-xs text-muted">—</p></div></div>
+                </div>
+            </div>
+
+            @* tracking *@
+            <div class="bg-white border border-cream-300 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex items-center gap-3.5 flex-1">
+                    <span class="px-3 py-2 rounded-xl bg-charcoal text-white text-xs font-bold tracking-wide">ARAS</span>
                     <div>
-                        <a href="/hesabim/Orders" class="text-sm text-gray-500 hover:text-gray-700 no-underline">&larr; Siparişlere Don</a>
-                        <h1 class="text-xl font-bold text-gray-900 mt-1">Sipariş #@order.OrderNumber</h1>
-                        <p class="text-sm text-gray-500">@order.OrderDate.ToString("dd MMMM yyyy, HH:mm")</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        @{
-                            var statusBadge = order.Status switch
-                            {
-                                "Alindi" => "bg-blue-100 text-blue-700",
-                                "Hazirlaniyor" => "bg-yellow-100 text-yellow-700",
-                                "Kargoda" => "bg-orange-100 text-orange-700",
-                                "Teslim Edildi" => "bg-green-100 text-green-700",
-                                "Iptal Edildi" => "bg-red-100 text-red-700",
-                                "Iade Edildi" => "bg-purple-100 text-purple-700",
-                                _ => "bg-gray-100 text-gray-700"
-                            };
-                        }
-                        <span class="inline-block px-3 py-1 rounded-full text-sm font-medium @statusBadge">@order.Status</span>
+                        <p class="font-mono text-sm font-semibold text-charcoal">1234567890123</p>
+                        <p class="text-xs text-muted mt-0.5">Tahmini teslim: <span class="text-charcoal font-medium">4 Haziran Çarşamba</span></p>
                     </div>
                 </div>
+                <button type="button" data-toast="Kargo takip sayfası açılıyor" class="text-center px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Kargonu Takip Et</button>
+            </div>
 
-                <!-- Status Timeline -->
-                <div class="flex items-center gap-1 overflow-x-auto pb-2">
-                    @{
-                        var steps = new[] { "Alindi", "Hazirlaniyor", "Kargoda", "Teslim Edildi" };
-                        var currentIdx = Array.IndexOf(steps, order.Status);
-                        var isCancelled = order.Status == "Iptal Edildi" || order.Status == "Iade Edildi";
-                    }
-                    @for (var i = 0; i < steps.Length; i++)
-                    {
-                        var isActive = !isCancelled && i <= currentIdx;
-                        var dotClass = isActive ? "bg-primary" : "bg-gray-300";
-                        var lineClass = isActive ? "bg-primary" : "bg-gray-200";
-                        var textClass = isActive ? "text-primary font-medium" : "text-gray-400";
+            @* items *@
+            <div class="bg-white border border-cream-300 rounded-2xl divide-y divide-cream-300 mb-6" id="odItems"></div>
 
-                        <div class="flex items-center">
-                            <div class="flex flex-col items-center">
-                                <div class="w-3 h-3 rounded-full @dotClass"></div>
-                                <span class="text-xs mt-1 whitespace-nowrap @textClass">@steps[i]</span>
-                            </div>
-                            @if (i < steps.Length - 1)
-                            {
-                                <div class="w-12 h-0.5 @lineClass mx-1 mt-[-12px]"></div>
-                            }
-                        </div>
-                    }
-                    @if (isCancelled)
-                    {
-                        <div class="flex items-center">
-                            <div class="w-12 h-0.5 bg-red-300 mx-1 mt-[-12px]"></div>
-                            <div class="flex flex-col items-center">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <span class="text-xs mt-1 whitespace-nowrap text-red-600 font-medium">@order.Status</span>
-                            </div>
-                        </div>
-                    }
+            @* address + payment *@
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white border border-cream-300 rounded-2xl p-6">
+                    <h3 class="font-semibold text-charcoal mb-3 flex items-center gap-2"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF8FB1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Teslimat Adresi</h3>
+                    <p class="text-sm text-charcoal font-medium">Ayşe Yılmaz · Ev</p>
+                    <p class="text-sm text-muted mt-1 leading-relaxed">Atatürk Mah. Çiçek Sok. No:12 D:4, Kadıköy/İstanbul 34710</p>
+                    <p class="text-sm text-muted mt-1">0(532) 123 45 67</p>
+                    <p class="text-xs text-muted/70 mt-2">Kargolanan siparişin adresi değiştirilemez.</p>
+                </div>
+                <div class="bg-white border border-cream-300 rounded-2xl p-6">
+                    <h3 class="font-semibold text-charcoal mb-3 flex items-center gap-2"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#8FCBE8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Ödeme Bilgisi</h3>
+                    <p class="text-sm text-charcoal font-medium">Kredi Kartı **** 1234</p>
+                    <p class="text-sm text-muted mt-1">3 Taksit · 3D Secure ile ödendi</p>
+                    <div class="flex items-center gap-2 mt-3"><span class="px-2 py-0.5 rounded bg-cream border border-cream-300 text-[10px] font-semibold text-charcoal">VISA</span><span class="text-xs text-muted">ile ödendi</span></div>
                 </div>
             </div>
 
-            <!-- Items -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Urunler</h2>
-                <div class="divide-y divide-gray-100">
-                    @foreach (var item in order.Items)
-                    {
-                        <div class="flex items-center gap-4 py-3">
-                            <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-400 shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-medium text-gray-900 truncate">@item.ProductTitle</p>
-                                @if (!string.IsNullOrEmpty(item.VariantInfo))
-                                {
-                                    <p class="text-xs text-gray-500">@item.VariantInfo</p>
-                                }
-                                <p class="text-xs text-gray-500">@item.Quantity adet x @item.UnitPrice.ToString("N2") TL</p>
-                            </div>
-                            <div class="text-right font-medium text-gray-900 shrink-0">
-                                @item.LineTotal.ToString("N2") TL
-                            </div>
-                        </div>
-                    }
+            @* summary *@
+            <div class="bg-cream rounded-2xl p-6 sm:max-w-sm sm:ml-auto">
+                <h3 class="font-heading text-lg text-charcoal mb-4">Özet</h3>
+                <div class="space-y-2.5 text-sm">
+                    <div class="flex justify-between"><span class="text-muted">Ara toplam</span><span class="text-charcoal font-medium">1.297₺</span></div>
+                    <div class="flex justify-between"><span class="text-muted">Kargo</span><span class="text-success font-medium">Bedava</span></div>
+                    <div class="flex justify-between"><span class="text-muted">İndirim</span><span class="text-success font-medium">−50₺</span></div>
                 </div>
+                <div class="border-t border-cream-300 my-3"></div>
+                <div class="flex items-baseline justify-between"><span class="font-bold text-charcoal">Toplam</span><span class="text-xl font-semibold text-primary">1.247₺</span></div>
             </div>
-
-            <!-- Summary + Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Order Summary -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Sipariş Ozeti</h2>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Ara Toplam</span>
-                            <span>@order.SubTotal.ToString("N2") TL</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Kargo</span>
-                            <span>@(order.ShippingCost == 0 ? "Ucretsiz" : $"{order.ShippingCost:N2} TL")</span>
-                        </div>
-                        @if (order.DiscountAmount > 0)
-                        {
-                            <div class="flex justify-between text-green-600">
-                                <span>Indirim</span>
-                                <span>-@order.DiscountAmount.ToString("N2") TL</span>
-                            </div>
-                        }
-                        <div class="flex justify-between font-bold text-base border-t border-gray-200 pt-2 mt-2">
-                            <span>Toplam</span>
-                            <span>@order.Total.ToString("N2") TL</span>
-                        </div>
-                        <div class="flex justify-between text-gray-500 text-xs">
-                            <span>Odeme Durumu</span>
-                            <span>@order.PaymentStatus</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shipping & Info -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Teslimat Bilgileri</h2>
-                    <div class="space-y-3 text-sm">
-                        @if (!string.IsNullOrEmpty(order.CustomerName))
-                        {
-                            <div>
-                                <span class="text-gray-500">Alici:</span>
-                                <p class="text-gray-900">@order.CustomerName</p>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(order.ShippingAddress))
-                        {
-                            <div>
-                                <span class="text-gray-500">Adres:</span>
-                                <p class="text-gray-900">@order.ShippingAddress</p>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(order.CargoProvider))
-                        {
-                            <div>
-                                <span class="text-gray-500">Kargo Firmasi:</span>
-                                <p class="text-gray-900">@order.CargoProvider</p>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(order.TrackingNumber))
-                        {
-                            <div>
-                                <span class="text-gray-500">Takip No:</span>
-                                <p class="text-gray-900 font-mono">@order.TrackingNumber</p>
-                                @if (!string.IsNullOrEmpty(order.TrackingLink))
-                                {
-                                    <a href="@order.TrackingLink" target="_blank" rel="noopener" class="text-primary text-xs hover:underline no-underline">Kargo Takip Sayfasi &rarr;</a>
-                                }
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(order.OrderNote))
-                        {
-                            <div>
-                                <span class="text-gray-500">Sipariş Notu:</span>
-                                <p class="text-gray-900">@order.OrderNote</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="bg-white rounded-lg shadow p-6 flex flex-wrap gap-3">
-                <a href="/hesabim/Sipariş/@order.Id/fatura" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 no-underline text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Fatura Indir
-                </a>
-                @if (order.Status == "Alindi")
-                {
-                    <form method="post" action="/hesabim/Sipariş/@order.Id/iptal" class="inline" onsubmit="return confirm('Siparişi iptal etmek istediginize emin misiniz?')">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm cursor-pointer border-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Siparişi Iptal Et
-                        </button>
-                    </form>
-                }
-                @if (order.Status == "Teslim Edildi")
-                {
-                    <a href="/hesabim/iade-talebi/@order.Id" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 no-underline text-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                        </svg>
-                        Iade Talebi
-                    </a>
-                }
-            </div>
-        }
+        </div>
     </div>
 </div>
+
+@* mobile account sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("orders")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/siparis-detay.js" asp-append-version="true"></script>
+}

@@ -1,101 +1,234 @@
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
+@using Entegrasyon.Entity.Storefront
+@using System.Globalization
 @{
-    var balance = ViewBag.Balance as Entegrasyon.Entity.Storefront.StorefrontLoyaltyPoints;
-    var transactions = ViewBag.Transactions as List<Entegrasyon.Entity.Storefront.StorefrontLoyaltyTransaction> ?? new();
-    var settings = ViewBag.Settings as Entegrasyon.Entity.Storefront.StorefrontSettings;
+    ViewData["Title"] = "Sadakat Puanları";
+
+    var balance = ViewBag.Balance as StorefrontLoyaltyPoints;
+    var transactions = ViewBag.Transactions as List<StorefrontLoyaltyTransaction> ?? new List<StorefrontLoyaltyTransaction>();
+    var settings = ViewBag.Settings as StorefrontSettings;
+
+    var current = balance?.CurrentBalance ?? 0;
+    var totalEarned = balance?.TotalEarned ?? 0;
+    var totalSpent = balance?.TotalSpent ?? 0;
+
+    // Tier hesaplama — eşikler Settings'ten (null ise default).
+    var silverMin = settings?.LoyaltyTierSilverMin ?? 2000;
+    var goldMin = settings?.LoyaltyTierGoldMin ?? 5000;
+    var tier = current >= goldMin ? "Gold" : current >= silverMin ? "Silver" : "Bronze";
+    var nextTier = current >= goldMin ? null : current >= silverMin ? "Gold" : "Silver";
+    var nextTierMin = current >= goldMin ? (int?)null : current >= silverMin ? goldMin : silverMin;
+    var pointsToNext = nextTierMin.HasValue ? Math.Max(0, nextTierMin.Value - current) : 0;
+    var progress = nextTierMin.HasValue ? Math.Min(100, (int)(current * 100.0 / nextTierMin.Value)) : 100;
+
+    // "Nasıl Kazanılır?" değerleri (Settings null ise default)
+    var perLira = settings?.LoyaltyPointsPerLira ?? 1;
+    var reviewBonus = settings?.LoyaltyReviewBonus ?? 50;
+    var referralBonus = settings?.LoyaltyReferralBonus ?? 200;
+    // Doğum günü bonusu — Settings'ten (null ise default).
+    var birthdayBonus = settings?.LoyaltyBirthdayBonus ?? 500;
+
+    // 100 puan = ?₺ (settings: LoyaltyPointsRedemptionRate = puan başına lira; default 100 puan = 1₺)
+    var redemptionRate = settings?.LoyaltyPointsRedemptionRate ?? 100;
+    var redemptionLira = redemptionRate > 0 ? 100m / redemptionRate : 1m;
+
+    var tr = new CultureInfo("tr-TR");
 }
 
-@section Head {
-    <seo-meta title="Puan Programi | @Tenant.Settings.StoreName" />
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        @await Html.PartialAsync("_AccountSidebar", "LoyaltyPoints")
-    </aside>
-    <div class="flex-1">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Puan Programi</h1>
+    @* mobil hesap trigger *@
+    <button type="button" data-acc-open class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">AY</span>
+            <span class="font-medium text-charcoal">Sadakat Puanları</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
 
-            @* Balance Card *@
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6 mb-8">
-                <p class="text-sm opacity-90 mb-1">Mevcut Puaniniz</p>
-                <p class="text-4xl font-bold mb-4">@(balance?.CurrentBalance ?? 0) Puan</p>
-                <div class="flex gap-6 text-sm opacity-80">
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("loyalty")' />
+        </aside>
+
+        <div>
+            @* heading *@
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">Sadakat Puanları</h1>
+                <p class="text-muted mt-1.5">Alışveriş yaptıkça kazan, indirime dönüştür.</p>
+            </div>
+
+            @* puan kartı (gradient) *@
+            <div class="relative overflow-hidden rounded-3xl p-7 lg:p-8 mb-8 text-white shadow-[0_18px_40px_-12px_rgba(255,143,177,.55)]"
+                 style="background-image:linear-gradient(135deg,#FF8FB1 0%,#FFB098 45%,#FFD56B 100%);">
+                <div class="pointer-events-none absolute -top-16 -right-10 w-64 h-64 rounded-full bg-white/20 blur-2xl"></div>
+                <div class="pointer-events-none absolute -bottom-24 -left-8 w-56 h-56 rounded-full bg-white/10 blur-2xl"></div>
+
+                <div class="relative flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <span class="block">Toplam Kazanilan</span>
-                        <span class="font-semibold">@(balance?.TotalEarned ?? 0)</span>
+                        <p class="text-sm font-medium text-white/85">Sadakat Puanlarınız</p>
+                        <p class="font-heading text-5xl lg:text-6xl leading-none mt-1.5">@current.ToString("N0", tr)</p>
                     </div>
-                    <div>
-                        <span class="block">Toplam Kullanilan</span>
-                        <span class="font-semibold">@(balance?.TotalSpent ?? 0)</span>
+                    <span class="inline-flex items-center gap-2 self-start rounded-full bg-white/20 backdrop-blur px-3.5 py-1.5 text-sm font-semibold ring-1 ring-white/30">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z"/></svg>
+                        @tier Üye
+                    </span>
+                </div>
+
+                @if (nextTierMin.HasValue)
+                {
+                    <div class="relative mt-7">
+                        <div class="flex items-center justify-between text-xs font-medium text-white/85 mb-2">
+                            <span>@tier</span>
+                            <span>@nextTier</span>
+                        </div>
+                        <div class="h-2.5 rounded-full bg-white/25 overflow-hidden">
+                            <div class="h-full rounded-full bg-white" style="width:@(progress)%"></div>
+                        </div>
+                        <p class="text-sm text-white/90 mt-3">@nextTier olmak için <span class="font-semibold text-white">@pointsToNext.ToString("N0", tr) puan</span> daha.</p>
                     </div>
+                }
+                else
+                {
+                    <p class="relative mt-7 text-sm text-white/90">En üst kademe — Gold Üye.</p>
+                }
+
+                @if (totalEarned > 0 || totalSpent > 0)
+                {
+                    <div class="relative mt-6 pt-5 border-t border-white/20 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-white/75 text-xs">Toplam kazanım</p>
+                            <p class="font-semibold mt-0.5">@totalEarned.ToString("N0", tr)</p>
+                        </div>
+                        <div>
+                            <p class="text-white/75 text-xs">Toplam harcama</p>
+                            <p class="font-semibold mt-0.5">@totalSpent.ToString("N0", tr)</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @* nasıl kazanılır *@
+            <section class="mb-8">
+                <h2 class="font-heading text-xl text-charcoal mb-4">Nasıl Kazanılır?</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="rounded-2xl p-5 bg-primary/10">
+                        <span class="w-11 h-11 rounded-xl bg-white/70 text-primary flex items-center justify-center mb-3">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        </span>
+                        <p class="font-medium text-charcoal">Alışveriş Yap</p>
+                        <p class="text-sm text-charcoal/65 mt-0.5">1₺ = @perLira puan</p>
+                    </div>
+                    <div class="rounded-2xl p-5 bg-accent/25">
+                        <span class="w-11 h-11 rounded-xl bg-white/70 text-warning flex items-center justify-center mb-3">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3 6.3 6.9.9-5 4.8 1.2 6.8L12 17.8 5.9 20.8 7.1 14l-5-4.8L9 8.3Z"/></svg>
+                        </span>
+                        <p class="font-medium text-charcoal">Yorum Yaz</p>
+                        <p class="text-sm text-charcoal/65 mt-0.5">+@reviewBonus puan / yorum</p>
+                    </div>
+                    <div class="rounded-2xl p-5 bg-secondary/20">
+                        <span class="w-11 h-11 rounded-xl bg-white/70 text-secondary flex items-center justify-center mb-3">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M3 21a6 6 0 0 1 12 0"/><path d="M19 8v6M22 11h-6"/></svg>
+                        </span>
+                        <p class="font-medium text-charcoal">Arkadaş Çağır</p>
+                        <p class="text-sm text-charcoal/65 mt-0.5">+@referralBonus puan / üyelik</p>
+                    </div>
+                    <div class="rounded-2xl p-5 bg-success/10">
+                        <span class="w-11 h-11 rounded-xl bg-white/70 text-success flex items-center justify-center mb-3">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8"/></svg>
+                        </span>
+                        <p class="font-medium text-charcoal">Doğum Günün</p>
+                        <p class="text-sm text-charcoal/65 mt-0.5">+@birthdayBonus puan / yıl</p>
+                    </div>
+                </div>
+            </section>
+
+            @* nasıl kullanılır *@
+            <div class="bg-primary/10 rounded-2xl p-5 mb-8 flex items-start gap-4">
+                <span class="w-11 h-11 rounded-xl bg-white text-primary flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
+                </span>
+                <div>
+                    <h3 class="font-heading text-lg text-charcoal mb-1">Nasıl Kullanılır?</h3>
+                    <p class="text-sm text-charcoal/75 leading-relaxed">
+                        <span class="font-semibold text-charcoal">@redemptionRate.ToString("N0", tr) puan = @redemptionLira.ToString("0.##", tr)₺ indirim.</span>
+                        Ödeme adımında otomatik uygulanır.
+                    </p>
                 </div>
             </div>
 
-            @* Redemption Info *@
-            @if (settings is not null)
-            {
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8">
-                    <h2 class="text-sm font-semibold text-gray-700 mb-2">Puan Kullanim Bilgisi</h2>
-                    <ul class="text-sm text-gray-600 space-y-1">
-                        <li>Her @settings.LoyaltyPointsPerLira TL alisveriste <strong>1 puan</strong> kazanirsiniz.</li>
-                        <li><strong>@settings.LoyaltyPointsRedemptionRate puan = 1 TL</strong> degerindedir.</li>
-                        <li>Minimum <strong>@settings.LoyaltyMinRedemption puan</strong> ile kullanabilirsiniz.</li>
-                        <li>Kayit olunca <strong>@settings.LoyaltyWelcomeBonus puan</strong> hos geldin hediyesi.</li>
-                        <li>Her urun yorumunda <strong>@settings.LoyaltyReviewBonus puan</strong> kazanirsiniz.</li>
-                        <li>Arkadasinizi getirince <strong>@settings.LoyaltyReferralBonus puan</strong> kazanirsiniz.</li>
-                    </ul>
+            @* puan geçmişi *@
+            <div class="bg-white border border-cream-300 rounded-2xl mb-8">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-cream-300">
+                    <h2 class="font-heading text-lg text-charcoal">Puan Geçmişi</h2>
                 </div>
-            }
+                @if (transactions.Count == 0)
+                {
+                    <div class="px-6 py-16 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-cream flex items-center justify-center mx-auto mb-4 text-muted">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <p class="font-medium text-charcoal">Henüz puan işleminiz yok</p>
+                        <p class="text-sm text-muted mt-1">İlk siparişinizden sonra burada görünecek.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="divide-y divide-cream-300">
+                        @foreach (var tx in transactions)
+                        {
+                            var positive = tx.Points >= 0;
+                            var amountClass = positive ? "text-success" : "text-danger";
+                            var bgClass = positive ? "bg-success/10 text-success" : "bg-danger/10 text-danger";
+                            var arrow = positive ? "<path d=\"M12 19V5M5 12l7-7 7 7\"/>" : "<path d=\"M12 5v14M5 12l7 7 7-7\"/>";
+                            <div class="flex items-center gap-4 px-6 py-4">
+                                <span class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 @bgClass">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        @Html.Raw(arrow)
+                                    </svg>
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-charcoal text-sm truncate">@(tx.Description ?? tx.TransactionType)</p>
+                                    <p class="text-xs text-muted">@tx.CreatedAt.ToString("d MMMM yyyy", tr)</p>
+                                </div>
+                                <p class="font-semibold text-sm whitespace-nowrap @amountClass">@(positive ? "+" : "−")@Math.Abs(tx.Points).ToString("N0", tr)</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
 
-            @* Transaction History *@
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Puan Gecmisi</h2>
-
-            @if (transactions.Count == 0)
-            {
-                <p class="text-gray-500 text-sm">Henuz puan hareketiniz bulunmuyor.</p>
-            }
-            else
-            {
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-200 text-left text-gray-500">
-                                <th class="pb-3 pr-4 font-medium">Tarih</th>
-                                <th class="pb-3 pr-4 font-medium">Islem</th>
-                                <th class="pb-3 pr-4 font-medium">Aciklama</th>
-                                <th class="pb-3 font-medium text-right">Puan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var tx in transactions)
-                            {
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-3 pr-4 text-gray-600">@tx.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")</td>
-                                    <td class="py-3 pr-4 text-gray-900">@MapTransactionType(tx.TransactionType)</td>
-                                    <td class="py-3 pr-4 text-gray-600">@(tx.Description ?? "-")</td>
-                                    <td class="py-3 text-right font-semibold @(tx.Points > 0 ? "text-green-600" : "text-red-500")">
-                                        @(tx.Points > 0 ? $"+{tx.Points}" : tx.Points.ToString())
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+            @* help *@
+            <div class="bg-primary/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="w-10 h-10 rounded-xl bg-white text-primary flex items-center justify-center shrink-0">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                    </span>
+                    <p class="text-sm font-medium text-charcoal">Puanlar hakkında sorunuz mu var? Size yardımcı olalım.</p>
                 </div>
-            }
+                <div class="flex gap-2.5">
+                    @if (!string.IsNullOrWhiteSpace(settings?.WhatsAppNumber))
+                    {
+                        <a href="https://wa.me/@settings.WhatsAppNumber.Replace(" ", string.Empty).TrimStart('+')" target="_blank" rel="noopener" class="px-4 py-2.5 rounded-full bg-success text-white text-sm font-semibold hover:bg-success/90 transition">WhatsApp</a>
+                    }
+                    <a href="/iletisim" class="px-4 py-2.5 rounded-full border border-cream-300 text-charcoal text-sm font-semibold hover:bg-white transition">İletişim</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-@functions {
-    static string MapTransactionType(string type) => type switch
-    {
-        "Purchase" => "Alisveris",
-        "Welcome" => "Hos Geldin",
-        "Review" => "Yorum",
-        "Referral" => "Referans",
-        "Redemption" => "Kullanim",
-        _ => type
-    };
+@* mobil hesap sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-acc-close class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-acc-close aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("loyalty")' />
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/loyalty-points.js" asp-append-version="true"></script>
 }

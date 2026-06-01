@@ -29,7 +29,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.Customers).ReturnsDbSet(new List<Customer>());
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var dto = new StorefrontRegisterDto(1, "Ali", "Yilmaz", "ali@test.com", "05551234567", "Test1234!", "Test1234!", true, false);
 
         // Act
@@ -54,7 +54,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { existing });
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var dto = new StorefrontRegisterDto(1, "Ali", "Yilmaz", "ali@test.com", null, "Test1234!", "Test1234!", true, false);
 
         // Act
@@ -70,7 +70,7 @@ public class StorefrontAuthManagerTests
         // Arrange
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths).ReturnsDbSet(new List<StorefrontCustomerAuth>());
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var dto = new StorefrontRegisterDto(1, "Ali", "Yilmaz", "ali@test.com", null, "Test1234!", "Different!", true, false);
 
         // Act
@@ -87,7 +87,7 @@ public class StorefrontAuthManagerTests
         // Arrange
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths).ReturnsDbSet(new List<StorefrontCustomerAuth>());
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var dto = new StorefrontRegisterDto(1, "Ali", "Yilmaz", "ali@test.com", null, "Test1234!", "Test1234!", false, false);
 
         // Act
@@ -112,7 +112,7 @@ public class StorefrontAuthManagerTests
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.LoginAsync(1, "ali@test.com", "Test1234!");
@@ -136,7 +136,7 @@ public class StorefrontAuthManagerTests
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var result = await manager.LoginAsync(1, "ali@test.com", "WrongPassword!");
 
         // Assert
@@ -157,7 +157,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var result = await manager.LoginAsync(1, "ali@test.com", "Test1234!");
 
         // Assert
@@ -172,7 +172,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
             .ReturnsDbSet(new List<StorefrontCustomerAuth>());
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var result = await manager.LoginAsync(1, "nonexistent@test.com", "Test1234!");
 
         // Assert
@@ -196,7 +196,7 @@ public class StorefrontAuthManagerTests
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.ConfirmEmailAsync(1, token);
@@ -220,7 +220,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var result = await manager.ConfirmEmailAsync(1, token);
 
         // Assert
@@ -241,7 +241,7 @@ public class StorefrontAuthManagerTests
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.ChangePasswordAsync(1, "OldPass1!", "NewPass1!");
@@ -263,7 +263,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var result = await manager.ChangePasswordAsync(1, "WrongPass!", "NewPass1!");
 
         // Assert
@@ -283,7 +283,7 @@ public class StorefrontAuthManagerTests
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.RequestPasswordResetAsync(1, "ali@test.com");
@@ -309,7 +309,7 @@ public class StorefrontAuthManagerTests
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.ResetPasswordAsync(1, token, "NewPassword1!");
@@ -330,7 +330,7 @@ public class StorefrontAuthManagerTests
         _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
             .ReturnsDbSet(new List<StorefrontCustomerAuth> { auth });
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
 
         // Act
         var result = await manager.GetAuthByCustomerIdAsync(1, 42);
@@ -351,13 +351,15 @@ public class StorefrontAuthManagerTests
         };
         _mockDbContext.Setup(x => x.Customers)
             .ReturnsDbSet(new List<Customer> { customer });
+        _mockDbContext.Setup(x => x.StorefrontCustomerAuths)
+            .ReturnsDbSet(new List<StorefrontCustomerAuth>());
         _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
+        var manager = new StorefrontAuthManager(_mockContextFactory.Object, Moq.Mock.Of<Entegrasyon.Business.Abstract.IStorefrontEmailService>(), Microsoft.Extensions.Options.Options.Create(new Entegrasyon.Business.FeatureFlags.NotificationFeatureFlags { PublishEnabled = false }));
         var dto = new StorefrontProfileDto("Veli", "Demir", "05559999999");
 
         // Act
-        var result = await manager.UpdateProfileAsync(1, dto);
+        var result = await manager.UpdateProfileAsync(1, 1, dto);
 
         // Assert
         result.Success.Should().BeTrue();

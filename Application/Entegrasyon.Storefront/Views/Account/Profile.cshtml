@@ -1,70 +1,200 @@
-@using Entegrasyon.Entity.Dtos.Storefront
-@inject Entegrasyon.Business.Abstract.IStorefrontTenantContext Tenant
-
-@section Head {
-    <seo-meta title="Profilim | @Tenant.Settings.StoreName" />
-}
-
 @{
-    var profile = ViewBag.Profile as StorefrontProfileDto;
+    ViewData["Title"] = "Profil Bilgileri";
+
+    // Gerçek veri controller'dan ViewBag ile gelir; eksikse boş gösterilir (demo fallback yok).
+    var name = ViewBag.Name as string ?? "";
+    var surname = ViewBag.Surname as string ?? "";
+    var email = ViewBag.Email as string ?? "";
+    var phone = ViewBag.Phone as string ?? "";
+    var birthDate = ViewBag.BirthDate as string ?? "";
+    var gender = ViewBag.Gender as string ?? "";
+    var newsletter = ViewBag.NewsletterOptIn as bool? ?? false;
+    var avatarUrl = ViewBag.AvatarUrl as string;
+    var hasAvatar = !string.IsNullOrWhiteSpace(avatarUrl);
+    var fullName = $"{name} {surname}".Trim();
+    var initials = string.IsNullOrWhiteSpace(fullName)
+        ? "?"
+        : string.Concat(fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+
+    var profileSuccess = TempData["ProfileSuccess"] as string;
+    var profileError = TempData["ProfileError"] as string;
+
+    string GenderChecked(string val) => gender == val ? "checked" : "";
 }
 
-<div class="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto px-4 py-8">
-    <aside class="w-full md:w-64 shrink-0">
-        <nav class="bg-white rounded-lg shadow p-4 space-y-1">
-            <a href="/hesabim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Hesap Ozeti</a>
-            <a href="/hesabim/Profile" class="block px-3 py-2 rounded bg-gray-50 font-medium text-primary no-underline">Profilim</a>
-            <a href="/hesabim/Orders" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Siparişlerim</a>
-            <a href="/hesabim/iadelerim" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Iadelerim</a>
-            <a href="/hesabim/Addresses" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Adreslerim</a>
-            <a href="/hesabim/ChangePassword" class="block px-3 py-2 rounded hover:bg-gray-50 text-gray-700 no-underline">Sifre Degistir</a>
-            <a href="/cikis" class="block px-3 py-2 rounded text-red-600 hover:bg-red-50 no-underline">Cikis Yap</a>
-        </nav>
-    </aside>
-    <div class="flex-1">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-6">Profilim</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-            @if (ViewBag.Success == true)
+    @* mobile account trigger *@
+    <button type="button" data-open-acc class="lg:hidden w-full mb-5 flex items-center justify-between bg-white border border-cream-300 rounded-2xl px-5 py-3.5">
+        <span class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center font-semibold text-sm">@initials</span>
+            <span class="font-medium text-charcoal">Hesabım</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#7B8794" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div class="lg:grid lg:grid-cols-[18rem_1fr] lg:gap-8">
+        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+            <partial name="_AccountSidebar" model='@("profile")' />
+        </aside>
+
+        <div>
+            <div class="mb-7">
+                <h1 class="font-heading text-3xl text-charcoal">Profil Bilgileri</h1>
+                <p class="text-muted mt-1.5 text-sm">Hesabınızı ve çocuklarınızı yönetin; size daha iyi öneriler sunalım.</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(profileSuccess))
             {
-                <div class="bg-green-50 text-green-700 text-sm rounded-lg p-3 mb-4">
-                    Profiliniz basariyla guncellendi.
-                </div>
+                <div class="mb-5 rounded-2xl bg-success/10 border border-success/30 text-success text-sm px-4 py-3" role="status">@profileSuccess</div>
             }
-            @if (ViewBag.Error != null)
+            @if (!string.IsNullOrWhiteSpace(profileError))
             {
-                <div class="bg-red-50 text-red-700 text-sm rounded-lg p-3 mb-4">
-                    @ViewBag.Error
-                </div>
+                <div class="mb-5 rounded-2xl bg-danger/10 border border-danger/30 text-danger text-sm px-4 py-3" role="alert">@profileError</div>
             }
 
-            <form method="post" asp-antiforgery="true" class="space-y-4 max-w-lg">
-                <div>
-                    <label for="Name" class="block text-sm font-medium text-gray-700 mb-1">Ad</label>
-                    <input type="text" id="Name" name="Name" required value="@profile?.Name"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+            <form asp-controller="Account" asp-action="Profile" method="post" enctype="multipart/form-data">
+                @* avatar *@
+                <div class="rounded-2xl border border-cream-300 p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-5">
+                    <span id="avatarBadge" class="w-20 h-20 rounded-full bg-primary/15 text-primary flex items-center justify-center font-heading text-2xl shrink-0 overflow-hidden">
+                        @if (hasAvatar)
+                        {
+                            <img src="@avatarUrl" alt="Profil fotoğrafı" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            @initials
+                        }
+                    </span>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="file" name="Avatar" id="avatarInput" accept="image/*" class="hidden" data-avatar-input />
+                        <button type="button" data-avatar-trigger class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                            Fotoğraf Yükle
+                        </button>
+                        <button type="button" data-avatar-remove class="text-sm font-medium text-muted hover:text-danger transition">Kaldır</button>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="Surname" class="block text-sm font-medium text-gray-700 mb-1">Soyad</label>
-                    <input type="text" id="Surname" name="Surname" required value="@profile?.Surname"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                @* fields *@
+                <div class="rounded-2xl border border-cream-300 p-6 mb-6">
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="Name" class="block text-sm font-medium text-charcoal mb-1.5">Ad</label>
+                            <input type="text" id="Name" name="Name" value="@name" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                        </div>
+                        <div>
+                            <label for="Surname" class="block text-sm font-medium text-charcoal mb-1.5">Soyad</label>
+                            <input type="text" id="Surname" name="Surname" value="@surname" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                        </div>
+                        <div>
+                            <label for="Email" class="block text-sm font-medium text-charcoal mb-1.5">E-posta</label>
+                            <div class="relative">
+                                <input type="email" id="Email" value="@email" readonly class="w-full px-3 py-2.5 pr-20 rounded-xl border border-cream-300 bg-cream/60 text-sm text-muted outline-none" />
+                                <a asp-controller="Account" asp-action="ChangeEmail" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-primary hover:underline">Değiştir →</a>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="Phone" class="block text-sm font-medium text-charcoal mb-1.5">Telefon</label>
+                            <input type="text" id="Phone" name="Phone" inputmode="numeric" value="@phone" data-mask-phone class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                        </div>
+                        <div>
+                            <label for="BirthDate" class="block text-sm font-medium text-charcoal mb-1.5">Doğum Tarihi</label>
+                            <input type="date" id="BirthDate" name="BirthDate" value="@birthDate" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary text-charcoal" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-charcoal mb-1.5">Cinsiyet</label>
+                            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2.5">
+                                <label class="flex items-center gap-2 text-sm text-charcoal cursor-pointer"><input type="radio" name="Gender" value="Kadın" class="w-4 h-4 accent-[#FF8FB1]" @GenderChecked("Kadın") /> Kadın</label>
+                                <label class="flex items-center gap-2 text-sm text-charcoal cursor-pointer"><input type="radio" name="Gender" value="Erkek" class="w-4 h-4 accent-[#FF8FB1]" @GenderChecked("Erkek") /> Erkek</label>
+                                <label class="flex items-center gap-2 text-sm text-charcoal cursor-pointer"><input type="radio" name="Gender" value="Belirtilmemiş" class="w-4 h-4 accent-[#FF8FB1]" @GenderChecked("Belirtilmemiş") /> Belirtmek istemiyorum</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="Phone" class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-                    <input type="tel" id="Phone" name="Phone" value="@profile?.Phone"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
+                @* newsletter *@
+                <div class="rounded-2xl border border-cream-300 p-6 mb-6">
+                    <div class="flex items-center justify-between gap-4">
+                        <span>
+                            <span class="block font-medium text-charcoal text-sm">Bülten &amp; kampanya bildirimleri</span>
+                            <span class="block text-sm text-muted mt-0.5">Yeni koleksiyon ve indirimlerden e-posta ile haberdar olun.</span>
+                        </span>
+                        <span class="switch" data-on="@(newsletter ? "1" : "0")" data-toggle-switch data-target="NewsletterOptIn" role="switch" aria-checked="@(newsletter ? "true" : "false")" tabindex="0"></span>
+                    </div>
+                    <input type="checkbox" id="NewsletterOptIn" name="NewsletterOptIn" value="true" class="sr-only" @(newsletter ? "checked" : "") />
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
-                    <input type="email" value="@ViewBag.Email" disabled
-                           class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 text-sm" />
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" class="px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Değişiklikleri Kaydet</button>
+                    <a asp-controller="Account" asp-action="Profile" class="px-7 py-3 rounded-full border border-cream-300 text-sm font-semibold text-charcoal hover:bg-cream transition">İptal</a>
                 </div>
-
-                <button type="submit" class="btn-primary">Kaydet</button>
             </form>
+
+            @* children *@
+            <div class="bg-cream rounded-2xl p-6 mt-6">
+                <div class="flex items-start justify-between gap-4 mb-1">
+                    <div>
+                        <h2 class="font-heading text-xl text-charcoal">Çocuklarım</h2>
+                        <p class="text-sm text-muted mt-1 max-w-md">Çocuklarınızı ekleyin, beden öneri ve yaş-uygun ürünleri kişiselleştirelim.</p>
+                    </div>
+                    <button type="button" data-child-add class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-cream-300 bg-white text-sm font-semibold text-charcoal hover:border-primary hover:text-primary transition">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                        <span class="hidden sm:inline">Çocuk Ekle</span>
+                    </button>
+                </div>
+                <div id="kidsGrid" class="grid sm:grid-cols-2 gap-3 mt-5"></div>
+            </div>
         </div>
     </div>
 </div>
+
+@* mobile account sheet *@
+<div id="accSheet" class="hidden fixed inset-0 z-[55] lg:hidden">
+    <div data-close-acc class="absolute inset-0 bg-charcoal/40"></div>
+    <div class="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl p-5">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold text-charcoal">Hesabım</span>
+            <button type="button" data-close-acc aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <partial name="_AccountSidebar" model='@("profile")' />
+    </div>
+</div>
+
+@* child modal *@
+<div id="childModal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div data-close-child class="absolute inset-0 bg-charcoal/45"></div>
+    <div class="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-xl">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-cream-300">
+            <h2 id="childModalTitle" class="font-heading text-xl text-charcoal">Çocuk Ekle</h2>
+            <button type="button" data-close-child aria-label="Kapat" class="p-2 -mr-2 text-charcoal/50 hover:text-charcoal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="p-6">
+            <div class="space-y-3">
+                <div>
+                    <label for="cf_name" class="block text-sm font-medium text-charcoal mb-1.5">Çocuğun adı</label>
+                    <input id="cf_name" type="text" placeholder="Ör. Selin" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary" />
+                </div>
+                <div>
+                    <label for="cf_birth" class="block text-sm font-medium text-charcoal mb-1.5">Doğum tarihi</label>
+                    <input id="cf_birth" type="date" class="w-full px-3 py-2.5 rounded-xl border border-cream-300 text-sm outline-none focus:border-primary text-charcoal" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-charcoal mb-1.5">Cinsiyet</label>
+                    <div class="flex items-center gap-5 pt-1">
+                        <label class="flex items-center gap-2 text-sm text-charcoal cursor-pointer"><input type="radio" name="cf_gender" value="k" class="w-4 h-4 accent-[#FF8FB1]" checked /> Kız</label>
+                        <label class="flex items-center gap-2 text-sm text-charcoal cursor-pointer"><input type="radio" name="cf_gender" value="e" class="w-4 h-4 accent-[#FF8FB1]" /> Erkek</label>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-5">
+                <button type="button" data-child-save class="px-6 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition">Kaydet</button>
+                <button type="button" data-close-child class="px-6 py-2.5 rounded-full border border-cream-300 text-sm text-charcoal hover:bg-cream transition">İptal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/profil.js" asp-append-version="true"></script>
+}
