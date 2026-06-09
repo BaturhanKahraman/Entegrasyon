@@ -29,6 +29,7 @@ Entity veya DbContext'te değişiklik yapıldığında:
 - DI: Scrutor convention-based auto-scan (`IXxxManager`→`XxxManager`). Özel durumlar manuel.
 - Domain modeli (kategori/özellik): `CategoryAttribute`, `CategoryAttributeCategory` (IsRequired/IsVarianter/IsSlicer), `CategoryAttributeValue`, `AttributeKeyValue`; marketplace eşleştirmeleri `CategoryAttributeMarketPlaceMatch` (MarketPlaceId=1=Trendyol). Müşteri kalıtımı `Customer`→`RetailCustomer`/`CorporateCustomer`. `BarcodeSequence` arka planda temizlenir.
 - Şüphede `entegrasyon-db` ve `microsoft-docs` skill'leri (EF Core resmi ref); EF kod desenleri için `aspnet-mvc-htmx`.
+- **Performans/şema için `postgres-performance` skill'i** (index stratejisi, EXPLAIN okuma, N+1, partial index, connection pooling, pg_stat_statements, GIN/trigram).
 
 ## Performans & sorgu
 
