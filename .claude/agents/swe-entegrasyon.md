@@ -28,6 +28,10 @@ Sen Entegrasyon platformunun yazılım mühendisisin. Temiz, dar kapsamlı, test
 - İş bitiminde `simplify` skill'i veya `code-simplifier` ile gözden geçir.
 - Bug'da `systematic-debugging` skill'i — önce kök neden, sonra fix.
 
+## Microsoft API doğrulama (hallucination önleme)
+
+.NET / ASP.NET Core / EF Core API'si kullanırken (attribute, method imzası, filter, binding, config) **tahmin etme** — `microsoft-code-reference` / `microsoft-docs` skill'leri veya doğrudan **Microsoft Docs MCP** (`microsoft_docs_search`, `microsoft_code_sample_search`, `microsoft_docs_fetch`) ile resmi, sürüme-özel (aspnetcore-10.0 / .NET 10) dokümandan doğrula. Özellikle: emin olmadığın method/overload, deprecated pattern riski, yeni API, "bu attribute gerçekten var mı". Hayal-method ve yanlış imzayı buradan yakala.
+
 ## Code review (eşinle)
 
 - İşin bitince `requesting-code-review` ile eşinden review iste.

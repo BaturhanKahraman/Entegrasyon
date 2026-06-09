@@ -54,7 +54,7 @@ Her rol `.claude/agents/<isim>.md` (frontmatter + projeye özel system prompt). 
 | Rol | Dosya | Model | Araçlar | Skill'ler |
 |---|---|---|---|---|
 | **Product Manager** | `pm-entegrasyon` | sonnet | Read, Grep, Glob, Write(*spec/backlog*), WebSearch, WebFetch | `entegrasyon-pm`, `brainstorming`, `writing-plans`, `deep-research` |
-| **Software Engineer** (×2) | `swe-entegrasyon` | opus | Tümü | `aspnet-mvc-htmx`, `test-driven-development`, `simplify`, `code-simplifier`, `systematic-debugging`, `requesting/receiving-code-review` |
+| **Software Engineer** (×2) | `swe-entegrasyon` | opus | Tümü | `aspnet-mvc-htmx`, `test-driven-development`, `simplify`, `code-simplifier`, `systematic-debugging`, `requesting/receiving-code-review`, `microsoft-docs`/`microsoft-code-reference` (+ MS Docs MCP) |
 | **Database Master** | `db-entegrasyon` | opus | Read, Edit, Write, Bash, Grep, Glob | `entegrasyon-db`, `microsoft-docs`, `aspnet-mvc-htmx` |
 | **QA / Test Engineer** | `qa-entegrasyon` | sonnet | Read, Edit, Write, Bash, Grep, Glob + Playwright/Chrome DevTools MCP | `test-driven-development`, `code-review`, `verify`, `verification-before-completion`, `fallow`(JS) |
 
