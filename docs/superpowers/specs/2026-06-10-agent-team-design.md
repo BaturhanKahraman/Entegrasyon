@@ -39,6 +39,12 @@ Detaylı domain referansları: `docs/rakip-analizi.md`, `docs/production-audit.m
 - Team Leader = ana oturum (kullanıcıyla konuşan Claude). İşi böler, dağıtır, sonuçları toplar, raporlar.
 - Teammate'ler birbirine `SendMessage` ile konuşur. Alt-teammate doğurmayı TL yapar.
 
+**Team Leader'ın asıl görevi — takımı idame + çıktı kalitesi (sadece dağıtıcı değil):**
+1. **Ekstra QC / çıktı güzelleştirme:** Her teammate çıktısını son süzgeçten geçir (tutarlılık, desen uyumu, vizyon, gerçek-işe-yararlık). QA'nın üstünde son kalite kapısı.
+2. **Agent geliştirme:** Zayıf/yanlış davranan agent'ın `.claude/agents/<rol>.md` tanımını düzenle, güçlendir; tekrarlayan hataları kalıcı kurala çevir.
+3. **Yeni rol:** İhtiyaç görürse yeni rol tasarlar, `.claude/agents/`'a ekler, takıma katar (`skill-creator` ile gerekli skill'i de üretir).
+4. **Takım sağlığı:** Darboğaz/izolasyon/iş-rol eşleşmesini sürekli gözetir ve ayarlar. Yapısal değişiklikleri commit'ler.
+
 ---
 
 ## 3. Roller
@@ -60,7 +66,7 @@ Her rol `.claude/agents/<isim>.md` (frontmatter + projeye özel system prompt). 
 ## 4. İş Akışı (TL pipeline)
 
 1. **Kullanıcı → TL:** istek (veya Faz 2'de backlog'dan otomatik).
-2. **TL → PM:** spec + kabul kriteri + task üret. PM çıktısını `docs/tasks/tasks.json` şemasına yazar (mevcut format: `task, description, status, priority, plan, manual_test_steps[], addOrUpdateUnitTests, addOrUpdateIntegrationTests`). Büyük işler için `docs/superpowers/specs/`'e tasarım dokümanı.
+2. **TL → PM:** spec + kabul kriteri + task üret. **PM proaktiftir** — iş verilmesini beklemeden fonksiyonel eksikleri (production-audit, rakip-analizi, backlog açıkları) VE teknik ihtiyaçları (test kapsamı, tech-debt, performans/N+1, güvenlik, refactor, eksik migration/index) tarayıp her tur 1-3 yüksek-değerli task önerir. PM çıktısını `docs/tasks/tasks.json` şemasına yazar (mevcut format: `task, description, status, priority, plan, manual_test_steps[], addOrUpdateUnitTests, addOrUpdateIntegrationTests`). Büyük işler için `docs/superpowers/specs/`'e tasarım dokümanı.
 3. **TL onay kapısı:** Saçma/gereksiz/kapsam dışı istek geçmez. Mantık sağlam mı, vizyona hizmetli mi, gerçek işe yarıyor mu?
 4. **DB'ye dokunan iş → DB Master önce:** entity/DbContext değişikliği + migration (strict-rule) + `has-pending-model-changes` temiz.
 5. **TL → SWE-A/B:** TDD-First implementasyon. QA RED-first'i zorlar.
@@ -122,6 +128,23 @@ Bu liste `.claude/agents/_guardrails.md` (veya her agent prompt'unun ortak böl�
 
 ## 9. Faz 2 (ertelendi — ayrı tasarlanacak)
 
-Sahibi başında değilken **usage-farkında otonom loop**: PM backlog'dan iş çeker, takım geliştirir, TL koordine eder.
+Sahibi başında değilken **usage-farkında otonom loop**: PM backlog'dan iş çeker, takım geliştirir, TL koordine eder. `loop`/`ScheduleWakeup` + usage-gate ile.
 
-**Kırmızı çizgi:** Sabah **08:45** ve **16:45** çalışma pencerelerine token kalmalı. Usage reset zamanlarını hesaba katıp dikkatli harca. Mekanizma (loop/ScheduleWakeup + usage-gate) Faz 1 bitince ve kanıt koşusu başarılı olunca tasarlanacak.
+### Kullanıcının çalışma pencereleri (KORUNACAK)
+- Sabah **08:45** ve öğleden sonra **16:45** — Baturhan'ın iş için çalıştığı saatler. Bu pencerelere yeterli kapasite kalmalı.
+
+### Reset-farkında mod seçimi (çekirdek mantık)
+İki limit dikkate alınır: **5 saatlik (oturum)** ve **haftalık** reset.
+
+- **Reset "harcamayı sıfırlayacak" konumdaysa → en güçlü modda çalış (full Opus).** Çünkü kalan kullanım nasılsa sıfırlanacak, biriktirmenin anlamı yok. İki durum:
+  1. **Haftalık reset'e çarpıyorsa:** çalışma haftalık reset anına denk geliyorsa → sıfırlanacak → en güçlü mod.
+  2. **5 saatlik limit 08:45'te veya öncesinde sıfırlanıyorsa:** kullanıcı penceresi taze başlayacağı için loop o reset'e kadar serbestçe (güçlü mod) harcayabilir.
+- **Reset yakın değilse → tutumlu mod:** kullanıcının 08:45/16:45 pencerelerine kapasite bırakacak şekilde kıs (daha ucuz model, daha az paralel doğurma, ara ver).
+- **Döngü yeniden başlatma:** Kullanıcı öğleden sonra işini bitirince (~**17:00 / "5 gibi"**) loop tekrar başlayabilir.
+
+### Açık sorular (Faz 2 inşa edilirken netleştirilecek)
+- 5 saatlik pencerenin ve haftalık limitin **gerçek reset saatleri** (rolling olduğundan ilk-kullanıma bağlı) — gözlemleyip kalibre et.
+- "Yeterli kapasite" eşiği token cinsinden ne olmalı (kullanıcının tipik 5 saatlik tüketimi).
+- Usage'ı programatik okuma yolu (Claude Code usage komutu / telemetri).
+
+**Önkoşul:** Faz 1 kanıt koşusu başarılı olmadan Faz 2'ye geçilmez.

@@ -23,6 +23,15 @@ Tek bir yerden (`Entegrasyon.MVC`) bir esnafın ürününü girip **tüm pazarye
 3. **Önceliklendir:** Müşteri değeri × aciliyet × efor. İlk müşteriyi (zekidsbebe) canlıya çıkarmaya hizmet eden işler önde.
 4. **Backlog yönet:** Task'ları `docs/tasks/tasks.json` şemasına yaz (aşağıda). Büyük/karmaşık işler için `docs/superpowers/specs/YYYY-MM-DD-<konu>-design.md` tasarım dokümanı taslağı (gerekirse `brainstorming`/`writing-plans` skill'leri).
 
+## Proaktif task üretimi (ASIL GÖREVİN)
+
+Kullanıcı sana iş vermesini BEKLEME. Eksikleri ve teknik ihtiyaçları kendin tespit edip task üret — sonra Team Leader onayına sun. İki kaynaktan:
+
+1. **Fonksiyonel eksikler:** `docs/production-audit.md`, `docs/rakip-analizi.md`, mevcut backlog'daki açıklar, "esnafın yapamadığı" işler. Örn: eksik pazaryeri akışı, fatura/kargo boşlukları, storefront eksik sayfalar.
+2. **Teknik ihtiyaçlar:** test kapsamı boşlukları, tech-debt, performans/N+1, güvenlik, refactor fırsatı, eksik migration/index, multi-tenant açıkları, kırık/eksik E2E. Kod tabanını (Read/Grep) tarayıp somut teknik task çıkar.
+
+Her tur: 1-3 yüksek-değerli task öner; her birini `tasks.json` şemasıyla tam doldur (özellikle `manual_test_steps`). "Neden şimdi" ve "hangi derdi çözüyor" gerekçesini yanına koy. TL elerse gerekçeyle düzelt; geçenleri backlog'a yaz.
+
 ## Backlog şeması — `docs/tasks/tasks.json` (MEVCUT FORMAT, KORU)
 
 ```json
