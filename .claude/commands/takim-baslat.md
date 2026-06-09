@@ -38,15 +38,7 @@ Arka plan teammate'leri geçici bir API hatası sonrası **sessizce ölebilir** 
 1. **Idle ≠ ölü ayrımı:** Bir teammate'ten uzun süre ses çıkmazsa "idle" varsayma. ÖNCE liveness doğrula:
    `bash .claude/scripts/team-health.sh SWE-Ahmet SWE-Mehmet QA` (beklenen roster'ı geç).
    Idle teammate süreçte GÖRÜNÜR; süreç listede yoksa **ölmüştür**.
-2. **Watchdog başlat:** Aktif çalışan teammate'ler varken, ölümü otomatik yakalayan bir arka plan watchdog koş (ölünce çıkar → harness seni uyandırır):
-   ```bash
-   for i in $(seq 1 90); do
-     live=$(ps aux | grep -oE 'agent-name (SWE-[A-Za-z]+|QA|DB|PM)[A-Za-z-]*' | sed 's/agent-name //' | sort -u)
-     for n in BEKLENEN_ISIMLER; do printf '%s\n' "$live" | grep -qx "$n" || { echo "WATCHDOG: $n ÖLDÜ (it $i)"; exit 0; }; done
-     sleep 20
-   done; echo "WATCHDOG: süre doldu, hâlâ canlı"
-   ```
-   `run_in_background: true` ile çalıştır; `BEKLENEN_ISIMLER`'i o fazdaki canlı roster yap. Faz değişince (ör. SWE→QA) eski watchdog'u durdur, yenisini başlat.
+2. **On-demand liveness (TEMİZ yöntem — kalıcı background watchdog KULLANMA):** Event-driven çalışıyorsun; teammate'ler bitince otomatik mesaj atar (chatty ekip → sık uyanırsın). Sessiz ölümü yakalamak için **her koordinasyon turunun başında** ve bir teammate'ten beklediğin yanıt gecikince `bash .claude/scripts/team-health.sh <roster>` çağır (tek seferlik). Kalıcı `seq/sleep` background döngüsü kurma — background clutter yaratır, gereksiz. (Sadece uzun ve tamamen sessiz bir bekleme öngörüyorsan tek bir geçici watchdog düşünülebilir; varsayılan DEĞİL.)
 3. **Otomatik kurtarma:** Bir teammate ölü + görevi tamamlanmamışsa, onu **bağlamı + peer'ların verdiği cevapları brief'e gömerek** yeniden doğur (ikinci soru-cevap turuna sokma). git ile kayıp iş var mı doğrula; genelde ölen teammate'in dosya değişikliği yoksa temiz başlanır.
 4. **Deadlock'tan kaçın:** İki teammate'i birbirine "review bekle" diye kilitleme. Review sırasını TL sen yönet; paylaşılan task listesi üzerinden ilerlet, peer-to-peer süresiz bekleme bırakma.
 

@@ -199,3 +199,19 @@ Claude sadece karar verme, doğrulama ve karmaşık reasoning için kullanılmal
 # Kullanım
 curl -s http://localhost:11434/api/generate -d '{"model":"entegrasyon-coder","prompt":"...","stream":false}'
 ```
+
+## Data-Access İş Bölümü (Strict Rule)
+
+Veritabanı bu işin kalbi; **"yavaşlığa tahammül yok"**. Sorgu yazımı ile index/şema kararı AYRI disiplinlerdir (denetimde görüldü: Orders matcher'ları yazıldı ama index'leri unutuldu). **(C) Hibrit model** geçerlidir:
+
+- **DB Master sahibi:** migration, `IEntityTypeConfiguration`, **index'ler**, hot-path/perf-kritik query'ler (pazaryeri polling matcher, export, dashboard, search, sync aggregate), N+1 audit, multi-tenant sorgu deseni, compiled query, perf gate.
+- **SWE sahibi:** günlük CRUD / basit tek-tablo filtre LINQ'i — gate'siz, feature içinde TDD ile.
+- **DB Master review ŞART (objektif tetikleyici):**
+  1. `Include` zinciri (≥2) / `GroupBy` / `join` / raw SQL
+  2. Döngü içinde çalışan query (N+1 riski)
+  3. Hot/büyük tabloda (Products, ProductVariants, BranchOfficeStocks, Orders) **indexsiz kolonda** `Where`/`OrderBy`
+  4. `Skip/Take` pagination'da indexli `OrderBy` yoksa
+  → Geri kalan (by-PK lookup, basit tek-tablo filtre) **gate'siz**, SWE serbest.
+- **SWE self-check (review öncesi):** `AsNoTracking` mı? `Select` projeksiyon mu (full-entity değil)? multi-`Include`'da `AsSplitQuery` mi? Hedef kolon index'li mi?
+- **SQL loglaması:** sadece Dev/CI (`LogTo` + `EnableSensitiveDataLogging`) — **prod'da ASLA** (PII/secret/I-O). CI'da opt-in N+1/seq-scan flag.
+- **Compiled query (multi-tenant):** context tipi tüm tenant'larda aynı (sadece connection değişir) → cache güvenli; DB Master bilerek tasarlar.
