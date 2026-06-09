@@ -76,6 +76,8 @@ Her rol `.claude/agents/<isim>.md` (frontmatter + projeye özel system prompt). 
 
 **İzolasyon:** Varsayılan tek workspace. Bir görev iki SWE'yi aynı dosyalara sokacaksa, o görev için `Agent(isolation: "worktree")` → TL birleştirir.
 
+**Teammate dayanıklılığı (sessiz ölüme karşı):** Arka plan teammate'leri geçici API hatasında sessizce ölebilir (süreç biter, mesaj gelmez). TL şu önlemleri uygular: (1) **idle ≠ ölü** — sessiz teammate'i idle varsaymadan önce `.claude/scripts/team-health.sh <roster>` ile liveness doğrula (idle süreçte görünür, ölü görünmez); (2) aktif fazda **watchdog** (arka plan, ölünce çıkıp TL'yi uyandıran ps-polling döngüsü); (3) **otomatik kurtarma** — ölü + görevi bitmemiş teammate'i bağlam + peer cevapları gömülü yeniden doğur; (4) **deadlock yok** — peer-to-peer süresiz "review bekle" kilidi kurma, review sırasını TL yönetir. Detay: `/takim-baslat` playbook'u.
+
 ---
 
 ## 5. Backlog

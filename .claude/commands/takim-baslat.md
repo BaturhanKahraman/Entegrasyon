@@ -31,6 +31,25 @@ Bu değişiklikleri (agent düzenleme, yeni rol, yeni skill) yaptığında commi
    - `subagent_type: qa-entegrasyon`, name: `QA`
    - Hepsini **tek mesajda** (paralel) doğur.
 
+## Teammate dayanıklılığı (ZORUNLU — sessiz ölüme karşı)
+
+Arka plan teammate'leri geçici bir API hatası sonrası **sessizce ölebilir** (süreç biter, sana mesaj gelmez). Bunu önlemek/erken yakalamak için:
+
+1. **Idle ≠ ölü ayrımı:** Bir teammate'ten uzun süre ses çıkmazsa "idle" varsayma. ÖNCE liveness doğrula:
+   `bash .claude/scripts/team-health.sh SWE-Ahmet SWE-Mehmet QA` (beklenen roster'ı geç).
+   Idle teammate süreçte GÖRÜNÜR; süreç listede yoksa **ölmüştür**.
+2. **Watchdog başlat:** Aktif çalışan teammate'ler varken, ölümü otomatik yakalayan bir arka plan watchdog koş (ölünce çıkar → harness seni uyandırır):
+   ```bash
+   for i in $(seq 1 90); do
+     live=$(ps aux | grep -oE 'agent-name (SWE-[A-Za-z]+|QA|DB|PM)[A-Za-z-]*' | sed 's/agent-name //' | sort -u)
+     for n in BEKLENEN_ISIMLER; do printf '%s\n' "$live" | grep -qx "$n" || { echo "WATCHDOG: $n ÖLDÜ (it $i)"; exit 0; }; done
+     sleep 20
+   done; echo "WATCHDOG: süre doldu, hâlâ canlı"
+   ```
+   `run_in_background: true` ile çalıştır; `BEKLENEN_ISIMLER`'i o fazdaki canlı roster yap. Faz değişince (ör. SWE→QA) eski watchdog'u durdur, yenisini başlat.
+3. **Otomatik kurtarma:** Bir teammate ölü + görevi tamamlanmamışsa, onu **bağlamı + peer'ların verdiği cevapları brief'e gömerek** yeniden doğur (ikinci soru-cevap turuna sokma). git ile kayıp iş var mı doğrula; genelde ölen teammate'in dosya değişikliği yoksa temiz başlanır.
+4. **Deadlock'tan kaçın:** İki teammate'i birbirine "review bekle" diye kilitleme. Review sırasını TL sen yönet; paylaşılan task listesi üzerinden ilerlet, peer-to-peer süresiz bekleme bırakma.
+
 ## Pipeline (her task için)
 
 1. **PM → spec/task:** PM hedefi `docs/tasks/tasks.json` şemasına (problem, kabul kriteri, `manual_test_steps`) döker. Büyük iş → `docs/superpowers/specs/` taslağı.
