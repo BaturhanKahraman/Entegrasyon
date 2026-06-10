@@ -16,7 +16,7 @@ public class BranchOfficeController(
     IActiveBranchOfficeAccessor activeBranchOfficeAccessor) : Controller
 {
     /// <summary>
-    /// Kullanıcının aktif şube ofisini değiştirir.
+    /// Kullanıcının aktif deposunu (şube ofisi) değiştirir.
     /// Session'a yazar, remember=true ise User.LastSelectedBranchOfficeId + RememberLastBranchOffice'e de yazar.
     /// HTMX çağrısında "HX-Refresh: true" header'ı ile sayfa yenilenir.
     /// </summary>
@@ -37,19 +37,19 @@ public class BranchOfficeController(
             if (Request.Headers.ContainsKey("HX-Request"))
             {
                 Response.StatusCode = 400;
-                return Content(result.Message ?? "Şube değiştirilemedi.");
+                return Content(result.Message ?? "Depo değiştirilemedi.");
             }
-            TempData.SetError(result.Message ?? "Şube değiştirilemedi.");
+            TempData.SetError(result.Message ?? "Depo değiştirilemedi.");
             return RedirectToAction(nameof(Index));
         }
 
         if (Request.Headers.ContainsKey("HX-Request"))
         {
             Response.Headers.Append("HX-Refresh", "true");
-            return Content(result.Message ?? "Aktif şube değiştirildi.");
+            return Content(result.Message ?? "Aktif depo değiştirildi.");
         }
 
-        TempData.SetSuccess(result.Message ?? "Aktif şube değiştirildi.");
+        TempData.SetSuccess(result.Message ?? "Aktif depo değiştirildi.");
         return RedirectToAction(nameof(Index));
     }
 
@@ -57,7 +57,7 @@ public class BranchOfficeController(
     [HttpGet("/branch-offices")]
     public async Task<IActionResult> Index()
     {
-        ViewData.SetPageTitle("Subeler");
+        ViewData.SetPageTitle("Depolar");
         ViewData.SetActiveNav("branch-offices");
 
         var result = await branchOfficeManager.GetPageBranchListAsync();
@@ -71,13 +71,13 @@ public class BranchOfficeController(
         var result = await branchOfficeManager.GetBranchDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sube bulunamadı.");
+            TempData.SetError(result.Message ?? "Depo bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
         ViewData.SetPageTitle(result.Data!.Name);
         ViewData.SetActiveNav("branch-offices");
-        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (result.Data.Name, null));
+        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (result.Data.Name, null));
 
         var stocks = await branchOfficeManager.GetBranchStocksAsync(id);
         ViewBag.Stocks = stocks.Data;
@@ -88,9 +88,9 @@ public class BranchOfficeController(
     [HttpGet("/branch-offices/create")]
     public IActionResult Create()
     {
-        ViewData.SetPageTitle("Yeni Sube");
+        ViewData.SetPageTitle("Yeni Depo");
         ViewData.SetActiveNav("branch-offices");
-        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), ("Yeni Sube", null));
+        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), ("Yeni Depo", null));
 
         return View(new BranchOfficeCreateVm());
     }
@@ -98,9 +98,9 @@ public class BranchOfficeController(
     [HttpPost("/branch-offices/create")]
     public async Task<IActionResult> Create(BranchOfficeCreateVm model)
     {
-        ViewData.SetPageTitle("Yeni Sube");
+        ViewData.SetPageTitle("Yeni Depo");
         ViewData.SetActiveNav("branch-offices");
-        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), ("Yeni Sube", null));
+        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), ("Yeni Depo", null));
 
         if (!ModelState.IsValid)
             return View(model);
@@ -109,11 +109,11 @@ public class BranchOfficeController(
 
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sube eklenemedi.");
+            TempData.SetError(result.Message ?? "Depo eklenemedi.");
             return View(model);
         }
 
-        TempData.SetSuccess("Sube basariyla eklendi.");
+        TempData.SetSuccess("Depo basariyla eklendi.");
         return RedirectToAction(nameof(Index));
     }
 
@@ -123,7 +123,7 @@ public class BranchOfficeController(
         var result = await branchOfficeManager.GetBranchDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sube bulunamadı.");
+            TempData.SetError(result.Message ?? "Depo bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -132,7 +132,7 @@ public class BranchOfficeController(
 
         ViewData.SetPageTitle($"{result.Data!.Name} - Duzenle");
         ViewData.SetActiveNav("branch-offices");
-        ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (result.Data.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (result.Data.Name, $"/branch-offices/{id}"), ("Duzenle", null));
 
         var vm = new BranchOfficeEditVm
         {
@@ -151,7 +151,7 @@ public class BranchOfficeController(
         if (!ModelState.IsValid)
         {
             ViewData.SetPageTitle($"{model.Name} - Duzenle");
-            ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+            ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
             model.Id = id;
             return View(model);
         }
@@ -160,14 +160,14 @@ public class BranchOfficeController(
 
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sube guncellenemedi.");
+            TempData.SetError(result.Message ?? "Depo guncellenemedi.");
             ViewData.SetPageTitle($"{model.Name} - Duzenle");
-            ViewData.SetBreadcrumb(("Subeler", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+            ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
             model.Id = id;
             return View(model);
         }
 
-        TempData.SetSuccess("Sube basariyla guncellendi.");
+        TempData.SetSuccess("Depo basariyla guncellendi.");
         return RedirectToAction(nameof(Detail), new { id });
     }
 
@@ -183,7 +183,7 @@ public class BranchOfficeController(
         if (!branchResult.Success)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = "Sube bulunamadı.", type = "danger" });
+                new { message = "Depo bulunamadı.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -207,7 +207,7 @@ public class BranchOfficeController(
         if (model.SourceBranchId == model.TargetBranchId)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = "Kaynak ve hedef sube ayni olamaz.", type = "danger" });
+                new { message = "Kaynak ve hedef depo ayni olamaz.", type = "danger" });
             return StatusCode(422);
         }
 

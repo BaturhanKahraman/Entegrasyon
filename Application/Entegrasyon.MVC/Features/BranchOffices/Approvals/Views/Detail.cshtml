@@ -31,7 +31,7 @@
             <div class="card-header"><h3 class="card-title">Talep Bilgileri</h3></div>
             <div class="card-body">
                 <dl class="row mb-0">
-                    <dt class="col-sm-4">Silinecek Şube</dt>
+                    <dt class="col-sm-4">Silinecek Depo</dt>
                     <dd class="col-sm-8">@Model.BranchOfficeName</dd>
 
                     <dt class="col-sm-4">Talep Eden</dt>
@@ -45,7 +45,7 @@
 
                     @if (Model.HasStockTransfer)
                     {
-                        <dt class="col-sm-4">Hedef Şube</dt>
+                        <dt class="col-sm-4">Hedef Depo</dt>
                         <dd class="col-sm-8">@Model.TransferTargetBranchOfficeName</dd>
                     }
 

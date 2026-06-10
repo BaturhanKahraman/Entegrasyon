@@ -1,25 +1,25 @@
 @model Entegrasyon.MVC.Features.BranchOffices.ViewModels.BranchOfficeEditVm
 
 <div class="d-flex justify-content-end mb-3">
-    <a href="/branch-offices/@Model.Id" class="btn btn-outline-secondary">Subeye Don</a>
+    <a href="/branch-offices/@Model.Id" class="btn btn-outline-secondary">Depoya Don</a>
 </div>
 
         <form method="post" action="/branch-offices/@Model.Id/edit">
             @Html.AntiForgeryToken()
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Sube Bilgileri</h3>
+                    <h3 class="card-title">Depo Bilgileri</h3>
                 </div>
                 <div class="card-body">
                     <input asp-for="Id" type="hidden" />
                     <div class="mb-3">
-                        <label asp-for="Name" class="form-label required">Sube Adi</label>
-                        <input asp-for="Name" class="form-control" placeholder="Sube adi giriniz" />
+                        <label asp-for="Name" class="form-label required">Depo Adi</label>
+                        <input asp-for="Name" class="form-control" placeholder="Depo adi giriniz" />
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label asp-for="Address" class="form-label">Adres</label>
-                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="Şube adresi (isteğe bağlı)"></textarea>
+                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="Depo adresi (isteğe bağlı)"></textarea>
                         <span asp-validation-for="Address" class="text-danger"></span>
                         <small class="form-hint">İsteğe bağlı, en fazla 500 karakter.</small>
                     </div>

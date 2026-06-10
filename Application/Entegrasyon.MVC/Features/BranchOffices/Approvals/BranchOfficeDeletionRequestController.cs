@@ -24,9 +24,9 @@ public class BranchOfficeDeletionRequestController(
     [Authorize(Policy = AppPermissions.BranchOffices.View)]
     public async Task<IActionResult> Index(BranchOfficeDeletionRequestStatus? status = null, int page = 0)
     {
-        ViewData.SetPageTitle("Şube Silme Talepleri");
+        ViewData.SetPageTitle("Depo Silme Talepleri");
         ViewData.SetActiveNav("branch-offices");
-        ViewData.SetBreadcrumb(("Şubeler", "/branch-offices"), ("Silme Talepleri", null));
+        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), ("Silme Talepleri", null));
 
         var result = await manager.GetPagedAsync(page, 50, status);
         ViewBag.Status = status;
@@ -49,7 +49,7 @@ public class BranchOfficeDeletionRequestController(
         ViewData.SetPageTitle($"Silme Talebi #{id}");
         ViewData.SetActiveNav("branch-offices");
         ViewData.SetBreadcrumb(
-            ("Şubeler", "/branch-offices"),
+            ("Depolar", "/branch-offices"),
             ("Silme Talepleri", "/branch-office-deletion-requests"),
             ($"#{id}", null));
 
@@ -98,7 +98,7 @@ public class BranchOfficeDeletionRequestController(
             return RedirectToAction(nameof(Detail), new { id });
         }
 
-        TempData.SetSuccess(result.Message ?? "Talep onaylandı ve şube silindi.");
+        TempData.SetSuccess(result.Message ?? "Talep onaylandı ve depo silindi.");
         return RedirectToAction(nameof(Index));
     }
 

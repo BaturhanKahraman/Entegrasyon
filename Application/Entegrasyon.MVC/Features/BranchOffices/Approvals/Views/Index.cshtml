@@ -3,13 +3,13 @@
 @model Pageable<BranchOfficeDeletionRequestListDto>
 
 <div class="d-flex align-items-center mb-3">
-    <h2 class="page-title me-2 mb-0">Şube Silme Talepleri</h2>
+    <h2 class="page-title me-2 mb-0">Depo Silme Talepleri</h2>
     @if (ViewBag.PendingCount is int pc && pc > 0)
     {
         <span class="badge bg-warning text-dark">@pc beklemede</span>
     }
     <div class="ms-auto">
-        <a href="/branch-offices" class="btn btn-outline-secondary">Şube Listesine Dön</a>
+        <a href="/branch-offices" class="btn btn-outline-secondary">Depo Listesine Dön</a>
     </div>
 </div>
 
@@ -32,12 +32,12 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Şube</th>
+                    <th>Depo</th>
                     <th>Durum</th>
                     <th>Talep Eden</th>
                     <th>Talep Tarihi</th>
                     <th>Stok Transferi</th>
-                    <th>Hedef Şube</th>
+                    <th>Hedef Depo</th>
                     <th class="text-end">İşlemler</th>
                 </tr>
             </thead>

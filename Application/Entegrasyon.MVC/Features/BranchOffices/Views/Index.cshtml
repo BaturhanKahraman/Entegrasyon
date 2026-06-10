@@ -14,7 +14,7 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th>Sube Adi</th>
+                                <th>Depo Adi</th>
                                 <th>Kullanici Sayısı</th>
                                 <th>Toplam Stok</th>
                                 <th>Pazaryeri</th>
@@ -51,7 +51,7 @@
                                                 <form method="post"
                                                       action="/branch-offices/@branch.Id/request-delete"
                                                       class="d-inline"
-                                                      onsubmit="return confirm('Bu şube için silme talebi açılacak. Devam etmek istiyor musunuz?');">
+                                                      onsubmit="return confirm('Bu depo için silme talebi açılacak. Devam etmek istiyor musunuz?');">
                                                     @Html.AntiForgeryToken()
                                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                                         Silme Talebi Aç
@@ -72,8 +72,8 @@
                     <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
-                                 Title = "Sube bulunamadı",
-                                 Subtitle = "Henüz sube tanimlanmamis."
+                                 Title = "Depo bulunamadı",
+                                 Subtitle = "Henüz depo tanimlanmamis."
                              }'/>
                 </div>
             }
