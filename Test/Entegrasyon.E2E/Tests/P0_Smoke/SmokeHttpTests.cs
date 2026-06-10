@@ -59,6 +59,21 @@ public class SmokeHttpTests
         "/settings/shipping",
         // --- Raporlar ---
         "/reports/sales",
+        // --- Kullanici & Roller (nav-active kök fix kapsami) ---
+        "/users",
+        "/roles",                      // nav-active: "roles" leaf-key
+        // --- Ayarlar (ek) ---
+        "/settings/printing",          // Yazici & Barkod — nav-active: "settings-printing"
+        // --- Marketplace (ek) ---
+        "/marketplace/commission-rates", // nav-active: "commission-rates"
+        // --- Storefront (nav-active leaf-key fix kapsami) ---
+        "/storefront/reviews",
+        "/storefront/returns",
+        "/storefront/sellers",
+        "/storefront/campaigns",
+        "/storefront/payouts",
+        "/loyalty",
+        "/picking",
         // --- Diger kritik sayfalar ---
         "/orders",
         "/invoices",
