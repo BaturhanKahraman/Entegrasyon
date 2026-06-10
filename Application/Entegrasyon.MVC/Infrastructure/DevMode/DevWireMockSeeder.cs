@@ -45,7 +45,9 @@ public static class DevWireMockSeeder
             var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
             await using var db = contextFactory.CreateDbContext();
 
-            var marketplaces = await db.MarketPlaces.ToListAsync();
+            // AsTracking ŞART: context global no-tracking (TenantDbContextFactory) →
+            // tracking'siz okunan entity'de mp.BaseUrl değişikliği SaveChanges'te no-op olur.
+            var marketplaces = await db.MarketPlaces.AsTracking().ToListAsync();
             var updated = 0;
 
             foreach (var mp in marketplaces)

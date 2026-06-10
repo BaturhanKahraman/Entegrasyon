@@ -30,7 +30,10 @@ public class AdminPermissionSeeder(
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
+        // AsTracking ŞART: context global no-tracking (TenantDbContextFactory) →
+        // tracking'siz okunan adminRole'a RoleClaims.Add(...) SaveChanges'te no-op olur.
         var adminRole = await context.Roles
+            .AsTracking()
             .Include(r => r.RoleClaims)
             .FirstOrDefaultAsync(r => r.Name == AdminRoleName, ct);
 
