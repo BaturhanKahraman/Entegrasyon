@@ -215,3 +215,14 @@ Veritabanı bu işin kalbi; **"yavaşlığa tahammül yok"**. Sorgu yazımı ile
 - **SWE self-check (review öncesi):** `AsNoTracking` mı? `Select` projeksiyon mu (full-entity değil)? multi-`Include`'da `AsSplitQuery` mi? Hedef kolon index'li mi?
 - **SQL loglaması:** sadece Dev/CI (`LogTo` + `EnableSensitiveDataLogging`) — **prod'da ASLA** (PII/secret/I-O). CI'da opt-in N+1/seq-scan flag.
 - **Compiled query (multi-tenant):** context tipi tüm tenant'larda aynı (sadece connection değişir) → cache güvenli; DB Master bilerek tasarlar.
+
+## Geliştirme Ortamı — Container Politikası (Strict Rule)
+
+- **Kullanıcının YEREL makinesinde container KURMA/ÇALIŞTIRMA.** Tüm container'lar (postgres, wiremock, app, redis, mock servisleri, vb.) **server'da (192.168.1.78)** çalışır. Yerel makinede yalnızca **local debug** olur (`dotnet run` + debugger).
+- **Testcontainers** gerekiyorsa yerel Docker daemon başlatma — **server Docker'ını socket-tünelle** kullan: `ssh -nNT -L /tmp/docker-server.sock:/var/run/docker.sock server &` + `DOCKER_HOST=unix:///tmp/docker-server.sock TESTCONTAINERS_HOST_OVERRIDE=192.168.1.78 TESTCONTAINERS_RYUK_DISABLED=true`. (`ssh://` Docker.DotNet'te ÇALIŞMAZ.)
+- **Dev/stage ortamı, DB'ler, WireMock, mock servisleri → hepsi server'da.** `develop` push → Gitea runner ile otomatik dev deploy.
+- **İSTİSNA:** Yerelde bir container gerçekten gerekiyorsa ÖNCE kullanıcıya sor — varsayılan asla yerel container değil.
+
+## WireMock Doğruluğu (Strict Rule — dev ortamı)
+
+Dev'de pazaryeri API'leri WireMock ile mock'lanır (gerçek key yok). Mock'lar **resmi pazaryeri dokümantasyonunu birebir yansıtmalı:** response alanları/formatı dokümandaki gibi olmalı; **geçersiz/yanlış request gönderilirse gerçek API gibi uygun HATA mesajı/kodu dönmeli** (request validation). Yani sadece happy-path canned değil — doc-doğru + validation-error'lı. Uygulama dev'de "gerçekten gönderiyormuş gibi" davranmalı, yanlışta hatayı görmeli.
