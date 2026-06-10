@@ -53,5 +53,6 @@ public class AppPermissionsTests
         PermissionConstants.StockOfficeDeleteApprove.Should().Be(AppPermissions.StockOffice.DeleteApprove);
         PermissionConstants.StockTransfer.Should().Be(AppPermissions.Stock.Transfer);
         PermissionConstants.StockTransferApprove.Should().Be(AppPermissions.Stock.TransferApprove);
+        PermissionConstants.MarketplaceView.Should().Be(AppPermissions.Marketplace.View);
     }
 }

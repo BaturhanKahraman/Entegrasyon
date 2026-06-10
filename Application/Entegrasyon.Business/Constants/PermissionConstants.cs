@@ -14,4 +14,10 @@ public static class PermissionConstants
     // Stock transfer workflow
     public const string StockTransfer = "Permissions.Stock.Transfer";
     public const string StockTransferApprove = "Permissions.Stock.Transfer.Approve";
+
+    /// <summary>
+    /// E-ticaret / pazaryeri feature gate'i. Tenant'ın aktif paketi bu izni içermiyorsa
+    /// pazaryeri durum kartları ve aktivite timeline'ı çalıştırılmaz (sadece fiziksel mağaza akışı).
+    /// </summary>
+    public const string MarketplaceView = "Permissions.Marketplace.View";
 }
