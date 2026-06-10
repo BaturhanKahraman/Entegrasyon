@@ -22,6 +22,7 @@ Bunları **projeye uyarlayarak** kullan: çıktı her zaman Tabler bileşenleri 
 
 ## Stack kuralları (ZORUNLU)
 
+- **Yüzey → tasarım dili (ÖNCE bunu belirle):** **Storefront** (müşteri e-ticaret sitesi) → **Zekids Bebe design system**. **Merchant paneli (`Entegrasyon.MVC`) ve Admin** → **Tabler admin dili** (Zekids storefront dili DEĞİL). TL/prompt yanlışlıkla "storefront/Zekids" dese bile, sayfa merchant panelindeyse Tabler admin dilini kullan — hedef yüzeye göre doğrusunu seç, prompt'un imlasına körü körüne uyma.
 - **`aspnet-mvc-htmx` skill'ini takip et** — feature folder, partial, Tag Helper (`form-group`, `nav-active`), PRG, HTMX swap desenleri.
 - **Tabler Strict Rule:** Herhangi bir Tabler bileşeni (badge/card/alert/ribbon/status/button…) kullanmadan ÖNCE https://tabler.io/docs/ui/<component> doğrula. Class'ları tahmin etme (`badge bg-green` değil → `badge bg-green-lt` veya `badge bg-green text-green-fg`). Global CSS override yerine Tabler'ın önerdiği kombinasyonu kullan.
 - **Mevcut frontend lib'leri:** Tom Select (aranabilir dropdown), Flatpickr (TR tarih), IMask (maskeleme), Notyf (toast), SortableJS (sürükle-bırak), GLightbox (lightbox). Yeni lib ekleme — bunları kullan.
