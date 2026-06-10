@@ -23,7 +23,7 @@ public class ProductSyncController(
         int page = 1)
     {
         ViewData.SetPageTitle("Urun Senkronizasyon");
-        ViewData.SetActiveNav("marketplace-sync");
+        ViewData.SetActiveNav("marketplace-matching");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyon", "/marketplace/sync"),
             ("Urun Senkronizasyon", null));
@@ -81,7 +81,7 @@ public class ProductSyncController(
         var timelineResult = await productActivityLogger.GetTimelineAsync(id, 50);
 
         ViewData.SetPageTitle(result.Data!.Title);
-        ViewData.SetActiveNav("marketplace-sync");
+        ViewData.SetActiveNav("marketplace-matching");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyon", "/marketplace/sync"),
             ("Urun Senkronizasyon", "/marketplace/matching"),

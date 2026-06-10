@@ -128,14 +128,6 @@
                     </div>
                 </li>
 
-                @* ── Mesajlar ── *@
-                <li class="nav-item mt-2">
-                    <a class="nav-link @(activeNav == "chat" ? "active" : "")" href="/chat">
-                        <span class="nav-link-icon"><i class="ti ti-messages"></i></span>
-                        <span class="nav-link-title">Sohbetler</span>
-                    </a>
-                </li>
-
                 @* ── Mağaza ── *@
                 @{
                     var MağazaKeys = new[] { "storefront", "storefront-reviews", "storefront-returns", "storefront-campaigns", "storefront-sellers", "storefront-payouts", "gift-cards", "storefront-commissions", "storefront-abandoned-carts", "loyalty", "storefront-referrals", "storefront-wallets", "storefront-wishlists", "storefront-stock-notifications", "storefront-search-analytics", "storefront-push-notifications" };
@@ -199,6 +191,22 @@
                             <li class="nav-item"><a class="nav-link @(activeNav == "logs" ? "active" : "")" require-permission="Permissions.Logs.View" href="/logs"><span class="nav-link-icon"><i class="ti ti-list-details"></i></span><span class="nav-link-title">Aktivite Logu</span></a></li>
                         </ul>
                     </div>
+                </li>
+
+                @* ── Sohbetler ── *@
+                <li class="nav-item mt-2">
+                    <a class="nav-link @(activeNav == "chat" ? "active" : "")" href="/chat">
+                        <span class="nav-link-icon"><i class="ti ti-messages"></i></span>
+                        <span class="nav-link-title">Sohbetler</span>
+                    </a>
+                </li>
+
+                @* ── Yardım ── *@
+                <li class="nav-item">
+                    <a class="nav-link @(activeNav == "help" ? "active" : "")" href="/help">
+                        <span class="nav-link-icon"><i class="ti ti-help-circle"></i></span>
+                        <span class="nav-link-title">Yardım</span>
+                    </a>
                 </li>
 
             </ul>

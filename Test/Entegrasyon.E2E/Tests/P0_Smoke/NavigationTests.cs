@@ -75,7 +75,8 @@ public class NavigationTests : E2ETestBase
         "/customers/1/dashboard",
         "/pricing",
         "/pricing/rules",
-        "/loyalty"
+        "/loyalty",
+        "/help"
     ];
 
     [SetUp]
