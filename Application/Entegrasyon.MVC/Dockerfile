@@ -13,10 +13,7 @@ COPY ["Application/Entegrasyon.DataAccess/Entegrasyon.DataAccess.csproj", "Appli
 COPY ["Application/Entegrasyon.Entity/Entegrasyon.Entity.csproj", "Application/Entegrasyon.Entity/"]
 COPY ["Application/Entegrasyon.ApplicationBootstrap/Entegrasyon.ApplicationBootstrap.csproj", "Application/Entegrasyon.ApplicationBootstrap/"]
 COPY ["Application/Entegrasyon.AdminPanel/Entegrasyon.AdminPanel.csproj", "Application/Entegrasyon.AdminPanel/"]
-COPY ["Application/Entegrasyon.MessageQueue/Entegrasyon.MessageQueue.Handler.csproj", "Application/Entegrasyon.MessageQueue/"]
-COPY ["Application/Entegrasyon.MessageQueue.Commands/Entegrasyon.MessageQueue.Commands.csproj", "Application/Entegrasyon.MessageQueue.Commands/"]
-COPY ["Shared/Shared/Shared.csproj", "Shared/Shared/"]
-COPY ["Shared/MarketPlace/MarketPlace.csproj", "Shared/MarketPlace/"]
+COPY ["Agent/Entegrasyon.PrintAgent.Contracts/Entegrasyon.PrintAgent.Contracts.csproj", "Agent/Entegrasyon.PrintAgent.Contracts/"]
 
 RUN dotnet restore "Application/Entegrasyon.MVC/Entegrasyon.MVC.csproj"
 
