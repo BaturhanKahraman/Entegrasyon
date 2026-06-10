@@ -437,12 +437,13 @@
     "status": "todo",
     "priority": "high",
     "plan": true,
-    "notes": "DB Master raw-SQL idempotent + EXPLAIN-kanıtlı yeni index'lerle Orders tarafını kalıcı kapattı; ama eski migration'ın iz bırakmaması araştırılmalı.",
+    "notes": "DB Master raw-SQL idempotent + EXPLAIN-kanıtlı yeni index'lerle Orders tarafını kalıcı kapattı; ama eski migration'ın iz bırakmaması araştırılmalı. | YENİ KANIT (2026-06-10, stok-timeline index TDD'sinde somutlaştı): PostgresOptimizations StockMovements.CreatedAt için 'DROP IX_StockMovements_CreatedAt (btree) → CREATE BRIN' yapması GEREKİRKEN, fresh-migrate test DB'sinde BTREE hâlâ duruyor (BRIN yok) → migration Up() etkisiz. Bu sadece 'index eksik' değil, YANLIŞ index tipi bırakıyor ve PLAN SEÇİMİNİ bozuyor: btree varken planlayıcı ürün stok-timeline'ında CreatedAt-geriye-tarama seçiyor; prod'da (BRIN amaçlanan) bu plan imkânsız olacağından plan tamamen değişir → dev/test ile prod arasında DAVRANIŞ FARKI (test yeşil ama prod farklı planlar). Kök neden aynı PostgresOptimizations no-op'u; çözünce StockMovements BRIN dönüşümü + yeni IX_StockMovements_ProductVariantId_CreatedAt birlikte doğrulanmalı.",
     "manual_test_steps": [
       "Fresh DB migrate et",
       "pg_indexes'te PostgresOptimizations'ın ürettiği index'leri ara — yoksa bug doğrulandı",
+      "StockMovements.CreatedAt index tipini kontrol et: btree mi BRIN mi? (PostgresOptimizations BRIN'e çevirmeli)",
       "Up() kök nedenini bul (raw SQL/exception)",
-      "Fix sonrası yeni tenant DB'sinde tüm optimizasyon index'leri var"
+      "Fix sonrası yeni tenant DB'sinde tüm optimizasyon index'leri + doğru tipler (BRIN) var"
     ],
     "addOrUpdateUnitTests": false,
     "addOrUpdateIntegrationTests": true
