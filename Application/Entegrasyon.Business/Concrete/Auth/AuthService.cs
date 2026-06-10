@@ -76,6 +76,9 @@ public class AuthService(
         // Reset lockout on success
         user.FailedLoginCount = 0;
         user.LockoutEnd = null;
+        // Legacy/eski kullanıcılarda damga yoksa ilk başarılı girişte ata (cookie'ye yazılacak).
+        if (string.IsNullOrEmpty(user.SecurityStamp))
+            user.SecurityStamp = Guid.NewGuid().ToString("N");
         await context.SaveChangesAsync();
 
         // If 2FA is active, require second factor
@@ -83,7 +86,7 @@ public class AuthService(
             return new SuccessDataResult<TwoFactorRequiredDto>(new TwoFactorRequiredDto(user.Id),
                 Messages.TwoFactorRequired);
 
-        return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id, user.Name!, user.Surname!, user.UserName!, user.Roles));
+        return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id, user.Name!, user.Surname!, user.UserName!, user.Roles, user.SecurityStamp));
     }
 
     public async Task<IResult> AssignTempPassword(string password, string userId, CancellationToken token = default)
@@ -97,6 +100,10 @@ public class AuthService(
             return new ErrorResult(Messages.ProcessFailed);
         user.NeedsTakeNewPassword = true;
         user.TemporaryPassword = password;
+        // Geçici şifre atandı → kullanıcının mevcut oturumunu düşür (auto-logout).
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        // Context global no-tracking → mutasyon persist olması için Update şart.
+        context.Update(user);
         await context.SaveChangesAsync(token);
         return new SuccessResult(Messages.TemporaryPasswordAssigned);
     }
@@ -203,6 +210,10 @@ public class AuthService(
         user.FailedLoginCount = 0;
         user.LockoutEnd = null;
         user.UpdatedAt = DateTimeOffset.UtcNow;
+        // Şifre sıfırlandı → mevcut tüm aktif oturumları düşür (auto-logout).
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        // Context global no-tracking → mutasyon persist olması için Update şart.
+        context.Update(user);
 
         await context.SaveChangesAsync(token);
         await applicationLogger.AddLog("Sifre sifirlama tamamlandi.", LogType.Auth, LogAction.Update, token: token);

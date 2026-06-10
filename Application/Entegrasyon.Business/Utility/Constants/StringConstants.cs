@@ -24,4 +24,8 @@ public static class StringConstants
     // Diger HTTP clientlari
     public const string OllamaApi = "Ollama";
     public const string WebhookApi = "webhook";
+
+    // Auth claim tipleri
+    // Login'de cookie'ye yazilan, her istekte DB ile karsilastirilan oturum damgasi.
+    public const string SecurityStampClaimType = "SecurityStamp";
 }

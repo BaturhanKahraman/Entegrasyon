@@ -18,6 +18,14 @@ public class ApplicationUser : BaseEntity
     public byte[]? PasswordHash { get; set; }
     public bool IsTwoFactorAuthActive { get; set; } = false;
     public bool NeedsTakeNewPassword { get; set; }
+
+    /// <summary>
+    /// Oturum geçersizleştirme damgası. Pasifleştirme/silme/şifre sıfırlama gibi güvenlik-kritik
+    /// işlemlerde değiştirilir (bump). Login'de cookie'ye claim olarak yazılır; her authenticated
+    /// istekte DB'deki değerle karşılaştırılır — eşleşmezse oturum düşürülür (auto-logout).
+    /// </summary>
+    [MaxLength(32)]
+    public string? SecurityStamp { get; set; }
     [MaxLength(15)]
     public string? TemporaryPassword { get; set; }
 

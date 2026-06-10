@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.Entity.Dtos.Auth;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.MVC.Features.Auth.ViewModels;
@@ -82,6 +83,9 @@ public class AuthController(
             new(ClaimTypes.Email, $"{user.Name} {user.Surname}"),
             new("TenantId", (tenantContext.IsInitialized ? tenantContext.TenantId : 1).ToString())
         };
+        // Oturum geçersizleştirme damgası — her istekte DB ile karşılaştırılır (auto-logout).
+        if (!string.IsNullOrEmpty(user.SecurityStamp))
+            claims.Add(new Claim(StringConstants.SecurityStampClaimType, user.SecurityStamp));
         claims.AddRange(user.Roles?.Select(r => new Claim(ClaimTypes.Role, r.Name)) ?? []);
         claims.AddRange(permissions.Distinct().Select(p => new Claim("Permission", p)));
 

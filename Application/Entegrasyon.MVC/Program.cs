@@ -19,6 +19,7 @@ using Entegrasyon.MVC.Infrastructure.ExceptionHandlers;
 using Entegrasyon.MVC.Infrastructure.Filters;
 using Entegrasyon.MVC.Infrastructure.Middleware;
 using Entegrasyon.MVC.Infrastructure.BranchOffices;
+using Entegrasyon.MVC.Infrastructure.Security;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -71,30 +72,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
 
-        // HTMX-aware: return 401 header instead of redirect for HTMX requests
-        options.Events.OnRedirectToLogin = context =>
-        {
-            if (context.Request.Headers.ContainsKey("HX-Request"))
-            {
-                context.Response.StatusCode = 401;
-                context.Response.Headers.Append("HX-Redirect", "/auth/login");
-                return Task.CompletedTask;
-            }
-            context.Response.Redirect(context.RedirectUri);
-            return Task.CompletedTask;
-        };
-
-        options.Events.OnRedirectToAccessDenied = context =>
-        {
-            if (context.Request.Headers.ContainsKey("HX-Request"))
-            {
-                context.Response.StatusCode = 403;
-                return Task.CompletedTask;
-            }
-            context.Response.Redirect(context.RedirectUri);
-            return Task.CompletedTask;
-        };
+        // Oturum geçersizleştirme (auto-logout) + HTMX-aware yönlendirmeler.
+        // ValidatePrincipal her istekte SecurityStamp/IsActive/IsDeleted'i DB ile doğrular;
+        // pasif/silinen/şifresi-sıfırlanan kullanıcının cookie'si reddedilir.
+        // EventsType, options.Events lambda'larının yerine geçer (scoped DI gerektiği için).
+        options.EventsType = typeof(SecurityStampCookieEvents);
     });
+
+builder.Services.AddScoped<SecurityStampCookieEvents>();
 
 // ── Authorization — AppPermissions ────────────────────────────────────────
 builder.Services.AddAuthorization(options =>

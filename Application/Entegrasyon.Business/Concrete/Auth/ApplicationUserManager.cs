@@ -35,6 +35,7 @@ public class ApplicationUserManager(
         await using var context = await contextFactory.CreateDbContextAsync();
         var user = mapper.MapToEntity(dto);
         user.NeedsTakeNewPassword = true;
+        BumpSecurityStamp(user);
         user.NormalizedUserName = user.UserName!.ToUpperInvariant();
         user.NormalizedEmail = user.Email!.ToUpperInvariant();
         user.CreatedAt = DateTimeOffset.UtcNow;
@@ -207,6 +208,10 @@ public class ApplicationUserManager(
             return new ErrorResult(Messages.UserNotFound);
         }
         user.IsActive = false;
+        // Pasifleştirme → aktif cookie oturumunu düşür (auto-logout).
+        BumpSecurityStamp(user);
+        // Context global no-tracking (TenantDbContextFactory) → mutasyon persist olması için Update şart.
+        context.Update(user);
         try
         {
             await context.SaveChangesAsync(token);
@@ -226,6 +231,11 @@ public class ApplicationUserManager(
         if (user is null)
             return new ErrorResult(Messages.UserNotFound);
         user.IsActive = !user.IsActive;
+        // Yalnızca pasifleştirirken oturumu düşür; reaktivasyonda gerek yok.
+        if (!user.IsActive)
+            BumpSecurityStamp(user);
+        // Context global no-tracking → mutasyon persist olması için Update şart.
+        context.Update(user);
         try
         {
             await context.SaveChangesAsync(token);
@@ -242,13 +252,69 @@ public class ApplicationUserManager(
 
     public async Task<IResult> SoftDelete(Guid userId, CancellationToken token = default)
     {
+        await applicationLogManager.AddLog("Kullanici siliniyor...", LogType.User, LogAction.Delete, token: token);
         await using var context = await contextFactory.CreateDbContextAsync();
-        var user = (await context.Users.FindAsync(userId))!;
+        var user = await context.Users.FindAsync([userId], cancellationToken: token);
+        if (user is null)
+            return new ErrorResult(Messages.UserNotFound);
+
         user.IsDeleted = true;
         user.DeletedAt = DateTime.UtcNow;
+        // Silinen kullanıcının aktif cookie oturumunu düşür (auto-logout).
+        BumpSecurityStamp(user);
+        // Context global no-tracking → mutasyon persist olması için Update şart.
+        context.Update(user);
         await context.SaveChangesAsync(token);
+
+        logger.LogInformation("User soft-deleted {UserId}", userId);
+        await applicationLogManager.AddLog("Kullanici silindi.", LogType.User, LogAction.Delete, token: token);
         return new SuccessResult(Messages.UserDeletedSuccessfuly);
     }
+
+    public async Task<IDataResult<string>> AdminResetPassword(Guid userId, CancellationToken token = default)
+    {
+        await applicationLogManager.AddLog("Yonetici sifre sifirlama islemi basliyor...", LogType.User, LogAction.Update, token: token);
+
+        // 2. Business Rules — kullanici var mi kontrolu (validasyon gerektiren input yok)
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FindAsync([userId], cancellationToken: token);
+        if (user is null)
+            return new ErrorDataResult<string>(null!, Messages.UserNotFound);
+
+        // 3. Execution — geçici şifre ata, ilk girişte değiştirmeye zorla, oturumu düşür.
+        var temporaryPassword = GenerateTemporaryPassword();
+        user.NeedsTakeNewPassword = true;
+        user.TemporaryPassword = temporaryPassword;
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+        BumpSecurityStamp(user);
+        // Context global no-tracking → mutasyon persist olması için Update şart.
+        context.Update(user);
+
+        try
+        {
+            await context.SaveChangesAsync(token);
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            logger.LogError(e, "Sifre sifirlama sirasinda concurrency hatasi {UserId}", userId);
+            return new ErrorDataResult<string>(null!, "Bu kayit guncellenmis olabilir. Lutfen tekrar deneyin.");
+        }
+
+        logger.LogInformation("Admin reset password for user {UserId}", userId);
+        await applicationLogManager.AddLog("Yonetici kullanici sifresini sifirladi.", LogType.User, LogAction.Update, token: token);
+        return new SuccessDataResult<string>(temporaryPassword, Messages.TemporaryPasswordAssigned);
+    }
+
+    /// <summary>
+    /// Güvenlik damgasını yeniler. Bu kullanıcının cookie'sindeki damga artık DB ile eşleşmez →
+    /// bir sonraki istekte oturum düşer (auto-logout). MaxLength(32) ile uyumlu: 32 hex karakter.
+    /// </summary>
+    private static void BumpSecurityStamp(ApplicationUser user)
+        => user.SecurityStamp = Guid.NewGuid().ToString("N");
+
+    /// <summary>Yönetici sıfırlamasında kullanıcıya verilecek geçici şifre. TemporaryPassword MaxLength(15) ile uyumlu.</summary>
+    private static string GenerateTemporaryPassword()
+        => Guid.NewGuid().ToString("N")[..12];
 
     public async Task<IResult> UpdateOwnProfile(Guid userId, UpdateProfileDto dto, CancellationToken token = default)
     {

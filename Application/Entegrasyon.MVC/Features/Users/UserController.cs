@@ -134,6 +134,33 @@ public class UserController(
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost("/users/{id:guid}/reset-password")]
+    public async Task<IActionResult> ResetPassword(Guid id)
+    {
+        var result = await userManager.AdminResetPassword(id);
+
+        if (Request.IsHtmx())
+        {
+            if (result.Success)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = $"Geçici şifre: {result.Data}", type = "success" });
+                return Content("");
+            }
+
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Şifre sıfırlanamadı.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        if (result.Success)
+            TempData.SetSuccess($"Şifre sıfırlandı. Geçici şifre: {result.Data}");
+        else
+            TempData.SetError(result.Message ?? "Şifre sıfırlanamadı.");
+
+        return RedirectToAction(nameof(Index));
+    }
+
     [HttpPost("/users/{id:guid}/toggle-active")]
     public async Task<IActionResult> ToggleActive(Guid id)
     {

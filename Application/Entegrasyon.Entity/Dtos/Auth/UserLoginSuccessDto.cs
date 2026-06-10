@@ -7,5 +7,6 @@ public sealed record UserLoginSuccessDto(
         string Name,
         string Surname,
         string Username,
-        ICollection<Role> Roles
+        ICollection<Role> Roles,
+        string? SecurityStamp = null
     );

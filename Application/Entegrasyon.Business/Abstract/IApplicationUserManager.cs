@@ -19,5 +19,13 @@ public interface IApplicationUserManager
     Task<IResult> SetPassive(Guid userId, CancellationToken token = default);
     Task<IResult> ToggleActive(Guid userId, CancellationToken token = default);
     Task<IResult> SoftDelete(Guid userId, CancellationToken token = default);
+
+    /// <summary>
+    /// Yönetici, başka bir kullanıcının şifresini sıfırlar: geçici şifre atar, ilk girişte
+    /// değiştirmeye zorlar ve güvenlik damgasını yeniler (kullanıcının aktif oturumu düşer).
+    /// Üretilen geçici şifreyi döner.
+    /// </summary>
+    Task<IDataResult<string>> AdminResetPassword(Guid userId, CancellationToken token = default);
+
     Task<IResult> UpdateOwnProfile(Guid userId, UpdateProfileDto dto, CancellationToken token = default);
 }

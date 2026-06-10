@@ -53,6 +53,11 @@
                                             hx-confirm="Kullanıcı durumunu değiştirmek istediğinize emin misiniz?">
                                         @(user.IsActive ? "Pasif Yap" : "Aktif Yap")
                                     </button>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            hx-post="/users/@user.Id/reset-password"
+                                            hx-confirm="Bu kullanıcının şifresini sıfırlayıp geçici şifre vermek istediğinize emin misiniz? Mevcut oturumu sonlandırılacaktır.">
+                                        Şifre Sıfırla
+                                    </button>
                                     <button class="btn btn-sm btn-outline-danger"
                                             hx-post="/users/@user.Id/delete"
                                             hx-target="closest tr"
