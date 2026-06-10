@@ -1,0 +1,28 @@
+@model Entegrasyon.Entity.Dtos.Users.UserActivitySummaryDto
+
+<div class="page-header d-print-none">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title d-flex align-items-center">
+                <span class="avatar avatar-md me-2 bg-blue-lt">
+                    <i class="ti ti-user"></i>
+                </span>
+                <span>@Model.FullName</span>
+            </h2>
+            <div class="text-muted mt-1">
+                <i class="ti ti-at me-1"></i>@Model.UserName
+            </div>
+        </div>
+        <div class="col-auto">
+            <a href="/users/@Model.Id/edit" class="btn btn-outline-primary">
+                <i class="ti ti-edit me-1"></i>Düzenle
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <partial name="Partials/_UserActivity" model="Model" />
+    </div>
+</div>

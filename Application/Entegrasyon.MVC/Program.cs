@@ -83,6 +83,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddScoped<SecurityStampCookieEvents>();
 
+// LastSeenAt throttle — singleton (in-memory ConcurrentDictionary, kullanıcı başına izole).
+// Kullanıcı başına en fazla 1 dk'da bir DB-write; her istekte senkron yazımı önler.
+builder.Services.AddSingleton(new LastSeenThrottle(TimeSpan.FromMinutes(1)));
+
 // ── Authorization — AppPermissions ────────────────────────────────────────
 builder.Services.AddAuthorization(options =>
 {
@@ -439,6 +443,10 @@ app.UseSession();
 // Active branch office validation — her authenticated request'te stale check
 // UseAuthentication + UseSession sonrası, endpoint'lerden önce
 app.UseMiddleware<ActiveBranchOfficeMiddleware>();
+
+// LastSeenAt güncelleme — admin detay sayfası canlı takibi besler.
+// Throttle'lı (kullanıcı başına 1 dk'da bir, tek SQL ExecuteUpdate); auth'dan sonra çalışır.
+app.UseMiddleware<LastSeenMiddleware>();
 
 app.UseAntiforgery();
 

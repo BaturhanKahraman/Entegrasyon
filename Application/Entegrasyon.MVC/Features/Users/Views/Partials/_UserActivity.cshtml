@@ -1,0 +1,115 @@
+@model Entegrasyon.Entity.Dtos.Users.UserActivitySummaryDto
+@{
+    string HumanizeSince(DateTimeOffset? from)
+    {
+        if (from is null) return "Hiç";
+        var span = DateTimeOffset.UtcNow - from.Value;
+        if (span < TimeSpan.Zero) span = TimeSpan.Zero;
+        if (span.TotalMinutes < 1) return "az önce";
+        if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} dk önce";
+        if (span.TotalHours < 24) return $"{(int)span.TotalHours} saat önce";
+        return $"{(int)span.TotalDays} gün önce";
+    }
+}
+
+<div id="user-activity"
+     hx-get="/users/@Model.Id/detail"
+     hx-trigger="every 15s"
+     hx-swap="outerHTML">
+    <div class="row row-cards">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body d-flex align-items-center">
+                    @if (Model.IsOnline)
+                    {
+                        <span class="badge bg-success-lt">
+                            <span class="status-dot status-dot-animated bg-success me-2"></span>Çevrimiçi
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary-lt">
+                            <span class="status-dot bg-secondary me-2"></span>Çevrimdışı
+                        </span>
+                    }
+                    <span class="ms-3 text-muted">
+                        <i class="ti ti-clock me-1"></i>
+                        Son görülme: <strong>@HumanizeSince(Model.LastSeenAt)</strong>
+                        @if (Model.LastSeenAt is not null)
+                        {
+                            <span class="text-secondary">(@Model.LastSeenAt.Value.LocalDateTime.ToString("dd.MM.yyyy HH:mm"))</span>
+                        }
+                    </span>
+                    @if (!Model.IsActive)
+                    {
+                        <span class="badge bg-red-lt ms-3">Pasif Hesap</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-green text-white avatar"><i class="ti ti-plus"></i></span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">@Model.ProductsAdded</div>
+                            <div class="text-muted">Eklenen ürün</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-blue text-white avatar"><i class="ti ti-edit"></i></span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">@Model.ProductsUpdated</div>
+                            <div class="text-muted">Güncellenen ürün</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-red text-white avatar"><i class="ti ti-trash"></i></span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">@Model.ProductsDeleted</div>
+                            <div class="text-muted">Silinen ürün</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-purple text-white avatar"><i class="ti ti-shopping-cart"></i></span>
+                        </div>
+                        <div class="col">
+                            <div class="font-weight-medium">@Model.SalesCount</div>
+                            <div class="text-muted">Satış</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

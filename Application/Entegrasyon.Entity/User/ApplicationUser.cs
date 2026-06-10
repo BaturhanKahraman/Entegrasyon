@@ -81,6 +81,15 @@ public class ApplicationUser : BaseEntity
     public DateTimeOffset? PasswordResetTokenExpiresAt { get; set; }
 
     public byte[]? RowVersion { get; set; }
+
+    /// <summary>
+    /// Kullanıcının son istek attığı (görüldüğü) zaman. Admin detay sayfasında "ne süredir aktif/pasif"
+    /// ve online/offline durumu bunun üzerinden hesaplanır. Hafif bir middleware her istekte —
+    /// throttle'lı (en fazla 1 dk'da bir, tek SQL ExecuteUpdate) — günceller.
+    /// Nullable: mevcut/eski kayıtlarda NULL → offline sayılır (geri-uyumlu).
+    /// </summary>
+    public DateTimeOffset? LastSeenAt { get; set; }
+
     public override string ToString()
     {
         return $"{Name} {Surname} {Email}";

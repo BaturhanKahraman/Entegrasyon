@@ -62,6 +62,27 @@ public class UserController(
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet("/users/{id:guid}/detail")]
+    public async Task<IActionResult> Detail(Guid id)
+    {
+        var result = await userManager.GetUserActivitySummary(id);
+        if (!result.Success)
+        {
+            TempData.SetError(result.Message ?? "Kullanıcı bulunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle("Kullanıcı Detayı");
+        ViewData.SetActiveNav("users");
+        ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Detay", null));
+
+        // HTMX polling ile canlı takip: tablo/kartlar partial olarak yenilenir.
+        if (Request.IsHtmx())
+            return PartialView("Partials/_UserActivity", result.Data);
+
+        return View(result.Data);
+    }
+
     [HttpGet("/users/{id:guid}/edit")]
     public async Task<IActionResult> Edit(Guid id)
     {

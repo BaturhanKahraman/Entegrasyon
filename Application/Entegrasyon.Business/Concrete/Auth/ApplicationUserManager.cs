@@ -349,4 +349,64 @@ public class ApplicationUserManager(
         return new SuccessResult(Messages.ProfileUpdated);
     }
 
+    /// <summary>Online sayılma eşiği — son bu süre içinde istek atmış kullanıcı "online".</summary>
+    private static readonly TimeSpan OnlineThreshold = TimeSpan.FromMinutes(5);
+
+    public async Task<IDataResult<UserActivitySummaryDto>> GetUserActivitySummary(
+        Guid id, CancellationToken token = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(token);
+
+        // Salt-okuma yolu: AddLog'u her çağrıda yazma (log-spam); sadece hata durumunda.
+        var user = await context.Users.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new { u.FullName, u.UserName, u.IsActive, u.LastSeenAt })
+            .FirstOrDefaultAsync(token);
+
+        if (user is null)
+        {
+            logger.LogWarning("Kullanici aktivite ozeti istendi ama kullanici bulunamadi {UserId}", id);
+            await applicationLogManager.AddLog(
+                "Kullanici aktivite ozeti istendi ama kullanici bulunamadi.",
+                LogType.User, LogAction.List, token: token);
+            return new ErrorDataResult<UserActivitySummaryDto>(null!, Messages.UserNotFound);
+        }
+
+        // Ürün ekleme/güncelleme/silme sayıları kullanıcı-facing ApplicationLog'dan (LogType.Product)
+        // türetilir — tek sorgu, indexli LogAction üzerinden grupla.
+        var productCounts = await context.Logs.AsNoTracking()
+            .Where(l => l.ApplicationUserId == id && l.LogType == LogType.Product
+                && (l.LogAction == LogAction.Add
+                    || l.LogAction == LogAction.Update
+                    || l.LogAction == LogAction.Delete))
+            .GroupBy(l => l.LogAction)
+            .Select(g => new { Action = g.Key, Count = g.Count() })
+            .ToListAsync(token);
+
+        var added = productCounts.FirstOrDefault(c => c.Action == LogAction.Add)?.Count ?? 0;
+        var updated = productCounts.FirstOrDefault(c => c.Action == LogAction.Update)?.Count ?? 0;
+        var deleted = productCounts.FirstOrDefault(c => c.Action == LogAction.Delete)?.Count ?? 0;
+
+        var salesCount = await context.Sales.AsNoTracking()
+            .CountAsync(s => s.SalePersonId == id, token);
+
+        var isOnline = user.LastSeenAt.HasValue
+            && DateTimeOffset.UtcNow - user.LastSeenAt.Value <= OnlineThreshold;
+
+        logger.LogInformation("Kullanici aktivite ozeti getirildi {UserId}", id);
+
+        var dto = new UserActivitySummaryDto(
+            id,
+            user.FullName ?? $"{user.UserName}",
+            user.UserName ?? "",
+            user.IsActive,
+            user.LastSeenAt,
+            isOnline,
+            added,
+            updated,
+            deleted,
+            salesCount);
+
+        return new SuccessDataResult<UserActivitySummaryDto>(dto);
+    }
 }

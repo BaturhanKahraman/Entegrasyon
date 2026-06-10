@@ -28,4 +28,11 @@ public interface IApplicationUserManager
     Task<IDataResult<string>> AdminResetPassword(Guid userId, CancellationToken token = default);
 
     Task<IResult> UpdateOwnProfile(Guid userId, UpdateProfileDto dto, CancellationToken token = default);
+
+    /// <summary>
+    /// Admin kullanıcı detay sayfası için canlı takip özeti: bağlantı durumu (online/offline),
+    /// son görülme zamanı ve ürün ekleme/güncelleme/silme + satış sayıları.
+    /// Salt-okuma; sayaçlar ApplicationLog (LogType.Product) ve Sales üzerinden türetilir.
+    /// </summary>
+    Task<IDataResult<UserActivitySummaryDto>> GetUserActivitySummary(Guid id, CancellationToken token = default);
 }
