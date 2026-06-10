@@ -49,8 +49,9 @@ public class DomainEventPipelineTests : IntegrationTestBase
                 Name = "Actor",
                 Surname = "User",
                 FullName = "Actor User",
-                UserName = $"actor-{actorId:N}",
-                NormalizedUserName = $"ACTOR-{actorId:N}".ToUpperInvariant(),
+                // UserName varchar(30) — "N" GUID (32) taşar, 12 hex yeterli benzersiz.
+                UserName = $"actor-{actorId.ToString("N")[..12]}",
+                NormalizedUserName = $"ACTOR-{actorId.ToString("N")[..12]}".ToUpperInvariant(),
                 Email = $"actor-{actorId:N}@test.com",
                 NormalizedEmail = $"ACTOR-{actorId:N}@TEST.COM".ToUpperInvariant(),
                 IsActive = true,
@@ -63,8 +64,9 @@ public class DomainEventPipelineTests : IntegrationTestBase
                 Name = "Recipient",
                 Surname = "User",
                 FullName = "Recipient User",
-                UserName = $"recipient-{recipientId:N}",
-                NormalizedUserName = $"RECIPIENT-{recipientId:N}".ToUpperInvariant(),
+                // UserName varchar(30) — "N" GUID (32) taşar, 12 hex yeterli benzersiz.
+                UserName = $"recipient-{recipientId.ToString("N")[..12]}",
+                NormalizedUserName = $"RECIPIENT-{recipientId.ToString("N")[..12]}".ToUpperInvariant(),
                 Email = $"recipient-{recipientId:N}@test.com",
                 NormalizedEmail = $"RECIPIENT-{recipientId:N}@TEST.COM".ToUpperInvariant(),
                 IsActive = true,

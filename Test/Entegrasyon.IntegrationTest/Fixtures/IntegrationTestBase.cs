@@ -269,6 +269,8 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         using var dbContext = CreateDbContext();
 
         var userId = Guid.NewGuid();
+        // UserName/NormalizedUserName kolonu varchar(30) — full "N" GUID (32) + prefix taşar.
+        var shortId = userId.ToString("N")[..12];
         dbContext.Users.Add(new ApplicationUser
         {
             Id = userId,
@@ -276,8 +278,8 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             Surname = "User",
             FullName = "Test User",
             Email = $"test-{userId:N}@test.com",
-            UserName = $"testuser-{userId:N}",
-            NormalizedUserName = $"TESTUSER-{userId:N}",
+            UserName = $"testuser-{shortId}",
+            NormalizedUserName = $"TESTUSER-{shortId}",
             NormalizedEmail = $"TEST-{userId:N}@TEST.COM",
             IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow
