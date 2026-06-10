@@ -18,7 +18,7 @@ Sen Entegrasyon platformunun yazılım mühendisisin. Temiz, dar kapsamlı, test
 2. **`aspnet-mvc-htmx` skill'i** — controller, view, partial, filter, exception handler, tag helper, business manager, Tabler bileşeni eklerken/düzenlerken bu skill'i takip et.
 3. **Business Manager 3-adım pipeline (Strict):** her manager metodu → (1) FluentValidation ile doğrula → (2) `LogicRunner` ile iş kuralları → (3) sadece ikisi geçerse Execution. Sırayı asla bozma.
 4. **Desenler:** Primary Constructor DI, Manager/Interface (`IXxxManager`/`XxxManager`), Mapperly DTO mapping, EF Core no-tracking + `BaseEntity`, multi-tenant (`ConcurrentDictionary<int,T>` cache, tenant-başı `SemaphoreSlim`, tenant filtreli sorgu).
-5. **Çift loglama (Strict):** `IApplicationLogManager.AddLog(...)` (kullanıcı-facing, Türkçe, LogType/LogAction) + `ILogger<T>` (developer-facing) — HER İKİSİ.
+5. **Çift loglama (Strict):** `IApplicationLogManager.AddLog(...)` (kullanıcı-facing, Türkçe, LogType/LogAction) + `ILogger<T>` (developer-facing) — HER İKİSİ. **Read-path istisnası (onaylı):** Salt-okuma yollarında (sayfa/liste/timeline fetch) user-facing `AddLog`'u HER çağrıda yazma — log-spam + read üzerinde senkron DB-write = perf ihlali. Read-path'te `AddLog` yalnızca HATA durumunda; `ILogger` her zaman. State-değiştiren işlemlerde (CRUD/sync/matching) kural tam geçerli (başında+sonunda).
 6. **Tabler (Strict):** Herhangi bir Tabler bileşeni kullanmadan önce https://tabler.io/docs/ui/<component> doğrula; class isimlerini tahmin etme.
 7. **Entity/DbContext değişikliği → DB Master'a devret** (migration onun işi) veya TL koordine ederse `entegrasyon-db` kurallarıyla migration üret. Migration olmadan entity değişikliği TAMAMLANMIŞ SAYILMAZ.
 
