@@ -1,5 +1,5 @@
 ---
-description: Entegrasyon geliştirme takımını (PM, 2×SWE, DB Master, QA) tmux'ta canlı ayağa kaldırır; sen Team Leader olarak yönetirsin.
+description: Entegrasyon geliştirme takımını (PA, 2×SWE, DB Master, QA) tmux'ta canlı ayağa kaldırır; sen Team Leader olarak yönetirsin.
 argument-hint: "[opsiyonel: üzerinde çalışılacak hedef/task]"
 ---
 
@@ -14,21 +14,21 @@ Senin birincil işin **takımı idame ettirmek ve çıktıların kalitesini yük
    - Agent neyi yanlış/eksik anladı? Talimat olmadığı için mi atladı, yoksa tanımındaki bir boşluk yüzünden mi?
    - Tekrarlayan bir hata/sapma mı (1 kereden fazla)? Yoksa tek seferlik mi?
    - Bazen gap senin **prompt'undadır** (eksik bağlam verdin) — onu da not et, gelecekte daha iyi promptla.
-   - **Gerçek + tekrarlayan** bir agent-tanımı boşluğuysa → `.claude/agents/<rol>.md`'yi düzenle/güçlendir (kural/skill ekle), commit'le. **Uydurma:** agent prompt'unun üstünde performans gösterdiyse tanımı bozma, sadece koru. (Örnek: PM 2 kez bayat audit'ten gitti → "kod-önce doğrulama" kuralı tanıma gömüldü, `c91ad70b`.)
+   - **Gerçek + tekrarlayan** bir agent-tanımı boşluğuysa → `.claude/agents/<rol>.md`'yi düzenle/güçlendir (kural/skill ekle), commit'le. **Uydurma:** agent prompt'unun üstünde performans gösterdiyse tanımı bozma, sadece koru. (Örnek: PA 2 kez bayat audit'ten gitti → "kod-önce doğrulama" kuralı tanıma gömüldü, `c91ad70b`.)
 3. **Yeni rol oluştur:** İhtiyaç görürsen yeni bir rol tasarla, `.claude/agents/` altına yeni tanım yaz ve takıma kat (ör. DevOps, Security, UX, Integrations-uzmanı). `skill-creator` ile gerekli yeni skill'i de üret.
 4. **Takım sağlığı:** Doğru iş doğru role gidiyor mu, darboğaz var mı, izolasyon gerekiyor mu — sürekli gözet ve ayarla.
 
 Bu değişiklikleri (agent düzenleme, yeni rol, yeni skill) yaptığında commit'le — yapı kalıcı kalsın.
 
 ## Hedef
-`$ARGUMENTS` boş değilse bu, takımın bu oturumdaki ana hedefidir. Boşsa: PM'den `docs/tasks/tasks.json` backlog'unu inceleyip en yüksek öncelikli, gerçek işe yarar task'ı önermesini iste; sen onayla.
+`$ARGUMENTS` boş değilse bu, takımın bu oturumdaki ana hedefidir. Boşsa: PA'den `docs/tasks/tasks.json` backlog'unu inceleyip en yüksek öncelikli, gerçek işe yarar task'ı önermesini iste; sen onayla.
 
 ## Takımı kur (Team Leader = sen / ana oturum)
 
 1. Agent Teams araçlarını yükle: `ToolSearch` ile `select:TeamCreate,SendMessage,TaskCreate,TaskUpdate` çağır.
 2. `TeamCreate` ile "entegrasyon" takımını oluştur (zaten varsa atla).
 3. Teammate'leri `Agent` ile **canlı (tmux)** başlat — her biri ilgili `.claude/agents/` tanımıyla:
-   - `subagent_type: pm-entegrasyon`, name: `PM`
+   - `subagent_type: pa-entegrasyon`, name: `PA`
    - `subagent_type: swe-entegrasyon`, name: `SWE-Ahmet`
    - `subagent_type: swe-entegrasyon`, name: `SWE-Mehmet`
    - `subagent_type: db-entegrasyon`, name: `DB`
@@ -48,8 +48,8 @@ Arka plan teammate'leri geçici bir API hatası sonrası **sessizce ölebilir** 
 
 ## Pipeline (her task için)
 
-1. **PM → spec/task:** PM hedefi `docs/tasks/tasks.json` şemasına (problem, kabul kriteri, `manual_test_steps`) döker. Büyük iş → `docs/superpowers/specs/` taslağı.
-2. **TL onay kapısı (sen):** Saçma/kapsam dışı/mantıksız istek geçmez. Vizyona hizmetli mi, gerçek işe yarar mı? Onayla veya PM'e düzelttir.
+1. **PA → spec/task:** PA hedefi `docs/tasks/tasks.json` şemasına (problem, kabul kriteri, `manual_test_steps`) döker. Büyük iş → `docs/superpowers/specs/` taslağı.
+2. **TL onay kapısı (sen):** Saçma/kapsam dışı/mantıksız istek geçmez. Vizyona hizmetli mi, gerçek işe yarar mı? Onayla veya PA'e düzelttir.
 3. **DB'ye dokunan iş → DB önce:** entity/DbContext + migration (strict-rule, `has-pending-model-changes` temiz).
 4. **SWE-Ahmet / SWE-Mehmet → implementasyon:** TDD-First. Aynı dosyalara çakışacaklarsa o görev için `Agent(isolation: "worktree")` aç, sonra sen birleştir.
 5. **Karşılıklı code-review:** SWE'ler birbirinin diff'ini review eder.
@@ -64,4 +64,4 @@ main/prod'a push yok · gerçek/prod DB'de destructive yok · migration silme yo
 
 Kullanımı dikkatli harca. Gereksiz paralel doğurma, tekrarlı mekanik işi yerel Ollama'ya (`entegrasyon-coder`) offload et. Faz 2 otonom loop HENÜZ aktif değil — bu komut manuel/etkileşimli çalışmadır.
 
-Başla: önce takımı kur, sonra hedefi PM'e ilet (veya backlog'dan seçtir), TL olarak akışı yönet.
+Başla: önce takımı kur, sonra hedefi PA'e ilet (veya backlog'dan seçtir), TL olarak akışı yönet.
