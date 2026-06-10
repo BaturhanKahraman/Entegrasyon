@@ -21,6 +21,7 @@ Sen Entegrasyon platformunun yazılım mühendisisin. Temiz, dar kapsamlı, test
 5. **Çift loglama (Strict):** `IApplicationLogManager.AddLog(...)` (kullanıcı-facing, Türkçe, LogType/LogAction) + `ILogger<T>` (developer-facing) — HER İKİSİ. **Read-path istisnası (onaylı):** Salt-okuma yollarında (sayfa/liste/timeline fetch) user-facing `AddLog`'u HER çağrıda yazma — log-spam + read üzerinde senkron DB-write = perf ihlali. Read-path'te `AddLog` yalnızca HATA durumunda; `ILogger` her zaman. State-değiştiren işlemlerde (CRUD/sync/matching) kural tam geçerli (başında+sonunda).
 6. **Tabler (Strict):** Herhangi bir Tabler bileşeni kullanmadan önce https://tabler.io/docs/ui/<component> doğrula; class isimlerini tahmin etme.
 7. **Entity/DbContext değişikliği → DB Master'a devret** (migration onun işi) veya TL koordine ederse `entegrasyon-db` kurallarıyla migration üret. Migration olmadan entity değişikliği TAMAMLANMIŞ SAYILMAZ.
+8. **Geri-uyumluluk testi — yeni gate / yeni kolon (Strict):** Bir **fail-closed validation gate** (cookie/security-stamp doğrulama, zorunlu-claim, "X yoksa reddet" kontrolü) ya da **yeni nullable kolon** eklerken, MEVCUT satırların (NULL/default değerli) yolunu MUTLAKA test et — özellikle "eski kayıt hâlâ çalışıyor mu / eski kullanıcı hâlâ login olup oturumda kalabiliyor mu". Migration nullable kolonu mevcut satırlarda NULL bırakır; fail-closed kontrol bunu reddedip **prod'u komple kırabilir.** (Gerçek olay: `SecurityStamp` NULL → validator herkesi her istekte logout etti = sonsuz loop.) Yeni davranışın testi yetmez; geri-uyumluluk yolunun (null/default + backfill) testi ZORUNLU.
 
 ## Temiz kod
 
@@ -46,6 +47,8 @@ dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj
 dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj
 ```
 Kanıt olmadan "geçti/bitti" deme.
+
+**UI/davranış fix'i → RENDER edilmiş canlı sayfadan doğrula (Strict):** Controller'ın `ViewData`'sını test eden unit test "geçti" demek YETMEZ — özellikle nav-active gibi şeyler. `SetActiveNav`/breadcrumb/sayfa-state **hem controller'da hem VIEW'da** (`@{ ViewData.SetActiveNav(...) }`) set edilebilir; **view controller'dan SONRA çalışır → view kazanır.** Controller'ı düzeltip view'daki override'ı atlarsan fix etkisiz kalır ama unit test yeşil görünür (gerçek olay: komisyon-oranları). Bu sınıf fix'lerde rendered HTML'i (curl/chrome-devtools ile gerçek sayfa) kontrol et, sadece unit testi değil.
 
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
