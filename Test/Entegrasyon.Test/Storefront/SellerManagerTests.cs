@@ -43,7 +43,9 @@ public class SellerManagerTests
         // Assert
         result.Success.Should().BeTrue();
         result.Data.StoreName.Should().Be("Test Mağaza");
-        result.Data.StoreSlug.Should().Be("test-Mağaza");
+        // Slug kanonik SlugHelper ile üretilir: küçük harf + Türkçe→ASCII transliterasyon
+        // ("Test Mağaza" → "test-magaza"). Uygulama geneli ASCII slug konvansiyonu (krş. "hakkımızda"→"hakkimizda").
+        result.Data.StoreSlug.Should().Be("test-magaza");
         result.Data.Status.Should().Be(SellerStatus.Pending);
         result.Data.CustomerId.Should().Be(42);
         result.Data.TenantId.Should().Be(1);

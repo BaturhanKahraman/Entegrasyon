@@ -1,7 +1,5 @@
-using System.Globalization;
-using System.Text;
-using System.Text.RegularExpressions;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Storefront;
 using Entegrasyon.Entity.Results;
@@ -24,7 +22,7 @@ public class SellerManager(
         if (alreadySeller)
             return new ErrorDataResult<Seller>(null!, "Bu musteri zaten bir satici olarak kayitli.");
 
-        var slug = GenerateSlug(dto.StoreName);
+        var slug = SlugHelper.GenerateSlug(dto.StoreName);
 
         // Ensure slug uniqueness
         var slugExists = await dbContext.Sellers
@@ -188,36 +186,5 @@ public class SellerManager(
         await dbContext.SaveChangesAsync();
 
         return new SuccessResult("Satici profili guncellendi.");
-    }
-
-    private static string GenerateSlug(string text)
-    {
-        // Turkish character mapping
-        var turkishMap = new Dictionary<char, string>
-        {
-            { '\u00e7', "c" }, { '\u00c7', "c" },
-            { '\u011f', "g" }, { '\u011e', "g" },
-            { '\u0131', "i" }, { '\u0130', "i" },
-            { '\u00f6', "o" }, { '\u00d6', "o" },
-            { '\u015f', "s" }, { '\u015e', "s" },
-            { '\u00fc', "u" }, { '\u00dc', "u" }
-        };
-
-        var sb = new StringBuilder();
-        foreach (var c in text)
-        {
-            if (turkishMap.TryGetValue(c, out var replacement))
-                sb.Append(replacement);
-            else
-                sb.Append(c);
-        }
-
-        var slug = sb.ToString().ToLowerInvariant();
-        slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
-        slug = Regex.Replace(slug, @"\s+", "-");
-        slug = Regex.Replace(slug, @"-+", "-");
-        slug = slug.Trim('-');
-
-        return slug;
     }
 }
