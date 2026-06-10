@@ -393,6 +393,29 @@ else
     app.UseDeveloperExceptionPage();
 }
 
+// Her HTTP istegi icin tek satir yapilandirilmis log (Elapsed ms + RequestPath + StatusCode).
+// Loki'de propertiesAsLabels=[RequestPath,StatusCode] ile label olur → TL latency'i query'leyebilir.
+// Statik dosyalar zaten OTel filter'inda eleniyor; burada da gurultuyu azaltmak icin elenir.
+Serilog.SerilogApplicationBuilderExtensions.UseSerilogRequestLogging(app, options =>
+{
+    options.MessageTemplate =
+        "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        var path = httpContext.Request.Path.Value ?? string.Empty;
+        var isStaticAsset =
+            path.StartsWith("/lib/") || path.StartsWith("/css/") || path.StartsWith("/js/") ||
+            path.StartsWith("/images/") || path.StartsWith("/favicon");
+        if (ex is not null || httpContext.Response.StatusCode >= 500)
+            return Serilog.Events.LogEventLevel.Error;
+        if (isStaticAsset)
+            return Serilog.Events.LogEventLevel.Verbose; // MinimumLevel.Default=Debug ile elenir
+        if (elapsed > 1000)
+            return Serilog.Events.LogEventLevel.Warning; // yavas istek → dikkat cek
+        return Serilog.Events.LogEventLevel.Information;
+    };
+});
+
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
