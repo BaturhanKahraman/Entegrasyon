@@ -19,13 +19,16 @@ env:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    container:
-      image: node:20-bookworm           # checkout (Node) + git hazir
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock   # whitelist
-        - /opt/stacks:/opt/stacks                      # whitelist
+    # NOT: docker.sock + /opt/stacks runner-config (options + auto) tarafindan job'a
+    # zaten mount ediliyor — burada container.volumes ile TEKRAR mount edilirse
+    # 'Duplicate mount point' hatasi verir (run #4'te yakalandi). Bu yuzden override yok.
     steps:
       - uses: actions/checkout@v4
+
+      - name: Diagnose runner (docker.sock + /opt/stacks)
+        run: |
+          echo "--- docker.sock ---"; ls -la /var/run/docker.sock 2>&1 || echo "NO docker.sock"
+          echo "--- /opt/stacks ---"; ls /opt/stacks 2>&1 | head || echo "NO /opt/stacks"
 
       - name: Install docker CLI + compose plugin
         run: |
