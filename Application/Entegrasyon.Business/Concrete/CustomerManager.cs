@@ -11,7 +11,9 @@ using FluentValidation;
 using Entegrasyon.Business.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Business.Extensions;
+using Entegrasyon.Business.Utilities;
 using Entegrasyon.Entity.Results;
+using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.Business.Concrete;
 
@@ -19,7 +21,8 @@ public class CustomerManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IFluentValidator fluentValidator,
     CustomerMapper mapper,
-    IApplicationLogManager applicationLogManager) : ICustomerManager
+    IApplicationLogManager applicationLogManager,
+    ILogger<CustomerManager> logger) : ICustomerManager
 {
     private const string EntityTypeCustomer = "Customer";
 
@@ -65,19 +68,74 @@ public class CustomerManager(
 
     public async Task<IResult> AddCustomer(CustomerAddDto dto)
     {
-        await using var dbContext = await contextFactory.CreateDbContextAsync();
-        await applicationLogManager.AddLog("Müşteri ekleme isteği geldi.", LogType.Customer, LogAction.Add, dto);
+        // 1. Validation
         await fluentValidator.ValidateAndThrowAsync(dto);
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // 2. Business rules
+        var rule = LogicRunner.Run(
+            await CheckIfIdentifierExistsAsync(dbContext, dto));
+        if (rule != null)
+        {
+            logger.LogWarning(
+                "Müşteri ekleme iş kuralı ihlali: {Message} (Tip: {CustomerType})",
+                rule.Message, dto.CustomerType);
+            return new ErrorResult(rule.Message!);
+        }
+
+        // 3. Execution
+        await applicationLogManager.AddLog(
+            "Müşteri ekleniyor.", LogType.Customer, LogAction.Add, dto);
+        logger.LogInformation(
+            "Adding customer (Type: {CustomerType})", dto.CustomerType);
+
         Customer customer = dto.CustomerType == "Retail"
             ? mapper.MapToRetail(dto)
             : mapper.MapToCorporate(dto);
+
+        // Adres owned-entity'si DTO'dan elle bağlanır (Mapperly scalar map'liyor,
+        // nested owned entity'yi değil) — aksi halde girilen adres sessizce kaybolur.
+        if (!string.IsNullOrWhiteSpace(dto.FullAddress))
+            customer.Address = new Address { FullAddress = dto.FullAddress.Trim() };
+
         dbContext.Customers.Add(customer);
         await dbContext.SaveChangesAsync();
+
         await applicationLogManager.AddLog(
-            "Müşteri ekleme isteği başarılı oldu.", LogType.Customer, LogAction.Add,
+            "Müşteri başarıyla eklendi.", LogType.Customer, LogAction.Add,
             EntityTypeCustomer, customer.Id.ToString());
+        logger.LogInformation("Added customer {CustomerId}", customer.Id);
+
         var result = FuncMappings.CustomerToDetailDto()(customer);
         return new SuccessDataResult<CustomerDetailDto>(result, "Müşteri başarıyla eklendi.");
+    }
+
+    /// <summary>
+    /// Aynı TC kimlik (bireysel) veya vergi no (kurumsal) ile ikinci bir aktif müşteri
+    /// oluşturulmasını engeller. Boş tanımlayıcı (girilmemiş) çakışma sayılmaz.
+    /// </summary>
+    private static async Task<IResult> CheckIfIdentifierExistsAsync(
+        IntegrationDbContext dbContext, CustomerAddDto dto)
+    {
+        if (dto.CustomerType == "Retail")
+        {
+            if (string.IsNullOrWhiteSpace(dto.NationalIdentity))
+                return new SuccessResult();
+            var exists = await dbContext.Customers.OfType<RetailCustomer>()
+                .AnyAsync(c => c.NationalIdentity == dto.NationalIdentity);
+            return exists
+                ? new ErrorResult("Bu TC kimlik numarasıyla kayıtlı bir müşteri zaten var.")
+                : new SuccessResult();
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.TaxNumber))
+            return new SuccessResult();
+        var taxExists = await dbContext.Customers.OfType<CorporateCustomer>()
+            .AnyAsync(c => c.TaxNumber == dto.TaxNumber);
+        return taxExists
+            ? new ErrorResult("Bu vergi numarasıyla kayıtlı bir müşteri zaten var.")
+            : new SuccessResult();
     }
 
     public async Task<IDataResult<Pageable<CustomerDetailDto>>> GetCustomerDetailPageable(string customerInfo, int pageIndex = 0, int itemCount = 50)

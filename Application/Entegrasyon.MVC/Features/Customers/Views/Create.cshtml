@@ -1,67 +1,101 @@
 @model Entegrasyon.Entity.Dtos.Customers.CustomerAddDto
+@{
+    var customerType = string.IsNullOrEmpty(Model?.CustomerType) ? "Retail" : Model.CustomerType;
+    var isCorporate = customerType == "Corporate";
+}
 
 <div class="d-flex justify-content-end mb-3">
-    <a href="/customers" class="btn btn-outline-secondary">Geri Don</a>
+    <a href="/customers" class="btn btn-outline-secondary">Listeye Dön</a>
 </div>
 
-        <div class="card">
-            <div class="card-body">
-                <form method="post" action="/customers/create">
-                    @Html.AntiForgeryToken()
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Müşteri Tipi</label>
-                            <select name="CustomerType" class="form-select" required>
-                                <option value="Retail">Bireysel</option>
-                                <option value="Corporate">Kurumsal</option>
-                            </select>
-                        </div>
-                    </div>
+<form method="post" action="/customers/create" id="customer-create-form">
+    @Html.AntiForgeryToken()
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Müşteri Bilgileri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label required">Müşteri Tipi</label>
+                    <select name="CustomerType" id="customer-type" class="form-select">
+                        <option value="Retail" selected="@(!isCorporate)">Bireysel</option>
+                        <option value="Corporate" selected="@isCorporate">Kurumsal</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Telefon</label>
+                    <input type="text" name="PhoneNumber" class="form-control"
+                           value="@(Model?.PhoneNumber)" placeholder="5XX XXX XX XX" />
+                </div>
+            </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Ad</label>
-                            <input type="text" name="Name" class="form-control"
-                                   value="@(Model?.Name)" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Soyad</label>
-                            <input type="text" name="Surname" class="form-control"
-                                   value="@(Model?.Surname)" />
-                        </div>
+            @* ── Bireysel alanları ── *@
+            <div data-customer-fields="Retail">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ad</label>
+                        <input type="text" name="Name" class="form-control"
+                               value="@(Model?.Name)" placeholder="Müşteri adı" />
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Soyad</label>
+                        <input type="text" name="Surname" class="form-control"
+                               value="@(Model?.Surname)" placeholder="Müşteri soyadı" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">TC Kimlik No</label>
+                        <input type="text" name="NationalIdentity" class="form-control"
+                               value="@(Model?.NationalIdentity)" placeholder="11 haneli TC kimlik no" />
+                    </div>
+                </div>
+            </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Firma Adı</label>
-                            <input type="text" name="CorporateName" class="form-control"
-                                   value="@(Model?.CorporateName)" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">TC / Vergi No</label>
-                            <input type="text" name="NationalIdentity" class="form-control"
-                                   value="@(Model?.NationalIdentity)" />
-                            <input type="hidden" name="TaxNumber" value="@(Model?.TaxNumber ?? "")" />
-                        </div>
+            @* ── Kurumsal alanları ── *@
+            <div data-customer-fields="Corporate">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required">Firma Adı</label>
+                        <input type="text" name="CorporateName" class="form-control"
+                               value="@(Model?.CorporateName)" placeholder="Firma / şirket ünvanı" />
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Vergi No</label>
+                        <input type="text" name="TaxNumber" class="form-control"
+                               value="@(Model?.TaxNumber)" placeholder="10 haneli vergi no" />
+                    </div>
+                </div>
+            </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Telefon</label>
-                            <input type="text" name="PhoneNumber" class="form-control"
-                                   value="@(Model?.PhoneNumber)" />
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Adres</label>
-                        <textarea name="FullAddress" class="form-control" rows="3">@(Model?.FullAddress)</textarea>
-                    </div>
-
-                    <div class="text-end">
-                        <a href="/customers" class="btn btn-link me-2">İptal</a>
-                        <button type="submit" class="btn btn-primary">Kaydet</button>
-                    </div>
-                </form>
+            <div class="mb-3">
+                <label class="form-label">Adres</label>
+                <textarea name="FullAddress" class="form-control" rows="3"
+                          placeholder="Müşteri adresi (isteğe bağlı)">@(Model?.FullAddress)</textarea>
             </div>
         </div>
+        <div class="card-footer text-end">
+            <a href="/customers" class="btn btn-ghost-secondary me-2">İptal</a>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    (function () {
+        const form = document.getElementById('customer-create-form');
+        const select = document.getElementById('customer-type');
+        if (!form || !select) return;
+
+        function applyType() {
+            const type = select.value;
+            form.querySelectorAll('[data-customer-fields]').forEach(group => {
+                group.style.display = group.dataset.customerFields === type ? '' : 'none';
+            });
+        }
+
+        select.addEventListener('change', applyType);
+        applyType();
+    })();
+</script>

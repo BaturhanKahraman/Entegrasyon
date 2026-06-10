@@ -182,4 +182,94 @@ public class CustomerManagerIntegrationTests : IntegrationTestBase
             .FirstOrDefaultAsync();
         entityLog.Should().NotBeNull();
     }
+
+    [Fact]
+    public async Task AddCustomer_Retail_ShouldPersist_AddressAndNationalIdentity()
+    {
+        var (manager, scope) = GetScopedService<ICustomerManager>();
+        using var _ = scope;
+
+        var dto = new CustomerAddDto(
+            NationalIdentity: "11111111110",
+            TaxNumber: "",
+            Name: "Ayşe",
+            Surname: "Yılmaz",
+            CorporateName: "",
+            PhoneNumber: "5559876543",
+            FullAddress: "Çankaya Mah. 1234 Sok. No:5 Ankara",
+            CustomerType: "Retail");
+
+        var result = await manager.AddCustomer(dto);
+        result.Success.Should().BeTrue(result.Message);
+
+        using var db = CreateDbContext();
+        var created = await db.Customers.AsNoTracking()
+            .OfType<RetailCustomer>()
+            .FirstOrDefaultAsync(c => c.NationalIdentity == "11111111110");
+
+        created.Should().NotBeNull();
+        created!.Name.Should().Be("Ayşe");
+        created.Surname.Should().Be("Yılmaz");
+        created.PhoneNumber.Should().Be("5559876543");
+        created.Address.Should().NotBeNull("girilen adres kaybolmamalı");
+        created.Address!.FullAddress.Should().Be("Çankaya Mah. 1234 Sok. No:5 Ankara");
+    }
+
+    [Fact]
+    public async Task AddCustomer_Corporate_ShouldPersist_CorporateNameTaxAndAddress()
+    {
+        var (manager, scope) = GetScopedService<ICustomerManager>();
+        using var _ = scope;
+
+        var dto = new CustomerAddDto(
+            NationalIdentity: "9876543210",
+            TaxNumber: "9876543210",
+            Name: "",
+            Surname: "",
+            CorporateName: "Zeki Bebe Tekstil A.Ş.",
+            PhoneNumber: "3121112233",
+            FullAddress: "Ostim OSB Ankara",
+            CustomerType: "Corporate");
+
+        var result = await manager.AddCustomer(dto);
+        result.Success.Should().BeTrue(result.Message);
+
+        using var db = CreateDbContext();
+        var created = await db.Customers.AsNoTracking()
+            .OfType<CorporateCustomer>()
+            .FirstOrDefaultAsync(c => c.CorporateName == "Zeki Bebe Tekstil A.Ş.");
+
+        created.Should().NotBeNull();
+        created!.TaxNumber.Should().Be("9876543210");
+        created.PhoneNumber.Should().Be("3121112233");
+        created.Address.Should().NotBeNull("girilen adres kaybolmamalı");
+        created.Address!.FullAddress.Should().Be("Ostim OSB Ankara");
+    }
+
+    [Fact]
+    public async Task AddCustomer_EmptyCustomerType_ShouldFailValidation_AndNotPersist()
+    {
+        var (manager, scope) = GetScopedService<ICustomerManager>();
+        using var _ = scope;
+
+        var dto = new CustomerAddDto(
+            NationalIdentity: "22222222220",
+            TaxNumber: "",
+            Name: "Boş",
+            Surname: "Tip",
+            CorporateName: "",
+            PhoneNumber: "5550000000",
+            FullAddress: "Adres",
+            CustomerType: "");
+
+        var act = async () => await manager.AddCustomer(dto);
+
+        await act.Should().ThrowAsync<FluentValidation.ValidationException>();
+
+        using var db = CreateDbContext();
+        var exists = await db.Customers.AsNoTracking()
+            .OfType<RetailCustomer>()
+            .AnyAsync(c => c.NationalIdentity == "22222222220");
+        exists.Should().BeFalse("validasyon hatasında kayıt oluşmamalı");
+    }
 }
