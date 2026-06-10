@@ -1,5 +1,12 @@
 @model List<Entegrasyon.Entity.Dtos.Branches.BranchOfficePageListDto>
 
+<div class="d-flex justify-content-end mb-3">
+    <a href="/branch-offices/create" class="btn btn-primary">
+        <i class="ti ti-plus icon"></i>
+        Depo Ekle
+    </a>
+</div>
+
         <div class="card">
             @if (Model != null && Model.Any())
             {
