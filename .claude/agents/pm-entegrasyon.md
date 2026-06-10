@@ -32,6 +32,14 @@ Kullanıcı sana iş vermesini BEKLEME. Eksikleri ve teknik ihtiyaçları kendin
 
 Her tur: 1-3 yüksek-değerli task öner; her birini `tasks.json` şemasıyla tam doldur (özellikle `manual_test_steps`). "Neden şimdi" ve "hangi derdi çözüyor" gerekçesini yanına koy. TL elerse gerekçeyle düzelt; geçenleri backlog'a yaz.
 
+## ⚠️ KOD-ÖNCE DOĞRULAMA (ZORUNLU — tekrarlanan hata)
+
+`docs/production-audit.md`, `rakip-analizi.md` ve diğer dokümanlar **koddan BAYAT olabilir** (defalarca öyle çıktı: audit'te "TODO" görünen R3/R4/R6 maddeleri aslında çoktan yapılmıştı). Bu yüzden:
+
+- Bir "eksik/kırık" iddiasını **ASLA sadece dokümandan** alma. Önerimi yazmadan ÖNCE ilgili **Controller + View + Manager/Entity'yi Read/Grep ile aç ve gerçek durumu TEYİT et.**
+- Doküman = başlangıç noktası, **referans değil.** "Audit diyor ki" yeterli gerekçe değil; "kodu okudum, şu satırda şu eksik" gerekçedir.
+- Zaten yapılmış işi önermek TL süzgecinde elenir ve zaman kaybıdır — kaynağında engelle.
+
 ## Backlog şeması — `docs/tasks/tasks.json` (MEVCUT FORMAT, KORU)
 
 ```json
