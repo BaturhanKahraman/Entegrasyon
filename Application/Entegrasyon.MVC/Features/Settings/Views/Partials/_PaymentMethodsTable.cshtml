@@ -62,8 +62,17 @@
 <script>
     (function initSortable() {
         var list = document.getElementById('payment-methods-list');
-        if (!list || typeof Sortable === 'undefined') return;
+        if (!list) return;
         if (list.dataset.sortableInitialized) return;
+
+        // sortable.min.js layout'ta @@RenderBody'den SONRA yuklendigi icin, ilk sayfa
+        // render'inda bu inline script calistiginda Sortable henuz tanimsiz olabilir.
+        // Kutuphane hazir olana kadar bekle (HTMX swap'larda zaten yuklu olur).
+        if (typeof Sortable === 'undefined') {
+            window.addEventListener('load', initSortable, { once: true });
+            return;
+        }
+
         list.dataset.sortableInitialized = 'true';
 
         new Sortable(list, {

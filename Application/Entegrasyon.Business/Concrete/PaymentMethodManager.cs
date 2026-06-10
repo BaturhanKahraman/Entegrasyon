@@ -71,8 +71,13 @@ public sealed class PaymentMethodManager(
         for (int i = 0; i < orderedIds.Count; i++)
         {
             var method = methods.FirstOrDefault(x => x.Id == orderedIds[i]);
-            if (method is not null)
-                method.SortOrder = i + 1;
+            if (method is null)
+                continue;
+
+            method.SortOrder = i + 1;
+            // Global no-tracking varsayilani altinda entity izlenmedigi icin
+            // mutasyonun kalici olmasi adina acikca modified olarak isaretlenir.
+            dbContext.PaymentMethodDefinitions.Update(method);
         }
 
         await dbContext.SaveChangesAsync();

@@ -105,19 +105,24 @@ public class VatRateManager(
     public async Task<IResult> SetDefaultAsync(int id)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var vatRate = await dbContext.VatRates.FindAsync(id);
+        // Global no-tracking varsayilani altinda guncellenecek entity izlenmeli;
+        // aksi halde SaveChangesAsync IsDefault degisikligini kalici hale getirmez.
+        var vatRate = await dbContext.VatRates
+            .AsTracking()
+            .FirstOrDefaultAsync(v => v.Id == id);
         if (vatRate is null)
             return new ErrorResult("KDV orani bulunamadı.");
 
-        // Mevcut default'u kaldır
+        // Tek-varsayilan invariant'i: hedef disindaki mevcut varsayilanlari temizle.
         await dbContext.VatRates
-            .Where(v => v.IsDefault)
+            .Where(v => v.IsDefault && v.Id != id)
             .ExecuteUpdateAsync(s => s.SetProperty(v => v.IsDefault, false));
 
         vatRate.IsDefault = true;
         await dbContext.SaveChangesAsync();
 
         await applicationLogManager.AddLog($"Varsayilan KDV orani degistirildi: {vatRate.Name} (%{vatRate.Rate})", LogType.Settings, LogAction.Update);
+        logger.LogInformation("VatRate default set: {Id} {Name} {Rate}%", vatRate.Id, vatRate.Name, vatRate.Rate);
         return new SuccessResult($"%{vatRate.Rate} varsayilan KDV orani olarak ayarlandi.");
     }
 
