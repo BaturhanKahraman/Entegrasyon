@@ -15,7 +15,7 @@ public class RoleController(IRoleService roleService) : Controller
     public async Task<IActionResult> Index()
     {
         ViewData.SetPageTitle("Roller");
-        ViewData.SetActiveNav("users");
+        ViewData.SetActiveNav("roles");
 
         var roles = await roleService.GetRolesWithClaimsAsync();
 
@@ -29,7 +29,7 @@ public class RoleController(IRoleService roleService) : Controller
     public IActionResult Create()
     {
         ViewData.SetPageTitle("Yeni Rol");
-        ViewData.SetActiveNav("users");
+        ViewData.SetActiveNav("roles");
         ViewData.SetBreadcrumb(("Roller", "/roles"), ("Yeni Rol", null));
 
         ViewBag.AllPermissions = AppPermissions.GetAllPermissions();
@@ -54,7 +54,7 @@ public class RoleController(IRoleService roleService) : Controller
     public async Task<IActionResult> Edit(int id)
     {
         ViewData.SetPageTitle("Rol Duzenle");
-        ViewData.SetActiveNav("users");
+        ViewData.SetActiveNav("roles");
         ViewData.SetBreadcrumb(("Roller", "/roles"), ("Duzenle", null));
 
         var roles = await roleService.GetRolesWithClaimsAsync();

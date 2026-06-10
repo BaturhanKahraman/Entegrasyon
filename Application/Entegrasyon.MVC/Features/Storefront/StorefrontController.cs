@@ -171,7 +171,7 @@ public class StorefrontController(
     public async Task<IActionResult> Reviews()
     {
         ViewData.SetPageTitle("Degerlendirmeler");
-        ViewData.SetActiveNav("storefront");
+        ViewData.SetActiveNav("storefront-reviews");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Degerlendirmeler", null));
 
         var result = await reviewManager.GetAllReviewsAsync(TenantId);
@@ -220,7 +220,7 @@ public class StorefrontController(
     public async Task<IActionResult> Returns()
     {
         ViewData.SetPageTitle("Iadeler");
-        ViewData.SetActiveNav("storefront");
+        ViewData.SetActiveNav("storefront-returns");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Iadeler", null));
 
         var result = await returnManager.GetAllReturnsAsync(TenantId);
@@ -253,7 +253,7 @@ public class StorefrontController(
     public async Task<IActionResult> Sellers()
     {
         ViewData.SetPageTitle("Saticilar");
-        ViewData.SetActiveNav("storefront");
+        ViewData.SetActiveNav("storefront-sellers");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Saticilar", null));
 
         // Marketplace/seller feature controlled via settings
@@ -267,7 +267,7 @@ public class StorefrontController(
     public async Task<IActionResult> Campaigns()
     {
         ViewData.SetPageTitle("Kampanyalar");
-        ViewData.SetActiveNav("storefront");
+        ViewData.SetActiveNav("storefront-campaigns");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Kampanyalar", null));
 
         var result = await campaignManager.GetCampaignsAsync(TenantId);
@@ -426,7 +426,7 @@ public class StorefrontController(
     public async Task<IActionResult> Payouts()
     {
         ViewData.SetPageTitle("Odemeler");
-        ViewData.SetActiveNav("storefront");
+        ViewData.SetActiveNav("storefront-payouts");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Odemeler", null));
 
         var result = await payoutManager.GetAllPendingPayoutsAsync(TenantId);

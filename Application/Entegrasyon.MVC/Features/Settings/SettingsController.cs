@@ -120,7 +120,7 @@ public class SettingsController(
     public async Task<IActionResult> Printing()
     {
         ViewData.SetPageTitle("Yazici Ayarlari");
-        ViewData.SetActiveNav("settings");
+        ViewData.SetActiveNav("settings-printing");
 
         var settings = await settingManager.GetSettingsByGroupAsync("Printer");
         var templatesResult = await labelTemplateService.GetAllAsync();
