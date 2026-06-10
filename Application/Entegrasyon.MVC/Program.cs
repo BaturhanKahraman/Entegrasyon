@@ -354,11 +354,15 @@ builder.Services.AddScoped<IActiveBranchOfficeAccessor, ActiveBranchOfficeAccess
 var app = builder.Build();
 // =====================================================================
 
-// CLI: --migrate flag ile sadece EF Core migration calistirip cikis
+// CLI: --migrate flag ile sadece EF Core migration calistirip cikis.
+// NOT: DI'da IntegrationDbContext DOGRUDAN kayitli degil — multi-tenant icin
+// IDbContextFactory<IntegrationDbContext> kayitli. CLI'da HTTP istegi yok →
+// tenant context initialize degil → factory fallback ConnectionStrings:Main kullanir.
 if (args.Contains("--migrate"))
 {
     await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<IntegrationDbContext>();
+    var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+    await using var db = await contextFactory.CreateDbContextAsync();
     await db.Database.MigrateAsync();
     Console.WriteLine("Migrations applied successfully.");
     return;
