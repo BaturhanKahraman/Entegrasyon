@@ -66,7 +66,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/auth/login";
         options.LogoutPath = "/auth/logout";
         options.AccessDeniedPath = "/error/403";
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        // "Beni hatırla" işaretlenmediğindeki taban ömür (login'de ExpiresUtc ile override edilir).
+        // SlidingExpiration: aktif kullanıcı erken atılmaz, her istekte pencere yenilenir.
+        options.ExpireTimeSpan = TimeSpan.FromDays(1);
         options.SlidingExpiration = true;
         options.Cookie.Name = "Entegrasyon.Auth";
         options.Cookie.HttpOnly = true;

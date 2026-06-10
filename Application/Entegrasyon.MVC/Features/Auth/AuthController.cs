@@ -97,8 +97,11 @@ public class AuthController(
             principal,
             new AuthenticationProperties
             {
+                // "Beni hatırla" işaretliyse kalıcı + pratikte sonsuz (1 yıl; SlidingExpiration ile
+                // aktif kullanıcıda sürekli yenilenir). Değilse oturum çerezi olarak 1 güne kadar geçerli.
                 IsPersistent = vm.RememberMe,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                ExpiresUtc = DateTimeOffset.UtcNow.Add(
+                    vm.RememberMe ? TimeSpan.FromDays(365) : TimeSpan.FromDays(1))
             });
 
         // Aktif şube ofisini Session'a yerleştir.
