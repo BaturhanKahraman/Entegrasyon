@@ -9,36 +9,13 @@
 -- KIRMIZI ÇİZGİ: IntegrationDb, IntegrationDb_Stage'e DOKUNMA.
 -- =============================================================================
 
-BEGIN;
+-- NOT: Admin login (admin / 123456789) bu SQL'de DEĞİL — boot-time C# seeder'da:
+--   Application/Entegrasyon.MVC/Infrastructure/DevMode/DevAdminSeeder.cs
+-- Sebep: C# seeder her boot'ta çalışır (deploy + local-debug), idempotent-koruyucudur
+-- (geliştiricinin app üzerinden elle değiştirdiği parolayı EZMEZ). Bu dosya yalnızca
+-- DEMO İÇERİK (kategori/ürün vb.) sağlar — tek sorumluluk ayrımı.
 
--- ─────────────────────────────────────────────
--- 0. DEV Admin — kullanılabilir login (admin / 123456789)
--- ─────────────────────────────────────────────
--- Admin user migration HasData ile gelir (sabit Id), ANCAK fresh DB'de
--- NeedsTakeNewPassword=true + BcryptPasswordHash=NULL → reset-stub dead-end → login imkânsız.
--- Bu blok dev'de admin'e bilinen bir parola atayarak login'i çalışır kılar.
---
--- ⚠️ SADECE DEV SEED. Prod admin reset akışı ayrıdır; prod HasData'ya DOKUNULMAZ.
--- Hash, uygulama helper'ıyla üretildi (garanti doğru):
---   HashingHelper.CreateBcryptHash("123456789")  →  BCrypt workFactor 12  ($2a$12$...)
---   (Business projesinde VerifyBcryptHash ile doğrulandı: VERIFY=True)
--- AuthService login: NormalizedUserName == ToUpperInvariant(input), IsActive zorunlu,
---   NeedsTakeNewPassword=false + PasswordHashVersion=1 → bcrypt yolu.
--- IDEMPOTENT: PK'ye göre UPDATE; satır yoksa 0 satır (zararsız), tekrar çalıştırılabilir.
-UPDATE "Users" SET
-    "BcryptPasswordHash"   = '$2a$12$QdgQ.HfZQlSG4xw9./8TSeLGxy6qxyft02s71u.R50DAjyjiff0lq',
-    "PasswordHashVersion"  = 1,
-    "NeedsTakeNewPassword" = false,
-    "PasswordHash"         = NULL,
-    "PasswordSalt"         = NULL,
-    "TemporaryPassword"    = NULL,
-    "FailedLoginCount"     = 0,
-    "LockoutEnd"           = NULL,
-    "UserName"             = 'Admin',
-    "NormalizedUserName"   = 'ADMIN',
-    "IsActive"             = true,
-    "UpdatedAt"            = NOW() AT TIME ZONE 'UTC'
-WHERE "Id" = 'dfda5d4a-f807-408c-9b4d-908830ad5724';
+BEGIN;
 
 -- ─────────────────────────────────────────────
 -- 1. Kategoriler

@@ -388,6 +388,11 @@ app.Lifetime.ApplicationStarted.Register(async () =>
         var devSeederLogger = app.Services.GetRequiredService<ILogger<Program>>();
         await Entegrasyon.MVC.Infrastructure.DevMode.DevWireMockSeeder
             .SeedAsync(app.Services, app.Configuration, devSeederLogger);
+
+        // Fresh dev DB'de admin login'i garanti et: bilinen parola (admin / 123456789).
+        // SADECE Development — prod HasData onboarding akisina dokunmaz. Idempotent.
+        await Entegrasyon.MVC.Infrastructure.DevMode.DevAdminSeeder
+            .SeedAsync(app.Services, devSeederLogger);
     }
 });
 
