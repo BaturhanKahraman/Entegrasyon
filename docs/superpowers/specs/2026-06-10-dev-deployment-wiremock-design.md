@@ -10,7 +10,7 @@
 
 Kullanıcının, uygulamayı **gerçek senaryo gibi** test edebileceği izole bir **dev ortamı** kurmak:
 
-1. **Ayrı portta** çalışan bir dev app container'ı (8083).
+1. **Ayrı portta** çalışan bir dev app container'ı (8085).
 2. **`develop` branch'e push** → Gitea runner ile **otomatik build + deploy** (push-to-deploy).
 3. **Localhost-geliştirme DB'sinden VE stage'den ayrı** bir dev veritabanı (`IntegrationDb_Dev` + `AdminPanelDb_Dev`).
 4. **WireMock ile pazaryeri API'leri mock'lanmış** — dev'de **gerçek API key YOK**; app "gerçekten gönderiyormuş gibi" davranır, canned response alır.
@@ -87,7 +87,7 @@ container:
 | D1 | Dev DB | **Ayrı `IntegrationDb_Dev` + `AdminPanelDb_Dev`** (aynı `postgres_db` container'ında, ayrı veritabanları) | Stage/lokal'den tam izolasyon; ayrı postgres container'ı gereksiz (kaynak). KVKK riski yok (mock data). |
 | D2 | DB Host | **`Host=postgres_db`** (container DNS, `integration_app_default` network) | postgres `127.0.0.1` dinliyor; `192.168.1.78` container'dan çözülmez. **Stage bug'ını tekrarlama.** |
 | D3 | Dev app environment | **`ASPNETCORE_ENVIRONMENT=Development`** | DevWireMockSeeder yalnızca `IsDevelopment()`'ta çalışıyor. Dev'de developer exception page + offline mode istiyoruz zaten. |
-| D4 | Port | App **8083**, WireMock admin **8091** (host'a yayın, inceleme için) | 8080(prod)/8081(stage-mvc)/8082(stage-blazor) dolu. WireMock admin UI kullanıcının request'leri görüp stub eklemesi için faydalı. |
+| D4 | Port | App **8085**, WireMock admin **8091** (host'a yayın, inceleme için) | 8080(prod)/8081(stage-mvc)/8082(stage-blazor) dolu. WireMock admin UI kullanıcının request'leri görüp stub eklemesi için faydalı. |
 | D5 | CI trigger | **`develop` push → Gitea Actions** (`.gitea/workflows/deploy-dev.yml`) | Kullanıcı isteği. Gitea = GitHub Actions uyumlu. |
 | D6 | Runner deseni | **`docker:27-cli` container + docker.sock mount** | Gitea runner node:20-bookworm container içinde; docker CLI gerekiyor (§2.4). |
 | D7 | Marketplace mock | **DevWireMockSeeder (mevcut)** — `DevMode__WireMockUrl=http://wiremock:8080` | Yeni kod YOK; mevcut mekanizma. Gerçek key gerekmez. |
@@ -116,7 +116,7 @@ container:
                               ▼
    /opt/stacks/entegrasyon-dev/compose.yaml
    ┌──────────────────────────────────────────────────────────┐
-   │  entegrasyon-mvc-dev   (8083:8080)                        │
+   │  entegrasyon-mvc-dev   (8085:8080)                        │
    │    ASPNETCORE_ENVIRONMENT=Development                     │
    │    ConnectionStrings__Main=Host=postgres_db;...Dev        │
    │    ConnectionStrings__AdminPanel=Host=postgres_db;...Dev  │
@@ -167,13 +167,13 @@ container:
 ### Faz 4 — İlk deploy + doğrulama
 9. `develop`'a push → run yeşil mi izle.
 10. **Sağlık testleri (kanıt):**
-    - `curl http://192.168.1.78:8083/health/live` → 200
-    - `192.168.1.78:8083` login (admin / 123456789) çalışıyor
+    - `curl http://192.168.1.78:8085/health/live` → 200
+    - `192.168.1.78:8085` login (admin / 123456789) çalışıyor
     - WireMock yönlendirme: bir Trendyol sync tetikle → `curl http://192.168.1.78:8091/__admin/requests` ile WireMock'a istek düştüğünü gör (gerçek API'ye GİTMEDİ)
     - DB izolasyon: dev'de yapılan değişiklik IntegrationDb/IntegrationDb_Stage'i etkilemiyor
 
 ### Faz 5 — (Opsiyonel) NPM ile dışa açma
-11. İstenirse `dev.entegrasyon.baturhan.xyz` → `192.168.1.78:8083` (NPM, Force SSL, Access List). **Önce kullanıcıya sor.**
+11. İstenirse `dev.entegrasyon.baturhan.xyz` → `192.168.1.78:8085` (NPM, Force SSL, Access List). **Önce kullanıcıya sor.**
 
 ---
 
@@ -187,7 +187,7 @@ services:
     container_name: entegrasyon-mvc-dev
     restart: unless-stopped
     ports:
-      - "8083:8080"                       # tüm arayüze (NPM/LAN erişsin)
+      - "8085:8080"                       # tüm arayüze (NPM/LAN erişsin)
     environment:
       - ASPNETCORE_ENVIRONMENT=Development # DevWireMockSeeder bunu ister
       - ASPNETCORE_URLS=http://+:8080

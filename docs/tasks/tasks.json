@@ -334,7 +334,7 @@
   },
   {
     "task": "Sipariş → Kargo Etiketi Oluşturma (merchant panel akışı)",
-    "description": "[DURUM TEYİDİ GEREKLİ] ArasKargoService/SuratKargoService/YurticiKargoService client'ları var ama sipariş detayında 'kargo şirketi seç → gönderi oluştur → takip no kaydet → label PDF indir' akışı görünmüyor. Hem storefront hem pazaryeri siparişleri kapsanmalı. Trendyol siparişinde takip no Trendyol'a iletilmeli. Implementasyon öncesi SWE mevcut OrderController/SaleController kargo durumunu teyit etsin.",
+    "description": "[PA KOD-ÖNCE TEYİT EDİLDİ 2026-06-10, bkz. docs/superpowers/specs/2026-06-10-order-fulfillment-flow-design.md] TEYİT: Kargo SERVİSLERİ TAM hazır — ArasKargoService.CreateShipmentAsync, SuratKargoService.CreateShipmentAsync/GetShipmentLabelAsync (Base64 etiket), YurticiKargoService.CreateShipmentAsync; Trendyol GetShippingLabelAsync (TrendyolOrderService.cs:92) + UpdateTrackingNumberAsync (:71). Takip adapter+polling (30dk)+/shipping UI çalışıyor. EKSİK OLAN UI/AKIŞ: (1) sipariş detayında 'kargo firması seç → gönderi oluştur → label PDF indir' UI YOK (GetShippingLabel/GetBarcode servis var, expose yok); (2) esnaf tracking number girme UI YOK; (3) Trendyol'a 'kargolandı' bildirimi (UpdateTrackingNumberAsync) UI'dan HİÇ çağrılmıyor. FIX: OrderController/SaleController'a kargo aksiyonları + sipariş detay UI (firma seç, gönderi oluştur, etiket indir, takip no kaydet+Trendyol'a bildir). Hem storefront hem pazaryeri siparişi.",
     "status": "todo",
     "priority": "high",
     "plan": true,
@@ -351,7 +351,7 @@
   },
   {
     "task": "Trendyol E-Fatura: Toplu Gönderim UI + Durum Takibi",
-    "description": "[DURUM TEYİDİ GEREKLİ] TrendyolEFaturaInvoiceBuilder + InvoiceController /invoicing/bulk var. Eksik olabilir: sipariş bazlı manuel e-fatura tetikleme butonu, toplu seçim+gönderim UI, fatura durumu (beklemede/gönderildi/hata) görselleştirme. Türkiye'de yasal zorunluluk. SWE önce docs/trendyol_efatura/ + InvoiceController'ın gerçekte ne yaptığını teyit etsin.",
+    "description": "[PA KOD-ÖNCE TEYİT EDİLDİ 2026-06-10, bkz. order-fulfillment-flow-design.md] TEYİT: Trendyol e-fatura API + polling ÇALIŞIYOR — TrendyolEFaturaService.CreateInvoiceForOrderAsync + TrendyolEFaturaStatusPollingService (5dk, status+PDF+marketplace link). EInvoice CRUD + InvoiceController (/invoicing) MVC UI tam (list/detail/create/send/cancel/pdf). EKSİK: (1) sipariş bazlı manuel e-fatura tetikleme butonu (Order import'ta CreateInvoiceForOrderAsync OTOMATİK çağrılmıyor — OrderManager loop'unda tetik yok), (2) toplu seçim+gönderim UI, (3) fatura durumu (beklemede/gönderildi/hata) görselleştirme. NOT: Otomatik sipariş→fatura tetikleme F1 task'ında; bu task toplu UI + durum görselleştirme + tekil manuel tetik. Türkiye yasal zorunluluk (2026 e-fatura).",
     "status": "todo",
     "priority": "high",
     "plan": true,
@@ -454,7 +454,7 @@
     "status": "todo",
     "priority": "high",
     "plan": true,
-    "notes": "Kullanıcı bunu erteledi (önce ürün-360 feature). Ayrı, iteratif DevOps task. Tahmini birkaç saat. Yeni 'devops' rolü düşünülebilir.",
+    "notes": "Kullanıcı bunu erteledi (önce ürün-360 feature). Ayrı, iteratif DevOps task. Yeni 'devops' rolü düşünülebilir. | BUILD KÖK-NEDENİ ÇÖZÜLDÜ (DevOps, 2026-06-10, dev-deploy kurarken kanıtlandı): MVC stage build'i 2 aydır FAILURE çünkü (a) Application/Entegrasyon.MVC/Dockerfile var olmayan 4 projeyi COPY'liyordu (Entegrasyon.MessageQueue, MessageQueue.Commands, Shared/Shared, Shared/MarketPlace — repo'da YOK) ve Business'in bağımlı olduğu Agent/Entegrasyon.PrintAgent.Contracts'ı atlıyordu → restore ÖNCESİ COPY fail; (b) Directory.Build.props + Directory.Packages.props (Central Package Management) restore'dan önce COPY edilmiyordu → NU1015; (c) MVC↔AdminPanel appsettings.json aynı relative path'te çakışıyordu → NETSDK1152 (fix: AdminPanel appsettings CopyToPublishDirectory=Never); (d) Program.cs --migrate 'GetRequiredService<IntegrationDbContext>()' istiyordu ama DI'da sadece IDbContextFactory<IntegrationDbContext> kayıtlı (multi-tenant) → 'No service registered' (fix: factory + fallback CS). TÜM build/migrate fix'leri develop'a commit'lendi → stage/prod build'ini de onarır. KALAN (stage'e özel, dev'de baştan doğru yapıldı): stage secret'larında Host=postgres_db, deploy-stage.yml migrate adımı --network integration_app_default, ADMIN_DB_CONNECTION secret, AdminPanelDb tenant CS'leri postgres_db.",
     "manual_test_steps": [
       "STAGE_DB_CONNECTION + yeni ADMIN_DB_CONNECTION secret'larında Host=postgres_db",
       "deploy-stage.yml migration adımı --network integration_app_default",
@@ -543,5 +543,431 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "WireMock T1 — Dev ortamında WireMock'u DEFAULT açık yap (offline pazaryeri mock)",
+    "description": "PA WireMock denetimi (2026-06-10, kod-önce teyit). HEDEF: Geliştirici dev'de uygulamayı başlattığında pazaryeri HTTP çağrıları GERÇEK API yerine otomatik lokal WireMock'a düşsün — gerçek API key gerekmeden 'gönderiyormuş gibi' test edilebilsin. MEVCUT DURUM (KODDA TEYİT): Altyapı zaten VAR ama default KAPALI. docker-compose.dev.yml (wiremock/wiremock:3.9.2, port 8080, docs/wiremock/mappings+__files volume mount, --global-response-templating) + DevWireMockSeeder.cs (Program.cs:383, IsDevelopment guard) + her *ApiClient'ın her istekte DB'den MarketPlace.BaseUrl okuması (TrendyolApiClient.cs:57-65) hazır. SORUN: appsettings.Development.json'da DevMode:WireMockUrl='' (BOŞ) → seeder pas geçiyor; mock yalnızca docker-compose.dev.yml ile başlatınca (env DevMode__WireMockUrl=http://wiremock:8080) açılıyor, 'normal dotnet run'da KAPALI. FIX: Dev-deploy akışını docker-compose.dev.yml'i baz alacak şekilde standartlaştır; WireMockUrl dev'de varsayılan dolu gelsin (compose env veya appsettings.Development override). RealApiMarketplaces ile tek tek gerçek sandbox'a kaçış yolu korunsun. DEVOPS KOORDİNASYONLU — dev-deploy planının temeli.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "Foundational — kullanıcının dev test deneyiminin temeli. TL onaylı (2026-06-10). DevOps dev-deploy planına doğrudan girdi (compose default WireMock-on). KIRMIZI ÇİZGİ: seeder yalnızca IsDevelopment'ta çalışmalı (Program.cs guard'ı korunsun) — staging/prod DB'de MarketPlace.BaseUrl'leri BOZAR. Secret yazma yok.",
+    "manual_test_steps": [
+      "Dev ortamını standart yöntemle başlat (dev-deploy / docker-compose.dev.yml) — WireMock container healthy olmalı (curl http://localhost:8080/__admin/health)",
+      "admin/123456789 ile giriş yap → /marketplaces → Trendyol için sipariş senkron / ürün gönder akışını tetikle",
+      "curl http://localhost:8080/__admin/requests ile isteğin WireMock'a düştüğünü doğrula (gerçek apigw.trendyol.com'a GİTMEMELİ)",
+      "Uygulama loglarında 'DevWireMockSeeder: N marketplace BaseUrl'i WireMock URL'ine guncellendi' satırını gör",
+      "RealApiMarketplaces=['Trendyol'] verilip restart edilince Trendyol'un BaseUrl'inin korunduğunu (WireMock'a çevrilmediğini) doğrula",
+      "Prod/stage ortam değişkeniyle başlatınca seeder'ın HİÇ çalışmadığını (log'da seeder satırı yok) doğrula"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "WireMock T2 — Eksik mock mapping'lerini tamamla (kargo, e-fatura, temu, iade/QnA)",
+    "description": "PA WireMock denetimi (2026-06-10, kod-önce teyit). HEDEF: Dev'de WireMock açıkken esnafın kullanacağı TÜM ana akışlar 404 almadan tamamlansın. MEVCUT KAPSAM (docs/wiremock/mappings/): trendyol(5), hepsiburada(5), n11(4), pazarama(5), amazon(6), pttavm(5), ciceksepeti(7), temu(1). Ürün gönder / sipariş çek / stok-fiyat güncelle ana akışları VAR. EKSİK (KODDA TEYİT): (a) KARGO — Aras vb. kargo client'ları var (Concrete/Kargo/ArasKargoClient.cs) ama hiç WireMock mapping YOK → dev'de kargo etiketi/takip 404; (b) E-FATURA/E-ARŞİV — genel e-fatura servisleri (Faz 7, TrendyolEFaturaStatusPollingService aktif) için sadece trendyol/post-invoice-link var, genel e-fatura/e-arşiv mapping yok; (c) TEMU — tek post-router mapping, ürün/sipariş akışı eksik; (d) İADE/QnA — bazı pazaryerlerinde kısmi (örn. n11/hepsiburada claim+qna var, diğerlerinde boşluklar). FIX: Eksik endpoint'ler için mapping (docs/wiremock/mappings/<mp>/*.json) + gerçekçi response body (docs/wiremock/__files/<mp>/*.json) ekle; path pattern'leri gerçek API ile hizala. Mevcut record.sh/sanitize.sh ile gerçek sandbox'tan kayıt opsiyonel. FIDELITY ŞARTI (kullanıcı, CLAUDE.md 'WireMock Doğruluğu' strict-rule): Her mapping RESMİ pazaryeri API dokümantasyonunu BİREBİR yansıtmalı — response alan adları/format/tipler dokümandaki gibi (sadece 'bir şey dönsün' değil). AYRICA request validation: zorunlu alan eksik / yanlış format / geçersiz değer gönderilirse mock GERÇEK API gibi uygun HATA dönsün (ör. 400 + dokümandaki hata gövdesi/kodu). WireMock request matcher'ları (matchingJsonPath / body matcher) ile geçersiz request'i ayrı mapping'e düşürüp doc-doğru error response ver. Yani happy-path canned DEĞİL → doc-doğru + validation-error'lı.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "Dev'de 404 = kırık akış hissi. TL onaylı (2026-06-10). Hangi pazaryeri/akışların ÖNCE tamamlanacağı ilk-müşteri (zekidsbebe) ihtiyacına göre önceliklenmeli — Trendyol + kargo + e-fatura muhtemelen ilk. Secret yazma yok (sanitize.sh ile temizle).",
+    "manual_test_steps": [
+      "Dev'de WireMock açıkken her ana akışı sırayla tetikle: ürün gönder, sipariş çek, stok güncelle, fiyat güncelle, e-fatura oluştur, kargo etiketi/takip",
+      "curl http://localhost:8080/__admin/requests ile her isteğin eşleştiğini (unmatched=0) doğrula",
+      "WireMock admin'de unmatched request kontrolü: curl http://localhost:8080/__admin/requests/unmatched → boş olmalı",
+      "Temu için ürün gönder + sipariş çek akışının 404 almadan tamamlandığını doğrula",
+      "Kargo etiketi oluşturma akışının dev'de mock response döndürdüğünü (gerçek Aras API'ye gitmeden) doğrula",
+      "Uygulama log'unda pazaryeri çağrılarında 404/unmatched kaynaklı hata OLMADIĞINI doğrula",
+      "DOC-FIDELITY: Bir mapping'in response gövdesini resmi API dokümanıyla karşılaştır — alan adları/tipleri birebir aynı olmalı",
+      "VALIDATION-ERROR: Zorunlu alanı eksik / formatı yanlış bir ürün gönder → mock'ın gerçek API gibi 400 + dokümandaki hata kodu/gövdesi döndürdüğünü ve uygulamanın bu hatayı kullanıcıya gösterdiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "WireMock T3 — Background polling kill-switch / WireMock yoksa gerçek API'ye gitme guard",
+    "description": "PA WireMock denetimi (2026-06-10, kod-önce teyit). HEDEF: Dev'de WireMock kapalıyken background polling servisleri boş/eksik credential ile GERÇEK pazaryeri API'lerine gidip sürekli hata loglamasın. MEVCUT DURUM (KODDA TEYİT): ApplicationDependencyExtension.cs AddBackgroundServices() içinde 28+ HostedService koşulsuz register ediliyor (TrendyolOrderPollingService, N11OrderPollingService, HepsiburadaOrderPollingService, AmazonOrderPollingService, Pazarama/Ciceksepeti/Pttavm polling + stok-fiyat sync + e-fatura polling...). IsDevelopment veya WireMock-varlığı guard'ı YOK. SORUN: dev'de WireMockUrl boşken bu servisler MarketPlace.BaseUrl'deki gerçek/default API'ye (örn. apigw.trendyol.com) boş credential'la gidip auth hatası üretir → log kirliliği + gereksiz dış çağrı + olası rate-limit/IP riski. FIX (seçenekler — DB Master/SWE ile netleşir): (a) Dev'de WireMockUrl boşsa polling servislerini register etme/Start etme (config-driven enable); (b) genel bir 'MarketplacePolling:Enabled' switch'i; (c) en azından dev'de credential yoksa graceful skip + tek-seferlik uyarı. KIRMIZI ÇİZGİ: prod/stage davranışı DEĞİŞMEMELİ (polling açık kalmalı).",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "T1 ile birlikte DevOps dev-deploy planına girer — WireMock-default-on olunca pratikte tetiklenmez ama WireMock kapalı/elle dotnet run senaryosunda guard şart. TL onaylı (2026-06-10). Multi-tenant: switch tenant başına değil ortam/global seviyede yeterli (dev guard). Prod regresyonu OLMAMALI.",
+    "manual_test_steps": [
+      "Dev'de WireMockUrl='' (boş) ve geçersiz/boş pazaryeri credential'larıyla uygulamayı başlat",
+      "İlk 2 dakika log'larını izle: pazaryeri polling kaynaklı tekrarlayan auth/connection hatası OLMAMALI",
+      "WireMockUrl dolu (WireMock açık) iken polling'in normal çalıştığını ve isteklerin :8080'e düştüğünü doğrula",
+      "ASPNETCORE_ENVIRONMENT=Production simülasyonunda polling servislerinin register edilip çalıştığını (guard'ın prod'u etkilemediğini) doğrula",
+      "Switch/config ile polling kapatılıp açıldığında HostedService'lerin buna uyduğunu doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "WireMock T4 — Stateful mock davranışı (gönderilen ürün/stok/sipariş mock'ta yansısın)",
+    "description": "PA WireMock denetimi (2026-06-10, kod-önce teyit). KULLANICININ ASIL İSTEDİĞİ 'GERÇEKTEN GÖNDERİYORMUŞ GİBİ' DENEYİMİN TAM KARŞILIĞI. MEVCUT DURUM (KODDA TEYİT): WireMock mapping'leri STATELESS / statik canned response. POST /suppliers/{id}/v2/products → sabit batchRequestId (trendyol/product-create.json); GET /suppliers/{id}/orders → HER ÇAĞRIDA aynı 2 sabit sipariş (TY-MOCK-001/002, __files/trendyol/orders-page1.json); stok/fiyat PUT → 200 ama state tutmaz. SORUN: Esnaf dev'de ürün gönderir → 'başarılı' der ama mock'ta hiçbir şey değişmez; stok günceller → yansımaz; sipariş listesi hep aynı kalır. 'Gönderdim ama hiçbir şey olmadı' hissi → gerçekçi değil. FIX: WireMock'un stateful özellikleriyle akışı yaşat — (a) --global-response-templating ZATEN açık → request body'yi echo'la (gönderilen ürün adı/barkod response'a yansısın), (b) WireMock Scenarios (state machine) ile ürün-gönder→batch-status 'PROCESSING'→'COMPLETED' geçişi, (c) yeni siparişlerin zamanla 'gelmesi' (örn. ardışık polling'de farklı sayfa/yeni sipariş). FIDELITY ŞARTI (kullanıcı, CLAUDE.md 'WireMock Doğruluğu' strict-rule): Stateful davranış da RESMİ dokümana sadık olmalı — state geçişleri (batch PROCESSING→COMPLETED→FAILED), response alanları ve geçersiz request'e dönen HATA (400 + doc-doğru hata gövdesi) gerçek API'yi yansıtmalı. Geçersiz ürün gönderilirse mock COMPLETED değil dokümandaki validation-error state'ine düşmeli. KAPSAM: küçük ayrı tasarım dokümanı (docs/superpowers/specs/) gerekebilir; önce Trendyol happy-path (ürün-gönder→durum→sipariş) hedeflenir, sonra diğer pazaryerleri.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "MEDIUM önceliklendirildi AMA KULLANICI İÇİN YÜKSEK DEĞER — 'gerçekten gönderiyormuş gibi' beklentisinin tam karşılığı budur (T1-T3 altyapı, T4 deneyim). Küçük ayrı spec gerekebilir; PA tasarım taslağı çıkarabilir. TL onaylı (2026-06-10). Önce Trendyol happy-path, MVP-first. WireMock scenarios + response-templating ile çözülür, custom mock servise gerek yok.",
+    "manual_test_steps": [
+      "Dev'de WireMock açıkken yeni bir ürün gönder → dönen response'ta GÖNDERDİĞİN ürünün barkod/adının yansıdığını (statik mock değil) doğrula",
+      "Ürün gönderdikten sonra batch-status sorgula → durumun PROCESSING'den COMPLETED'e geçtiğini (scenario state) gör",
+      "Stok güncelle (PUT) → ardından stok sorgula → güncellenen değerin döndüğünü doğrula",
+      "Sipariş polling'ini birkaç kez tetikle → ilk turda olmayan yeni bir mock siparişin sonraki turda 'geldiğini' doğrula",
+      "VALIDATION-ERROR (fidelity): Geçersiz/eksik alanlı ürün gönder → batch durumunun COMPLETED değil, dokümandaki FAILED/validation-error state'ine geçtiğini ve hata gövdesinin resmi API ile eşleştiğini doğrula",
+      "Tüm bu akış boyunca hiçbir gerçek pazaryeri API'sine çıkış yapılmadığını (:8080 __admin/requests) doğrula"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "E1 — Pazaryeri-bazlı açıklama/başlık TRANSFORM (HTML↔düz metin) + önizlemeli gönderim",
+    "description": "Kaynak: docs/superpowers/specs/2026-06-10-per-marketplace-product-customization-design.md (PA, kod-önce teyit). PROBLEM (kullanıcının tam örneği): Trendyol açıklama SADECE düz metin kabul eder, Pazarama HTML kabul eder; bugün hiçbir mapper'da HTML strip/convert YOK (StringExtension.cs'te de yok) → açıklamadaki HTML olduğu gibi Trendyol'a gidiyor (hata/kötü görünüm). KOD-ÖNCE TEYİT: 5 mapper'da override gönderimde kullanılıyor (TrendyolProductMapper.cs:47-48,202; PazaramaProductMapper.cs:46-47,162; Hepsiburada/N11/Amazon benzer) ama transform yok — sadece sessiz truncate ([..30000], [..100]). FIX: Pazaryeri kuralına göre deterministik transform pipeline — hedef PlainText ise HTML strip (tag temizle, entity decode, satır yapısı koru), hedef Html ise düz metni minimal <p>/<br> ile sarmala. STANDART HTML KÜTÜPHANESİ kullan (HtmlSanitizer veya HtmlAgilityPack — TL onaylı yeni bağımlılık; implementasyonda microsoft-docs/context7 ile API doğrula). ÖNİZLEMELİ UX: esnaf gönderim/düzenleme ekranında her pazaryeri için açıklamanın DÖNÜŞMÜŞ hâlini gönderim öncesi görür (sessiz dönüşüm değil). E2'deki kural profilini kullanır.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "Kullanıcının verdiği örneğin TAM karşılığı — en yüksek değer. TL+kullanıcı onaylı (2026-06-10). Önizlemeli (sessiz değil) + standart kütüphane (yeni bağımlılık TL onaylı). E2 kural profili ile birlikte gider. Roller: SWE (transform servisi + mapper entegrasyonu, TDD-first), Designer (önizleme UI — PlainText düz textarea+sayaç / Html zengin editör), QA (DoD: WireMock fidelity ile gönderilen body assert). KIRMIZI ÇİZGİ: yeni paket eklenecek — TL onayı alındı; implementasyonda resmi doc ile doğrula. Ürün-360 wiring + dev-env'den SONRA implementasyona girer.",
+    "manual_test_steps": [
+      "Bir ürünün açıklamasına HTML gir: <b>Kalın</b><ul><li>Madde 1</li><li>Madde 2</li></ul>",
+      "Ürünü Trendyol gönderim ekranında aç → önizlemede açıklamanın HTML'siz düz metin (Kalın, Madde 1, Madde 2 satırları korunmuş) göründüğünü doğrula",
+      "Aynı ürünü Pazarama gönderim ekranında aç → önizlemede HTML'in korunduğunu doğrula",
+      "Trendyol'a gönder → gönderilen request body'sinde (WireMock __admin/requests) açıklamada HTML tag OLMADIĞINI doğrula",
+      "Pazarama'ya gönder → request body'sinde HTML'in korunduğunu doğrula",
+      "Düz metin açıklamalı bir ürünü Pazarama'ya gönder → minimal <p>/<br> sarmalama yapıldığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "E2 — Pazaryeri kural motoru (kod/config) — magic-number limitleri merkezîleştir + uyarı",
+    "description": "Kaynak: per-marketplace-customization spec (PA). PROBLEM: Pazaryeri içerik kuralları (başlık/açıklama limiti, format HTML/Plain, görsel max, custom-value desteği) dağınık ve hardcoded — her mapper'da magic-number: TrendyolProductMapper.cs:193 ([..100] başlık), :202 ([..30000] açıklama), Hepsiburada 500/30000, Amazon 200/2000. SaveMarketplaceOverridesDtoValidator.cs:14 TitleOverride.MaximumLength(200) ama Trendyol gerçek limiti 100 → TUTARSIZ. FIX: Her pazaryeri için tek merkezî 'MarketplaceContentRules' kural profili — KOD/CONFIG tanımlı (DB rule-engine DEĞİL; her pazaryerinin API'si belirliyor, sabit). Alanlar: DescriptionFormat (PlainText/Html), TitleMaxLength, DescriptionMaxLength, TitleAllowsHtml, MaxImages, AllowsCustomAttributeValue, RequiredAttributeEnforcement (Block/Warn/Skip). Mapper'lar magic-number yerine bu profili okur. E7 (sessiz truncate) + E8 (zorunlu-attr sessiz skip ProductSyncManager/mapper) → kural profiline göre kullanıcıya GÖRÜNÜR uyarı/önizleme. Validator limitleri profil ile senkronlanır.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "E1'in temeli — transform pipeline bu profili okur. TL+kullanıcı onaylı (2026-06-10): KOD/CONFIG-tanımlı, DB rule-engine değil. Magic-number tech-debt temizliği + fidelity (sessiz kırpma → görünür uyarı). Roller: SWE (kural profili + mapper refactor + validator senkron, TDD), Designer (limit göstergesi/uyarı UI — E1 önizleme ile ortak), QA. Multi-tenant: kural pazaryeri-sabit/global (tenant override etmez); ürün-bazlı override zaten DB'de. E7/E8 bu task kapsamında görünür yapılır.",
+    "manual_test_steps": [
+      "Kod tabanında başlık/açıklama limitlerinin tek merkezî kural tanımından okunduğunu (mapper'larda magic-number kalmadığını) doğrula",
+      "150 karakter başlıklı ürünü Trendyol'a göndermeyi dene → gönderim öncesi 'başlık 100 karakteri aşıyor' uyarısı gelmeli (sessiz kırpma YOK)",
+      "Override validator'ın Trendyol için 100 (200 değil) limitini uyguladığını doğrula",
+      "Zorunlu attribute'u eşleşmemiş ürünü göndermeyi dene → kural profili RequiredAttributeEnforcement'a göre engellendiğini/uyarıldığını (sessizce eksik gitmediğini) doğrula",
+      "Yeni bir pazaryeri kuralının tek yerde tanımlanıp tüm mapper'a yansıdığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "E6 — Amazon variant fiyat override bug-fix (override sessizce yok sayılıyor)",
+    "description": "Kaynak: per-marketplace-customization spec (PA, kod-önce teyit). BUG: AmazonProductMapper.cs:74 doğrudan 'variant.SalePrice' okuyor, ProductVariantMarketplaceOverride.ListPriceOverride/SalePriceOverride'ı YOK SAYIYOR. Diğer 4 pazaryeri override'ı okuyor (TrendyolProductMapper.cs:120-121, PazaramaProductMapper.cs:129-130, HepsiburadaProductMapper.cs:111-112, N11ProductMapper.cs:114-115). SONUÇ: Esnaf Amazon için ayrı fiyat girse bile orijinal fiyat gidiyor. FIX: Amazon mapper'da diğer 4'ün desenini uygula — override varsa onu kullan (override ?? variant.SalePrice). Düşük risk, küçük değişiklik.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": false,
+    "notes": "Hızlı bug-fix, düşük risk. TL onaylı (2026-06-10). Roller: SWE (tek-nokta fix), QA (RED test: override set → Amazon request'inde override fiyat). TDD: önce override'ın yok sayıldığını gösteren RED test, sonra fix.",
+    "manual_test_steps": [
+      "Bir ürünün bir variant'ına Amazon için fiyat override gir (örn. SalePriceOverride = orijinalden farklı)",
+      "Ürünü Amazon'a gönder → gönderilen request'te override fiyatın (orijinal variant.SalePrice DEĞİL) gittiğini doğrula",
+      "Override girilmemiş variant için orijinal fiyatın gittiğini (regresyon yok) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "E5 — Per-marketplace override/düzenleme UI'ını 8 pazaryerine yay (şu an sadece Trendyol)",
+    "description": "Kaynak: per-marketplace-customization spec (PA, kod-önce teyit). DURUM: Override KAYDETME/OKUMA altyapısı TÜM pazaryerleri için HAZIR — IMarketplaceOverrideManager (Get/Save/SaveAndPublish) pazaryeri-agnostik, mapper'lar override okuyor. EKSİK olan UI: override girme ekranı YALNIZCA Trendyol'da var (ProductController.cs:690-790 TrendyolSendGet/Post + Views/TrendyolSend.cshtml + TrendyolSendVm.cs). Diğer 7 pazaryeri (Pazarama/Hepsiburada/N11/Amazon/Pttavm/Çiçeksepeti/Temu) için override+gönderim UI yok. Spec 2026-03-31-trendyol-product-send-page-design.md:259: 'diğerleri sonraki fazlarda'. FIX (önerilen Seçenek A — DRY): TrendyolSend.cshtml'i pazaryeri-parametrik generic partial'a çıkar (MarketplaceSend(marketPlaceId)); preflight + override formu + E2 kural profiline göre dinamik alanlar (DescriptionFormat=Html→zengin editör, PlainText→düz textarea+sayaç) + E1 önizleme. Her pazaryeri için preflight kuralları zaten var.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "Manager/mapper hazır; sadece UI eksik. TL onaylı (2026-06-10). E1+E2'den SONRA (kural profili + transform + önizleme generic forma girsin). Roller: Designer (generic kural-duyarlı override/send formu + UX), SWE (Trendyol partial'ı generic'e çıkar + controller wiring per-marketplace), QA. E1+E2 ile sıkı bağlı — onlardan sonra sıraya.",
+    "manual_test_steps": [
+      "En az 3 pazaryeri (Trendyol + Pazarama + Hepsiburada) için override formundan başlık/açıklama/variant-fiyat gir, kaydet",
+      "Sayfayı yenile → her pazaryeri için girilen override değerlerinin korunduğunu doğrula",
+      "Her birinde gönderim yap → override değerlerin (ürünün orijinali değil) gittiğini doğrula",
+      "Açıklama formatına göre formun değiştiğini doğrula (Pazarama=HTML editör, Trendyol=düz metin + karakter sayacı)",
+      "Mevcut Trendyol gönderiminin bozulmadığını (regresyon) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "E3/E4 [V2] — Görsel + attribute per-marketplace override (ertelendi)",
+    "description": "Kaynak: per-marketplace-customization spec (PA, kod-önce teyit). EKSİK: (E3) Görsel per-marketplace override — ProductMarketplace/variant override'da image alanı YOK, tüm mapper variant.Images kullanıyor (Hepsiburada max5, Amazon max9 kırpma var ama SEÇİM yok). 'Trendyol için farklı kapak görseli' yapılamıyor. (E4) Attribute per-marketplace override — eşleştirme global (kategori-attr seviyesi), ürün-bazlı 'bu ürünün Trendyol rengi Kızıl, Pazarama Kırmızı' override'ı yok. ÖNERİLEN VERİ MODELİ: E3 → ProductMarketplaceImageOverride (ProductMarketplaceId, ProductVariantId?, ImageRef, SortOrder) veya ProductMarketplace.ImageSelectionJson; E4 → ProductMarketplaceAttributeOverride (ProductMarketplaceId, ApplicationCategoryAttributeId, OverrideValueId?/OverrideCustomValue?). DURUM: V2'ye ERTELENDİ — ilk müşteri (zekidsbebe) için E1+E2+E5 (doğru format + çok-pazaryeri UI) daha yüksek değer.",
+    "status": "deferred",
+    "priority": "low",
+    "plan": true,
+    "notes": "V2'ye ertelendi (TL+kullanıcı onaylı, 2026-06-10). İlk müşteri için E1/E2/E5 öncelikli. Aktive edilince roller: DB Master (veri modeli kararı ayrı-tablo vs JSON + migration), SWE (mapper entegrasyonu — attribute override eşleştirmeden ÖNCE uygulanmalı), Designer (görsel seçici + attribute override UI), QA. zekidsbebe gerçek ihtiyacı netleşince önceliklendir.",
+    "manual_test_steps": [
+      "(V2 aktive olunca) Bir ürün için Trendyol'a özel kapak görseli seç → Trendyol gönderiminde o görselin ilk sırada gittiğini doğrula",
+      "(V2 aktive olunca) Bir ürünün bir attribute'una Pazarama için farklı değer override et → Pazarama gönderiminde override değerin gittiğini doğrula",
+      "Override girilmemişte ürünün kendi görsel/attribute değerlerinin gittiğini (regresyon yok) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "S1 — Storefront sipariş iptali stok event'i KOPUK (pazaryerlerine yansımıyor)",
+    "description": "Kaynak: docs/superpowers/specs/2026-06-10-multi-platform-sync-design.md (PA, kod-önce teyit, R1). PROBLEM: Storefront müşterisi siparişini iptal edince stok geri yükleniyor AMA pazaryerlerine yansımıyor. KOD-ÖNCE TEYİT: OrderManager.cs:676-683 storefront sipariş iptalinde doğrudan 'stock.SoldQuantity -= item.Quantity' yazıyor; OfficeStockManager.CheckStockLevelsAsync() ÇAĞRILMIYOR → StockPriceChangedEvent yayılmıyor → TrendyolStockPriceSyncService vb. tetiklenmiyor. SONUÇ: Müşteri iptal eder, stok DB'de artar ama Trendyol/N11/Hepsiburada'da eski (düşük) stok kalır → eksik satış fırsatı/yanlış stok. FIX: Storefront iptal yolunu diğer tüm tetikleyiciler gibi OfficeStockManager.IncreaseStockAtomicAsync()'e bağla (StockMovementType.Return/Cancellation, referenceType='StorefrontOrderCancellation') — bu metod CheckStockLevelsAsync → event yayar → tüm pazaryeri sync'i otomatik tetiklenir.",
+    "status": "todo",
+    "priority": "high",
+    "plan": false,
+    "notes": "Çekirdek değer (çok-platform sync) kopuk ucu. TL onayı bekliyor (PA önerisi 2026-06-10). Düşük risk — mevcut atomik API'ye bağlama. Roller: SWE (OrderManager storefront-cancel düzelt), QA (TDD: iptal → event yayıldı + stok arttı assert). Diğer 9 tetikleyici zaten event yayıyor; bu tek kopuk uç.",
+    "manual_test_steps": [
+      "Storefront'tan bir ürün sipariş et (stok düşsün, pazaryerlerine sync gitsin)",
+      "Aynı siparişi iptal et",
+      "DB'de BranchOfficeStock'un (SoldQuantity azalarak) geri yüklendiğini doğrula",
+      "StockPriceChangedEvent yayıldığını ve pazaryeri stok sync servisinin tetiklendiğini (log/WireMock request) doğrula",
+      "İptal sonrası pazaryerindeki stoğun arttığını (eski düşük değerde kalmadığını) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "S2 — Storefront checkout overselling/stoksuz-sipariş bug'ı (atomik sonuç yok sayılıyor + depo hardcoded)",
+    "description": "Kaynak: multi-platform-sync spec (PA, kod-önce teyit, R2). 🔴 BUG: CheckoutManager.cs:40 stok kontrolü TÜM depoların toplamına bakıyor (item.ProductVariant.BranchOfficeStocks.Sum(s => s.CurrentStock)), AMA CheckoutManager.cs:120 atomik düşme 'branchOfficeId: 1' HARDCODED + DÖNÜŞ DEĞERİ KONTROL EDİLMİYOR (await stockManager.DecreaseStockAtomicAsync(...); — result atılıyor). SONUÇLAR: (a) Depo-1'de stok yok ama depo-2'de varsa: memory kontrol geçer (toplam>0), atomik düşme depo-1'den affected==0 olur, SESSİZCE başarısız → SİPARİŞ STOKSUZ OLUŞUR (order zaten Add edilmiş). (b) Kontrol-düşme arası yarış penceresi. FIX: (1) Atomik düşme sonucunu kontrol et — başarısızsa siparişi oluşturma/rollback; (2) hardcoded branchOfficeId:1 yerine doğru depo seçimi (storefront-deposu config veya çoklu-depo dağıtım); (3) memory pre-check ile atomik düşmeyi tutarlı depoya hizala. Overselling kapanır.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "Çok-platform sync'in en kritik tutarlılık bug'ı — gerçek overselling/stoksuz sipariş üretebilir. TL onayı bekliyor (PA önerisi 2026-06-10). Roller: SWE (checkout akışı), DB Master (atomiklik + çoklu-depo dağıtım deseni), QA (concurrent race testi — mevcut OfficeStockManagerIntegrationTests deseni). AÇIK SORU (TL): storefront hangi depodan düşmeli (sabit storefront-deposu mu, öncelik sırası mı)?",
+    "manual_test_steps": [
+      "Bir variant için depo-1 stok=0, depo-2 stok=5 ayarla",
+      "Storefront'tan o variant'tan 1 adet satın almayı dene",
+      "Ya doğru depodan (depo-2) atomik düşüldüğünü YA DA net 'yetersiz stok' hatası alındığını doğrula — stoksuz sipariş OLUŞMAMALI",
+      "Atomik düşme başarısız olduğunda siparişin oluşturulmadığını/rollback edildiğini doğrula",
+      "Eş zamanlı 2 checkout (son 1 ürün) → yalnızca birinin başarılı olduğunu (overselling yok) doğrula",
+      "Normal stoklu satışta regresyon olmadığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "S3 — Amazon stok/fiyat sync implementasyonu YOK (feed gönderimi TODO)",
+    "description": "Kaynak: multi-platform-sync spec (PA, kod-önce teyit, R3). PROBLEM: AmazonStockPriceSyncService.cs:50-52 stok/fiyat feed gönderimi sadece TODO yorumu + log; gerçek gönderim YOK ('TODO: JSON_LISTINGS_FEED formatında stok/fiyat feed oluştur ve gönder'). Diğer 6 pazaryeri (Trendyol/Pazarama/N11/Hepsiburada/Pttavm/Çiçeksepeti) çalışıyor. SONUÇ: Amazon'da yayınlanmış ürünlerin stok/fiyatı HİÇ güncellenmiyor → Amazon'da yanlış stok/fiyat. FIX: AmazonFeedService ile JSON_LISTINGS_FEED oluştur + SubmitFeedAsync. Mevcut Amazon feed altyapısı (post-feeds mapping var) kullanılabilir. WireMock Amazon mock'larıyla dev'de doğrulanır.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Amazon SP-API feed akışı karmaşık — implementasyonda resmi doc (microsoft-docs/context7 değil, Amazon SP-API doc) gerekebilir. Roller: SWE (feed builder + submit), DevOps (WireMock Amazon stok/fiyat feed mock — Konu5/T2 ile kesişir), QA. E6 (Amazon fiyat override bug) ile aynı dosya ailesi.",
+    "manual_test_steps": [
+      "Amazon'da yayınlanmış (Published) bir ürünün stoğunu değiştir",
+      "AmazonStockPriceSyncService'in feed oluşturup gönderdiğini (WireMock __admin/requests'te feed POST'u) doğrula",
+      "TODO yorumunun kalktığını ve gerçek feed submit yapıldığını doğrula",
+      "Fiyat değişikliğinin de feed'e yansıdığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "S4 — Temu stok/fiyat sync servisi YOK",
+    "description": "Kaynak: multi-platform-sync spec (PA, kod-önce teyit, R4). PROBLEM: Temu için sadece category importer var; stok/fiyat sync background servisi HİÇ YOK (ApplicationDependencyExtension.cs AddBackgroundServices'te Temu stok-fiyat HostedService register edilmemiş). SONUÇ: Temu'da yayınlanmış ürünlerin stok/fiyatı hiç güncellenmiyor. FIX: TemuStockPriceSyncService ekle — diğer 6 sync servisinin desenini izle (TenantAwarePollingService tabanlı, Published Temu ürünleri, StockPriceChangedEvent veya polling). Temu post-router API üzerinden stok/fiyat update endpoint'i.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Temu entegrasyonu genelde en zayıf (mapping de tek post-router). Roller: SWE (yeni HostedService), DevOps (WireMock Temu stok/fiyat mock), QA. Temu API router-tabanlı — endpoint kontratı netleşmeli (Konu5 API envanteri ile).",
+    "manual_test_steps": [
+      "Temu'da yayınlanmış bir ürünün stoğunu değiştir",
+      "TemuStockPriceSyncService'in çalıştığını ve Temu'ya update gönderdiğini (WireMock request) doğrula",
+      "Servisin AddBackgroundServices'te register edildiğini doğrula",
+      "Fiyat değişikliğinin de yansıdığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "S5 — Fiyat-only değişiklik anlık event yaymıyor (sadece polling ile yansıyor)",
+    "description": "Kaynak: multi-platform-sync spec (PA, kod-önce teyit, R5). PROBLEM: StockPriceChangedEvent adına rağmen YALNIZCA OfficeStockManager (stok değişimi) yayıyor (OfficeStockManager.cs:291,371,388). ProductVariantManager fiyat güncellemesi event YAYMIYOR (kod-önce teyit: grep StockPriceChangedEvent sadece OfficeStockManager'da). SONUÇ: Esnaf panelden ürün fiyatını değiştirince anlık pazaryeri sync YOK — sadece 15dk/5dk polling yansıtır; Trendyol event-driven olduğundan fiyat değişikliği Trendyol'a ANINDA gitmez (bir sonraki stok değişikliğini bekler). FIX: ProductVariantManager (ve ilgili fiyat-güncelleme yolları) fiyat değişince StockPriceChangedEvent (veya yeni PriceChangedEvent) publish etsin. Esnaf fiyat değiştirince tüm pazaryerine anlık yansır.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Event adı zaten 'StockPrice' içeriyor — aynı event'i fiyat için de kullanmak mantıklı (TL açık soru: aynı event mi yeni PriceChangedEvent mi). Roller: SWE (fiyat update yollarına publish), QA (TDD: fiyat değişti → event + sync). Düşük-orta risk; mevcut event tüketicileri zaten hazır.",
+    "manual_test_steps": [
+      "Esnaf panelinden yayınlanmış bir ürünün satış fiyatını değiştir + kaydet",
+      "StockPriceChangedEvent (veya PriceChangedEvent) yayıldığını doğrula",
+      "Pazaryeri sync servisinin (örn. Trendyol) 15dk beklemeden tetiklendiğini ve yeni fiyatı gönderdiğini (WireMock request) doğrula",
+      "Stok değişikliğinin event davranışında regresyon olmadığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "D1 — Pazaryerinden yayından kaldırma akışı KOPUK (Trendyol endpoint yok, Hepsiburada UI yok)",
+    "description": "Kaynak: docs/superpowers/specs/2026-06-10-marketplace-product-editing-lifecycle-design.md (PA, kod-önce teyit). PROBLEM: Esnaf gönderdiği ürünü pazaryerinden geri çekemiyor. KOD-ÖNCE TEYİT: (a) TRENDYOL — ITrendyolProductService.DeleteProductAsync() servisi VAR (ITrendyolProductService.cs:27), UI button + onay modalı VAR (TrendyolDetail.cshtml:195-201, _TrendyolRemoveConfirm.cshtml:40 POST /products/{id}/sync/trendyol/remove) AMA controller'da bu action YOK → buton çalışmıyor. (b) HEPSIBURADA — DeactivateListingAsync() servisi VAR (HepsiburadaListingService.cs:169-189) ama UI/controller HİÇ YOK. SONUÇ: Esnaf yanlış/tükenmiş/sezon-dışı ürünü pazaryerinden kaldıramıyor. FIX: Trendyol remove controller action ekle (servis hazır) + Hepsiburada delist UI+action. Durum (IsArchived/Status) güncellensin, activity log yazılsın.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Trendyol neredeyse hazır (sadece action eksik) — hızlı kazanç. KESİŞİM: E5 (override UI yayma) + D2 ile tek generic 'pazaryeri ürün yönetim' sayfasında birleşmeli. AÇIK SORU (TL): 'yayından kaldırma' gerçek delete/delist mi yoksa stok-0+pasif mi (pazaryerine göre)? Roller: SWE (Trendyol action), Designer (Hepsiburada UI), QA. Pazaryeri canlı işlem — risk notu: gerçek delist destructive.",
+    "manual_test_steps": [
+      "Trendyol'a gönderilmiş bir ürünün detayında 'Yayından Kaldır' butonuna bas → onay modalı → onayla",
+      "İsteğin Trendyol'a gittiğini (WireMock __admin/requests) ve ürünün pazaryerinde pasifleştiğini/silindiğini doğrula",
+      "ProductMarketplace.Status/IsArchived'ın güncellendiğini ve activity log yazıldığını doğrula",
+      "Hepsiburada'da gönderilmiş ürün için delist UI'ından kaldırma yapılabildiğini doğrula",
+      "Kaldırma sonrası UI'da durumun doğru gösterildiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "D2 — Hepsiburada + Pazarama içerik GÜNCELLEME servisi YOK (gönderilmiş ürün düzenlenemiyor)",
+    "description": "Kaynak: marketplace-product-editing spec (PA, kod-önce teyit). PROBLEM: Gönderilmiş ürünün başlık/açıklamasını güncelleme bazı pazaryerlerinde YOK. KOD-ÖNCE TEYİT: HepsiburadaProductService.cs:31 sadece Publish/CheckStatus/ApprovePreMatch — Update metodu YOK; PazaramaProductService.cs:24 sadece Publish/CheckBatchStatus — Update YOK. SONUÇ: Bu pazaryerlerinde gönderilmiş ürünün açıklaması değişirse pazaryerine yansıtılamıyor (sadece yeni batch publish, mükerrer risk). KARŞILAŞTIRMA: Trendyol (UpdateUnapproved+UpdateApprovedContent), Çiçeksepeti (UpdateProductAsync PUT), Amazon (UpdateProductAsync) update destekliyor. FIX: Hepsiburada + Pazarama için içerik update servisi ekle (resmi API'nin update endpoint'i). N11 title güncelleme (UpdateProductBasicAsync title belirsiz) + Pttavm gerçek-update tracing D5'te.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). E1/E2 (transform/override) + E5 (UI) ile birlikte gider — düzenlenen içerik doğru formatta update edilmeli. Roller: SWE (update servisi + mapper), DevOps (WireMock Hepsiburada/Pazarama update mock — doc-fidelity), QA. Mock ihtiyacı Konu5 ile kesişir.",
+    "manual_test_steps": [
+      "Hepsiburada'da gönderilmiş bir ürünün açıklamasını panelden değiştir → güncelle",
+      "Hepsiburada'ya UPDATE isteği (yeni publish DEĞİL) gittiğini (WireMock request) doğrula",
+      "Pazarama için aynısını doğrula",
+      "Güncellemenin mükerrer ürün oluşturmadığını (mevcut listing güncellendi) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "D3 — İçerik değişince otomatik pazaryeri güncelleme tetikleme YOK (elle senkron gerekiyor)",
+    "description": "Kaynak: marketplace-product-editing spec (PA, kod-önce teyit). PROBLEM: Published bir ürünün içeriği (başlık/açıklama/görsel) panelden değişince pazaryeri güncellemesi OTOMATİK tetiklenmiyor. KOD-ÖNCE TEYİT: ProductManager.cs:306 ProductUpdatedEvent yayıyor AMA ProductUpdatedNotificationHandler sadece UI bildirimi yapıyor; ProductUpdatedEvent'i tüketip pazaryeri update'i tetikleyen handler YOK. Manuel yol var (ProductSyncManager.SyncProductAsync) ama esnaf her değişiklikte elle 'senkronize et' basmalı. SONUÇ: Esnaf açıklamayı düzeltir, pazaryerinde eski kalır (farkında olmadan). FIX: ProductUpdatedEvent'i tüketen marketplace-update handler — published olduğu pazaryerlerine içerik güncellemesi push et (D2 update servisleri + E1 transform kullanarak). S5 (fiyat event) ile aynı desen — birlikte düşünülmeli.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). S5 (fiyat-event) + E1 (transform önizleme) ile tutarlı olmalı. AÇIK SORU (TL): otomatik anında push mu, yoksa 'değişiklik var, güncelle?' onaylı mı (E1 önizleme/S5 ile hizalı)? Roller: SWE (event handler), QA. D2 update servislerine bağımlı (önce D2).",
+    "manual_test_steps": [
+      "Published bir ürünün açıklamasını panelden değiştir + kaydet",
+      "Pazaryeri içerik güncellemesinin (otomatik veya tek-tık) tetiklendiğini ve pazaryerine gittiğini (WireMock request) doğrula",
+      "Pazaryerindeki içeriğin eski kalmadığını (güncellendiğini) doğrula",
+      "Birden çok pazaryerine gönderilmiş üründe hepsinin güncellendiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "D4 — Ürün arşivleme YAZMA aksiyonu yok (sadece okuma) + toplu yayından kaldırma yok",
+    "description": "Kaynak: marketplace-product-editing spec (PA, kod-önce teyit). PROBLEM: (a) ARŞİVLEME — ProductMarketplace.IsArchived (ProductMarketplace.cs:32) sadece OKUMA; TrendyolProductStatusSyncService.cs:87 polling ile pazaryerinden çekiyor ama esnaf panelden ürünü ARŞİVLEYEMİYOR (yazma aksiyonu yok). (b) TOPLU İŞLEM — BulkOperationType.cs sadece Import/Export; toplu yayından kaldırma/delist YOK. Mevcut toplu işlem sadece SyncAllPending/RetryAllFailed (gönderim/retry). SONUÇ: Esnaf sezon-sonu 50 ürünü topluca kaldıramaz; tek tek bile arşivleyemez. FIX: Arşivleme yazma aksiyonu (IsArchived set + pazaryeri archive API çağrısı) + BulkOperationType'a toplu unpublish/delist ekle.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). D1 (tekil yayından kaldırma) üzerine kurulur — önce D1. Roller: SWE (arşiv/toplu aksiyon), Designer (toplu seçim UI), DB Master (BulkOperationType enum + migration), QA. Toplu pazaryeri canlı işlem — risk notu.",
+    "manual_test_steps": [
+      "Bir ürünü panelden arşivle → IsArchived set edildiğini + pazaryeri archive API'sine gittiğini doğrula",
+      "Birden çok ürünü seçip toplu 'yayından kaldır' yap → hepsinin pazaryerinde işlendiğini (WireMock requests) doğrula",
+      "Toplu işlem sonucunun (başarılı/başarısız) kullanıcıya raporlandığını doğrula",
+      "Arşivlenen ürünün stok/fiyat sync'ten çıkarıldığını (gereksiz push olmadığını) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "D5 — N11 title güncelleme + Pttavm gerçek-update tracing netleştir (kapsam denetimi)",
+    "description": "Kaynak: marketplace-product-editing spec (PA, kod-önce teyit). PROBLEM: İki pazaryerinde update kapsamı belirsiz. KOD-ÖNCE TEYİT: (a) N11 — UpdateProductBasicAsync (N11ProductService.cs:198) fiyat/stok/açıklama güncelliyor ama TITLE güncellemesi request'te açık değil. (b) Pttavm — UpsertProductsAsync (PttavmProductService.cs:22) add/update aynı endpoint ama ExternalProductId ile track etmediğinden gerçekten update mi yoksa mükerrer mi belirsiz. FIX: N11 title update kapsamını netleştir/ekle; Pttavm upsert'in gerçek-update yaptığını (ExternalProductId eşlemesi) doğrula/düzelt.",
+    "status": "todo",
+    "priority": "low",
+    "plan": false,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Düşük öncelik — kapsam denetimi + küçük düzeltme. Roller: SWE (kapsam + fix), QA. D2 ile aynı ailede; gerçek API doc gerekebilir.",
+    "manual_test_steps": [
+      "N11'de gönderilmiş ürünün başlığını değiştir → N11'e title güncellemesinin gittiğini doğrula",
+      "Pttavm'da gönderilmiş ürünü güncelle → mükerrer oluşmadan mevcut ürünün (ExternalProductId eşleşmesiyle) güncellendiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "F1 — Sipariş→fatura OTOMATİK tetikleme yok + müşteri tipine göre e-arşiv/e-fatura seçimi yok",
+    "description": "Kaynak: docs/superpowers/specs/2026-06-10-order-fulfillment-flow-design.md (PA, kod-önce teyit). PROBLEM: Sipariş/satış oluşunca fatura OTOMATİK oluşmuyor + e-arşiv/e-fatura türü elle seçiliyor. KOD-ÖNCE TEYİT: OrderManager.cs import loop'unda fatura tetiği YOK; SaleManager.cs fatura çağrısı YOK; EInvoice.EInvoiceType (EArsiv/EFatura) enum var ama RetailCustomer/CorporateCustomer ile OTOMATİK binding yok (manuel). SEKTÖR STANDARDI (web): 2026'dan itibaren bilanço esasına tabi mükelleflerde her fatura elektronik; bireysel→e-arşiv, kurumsal(VKN)→e-fatura otomatik seçilmeli (GİB mükellef sorgusu). FIX: Order/Sale oluşunca otomatik fatura taslağı oluştur; alıcı tipine göre (RetailCustomer.NationalIdentity→e-arşiv, CorporateCustomer.TaxNumber→e-fatura) tür seç. Trendyol için CreateInvoiceForOrderAsync zaten var, tetikle.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Yasal zorunluluk + esnaf yükü azaltma. AÇIK SORU (TL): anında otomatik kesim mi, taslak-oluştur-onayla mı (yanlış fatura riski → onaylı güvenli)? Roller: SWE (tetikleme + tür seçimi), DB Master (Order↔Invoice ilişki — şu an EInvoice.MarketplaceOrderId Guid? FK değil), QA. #28 (toplu UI) ile tamamlayıcı.",
+    "manual_test_steps": [
+      "Bireysel müşteriden (TCKN) sipariş oluştur → otomatik e-ARŞİV taslağı oluştuğunu doğrula",
+      "Kurumsal müşteriden (VKN) sipariş oluştur → otomatik e-FATURA taslağı oluştuğunu doğrula",
+      "Trendyol siparişinde CreateInvoiceForOrderAsync'in otomatik tetiklendiğini doğrula",
+      "POS satışında fatura tetiklendiğini doğrula",
+      "Taslak/onay akışı seçildiyse esnaf onaylamadan GİB'e gitmediğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "F2 — N11 kargo bilgisi çekilmiyor + Pazarama cargo import'da kaydedilmiyor",
+    "description": "Kaynak: order-fulfillment-flow spec (PA, kod-önce teyit). PROBLEM: Bazı pazaryeri siparişlerinde kargo bilgisi (firma+takip no) eksik. KOD-ÖNCE TEYİT: (a) N11 — OrderManager.cs:297-363 import'unda cargo alanları HİÇ doldurulmuyor; (b) Pazarama — PazaramaCargoDto VAR (PazaramaOrderModels.cs:92-95: firma/takip no/url) AMA OrderManager.cs:155-295 import loop'unda item.Cargo OKUNMUYOR → Order.CargoTrackingNumber NULL. Karşılaştırma: Trendyol kargo bilgisi düzgün çekiliyor (OrderManager.cs:474-494). SONUÇ: N11/Pazarama siparişlerinde esnaf kargo takip no'yu göremiyor, müşteriye bildiremiyor. FIX: N11 sipariş response'undan kargo bilgisi çek + map; Pazarama import'unda mevcut PazaramaCargoDto'yu Order'a kaydet.",
+    "status": "todo",
+    "priority": "high",
+    "plan": false,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Pazarama düşük efor (DTO hazır, sadece map eksik); N11 response kontratı netleşmeli. Roller: SWE (import mapping), DevOps (WireMock N11/Pazarama order response cargo alanları), QA. #27 (kargo UI) ile tamamlayıcı — veri olmadan UI eksik kalır.",
+    "manual_test_steps": [
+      "N11'den kargo bilgili bir sipariş import et → Order.CargoProviderName/CargoTrackingNumber'ın dolduğunu doğrula",
+      "Pazarama'dan kargo bilgili sipariş import et → cargo alanlarının (PazaramaCargoDto'dan) kaydedildiğini doğrula",
+      "Trendyol kargo bilgisi çekiminin regresyona uğramadığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "F3 — Genel e-fatura GİB gönderimi placeholder + diğer pazaryeri invoice upload manuel",
+    "description": "Kaynak: order-fulfillment-flow spec (PA, kod-önce teyit). PROBLEM: (a) Genel e-fatura GİB gönderimi AKTİF DEĞİL — ParasutInvoiceClient.SendInvoice 'henüz implemente edilmedi' (warning log placeholder); sadece Trendyol e-fatura API çalışıyor. (b) Pazarama/Pttavm/Çiçeksepeti invoice upload endpoint'leri VAR (IPazaramaInvoiceService/IPttavmInvoiceService/ICiceksepetiInvoiceService) ama sipariş sonrası OTOMATİK invoice yükleme loop'u yok (manuel). SONUÇ: Trendyol dışı pazaryerlerinde fatura GİB'e gitmiyor + pazaryerine yüklenmiyor. FIX: Bir e-fatura entegratörü (Paraşüt/GİB özel entegratör/Trendyol e-Faturam) ile gerçek GİB gönderimi + pazaryerlerine otomatik fatura yükleme.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). AÇIK SORU (TL): hangi entegratör (maliyet/sözleşme kararı — Paraşüt mü GİB özel entegratör mü)? Roller: SWE (entegratör client + upload loop), DevOps (mock), QA. F1 (otomatik fatura) sonrası anlamlı. Multi-tenant: entegratör config tenant başına DB'den.",
+    "manual_test_steps": [
+      "Bir e-faturayı GİB'e gönder → placeholder yerine gerçek gönderim yapıldığını ve durumun güncellendiğini doğrula",
+      "Pazarama/Pttavm/Çiçeksepeti siparişinde fatura otomatik yüklendiğini (WireMock invoice upload request) doğrula",
+      "Gönderim hatasında durumun doğru raporlandığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "F4 — İade faturası YOK (SaleReturn'de Invoice ilişkisi yok)",
+    "description": "Kaynak: order-fulfillment-flow spec (PA, kod-önce teyit). PROBLEM: İade/iptal işleminde iade faturası (refund invoice) oluşmuyor — yasal olarak gerekli. KOD-ÖNCE TEYİT: SaleReturn.cs entity'de Invoice FK YOK; CancelSaleAsync / iade akışı fatura tetiklemiyor. SONUÇ: İade yapılınca iade faturası kesilmiyor → muhasebe/yasal eksik. FIX: SaleReturn → iade e-fatura/e-arşiv (orijinal fatura tipine göre) oluşturma + GİB gönderimi. F1 (otomatik fatura) + F3 (GİB) altyapısına bağlı.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). F1+F3 sonrası. Roller: SWE (iade fatura akışı), DB Master (SaleReturn↔Invoice ilişki + migration), QA. Yasal gereklilik — iade faturası muhasebe için şart.",
+    "manual_test_steps": [
+      "Bir satışı iade et → iade faturasının (orijinal fatura tipiyle uyumlu e-arşiv/e-fatura) oluştuğunu doğrula",
+      "İade faturasının GİB'e gönderildiğini/gönderilebilir olduğunu doğrula",
+      "İade tutarı/kalemlerinin orijinal faturayla tutarlı olduğunu doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "F5 — Sipariş SLA/termin panosu YOK (geciken kargo = pazaryeri cezası)",
+    "description": "Kaynak: order-fulfillment-flow spec (PA, web sektör araştırması). PROBLEM: Esnaf kargo termininin dolmasını takip edemiyor → geç kargo = ceza + mağaza skoru düşüşü. SEKTÖR STANDARDI (web): Hepsiburada sipariş tarihinden sonra 2 İŞ GÜNÜ içinde kargoya verilmeli (geç = sipariş tutarı üzerinden ceza, komisyon artışı, skor düşüşü, eşik aşılırsa mağaza askıya); N11 ~2 iş günü. Rakipler (Entegra/Sentos) SLA/termin uyarısı sunuyor. KOD-ÖNCE: kalan-süre/geciken-sipariş uyarısı YOK. FIX: Sipariş listesi/dashboard'da her sipariş için kalan kargo süresi sayacı + geciken/risk listesi + renk uyarısı (pazaryeri SLA eşiklerine göre). DB: OrderDate + pazaryeri SLA → kalan süre hesabı; geciken-sipariş sorgusu (indexli).",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Esnafın 'ceza yemesini önleyen' yüksek-değer özellik — rakip paritesi. AÇIK SORU (TL): SLA eşikleri tenant/pazaryeri başına config mi? Roller: Designer (SLA panosu/renk uyarı UI), SWE (kalan-süre hesabı), DB Master (geciken-sipariş sorgu + OrderDate index), QA.",
+    "manual_test_steps": [
+      "Farklı tarihlerde Hepsiburada siparişleri oluştur → her birinin kalan kargo süresi sayacının doğru gösterildiğini doğrula",
+      "Termini geçmiş bir siparişin 'geciken/risk' olarak işaretlendiğini (renk uyarı) doğrula",
+      "Geciken siparişler listesinin filtrelenebildiğini doğrula",
+      "Pazaryeri başına farklı SLA eşiklerinin uygulandığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "F6 — Toplu kargo etiketi + toplu fatura (rakip paritesi)",
+    "description": "Kaynak: order-fulfillment-flow spec (PA, web sektör araştırması). PROBLEM: Tekil kargo etiketi/fatura bile UI'da yok (#27/#28); toplu işlem hiç yok. SEKTÖR STANDARDI: Entegra/Sentos 'tek tuşla toplu faturalandırma' + 'toplu kargo etiketi (PDF/ZPL/PNP)' + fatura-barkod birleşik çıktı sunuyor — esnaf 100 siparişi tek tek değil topluca işliyor. FIX: Sipariş listesinde çoklu seçim → toplu fatura kes + toplu kargo etiketi bas (tek PDF, çok sipariş). #27 (tekil etiket) + #28 (toplu e-fatura UI) üzerine kurulur. ETKİ: yüksek hacimli esnaf için kritik verimlilik.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). #27+#28 sonrası (tekil akışlar önce). Roller: Designer (toplu seçim + birleşik çıktı UI), SWE (toplu etiket/fatura üretimi — PDF birleştirme), QA. Rakip paritesi — yüksek hacimli esnafın olmazsa olmazı.",
+    "manual_test_steps": [
+      "Sipariş listesinden 5 sipariş seç → toplu kargo etiketi bas → tek PDF'te 5 etiketin geldiğini doğrula",
+      "Aynı seçimle toplu fatura kes → hepsinin faturalandığını doğrula",
+      "Fatura + kargo barkodu birleşik çıktının (varsa) doğru üretildiğini doğrula",
+      "Kısmi başarısızlıkta (1 sipariş hatalı) diğerlerinin etkilenmediğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "F8 — POS/fiziksel satış e-arşiv fişi YOK",
+    "description": "Kaynak: order-fulfillment-flow spec (PA, kod-önce teyit). PROBLEM: POS satışında (SaleManager) e-fatura/e-arşiv oluşmuyor; mevcut receipt sadece thermal print (ZPL barkod), e-belge DEĞİL. KOD-ÖNCE TEYİT: Sale.cs/SaleManager.cs'te Invoice tetiği yok; ReceiptTemplate thermal JSON şablonu (e-fatura değil). SONUÇ: Fiziksel mağaza satışı elektronik belge üretmiyor → 2026 e-belge zorunluluğuyla uyumsuz. FIX: POS satışı sonrası e-arşiv fişi (e-arşiv basit fatura) oluştur + yazdır. F1 (otomatik fatura) altyapısına bağlı.",
+    "status": "todo",
+    "priority": "low",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). F1 sonrası. Roller: SWE (POS→e-arşiv), Designer (fiş/yazıcı), QA. Fiziksel mağaza (zekidsbebe) için ilgili ama e-ticaret önceliği sonrası.",
+    "manual_test_steps": [
+      "POS'tan bir satış yap → e-arşiv fişi oluştuğunu doğrula",
+      "Fişin yazıcıdan basıldığını + e-arşiv olarak kaydedildiğini doğrula",
+      "Bireysel müşteride e-arşiv türünün doğru seçildiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
   }
 ]

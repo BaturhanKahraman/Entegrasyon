@@ -2,7 +2,7 @@
 
 İki ayrı, birbirinden bağımsız senaryo var:
 
-| | **Dev-Deploy (8083)** | **Local Debug (`dotnet run`)** |
+| | **Dev-Deploy (8085)** | **Local Debug (`dotnet run`)** |
 |---|---|---|
 | Amaç | Kullanıcının gerçek senaryo testi | Geliştirici breakpoint/debug |
 | Nerede | %100 server'da (container) | Yerel makinede `dotnet run` |
@@ -14,7 +14,7 @@
 
 ---
 
-## 1) Dev-Deploy (port 8083) — otomatik
+## 1) Dev-Deploy (port 8085) — otomatik
 
 `develop` branch'e push → Gitea act_runner (`.gitea/workflows/deploy-dev.yml`):
 1. `entegrasyon-mvc:dev` image build + registry push (`192.168.1.78:5252`)
@@ -22,7 +22,7 @@
 3. `IntegrationDb_Dev` migration (`--migrate`, `integration_app_default` network)
 4. `/opt/stacks/entegrasyon-dev/` compose pull + up + healthcheck
 
-**Erişim:** http://192.168.1.78:8083  (login: admin / 123456789)
+**Erişim:** http://192.168.1.78:8085  (login: admin / 123456789)
 **WireMock admin/inceleme:** http://192.168.1.78:8091/__admin/requests
 
 - `ASPNETCORE_ENVIRONMENT=Development` → `DevWireMockSeeder` tüm `MarketPlace.BaseUrl`'lerini `http://wiremock:8080`'e çevirir. **Gerçek pazaryeri API key'i YOK** — her çağrı WireMock'a gider, canned response döner.

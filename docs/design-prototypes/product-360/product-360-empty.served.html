@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Ürün 360° — Boş / Pasif Senaryo</title>
+<link rel="stylesheet" href="/Application/Entegrasyon.MVC/wwwroot/lib/tabler/css/tabler.min.css"/>
+<link rel="stylesheet" href="/Application/Entegrasyon.MVC/wwwroot/lib/tabler/css/tabler-icons.min.css"/>
+</head>
+<body>
+<div class="page">
+  <div class="page-wrapper">
+    <div class="page-body">
+      <div class="container-xl">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header d-print-none mb-3">
+          <div class="row g-2 align-items-center">
+            <div class="col">
+              <div class="page-pretitle">Ürün 360° · E-Ticaret Aktivitesi</div>
+              <h2 class="page-title">El Örgüsü Bebe Patik — Beyaz</h2>
+              <div class="text-secondary mt-1">
+                <span class="me-3"><i class="ti ti-barcode me-1"></i>SKU: ZK-PT-0307</span>
+                <span class="me-3"><i class="ti ti-tag me-1"></i>Zekids Bebe</span>
+                <span class="me-3"><i class="ti ti-category me-1"></i>Bebe Ayakkabı</span>
+                <span class="badge bg-secondary-lt"><i class="ti ti-building-store me-1"></i>Yalnızca Mağaza</span>
+              </div>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+              <div class="btn-list">
+                <a href="#" class="btn btn-primary"><i class="ti ti-edit icon"></i>Düzenle</a>
+                <a href="#" class="btn btn-outline-primary"><i class="ti ti-versions icon"></i>Varyantlar</a>
+                <a href="#" class="btn btn-outline-secondary"><i class="ti ti-arrow-left icon"></i>Listeye Dön</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════ BÖLÜM A (PASİF): E-TİCARET ZARİF BOŞ DURUM ════════ -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="empty">
+              <div class="empty-icon"><i class="ti ti-plug-connected-x" style="font-size:3rem;color:var(--tblr-secondary)"></i></div>
+              <p class="empty-title">Bu ürün henüz hiçbir pazaryerine gönderilmedi</p>
+              <p class="empty-subtitle text-secondary">
+                Ürün şu anda yalnızca fiziksel mağazada satışta. Trendyol, N11 veya Hepsiburada gibi
+                pazaryerlerine göndererek satış kanallarını genişletebilirsiniz — istemiyorsanız bu ürün
+                mağaza modunda sorunsuz çalışmaya devam eder.
+              </p>
+              <div class="empty-action">
+                <a href="#" class="btn btn-primary"><i class="ti ti-send icon"></i>Pazaryerine Gönder</a>
+                <a href="#" class="btn btn-link link-secondary">E-ticaret entegrasyonu nasıl çalışır?</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════ SEKMELER (e-ticaret pasifken Aktivite/Sipariş zarif boş) ════════ -->
+        <div class="card">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+              <li class="nav-item"><a href="#tab-genel" class="nav-link active" data-bs-toggle="tab"><i class="ti ti-info-circle me-1"></i>Genel</a></li>
+              <li class="nav-item"><a href="#tab-aktivite" class="nav-link" data-bs-toggle="tab"><i class="ti ti-timeline-event me-1"></i>Aktivite</a></li>
+              <li class="nav-item"><a href="#tab-siparis" class="nav-link" data-bs-toggle="tab"><i class="ti ti-shopping-cart me-1"></i>Siparişler</a></li>
+              <li class="nav-item"><a href="#tab-stok" class="nav-link" data-bs-toggle="tab"><i class="ti ti-stack-2 me-1"></i>Stok Hareketleri</a></li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content">
+
+              <!-- GENEL (her zaman dolu) -->
+              <div class="tab-pane active show" id="tab-genel">
+                <div class="datagrid">
+                  <div class="datagrid-item"><div class="datagrid-title">Stok Kodu</div><div class="datagrid-content">ZK-PT-0307</div></div>
+                  <div class="datagrid-item"><div class="datagrid-title">Marka</div><div class="datagrid-content">Zekids Bebe</div></div>
+                  <div class="datagrid-item"><div class="datagrid-title">Kategori</div><div class="datagrid-content">Bebe Ayakkabı</div></div>
+                  <div class="datagrid-item"><div class="datagrid-title">Mevcut Stok</div><div class="datagrid-content"><span class="badge bg-green-lt">23</span></div></div>
+                </div>
+              </div>
+
+              <!-- AKTİVİTE — zarif boş -->
+              <div class="tab-pane" id="tab-aktivite">
+                <div class="empty">
+                  <div class="empty-icon"><i class="ti ti-timeline-event-x" style="font-size:2.5rem;color:var(--tblr-secondary)"></i></div>
+                  <p class="empty-title">Henüz aktivite yok</p>
+                  <p class="empty-subtitle text-secondary">
+                    Ürün bir pazaryerine gönderildiğinde senkronizasyon, onay ve hata olayları burada
+                    tarih sıralı olarak görünecek.
+                  </p>
+                  <div class="empty-action"><a href="#" class="btn btn-primary"><i class="ti ti-send icon"></i>Pazaryerine Gönder</a></div>
+                </div>
+              </div>
+
+              <!-- SİPARİŞLER — boş ama mağaza satışı varsa POS gösterilebilir -->
+              <div class="tab-pane" id="tab-siparis">
+                <div class="empty">
+                  <div class="empty-icon"><i class="ti ti-shopping-cart-off" style="font-size:2.5rem;color:var(--tblr-secondary)"></i></div>
+                  <p class="empty-title">Bu ürün için sipariş bulunamadı</p>
+                  <p class="empty-subtitle text-secondary">
+                    Pazaryeri veya mağaza siparişleri oluştukça bu ürünü içeren siparişler burada listelenir.
+                  </p>
+                </div>
+              </div>
+
+              <!-- STOK HAREKETLERİ — mağaza kullanıcısı için DOLU (en değerli sekme) -->
+              <div class="tab-pane" id="tab-stok">
+                <div class="alert alert-info mb-3">
+                  <div class="d-flex">
+                    <i class="ti ti-info-circle alert-icon"></i>
+                    <div>Bu ürün yalnızca mağazada satılıyor. Stok hareketleri mağaza satış ve düzeltmelerinden oluşur.</div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                  <span class="avatar avatar-xs bg-azure-lt text-azure me-2"><i class="ti ti-color-swatch"></i></span>
+                  <strong>Beyaz / 0-3 Ay</strong><span class="text-secondary ms-2 small">Mevcut: 23</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-vcenter card-table table-sm">
+                    <thead><tr><th>Tarih</th><th>Hareket</th><th class="text-center">Miktar</th><th class="text-center">Stok</th><th>Referans</th></tr></thead>
+                    <tbody>
+                      <tr><td class="text-secondary">09 Haz 16:20</td><td><span class="badge bg-green-lt">Satış</span></td><td class="text-center text-red">−1</td><td class="text-center">24 → 23</td><td><code>POS-00051</code></td></tr>
+                      <tr><td class="text-secondary">02 Haz 10:00</td><td><span class="badge bg-blue-lt">İlk Stok</span></td><td class="text-center text-green">+24</td><td class="text-center">0 → 24</td><td>admin</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/Application/Entegrasyon.MVC/wwwroot/lib/tabler/js/tabler.min.js"></script>
+</body>
+</html>
