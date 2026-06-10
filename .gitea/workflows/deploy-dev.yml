@@ -63,10 +63,15 @@ jobs:
       - name: Sync WireMock stubs to stack
         run: |
           set -e
-          mkdir -p ${STACK_DIR}/wiremock
-          rm -rf ${STACK_DIR}/wiremock/mappings ${STACK_DIR}/wiremock/__files
-          cp -r docs/wiremock/mappings ${STACK_DIR}/wiremock/mappings
-          cp -r docs/wiremock/__files  ${STACK_DIR}/wiremock/__files
+          # ÖNEMLİ: dizini 'rm -rf' ile SİLME — wiremock o dizini bind-mount ediyor;
+          # silmek inode'u koparır → container eski (boş) inode'a bakar → her stub 500.
+          # İçeriği temizle (dizin inode'unu KORU), sonra kopyala. Deploy'da wiremock
+          # --force-recreate ile yeni içeriği yeniden yükler.
+          mkdir -p ${STACK_DIR}/wiremock/mappings ${STACK_DIR}/wiremock/__files
+          find ${STACK_DIR}/wiremock/mappings -mindepth 1 -delete
+          find ${STACK_DIR}/wiremock/__files  -mindepth 1 -delete
+          cp -r docs/wiremock/mappings/. ${STACK_DIR}/wiremock/mappings/
+          cp -r docs/wiremock/__files/.  ${STACK_DIR}/wiremock/__files/
           echo "WireMock stubs synced"
 
       - name: Run EF Core migrations (IntegrationDb_Dev)
@@ -90,7 +95,9 @@ jobs:
           set -e
           cd ${STACK_DIR}
           docker compose pull
-          docker compose up -d --wait --wait-timeout 180
+          # --force-recreate: wiremock güncel stub içeriğini yeniden mount+yükler (inode-safe),
+          # mvc-dev yeni image'ı alır.
+          docker compose up -d --force-recreate --wait --wait-timeout 180
           echo "Dev deploy completed"
 
       - name: Health check
