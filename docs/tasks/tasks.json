@@ -446,5 +446,23 @@
     ],
     "addOrUpdateUnitTests": false,
     "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Stage/Prod CI-CD deploy onarımı: MVC stage 2 aydır kırık (DB host + network + ADMIN_DB_CONNECTION)",
+    "description": "TEŞHIS (TL, 2026-06-10): entegrasyon-mvc:stage deploy'u 2 Nisan'dan beri her run FAILURE; çalışan tek şey eski entegrasyon-blazor:stage (DB kırık, 500). Kök sorunlar: (1) Tüm CS'ler Host=192.168.1.78 ama postgres_db sadece 127.0.0.1 dinliyor → container'lar bağlanamıyor; doğrusu Host=postgres_db (ikisi de integration_app_default network'te, DNS çözülüyor). (2) deploy-stage.yml migration adımı 'docker run --network host' → orada postgres_db DNS'i çözülmez ve app network'üyle çelişir → '--network integration_app_default' olmalı. (3) docker-compose.stage.yml ConnectionStrings__AdminPanel=${ADMIN_DB_CONNECTION} bekliyor ama workflow bunu set ETMİYOR ve GitHub secret bile DEĞİL → app AdminPanelDb'yi okuyamaz; ADMIN_DB_CONNECTION secret'ı eklenmeli (Host=postgres_db). (4) AdminPanelDb'de saklı tenant CS'leri de 192.168.1.78 → postgres_db yapılmalı (yedekle). (5) Nisan run loglarında E2E/seed/Tenants sorunları da var, deploy yeşil olana kadar iterasyon gerekebilir. ARAÇ: gh authlu (BaturhanKahraman, repo+workflow scope) → secret set + workflow edit + push yapılabilir.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "Kullanıcı bunu erteledi (önce ürün-360 feature). Ayrı, iteratif DevOps task. Tahmini birkaç saat. Yeni 'devops' rolü düşünülebilir.",
+    "manual_test_steps": [
+      "STAGE_DB_CONNECTION + yeni ADMIN_DB_CONNECTION secret'larında Host=postgres_db",
+      "deploy-stage.yml migration adımı --network integration_app_default",
+      "AdminPanelDb tenant CS'leri postgres_db (yedekli)",
+      "stage branch'e push → deploy run yeşil",
+      "192.168.1.78:8082 (veya yeni port) MVC app açılıyor, login çalışıyor",
+      "tenant çözümü + ürün listesi geliyor"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
   }
 ]
