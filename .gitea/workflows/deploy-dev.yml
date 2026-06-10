@@ -11,6 +11,13 @@ on:
     branches: [ develop ]
   workflow_dispatch:
 
+# Hizli ardisik push'larda deploy kuyrugu birikmesin: yeni push, calisan/bekleyen
+# eski deploy'u iptal etsin → sadece EN GUNCEL commit deploy olur. Dev ortami icin
+# dogru davranis (ara surumler gereksiz; tek sirali runner'i tikamaz).
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
 env:
   REGISTRY: 192.168.1.78:5252
   IMAGE: 192.168.1.78:5252/entegrasyon-mvc
