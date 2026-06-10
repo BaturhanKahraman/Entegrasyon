@@ -1,0 +1,117 @@
+@using Entegrasyon.Entity.Dtos.Product.Activity
+@using Entegrasyon.Entity.Products
+@model Entegrasyon.MVC.Features.Products.ViewModels.Activity.ProductMarketplaceCardsVm
+@*
+    Bölüm A — Pazaryeri Durum Kartları (HTMX lazy: GET /products/{id}/marketplace-cards).
+    Model: ProductMarketplaceCardsVm (EcommerceEnabled + Cards). E-ticaret kapalı VEYA ürün hiç
+    gönderilmemişse → zarif pasif/boş durum (Tabler empty). Aksi halde durum kartları.
+    Karta tıklayınca → Aktivite sekmesi açılır + ?marketplace={pazaryeri adı} filtresi uygulanır.
+*@
+
+@functions {
+    // (MarketplaceProductStatus + IsApproved) → (status-dot/card-status rengi, etiket, animasyon)
+    static (string Color, string Text, bool Animated) StatusVisual(MarketplaceProductStatus s, bool? approved) => s switch
+    {
+        MarketplaceProductStatus.Published when approved == true => ("bg-green", "Yayında", false),
+        MarketplaceProductStatus.Published => ("bg-azure", "İşleniyor", true),
+        MarketplaceProductStatus.Pending => ("bg-yellow", "Onay Bekliyor", true),
+        MarketplaceProductStatus.Failed => ("bg-red", "Hata", false),
+        MarketplaceProductStatus.Rejected => ("bg-red", "Reddedildi", false),
+        _ => ("bg-secondary", "Gönderilmedi", false)
+    };
+
+    static string TextColor(string color) => color.Replace("bg-", "text-");
+
+    static string Ago(DateTimeOffset? t)
+    {
+        if (t is null) return "—";
+        var d = DateTimeOffset.UtcNow - t.Value;
+        if (d.TotalMinutes < 1) return "Anlık";
+        if (d.TotalMinutes < 60) return $"{(int)d.TotalMinutes} dk önce";
+        if (d.TotalHours < 24) return $"{(int)d.TotalHours} saat önce";
+        return $"{(int)d.TotalDays} gün önce";
+    }
+}
+
+@if (!Model.EcommerceEnabled || Model.Cards.Count == 0)
+{
+    @* ── KRİTİK: e-ticaret kapalı / ürün hiç gönderilmemiş → zarif pasif durum ── *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-plug-connected-x" style="font-size:3rem;color:var(--tblr-secondary)"></i></div>
+                <p class="empty-title">Bu ürün henüz hiçbir pazaryerine gönderilmedi</p>
+                <p class="empty-subtitle text-secondary">
+                    Ürün şu anda yalnızca fiziksel mağazada satışta. Trendyol, N11 veya Hepsiburada gibi
+                    pazaryerlerine göndererek satış kanallarını genişletebilirsiniz — istemiyorsanız bu ürün
+                    mağaza modunda sorunsuz çalışmaya devam eder.
+                </p>
+                <div class="empty-action">
+                    <a href="/products/@Model.ProductId/sync" class="btn btn-primary"><i class="ti ti-send icon"></i>Pazaryerine Gönder</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex align-items-center mb-2">
+        <h3 class="mb-0">Pazaryeri Durumu</h3>
+        <span class="text-secondary ms-2 small">@Model.Cards.Count pazaryerinde aktif</span>
+        <div class="ms-auto text-secondary small d-none d-md-flex align-items-center">
+            <span class="status-dot bg-green me-1"></span>Yayında
+            <span class="status-dot bg-yellow ms-3 me-1"></span>Bekliyor
+            <span class="status-dot bg-red ms-3 me-1"></span>Hata
+        </div>
+    </div>
+
+    <div class="row row-cards mb-4">
+        @foreach (var mp in Model.Cards)
+        {
+            var (color, text, animated) = StatusVisual(mp.Status, mp.IsApproved);
+            <div class="col-sm-6 col-lg-3">
+                <div class="card mp-card"
+                     hx-get="/products/@Model.ProductId/activity?marketplace=@Uri.EscapeDataString(mp.MarketplaceName)"
+                     hx-target="#activity-panel"
+                     hx-on:click="var l=document.getElementById('tab-aktivite-link'); if(l) bootstrap.Tab.getOrCreateInstance(l).show();"
+                     role="button">
+                    <div class="card-status-start @color"></div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-sm bg-azure-lt text-azure me-2"><i class="ti ti-building-store"></i></span>
+                            <div class="me-auto">
+                                <div class="font-weight-medium">@mp.MarketplaceName</div>
+                                <div class="@TextColor(color) d-flex align-items-center small">
+                                    <span class="status-dot @color @(animated ? "status-dot-animated" : "") me-1"></span>@text
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2 d-flex align-items-center justify-content-between small">
+                            <span class="text-secondary"><i class="ti ti-refresh me-1"></i>@Ago(mp.LastSyncedAt)</span>
+                            @if (mp.Status is MarketplaceProductStatus.Failed or MarketplaceProductStatus.Rejected
+                                 && !string.IsNullOrWhiteSpace(mp.StatusMessage))
+                            {
+                                <span class="text-red" data-bs-toggle="tooltip" data-bs-placement="top" title="@mp.StatusMessage">
+                                    <i class="ti ti-alert-triangle me-1"></i>Detay
+                                </span>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(mp.ExternalProductId))
+                            {
+                                <span class="text-muted">@mp.ExternalProductId</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <script>
+        (function () {
+            if (typeof bootstrap === 'undefined' || !bootstrap.Tooltip) return;
+            document.querySelectorAll('#mp-cards [data-bs-toggle="tooltip"]').forEach(function (el) {
+                bootstrap.Tooltip.getOrCreateInstance(el);
+            });
+        })();
+    </script>
+}

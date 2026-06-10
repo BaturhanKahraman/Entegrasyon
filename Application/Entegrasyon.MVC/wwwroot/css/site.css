@@ -165,3 +165,10 @@
 .input-group > .currency-input {
     text-align: right;
 }
+
+/* ── Ürün 360° — pazaryeri kartı hover + aktivite detay toggle ── */
+.mp-card { transition: transform .12s ease, box-shadow .12s ease; cursor: pointer; }
+.mp-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .08); }
+.mp-card.is-active { box-shadow: 0 0 0 2px var(--tblr-primary); }
+.tl-detail { display: none; }
+.tl-detail.show { display: block; }

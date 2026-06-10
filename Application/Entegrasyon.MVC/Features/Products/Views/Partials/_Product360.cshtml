@@ -1,0 +1,77 @@
+@model Entegrasyon.Entity.Dtos.Product.ProductDetailDto
+@*
+    Ürün 360° kabuğu — Detail.cshtml içine gömülür. Model: ProductDetailDto.
+    Bölüm A (pazaryeri kartları) ve Aktivite/Sipariş/Stok sekmeleri HTMX ile lazy yüklenir.
+    E-ticaret gating'i partial'ların kendi içinde (EcommerceEnabled) ele alınır — kabuk model
+    pazaryeri verisi taşımaz, bu yüzden kartlar ayrı endpoint'ten gelir.
+*@
+@{
+    var id = Model.Id;
+}
+
+@* ── Bölüm A: Pazaryeri durum kartları (lazy; e-ticaret kapalıysa endpoint boş-durum döner) ── *@
+<div id="mp-cards" hx-get="/products/@id/marketplace-cards" hx-trigger="load" hx-swap="innerHTML">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="placeholder-glow">
+                <div class="placeholder col-3 mb-2"></div>
+                <div class="placeholder col-6"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+            <li class="nav-item">
+                <a href="#tab-genel" class="nav-link active" data-bs-toggle="tab"><i class="ti ti-info-circle me-1"></i>Genel</a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-aktivite" id="tab-aktivite-link" class="nav-link" data-bs-toggle="tab"
+                   hx-get="/products/@id/activity" hx-target="#activity-panel" hx-trigger="click once">
+                    <i class="ti ti-timeline-event me-1"></i>Aktivite
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-siparis" class="nav-link" data-bs-toggle="tab"
+                   hx-get="/products/@id/orders" hx-target="#orders-panel" hx-trigger="click once">
+                    <i class="ti ti-shopping-cart me-1"></i>Siparişler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab-stok" class="nav-link" data-bs-toggle="tab"
+                   hx-get="/products/@id/stock-movements" hx-target="#stock-panel" hx-trigger="click once">
+                    <i class="ti ti-stack-2 me-1"></i>Stok Hareketleri
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane active show" id="tab-genel">
+                <partial name="Partials/_ProductGeneralInfo" model="Model" />
+            </div>
+
+            <div class="tab-pane" id="tab-aktivite">
+                <div id="activity-panel">
+                    <div class="d-flex justify-content-center py-5 text-secondary">
+                        <div class="spinner-border" role="status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="tab-siparis">
+                <div id="orders-panel">
+                    <div class="d-flex justify-content-center py-5 text-secondary"><div class="spinner-border" role="status"></div></div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="tab-stok">
+                <div id="stock-panel">
+                    <div class="d-flex justify-content-center py-5 text-secondary"><div class="spinner-border" role="status"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

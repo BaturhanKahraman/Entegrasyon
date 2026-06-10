@@ -10,6 +10,8 @@ public class FeatureViewLocationExpander : IViewLocationExpander
     private static readonly Dictionary<string, string> controllerToFolder = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Product"] = "Products",
+        // Ürün 360° aktivite sayfası: ProductActivityController → Products klasörü
+        ["ProductActivity"] = "Products",
         ["Category"] = "Categories",
         ["Brand"] = "Brands",
         ["Customer"] = "Customers",

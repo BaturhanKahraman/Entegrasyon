@@ -1,0 +1,235 @@
+@using Entegrasyon.Entity.Logs
+@model Entegrasyon.MVC.Features.Products.ViewModels.Activity.ProductActivityTimelineVm
+@*
+    Bölüm C — Aktivite Timeline (HTMX lazy: GET /products/{id}/activity?...).
+    Model: ProductActivityTimelineVm (Items CreatedAt DESC + NextCursor/NextCursorId + AppliedFilter).
+    Tek backend endpoint, iki render modu:
+      • İlk yükleme / filtre değişimi (Cursor == null) → filtre barı + timeline + "Daha Fazla".
+      • "Daha Fazla" (Cursor != null)              → sadece ek satırlar + yeni "Daha Fazla" (append).
+    Filtre barı AppliedFilter ile state'ini korur (re-render'da seçimler kaybolmaz).
+*@
+
+@functions {
+    // ProductActivityType → (ikon, satır-noktası bg rengi) — spec §3.1
+    static (string Icon, string Bg) Visual(ProductActivityType t) => t switch
+    {
+        ProductActivityType.Created => ("ti-circle-plus", "bg-blue"),
+        ProductActivityType.Updated => ("ti-pencil", "bg-blue"),
+        ProductActivityType.MappingValidated => ("ti-check", "bg-green"),
+        ProductActivityType.PublishRequested => ("ti-send", "bg-blue"),
+        ProductActivityType.PublishSent => ("ti-upload", "bg-azure"),
+        ProductActivityType.BatchCompleted => ("ti-checks", "bg-green"),
+        ProductActivityType.BatchFailed => ("ti-circle-x", "bg-red"),
+        ProductActivityType.Approved => ("ti-shield-check", "bg-green"),
+        ProductActivityType.Rejected => ("ti-shield-x", "bg-red"),
+        ProductActivityType.Archived => ("ti-archive", "bg-secondary"),
+        ProductActivityType.StockUpdated => ("ti-package", "bg-blue"),
+        ProductActivityType.PriceUpdated => ("ti-currency-lira", "bg-blue"),
+        ProductActivityType.ContentUpdated => ("ti-file-text", "bg-blue"),
+        ProductActivityType.ImageUpdated => ("ti-photo", "bg-blue"),
+        ProductActivityType.Deleted => ("ti-trash", "bg-red"),
+        _ => ("ti-point", "bg-blue")
+    };
+
+    static (string Badge, string Label) StatusBadge(ProductActivityStatus s) => s switch
+    {
+        ProductActivityStatus.Success => ("bg-green-lt", "Başarılı"),
+        ProductActivityStatus.Warning => ("bg-yellow-lt", "Uyarı"),
+        ProductActivityStatus.Error => ("bg-red-lt", "Hata"),
+        _ => ("bg-blue-lt", "Bilgi")
+    };
+
+    static string DayLabel(DateTimeOffset d)
+    {
+        var today = DateTimeOffset.UtcNow.Date;
+        var day = d.ToLocalTime().Date;
+        if (day == today) return "Bugün";
+        if (day == today.AddDays(-1)) return "Dün";
+        return d.ToLocalTime().ToString("dd MMMM");
+    }
+}
+
+@{
+    var id = Model.ProductId;
+    var f = Model.AppliedFilter;
+    var isLoadMore = f.Cursor is not null;
+    var selectedTypes = (f.ActivityTypes ?? []).Select(t => t.ToString()).ToHashSet();
+    var selectedStatus = (f.Statuses is { Count: > 0 }) ? f.Statuses[0].ToString() : "";
+}
+
+@if (!Model.EcommerceEnabled)
+{
+    @* ── E-ticaret kapalı / ürün hiç gönderilmemiş → pasif durum ── *@
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-timeline-event-x" style="font-size:2.5rem;color:var(--tblr-secondary)"></i></div>
+        <p class="empty-title">Henüz aktivite yok</p>
+        <p class="empty-subtitle text-secondary">Ürün bir pazaryerine gönderildiğinde senkronizasyon, onay ve hata olayları burada görünecek.</p>
+        <div class="empty-action"><a href="/products/@id/sync" class="btn btn-primary"><i class="ti ti-send icon"></i>Pazaryerine Gönder</a></div>
+    </div>
+    return;
+}
+
+@if (!isLoadMore)
+{
+    <form id="activity-filter-form" hx-get="/products/@id/activity" hx-target="#activity-panel" hx-swap="innerHTML"
+          hx-trigger="change" hx-push-url="false">
+        @* Pazaryeri kartına tıklayınca uygulanan filtre — formda taşı ki filtre-değişimi ve
+           "Daha Fazla" (hx-include) pazaryeri seçimini düşürmesin (P2). *@
+        @foreach (var mpName in f.MarketplaceNames ?? [])
+        {
+            <input type="hidden" name="marketplace" value="@mpName" />
+        }
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-md">
+                <select name="activityType" multiple placeholder="Aktivite tipi (tümü)" autocomplete="off" data-activity-tomselect>
+                    @foreach (var (val, label) in new[]
+                   {
+                       ("BatchCompleted","Batch tamamlandı"), ("BatchFailed","Batch başarısız"),
+                       ("Approved","Onaylandı"), ("Rejected","Reddedildi"),
+                       ("StockUpdated","Stok güncellendi"), ("PriceUpdated","Fiyat güncellendi"),
+                       ("ContentUpdated","İçerik güncellendi"), ("PublishSent","Pazaryerine iletildi")
+                   })
+                    {
+                        if (selectedTypes.Contains(val))
+                        {
+                            <option value="@val" selected>@label</option>
+                        }
+                        else
+                        {
+                            <option value="@val">@label</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-auto">
+                <input name="from" class="form-control" placeholder="Başlangıç" autocomplete="off"
+                       data-activity-flatpickr value="@(f.From?.ToLocalTime().ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-12 col-md-auto">
+                <input name="to" class="form-control" placeholder="Bitiş" autocomplete="off"
+                       data-activity-flatpickr value="@(f.To?.ToLocalTime().ToString("yyyy-MM-dd"))" />
+            </div>
+        </div>
+        <div class="row g-2 mb-3 align-items-center">
+            <div class="col-auto">
+                <div class="btn-group" role="group" aria-label="Durum filtresi">
+                    <input type="radio" class="btn-check" name="status" id="st-all" value="" autocomplete="off" @(selectedStatus == "" ? "checked" : "")>
+                    <label class="btn btn-sm" for="st-all">Tümü</label>
+                    <input type="radio" class="btn-check" name="status" id="st-info" value="Info" autocomplete="off" @(selectedStatus == "Info" ? "checked" : "")>
+                    <label class="btn btn-sm" for="st-info"><span class="status-dot bg-blue me-1"></span>Bilgi</label>
+                    <input type="radio" class="btn-check" name="status" id="st-ok" value="Success" autocomplete="off" @(selectedStatus == "Success" ? "checked" : "")>
+                    <label class="btn btn-sm" for="st-ok"><span class="status-dot bg-green me-1"></span>Başarılı</label>
+                    <input type="radio" class="btn-check" name="status" id="st-warn" value="Warning" autocomplete="off" @(selectedStatus == "Warning" ? "checked" : "")>
+                    <label class="btn btn-sm" for="st-warn"><span class="status-dot bg-yellow me-1"></span>Uyarı</label>
+                    <input type="radio" class="btn-check" name="status" id="st-err" value="Error" autocomplete="off" @(selectedStatus == "Error" ? "checked" : "")>
+                    <label class="btn btn-sm" for="st-err"><span class="status-dot bg-red me-1"></span>Hata</label>
+                </div>
+            </div>
+            <div class="col-auto ms-auto">
+                <a class="btn btn-sm btn-ghost-secondary" hx-get="/products/@id/activity" hx-target="#activity-panel" hx-swap="innerHTML">
+                    <i class="ti ti-filter-off icon"></i>Filtreyi temizle
+                </a>
+            </div>
+        </div>
+    </form>
+}
+
+@if (Model.Items.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-timeline-event-x" style="font-size:2.5rem;color:var(--tblr-secondary)"></i></div>
+        <p class="empty-title">Seçilen filtrelerde aktivite bulunamadı</p>
+        <p class="empty-subtitle text-secondary">Filtreleri temizleyerek tüm aktiviteleri görüntüleyebilirsiniz.</p>
+    </div>
+}
+else
+{
+    string? lastDay = null;
+    <ul class="timeline">
+        @foreach (var e in Model.Items)
+        {
+            var day = DayLabel(e.CreatedAt);
+            if (day != lastDay)
+            {
+                lastDay = day;
+                <li class="timeline-event">
+                    <div class="timeline-event-icon bg-secondary-lt"></div>
+                    <div class="w-100"><div class="hr-text hr-text-left text-secondary my-0">@day</div></div>
+                </li>
+            }
+            var (icon, bg) = Visual(e.ActivityType);
+            var (badge, label) = StatusBadge(e.Status);
+            <li class="timeline-event">
+                <div class="timeline-event-icon @bg text-white"><i class="ti @icon"></i></div>
+                <div class="card timeline-event-card">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center mb-1 flex-wrap gap-1">
+                            <strong class="me-2">@e.Message</strong>
+                            @if (!string.IsNullOrWhiteSpace(e.MarketplaceName))
+                            {
+                                <span class="badge bg-azure-lt">@e.MarketplaceName</span>
+                            }
+                            <span class="badge @badge">@label</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-secondary small">
+                                <i class="ti ti-clock me-1"></i>@e.CreatedAt.ToLocalTime().ToString("HH:mm:ss")
+                                @if (!string.IsNullOrWhiteSpace(e.ReferenceId))
+                                {
+                                    <span class="ms-2">Ref: <code>@e.ReferenceId</code></span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(e.Detail))
+                            {
+                                <button type="button" class="btn btn-sm btn-ghost-secondary"
+                                        onclick="this.closest('.card-body').querySelector('.tl-detail').classList.toggle('show')">
+                                    <i class="ti ti-chevron-down icon"></i>Detayı göster
+                                </button>
+                            }
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(e.Detail))
+                        {
+                            <div class="tl-detail mt-2">
+                                <pre class="mb-0 p-2 bg-secondary-lt rounded small"><code>@e.Detail</code></pre>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+
+    @if (Model.HasMore && Model.NextCursor is not null)
+    {
+        <div class="text-center mt-3" id="load-more">
+            <button type="button" class="btn btn-outline-primary"
+                    hx-get="/products/@id/activity?cursor=@Model.NextCursor.Value.UtcDateTime.ToString("o")&cursorId=@Model.NextCursorId"
+                    hx-target="#load-more" hx-swap="outerHTML"
+                    hx-include="#activity-filter-form">
+                <i class="ti ti-chevron-down icon"></i>Daha Fazla Yükle
+            </button>
+        </div>
+    }
+}
+
+@if (!isLoadMore)
+{
+    <script>
+        (function () {
+            var root = document.getElementById('activity-filter-form');
+            if (!root) return;
+            if (typeof TomSelect !== 'undefined') {
+                root.querySelectorAll('[data-activity-tomselect]').forEach(function (el) {
+                    if (el.tomselect) return;
+                    new TomSelect(el, { plugins: ['remove_button'], create: false });
+                });
+            }
+            if (typeof flatpickr !== 'undefined') {
+                root.querySelectorAll('[data-activity-flatpickr]').forEach(function (el) {
+                    if (el._flatpickr) return;
+                    flatpickr(el, { dateFormat: 'Y-m-d', allowInput: true });
+                });
+            }
+        })();
+    </script>
+}
