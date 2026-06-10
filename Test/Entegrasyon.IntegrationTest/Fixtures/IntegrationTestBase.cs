@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Customers;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.User;
 using Entegrasyon.IntegrationTest.Collections;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -49,7 +50,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         // mapping'leri, log entry'leri ve scenario state'lerini temizle.
         WireMock.ResetAll();
 
-        _factory = new IntegrationTestWebAppFactory(_pgFixture.ConnectionString);
+        _factory = CreateFactory(_pgFixture.ConnectionString);
 
         // Force the WebApplicationFactory to build the host
         _ = _factory.Server;
@@ -86,6 +87,21 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     /// Alt class'lar icin ek initialization hook'u.
     /// </summary>
     protected virtual Task OnInitializeAsync() => Task.CompletedTask;
+
+    /// <summary>
+    /// WebApplicationFactory'yi olusturur. Varsayilan: standart IntegrationTest host.
+    /// HTTP-seviye (auth + antiforgery) testi yapan alt class'lar override edip
+    /// kimlik dogrulamali bir factory donebilir. Service-seviye testler dokunmaz.
+    /// </summary>
+    protected virtual IntegrationTestWebAppFactory CreateFactory(string connectionString)
+        => new(connectionString);
+
+    /// <summary>
+    /// Test host'una baglanan bir HttpClient olusturur. Cookie container otomatik
+    /// yonetilir (antiforgery cookie'leri istekler arasi tasinir).
+    /// </summary>
+    protected HttpClient CreateClient(WebApplicationFactoryClientOptions? options = null)
+        => _factory.CreateClient(options ?? new WebApplicationFactoryClientOptions());
 
     public async Task DisposeAsync()
     {

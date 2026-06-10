@@ -1,5 +1,27 @@
 [
   {
+    "task": "Export Tarih Filtresi (DateFrom / DateTo)",
+    "description": "Toplu işlemler export ekranına tarih aralığı filtresi eklendi. Ürün/Fiyat/Stok export'larında CreatedAt alanına göre filtreleme. Flatpickr altInput ile TR görünümü + ISO form binding. Antiforgery token eksikliği (orijinal bug) giderildi.",
+    "status": "done",
+    "notes": "Task #1 (controller binding + unit test RED→GREEN), Task #2 (view Flatpickr + antiforgery fix), Task #4 (BulkExportHttpTests: token'sız 400, token'lı 200+xlsx, tarih filtresiyle satır daralması). QA bug fix: AuthenticatedExportWebAppFactory'den UseEnvironment('Testing') kaldırıldı — ApplicationLifetimeManager.MigrateDatabase() ile IntegrationTestBase.InitializeAsync() race condition engellendi. Integration testler pre-existing Docker altyapı sorunu nedeniyle (Docker.DotNet ssh:// desteklemiyor; AdminPermissionSeeder/migration race tüm testleri etkiliyor) yerel Docker açık olduğunda koşulabilir.",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "1. Uygulamaya admin/123456789 ile giriş yap",
+      "2. Sol menüden 'Toplu İşlemler' sayfasına git (/bulk-operations)",
+      "3. Export sekmesinde 'Stok Export' türünü seç — kolon seçici partial yüklenmeli",
+      "4. Tarih Filtresi alanında Başlangıç Tarihi olarak 01.01.2026 gir (Flatpickr altInput TR formatı göstermeli)",
+      "5. Bitiş Tarihi alanını boş bırak → 'Seçili Kolonlarla İndir' butonuna bas",
+      "6. İndirilen .xlsx dosyasını aç; satırlarda yalnızca 01.01.2026 sonrası oluşturulan ürünlerin bulunduğunu doğrula",
+      "7. Tekrar export ekranına git, bu sefer HER İKİ tarih alanını da boş bırak → Excel indir",
+      "8. Bu seferin tüm ürünleri kapsadığını doğrula (adım 6'dan daha fazla satır)",
+      "9. Antiforgery testi: tarayıcı geliştirici araçlarından token'ı kaldırıp POST gönder — 400 alındığını doğrula (manuel veya curl ile)",
+      "10. Ürün Export ve Fiyat Export için de aynı tarih filtresi akışını tekrarla — her ikisinde de daralma çalışmalı"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
     "task": "Depo (BranchOffice) Yönetimi — Tam CRUD + Stok Devri + Marketplace Etkisi",
     "description": "Depo yönetimi için kapsamlı bir sistem.",
     "status": "done",

@@ -113,9 +113,17 @@ public class BulkOperationController(IBulkOperationManager bulkOperationManager)
     }
 
     [HttpPost("/bulk-operations/export-with-columns")]
-    public async Task<IActionResult> ExportWithColumns([FromForm] BulkOperationType type, [FromForm] List<string>? selectedColumns)
+    public async Task<IActionResult> ExportWithColumns(
+        [FromForm] BulkOperationType type,
+        [FromForm] List<string>? selectedColumns,
+        [FromForm] DateTimeOffset? dateFrom = null,
+        [FromForm] DateTimeOffset? dateTo = null)
     {
-        var filter = new ExportFilterDto(SelectedColumns: selectedColumns);
+        // Tarih girilmezse (null) tüm veri export edilir — geriye dönük uyumlu.
+        var filter = new ExportFilterDto(
+            DateFrom: dateFrom,
+            DateTo: dateTo,
+            SelectedColumns: selectedColumns);
 
         var result = type switch
         {
