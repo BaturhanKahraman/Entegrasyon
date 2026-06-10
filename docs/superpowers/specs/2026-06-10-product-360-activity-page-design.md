@@ -299,25 +299,36 @@ LIMIT 20
 
 ---
 
-## 6. İş Bölümü
+## 6. İş Bölümü ve Uygulama Sırası
 
-### Designer (UI Sorumluluğu)
+> **Sıralama kuralı:** Önce güzel tasarım, sonra aktarma.  
+> Designer tüm sayfayı tasarlar → TL onaylar → SWE backend'i wiring eder.  
+> SWE, Designer onaylanmadan backend'e geçmez.
 
-| # | İş | Tabler Referans | Öncelik |
+### Aşama 1 — Designer (UI Tasarım Teslimi)
+
+TL onayına sunulacak tam statik Razor/HTMX taslağı. Backend'e bağlı değil; dummy data ile gösterilir.
+
+| # | İş | Tabler Referans | Çıktı |
 |---|---|---|---|
-| D-1 | Pazaryeri durum kartları (badge, status-dot, tooltip) | `tabler.io/docs/ui/cards` + `status-dot` + `dropdowns` | Faz 1 |
-| D-2 | Aktivite timeline satır tasarımı (ikon, renk, accordion expand) | `tabler.io/docs/ui/timeline` | Faz 1 |
-| D-3 | Filtre bar (Tom Select + Flatpickr range + radio) | Mevcut form pattern (ExportColumnSelector referans) | Faz 1 |
-| D-4 | Sekme yapısı entegrasyonu (nav-tabs + HTMX lazy) | `tabler.io/docs/ui/nav` | Faz 1 |
-| D-5 | Sipariş ve stok hareketi tabloları | Mevcut Tabler table pattern | Faz 1 |
-| D-6 | (Faz 2) Fiyat geçmiş grafiği | Tabler charts | Faz 2 |
+| D-1 | Pazaryeri durum kartları (badge, status-dot, tooltip) | `tabler.io/docs/ui/cards` + `status-dot` | Kart partial `_MarketplaceStatusCards.cshtml` (dummy data) |
+| D-2 | Aktivite timeline satır tasarımı (ikon, renk, accordion expand) | `tabler.io/docs/ui/timeline` | `_ActivityTimeline.cshtml` (hardcoded örnekler) |
+| D-3 | Filtre bar (Tom Select + Flatpickr range + radio) | Mevcut form pattern (ExportColumnSelector referans) | `_ActivityFilter.cshtml` |
+| D-4 | Sekme yapısı + lazy tetikleyici | `tabler.io/docs/ui/nav` | `Detail.cshtml` sekme sistemi (HTMX `hx-get` kancaları şablon olarak) |
+| D-5 | Sipariş ve stok hareketi tabloları | Mevcut Tabler table pattern | `_ProductOrders.cshtml`, `_ProductStockMovements.cshtml` (dummy) |
+| D-6 | E-ticaret pasif / empty state | `tabler.io/docs/ui/empty` | `_EcommerceDisabled.cshtml` partial |
+| D-7 | (Faz 2) Fiyat geçmiş grafiği | Tabler charts | Faz 2 |
 
-### SWE (Backend Sorumluluğu)
+**✅ Aşama 1 tamamlanma koşulu:** TL tasarımı onaylar.
+
+---
+
+### Aşama 2 — SWE (Backend Wiring) ← Designer onayı sonrası başlar
 
 | # | İş | DB Master Review? | Öncelik |
 |---|---|---|---|
-| S-1 | `ProductController.Detail` → marketplace durumları yükle | Hayır (by-PK) | Faz 1 |
-| S-2 | `ProductActivityController` HTMX endpoint'leri | Hayır (index var) | Faz 1 |
+| S-1 | `ProductController.Detail` → `IFeatureService` kontrolü + marketplace durumları yükle | Hayır (by-PK) | Faz 1 |
+| S-2 | `ProductActivityController` HTMX endpoint'leri (filtre + pagination) | Hayır (index var) | Faz 1 |
 | S-3 | `IProductActivityLogger.GetTimelineAsync` filtre+pagination overload | Hayır | Faz 1 |
 | S-4 | Sipariş referans endpoint (`/products/{id}/orders`) | **EVET** | Faz 1 |
 | S-5 | Stok hareketi endpoint (`/products/{id}/stock-movements`) | **EVET** | Faz 1 |
@@ -328,9 +339,11 @@ LIMIT 20
 **TDD Sırası (ZORUNLU — CLAUDE.md kuralı):**
 1. RED: `ProductActivityController` filtre/pagination unit test
 2. GREEN: `GetTimelineAsync` overload implement
-3. RED: Sipariş referans integration test (OrderItem query)
-4. GREEN: DB Master onayı sonrası implement
-5. E2E: Playwright ile sekme tıklama → timeline yükleme akışı
+3. RED: `IFeatureService.IsEnabled(Feature.Marketplace) = false` → empty state unit test
+4. GREEN: Controller feature-flag dallanması implement
+5. RED: Sipariş referans integration test (OrderItem query)
+6. GREEN: DB Master onayı sonrası implement
+7. E2E: Playwright ile sekme tıklama → timeline yükleme + feature-flag kapalı → empty state akışı
 
 ---
 
@@ -348,6 +361,7 @@ LIMIT 20
 10. "Stok Hareketleri" sekmesi variant bazlı `StockMovement` kayıtlarını gösterir
 11. Sayfa açılış süresi etkilenmez — timeline HTMX lazy load (ölçüm: `Detail` action < 300ms ekstra)
 12. Mobile responsive (Tabler grid)
+13. **E-ticaret OPSİYONEL (IFeatureService):** Esnaf pazaryeri/e-ticaret özelliğini kullanmıyorsa (`IFeatureService.IsEnabled(Feature.Marketplace)` false döner) sayfa pazaryeri durum kartlarını ve aktivite akışını göstermez; bunların yerine Tabler `empty` bileşeni ile zarif bir pasif durum mesajı gösterir ("Bu ürün için pazaryeri entegrasyonu aktif değil."), hata fırlatmaz. Sayfa hem e-ticaret-yoğun hem de yalnızca fiziksel mağaza kullanan esnaf için sorunsuz açılır.
 
 ---
 
@@ -423,6 +437,19 @@ BÖLÜM E: Performans
 16. "Aktivite" sekmesine tıkla
     BEKLENEN: /products/{id}/activity isteği görünür (HTMX partial)
               Response < 500ms
+
+BÖLÜM F: E-ticaret Opsiyonel (IFeatureService)
+──────────────────────────────────
+17. Test ortamında IFeatureService.IsEnabled(Feature.Marketplace) = false yapılandır
+    (veya e-ticaret özelliği devre dışı bırakılmış bir kiracıyla test et)
+    /products/{id} sayfasına git
+    BEKLENEN: Pazaryeri durum kartları görünmez
+              "Aktivite" sekmesi görünmez (veya içeriği empty state gösterir)
+              Hata mesajı, exception veya kırık UI yok
+              Tabler empty bileşeni: "Bu ürün için pazaryeri entegrasyonu aktif değil."
+
+18. IFeatureService.IsEnabled(Feature.Marketplace) = true iken aynı sayfaya git
+    BEKLENEN: Pazaryeri kartları ve Aktivite sekmesi normal görünür (test adım 1-4 tekrar geçer)
 ```
 
 ---
