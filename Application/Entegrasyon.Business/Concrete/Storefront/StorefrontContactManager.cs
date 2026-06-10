@@ -12,13 +12,13 @@ public class StorefrontContactManager(
     public async Task<IResult> SubmitMessageAsync(int tenantId, string name, string email, string? phone, string? subject, string message)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return new ErrorResult("Ad soyad alani zorunludur.");
+            return new ErrorResult("Ad soyad alanızorunludur.");
 
         if (string.IsNullOrWhiteSpace(email))
-            return new ErrorResult("E-posta alani zorunludur.");
+            return new ErrorResult("E-posta alanızorunludur.");
 
         if (string.IsNullOrWhiteSpace(message))
-            return new ErrorResult("Mesaj alani zorunludur.");
+            return new ErrorResult("Mesaj alanızorunludur.");
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
@@ -58,7 +58,7 @@ public class StorefrontContactManager(
 
         var msg = await dbContext.StorefrontContactMessages.FindAsync(id);
         if (msg is null)
-            return new ErrorResult("Mesaj bulunamadi.");
+            return new ErrorResult("Mesaj bulunamadı.");
 
         msg.IsRead = true;
         msg.ReadAt = DateTimeOffset.UtcNow;

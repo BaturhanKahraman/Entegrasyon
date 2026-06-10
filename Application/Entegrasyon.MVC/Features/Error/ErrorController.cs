@@ -14,7 +14,7 @@ public class ErrorController : Controller
         ViewData.SetPageTitle(statusCode switch
         {
             403 => "Erisim Engellendi",
-            404 => "Sayfa Bulunamadi",
+            404 => "Sayfa bulunamadı",
             429 => "Cok Fazla Istek",
             _ => "Sunucu Hatasi"
         });

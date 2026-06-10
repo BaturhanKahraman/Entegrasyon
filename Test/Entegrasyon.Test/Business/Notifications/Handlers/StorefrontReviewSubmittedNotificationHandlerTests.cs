@@ -30,7 +30,7 @@ public class StorefrontReviewSubmittedNotificationHandlerTests
             "Yeni ürün değerlendirmesi",
             It.Is<string>(s => s.Contains("5")),
             NotificationSeverity.Info,
-            NotificationCategory.Magaza,
+            NotificationCategory.Mağaza,
             It.Is<IEnumerable<Guid>>(ids => ids.Single() == user),
             "/storefront/reviews/123"), Times.Once);
     }

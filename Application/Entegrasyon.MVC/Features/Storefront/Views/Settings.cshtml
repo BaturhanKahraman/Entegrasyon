@@ -5,8 +5,8 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="ti ti-settings icon-lg text-muted mb-3" style="font-size: 2rem;"></i>
-                    <h3 class="text-secondary">Magaza ayarlari henüz yapilandirilmamis</h3>
-                    <p class="text-secondary">Asagidaki formu doldurarak magaza ayarlarinizi olusturun.</p>
+                    <h3 class="text-secondary">Mağaza ayarlari henüz yapilandirilmamis</h3>
+                    <p class="text-secondary">Asagidaki formu doldurarak Mağaza ayarlarinizi olusturun.</p>
                 </div>
             </div>
         }
@@ -24,14 +24,14 @@
                     <input type="hidden" name="Id" value="@(Model?.Id ?? 0)" />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Magaza Adi</label>
+                            <label class="form-label required">Mağaza Adi</label>
                             <input type="text" name="StoreName" class="form-control"
-                                   value="@Model?.StoreName" placeholder="Magaza adinizi girin" required />
+                                   value="@Model?.StoreName" placeholder="Mağaza adinizi girin" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Magaza Slogani</label>
+                            <label class="form-label">Mağaza Slogani</label>
                             <input type="text" name="StoreSlogan" class="form-control"
-                                   value="@Model?.StoreSlogan" placeholder="Magaza sloganiniz" />
+                                   value="@Model?.StoreSlogan" placeholder="Mağaza sloganiniz" />
                         </div>
                     </div>
                     <div class="row">
@@ -49,15 +49,15 @@
                 </div>
             </div>
 
-            @* ── Sirket Bilgileri ─────────────────────────────────────── *@
+            @* ── Şirket Bilgileri ─────────────────────────────────────── *@
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">Sirket Bilgileri</h3>
+                    <h3 class="card-title">Şirket Bilgileri</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Sirket Adi</label>
+                            <label class="form-label required">Şirket Adi</label>
                             <input type="text" name="CompanyName" class="form-control"
                                    value="@Model?.CompanyName" required />
                         </div>
@@ -87,10 +87,10 @@
                 </div>
             </div>
 
-            @* ── Iletisim ─────────────────────────────────────────────── *@
+            @* ── İletişim ─────────────────────────────────────────────── *@
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">Iletisim Bilgileri</h3>
+                    <h3 class="card-title">İletişim Bilgileri</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">

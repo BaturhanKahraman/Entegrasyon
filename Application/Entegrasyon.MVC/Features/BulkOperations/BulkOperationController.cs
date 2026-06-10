@@ -37,7 +37,7 @@ public class BulkOperationController(IBulkOperationManager bulkOperationManager)
         if (!result.Success)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Dogrulama basarisiz.", type = "danger" });
+                new { message = result.Message ?? "Dogrulama başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -78,20 +78,20 @@ public class BulkOperationController(IBulkOperationManager bulkOperationManager)
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = $"Import tamamlandi. {result.Data?.SuccessCount ?? 0} basarili, {result.Data?.ErrorCount ?? 0} hatali.", type = "success" });
+                    new { message = $"Import tamamlandi. {result.Data?.SuccessCount ?? 0} basarili, {result.Data?.ErrorCount ?? 0} Hatalı.", type = "success" });
                 Response.HtmxTrigger("importCompleted");
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Import basarisiz.", type = "danger" });
+                new { message = result.Message ?? "Import başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
         if (result.Success)
             TempData.SetSuccess($"Import tamamlandi. {result.Data?.SuccessCount ?? 0} basarili.");
         else
-            TempData.SetError(result.Message ?? "Import basarisiz.");
+            TempData.SetError(result.Message ?? "Import başarısız.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -135,7 +135,7 @@ public class BulkOperationController(IBulkOperationManager bulkOperationManager)
 
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Export basarisiz.");
+            TempData.SetError(result.Message ?? "Export başarısız.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -165,7 +165,7 @@ public class BulkOperationController(IBulkOperationManager bulkOperationManager)
 
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Export basarisiz.");
+            TempData.SetError(result.Message ?? "Export başarısız.");
             return RedirectToAction(nameof(Index));
         }
 

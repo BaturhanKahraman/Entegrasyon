@@ -68,7 +68,7 @@ public class PricingRuleManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var rule = await dbContext.PricingRules.FindAsync(dto.Id);
         if (rule is null)
-            return new ErrorResult("Kural bulunamadi.");
+            return new ErrorResult("Kural bulunamadı.");
 
         rule.Name = dto.Name;
         rule.MarketPlaceId = dto.MarketPlaceId;
@@ -89,7 +89,7 @@ public class PricingRuleManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var rule = await dbContext.PricingRules.FindAsync(ruleId);
         if (rule is null)
-            return new ErrorResult("Kural bulunamadi.");
+            return new ErrorResult("Kural bulunamadı.");
 
         rule.IsDeleted = true;
         rule.DeletedAt = DateTimeOffset.UtcNow;
@@ -104,7 +104,7 @@ public class PricingRuleManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var rule = await dbContext.PricingRules.FindAsync(ruleId);
         if (rule is null)
-            return new ErrorResult("Kural bulunamadi.");
+            return new ErrorResult("Kural bulunamadı.");
 
         rule.IsActive = !rule.IsActive;
         await dbContext.SaveChangesAsync();

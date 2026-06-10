@@ -208,7 +208,7 @@ public class CategoryAutoMatchServiceTests : BaseTest
         // Act
         var result = await _sut.GetAutoMatchSuggestionsAsync(request);
 
-        // Assert — WireMock log entries sayisi batch sayisina esit olmali
+        // Assert — WireMock log entries Sayısı batch Sayısına esit olmali
         result.Success.Should().BeTrue();
         var logs = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/api/generate").UsingPost());

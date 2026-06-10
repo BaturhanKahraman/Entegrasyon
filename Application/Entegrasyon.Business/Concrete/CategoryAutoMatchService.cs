@@ -122,7 +122,7 @@ public class CategoryAutoMatchService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Auto-match isleminde beklenmedik hata.");
+            logger.LogError(ex, "Auto-match işleminde beklenmedik hata.");
             return [];
         }
     }
@@ -201,7 +201,7 @@ public class CategoryAutoMatchService(
             confidence degeri 0-1 arasi olmali:
             - 0.8-1.0: Cok yuksek guven (direkt eslesen isimler)
             - 0.5-0.8: Orta guven (benzer ama farkli isimler)
-            - 0.0-0.5: Dusuk guven (tahmini eslestirme)
+            - 0.0-0.5: Düşük guven (tahmini eslestirme)
             """;
     }
 

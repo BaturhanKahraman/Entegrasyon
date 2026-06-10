@@ -8,7 +8,7 @@ namespace Entegrasyon.Business.Concrete.Pttavm;
 
 /// <summary>
 /// PttAVM urun publish servisi.
-/// Upsert, tracking, barkod kontrol, aktif/pasif, hatali gorseller.
+/// Upsert, tracking, barkod kontrol, aktif/pasif, Hatalı gorseller.
 /// </summary>
 public sealed class PttavmProductService(
     IPttavmCatalogApiClient apiClient,

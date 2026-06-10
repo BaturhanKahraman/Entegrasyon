@@ -6,7 +6,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(Model.ActiveTab == "contact" ? "active" : "")"
                            href="/storefront/messages?tab=contact">
-                            Iletisim Mesajlari
+                            İletişim Mesajlari
                             @if (Model.ContactMessages.Count(m => !m.IsRead) > 0)
                             {
                                 <span class="badge bg-red ms-1">@Model.ContactMessages.Count(m => !m.IsRead)</span>
@@ -32,7 +32,7 @@
                 {
                     <div class="card-body text-center py-5">
                         <h3 class="text-secondary">Henüz mesaj yok</h3>
-                        <p class="text-secondary">Müşterilerden gelen iletisim mesajlari burada gorunecektir.</p>
+                        <p class="text-secondary">Müşterilerden gelen İletişim mesajlari burada gorunecektir.</p>
                     </div>
                 }
                 else

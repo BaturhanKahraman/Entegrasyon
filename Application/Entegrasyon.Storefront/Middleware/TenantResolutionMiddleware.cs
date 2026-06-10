@@ -29,7 +29,7 @@ public class TenantResolutionMiddleware(RequestDelegate next)
         if (tenantInfo is null)
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync("Magaza bulunamadi.");
+            await context.Response.WriteAsync("Mağaza bulunamadı.");
             return;
         }
 
@@ -127,7 +127,7 @@ public class TenantResolutionMiddleware(RequestDelegate next)
         if (tenantEntry is null)
         {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await context.Response.WriteAsync("Magaza gecici olarak kullanilamiyor.");
+            await context.Response.WriteAsync("Mağaza gecici olarak kullanilamiyor.");
             return;
         }
         tenantContext.Initialize(tenantEntry);

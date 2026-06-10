@@ -127,7 +127,7 @@ Entegrasyon/
 |   |   |-- Brands/                          #   Brand, BrandImport
 |   |   |-- Invoices/                        #   Fatura modelleri
 |   |   |-- Shipping/                        #   Kargo modelleri
-|   |   |-- Marketplace/                     #   MarketPlace eslesme modelleri
+|   |   |-- Marketplace/                     #   MarketPlace Eşleşme modelleri
 |   |   |-- Matches/                         #   Kategori/marka/ozellik eslestirme
 |   |   |-- User/                            #   ApplicationUser, Role, Claim
 |   |   |-- Storefront/                      #   Musteri paneli entity'leri
@@ -330,7 +330,7 @@ dotnet build Entegrasyon.sln
 
 Her yeni ozellik ve bug fix icin kesinlikle su sira izlenir:
 
-1. **RED** -- Testi yaz, calistir, basarisiz oldugunu dogrula
+1. **RED** -- Testi yaz, calistir, başarısız oldugunu dogrula
 2. **GREEN** -- Minimum kodu implement et, testi gecir
 3. **REFACTOR** -- Gerekiyorsa kodu iyilestir
 4. **VERIFY** -- Tum test suite'lerini calistir
@@ -350,9 +350,9 @@ Tum Business Manager metotlari kesinlikle su 3 adimli akisi takip eder:
 
 ```
 1. Validation      ->  FluentValidation ile DTO/obje dogrulama
-                         Basarisiz? -> Validasyon hatalarini iceren Result don
+                         başarısız? -> Validasyon hatalarini iceren Result don
 2. Business Rules  ->  LogicRunner ile is kurallari kontrolu
-                         Basarisiz? -> Is kurali hatalarini don
+                         başarısız? -> Is kurali hatalarini don
 3. Execution       ->  Sadece 1 ve 2 basarili ise asil islem gerceklesir
 ```
 
@@ -458,7 +458,7 @@ Sistem ileride multi-tenant yapilacak. Tum yeni gelistirmelerde tenant izolasyon
 
 ### Genel Bakis
 
-| Tur | Framework | Proje | Test Sayisi |
+| Tur | Framework | Proje | Test Sayısı |
 |---|---|---|---|
 | Unit | xUnit + Moq + FluentAssertions | `Test/Entegrasyon.Test/` | ~97 |
 | Integration | xUnit + Testcontainers + Respawn + WebApplicationFactory | `Test/Entegrasyon.IntegrationTest/` | -- |
@@ -552,7 +552,7 @@ Her pazaryeri icin `UseMock` konfigurasyonu mevcuttur. Gelistirme ortaminda vars
 | **Pazarama** | 5 | REST + OAuth2 | Urun, stok/fiyat sync, Sipariş, iade, batch status, kategori/marka import | Tam |
 | **PttAVM** | 7 | REST + Token | Urun, stok/fiyat sync, Sipariş, kargo, fatura (iki ayri API: Catalog + Shipment) | Tam |
 | **Ciceksepeti** | 8 | REST + API Key | Urun, stok/fiyat sync, Sipariş, fatura, iade, soru-cevap, kategori import | Tam |
-| **Temu** | - | REST | API istemcisi, kategori import | Baslangic |
+| **Temu** | - | REST | API istemcisi, kategori import | Başlangıç |
 
 ### Her Pazaryeri Icin Ortak Bilesenler
 
@@ -626,7 +626,7 @@ EventChannel<CategoryUpdatedEvent>
 | `CheckoutController` | Odeme akisi |
 | `WishlistController` | Istek listesi |
 | `CompareController` | Urun karsilastirma |
-| `ContactController` | Iletisim formu |
+| `ContactController` | İletişim formu |
 | `NewsletterController` | Newsletter abonelik |
 | `GiftCardController` | Hediye karti kullanimi |
 | `TrackingController` | Sipariş takibi |
@@ -679,7 +679,7 @@ EventChannel<CategoryUpdatedEvent>
 **Musteri Deneyimi**
 - Urun degerlendirme ve yorum (review)
 - Istek listesi (wishlist)
-- Iletisim formu
+- İletişim formu
 - Newsletter aboneligi
 - E-posta kampanyalari (otomatik)
 - Sadakat puani (loyalty points) ve islemler
@@ -727,7 +727,7 @@ EventChannel<CategoryUpdatedEvent>
 | Provider | Npgsql.EntityFrameworkCore.PostgreSQL 8.0.11 |
 | Tracking | Varsayilan no-tracking (`QueryTrackingBehavior.NoTracking`) |
 | Query Splitting | Aktif (`SplitQuery`) |
-| Migration Sayisi | 77 |
+| Migration Sayısı | 77 |
 | Soft Delete | `IsDeleted` flag ile |
 
 ### BaseEntity

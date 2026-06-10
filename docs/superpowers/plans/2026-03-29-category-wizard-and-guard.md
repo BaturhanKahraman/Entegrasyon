@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Kategori ekleme/duzenleme islemini modal'dan 3 adimli wizard sayfasina tasimak ve tum form sayfalari icin yeniden kullanilabilir unsaved changes guard altyapisi olusturmak.
+**Goal:** Kategori ekleme/duzenleme işlemini modal'dan 3 adimli wizard sayfasina tasimak ve tum form sayfalari icin yeniden kullanilabilir unsaved changes guard altyapisi olusturmak.
 
 **Architecture:** UnsavedChangesGuard reusable Blazor component'i NavigationLock + JS interop ile hem uygulama ici hem tarayici seviyesinde koruma saglar. Kategori wizard'i MudStepper ile 3 adim (Genel, Ozellikler, Marketplace) sunar. Mevcut CategoryDialog silinir, CategoryEdit wizard'a donusturulur. AllowCustom kategori bazindan kaldirilip read-only gosterilir.
 

@@ -12,8 +12,8 @@
         <button class="btn btn-outline-danger"
                 hx-post="/marketplace/matching/retry-all?mp=@Model.SelectedMarketPlaceId"
                 hx-swap="none"
-                hx-confirm="Tum hatali urunleri yeniden denemek istediginize emin misiniz?">
-            Hatalilari Yeniden Dene
+                hx-confirm="Tum Hatalı urunleri yeniden denemek istediginize emin misiniz?">
+            Hatalılari Yeniden Dene
         </button>
     </div>
 </div>
@@ -71,7 +71,7 @@
                             <option value="Waiting" selected="@(Model.StateFilter == "Waiting")">Bekleyen</option>
                             <option value="Processing" selected="@(Model.StateFilter == "Processing")">Isleniyor</option>
                             <option value="OutOfSync" selected="@(Model.StateFilter == "OutOfSync")">Guncellenmemis</option>
-                            <option value="Failed" selected="@(Model.StateFilter == "Failed")">Hatali</option>
+                            <option value="Failed" selected="@(Model.StateFilter == "Failed")">Hatalı</option>
                             <option value="Rejected" selected="@(Model.StateFilter == "Rejected")">Reddedildi</option>
                             <option value="NeverSynced" selected="@(Model.StateFilter == "NeverSynced")">Hic Senkronize Edilmemis</option>
                         </select>

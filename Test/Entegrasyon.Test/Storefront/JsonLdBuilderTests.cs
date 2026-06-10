@@ -16,15 +16,15 @@ public class JsonLdBuilderTests
         {
             StoreName = "Test Mağaza",
             ContactPhone = "+905551234567",
-            ContactEmail = "info@testmagaza.com",
+            ContactEmail = "info@testMağaza.com",
             Address = "Atatürk Cad. No:1",
             City = "İstanbul",
             District = "Kadıköy",
             CompanyName = "Test A.Ş.",
             CompanyTaxOffice = "Kadıköy",
             CompanyTaxNumber = "1234567890",
-            InstagramUrl = "https://instagram.com/testmagaza",
-            FacebookUrl = "https://facebook.com/testmagaza",
+            InstagramUrl = "https://instagram.com/testMağaza",
+            FacebookUrl = "https://facebook.com/testMağaza",
             TwitterUrl = null
         };
 
@@ -39,7 +39,7 @@ public class JsonLdBuilderTests
         root.GetProperty("@type").GetString().Should().Be("Store");
         root.GetProperty("name").GetString().Should().Be("Test Mağaza");
         root.GetProperty("telephone").GetString().Should().Be("+905551234567");
-        root.GetProperty("email").GetString().Should().Be("info@testmagaza.com");
+        root.GetProperty("email").GetString().Should().Be("info@testMağaza.com");
 
         var address = root.GetProperty("address");
         address.GetProperty("@type").GetString().Should().Be("PostalAddress");
@@ -50,8 +50,8 @@ public class JsonLdBuilderTests
 
         var sameAs = root.GetProperty("sameAs");
         sameAs.GetArrayLength().Should().Be(2);
-        sameAs[0].GetString().Should().Be("https://instagram.com/testmagaza");
-        sameAs[1].GetString().Should().Be("https://facebook.com/testmagaza");
+        sameAs[0].GetString().Should().Be("https://instagram.com/testMağaza");
+        sameAs[1].GetString().Should().Be("https://facebook.com/testMağaza");
     }
 
     [Fact]

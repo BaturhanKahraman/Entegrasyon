@@ -152,7 +152,7 @@ public class ProductSyncManagerIntegrationTests : IntegrationTestBase
             var (service, scope) = GetScopedService<IProductSyncManager>();
             using var _ = scope;
 
-            // Act — lock zaten alinmis, basarisiz olmali
+            // Act — lock zaten alinmis, başarısız olmali
             var result = await service.SyncAllPendingAsync(TestMarketPlaceId);
 
             // Assert

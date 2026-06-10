@@ -30,7 +30,7 @@ public class StorefrontNewCustomerNotificationHandlerTests
             "Yeni müşteri",
             It.Is<string>(s => s.Contains("test@example.com")),
             NotificationSeverity.Info,
-            NotificationCategory.Magaza,
+            NotificationCategory.Mağaza,
             It.Is<IEnumerable<Guid>>(ids => ids.Single() == user),
             "/storefront/customers/77"), Times.Once);
     }

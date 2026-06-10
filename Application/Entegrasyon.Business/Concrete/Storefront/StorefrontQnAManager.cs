@@ -67,7 +67,7 @@ public class StorefrontQnAManager(
             .FirstOrDefaultAsync(q => q.Id == questionId);
 
         if (question is null)
-            return new ErrorResult("Soru bulunamadi.");
+            return new ErrorResult("Soru bulunamadı.");
 
         question.AnswerText = answer.Trim();
         question.AnsweredAt = DateTimeOffset.UtcNow;
@@ -98,7 +98,7 @@ public class StorefrontQnAManager(
             .FirstOrDefaultAsync(q => q.Id == questionId);
 
         if (question is null)
-            return new ErrorResult("Soru bulunamadi.");
+            return new ErrorResult("Soru bulunamadı.");
 
         question.HelpfulCount++;
         dbContext.StorefrontProductQuestions.Update(question);

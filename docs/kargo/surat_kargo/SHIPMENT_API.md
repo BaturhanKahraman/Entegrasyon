@@ -37,7 +37,7 @@ Yeni bir kargo gonderisi olusturur ve takip numarasi doner.
 | `receiverCityName` | string | Evet | Alici il adi |
 | `receiverTownName` | string | Evet | Alici ilce adi |
 | `referenceNo` | string | Hayir | Gondericinin referans numarasi (Sipariş no) |
-| `pieceCount` | int | Evet | Parca sayisi |
+| `pieceCount` | int | Evet | Parca Sayısı |
 | `weight` | decimal | Hayir | Agirlik (kg) |
 | `volume` | decimal | Hayir | Hacim (desi) |
 | `ttDocumentId` | string | Hayir | TT belge ID |

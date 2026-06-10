@@ -522,7 +522,7 @@ public class AccountController(
     {
         PaymentStatus.Pending => "Bekliyor",
         PaymentStatus.Paid => "Odendi",
-        PaymentStatus.Failed => "Basarisiz",
+        PaymentStatus.Failed => "başarısız",
         PaymentStatus.Refunded => "Iade Edildi",
         _ => "Bilinmiyor"
     };

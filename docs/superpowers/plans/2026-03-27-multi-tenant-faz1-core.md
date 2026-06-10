@@ -865,7 +865,7 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
         if (string.IsNullOrEmpty(subdomain))
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync("Tenant bulunamadi.");
+            await context.Response.WriteAsync("Tenant bulunamadı.");
             return;
         }
 
@@ -874,7 +874,7 @@ public class BlazorTenantResolutionMiddleware(RequestDelegate next)
         if (tenant is null || !tenant.IsActive)
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync("Tenant bulunamadi veya pasif.");
+            await context.Response.WriteAsync("Tenant bulunamadı veya pasif.");
             return;
         }
 

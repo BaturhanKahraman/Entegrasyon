@@ -87,12 +87,12 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Email == email);
 
         if (auth is null)
-            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "E-posta veya sifre hatali.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "E-posta veya sifre Hatalı.");
 
         // Check lock
         if (auth.LockedUntil.HasValue && auth.LockedUntil.Value > DateTimeOffset.UtcNow)
             return new ErrorDataResult<StorefrontCustomerAuth>(null!,
-                "Hesabiniz cok fazla basarisiz giris denemesi nedeniyle kilitlendi. Lutfen daha sonra tekrar deneyin.");
+                "Hesabiniz cok fazla başarısız giris denemesi nedeniyle kilitlendi. Lutfen daha sonra tekrar deneyin.");
 
         // Verify password
         if (!HashingHelper.VerifyPasswordHash(password, auth.PasswordHash, auth.PasswordSalt))
@@ -104,7 +104,7 @@ public class StorefrontAuthManager(
             dbContext.StorefrontCustomerAuths.Update(auth);
             await dbContext.SaveChangesAsync();
 
-            return new ErrorDataResult<StorefrontCustomerAuth>(auth, "E-posta veya sifre hatali.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(auth, "E-posta veya sifre Hatalı.");
         }
 
         // Success: reset counters
@@ -157,7 +157,7 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Email == email);
 
         if (auth is null)
-            return new ErrorResult("Bu e-posta adresiyle kayitli kullanici bulunamadi.");
+            return new ErrorResult("Bu e-posta adresiyle kayitli kullanici bulunamadı.");
 
         if (auth.EmailConfirmed)
             return new ErrorResult("E-posta adresiniz zaten dogrulanmis.");
@@ -169,7 +169,7 @@ public class StorefrontAuthManager(
         dbContext.StorefrontCustomerAuths.Update(auth);
         await dbContext.SaveChangesAsync();
 
-        // Magaza adi + domain bilgisi (tenant bazli)
+        // Mağaza adi + domain bilgisi (tenant bazli)
         var settings = await dbContext.StorefrontSettings
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.TenantId == tenantId);
@@ -181,7 +181,7 @@ public class StorefrontAuthManager(
             .Select(d => d.DomainName)
             .FirstOrDefaultAsync();
 
-        var storeName = settings?.StoreName ?? "Magaza";
+        var storeName = settings?.StoreName ?? "Mağaza";
         var customerName = auth.Customer?.Name
             ?? auth.Customer?.FullName
             ?? email;
@@ -200,7 +200,7 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Email == email);
 
         if (auth is null)
-            return new ErrorDataResult<string>(null!, "Bu e-posta adresiyle kayitli kullanici bulunamadi.");
+            return new ErrorDataResult<string>(null!, "Bu e-posta adresiyle kayitli kullanici bulunamadı.");
 
         var token = GenerateToken();
         auth.PasswordResetToken = token;
@@ -250,10 +250,10 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.Id == authId);
 
         if (auth is null)
-            return new ErrorResult("Kullanici bulunamadi.");
+            return new ErrorResult("Kullanici bulunamadı.");
 
         if (!HashingHelper.VerifyPasswordHash(currentPassword, auth.PasswordHash, auth.PasswordSalt))
-            return new ErrorResult("Mevcut sifre hatali.");
+            return new ErrorResult("Mevcut sifre Hatalı.");
 
         HashingHelper.CreatePasswordHash(newPassword, out var hash, out var salt);
         auth.PasswordHash = hash;
@@ -275,11 +275,11 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.Id == authId && x.TenantId == tenantId);
 
         if (auth is null)
-            return new ErrorResult("Kullanici bulunamadi.");
+            return new ErrorResult("Kullanici bulunamadı.");
 
         // Business Rule: sifre dogrulamasi
         if (!HashingHelper.VerifyPasswordHash(password, auth.PasswordHash, auth.PasswordSalt))
-            return new ErrorResult("Sifre hatali.");
+            return new ErrorResult("Sifre Hatalı.");
 
         // Business Rule: devam eden siparis varken hesap kapatilamaz
         var openStatuses = new[]
@@ -333,7 +333,7 @@ public class StorefrontAuthManager(
 
         var auth = await dbContext.StorefrontCustomerAuths.FirstOrDefaultAsync(x => x.Id == authId);
         if (auth is null)
-            return new ErrorResult("Kullanici bulunamadi.");
+            return new ErrorResult("Kullanici bulunamadı.");
 
         auth.LoginAlertsEnabled = enabled;
         dbContext.StorefrontCustomerAuths.Update(auth);
@@ -352,7 +352,7 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.CustomerId == customerId);
 
         if (auth is null)
-            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "Musteri auth bilgisi bulunamadi.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "Musteri auth bilgisi bulunamadı.");
 
         return new SuccessDataResult<StorefrontCustomerAuth>(auth);
     }
@@ -373,7 +373,7 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.Id == customerId);
 
         if (customer is null)
-            return new ErrorResult("Musteri bulunamadi.");
+            return new ErrorResult("Musteri bulunamadı.");
 
         // 3. Execution: profil alanlari + bulten tercihi (auth.MarketingConsent)
         customer.Name = dto.Name;
@@ -417,11 +417,11 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.Id == authId && x.TenantId == tenantId);
 
         if (auth is null)
-            return new ErrorResult("Kullanici bulunamadi.");
+            return new ErrorResult("Kullanici bulunamadı.");
 
         // 2. Business Rules
         if (!HashingHelper.VerifyPasswordHash(currentPassword, auth.PasswordHash, auth.PasswordSalt))
-            return new ErrorResult("Mevcut sifre hatali.");
+            return new ErrorResult("Mevcut sifre Hatalı.");
 
         if (string.Equals(auth.Email, newEmail, StringComparison.OrdinalIgnoreCase))
             return new ErrorResult("Yeni e-posta adresi mevcut adresinizle ayni.");
@@ -451,7 +451,7 @@ public class StorefrontAuthManager(
             .Select(d => d.DomainName)
             .FirstOrDefaultAsync();
 
-        var storeName = settings?.StoreName ?? "Magaza";
+        var storeName = settings?.StoreName ?? "Mağaza";
         var customerName = auth.Customer?.Name ?? auth.Customer?.FullName ?? newEmail;
 
         await emailService.SendEmailVerificationAsync(
@@ -561,7 +561,7 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(a => a.TenantId == tenantId && a.CustomerId == customerId);
 
         if (auth is null)
-            return new ErrorDataResult<string>(null!, "Musteri bulunamadi.");
+            return new ErrorDataResult<string>(null!, "Musteri bulunamadı.");
 
         var customer = await dbContext.Customers
             .AsNoTracking()
@@ -672,7 +672,7 @@ public class StorefrontAuthManager(
 
         var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
         if (auth is null)
-            return new ErrorDataResult<string>(null!, "Hesap bulunamadi.");
+            return new ErrorDataResult<string>(null!, "Hesap bulunamadı.");
 
         // Generate TOTP secret
         var secret = OtpNet.Base32Encoding.ToString(RandomNumberGenerator.GetBytes(20));
@@ -694,7 +694,7 @@ public class StorefrontAuthManager(
 
         var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
         if (auth is null)
-            return new ErrorResult("Hesap bulunamadi.");
+            return new ErrorResult("Hesap bulunamadı.");
 
         if (string.IsNullOrEmpty(auth.TwoFactorSecret))
             return new ErrorResult("2FA yapilandirilmamis.");
@@ -726,7 +726,7 @@ public class StorefrontAuthManager(
 
         var auth = await dbContext.StorefrontCustomerAuths.FindAsync(authId);
         if (auth is null)
-            return new ErrorResult("Hesap bulunamadi.");
+            return new ErrorResult("Hesap bulunamadı.");
 
         auth.TwoFactorEnabled = false;
         auth.TwoFactorSecret = null;

@@ -271,7 +271,7 @@ public interface IBrandAutoMatchService
 {
     /// <summary>
     /// Secilen marketplace icin eslenmemis markalari string matching + Ollama ile otomatik eslestirir.
-    /// confidence >= 0.8 olan eslesmeleri otomatik kaydeder, dusuk guvenli olanlar onay icin doner.
+    /// confidence >= 0.8 olan Eşleşmeleri otomatik kaydeder, Düşük guvenli olanlar onay icin doner.
     /// </summary>
     Task<IDataResult<BrandAutoMatchResultDto>> AutoMatchAsync(int marketPlaceId, CancellationToken ct = default);
 
@@ -815,7 +815,7 @@ public class BrandAutoMatchService(
         confidence degeri 0-1 arasi olmali:
         - 0.8-1.0: Cok yuksek guven (ayni marka, sadece kucuk fark)
         - 0.5-0.8: Orta guven (muhtemelen ayni marka ama emin degilim)
-        - 0.0-0.5: Dusuk guven (tahmini eslestirme)
+        - 0.0-0.5: Düşük guven (tahmini eslestirme)
 
         Eslestirme bulunamazsa: []
         Her uygulama markasi icin en fazla 1 eslestirme yap.

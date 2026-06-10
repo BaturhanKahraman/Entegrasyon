@@ -495,7 +495,7 @@ public sealed class PttavmCatalogApiClient(
             .FirstOrDefaultAsync(m => m.Id == marketPlaceId);
 
         if (marketPlace is null)
-            throw new InvalidOperationException($"MarketPlace (Id={marketPlaceId}) bulunamadi. DB'de PttAVM kaydi olusturun.");
+            throw new InvalidOperationException($"MarketPlace (Id={marketPlaceId}) bulunamadı. DB'de PttAVM kaydi olusturun.");
 
         var newCredentials = new CachedCredentials(
             marketPlace.ApiKey ?? throw new InvalidOperationException("PttAVM ApiKey bos."),
@@ -521,7 +521,7 @@ public sealed class PttavmCatalogApiClient(
 ```
 
 > **Onemli noktalar:**
-> - `ApiSecret` alani `AccessToken` olarak kullanilir (MarketPlace entity'sindeki mevcut alan)
+> - `ApiSecret` alanı`AccessToken` olarak kullanilir (MarketPlace entity'sindeki mevcut alan)
 > - `ConcurrentDictionary<int, CachedCredentials>` multi-tenant uyumlu, static
 > - TTL 5 dakika, DB'ye her istekte gitmez
 > - `X-Correlation-Id` header'i her istekte yeni GUID
@@ -849,7 +849,7 @@ public sealed class PttavmCategoryImporter(
             if (result is null || !result.Success)
             {
                 var errorMsg = result?.Error?.ErrorMessage ?? "Bilinmeyen hata";
-                logger.LogError("PttAVM ana kategori yuklemesi basarisiz: {Error}", errorMsg);
+                logger.LogError("PttAVM ana kategori yuklemesi başarısız: {Error}", errorMsg);
                 return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>(errorMsg);
             }
 
@@ -1257,7 +1257,7 @@ private async Task ImportPttavmCategoriesAsync()
     await ImportRequestedChannel.PublishAsync(
         new CategoryImportRequestedEvent("PttAVM", importRequests, Guid.Empty));
 
-    Snackbar.Add("PttAVM kategori import islemi basladi, islem arka planda devam edecek.", Severity.Info);
+    Snackbar.Add("PttAVM kategori import işlemi basladi, islem arka planda devam edecek.", Severity.Info);
     NavigationManager.NavigateTo("/categories");
 }
 
@@ -1387,7 +1387,7 @@ PttAVM commit'leri sirayla gorunmeli.
 
 ## Ozet
 
-| Task | Dosya Sayisi | Test Sayisi | Aciklama |
+| Task | Dosya Sayısı | Test Sayısı | Aciklama |
 |------|-------------|-------------|----------|
 | 1 | 3 | 4 | Constants + ImportSource |
 | 2 | 1 | 0 | Interface |

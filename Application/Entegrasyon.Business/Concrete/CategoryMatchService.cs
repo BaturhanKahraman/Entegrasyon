@@ -304,7 +304,7 @@ public class CategoryMatchService(
 
         if (template is null)
             return new ErrorDataResult<CategoryMatchTemplateDetailDto>(
-                new CategoryMatchTemplateDetailDto(), "Template bulunamadi.");
+                new CategoryMatchTemplateDetailDto(), "Template bulunamadı.");
 
         var detail = new CategoryMatchTemplateDetailDto
         {
@@ -341,7 +341,7 @@ public class CategoryMatchService(
             .ToListAsync();
 
         if (currentMappings.Count == 0)
-            return new ErrorResult("Kaydedilecek eslestirme bulunamadi.");
+            return new ErrorResult("Kaydedilecek eslestirme bulunamadı.");
 
         // Execution
         var template = new CategoryMatchTemplate
@@ -379,7 +379,7 @@ public class CategoryMatchService(
 
         if (template is null)
             return new ErrorDataResult<BulkCategoryMatchResultDto>(
-                new BulkCategoryMatchResultDto(), "Template bulunamadi.");
+                new BulkCategoryMatchResultDto(), "Template bulunamadı.");
 
         // Convert template items to bulk match DTO and delegate to existing bulk logic
         var bulkDto = new BulkCategoryMatchDto
@@ -406,7 +406,7 @@ public class CategoryMatchService(
             .FirstOrDefaultAsync(t => t.Id == templateId && !t.IsDeleted);
 
         if (template is null)
-            return new ErrorResult("Template bulunamadi.");
+            return new ErrorResult("Template bulunamadı.");
 
         template.IsDeleted = true;
         await dbContext.SaveChangesAsync();

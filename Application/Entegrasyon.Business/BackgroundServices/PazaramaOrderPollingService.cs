@@ -32,7 +32,7 @@ public class PazaramaOrderPollingService(
 
         if (!result.Success)
         {
-            logger.LogWarning("Pazarama Sipariş fetch basarisiz for tenant {TenantId}: {Message}",
+            logger.LogWarning("Pazarama Sipariş fetch başarısız for tenant {TenantId}: {Message}",
                 tenantId, result.Message);
             return;
         }

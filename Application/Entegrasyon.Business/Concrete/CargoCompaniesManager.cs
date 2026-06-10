@@ -113,7 +113,7 @@ public class CargoCompaniesManager(
 
         var company = await dbContext.CargoCompanies.FindAsync(companyId);
         if (company is null)
-            return new ErrorResult("Kargo firmasi bulunamadi.");
+            return new ErrorResult("Kargo firmasi bulunamadı.");
 
         company.IsDefault = true;
         company.CustomerCode = customerCode;

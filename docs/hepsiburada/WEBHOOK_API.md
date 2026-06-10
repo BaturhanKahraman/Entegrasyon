@@ -157,7 +157,7 @@ HB yeni Sipariş olusturuldugunda bu endpoint'e Sipariş bilgilerini push eder.
 
 **POST** `{baseUrl}/packages`
 
-Otomatik veya panel uzerinden paketleme islemi sonrasi paket bilgileri push edilir.
+Otomatik veya panel uzerinden paketleme işlemi sonrasi paket bilgileri push edilir.
 
 ### Response — `201 Created`
 

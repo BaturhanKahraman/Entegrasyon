@@ -111,11 +111,11 @@ public class NotificationController(
                 if (Request.IsHtmx())
                 {
                     Response.HtmxTriggerWithData("showToast",
-                        new { message = "Bildirim gonderilecek kullanici bulunamadi.", type = "warning" });
+                        new { message = "Bildirim gonderilecek kullanici bulunamadı.", type = "warning" });
                     return StatusCode(422);
                 }
 
-                TempData.SetWarning("Bildirim gonderilecek kullanici bulunamadi.");
+                TempData.SetWarning("Bildirim gonderilecek kullanici bulunamadı.");
                 return RedirectToAction(nameof(Admin));
             }
 

@@ -45,7 +45,7 @@ public static class DevAdminSeeder
             if (admin is null)
             {
                 logger.LogWarning(
-                    "DevAdminSeeder: '{UserName}' kullanicisi bulunamadi — parola seed atlandi. " +
+                    "DevAdminSeeder: '{UserName}' kullanicisi bulunamadı — parola seed atlandi. " +
                     "(Migration HasData admin'i saglamali.)", AdminUserName);
                 return;
             }
@@ -84,7 +84,7 @@ public static class DevAdminSeeder
         catch (Exception ex)
         {
             // DB baglantisi yoksa MVC normal calismaya devam etsin — log'la ve gec.
-            logger.LogWarning(ex, "DevAdminSeeder: admin parola seed basarisiz, gecillenecek. Hata: {Message}", ex.Message);
+            logger.LogWarning(ex, "DevAdminSeeder: admin parola seed başarısız, gecillenecek. Hata: {Message}", ex.Message);
         }
     }
 }

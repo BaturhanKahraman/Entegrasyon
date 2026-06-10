@@ -47,7 +47,7 @@ public class BrandController(
         var result = await brandService.GetBrandDetail(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Marka bulunamadi.");
+            TempData.SetError(result.Message ?? "Marka bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 

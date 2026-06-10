@@ -8,7 +8,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Toplam Kategori Eslesmesi</div>
+                            <div class="subheader">Toplam Kategori Eşleşmesi</div>
                         </div>
                         <div class="h1 mb-0">
                             @Model.CategorySummary.MappedCategories / @Model.CategorySummary.TotalCategories
@@ -29,7 +29,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Toplam Marka Eslesmesi</div>
+                            <div class="subheader">Toplam Marka Eşleşmesi</div>
                         </div>
                         <div class="h1 mb-0">
                             @Model.BrandSummary.MappedBrands / @Model.BrandSummary.TotalBrands
@@ -50,7 +50,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Eslesmemis Kategoriler</div>
+                            <div class="subheader">Eşleşmemis Kategoriler</div>
                         </div>
                         <div class="h1 mb-0 text-warning">@Model.CategorySummary.UnmappedCategories</div>
                     </div>
@@ -60,7 +60,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Eslesmemis Markalar</div>
+                            <div class="subheader">Eşleşmemis Markalar</div>
                         </div>
                         <div class="h1 mb-0 text-warning">@Model.BrandSummary.UnmappedBrands</div>
                     </div>
@@ -103,7 +103,7 @@
                                     <span class="badge bg-warning-lt">@card.SyncSummary.PendingCount</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-secondary">Hatali</span>
+                                    <span class="text-secondary">Hatalı</span>
                                     <span class="badge bg-danger-lt">@card.SyncSummary.FailedCount</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-1">
@@ -130,7 +130,7 @@
                             <!-- Category Mapping -->
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-secondary">Kategori Eslesmesi</span>
+                                    <span class="text-secondary">Kategori Eşleşmesi</span>
                                     <span>@card.MappedCategoryCount / @Model.CategorySummary.TotalCategories</span>
                                 </div>
                             </div>
@@ -163,7 +163,7 @@
                     <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
-                                 Title = "Pazaryeri bulunamadi",
+                                 Title = "Pazaryeri bulunamadı",
                                  Subtitle = "Henüz aktif pazaryeri tanimlanmamis."
                              }'/>
                 </div>

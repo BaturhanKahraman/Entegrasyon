@@ -83,7 +83,7 @@ Trendyol e-Faturam, GIB'e (Gelir Idaresi Baskanligi) dogrudan baglanmadan e-fatu
 | 40 | GIB'e gonderildi |
 | 205 | Onaylandi (final) |
 | 305 | Iptal edildi |
-| 405 | Hatali |
+| 405 | Hatalı |
 
 ---
 
@@ -235,7 +235,7 @@ public enum EFaturaStatus { Pending, Processing, Created, Sent, Approved, Cancel
 2. TrendyolEFaturaStatusPollingService: Shipped + faturasi olmayan Siparişleri bul
 3. Alicinin VKN/TCKN'si ile mukellef sorgula (CheckTaxPayerAsync)
    → aliasType == INVOICE → e-Fatura mukellefiyse
-   → Bulunamadi → e-Arsiv kullan
+   → bulunamadı → e-Arsiv kullan
 4a. e-Fatura mukellefiyse → createOutgoingEInvoice
 4b. Degilse → createEArchive (paymentInfo + deliveryInfo zorunlu)
 5. EFaturaRecord kaydet (Status = Processing)
@@ -352,7 +352,7 @@ Test/Entegrasyon.Test/Trendyol/
 4. `CheckInvoiceStatusAsync` — status 405 → Error
 5. `CancelInvoiceAsync` — basarili iptal
 6. `CheckTaxPayerAsync` — mukellef bulundu
-7. `CheckTaxPayerAsync` — mukellef bulunamadi
+7. `CheckTaxPayerAsync` — mukellef bulunamadı
 8. `InvoiceBuilder` — tutar dogru kurus'a cevriliyor
 9. `InvoiceBuilder` — KDV dogru hesaplaniyor
 10. `InvoiceBuilder` — paymentInfo ve deliveryInfo zorunlu alanlari dolu

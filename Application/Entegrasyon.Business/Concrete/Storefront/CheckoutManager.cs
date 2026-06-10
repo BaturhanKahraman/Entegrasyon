@@ -30,7 +30,7 @@ public class CheckoutManager(
             .FirstOrDefaultAsync(c => c.Id == cartId);
 
         if (cart is null)
-            return new ErrorDataResult<Order>(null!, "Sepet bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sepet bulunamadı.");
 
         if (!cart.Items.Any())
             return new ErrorDataResult<Order>(null!, "Sepet bos. Sipariş olusturulamaz.");
@@ -140,7 +140,7 @@ public class CheckoutManager(
 
         var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
         if (order is null)
-            return new ErrorResult("Sipariş bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadı.");
 
         order.StorefrontPaymentStatus = PaymentStatus.Paid;
         order.PaymentTransactionId = transactionId;
@@ -161,7 +161,7 @@ public class CheckoutManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Sipariş bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadı.");
 
         order.StorefrontPaymentStatus = PaymentStatus.Failed;
         order.OrderNote = string.IsNullOrEmpty(order.OrderNote)

@@ -150,7 +150,7 @@ Tekli barkod kontrolundeki alanlara ek olarak:
 | iskonto | decimal | Indirim |
 | boyX, boyY, boyZ | decimal | Boyutlar |
 | desi | double | Desi |
-| shopId | integer | Magaza ID |
+| shopId | integer | Mağaza ID |
 | durum | string | Urun durumu |
 | resimListesi | array | Gorseller |
 | variantListesi | array | Varyantlar |
@@ -267,7 +267,7 @@ Tekli barkod kontrolundeki alanlara ek olarak:
 
 ---
 
-## 9. Hatali Urun Gorselleri
+## 9. Hatalı Urun Gorselleri
 
 **POST** `/api/v1/products/get-faulty-images`
 

@@ -4,7 +4,7 @@ Bu klasor WireMock standalone container icin mapping ve response body dosyalarin
 barindirir. Amac: gelistirici lokal ortamda internetsiz calisabilsin ve marketplace
 HTTP cagrilari gercek API yerine lokal WireMock'a dusurulsun.
 
-## Hizli Baslangic
+## Hizli Başlangıç
 
 ```bash
 # Docker compose'u dev override ile baslat

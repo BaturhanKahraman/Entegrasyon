@@ -42,7 +42,7 @@ public sealed class TrendyolProductService(
                     validationSpan?.SetStatus(ActivityStatusCode.Error, validationResult.Message);
                     activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
                     await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-                        $"Eslestirme dogrulamasi basarisiz: {validationResult.Message}",
+                        $"Eslestirme dogrulamasi başarısız: {validationResult.Message}",
                         ProductActivityStatus.Error, marketplaceName: "Trendyol");
                     EntegrasyonMetrics.ProductSyncErrors.Add(1,
                         new KeyValuePair<string, object?>("marketplace", "Trendyol"),
@@ -113,7 +113,7 @@ public sealed class TrendyolProductService(
 
             var batchResponse = await response.Content.ReadFromJsonAsync<TrendyolBatchResponse>();
             var batchRequestId = batchResponse?.BatchRequestId
-                ?? throw new InvalidOperationException("Trendyol batch response'da BatchRequestId bulunamadi.");
+                ?? throw new InvalidOperationException("Trendyol batch response'da BatchRequestId bulunamadı.");
 
             activity?.SetTag("trendyol.batch_id", batchRequestId);
             activity?.SetTag("trendyol.variant_count", mappedData.Items.Count);
@@ -276,7 +276,7 @@ public sealed class TrendyolProductService(
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == TrendyolMarketPlaceId);
 
         if (pm?.ContentId is null)
-            return new ErrorResult("ContentId bulunamadi -- urun henuz onaylanmamis olabilir.");
+            return new ErrorResult("ContentId bulunamadı -- urun henuz onaylanmamis olabilir.");
 
         var mapResult = await productMapper.MapProductAsync(productId);
         if (!mapResult.Success)

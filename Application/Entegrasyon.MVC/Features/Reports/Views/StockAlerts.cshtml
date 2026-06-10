@@ -5,7 +5,7 @@
             <div class="card-body">
                 <form method="get" action="/reports/stock-alerts" class="row g-3 align-items-end">
                     <div class="col-auto">
-                        <label class="form-label">Minimum Stok Esigi</label>
+                        <label class="form-label">Minimum Stok Eşiği</label>
                         <input type="number" class="form-control" name="threshold" value="@ViewBag.Threshold" min="1" />
                     </div>
                     <div class="col-auto">
@@ -18,7 +18,7 @@
         <!-- Table -->
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Dusuk Stoklu Ürünler</h3>
+                <h3 class="card-title">Düşük Stoklu Ürünler</h3>
             </div>
             <partial name="Partials/_StockAlertTable" model="Model"/>
         </div>

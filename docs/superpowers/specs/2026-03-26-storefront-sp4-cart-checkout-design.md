@@ -95,7 +95,7 @@ Checkout Form API (en basit entegrasyon):
 5. Odeme sonrasi callback URL'e doner
 6. HandleCallback ile sonucu dogrula
 7. Basariliysa: Order olustur + stok dus + redirect /odeme/basarili
-8. Basarisizsa: hata sayfasi goster
+8. başarısızsa: hata sayfasi goster
 
 Config: StorefrontPaymentConfig'ten ApiKey + SecretKey (tenant bazli)
 
@@ -113,7 +113,7 @@ GET /odeme — Checkout page (adres secimi, odeme yontemi, Sipariş ozeti)
 POST /odeme/onayla — ValidateCheckout + InitiatePayment -> redirect iyzico
 GET /odeme/callback — iyzico callback handler
 GET /odeme/basarili — Sipariş basarili sayfasi
-GET /odeme/basarisiz — Odeme basarisiz sayfasi
+GET /odeme/başarısız — Odeme başarısız sayfasi
 
 ## 6. Views
 
@@ -154,14 +154,14 @@ POST /odeme/onayla -> CheckoutController.Confirm
 GET /odeme/callback?token=... -> CheckoutController.Callback
   1. HandleCallbackAsync (iyzico sonucu dogrula)
   2. Basarili: Order.PaymentStatus = Paid, Cart temizle -> /odeme/basarili
-  3. Basarisiz: Order.PaymentStatus = Failed, stok geri ekle -> /odeme/basarisiz
+  3. başarısız: Order.PaymentStatus = Failed, stok geri ekle -> /odeme/başarısız
 ```
 
 ## 9. Stok Yonetimi
 
 - DecreaseStockAtomicAsync mevcut — dogrudan kullanilir
 - StockMovementType.Sale + ReferenceType="StorefrontOrder" + ReferenceId=Order.Id
-- Odeme basarisiz olursa: stok geri eklenir (IncreaseStockAsync)
+- Odeme başarısız olursa: stok geri eklenir (IncreaseStockAsync)
 - Race condition yok: atomic SQL update
 
 ## 10. Guvenlik

@@ -68,7 +68,7 @@ public sealed class POSSessionManager(
             .FirstOrDefaultAsync(s => s.Id == dto.SessionId);
 
         if (session == null)
-            return new ErrorResult("Oturum bulunamadi.");
+            return new ErrorResult("Oturum bulunamadı.");
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
@@ -128,7 +128,7 @@ public sealed class POSSessionManager(
 
         return session != null
             ? new SuccessDataResult<POSSession>(session)
-            : new ErrorDataResult<POSSession>(null!, "Acik oturum bulunamadi.");
+            : new ErrorDataResult<POSSession>(null!, "Acik oturum bulunamadı.");
     }
 
     public async Task<IDataResult<POSTransaction>> RecordTransactionAsync(POSTransactionDto dto)
@@ -143,7 +143,7 @@ public sealed class POSSessionManager(
             .FirstOrDefaultAsync(s => s.Id == dto.POSSessionId);
 
         if (session == null)
-            return new ErrorDataResult<POSTransaction>(null!, "Oturum bulunamadi.");
+            return new ErrorDataResult<POSTransaction>(null!, "Oturum bulunamadı.");
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
@@ -194,7 +194,7 @@ public sealed class POSSessionManager(
         var session = await dbContext.POSSessions
             .FirstOrDefaultAsync(s => s.Id == sessionId);
         if (session == null)
-            return new ErrorResult("Oturum bulunamadi.");
+            return new ErrorResult("Oturum bulunamadı.");
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
@@ -202,7 +202,7 @@ public sealed class POSSessionManager(
 
         var saleExists = await dbContext.Sales.AnyAsync(s => s.Id == saleId);
         if (!saleExists)
-            return new ErrorResult("Satis bulunamadi.");
+            return new ErrorResult("Satis bulunamadı.");
 
         dbContext.POSTransactions.Add(new POSTransaction
         {
@@ -230,7 +230,7 @@ public sealed class POSSessionManager(
             .FirstOrDefaultAsync(s => s.Id == dto.POSSessionId);
 
         if (session == null)
-            return new ErrorResult("Oturum bulunamadi.");
+            return new ErrorResult("Oturum bulunamadı.");
 
         var logicResult = LogicRunner.Run(CheckSessionIsOpen(session));
         if (logicResult != null)
@@ -266,7 +266,7 @@ public sealed class POSSessionManager(
             .FirstOrDefaultAsync(s => s.Id == sessionId);
 
         if (session == null)
-            return new ErrorDataResult<POSSummaryDto>(null!, "Oturum bulunamadi.");
+            return new ErrorDataResult<POSSummaryDto>(null!, "Oturum bulunamadı.");
 
         var saleIds = await dbContext.POSTransactions
             .Where(t => t.POSSessionId == sessionId)
@@ -336,7 +336,7 @@ public sealed class POSSessionManager(
             .ToListAsync();
 
         if (!sessions.Any())
-            return new ErrorDataResult<POSSummaryDto>(null!, "Belirtilen tarihte oturum bulunamadi.");
+            return new ErrorDataResult<POSSummaryDto>(null!, "Belirtilen tarihte oturum bulunamadı.");
 
         var sessionIds = sessions.Select(s => s.Id).ToList();
 
@@ -414,7 +414,7 @@ public sealed class POSSessionManager(
             .FirstOrDefaultAsync(s => s.Id == sessionId);
 
         if (session is null)
-            return new ErrorDataResult<POSReportDto>(null!, "Kasa oturumu bulunamadi.");
+            return new ErrorDataResult<POSReportDto>(null!, "Kasa oturumu bulunamadı.");
 
         var saleIds = await dbContext.POSTransactions
             .Where(t => t.POSSessionId == sessionId)

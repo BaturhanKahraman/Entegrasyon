@@ -68,7 +68,7 @@ Bunlar production'da **sessizce başarısız** olur (boş `action=""` → mevcut
 | Layout iletişim bilgileri | `_Layout.cshtml` | ✅ Zaten `Tenant.Settings` (ContactPhone/Email/City/WhatsApp/sosyal) ile bağlı. Sorun yok. | — |
 | Demo telefon `0(532) 123 45 67` | `Checkout/Index.cshtml`, `Account/OrderDetail.cshtml`, `Profile.cshtml` fallback | Controller gerçek müşteri/adres telefonu geçtiğinde çözülür (R3/R4/R6 ile birlikte). | 🟡 Orta |
 | Statik adresler | `Addresses.cshtml` | R6 kapsamında. | 🔴 (R6) |
-| `0850 000 00 00` fallback | `Checkout/Basarisiz.cshtml:6` | `settings?.ContactPhone ?? "0850 000 00 00"` — kabul edilebilir fallback. | 🟢 Düşük |
+| `0850 000 00 00` fallback | `Checkout/başarısız.cshtml:6` | `settings?.ContactPhone ?? "0850 000 00 00"` — kabul edilebilir fallback. | 🟢 Düşük |
 | **`onerror` → loremflickr demo görselleri** | `Account/CreateReturn.cshtml:81`, `Wishlist/Index.cshtml:85` | `img onerror` ile dış demo servisi (`loremflickr.com`) fallback. img fallback kabul edilebilir AMA production'da dış demo servisine bağımlılık istenmez → yerel placeholder görsele (`/img/...`) çevrilmeli. | 🟡 Orta |
 
 > ✔️ Inline `onclick`/event handler taraması: **0** (tüm chrome `data-*` + `site.js`). `onerror` yalnızca yukarıdaki 2 img.

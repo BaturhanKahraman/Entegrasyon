@@ -98,7 +98,7 @@ public class CheckoutController(
             // Payment initiation failed — fail the order and show error
             await checkoutManager.FailOrderPaymentAsync(order.Id, paymentResult.Message);
             ViewBag.Error = paymentResult.Message;
-            return View("Basarisiz");
+            return View("başarısız");
         }
 
         // No iyzico configured — direct order (development/testing fallback)
@@ -114,18 +114,18 @@ public class CheckoutController(
     public async Task<IActionResult> Callback(string token)
     {
         if (string.IsNullOrEmpty(token))
-            return RedirectToAction("Basarisiz");
+            return RedirectToAction("başarısız");
 
         var callbackResult = await paymentGateway.HandleCallbackAsync(token);
 
         if (!callbackResult.Success)
-            return RedirectToAction("Basarisiz");
+            return RedirectToAction("başarısız");
 
         var payment = callbackResult.Data;
         var orderIdStr = HttpContext.Session.GetString("PendingOrderId");
 
         if (orderIdStr == null || !Guid.TryParse(orderIdStr, out var orderId))
-            return RedirectToAction("Basarisiz");
+            return RedirectToAction("başarısız");
 
         if (payment.Success)
         {
@@ -144,7 +144,7 @@ public class CheckoutController(
 
         await checkoutManager.FailOrderPaymentAsync(orderId, payment.ErrorMessage);
         HttpContext.Session.Remove("PendingOrderId");
-        return RedirectToAction("Basarisiz");
+        return RedirectToAction("başarısız");
     }
 
     public async Task<IActionResult> Basarili(Guid id)
@@ -155,9 +155,9 @@ public class CheckoutController(
         return View();
     }
 
-    public IActionResult Basarisiz()
+    public IActionResult başarısız()
     {
-        ViewBag.SeoTitle = $"Odeme Basarisiz | {tenant.Settings.StoreName}";
+        ViewBag.SeoTitle = $"Odeme başarısız | {tenant.Settings.StoreName}";
         return View();
     }
 

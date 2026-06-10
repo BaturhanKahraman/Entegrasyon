@@ -10,7 +10,7 @@ public class ContactController(
     [HttpGet]
     public IActionResult Index()
     {
-        ViewBag.SeoTitle = $"Iletisim | {tenant.Settings.StoreName}";
+        ViewBag.SeoTitle = $"İletişim | {tenant.Settings.StoreName}";
         return View();
     }
 
@@ -21,7 +21,7 @@ public class ContactController(
         var result = await contactManager.SubmitMessageAsync(tenant.TenantId, name, email, phone, subject, message);
         ViewBag.Success = result.Success;
         ViewBag.Message = result.Message;
-        ViewBag.SeoTitle = $"Iletisim | {tenant.Settings.StoreName}";
+        ViewBag.SeoTitle = $"İletişim | {tenant.Settings.StoreName}";
         return View();
     }
 }

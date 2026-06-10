@@ -26,7 +26,7 @@ public class TrackingController(
         var result = await orderManager.GetOrderByNumberAsync(orderNumber.Trim());
         if (!result.Success)
         {
-            ViewBag.Error = "Sipariş bulunamadi. Lutfen Sipariş numaranizi kontrol edin.";
+            ViewBag.Error = "Sipariş bulunamadı. Lutfen Sipariş numaranizi kontrol edin.";
             ViewBag.SearchedNumber = orderNumber;
             return View("Index");
         }
@@ -78,7 +78,7 @@ public class TrackingController(
     {
         PaymentStatus.Pending => "Bekliyor",
         PaymentStatus.Paid => "Odendi",
-        PaymentStatus.Failed => "Basarisiz",
+        PaymentStatus.Failed => "başarısız",
         PaymentStatus.Refunded => "Iade Edildi",
         _ => "Bilinmiyor"
     };

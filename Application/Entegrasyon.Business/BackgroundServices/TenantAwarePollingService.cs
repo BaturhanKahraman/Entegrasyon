@@ -87,7 +87,7 @@ public abstract class TenantAwarePollingService(
     }
 
     /// <summary>
-    /// Tek bir tenant icin polling islemi. Alt siniflar implement eder.
+    /// Tek bir tenant icin polling işlemi. Alt siniflar implement eder.
     /// </summary>
     protected abstract Task PollForTenantAsync(
         IServiceProvider services, int tenantId,

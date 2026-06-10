@@ -118,7 +118,7 @@ public class IyzicoPaymentService(
             }
 
             return new SuccessDataResult<PaymentCallbackResult>(
-                new PaymentCallbackResult(false, null, null, result.ErrorMessage ?? "Odeme basarisiz."));
+                new PaymentCallbackResult(false, null, null, result.ErrorMessage ?? "Odeme başarısız."));
         }
         catch (Exception ex)
         {

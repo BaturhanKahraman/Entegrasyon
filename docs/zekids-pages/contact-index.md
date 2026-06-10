@@ -2,7 +2,7 @@
 title: İletişim
 target_view: Views/Contact/Index.cshtml
 controller_action: Contact/Index
-route: /iletisim
+route: /İletişim
 model: None (Tenant'tan ContactPhone, WhatsApp, Email, Address, City, MapEmbedUrl)
 status: pending
 source_html: henüz tasarlanmadı
@@ -50,7 +50,7 @@ Sample data: Tenant'tan ContactPhone, WhatsApp, Email, Address, City, MapEmbedUr
 
 ## Çıktı geldiğinde
 
-1. HTML'i `İndirilenler/zekids/Iletisim.html` olarak indir.
+1. HTML'i `İndirilenler/zekids/İletişim.html` olarak indir.
 2. Razor + JS çevirisi için uygun `agent-...` ajanına ver.
 3. View üretildikten sonra bu MD'yi sil.
 </content>

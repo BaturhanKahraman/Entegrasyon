@@ -345,7 +345,7 @@ Temu, PDD Holdings'in global markasi oldugu icin API yapisi Pinduoduo Open Platf
 | 2 | Endpoint dogrulama | Yuksek | Bircok endpoint ismi Pinduoduo pattern'inden turetilmistir, dogrulanmasi gerekir |
 | 3 | Sandbox ortami | Orta | Sandbox/test ortami mevcut mu, dogrulanmalidir |
 | 4 | Turkiye pazari ozellikleri | Orta | Lokal pazar (TR) icin ozel gereksinimler incelenmeli |
-| 5 | Fiyat formati | Dusuk | Cent vs birim fiyat dogrulanmali |
-| 6 | Gorsel gereksinimleri | Dusuk | Format, boyut ve adet sinirlari dogrulanmali |
+| 5 | Fiyat formati | Düşük | Cent vs birim fiyat dogrulanmali |
+| 6 | Gorsel gereksinimleri | Düşük | Format, boyut ve adet sinirlari dogrulanmali |
 
 > **Sonraki Adim:** Temu Partner Platform'a developer erisimi saglanarak resmi dokumantasyondan TBD maddelerin doldurulmasi.

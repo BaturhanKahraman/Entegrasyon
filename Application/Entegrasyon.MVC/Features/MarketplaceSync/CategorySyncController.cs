@@ -72,13 +72,13 @@ public class CategorySyncController(
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
                     Response.HtmxTriggerWithData("showToast",
-                        new { message = "Kategori eslesmesi olusturuldu. Yonlendiriliyorsunuz...", type = "success" });
+                        new { message = "Kategori Eşleşmesi olusturuldu. Yonlendiriliyorsunuz...", type = "success" });
                     Response.Headers["HX-Redirect"] = returnUrl;
                     return Content("");
                 }
 
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Kategori eslesmesi olusturuldu.", type = "success" });
+                    new { message = "Kategori Eşleşmesi olusturuldu.", type = "success" });
                 Response.HtmxTrigger("refreshTable");
                 return Content("");
             }
@@ -89,7 +89,7 @@ public class CategorySyncController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Kategori eslesmesi olusturuldu.");
+            TempData.SetSuccess("Kategori Eşleşmesi olusturuldu.");
         else
             TempData.SetError(result.Message ?? "Eslestirme olusturulamadi.");
 
@@ -109,7 +109,7 @@ public class CategorySyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Kategori eslesmesi kaldirildi.", type = "success" });
+                    new { message = "Kategori Eşleşmesi kaldirildi.", type = "success" });
                 Response.HtmxTrigger("refreshTable");
                 return Content("");
             }
@@ -120,7 +120,7 @@ public class CategorySyncController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Kategori eslesmesi kaldirildi.");
+            TempData.SetSuccess("Kategori Eşleşmesi kaldirildi.");
         else
             TempData.SetError(result.Message ?? "Eslestirme kaldirilamadi.");
 

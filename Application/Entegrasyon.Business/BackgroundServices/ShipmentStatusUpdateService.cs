@@ -69,7 +69,7 @@ public class ShipmentStatusUpdateService(
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
-                    logger.LogWarning(ex, "Kargo durum guncelleme basarisiz, tenant {TenantId}: ShipmentTrackingId={Id}",
+                    logger.LogWarning(ex, "Kargo durum guncelleme başarısız, tenant {TenantId}: ShipmentTrackingId={Id}",
                         tenantId, id);
                 }
             }

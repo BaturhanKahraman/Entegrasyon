@@ -14,9 +14,9 @@ public class IntegrationHealthController(IApplicationLogManager logManager) : Ht
     [HttpGet("/integrations/health")]
     public async Task<IActionResult> Index()
     {
-        ViewData.SetPageTitle("Entegrasyon Sagligi");
+        ViewData.SetPageTitle("Entegrasyon Sağlığı");
         ViewData.SetActiveNav("integration-health");
-        ViewData.SetBreadcrumb(("Entegrasyon Sagligi", null));
+        ViewData.SetBreadcrumb(("Entegrasyon Sağlığı", null));
 
         var syncResult = await logManager.GetPaginatedLogs(
             pageIndex: 0,

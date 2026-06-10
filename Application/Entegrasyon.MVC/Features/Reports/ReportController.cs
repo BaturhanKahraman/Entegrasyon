@@ -53,9 +53,9 @@ public class ReportController(
     [HttpGet("/reports/product-performance")]
     public async Task<IActionResult> ProductPerformance(DateOnly? startDate = null, DateOnly? endDate = null)
     {
-        ViewData.SetPageTitle("Urun Performansi");
+        ViewData.SetPageTitle("Ürün Performansı");
         ViewData.SetActiveNav("reports-product-performance");
-        ViewData.SetBreadcrumb(("Raporlar", null), ("Urun Performansi", null));
+        ViewData.SetBreadcrumb(("Raporlar", null), ("Ürün Performansı", null));
 
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
         var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);

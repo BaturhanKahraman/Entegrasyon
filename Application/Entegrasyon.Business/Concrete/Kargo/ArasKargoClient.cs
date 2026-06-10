@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.Concrete.Kargo;
 
 /// <summary>
-/// Aras Kargo SOAP API ile iletisim kuran low-level HTTP client.
+/// Aras Kargo SOAP API ile İletişim kuran low-level HTTP client.
 /// SOAP XML envelope olusturur, POST eder ve response parse eder.
 /// </summary>
 public class ArasKargoClient(

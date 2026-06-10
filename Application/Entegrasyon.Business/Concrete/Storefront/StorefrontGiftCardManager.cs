@@ -72,7 +72,7 @@ public class StorefrontGiftCardManager(
                 && g.ExpiresAt > DateTimeOffset.UtcNow);
 
         if (giftCard is null)
-            return new ErrorDataResult<StorefrontGiftCard>(null!, "Gecerli hediye karti bulunamadi.");
+            return new ErrorDataResult<StorefrontGiftCard>(null!, "Gecerli hediye karti bulunamadı.");
 
         return new SuccessDataResult<StorefrontGiftCard>(giftCard);
     }
@@ -91,7 +91,7 @@ public class StorefrontGiftCardManager(
                 && g.ExpiresAt > DateTimeOffset.UtcNow);
 
         if (giftCard is null)
-            return new ErrorDataResult<decimal>(0, "Gecerli hediye karti bulunamadi.");
+            return new ErrorDataResult<decimal>(0, "Gecerli hediye karti bulunamadı.");
 
         if (giftCard.RemainingAmount < amount)
             return new ErrorDataResult<decimal>(giftCard.RemainingAmount, "Hediye karti bakiyesi yetersiz.");
@@ -133,7 +133,7 @@ public class StorefrontGiftCardManager(
                 && g.Code == code.Trim().ToUpperInvariant());
 
         if (giftCard is null)
-            return new ErrorDataResult<decimal>(0, "Hediye karti bulunamadi.");
+            return new ErrorDataResult<decimal>(0, "Hediye karti bulunamadı.");
 
         if (giftCard.Status == GiftCardStatus.Expired || giftCard.ExpiresAt <= DateTimeOffset.UtcNow)
             return new ErrorDataResult<decimal>(0, "Hediye kartinin suresi dolmus.");
@@ -175,7 +175,7 @@ public class StorefrontGiftCardManager(
             .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId && !g.IsDeleted);
 
         if (giftCard is null)
-            return new ErrorDataResult<StorefrontGiftCard>(null!, "Hediye karti bulunamadi.");
+            return new ErrorDataResult<StorefrontGiftCard>(null!, "Hediye karti bulunamadı.");
 
         return new SuccessDataResult<StorefrontGiftCard>(giftCard);
     }
@@ -200,7 +200,7 @@ public class StorefrontGiftCardManager(
             .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId && !g.IsDeleted);
 
         if (card is null)
-            return new ErrorResult("Hediye karti bulunamadi.");
+            return new ErrorResult("Hediye karti bulunamadı.");
         if (card.Status == GiftCardStatus.Cancelled)
             return new ErrorResult("Bu kart zaten iptal edilmis.");
 
@@ -234,7 +234,7 @@ public class StorefrontGiftCardManager(
             .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId && !g.IsDeleted);
 
         if (card is null)
-            return new ErrorDataResult<decimal>(0, "Hediye karti bulunamadi.");
+            return new ErrorDataResult<decimal>(0, "Hediye karti bulunamadı.");
         if (card.Status != GiftCardStatus.Active)
             return new ErrorDataResult<decimal>(0, "Sadece aktif kartlara bakiye yuklenebilir.");
 

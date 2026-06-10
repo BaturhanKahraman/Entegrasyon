@@ -2,7 +2,7 @@
 
 ## Genel Bakis
 
-Aras Kargo, Turkiye'nin en buyuk kargo sirketlerinden biridir. API entegrasyonu **SOAP (XML Web Service)** protokolu uzerinden calisir.
+Aras Kargo, Turkiye'nin en buyuk kargo Şirketlerinden biridir. API entegrasyonu **SOAP (XML Web Service)** protokolu uzerinden calisir.
 
 ## Kimlik Dogrulama (Authentication)
 
@@ -74,10 +74,10 @@ PHP API kutuphanesinden cikarilan sorgulama metodlari:
 | `getCargoSenderReturnDate` | Gonderene iade edilen kargolar | Tarih |
 | `getCargoMovementInformation` | Kargo hareket gecmisi | Kargo numarasi |
 | `getAllBranchs` | Tum sube bilgileri | - |
-| `getCargoWaybillBetweenDate` | Tarih araliginda kargolar | Baslangic/Bitis tarihi |
+| `getCargoWaybillBetweenDate` | Tarih araliginda kargolar | Başlangıç/Bitiş tarihi |
 | `getCargoRealInformation` | Kapsamli kargo durum bilgisi | Kargo numarasi |
 | `getCargoInvoice` | Fatura bilgisi (fatura/e-fatura) | Fatura no, tip |
-| `getCargoCountToday` | Bugunku teslim sayisi | - |
+| `getCargoCountToday` | Bugunku teslim Sayısı | - |
 | `getCampaignCode` | Kampanya kodu bilgisi | Kampanya kodu |
 
 ## Tarih Formati

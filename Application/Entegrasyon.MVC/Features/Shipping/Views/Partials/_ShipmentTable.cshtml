@@ -31,7 +31,7 @@
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.InTransit => ("bg-blue-lt", "Yolda"),
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.OutForDelivery => ("bg-cyan-lt", "Dagitimda"),
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.PickedUp => ("bg-yellow-lt", "Teslim Alindi"),
-                                        Entegrasyon.Entity.Shipping.ShipmentStatus.Failed => ("bg-red-lt", "Basarisiz"),
+                                        Entegrasyon.Entity.Shipping.ShipmentStatus.Failed => ("bg-red-lt", "başarısız"),
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.Cancelled => ("bg-secondary-lt", "Iptal"),
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.ReturnedToSender => ("bg-orange-lt", "İade"),
                                         _ => ("bg-secondary-lt", "Olusturuldu")
@@ -74,7 +74,7 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Kargo kaydi bulunamadi",
+                         Title = "Kargo kaydi bulunamadı",
                          Subtitle = "Henüz kargo takibi eklenmemis."
                      }'/>
         </div>

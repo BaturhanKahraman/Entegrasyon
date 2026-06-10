@@ -87,13 +87,13 @@ public class BrandMappingController(
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
                     Response.HtmxTriggerWithData("showToast",
-                        new { message = "Marka eslesmesi olusturuldu. Yonlendiriliyorsunuz...", type = "success" });
+                        new { message = "Marka Eşleşmesi olusturuldu. Yonlendiriliyorsunuz...", type = "success" });
                     Response.Headers["HX-Redirect"] = returnUrl;
                     return Content("");
                 }
 
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Marka eslesmesi olusturuldu.", type = "success" });
+                    new { message = "Marka Eşleşmesi olusturuldu.", type = "success" });
                 Response.HtmxTrigger("refreshList");
                 return Content("");
             }
@@ -104,7 +104,7 @@ public class BrandMappingController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Marka eslesmesi olusturuldu.");
+            TempData.SetSuccess("Marka Eşleşmesi olusturuldu.");
         else
             TempData.SetError(result.Message ?? "Eslestirme olusturulamadi.");
 
@@ -124,7 +124,7 @@ public class BrandMappingController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Marka eslesmesi kaldirildi.", type = "success" });
+                    new { message = "Marka Eşleşmesi kaldirildi.", type = "success" });
                 Response.HtmxTrigger("refreshList");
                 return Content("");
             }
@@ -135,7 +135,7 @@ public class BrandMappingController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Marka eslesmesi kaldirildi.");
+            TempData.SetSuccess("Marka Eşleşmesi kaldirildi.");
         else
             TempData.SetError(result.Message ?? "Eslestirme kaldirilamadi.");
 

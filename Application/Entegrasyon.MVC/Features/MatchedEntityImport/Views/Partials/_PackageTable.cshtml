@@ -16,7 +16,7 @@
     {
         MatchedEntityType.Category => "Kategori",
         MatchedEntityType.Brand => "Marka",
-        MatchedEntityType.CargoCompany => "Kargo Sirketi",
+        MatchedEntityType.CargoCompany => "Kargo Şirketi",
         _ => type.ToString()
     };
 }
@@ -109,7 +109,7 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Paket bulunamadi",
+                         Title = "Paket bulunamadı",
                          Subtitle = "Henüz paket eklenmemis veya arama kriterinize uygun paket yok."
                      }' />
         </div>

@@ -116,7 +116,7 @@ public class BrandMatchService(
         var brand = await dbContext.Brands.FindAsync(dto.ApplicationBrandId);
         if (brand == null || brand.IsDeleted)
         {
-            var error = "Secilen marka bulunamadi veya silinmis durumda.";
+            var error = "Secilen marka bulunamadı veya silinmis durumda.";
             await applicationLogManager.AddLog(error, LogType.Brand, LogAction.Add, dto);
             return new ErrorResult(error);
         }
@@ -161,7 +161,7 @@ public class BrandMatchService(
 
         if (mapping == null)
         {
-            var error = "Mapping bulunamadi.";
+            var error = "Mapping bulunamadı.";
             await applicationLogManager.AddLog(error, LogType.Brand, LogAction.Delete);
             return new ErrorResult(error);
         }

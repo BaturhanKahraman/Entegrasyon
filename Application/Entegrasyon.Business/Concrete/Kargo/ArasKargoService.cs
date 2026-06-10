@@ -37,10 +37,10 @@ public sealed class ArasKargoService(
 
             if (result.ResultCode != "0")
             {
-                logger.LogWarning("Aras Kargo gonderi olusturma basarisiz: {Code} {Message}",
+                logger.LogWarning("Aras Kargo gonderi olusturma başarısız: {Code} {Message}",
                     result.ResultCode, result.ResultMessage);
                 await applicationLogManager.AddLog(
-                    $"Aras Kargo gonderi olusturma basarisiz: {result.ResultMessage}",
+                    $"Aras Kargo gonderi olusturma başarısız: {result.ResultMessage}",
                     LogType.Order, LogAction.Add, result, ct);
                 return new ErrorDataResult<ArasKargoOrderResult>(result, result.ResultMessage);
             }
@@ -81,9 +81,9 @@ public sealed class ArasKargoService(
 
             if (!success)
             {
-                logger.LogWarning("Aras Kargo gonderi iptal basarisiz: {IntegrationCode}", integrationCode);
+                logger.LogWarning("Aras Kargo gonderi iptal başarısız: {IntegrationCode}", integrationCode);
                 await applicationLogManager.AddLog(
-                    $"Aras Kargo gonderi iptal basarisiz: {integrationCode}",
+                    $"Aras Kargo gonderi iptal başarısız: {integrationCode}",
                     LogType.Order, LogAction.Delete, new { integrationCode }, ct);
                 return new ErrorResult("Gonderi iptal edilemedi.");
             }
@@ -121,7 +121,7 @@ public sealed class ArasKargoService(
             if (result is null)
             {
                 logger.LogWarning("Aras Kargo takip sonucu bos: {IntegrationCode}", integrationCode);
-                return new ErrorDataResult<ArasKargoTrackingResult>(null!, "Kargo bilgisi bulunamadi.");
+                return new ErrorDataResult<ArasKargoTrackingResult>(null!, "Kargo bilgisi bulunamadı.");
             }
 
             logger.LogInformation("Aras Kargo takip basarili: {IntegrationCode} -> {Status}",
@@ -175,9 +175,9 @@ public sealed class ArasKargoService(
     {
         if (startDate > endDate)
         {
-            logger.LogWarning("Aras Kargo tarih araligi hatali: {Start} > {End}", startDate, endDate);
+            logger.LogWarning("Aras Kargo tarih araligi Hatalı: {Start} > {End}", startDate, endDate);
             return new ErrorDataResult<List<ArasKargoShipmentSummary>>(
-                null!, "Baslangic tarihi bitis tarihinden buyuk olamaz.");
+                null!, "Başlangıç tarihi Bitiş tarihinden buyuk olamaz.");
         }
 
         try
@@ -247,7 +247,7 @@ public sealed class ArasKargoService(
             return "Alici adresi (adres) bos olamaz.";
 
         if (request.PieceCount <= 0)
-            return "Parca sayisi (parca) 0'dan buyuk olmalidir.";
+            return "Parca Sayısı (parca) 0'dan buyuk olmalidir.";
 
         return null;
     }

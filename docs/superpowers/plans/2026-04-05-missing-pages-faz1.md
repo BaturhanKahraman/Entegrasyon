@@ -100,10 +100,10 @@ In `ViewDataExtensions.cs`, add these entries to `NavGroupMap`:
 ["logs"] = "ayarlar",
 ["stock-movements"] = "yonetim",
 ["discounts"] = "yonetim",
-["gift-cards"] = "magaza",
+["gift-cards"] = "Mağaza",
 ["shipping-companies"] = "yonetim",
-["storefront-commissions"] = "magaza",
-["storefront-abandoned-carts"] = "magaza",
+["storefront-commissions"] = "Mağaza",
+["storefront-abandoned-carts"] = "Mağaza",
 ```
 
 - [ ] **Step 2: Add sidebar links for Yonetim group**
@@ -125,9 +125,9 @@ In `_Sidebar.cshtml`, inside `@if (activeGroup == "yonetim")` block, after the "
                         </li>
 ```
 
-- [ ] **Step 3: Add sidebar links for Magaza group**
+- [ ] **Step 3: Add sidebar links for Mağaza group**
 
-In `_Sidebar.cshtml`, inside `@if (activeGroup == "magaza")` block, after "Odeme Talepleri" link (line ~309), add:
+In `_Sidebar.cshtml`, inside `@if (activeGroup == "Mağaza")` block, after "Odeme Talepleri" link (line ~309), add:
 
 ```html
                         <li class="nav-item">
@@ -365,7 +365,7 @@ Create `Application/Entegrasyon.MVC/Features/Logs/Views/Partials/_LogTable.cshtm
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Log bulunamadi",
+                         Title = "Log bulunamadı",
                          Subtitle = "Henuz islem yapilmamis veya filtreye uygun kayit yok."
                      }'/>
         </div>
@@ -513,7 +513,7 @@ Add these methods to `BranchOfficeController.cs`:
         var result = await branchOfficeManager.GetBranchDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Depo bulunamadi.");
+            TempData.SetError(result.Message ?? "Depo bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -959,8 +959,8 @@ Create `Application/Entegrasyon.MVC/Features/StockMovements/Views/Partials/_Move
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Stok hareketi bulunamadi",
-                         Subtitle = "Henuz stok hareketi yok veya filtreye uygun kayit bulunamadi."
+                         Title = "Stok hareketi bulunamadı",
+                         Subtitle = "Henuz stok hareketi yok veya filtreye uygun kayit bulunamadı."
                      }'/>
         </div>
     }
@@ -1249,7 +1249,7 @@ Create `Application/Entegrasyon.MVC/Features/Discounts/Views/Partials/_VoucherTa
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Kupon bulunamadi",
+                         Title = "Kupon bulunamadı",
                          Subtitle = "Henuz kupon olusturulmamis.",
                          ActionUrl = "/discounts/create",
                          ActionText = "Yeni Kupon Olustur"
@@ -1406,7 +1406,7 @@ In `Application/Entegrasyon.Business/Concrete/Storefront/StorefrontGiftCardManag
 
         return card is not null
             ? new SuccessDataResult<StorefrontGiftCard>(card)
-            : new ErrorDataResult<StorefrontGiftCard>("Hediye karti bulunamadi.");
+            : new ErrorDataResult<StorefrontGiftCard>("Hediye karti bulunamadı.");
     }
 
     public async Task<IDataResult<List<StorefrontGiftCardTransaction>>> GetTransactionsAsync(int giftCardId)
@@ -1515,7 +1515,7 @@ public class GiftCardController(IStorefrontGiftCardManager giftCardManager) : Ht
         var result = await giftCardManager.GetByIdAsync(DefaultTenantId, id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Hediye karti bulunamadi.");
+            TempData.SetError(result.Message ?? "Hediye karti bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -1569,7 +1569,7 @@ Create `Application/Entegrasyon.MVC/Features/GiftCards/Views/Partials/_GiftCardT
                 <thead>
                     <tr>
                         <th>Kod</th>
-                        <th>Baslangic</th>
+                        <th>Başlangıç</th>
                         <th>Kalan</th>
                         <th>Durum</th>
                         <th>Son Kullanma</th>
@@ -1626,7 +1626,7 @@ Create `Application/Entegrasyon.MVC/Features/GiftCards/Views/Partials/_GiftCardT
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Hediye karti bulunamadi",
+                         Title = "Hediye karti bulunamadı",
                          Subtitle = "Henuz hediye karti olusturulmamis.",
                          ActionUrl = "/gift-cards/create",
                          ActionText = "Yeni Hediye Karti"
@@ -1697,7 +1697,7 @@ Create `Application/Entegrasyon.MVC/Features/GiftCards/Views/Detail.cshtml`:
                             <div class="fw-bold fs-3"><code>@Model.Code</code></div>
                         </div>
                         <div class="mb-3">
-                            <span class="text-secondary small">Baslangic Tutari</span>
+                            <span class="text-secondary small">Başlangıç Tutari</span>
                             <div>@Model.InitialAmount.ToString("N2") TL</div>
                         </div>
                         <div class="mb-3">
@@ -1892,7 +1892,7 @@ Add methods:
         if (company is null)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = "Kargo firmasi bulunamadi.", type = "danger" });
+                new { message = "Kargo firmasi bulunamadı.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -2018,7 +2018,7 @@ Create `Application/Entegrasyon.MVC/Features/Shipping/Views/Partials/_CompanyTab
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Kargo firmasi bulunamadi",
+                         Title = "Kargo firmasi bulunamadı",
                          Subtitle = "Henuz kargo firmasi eklenmemis."
                      }'/>
         </div>
@@ -2117,7 +2117,7 @@ In `Application/Entegrasyon.Business/Concrete/Storefront/SellerCommissionManager
             .FirstOrDefaultAsync(c => c.Id == commissionId && !c.IsDeleted);
 
         if (commission is null)
-            return new ErrorResult("Komisyon kaydi bulunamadi.");
+            return new ErrorResult("Komisyon kaydi bulunamadı.");
 
         commission.CommissionRate = newRate;
         await dbContext.SaveChangesAsync();
@@ -2228,7 +2228,7 @@ Create `Application/Entegrasyon.MVC/Features/Storefront/Views/Partials/_Commissi
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Komisyon kaydi bulunamadi",
+                         Title = "Komisyon kaydi bulunamadı",
                          Subtitle = "Henuz satici komisyonu tanimlanmamis."
                      }'/>
         </div>
@@ -2409,7 +2409,7 @@ Create `Application/Entegrasyon.MVC/Features/Storefront/Views/Partials/_Abandone
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Terk edilen sepet bulunamadi",
+                         Title = "Terk edilen sepet bulunamadı",
                          Subtitle = "Henuz terk edilen sepet e-postasi gonderilmemis."
                      }'/>
         </div>

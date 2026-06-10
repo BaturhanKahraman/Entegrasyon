@@ -4,7 +4,7 @@
 
 ## Genel Bakis
 
-Surat Kargo, Turkiye'nin buyuk kargo sirketlerinden biridir. Entegrasyon icin SOAP tabanli bir web servisi sunmaktadir.
+Surat Kargo, Turkiye'nin buyuk kargo Şirketlerinden biridir. Entegrasyon icin SOAP tabanli bir web servisi sunmaktadir.
 
 | Bilgi | Deger |
 |-------|-------|

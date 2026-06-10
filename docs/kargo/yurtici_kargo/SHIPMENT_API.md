@@ -18,7 +18,7 @@ Musteri, gondermek istedigi kargo bilgilerini bu metod ile Yurtici Kargo sistemi
 | `receiverPhone2` | string | Hayir | Alternatif telefon |
 | `receiverPhone3` | string | Hayir | Alternatif telefon |
 | `emailAddress` | string | Hayir | Alici e-posta |
-| `cargoCount` | int | Hayir | Koli sayisi (varsayilan: 1) |
+| `cargoCount` | int | Hayir | Koli Sayısı (varsayilan: 1) |
 | `desi` | decimal | Hayir | Hacimsel agirlik (desi) |
 | `kg` | decimal | Hayir | Gercek agirlik (kg) |
 | `description` | string | Hayir | Gonderi icerigi aciklamasi |
@@ -42,14 +42,14 @@ Musteri, gondermek istedigi kargo bilgilerini bu metod ile Yurtici Kargo sistemi
 | `ttInvoiceAmount` | decimal | Tahsilat tutari |
 | `ttCollectionType` | int | 0 = Nakit, 1 = Kredi karti |
 | `ttDocumentSaveType` | int | 0 = Ayni fatura, 1 = Ayri fatura |
-| `dcSelectedCredit` | int | Taksit sayisi |
+| `dcSelectedCredit` | int | Taksit Sayısı |
 | `dcCreditRule` | int | 0 = Musteri sectigi, 1 = Tek cekim |
 
 ### Response
 
 | Alan | Tip | Aciklama |
 |---|---|---|
-| `outFlag` | string | `"0"` = basarisiz, `"1"` = basarili |
+| `outFlag` | string | `"0"` = başarısız, `"1"` = basarili |
 | `outResult` | string | Sonuc mesaji |
 | `jobId` | string | Is kimlik numarasi |
 | `shippingOrderDetailVO` | object | Olusturulan gonderinin detay bilgisi |
@@ -79,7 +79,7 @@ Musteriler bu metod ile kargo teslimat bilgilerini sorgular.
 | `cargoKey` | string | Kargo anahtari |
 | `deliveryDate` | datetime | Teslim tarihi |
 | `deliveredTo` | string | Teslim edilen kisi |
-| `unitCount` | int | Parca sayisi |
+| `unitCount` | int | Parca Sayısı |
 
 ### Kargo Durum Kodlari
 
@@ -108,7 +108,7 @@ Kargo, Yurtici Kargo subesine fiziksel teslimden once veya teslimden sonra fatur
 
 | Alan | Tip | Aciklama |
 |---|---|---|
-| `outFlag` | string | `"0"` = basarisiz, `"1"` = basarili |
+| `outFlag` | string | `"0"` = başarısız, `"1"` = basarili |
 | `outResult` | string | Sonuc mesaji |
 | `cargoKey` | string | Iptal edilen kargo anahtari |
 

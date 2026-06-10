@@ -30,7 +30,7 @@ public class StorefrontAbandonedCartNotificationHandlerTests
             "Terk edilmiş sepet",
             It.Is<string>(s => s.Contains("sepet")),
             NotificationSeverity.Info,
-            NotificationCategory.Magaza,
+            NotificationCategory.Mağaza,
             It.Is<IEnumerable<Guid>>(ids => ids.Single() == user),
             "/storefront/carts/456"), Times.Once);
     }

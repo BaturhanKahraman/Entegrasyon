@@ -16,7 +16,7 @@ Arama filtreleriyle eslesen urun bilgilerini sayfalanmis sekilde dondurur.
 | subCategoryId | integer | Alt kategori filtresi |
 | isActive | boolean | Aktiflik filtresi |
 | isInStock | boolean | Stok filtresi |
-| merchantCategoryId | integer | Magaza kategori filtresi |
+| merchantCategoryId | integer | Mağaza kategori filtresi |
 | searchPage | integer | Sayfa numarasi |
 
 ### Response

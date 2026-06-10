@@ -22,7 +22,7 @@ public class StorefrontReturnManager(
             .FirstOrDefaultAsync(o => o.Id == orderId && o.CustomerId == customerId);
 
         if (order is null)
-            return new ErrorResult("Sipariş bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadı.");
 
         if (order.StorefrontOrderStatus != OrderStatus.Delivered)
             return new ErrorResult("Sadece teslim edilmis Siparişler icin iade talebi olusturulabilir.");
@@ -82,7 +82,7 @@ public class StorefrontReturnManager(
 
         var returnRequest = await dbContext.StorefrontReturnRequests.FindAsync(id);
         if (returnRequest is null)
-            return new ErrorResult("Iade talebi bulunamadi.");
+            return new ErrorResult("Iade talebi bulunamadı.");
 
         returnRequest.Status = status;
         returnRequest.ReviewNote = reviewNote;

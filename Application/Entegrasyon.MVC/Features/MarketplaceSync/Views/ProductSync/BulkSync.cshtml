@@ -24,7 +24,7 @@
                 <div class="card card-sm">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Hatali</div>
+                            <div class="subheader">Hatalı</div>
                         </div>
                         <div class="h1 mb-0 text-red">@(ViewBag.Summary?.FailedCount ?? 0)</div>
                     </div>
@@ -47,7 +47,7 @@
                     <form method="post" action="/marketplace/matching/retry-all?mp=@ViewBag.SelectedMarketPlaceId">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-warning">
-                            Hatalilari Yeniden Dene
+                            Hatalılari Yeniden Dene
                         </button>
                     </form>
                     <a href="/marketplace/matching?mp=@ViewBag.SelectedMarketPlaceId" class="btn btn-outline-secondary">

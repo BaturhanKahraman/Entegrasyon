@@ -65,7 +65,7 @@ public partial class OfflineSales
 
         if (product is null)
         {
-            Snackbar.Add($"Barkoda ait urun bulunamadi: {barcode}", Severity.Warning);
+            Snackbar.Add($"Barkoda ait urun bulunamadı: {barcode}", Severity.Warning);
             return;
         }
 

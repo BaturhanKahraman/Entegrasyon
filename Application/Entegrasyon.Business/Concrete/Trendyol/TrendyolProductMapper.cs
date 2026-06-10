@@ -32,7 +32,7 @@ public sealed class TrendyolProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Urun bulunamadi.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Urun bulunamadı.");
 
         if (product.ProductVariants.Count == 0)
             return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Urunun varyanti yok.");
@@ -54,13 +54,13 @@ public sealed class TrendyolProductMapper(
             : null;
 
         if (brandMatch is null)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Marka Trendyol eslestirmesi bulunamadi.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Marka Trendyol eslestirmesi bulunamadı.");
 
         var categoryMatch = await dbContext.CategoryMarketPlaceMatches.AsNoTracking()
             .FirstOrDefaultAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId);
 
         if (categoryMatch is null)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Kategori Trendyol eslestirmesi bulunamadi.");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Kategori Trendyol eslestirmesi bulunamadı.");
 
         // Attribute eslestirmelerini toplu cek
         var attributeIds = product.AttributeKeyValues.Select(a => a.CategoryAttributeId).Distinct().ToList();

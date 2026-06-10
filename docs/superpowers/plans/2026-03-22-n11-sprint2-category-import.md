@@ -607,7 +607,7 @@ public class CategoryImportBackgroundService : BackgroundService
                 try
                 {
                     await notificationManager.SendNotification(
-                        header: $"{importEvent.MarketplaceName} kategori ice aktarma islemi basladi",
+                        header: $"{importEvent.MarketplaceName} kategori ice aktarma işlemi basladi",
                         content: $"{importEvent.Categories.Count()} kategori ice aktariliyor...",
                         severity: NotificationSeverity.Info,
                         category: NotificationCategory.Pazaryeri,
@@ -632,7 +632,7 @@ public class CategoryImportBackgroundService : BackgroundService
                     : $"{importEvent.MarketplaceName} kategori ice aktarma hatasi";
                 var content = result.Success
                     ? $"{importEvent.Categories.Count()} kategori basariyla ice aktarildi."
-                    : $"Ice aktarma basarisiz: {result.Message}";
+                    : $"Ice aktarma başarısız: {result.Message}";
 
                 try
                 {
@@ -773,7 +773,7 @@ private async Task ImportN11CategoriesAsync()
         var importRequests = n11SelectedNodes.Select(MapToImportRequest).ToList();
         var importEvent = new CategoryImportRequestedEvent("N11", importRequests, userId);
         await ImportRequestedChannel.PublishAsync(importEvent);
-        Snackbar.Add("N11 kategori ice aktarma islemi baslatildi.", Severity.Info);
+        Snackbar.Add("N11 kategori ice aktarma işlemi baslatildi.", Severity.Info);
         n11SelectedNodes = null;
         NavigationManager.NavigateTo("/categories");
     }
@@ -908,7 +908,7 @@ public partial class N11CategoryTreeView
     @if (!Categories.Any())
     {
         <MudText Align="Align.Center" Color="Color.Secondary" Class="mt-4">
-            Kategori bulunamadi
+            Kategori bulunamadı
         </MudText>
     }
     else

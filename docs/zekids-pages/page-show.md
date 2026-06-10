@@ -18,7 +18,7 @@ priority: high
 - Breadcrumb.
 - H1 Fraunces: `Page.Title`. Son güncelleme muted küçük.
 - **Prose içerik** `article class="prose prose-lg max-w-none"`: `@Html.Raw(Page.ContentHtml)` — Tailwind typography ile p, h2, h3, ul, ol, blockquote, code; renk override `prose-headings:text-charcoal prose-headings:font-heading prose-a:text-primary prose-strong:text-charcoal`.
-- Footer alt link kart: "Yardım gerekirse iletişim" → /iletisim.
+- Footer alt link kart: "Yardım gerekirse iletişim" → /İletişim.
 - **SSS özel görünüm** (slug "sss"): soru-cevap accordion liste; her `details/summary` açılınca cevap fade-in.
 
 ## Sample data ipucu
@@ -42,7 +42,7 @@ Sample data: KVKK / Hakkımızda / İade Politikası gibi.
 - **Prose içerik** article class="prose prose-lg max-w-none":
   - @Html.Raw(Page.ContentHtml) — Tailwind typography ile p, h2, h3, ul, ol, blockquote, code stilleri
   - Renk overrides: prose-headings:text-charcoal prose-headings:font-heading prose-a:text-primary prose-strong:text-charcoal
-- Footer alt link kart: "Yardım gerekirse iletişim" → /iletisim
+- Footer alt link kart: "Yardım gerekirse iletişim" → /İletişim
 
 SSS özel görünüm (Page slug "sss" ise):
 - Soru-cevap accordion liste

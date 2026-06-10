@@ -198,7 +198,7 @@ public class CategoryController(
         var result = await categoryService.GetCategoryEditPageData(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Kategori bulunamadi.");
+            TempData.SetError(result.Message ?? "Kategori bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 

@@ -136,22 +136,22 @@
                     </a>
                 </li>
 
-                @* ── Magaza ── *@
+                @* ── Mağaza ── *@
                 @{
-                    var magazaKeys = new[] { "storefront", "storefront-reviews", "storefront-returns", "storefront-campaigns", "storefront-sellers", "storefront-payouts", "gift-cards", "storefront-commissions", "storefront-abandoned-carts", "loyalty", "storefront-referrals", "storefront-wallets", "storefront-wishlists", "storefront-stock-notifications", "storefront-search-analytics", "storefront-push-notifications" };
-                    var magazaActive = magazaKeys.Contains(activeNav);
+                    var MağazaKeys = new[] { "storefront", "storefront-reviews", "storefront-returns", "storefront-campaigns", "storefront-sellers", "storefront-payouts", "gift-cards", "storefront-commissions", "storefront-abandoned-carts", "loyalty", "storefront-referrals", "storefront-wallets", "storefront-wishlists", "storefront-stock-notifications", "storefront-search-analytics", "storefront-push-notifications" };
+                    var MağazaActive = MağazaKeys.Contains(activeNav);
                 }
                 <li class="nav-item mt-2">
-                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(magazaActive ? "" : "collapsed")"
-                       data-bs-toggle="collapse" href="#nav-magaza" role="button"
-                       aria-expanded="@(magazaActive ? "true" : "false")">
+                    <a class="nav-link nav-link-title text-uppercase fw-bold small sidebar-group-toggle @(MağazaActive ? "" : "collapsed")"
+                       data-bs-toggle="collapse" href="#nav-Mağaza" role="button"
+                       aria-expanded="@(MağazaActive ? "true" : "false")">
                         <span class="nav-link-icon"><i class="ti ti-shopping-bag"></i></span>
-                        Magaza
+                        Mağaza
                         <i class="ti ti-chevron-down sidebar-chevron ms-auto"></i>
                     </a>
-                    <div class="collapse @(magazaActive ? "show" : "")" id="nav-magaza">
+                    <div class="collapse @(MağazaActive ? "show" : "")" id="nav-Mağaza">
                         <ul class="navbar-nav ps-3">
-                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/storefront"><span class="nav-link-icon"><i class="ti ti-settings"></i></span><span class="nav-link-title">Magaza Ayarlari</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "storefront" ? "active" : "")" require-permission="Permissions.Settings.View" href="/settings/storefront"><span class="nav-link-icon"><i class="ti ti-settings"></i></span><span class="nav-link-title">Mağaza Ayarlari</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "storefront-reviews" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/reviews"><span class="nav-link-icon"><i class="ti ti-star"></i></span><span class="nav-link-title">Değerlendirmeler</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "storefront-returns" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/returns"><span class="nav-link-icon"><i class="ti ti-arrow-back-up"></i></span><span class="nav-link-title">İade Talepleri</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "storefront-campaigns" ? "active" : "")" require-permission="Permissions.Settings.View" href="/storefront/campaigns"><span class="nav-link-icon"><i class="ti ti-speakerphone"></i></span><span class="nav-link-title">Otomatik Kampanyalar</span></a></li>

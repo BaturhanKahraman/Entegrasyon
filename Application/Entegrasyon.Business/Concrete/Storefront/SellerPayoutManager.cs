@@ -18,7 +18,7 @@ public class SellerPayoutManager(
 
         return balance is not null
             ? new SuccessDataResult<SellerBalance>(balance)
-            : new ErrorDataResult<SellerBalance>(null!, "Bakiye bulunamadi.");
+            : new ErrorDataResult<SellerBalance>(null!, "Bakiye bulunamadı.");
     }
 
     public async Task<IDataResult<List<SellerTransaction>>> GetTransactionsAsync(int sellerId)
@@ -44,7 +44,7 @@ public class SellerPayoutManager(
             .FirstOrDefaultAsync(b => b.SellerId == sellerId);
 
         if (balance is null)
-            return new ErrorResult("Bakiye bulunamadi.");
+            return new ErrorResult("Bakiye bulunamadı.");
 
         var availableBalance = balance.CurrentBalance - balance.PendingAmount;
         if (amount > availableBalance)
@@ -52,7 +52,7 @@ public class SellerPayoutManager(
 
         var seller = await dbContext.Sellers.FindAsync(sellerId);
         if (seller is null)
-            return new ErrorResult("Satici bulunamadi.");
+            return new ErrorResult("Satici bulunamadı.");
 
         var payout = new PayoutRequest
         {
@@ -109,7 +109,7 @@ public class SellerPayoutManager(
             .FirstOrDefaultAsync(p => p.Id == payoutId);
 
         if (payout is null)
-            return new ErrorResult("Odeme talebi bulunamadi.");
+            return new ErrorResult("Odeme talebi bulunamadı.");
 
         if (payout.Status != PayoutStatus.Pending)
             return new ErrorResult("Bu talep zaten islenmis.");
@@ -118,7 +118,7 @@ public class SellerPayoutManager(
             .FirstOrDefaultAsync(b => b.SellerId == payout.SellerId);
 
         if (balance is null)
-            return new ErrorResult("Satici bakiyesi bulunamadi.");
+            return new ErrorResult("Satici bakiyesi bulunamadı.");
 
         if (approve)
         {

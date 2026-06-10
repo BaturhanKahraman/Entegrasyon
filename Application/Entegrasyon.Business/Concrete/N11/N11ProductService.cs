@@ -62,7 +62,7 @@ public sealed class N11ProductService(
         if (!validationResult.Success)
         {
             await activityLogger.LogAsync(productId, ProductActivityType.MappingValidated,
-                $"Eslestirme dogrulamasi basarisiz: {validationResult.Message}",
+                $"Eslestirme dogrulamasi başarısız: {validationResult.Message}",
                 ProductActivityStatus.Error, marketplaceName: "N11");
             return new ErrorDataResult<long>(0, validationResult.Message!);
         }

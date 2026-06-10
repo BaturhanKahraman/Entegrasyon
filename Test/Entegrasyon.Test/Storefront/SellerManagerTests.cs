@@ -32,8 +32,8 @@ public class SellerManagerTests
 
         var manager = new SellerManager(_mockContextFactory.Object);
         var dto = new SellerRegistrationDto(
-            "Test Magaza", "Aciklama",
-            "Test Sirket", "1234567890", "Kadikoy",
+            "Test Mağaza", "Aciklama",
+            "Test Şirket", "1234567890", "Kadikoy",
             "TR123456789012345678901234", "05551234567", "test@test.com",
             "Test Adres", "Istanbul");
 
@@ -42,8 +42,8 @@ public class SellerManagerTests
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.StoreName.Should().Be("Test Magaza");
-        result.Data.StoreSlug.Should().Be("test-magaza");
+        result.Data.StoreName.Should().Be("Test Mağaza");
+        result.Data.StoreSlug.Should().Be("test-Mağaza");
         result.Data.Status.Should().Be(SellerStatus.Pending);
         result.Data.CustomerId.Should().Be(42);
         result.Data.TenantId.Should().Be(1);
@@ -84,7 +84,7 @@ public class SellerManagerTests
 
         var manager = new SellerManager(_mockContextFactory.Object);
         var dto = new SellerRegistrationDto(
-            "Magaza", null, "Co", "123", "Off",
+            "Mağaza", null, "Co", "123", "Off",
             null, "555", "e@e.com", "A", "C");
 
         // Act
@@ -244,7 +244,7 @@ public class SellerManagerTests
         // Arrange
         var seller = new Seller
         {
-            TenantId = 1, StoreSlug = "test-magaza", StoreName = "Test Magaza",
+            TenantId = 1, StoreSlug = "test-Mağaza", StoreName = "Test Mağaza",
             CompanyName = "C", TaxNumber = "T", TaxOffice = "O",
             ContactPhone = "P", ContactEmail = "E", Address = "A", City = "C",
             Customer = new RetailCustomer { Name = "Ali", Surname = "Yilmaz", FullName = "Ali Yilmaz", Address = new Address() }
@@ -254,11 +254,11 @@ public class SellerManagerTests
         var manager = new SellerManager(_mockContextFactory.Object);
 
         // Act
-        var result = await manager.GetSellerBySlugAsync(1, "test-magaza");
+        var result = await manager.GetSellerBySlugAsync(1, "test-Mağaza");
 
         // Assert
         result.Success.Should().BeTrue();
-        result.Data.StoreName.Should().Be("Test Magaza");
+        result.Data.StoreName.Should().Be("Test Mağaza");
     }
 
     [Fact]

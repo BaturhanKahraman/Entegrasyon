@@ -33,7 +33,7 @@ public class StorefrontReviewManager(
             return new ErrorDataResult<StorefrontReview>(null!, "Puan 1-5 arasinda olmalidir.");
 
         if (string.IsNullOrWhiteSpace(comment))
-            return new ErrorDataResult<StorefrontReview>(null!, "Yorum alani bos birakilamaz.");
+            return new ErrorDataResult<StorefrontReview>(null!, "Yorum alanıbos birakilamaz.");
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
@@ -104,7 +104,7 @@ public class StorefrontReviewManager(
 
         var review = await dbContext.StorefrontReviews.FindAsync(id);
         if (review is null)
-            return new ErrorResult("Yorum bulunamadi.");
+            return new ErrorResult("Yorum bulunamadı.");
 
         review.IsApproved = true;
         dbContext.StorefrontReviews.Update(review);
@@ -119,7 +119,7 @@ public class StorefrontReviewManager(
 
         var review = await dbContext.StorefrontReviews.FindAsync(id);
         if (review is null)
-            return new ErrorResult("Yorum bulunamadi.");
+            return new ErrorResult("Yorum bulunamadı.");
 
         review.IsApproved = false;
         review.IsDeleted = true;
@@ -136,7 +136,7 @@ public class StorefrontReviewManager(
 
         var review = await dbContext.StorefrontReviews.FindAsync(id);
         if (review is null)
-            return new ErrorResult("Yorum bulunamadi.");
+            return new ErrorResult("Yorum bulunamadı.");
 
         review.ReplyText = replyText;
         review.RepliedAt = DateTimeOffset.UtcNow;

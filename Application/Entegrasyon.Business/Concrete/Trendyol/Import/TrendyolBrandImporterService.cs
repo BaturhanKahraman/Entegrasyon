@@ -43,7 +43,7 @@ public class TrendyolBrandImporterService : ITrendyolBrandImporterService
     {
         int page = -1;
         HashSet<BrandMarketPlaceMatch> brandMatchList = new();
-        await _logService.AddLog("Trendyoldan tum markalari iceri cekme islemine baslandi.",LogType.Brand);
+        await _logService.AddLog("Trendyoldan tum markalari iceri cekme işlemine baslandi.",LogType.Brand);
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
         var trendyolMarketPlace = await dbContext.MarketPlaces
@@ -62,7 +62,7 @@ public class TrendyolBrandImporterService : ITrendyolBrandImporterService
             }
             if(!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Brand importta gelen response hatali. {0}",JsonConvert.SerializeObject(response));
+                _logger.LogWarning("Brand importta gelen response Hatalı. {0}",JsonConvert.SerializeObject(response));
                 return new ErrorResult(Messages.BrandsImportingInterruptedNull);
             }
             var trendyolBrandRoot = await response.Content.ReadFromJsonAsync<TrendyolBrandRoot>();

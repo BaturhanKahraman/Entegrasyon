@@ -18,7 +18,7 @@ public class MatchedEntityImportController(IMatchedEntityImportManager matchedEn
     public async Task<IActionResult> Index(
         string? search = null, int? type = null, int page = 1, CancellationToken ct = default)
     {
-        ViewData.SetPageTitle("Eslestirilmis Varlik Aktarimi");
+        ViewData.SetPageTitle("Eşleştirilmiş Varlık Aktarımı");
         ViewData.SetActiveNav("matched-entities");
 
         var typeFilter = type.HasValue ? (MatchedEntityType)type.Value : (MatchedEntityType?)null;
@@ -49,10 +49,10 @@ public class MatchedEntityImportController(IMatchedEntityImportManager matchedEn
             if (Request.IsHtmx())
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = result.Message ?? "Paket bulunamadi.", type = "danger" });
+                    new { message = result.Message ?? "Paket bulunamadı.", type = "danger" });
                 return StatusCode(404);
             }
-            TempData.SetError(result.Message ?? "Paket bulunamadi.");
+            TempData.SetError(result.Message ?? "Paket bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -67,7 +67,7 @@ public class MatchedEntityImportController(IMatchedEntityImportManager matchedEn
         if (!conflictsResult.Success)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = conflictsResult.Message ?? "Cakisma tespiti basarisiz.", type = "danger" });
+                new { message = conflictsResult.Message ?? "Cakisma tespiti başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -96,7 +96,7 @@ public class MatchedEntityImportController(IMatchedEntityImportManager matchedEn
 
         var result = await matchedEntityImportManager.ImportPackageAsync(request, ct);
 
-        return HtmxMutationResult(result, "Paket basariyla import edildi.", "Import basarisiz.");
+        return HtmxMutationResult(result, "Paket basariyla import edildi.", "Import başarısız.");
     }
 }
 

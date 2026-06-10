@@ -56,7 +56,7 @@ public sealed class YurticiKargoService(
             {
                 logger.LogWarning("YurticiKargo createShipment failed: {OutResult}", result.OutResult);
                 await applicationLogManager.AddLog(
-                    $"Yurtici Kargo gonderi olusturma basarisiz: {result.OutResult}",
+                    $"Yurtici Kargo gonderi olusturma başarısız: {result.OutResult}",
                     LogType.Order, LogAction.Update, null, ct);
                 return new ErrorDataResult<YurticiCreateShipmentResponse>(result, result.OutResult);
             }
@@ -133,7 +133,7 @@ public sealed class YurticiKargoService(
             {
                 logger.LogWarning("YurticiKargo cancelShipment failed: {OutResult}", result.OutResult);
                 await applicationLogManager.AddLog(
-                    $"Yurtici Kargo iptal basarisiz: {result.OutResult}",
+                    $"Yurtici Kargo iptal başarısız: {result.OutResult}",
                     LogType.Order, LogAction.Update, null, ct);
                 return new ErrorResult(result.OutResult);
             }

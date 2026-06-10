@@ -19,8 +19,8 @@ Her istekte asagidaki headerlar zorunludur:
 
 | Header | Zorunlu | Aciklama |
 |--------|---------|----------|
-| `Api-Key` | Evet | Magaza API anahtari |
-| `Access-Token` | Evet | Magaza erisim tokeni |
+| `Api-Key` | Evet | Mağaza API anahtari |
+| `Access-Token` | Evet | Mağaza erisim tokeni |
 | `Content-Type` | Evet | `application/json` |
 | `X-Correlation-Id` | Evet | Istek izleme icin benzersiz ID (GUID) |
 
@@ -28,7 +28,7 @@ Her istekte asagidaki headerlar zorunludur:
 
 Basic Auth kullanir. `Authorization: Basic base64(username:password)` header'i gonderilir.
 
-## Iletisim
+## İletişim
 
 SOAP servisleri ile ilgili erisime ihtiyac icin: `entegrasyon@pttavm.com`
 

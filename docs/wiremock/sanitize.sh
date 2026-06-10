@@ -25,7 +25,7 @@ fi
 FILE="$1"
 
 if [ ! -f "$FILE" ]; then
-    echo "HATA: Dosya bulunamadi: $FILE"
+    echo "HATA: Dosya bulunamadı: $FILE"
     exit 2
 fi
 

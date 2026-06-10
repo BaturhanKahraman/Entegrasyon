@@ -25,7 +25,7 @@ public static class AppPages
         new("Toplu İşlem",          "/bulk-operations",      "ti-layers-subtract",  ["toplu", "bulk"], "Permissions.Products.Edit"),
         new("Depolar",              "/branch-offices",       "ti-building-warehouse",["depo", "subelik", "warehouse", "branch"], "Permissions.BranchOffices.View"),
         new("Stok Hareketleri",     "/stock-movements",      "ti-exchange",         ["stok hareketi", "stock movement"], "Permissions.Products.View"),
-        new("Pazaryeri Şablonları", "/matched-entities",     "ti-template",         ["sablon", "template", "eslesme"], "Permissions.Marketplace.View"),
+        new("Pazaryeri Şablonları", "/matched-entities",     "ti-template",         ["sablon", "template", "Eşleşme"], "Permissions.Marketplace.View"),
         new("Senkronizasyon",       "/marketplace/sync",     "ti-refresh",          ["senkron", "sync"], "Permissions.Marketplace.View"),
         new("Ürün Eşleştirme",      "/marketplace/matching", "ti-link",             ["eslestirme", "matching"], "Permissions.Marketplace.View"),
         new("Komisyon Oranları",    "/marketplace/commission-rates", "ti-percentage",["komisyon", "commission"], "Permissions.Marketplace.View"),

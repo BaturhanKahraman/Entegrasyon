@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Entegrasyon.Business.BackgroundServices;
 
 /// <summary>
-/// Her 15 dakikada abandoned cart recovery islemi calistirir.
+/// Her 15 dakikada abandoned cart recovery işlemi calistirir.
 /// Sadece storefront ozelligi acik olan tenant'lar icin calisir.
 /// </summary>
 public class AbandonedCartBackgroundService(

@@ -32,7 +32,7 @@ public class StorefrontEmailServiceTests
                 new() { Key = "SmtpUsername", Value = "user@test.com" },
                 new() { Key = "SmtpPassword", Value = "pass" },
                 new() { Key = "SmtpFromAddress", Value = "noreply@test.com" },
-                new() { Key = "SmtpFromDisplayName", Value = "Test Magaza" }
+                new() { Key = "SmtpFromDisplayName", Value = "Test Mağaza" }
             });
     }
 
@@ -102,7 +102,7 @@ public class StorefrontEmailServiceTests
         var service = CreateService();
 
         var result = await service.SendEmailVerificationAsync(
-            "test@test.com", "Ali", "token123", "Test Magaza", "test.com");
+            "test@test.com", "Ali", "token123", "Test Mağaza", "test.com");
 
         result.Success.Should().BeFalse();
     }
@@ -114,7 +114,7 @@ public class StorefrontEmailServiceTests
         var service = CreateService();
 
         var result = await service.SendPasswordResetAsync(
-            "test@test.com", "Ali", "resettoken", "Test Magaza", "test.com");
+            "test@test.com", "Ali", "resettoken", "Test Mağaza", "test.com");
 
         result.Success.Should().BeFalse();
     }
@@ -126,7 +126,7 @@ public class StorefrontEmailServiceTests
         var service = CreateService();
 
         var result = await service.SendWelcomeAsync(
-            "test@test.com", "Ali", "Test Magaza");
+            "test@test.com", "Ali", "Test Mağaza");
 
         result.Success.Should().BeFalse();
     }
@@ -138,7 +138,7 @@ public class StorefrontEmailServiceTests
         var service = CreateService();
 
         var result = await service.SendOrderConfirmationAsync(
-            "test@test.com", "Ali", "SF-20260326-ABC12345", 199.90m, "Test Magaza", "test.com");
+            "test@test.com", "Ali", "SF-20260326-ABC12345", 199.90m, "Test Mağaza", "test.com");
 
         result.Success.Should().BeFalse();
     }

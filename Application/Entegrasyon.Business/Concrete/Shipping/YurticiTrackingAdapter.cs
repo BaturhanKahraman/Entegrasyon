@@ -31,7 +31,7 @@ public class YurticiTrackingAdapter(
                 return new ErrorDataResult<ShipmentTrackingDto>(null!, result.Message ?? "Yurtici Kargo takip bilgisi alinamadi");
 
             if (result.Data == null || result.Data.Count == 0)
-                return new ErrorDataResult<ShipmentTrackingDto>(null!, "Yurtici Kargo gonderi bulunamadi");
+                return new ErrorDataResult<ShipmentTrackingDto>(null!, "Yurtici Kargo gonderi bulunamadı");
 
             var shipment = result.Data[0];
             var status = MapOperationCode(shipment.OperationCode);

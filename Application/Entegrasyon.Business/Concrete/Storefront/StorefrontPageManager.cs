@@ -31,7 +31,7 @@ public class StorefrontPageManager(
             .FirstOrDefaultAsync(p => p.TenantId == tenantId && p.Slug == slug && p.IsPublished);
 
         if (page is null)
-            return new ErrorDataResult<StorefrontPage>(null!, "Sayfa bulunamadi.");
+            return new ErrorDataResult<StorefrontPage>(null!, "Sayfa bulunamadı.");
 
         return new SuccessDataResult<StorefrontPage>(page);
     }

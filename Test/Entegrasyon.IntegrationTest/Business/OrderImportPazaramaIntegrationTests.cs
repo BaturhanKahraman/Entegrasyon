@@ -257,7 +257,7 @@ public class OrderImportPazaramaIntegrationTests : IntegrationTestBase
             // Act — lock alinmis durumda import dene
             var result = await orderManager.ImportPazaramaOrdersAsync(orders);
 
-            // Assert — lock nedeniyle basarisiz olmali
+            // Assert — lock nedeniyle başarısız olmali
             result.Success.Should().BeFalse("Advisory lock should prevent concurrent import");
             result.Message.Should().Contain("zaten devam ediyor");
         }

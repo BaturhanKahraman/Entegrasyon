@@ -17,7 +17,7 @@ public sealed class TrendyolMappingValidator(IDbContextFactory<IntegrationDbCont
             .FirstOrDefaultAsync();
 
         if (product is null)
-            return new ErrorResult("Urun bulunamadi.");
+            return new ErrorResult("Urun bulunamadı.");
 
         var errors = new List<string>();
 

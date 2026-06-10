@@ -43,9 +43,9 @@ public class StorefrontController(
     [HttpGet("/settings/storefront")]
     public async Task<IActionResult> Settings()
     {
-        ViewData.SetPageTitle("Magaza Ayarlari");
+        ViewData.SetPageTitle("Mağaza Ayarlari");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", null), ("Ayarlar", null));
+        ViewData.SetBreadcrumb(("Mağaza", null), ("Ayarlar", null));
 
         var result = await settingsManager.GetByTenantIdAsync(TenantId);
         return View(result.Data);
@@ -58,8 +58,8 @@ public class StorefrontController(
         var result = await settingsManager.CreateOrUpdateAsync(model);
 
         return HtmxMutationResult(result,
-            "Magaza ayarlari kaydedildi.",
-            "Magaza ayarlari kaydedilemedi.",
+            "Mağaza ayarlari kaydedildi.",
+            "Mağaza ayarlari kaydedilemedi.",
             refreshEvent: "settingsUpdated",
             redirectAction: nameof(Settings));
     }
@@ -82,7 +82,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Banner Yonetimi");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Bannerlar", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Bannerlar", null));
 
         var result = await bannerManager.GetAllBannersAsync(TenantId);
         return View(result.Data ?? []);
@@ -134,7 +134,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Odeme Ayarlari");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Odeme Ayarlari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Odeme Ayarlari", null));
 
         var result = await settingsManager.GetByTenantIdAsync(TenantId);
         return View(result.Data);
@@ -147,7 +147,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Yasal Bilgiler");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Yasal Bilgiler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Yasal Bilgiler", null));
 
         var result = await settingsManager.GetByTenantIdAsync(TenantId);
         return View(result.Data);
@@ -172,7 +172,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Degerlendirmeler");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Degerlendirmeler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Degerlendirmeler", null));
 
         var result = await reviewManager.GetAllReviewsAsync(TenantId);
         return View(result.Data ?? []);
@@ -221,7 +221,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Iadeler");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Iadeler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Iadeler", null));
 
         var result = await returnManager.GetAllReturnsAsync(TenantId);
         return View(result.Data ?? []);
@@ -242,7 +242,7 @@ public class StorefrontController(
 
         return HtmxMutationResult(result,
             $"Iade talebi {statusText}.",
-            $"Iade talebi {statusText} islemi basarisiz.",
+            $"Iade talebi {statusText} işlemi başarısız.",
             refreshEvent: "returnsUpdated",
             redirectAction: nameof(Returns));
     }
@@ -254,7 +254,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Saticilar");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Saticilar", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Saticilar", null));
 
         // Marketplace/seller feature controlled via settings
         var result = await settingsManager.GetByTenantIdAsync(TenantId);
@@ -268,7 +268,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Kampanyalar");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Kampanyalar", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Kampanyalar", null));
 
         var result = await campaignManager.GetCampaignsAsync(TenantId);
         var vm = new CampaignsVm { Campaigns = result.Data ?? [] };
@@ -330,7 +330,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("E-posta Kampanyalari");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("E-posta Kampanyalari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("E-posta Kampanyalari", null));
 
         var result = await campaignManager.GetCampaignsAsync(TenantId);
         var vm = new EmailCampaignsVm { Campaigns = result.Data ?? [] };
@@ -344,7 +344,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Mesajlar");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Mesajlar", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Mesajlar", null));
 
         var contactResult = await contactManager.GetMessagesAsync(TenantId);
         var qnaResult = await qnaManager.GetUnansweredQuestionsAsync(TenantId);
@@ -365,7 +365,7 @@ public class StorefrontController(
 
         return HtmxMutationResult(result,
             "Mesaj okundu olarak isaretlendi.",
-            "Islem basarisiz.",
+            "Islem başarısız.",
             refreshEvent: "messagesUpdated",
             redirectAction: nameof(Messages));
     }
@@ -389,7 +389,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Bulten Yonetimi");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Bulten", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Bulten", null));
 
         var result = await newsletterManager.GetSubscribersAsync(TenantId);
         var vm = new NewsletterVm { Subscribers = result.Data ?? [] };
@@ -427,7 +427,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Odemeler");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Odemeler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Odemeler", null));
 
         var result = await payoutManager.GetAllPendingPayoutsAsync(TenantId);
         var vm = new PayoutsVm { PendingPayouts = result.Data ?? [] };
@@ -441,7 +441,7 @@ public class StorefrontController(
 
         return HtmxMutationResult(result,
             approve ? "Odeme onaylandi." : "Odeme reddedildi.",
-            "Odeme islemi basarisiz.",
+            "Odeme işlemi başarısız.",
             refreshEvent: "payoutsUpdated",
             redirectAction: nameof(Payouts));
     }
@@ -453,7 +453,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Beden Kilavuzlari");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Beden Kilavuzlari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Beden Kilavuzlari", null));
 
         var result = await sizeGuideManager.GetAllSizeGuidesAsync(TenantId);
         var vm = new SizeGuidesVm { SizeGuides = result.Data ?? [] };
@@ -524,7 +524,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Satici Komisyonlari");
         ViewData.SetActiveNav("storefront-commissions");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Satici Komisyonlari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Satici Komisyonlari", null));
 
         var result = await sellerCommissionManager.GetCommissionsAsync(TenantId);
         return HtmxView("Commissions", result.Data ?? []);
@@ -549,7 +549,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Terk Edilen Sepetler");
         ViewData.SetActiveNav("storefront-abandoned-carts");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Terk Edilen Sepetler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Terk Edilen Sepetler", null));
 
         var result = await abandonedCartManager.GetAbandonedCartEmailsAsync(TenantId);
         return HtmxView("AbandonedCarts", result.Data ?? []);
@@ -562,7 +562,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Referans Programi");
         ViewData.SetActiveNav("storefront-referrals");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Referans Programi", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Referans Programi", null));
 
         return View();
     }
@@ -574,7 +574,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Musteri Cuzdanlari");
         ViewData.SetActiveNav("storefront-wallets");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Musteri Cuzdanlari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Musteri Cuzdanlari", null));
 
         var vm = new WalletsVm();
         return HtmxView(vm);
@@ -585,7 +585,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle($"Cuzdan Detayi - #{id}");
         ViewData.SetActiveNav("storefront-wallets");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Musteri Cuzdanlari", "/storefront/wallets"), ($"#{id}", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Musteri Cuzdanlari", "/storefront/wallets"), ($"#{id}", null));
 
         var walletResult = await walletManager.GetOrCreateWalletAsync(TenantId, id);
         var txResult = await walletManager.GetTransactionsAsync(TenantId, id);
@@ -611,7 +611,7 @@ public class StorefrontController(
         if (result.Success)
             TempData.SetSuccess($"{amount:N2} TL cuzdana yuklendi.");
         else
-            TempData.SetError(result.Message ?? "Yukleme basarisiz.");
+            TempData.SetError(result.Message ?? "Yukleme başarısız.");
 
         return RedirectToAction(nameof(WalletDetail), new { id });
     }
@@ -623,7 +623,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Sadakat Programi");
         ViewData.SetActiveNav("storefront-loyalty");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Sadakat Programi", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Sadakat Programi", null));
 
         var dashboard = await loyaltyManager.GetDashboardAsync(TenantId);
         var vm = new LoyaltyVm { Dashboard = dashboard };
@@ -635,7 +635,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle($"Sadakat Detayi - #{id}");
         ViewData.SetActiveNav("storefront-loyalty");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Sadakat Programi", "/storefront/loyalty"), ($"#{id}", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Sadakat Programi", "/storefront/loyalty"), ($"#{id}", null));
 
         var balanceResult = await loyaltyManager.GetBalanceAsync(TenantId, id);
         var txResult = await loyaltyManager.GetTransactionsAsync(TenantId, id);
@@ -662,7 +662,7 @@ public class StorefrontController(
         if (result.Success)
             TempData.SetSuccess($"{points} puan musteriye eklendi.");
         else
-            TempData.SetError(result.Message ?? "Puan ekleme basarisiz.");
+            TempData.SetError(result.Message ?? "Puan ekleme başarısız.");
 
         return RedirectToAction(nameof(LoyaltyCustomer), new { id });
     }
@@ -674,7 +674,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Istek Listeleri");
         ViewData.SetActiveNav("storefront-wishlists");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Istek Listeleri", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Istek Listeleri", null));
 
         return HtmxView("Wishlists");
     }
@@ -686,7 +686,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Stok Bildirimleri");
         ViewData.SetActiveNav("storefront-stock-notifications");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Stok Bildirimleri", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Stok Bildirimleri", null));
 
         return HtmxView("StockNotifications");
     }
@@ -698,7 +698,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Arama Analitik");
         ViewData.SetActiveNav("storefront-search-analytics");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Arama Analitik", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Arama Analitik", null));
 
         var result = await searchHistoryManager.GetPopularSearchesAsync(TenantId, 10);
         return HtmxView("SearchAnalytics", result.Data ?? []);
@@ -711,7 +711,7 @@ public class StorefrontController(
     {
         ViewData.SetPageTitle("Push Bildirimler");
         ViewData.SetActiveNav("storefront-push-notifications");
-        ViewData.SetBreadcrumb(("Magaza", "/settings/storefront"), ("Push Bildirimler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Push Bildirimler", null));
 
         var countResult = await pushManager.GetSubscriberCountAsync(TenantId);
 

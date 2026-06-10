@@ -66,7 +66,7 @@ Degisiklikler:
 `BranchOfficeManager.Delete()`:
 ```
 1. id <= 0 → hata
-2. Aktif depo sayisi (IsDeleted=false) <= 1 → "En az 1 aktif depo olmalidir."
+2. Aktif depo Sayısı (IsDeleted=false) <= 1 → "En az 1 aktif depo olmalidir."
 3. Open POS oturumu var mi (POSSessions.Any(s => s.BranchOfficeId == id && s.Status == Open)) → engelle
 4. IsDefaultMarketPlaceStock == true → "Once baska bir depoyu varsayilan yapin."
 5. Soft delete: IsDeleted=true, DeletedAt=UtcNow
@@ -102,7 +102,7 @@ Task<IDataResult<StockTransferResultDto>> TransferStockAsync(
 3. Hedef depo aktif mi kontrol et
 4. BeginTransactionAsync()
 5. Her item icin DecreaseStockAtomicAsync (StockMovementType.Transfer)
-6. Basarisizsa RollbackAsync(), ErrorDataResult don
+6. başarısızsa RollbackAsync(), ErrorDataResult don
 7. Her item icin IncreaseStockAtomicAsync (StockMovementType.Transfer)
 8. CommitAsync()
 9. StockPriceChangedEvent publish (kaynak + hedef)
@@ -125,7 +125,7 @@ Task<IDataResult<StockTransferResultDto>> TransferStockAsync(
 
 **UI:**
 - `MudDataGrid<BranchListDetailDto>` (mevcut pageable DTO kullan)
-- Kolonlar: Ad, Kullanici Sayisi, Toplam Stok (BranchOfficeStocks.Sum), Olusturma Tarihi, Aksiyonlar
+- Kolonlar: Ad, Kullanici Sayısı, Toplam Stok (BranchOfficeStocks.Sum), Olusturma Tarihi, Aksiyonlar
 - "Yeni Depo Ekle" butonu → BranchOfficeDialog ac
 - Row aksiyonlar: Duzenle (BranchOfficeDialog edit mode), Detay (NavigationManager → /branch-offices/{id}), Sil (BranchOfficeDeleteDialog)
 
@@ -170,7 +170,7 @@ Task<IDataResult<List<BranchOfficePageListDto>>> GetPageBranchListAsync();
 - Ad (inline duzenlenebilir MudTextField)
 - IsDefaultMarketPlaceStock (MudSwitch)
 - Olusturma tarihi
-- Kullanici sayisi
+- Kullanici Sayısı
 - "Kaydet" butonu → IBranchOfficeManager.Update
 
 **Tab 2 — Stok Durumu:**

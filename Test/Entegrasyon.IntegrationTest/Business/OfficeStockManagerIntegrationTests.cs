@@ -103,7 +103,7 @@ public class OfficeStockManagerIntegrationTests : IntegrationTestBase
 
         var results = await Task.WhenAll(task1, task2);
 
-        // Assert — biri basarili, biri basarisiz olmali
+        // Assert — biri basarili, biri başarısız olmali
         var successCount = results.Count(r => r.Success);
         var failCount = results.Count(r => !r.Success);
         successCount.Should().Be(1);

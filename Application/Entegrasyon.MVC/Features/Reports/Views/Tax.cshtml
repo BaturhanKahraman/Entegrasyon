@@ -4,11 +4,11 @@
             <div class="card-body">
                 <form method="get" action="/reports/tax" class="row g-3 align-items-end">
                     <div class="col-auto">
-                        <label class="form-label">Baslangic</label>
+                        <label class="form-label">Başlangıç</label>
                         <input type="date" class="form-control" name="startDate" value="@(((DateOnly)ViewBag.StartDate).ToString("yyyy-MM-dd"))" />
                     </div>
                     <div class="col-auto">
-                        <label class="form-label">Bitis</label>
+                        <label class="form-label">Bitiş</label>
                         <input type="date" class="form-control" name="endDate" value="@(((DateOnly)ViewBag.EndDate).ToString("yyyy-MM-dd"))" />
                     </div>
                     <div class="col-auto">
@@ -46,7 +46,7 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="card">
                     <div class="card-body">
-                        <div class="subheader">Satış Sayisi</div>
+                        <div class="subheader">Satış Sayısı</div>
                         <div class="h1 mb-0">@Model.Summary.TotalSales</div>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Gunluk KDV Dagilimi</h3>
+                <h3 class="card-title">Gunluk KDV Dağılımı</h3>
             </div>
             <div class="table-responsive">
                 <table class="table table-vcenter card-table table-hover">

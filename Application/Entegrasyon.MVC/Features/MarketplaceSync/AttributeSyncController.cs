@@ -100,13 +100,13 @@ public class AttributeSyncController(
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
                     Response.HtmxTriggerWithData("showToast",
-                        new { message = "Ozellik eslesmesi kaydedildi. Yonlendiriliyorsunuz...", type = "success" });
+                        new { message = "Ozellik Eşleşmesi kaydedildi. Yonlendiriliyorsunuz...", type = "success" });
                     Response.Headers["HX-Redirect"] = returnUrl;
                     return Content("");
                 }
 
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Ozellik eslesmesi kaydedildi.", type = "success" });
+                    new { message = "Ozellik Eşleşmesi kaydedildi.", type = "success" });
                 Response.HtmxTrigger("refreshList");
                 return Content("");
             }
@@ -132,7 +132,7 @@ public class AttributeSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Ozellik eslesmesi kaldirildi.", type = "success" });
+                    new { message = "Ozellik Eşleşmesi kaldirildi.", type = "success" });
                 Response.HtmxTrigger("refreshList");
                 return Content("");
             }
@@ -155,7 +155,7 @@ public class AttributeSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Deger eslesmesi kaydedildi.", type = "success" });
+                    new { message = "Deger Eşleşmesi kaydedildi.", type = "success" });
                 return Content("");
             }
 
@@ -177,7 +177,7 @@ public class AttributeSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Deger eslesmesi kaldirildi.", type = "success" });
+                    new { message = "Deger Eşleşmesi kaldirildi.", type = "success" });
                 return Content("");
             }
 

@@ -19,7 +19,7 @@
 ### CategorySync Sayfasi
 
 - Eslestirilen kategorilerde "Eslestir" butonu yerine "Duzenle/Kaldir" butonlari gosterilir
-- Eslestirme durumu marketplace bazinda bagimsiz — Trendyol'da eslesmis ama N11'de eslesmemis olabilir
+- Eslestirme durumu marketplace bazinda bagimsiz — Trendyol'da eslesmis ama N11'de Eşleşmemis olabilir
 
 ### BulkCategoryMatchPage
 
@@ -71,7 +71,7 @@ Query parametreleri:
 **Duplicate prevention:**
 - Zaten baska bir uygulama attribute'ina eslestirilen marketplace attribute'i oneri listesinde "kullaniliyor" olarak isaretlenir, secilemez
 - Ayni uygulama attribute'i ayni marketplace'te iki kez eslestirilemez
-- Her eslestirme marketplace bazinda bagimsiz — "Renk" Trendyol'da eslesmis ama Amazon'da eslesmemis olabilir
+- Her eslestirme marketplace bazinda bagimsiz — "Renk" Trendyol'da eslesmis ama Amazon'da Eşleşmemis olabilir
 
 ---
 
@@ -164,7 +164,7 @@ Pazar Yeri Sync
 Tum eslestirme degisiklikleri (kategori, attribute, value) ayni etki analizi pipeline'indan gececek. Bu, strateji dokumanindaki Parca 2 (Etki Analizi + Uyari) kapsaminda implement edilecek.
 
 Eslestirme kaldirildiginda veya degistirildiginde:
-- Etkilenen yayindaki urun sayisi hesaplanir
+- Etkilenen yayindaki urun Sayısı hesaplanir
 - Kullaniciya uyari gosterilir: "Bu eslestirmeyi kaldirirseniz X urun etkilenir"
 - Kullanici onaylarsa islem yapilir
 - Etkilenen urunler "guncelleme gerekli" durumuna duser

@@ -9,7 +9,7 @@ Auth: Basic Auth
 
 **POST** `/api/v1/get-warehouse`
 
-Magazaya ait depo verilerini dondurur.
+Mağazaya ait depo verilerini dondurur.
 
 ### Response
 
@@ -79,7 +79,7 @@ Magazaya ait depo verilerini dondurur.
 ### HTTP Durum Kodlari
 
 - 200: Basarili
-- 422: Hatali istek
+- 422: Hatalı istek
 
 ---
 
@@ -148,7 +148,7 @@ Magazaya ait depo verilerini dondurur.
 ### HTTP Durum Kodlari
 
 - 200: Basarili
-- 400: Hatali istek
+- 400: Hatalı istek
 
 ---
 
@@ -175,7 +175,7 @@ Kargosuz Siparişleri (dijital urunler) "teslim edildi" durumuna gecirir.
 }
 ```
 
-### Response (Basarisiz)
+### Response (başarısız)
 
 ```json
 {

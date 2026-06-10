@@ -230,7 +230,7 @@ Cache: IMemoryCache, 10 dakika TTL. Dashboard'dan settings degistiginde EventCha
 
 ### Yeni Entity'ler
 
-**StorefrontSettings : BaseEntity** — Tenant bazli magaza ayarlari
+**StorefrontSettings : BaseEntity** — Tenant bazli Mağaza ayarlari
 - TenantId (unique), ThemeId, StoreName, StoreSlogan
 - LogoUrl, FaviconUrl, PrimaryColor, SecondaryColor, AccentColor, CustomCss
 - CompanyName, CompanyTaxOffice, CompanyTaxNumber, MersisNumber, KepAddress

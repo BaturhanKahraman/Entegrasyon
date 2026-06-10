@@ -1028,7 +1028,7 @@ public class ProductController(
         if (!result.Success)
         {
             Response.StatusCode = 422;
-            return Content(result.Message ?? "Islem basarisiz.");
+            return Content(result.Message ?? "Islem başarısız.");
         }
 
         TempData.SetSuccess($"{result.Data!.VariantsUpdated} varyanta %{discountPercentage} indirim uyguland\u0131.");
@@ -1064,7 +1064,7 @@ public class ProductController(
         var result = await bulkOperationManager.ExportProductsAsync(filter);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Export basarisiz.");
+            TempData.SetError(result.Message ?? "Export başarısız.");
             return RedirectToAction(nameof(Index));
         }
         return File(result.Data!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"urunler-{DateTime.Now:yyyyMMdd}.xlsx");

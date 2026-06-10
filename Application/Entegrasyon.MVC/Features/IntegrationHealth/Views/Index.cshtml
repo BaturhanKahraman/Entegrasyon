@@ -21,7 +21,7 @@
                             </div>
                         </div>
                         <div class="h1 mb-0">@Model.RecentSyncCount</div>
-                        <div class="text-secondary mt-1">Son 24 saatteki senkronizasyon islemi</div>
+                        <div class="text-secondary mt-1">Son 24 saatteki senkronizasyon işlemi</div>
                     </div>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                             </div>
                         </div>
                         <div class="h1 mb-0 @(Model.RecentErrorCount > 0 ? "text-danger" : "")">@Model.RecentErrorCount</div>
-                        <div class="text-secondary mt-1">Son 24 saatteki hata sayisi</div>
+                        <div class="text-secondary mt-1">Son 24 saatteki hata Sayısı</div>
                     </div>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                         else
                         {
                             <div class="h2 mb-0 text-secondary">-</div>
-                            <div class="text-secondary mt-1">Sync logu bulunamadi</div>
+                            <div class="text-secondary mt-1">Sync logu bulunamadı</div>
                         }
                     </div>
                 </div>
@@ -143,7 +143,7 @@
                     <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
-                                 Title = "Hata bulunamadi",
+                                 Title = "Hata bulunamadı",
                                  Subtitle = "Son donemde kaydedilmis hata logu yok. Her sey calisiyor gorunuyor."
                              }'/>
                 </div>

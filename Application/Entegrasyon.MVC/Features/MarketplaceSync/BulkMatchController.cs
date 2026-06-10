@@ -90,7 +90,7 @@ public class BulkMatchController(
         if (!result.Success || result.Data.Count == 0)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = "Otomatik esleme onerisi bulunamadi.", type = "info" });
+                new { message = "Otomatik esleme onerisi bulunamadı.", type = "info" });
             return PartialView($"{ViewBase}/Partials/_SuggestionsEmpty.cshtml");
         }
 
@@ -144,7 +144,7 @@ public class BulkMatchController(
             var data = result.Data!;
             var msg = $"{data.SuccessCount} kategori otomatik eslendi.";
             if (data.FailedCount > 0)
-                msg += $" {data.FailedCount} basarisiz.";
+                msg += $" {data.FailedCount} başarısız.";
             if (data.SkippedCount > 0)
                 msg += $" {data.SkippedCount} atlandi.";
 
@@ -155,7 +155,7 @@ public class BulkMatchController(
         }
 
         Response.HtmxTriggerWithData("showToast",
-            new { message = result.Message ?? "Otomatik esleme basarisiz.", type = "danger" });
+            new { message = result.Message ?? "Otomatik esleme başarısız.", type = "danger" });
         return StatusCode(422);
     }
 
@@ -205,7 +205,7 @@ public class BulkMatchController(
                 var data = result.Data!;
                 var msg = $"{data.SuccessCount} kategori eslendi.";
                 if (data.FailedCount > 0)
-                    msg += $" {data.FailedCount} basarisiz.";
+                    msg += $" {data.FailedCount} başarısız.";
                 if (data.SkippedCount > 0)
                     msg += $" {data.SkippedCount} atlandi.";
 
@@ -216,14 +216,14 @@ public class BulkMatchController(
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Toplu esleme basarisiz.", type = "danger" });
+                new { message = result.Message ?? "Toplu esleme başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
         if (result.Success)
             TempData.SetSuccess($"{result.Data!.SuccessCount} kategori eslendi.");
         else
-            TempData.SetError(result.Message ?? "Toplu esleme basarisiz.");
+            TempData.SetError(result.Message ?? "Toplu esleme başarısız.");
 
         return RedirectToAction(nameof(Index), new { mp });
     }

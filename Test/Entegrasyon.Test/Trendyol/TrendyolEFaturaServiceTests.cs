@@ -130,7 +130,7 @@ public class TrendyolEFaturaServiceTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("bulunamadi");
+        result.Message.Should().Contain("bulunamadı");
     }
 
     [Fact]

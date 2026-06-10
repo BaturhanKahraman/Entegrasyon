@@ -6,7 +6,7 @@
 
 ## Amac
 
-1. Kategori ekleme/duzenleme islemi modal'dan cikarilip 3 adimli wizard sayfasina tasiniyor
+1. Kategori ekleme/duzenleme işlemi modal'dan cikarilip 3 adimli wizard sayfasina tasiniyor
 2. Tum form sayfalari icin yeniden kullanilabilir "unsaved changes guard" altyapisi olusturuluyor
 3. AllowCustom toggle'i kategori bazindan kaldirilip attribute bazinda global kalacak sekilde duzeltiliyor
 4. Marketplace eslestirmesi sonrasi attribute sayfasina deep link ile yonlendirme ekleniyor
@@ -176,7 +176,7 @@ Kaydet'e basildiginda:
   - `AllowCustom == false` → `<MudChip Color="Color.Default">Serbest deger: Hayir</MudChip>`
 
 **Kaydetme:**
-- DTO'da `AllowCustom` alani attribute'in mevcut degerinden okunacak
+- DTO'da `AllowCustom` alanıattribute'in mevcut degerinden okunacak
 - Kullanici tarafindan degistirilmeyecek
 
 **Mevcut CategoryDialog ve CategoryEdit'teki switch'ler:**

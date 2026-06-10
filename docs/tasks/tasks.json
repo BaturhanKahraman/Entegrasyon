@@ -969,5 +969,115 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "C1 — Repricing / rakip fiyat takibi (rakiplerin en güçlü silahı — bizde YOK)",
+    "description": "Kaynak: docs/rakip-analizi.md (PA kod-önce doğrulama 2026-06-10). PROBLEM: Pazaryerindeki rakip fiyatlarını izleyip kurallar dahilinde otomatik fiyat güncelleme YOK. KOD-ÖNCE TEYİT: grep Repricing/Competitor/BuyBox boş — hiç yok. RAKİP DURUMU: Entegra + Dopigo'nun EN GÜÇLÜ satış argümanı; 'rakip fiyatını çek → belirlenen sınırlar içinde otomatik altına in / buy-box kazan'. Doğrudan satış artırıcı, müşteri için en değerli özellik. FIX: (1) Pazaryeri rakip-fiyat/buy-box API'lerinden veri çek (Trendyol/Hepsiburada competitor price endpoint'leri), (2) kural motoru (min-kar/max-indirim sınırı, rakibin X TL altına in, buy-box hedefle), (3) otomatik fiyat güncelleme (mevcut StockPriceSync altyapısına bağla). C2 (marj-bazlı fiyatlandırma) ile sinerjik.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). EN YÜKSEK ÖNCELİKLİ REKABET AÇIĞI — rakiplerin baş satış argümanı. Büyük iş, ayrı spec gerekir. AÇIK SORU (TL): hangi pazaryerleri buy-box/rakip-fiyat API'si veriyor (hepsi vermez)? Roller: PA (spec), SWE (kural motoru + API), DB Master (fiyat-geçmiş + kural tablosu), Designer (kural UI), QA. Mevcut PricingRuleManager (C2) genişletilebilir temel. Pazaryeri canlı fiyat yazma — risk notu: yanlış kural = zararına satış; min-kar koruması ŞART.",
+    "manual_test_steps": [
+      "Bir ürün için repricing kuralı tanımla (rakibin 1 TL altına in, min-kar %10 koru)",
+      "Mock rakip fiyatı düşür → ürün fiyatının kural sınırında otomatik güncellendiğini doğrula",
+      "Rakip fiyatı min-kar sınırının altına inerse → fiyatın min-kar'da durduğunu (zararına inmediğini) doğrula",
+      "Güncellenen fiyatın pazaryerine push edildiğini (WireMock request) doğrula",
+      "Kural devre dışıyken otomatik güncelleme olmadığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "C2 — Maliyet/kâr-marjı bazlı dinamik fiyatlandırma (mevcut PricingRule statik oran)",
+    "description": "Kaynak: rakip-analizi.md (PA kod-önce teyit). DURUM: KISMEN VAR. KOD-ÖNCE TEYİT: PricingRuleManager + PricingRule (RuleType Percentage/FixedAmount, Direction, Priority, Scope AllProducts/Category/Brand) VAR; CommissionCalculator (pazaryeri komisyon/servis/işlem ücreti hesabı) VAR. EKSİK: kurallar STATİK oran — maliyet/kâr-marjı bazlı DEĞİL. Maliyet değişince otomatik fiyat güncelleme, kâr-marjı koruma kuralı, platform-bazlı farklı strateji YOK. FIX: PricingRule'a maliyet-bazlı tür ekle (alış maliyeti + hedef marj → satış fiyatı), komisyon/kargo/vergi düşülerek net-marj koruma (CommissionCalculator entegre), maliyet değişince otomatik yeniden fiyatlama. Platform-bazlı strateji (Trendyol agresif, Amazon yüksek-marj).",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Mevcut PricingRuleManager temelinde GENİŞLETME. C1 (repricing) ile sinerjik — ikisi birlikte güçlü fiyat motoru. Roller: SWE (maliyet-marj kuralı + CommissionCalculator entegre), DB Master (maliyet alanı/geçmiş), QA. Ürün maliyet verisi (alış fiyatı) mevcut mu — SWE teyit etmeli.",
+    "manual_test_steps": [
+      "Bir ürüne alış maliyeti + hedef net-marj %20 kuralı tanımla",
+      "Pazaryeri komisyonu/kargo/vergi düşülerek satış fiyatının net %20 marj koruyacak şekilde hesaplandığını doğrula",
+      "Alış maliyetini artır → satış fiyatının otomatik güncellendiğini doğrula",
+      "Platform-bazlı farklı marj stratejisinin uygulandığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "C3 — Set/Paket (Bundle/Kit) yönetimi (bizde YOK, Cin7/Linnworks standardı)",
+    "description": "Kaynak: rakip-analizi.md (PA kod-önce teyit). PROBLEM: Birden çok ürünü tek SKU olarak satma + parça-bazlı otomatik stok düşümü YOK. KOD-ÖNCE TEYİT: grep Bundle/Kit/ProductSet/Composite boş ('Paket' sadece Hepsiburada paketleme/shipping anlamında). RAKİP: Cin7 + Linnworks'ta standart. KULLANIM: Esnaf 'kombin set' (üst+alt+şapka) tek ürün olarak satar; satılınca her parçanın stoğu otomatik düşer. FIX: Bundle entity (bundle SKU → bileşen variant'lar + adet); satışta bileşen stok düşümü (mevcut atomik stok altyapısı); pazaryerine bundle gönderimi.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). zekidsbebe için ilgili olabilir (bebe kombin setleri). Roller: DB Master (Bundle veri modeli + migration), SWE (bundle satış→bileşen stok düşümü, OfficeStockManager entegre), Designer (bundle oluşturma UI), QA. Stok atomikliği (Konu1) korunmalı.",
+    "manual_test_steps": [
+      "Bir bundle oluştur (3 variant + adetleri)",
+      "Bundle'ı sat → her bileşen variant stoğunun adet × satış kadar düştüğünü doğrula",
+      "Bir bileşen stoğu yetersizse bundle'ın satılabilir olmadığını doğrula",
+      "Bundle'ın pazaryerine/storefront'a tek ürün olarak gittiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "C4 — Satın Alma Siparişi (Purchase Order) + min-stok uyarı + tedarikçi (bizde YOK)",
+    "description": "Kaynak: rakip-analizi.md (PA kod-önce teyit). PROBLEM: Tedarikçi siparişi, minimum stok uyarısı, otomatik satın alma önerisi YOK. KOD-ÖNCE TEYİT: grep PurchaseOrder/Supplier/MinStock/ReorderPoint boş. RAKİP: orta-büyük işletmenin olmazsa olmazı (Cin7/Linnworks). KULLANIM: Stok azalınca uyar → tedarikçiye sipariş oluştur → mal girişinde stok artır. FIX: Supplier entity + PurchaseOrder (tedarikçi, kalemler, durum) + min-stok eşiği (variant başına) + düşük-stokta uyarı/öneri + mal-giriş ile stok artışı (IncreaseStockAtomic).",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). zekidsbebe (fiziksel mağaza + depo) için değerli. Roller: DB Master (Supplier/PurchaseOrder veri modeli + migration), SWE (PO akışı + min-stok uyarı + mal giriş), Designer (PO UI), QA. Stok artışı mevcut atomik API'ye bağlanmalı.",
+    "manual_test_steps": [
+      "Bir variant'a minimum stok eşiği tanımla",
+      "Stoğu eşiğin altına düşür → düşük-stok uyarısı/önerisinin oluştuğunu doğrula",
+      "Tedarikçiye satın alma siparişi oluştur → kalemleri/durumu doğrula",
+      "PO mal girişi yap → stoğun (IncreaseStockAtomic ile) arttığını ve event yayıldığını doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "C5 [LOW] — AI içerik üretimi (ürün açıklaması/görsel — Ollama/Claude)",
+    "description": "Kaynak: rakip-analizi.md (PA kod-önce teyit). PROBLEM: AI ile ürün açıklaması/başlık/görsel üretimi YOK. KOD-ÖNCE TEYİT: grep OpenAI/Claude/GenerateDescription boş; Ollama SADECE AttributeAutoMatchService/CategoryAutoMatchService'te eşleştirme için kullanılıyor; AiCreditAccount sadece credit accounting (kullanım yok). RAKİP: Ticimax/Dopigo AI içerik/fiyat sunuyor. KULLANIM: Esnaf ürün açıklaması yazmakla uğraşmasın — AI üretsin (pazaryeri kuralına uygun, E1 transform ile). FIX: Ollama (yerel, ücretsiz) veya Claude API ile ürün açıklaması/başlık üretimi; AiCredit accounting zaten var. E1 (pazaryeri-format transform) ile sinerjik — AI üret + pazaryeri formatına dönüştür.",
+    "status": "todo",
+    "priority": "low",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). E1 (transform) + per-marketplace ile sinerjik. Düşük öncelik ama fark yaratıcı + AiCredit altyapısı hazır. Roller: SWE (Ollama/Claude entegrasyon — yerel Ollama ücretsiz tercih), Designer (üret-düzenle UI), QA. AÇIK SORU (TL): yerel Ollama mı (ücretsiz, kalite düşük) Claude API mi (maliyetli, kaliteli)?",
+    "manual_test_steps": [
+      "Bir ürün için 'AI ile açıklama üret' → makul bir ürün açıklaması üretildiğini doğrula",
+      "Üretilen açıklamanın E1 ile pazaryeri formatına (Trendyol düz metin) dönüştürülebildiğini doğrula",
+      "AiCredit'in kullanımdan düşüldüğünü doğrula",
+      "Esnafın üretilen metni düzenleyip kaydedebildiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "C6 [LOW] — B2B / toptan satış portalı (bizde YOK)",
+    "description": "Kaynak: rakip-analizi.md (PA kod-önce teyit). PROBLEM: Toptan müşteriler için özel giriş + özel fiyat listesi + min sipariş miktarı YOK. KOD-ÖNCE TEYİT: grep B2B/Wholesale/Toptan/PriceList/CustomerGroup boş. RAKİP: Ticimax (B2B modülü), Brightpearl/Cin7 (B2B portal). KULLANIM: Esnaf hem perakende hem toptan satıyorsa — toptan müşteriye özel fiyat/giriş. FIX: CustomerGroup (perakende/toptan) + grup-bazlı fiyat listesi + min sipariş miktarı + (opsiyonel) ayrı B2B storefront girişi.",
+    "status": "todo",
+    "priority": "low",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Düşük öncelik — ilk müşteri (zekidsbebe) perakende ağırlıklı; B2B ihtiyacı netleşmeli. Roller: DB Master (CustomerGroup/PriceList), SWE, Designer, QA. zekidsbebe toptan satıyor mu — TL/kullanıcı teyit.",
+    "manual_test_steps": [
+      "Bir müşteriyi 'toptan' grubuna ata",
+      "Toptan gruba özel fiyat listesi tanımla → o müşterinin özel fiyatları gördüğünü doğrula",
+      "Min sipariş miktarı altında sipariş engellendiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "C7 [LOW] — Pazaryeri reklam yönetimi (Trendyol/Amazon kampanya — bizde YOK)",
+    "description": "Kaynak: rakip-analizi.md (PA kod-önce teyit). PROBLEM: Pazaryeri reklam kampanyası (Trendyol/Hepsiburada/Amazon ads) yönetimi + performans raporu YOK. KOD-ÖNCE TEYİT: grep Advertising/Campaign/Ads boş anlamlı sonuç; sadece StorefrontCampaignManager (kendi sitesine EMAIL kampanya) var — pazaryeri reklam DEĞİL. RAKİP: ChannelAdvisor (reklam yönetimi). KULLANIM: Esnaf pazaryeri reklamını tek panelden yönetsin + ROI görsün. FIX: Pazaryeri reklam API'leri (Trendyol/Amazon ads) ile kampanya oluştur/yönet + performans/bütçe raporu.",
+    "status": "todo",
+    "priority": "low",
+    "plan": true,
+    "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). En düşük öncelik — ileri seviye, reklam API'leri karmaşık + her pazaryeri vermiyor. Roller: SWE (ads API), Designer (kampanya UI), QA. V2+ aday. Hangi pazaryeri ads API'si açık — araştırma gerekir.",
+    "manual_test_steps": [
+      "Bir pazaryeri için reklam kampanyası oluştur → kampanyanın pazaryerine gittiğini doğrula",
+      "Kampanya performans/bütçe raporunun gösterildiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
   }
 ]

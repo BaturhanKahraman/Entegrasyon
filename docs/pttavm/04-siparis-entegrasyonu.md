@@ -108,14 +108,14 @@ Base URL: `https://integration-api.pttavm.com`
 
 | Parametre | Tur | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
-| startDate | DateTime | Evet | Baslangic tarihi |
-| endDate | DateTime | Evet | Bitis tarihi |
+| startDate | DateTime | Evet | Başlangıç tarihi |
+| endDate | DateTime | Evet | Bitiş tarihi |
 | isActiveOrders | boolean | Evet | true=sadece hazirlanmayanlar, false=tumu |
 
 ### Onemli Kurallar
 
 - Tarih araligi maks 40 gun
-- Bitis tarihi baslangictan once olamaz
+- Bitiş tarihi Başlangıçtan once olamaz
 
 ### Response
 

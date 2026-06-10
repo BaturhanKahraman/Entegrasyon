@@ -12,7 +12,7 @@ public class StorefrontStockNotificationManager(
     public async Task<IResult> SubscribeAsync(int tenantId, Guid productVariantId, string email)
     {
         if (string.IsNullOrWhiteSpace(email))
-            return new ErrorResult("E-posta alani zorunludur.");
+            return new ErrorResult("E-posta alanızorunludur.");
 
         if (productVariantId == Guid.Empty)
             return new ErrorResult("Urun varyanti belirtilmelidir.");

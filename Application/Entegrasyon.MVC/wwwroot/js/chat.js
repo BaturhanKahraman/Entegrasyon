@@ -167,7 +167,7 @@
                     if (users.length === 0) {
                         var empty = document.createElement('div');
                         empty.className = 'text-center text-secondary p-3';
-                        empty.textContent = 'Kullanici bulunamadi';
+                        empty.textContent = 'Kullanici bulunamadı';
                         list.appendChild(empty);
                         return;
                     }

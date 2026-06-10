@@ -92,7 +92,7 @@ public class POSSessionManagerTests : BaseTest
         var result = await _manager.AddTransactionRecordAsync(999, Guid.NewGuid(), 0m, 0m);
 
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("bulunamadi");
+        result.Message.Should().Contain("bulunamadı");
     }
 
     [Fact]

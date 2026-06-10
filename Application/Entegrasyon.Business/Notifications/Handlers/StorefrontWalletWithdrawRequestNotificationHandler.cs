@@ -19,7 +19,7 @@ public sealed class StorefrontWalletWithdrawRequestNotificationHandler(
             header: "Cüzdan çekim talebi",
             content: $"Müşteri {@event.Amount:C} çekim talebinde bulundu.",
             severity: NotificationSeverity.Warning,
-            category: NotificationCategory.Magaza,
+            category: NotificationCategory.Mağaza,
             userIds: recipients,
             actionUrl: $"/storefront/wallet/requests/{@event.CustomerId}");
     }

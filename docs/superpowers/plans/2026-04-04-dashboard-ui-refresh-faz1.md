@@ -145,7 +145,7 @@ Replace the entire content of `Application/Entegrasyon.MVC/Features/Dashboard/Vi
                         </span>
                     </div>
                     <div class="col">
-                        <div class="subheader">DUSUK STOK</div>
+                        <div class="subheader">Düşük STOK</div>
                         <div class="h1 mb-0 @(Model.LowStockProducts > 0 ? "text-danger" : "")">@Model.LowStockProducts</div>
                     </div>
                 </div>
@@ -382,7 +382,7 @@ Replace the entire content of `Application/Entegrasyon.MVC/Features/Dashboard/Vi
 ```html
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Hizli Islemler</h3>
+        <h3 class="card-title">Hızlı İşlemler</h3>
     </div>
     <div class="card-body">
         <div class="d-flex flex-wrap gap-2">

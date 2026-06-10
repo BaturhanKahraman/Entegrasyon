@@ -7,5 +7,5 @@ public enum NotificationCategory
     Sipariş = 2,
     Stok = 3,
     Urun = 4,
-    Magaza = 5
+    Mağaza = 5
 }

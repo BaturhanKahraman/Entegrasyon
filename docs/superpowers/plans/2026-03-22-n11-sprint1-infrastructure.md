@@ -453,7 +453,7 @@ public sealed class N11SoapClient(
         var marketplace = await dbContext.MarketPlaces
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == N11MarketPlaceId)
-            ?? throw new InvalidOperationException("N11 marketplace kaydi bulunamadi (Id=2).");
+            ?? throw new InvalidOperationException("N11 marketplace kaydi bulunamadı (Id=2).");
 
         // 2. bodyContent'in kopyasini olustur (caller'in XElement'ini mutate etmemek icin)
         var requestBody = new XElement(bodyContent);
@@ -495,13 +495,13 @@ public sealed class N11SoapClient(
             logger.LogError("N11 SOAP error (HTTP {StatusCode}): {ResponseBody}",
                 (int)response.StatusCode, responseXml);
             throw new HttpRequestException(
-                $"N11 SOAP istegi basarisiz (HTTP {(int)response.StatusCode}). Response: {responseXml}");
+                $"N11 SOAP istegi başarısız (HTTP {(int)response.StatusCode}). Response: {responseXml}");
         }
 
         // 5. Response parse et — Body'nin ilk child'ini don
         var responseDoc = XDocument.Parse(responseXml);
         var body = responseDoc.Descendants(SoapEnv + "Body").FirstOrDefault()
-            ?? throw new InvalidOperationException("SOAP response'ta Body bulunamadi.");
+            ?? throw new InvalidOperationException("SOAP response'ta Body bulunamadı.");
 
         var firstChild = body.Elements().FirstOrDefault()
             ?? throw new InvalidOperationException("SOAP Body bos — response icerik yok.");

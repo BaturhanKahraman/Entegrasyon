@@ -80,7 +80,7 @@ public class SellerManager(
 
         return seller is not null
             ? new SuccessDataResult<Seller>(seller)
-            : new ErrorDataResult<Seller>(null!, "Satici bulunamadi.");
+            : new ErrorDataResult<Seller>(null!, "Satici bulunamadı.");
     }
 
     public async Task<IDataResult<Seller>> GetSellerBySlugAsync(int tenantId, string slug)
@@ -93,7 +93,7 @@ public class SellerManager(
 
         return seller is not null
             ? new SuccessDataResult<Seller>(seller)
-            : new ErrorDataResult<Seller>(null!, "Magaza bulunamadi.");
+            : new ErrorDataResult<Seller>(null!, "Mağaza bulunamadı.");
     }
 
     public async Task<IDataResult<List<Seller>>> GetAllSellersAsync(int tenantId)
@@ -115,7 +115,7 @@ public class SellerManager(
 
         var seller = await dbContext.Sellers.FindAsync(sellerId);
         if (seller is null)
-            return new ErrorResult("Satici bulunamadi.");
+            return new ErrorResult("Satici bulunamadı.");
 
         if (seller.Status == SellerStatus.Approved)
             return new ErrorResult("Satici zaten onaylanmis.");
@@ -136,7 +136,7 @@ public class SellerManager(
 
         var seller = await dbContext.Sellers.FindAsync(sellerId);
         if (seller is null)
-            return new ErrorResult("Satici bulunamadi.");
+            return new ErrorResult("Satici bulunamadı.");
 
         seller.Status = SellerStatus.Rejected;
         seller.RejectionReason = reason;
@@ -153,7 +153,7 @@ public class SellerManager(
 
         var seller = await dbContext.Sellers.FindAsync(sellerId);
         if (seller is null)
-            return new ErrorResult("Satici bulunamadi.");
+            return new ErrorResult("Satici bulunamadı.");
 
         if (seller.Status != SellerStatus.Approved)
             return new ErrorResult("Sadece onaylanmis saticilar askiya alinabilir.");
@@ -173,7 +173,7 @@ public class SellerManager(
 
         var seller = await dbContext.Sellers.FindAsync(sellerId);
         if (seller is null)
-            return new ErrorResult("Satici bulunamadi.");
+            return new ErrorResult("Satici bulunamadı.");
 
         seller.StoreName = dto.StoreName;
         seller.StoreDescription = dto.StoreDescription;

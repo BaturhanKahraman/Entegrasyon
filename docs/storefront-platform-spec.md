@@ -9,7 +9,7 @@ Mevcut Entegrasyon sistemi müşterilere pazaryeri entegrasyonu sağlıyor. Şim
 
 **Kritik Kurallar:**
 - `{slug}.entegrasyon.com` = müşterinin **yönetim paneli** (dashboard). E-ticaret sitesi DEĞİL.
-- Her müşterinin **kendi alan adı zorunlu** (magaza-ali.com). Subdomain ile mağaza AÇILMAZ.
+- Her müşterinin **kendi alan adı zorunlu** (Mağaza-ali.com). Subdomain ile mağaza AÇILMAZ.
 - **Üyelik sistemi zorunlu** — son kullanıcılar kayıt/giriş yapar, geçmiş siparişlerini görür.
 - **Storefront üyeleri = Entegrasyon Customer entity** — dashboard'dan da görünür/yönetilir.
 - **SEO hedefi: Trendyol ve Hepsiburada'dan daha iyi** — teknik SEO, structured data, Core Web Vitals, content SEO hepsinde üstün olmalı.
@@ -29,8 +29,8 @@ Mevcut Entegrasyon sistemi müşterilere pazaryeri entegrasyonu sağlıyor. Şim
 ┌──────────────────────┐                ┌──────────────────────┐
 │  Storefront App      │                │  Dashboard App       │
 │  (ASP.NET MVC)       │                │  (mevcut Blazor)     │
-│  magaza-x.com        │                │  + Sanal POS Ayar    │
-│  magaza-y.com        │                │  + Mağaza Kurulum    │
+│  Mağaza-x.com        │                │  + Sanal POS Ayar    │
+│  Mağaza-y.com        │                │  + Mağaza Kurulum    │
 └──────────┬───────────┘                └──────────┬───────────┘
            │ Direct DI                              │ Direct DI
            ▼                                        ▼
@@ -50,7 +50,7 @@ Mevcut Entegrasyon sistemi müşterilere pazaryeri entegrasyonu sağlıyor. Şim
 
 ```
 Nginx
-├── magaza-ali.com             → X-Tenant-Id: 1  → Storefront App (e-ticaret sitesi)
+├── Mağaza-ali.com             → X-Tenant-Id: 1  → Storefront App (e-ticaret sitesi)
 ├── www.veli-giyim.com.tr      → X-Tenant-Id: 2  → Storefront App (e-ticaret sitesi)
 ├── ahmet-tekstil.entegrasyon.com → (Dashboard)   → Dashboard App (yönetim paneli)
 ├── veli-giyim.entegrasyon.com    → (Dashboard)   → Dashboard App (yönetim paneli)
@@ -59,7 +59,7 @@ Nginx
 ```
 
 **Önemli ayrım:**
-- `magaza-ali.com` → **E-ticaret sitesi** (son kullanıcılar görür, alışveriş yapar)
+- `Mağaza-ali.com` → **E-ticaret sitesi** (son kullanıcılar görür, alışveriş yapar)
 - `ahmet.entegrasyon.com` → **Dashboard** (müşterimiz ürün/sipariş/stok yönetir)
 - Her müşterinin **kendi domain'i zorunlu** — subdomain ile mağaza açılmaz
 
@@ -138,7 +138,7 @@ Görsel önizlemeli tema kartları. Tıkla → seç.
 - Minimum sipariş tutarı
 
 ### Adım 7: Alan Adı (Zorunlu)
-- Müşterinin **kendi alan adı zorunlu** (ör: magaza-ali.com)
+- Müşterinin **kendi alan adı zorunlu** (ör: Mağaza-ali.com)
 - Dashboard erişimi: `{slug}.entegrasyon.com` (otomatik oluşturulur)
 - DNS talimatları müşteriye verilir (A record + CNAME)
 - SSL otomatik (Let's Encrypt + Certbot)
@@ -507,7 +507,7 @@ Dashboard → Raporlar → SEO Performansı
 | Sayfa | URL | İçerik |
 |-------|-----|--------|
 | Hakkımızda | `/hakkimizda` | Firma tanıtımı (WYSIWYG HTML) |
-| İletişim | `/iletisim` | Form (ad, email, mesaj) + harita embed + adres/telefon |
+| İletişim | `/İletişim` | Form (ad, email, mesaj) + harita embed + adres/telefon |
 | Kullanıcı Sözleşmesi | `/kullanim-kosullari` | Yasal metin |
 | Gizlilik Politikası | `/gizlilik-politikasi` | Yasal metin |
 | KVKK | `/kvkk` | Yasal metin |
@@ -923,8 +923,8 @@ Dashboard → Ayarlar → Email Ayarları
 ├── Provider seçimi: SendGrid / Mailgun / SMTP
 ├── API Key (encrypted at rest, AES-256)
 ├── Gönderici adı: "Ahmet Tekstil"
-├── Gönderici email: info@magaza-ali.com (SPF/DKIM doğrulanmış)
-├── Reply-to email: destek@magaza-ali.com
+├── Gönderici email: info@Mağaza-ali.com (SPF/DKIM doğrulanmış)
+├── Reply-to email: destek@Mağaza-ali.com
 ├── [🔌 Bağlantıyı Test Et] → test email gönder
 └── Günlük gönderim limiti (rate limit koruması)
 ```
@@ -1439,7 +1439,7 @@ ReferenceId? (OrderId, ReviewId vb.), Description, CreatedAt, ExpiresAt
 
 ```
 /hesabim → "Arkadaşını Davet Et"
-├── Benzersiz referans linki: magaza-ali.com/?ref=ABC123
+├── Benzersiz referans linki: Mağaza-ali.com/?ref=ABC123
 ├── Paylaşma: WhatsApp, email, link kopyala
 ├── Davetli: linke tıklar → kayıt olur → ilk sipariş verir
 ├── Davet eden: puan/kupon kazanır
@@ -2278,7 +2278,7 @@ Tek bir "Favoriler" yerine, müşteri birden fazla liste oluşturabilir:
 
 ```
 Liste detay sayfasında → [🔗 Paylaş] butonu
-├── Link oluştur: magaza-ali.com/liste/ABC123 (public link)
+├── Link oluştur: Mağaza-ali.com/liste/ABC123 (public link)
 ├── WhatsApp, email, kopyala
 └── Paylaşılan liste: read-only, "Sepete Ekle" butonlu (giriş gerektirmez)
 ```

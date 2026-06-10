@@ -189,7 +189,7 @@ public class OfficeStockManager(
             .ExecuteUpdateAsync(s => s.SetProperty(b => b.SoldQuantity, b => b.SoldQuantity - quantity));
 
         if (affected == 0)
-            return new ErrorDataResult<StockMovement>(null!, "Stok kaydi bulunamadi.");
+            return new ErrorDataResult<StockMovement>(null!, "Stok kaydi bulunamadı.");
 
         var currentStock = await dbContext.BranchOfficeStocks.AsNoTracking()
             .Where(s => s.BranchOfficeId == branchOfficeId && s.ProductVariantId == productVariantId)
@@ -232,7 +232,7 @@ public class OfficeStockManager(
             .FirstOrDefaultAsync(b => b.Id == targetBranchId && !b.IsDeleted);
 
         if (targetBranch is null)
-            return new ErrorDataResult<StockTransferResultDto>(null!, "Hedef depo aktif degil veya bulunamadi.");
+            return new ErrorDataResult<StockTransferResultDto>(null!, "Hedef depo aktif degil veya bulunamadı.");
 
         // Pre-check: yeterli stok var mi? (ExecuteUpdateAsync'ten once kontrol — unit test dostu)
         // CurrentStock computed column yerine FirstTotalStock - SoldQuantity kullanilir

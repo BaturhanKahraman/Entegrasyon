@@ -33,9 +33,9 @@ public class ShipmentTrackingManager(
         var adapter = adapters.FirstOrDefault(a => a.CargoCompanyId == dto.CargoCompanyId);
         if (adapter == null)
         {
-            logger.LogWarning("Kargo sirketine uygun adapter bulunamadi: {CargoCompanyId}", dto.CargoCompanyId);
+            logger.LogWarning("Kargo Şirketine uygun adapter bulunamadı: {CargoCompanyId}", dto.CargoCompanyId);
             return new ErrorDataResult<ShipmentTrackingDto>(null!,
-                $"CargoCompanyId={dto.CargoCompanyId} icin uygun kargo adapter bulunamadi");
+                $"CargoCompanyId={dto.CargoCompanyId} icin uygun kargo adapter bulunamadı");
         }
 
         // 3. Execution
@@ -206,15 +206,15 @@ public class ShipmentTrackingManager(
                 .FirstOrDefaultAsync(x => x.Id == shipmentTrackingId);
 
             if (tracking == null)
-                return new ErrorResult("Kargo takip kaydi bulunamadi");
+                return new ErrorResult("Kargo takip kaydi bulunamadı");
 
             var adapter = adapters.FirstOrDefault(a => a.CargoCompanyId == tracking.CargoCompanyId);
             if (adapter == null)
-                return new ErrorResult($"CargoCompanyId={tracking.CargoCompanyId} icin adapter bulunamadi");
+                return new ErrorResult($"CargoCompanyId={tracking.CargoCompanyId} icin adapter bulunamadı");
 
             var historyResult = await adapter.GetStatusHistoryAsync(tracking.TrackingNumber);
             if (!historyResult.Success)
-                return new ErrorResult(historyResult.Message ?? "Durum guncelleme basarisiz");
+                return new ErrorResult(historyResult.Message ?? "Durum guncelleme başarısız");
 
             if (historyResult.Data != null && historyResult.Data.Count > 0)
             {

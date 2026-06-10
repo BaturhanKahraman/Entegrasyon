@@ -31,7 +31,7 @@ public sealed class PazaramaProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
-            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Urun bulunamadi.");
+            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Urun bulunamadı.");
 
         if (product.ProductVariants.Count == 0)
             return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Urunun varyanti yok.");
@@ -53,14 +53,14 @@ public sealed class PazaramaProductMapper(
             : null;
 
         if (brandMatch is null || string.IsNullOrEmpty(brandMatch.MarketPlaceBrandExternalId))
-            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Marka Pazarama eslestirmesi bulunamadi.");
+            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Marka Pazarama eslestirmesi bulunamadı.");
 
         // Kategori eslestirmesi -- CategoryMarketplaces (ExternalCategoryId GUID formatinda)
         var categoryMatch = await dbContext.CategoryMarketplaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.CategoryId == product.CategoryId && m.MarketPlaceId == PazaramaMarketPlaceId);
 
         if (categoryMatch is null || string.IsNullOrEmpty(categoryMatch.ExternalCategoryId))
-            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Kategori Pazarama eslestirmesi bulunamadi.");
+            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Kategori Pazarama eslestirmesi bulunamadı.");
 
         // Attribute eslestirmelerini toplu cek (GUID string olarak)
         var attributeIds = product.AttributeKeyValues.Select(a => a.CategoryAttributeId).Distinct().ToList();

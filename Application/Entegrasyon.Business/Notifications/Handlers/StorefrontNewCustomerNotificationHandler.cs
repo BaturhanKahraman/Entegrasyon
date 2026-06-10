@@ -19,7 +19,7 @@ public sealed class StorefrontNewCustomerNotificationHandler(
             header: "Yeni müşteri",
             content: $"Yeni kayıt: {@event.Email}",
             severity: NotificationSeverity.Info,
-            category: NotificationCategory.Magaza,
+            category: NotificationCategory.Mağaza,
             userIds: recipients,
             actionUrl: $"/storefront/customers/{@event.CustomerId}");
     }

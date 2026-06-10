@@ -48,7 +48,7 @@ Mevcut stub (bos liste) yerine test verisi donecek.
 ### Akis
 
 1. Kullanici "Tumunu Otomatik Eslestir" butonuna basar
-2. Eslesmemis markalar alinir (`GetUnmappedBrandsAsync`)
+2. Eşleşmemis markalar alinir (`GetUnmappedBrandsAsync`)
 3. Secilen marketplace'in tum markalari cekilir (SearchBrandsAsync veya DB)
 
 **Round 1 — String Matching:**
@@ -57,7 +57,7 @@ Mevcut stub (bos liste) yerine test verisi donecek.
 - Contains match (marketplace markasi uygulama markasini iceriyor veya tersi)
 - Eslesen markalar otomatik kaydedilir
 
-**Round 2 — Ollama Fallback (kalan eslesmemisler icin):**
+**Round 2 — Ollama Fallback (kalan Eşleşmemisler icin):**
 - Ollama'ya "Bu uygulama markalarini marketplace markalariyla esle" prompt'u
 - Confidence >= 0.8 → otomatik kaydet
 - Confidence < 0.8 → kullaniciya goster, onay iste
@@ -118,7 +118,7 @@ Mevcut stub (bos liste) yerine test verisi donecek.
 - Duplicate prevention — eslesmis marka filtrelenmesi
 
 ### Entegrasyon Testler
-- Auto-match full flow: eslesmemis markalar → string match → Ollama → sonuc
+- Auto-match full flow: Eşleşmemis markalar → string match → Ollama → sonuc
 
 ---
 

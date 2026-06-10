@@ -30,7 +30,7 @@ public class N11OrderPollingService(
 
         if (!result.Success)
         {
-            logger.LogWarning("N11 Sipariş fetch basarisiz for tenant {TenantId}: {Message}",
+            logger.LogWarning("N11 Sipariş fetch başarısız for tenant {TenantId}: {Message}",
                 tenantId, result.Message);
             return;
         }

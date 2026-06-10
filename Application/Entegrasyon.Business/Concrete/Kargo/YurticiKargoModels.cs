@@ -40,7 +40,7 @@ public sealed record YurticiQueryShipmentRequest(
 
 /// <summary>
 /// createShipment response'u.
-/// OutFlag: "0" = basarisiz, "1" = basarili.
+/// OutFlag: "0" = başarısız, "1" = basarili.
 /// </summary>
 public sealed record YurticiCreateShipmentResponse(
     string OutFlag,

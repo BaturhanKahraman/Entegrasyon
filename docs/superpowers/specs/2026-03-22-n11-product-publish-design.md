@@ -70,9 +70,9 @@ Temel fark: Trendyol batch + async polling kullanirken, N11 senkron SaveProduct 
 Pre-flight validation — publish oncesi calisir:
 
 1. **Product kontrolu** — Urun var mi, CategoryId set mi?
-2. **Kategori eslesmesi** — `CategoryMarketplace` tablosunda `MarketPlaceId=2` kaydi var mi?
+2. **Kategori Eşleşmesi** — `CategoryMarketplace` tablosunda `MarketPlaceId=2` kaydi var mi?
 3. **Brand kontrolu** — Product.BrandId null degilse, `BrandMarketPlaceMatch` tablosunda `MarketPlaceId=2` kaydi var mi? **Not:** N11'de brand zorunlu degil (Trendyol'dan farkli). BrandId null ise bu adim atlanir — brand N11'de name-value attribute olarak gider, zorunlu degilse hata degil.
-4. **Zorunlu attribute kontrolu** — `CategoryAttributeCategory` tablosunda `IsRequired=true` olan attribute'larin hepsinin `CategoryAttributeMarketPlaceMatch` tablosunda `MarketPlaceId=2` eslesmesi var mi?
+4. **Zorunlu attribute kontrolu** — `CategoryAttributeCategory` tablosunda `IsRequired=true` olan attribute'larin hepsinin `CategoryAttributeMarketPlaceMatch` tablosunda `MarketPlaceId=2` Eşleşmesi var mi?
 
 Returns: `IResult` (Success veya hata mesajlariyla Error)
 
@@ -288,9 +288,9 @@ else
 
 ## Error Handling
 
-- Validator basarisiz → ErrorResult + activity log (MappingValidated, Error)
-- Mapper basarisiz (urun yok, varyant yok, image yok) → ErrorDataResult
-- SOAP HTTP basarisiz → HttpRequestException (N11SoapClient firlatir), activity log (PublishSent, Error)
+- Validator başarısız → ErrorResult + activity log (MappingValidated, Error)
+- Mapper başarısız (urun yok, varyant yok, image yok) → ErrorDataResult
+- SOAP HTTP başarısız → HttpRequestException (N11SoapClient firlatir), activity log (PublishSent, Error)
 - N11 response `<result><status>failure</status>` → parse `<errorMessage>`, return ErrorResult
 - ExternalProductId bulunamayan islemler (Delete/Update/Start/Stop) → ErrorResult
 - Brand null → validator gecerli sayar (N11'de brand zorunlu degil), mapper brand attribute'unu atlar

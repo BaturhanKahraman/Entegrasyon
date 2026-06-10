@@ -273,7 +273,7 @@ app.MapControllerRoute("giftCard", "/hediye-karti",
     new { controller = "GiftCard", action = "Index" });
 app.MapControllerRoute("giftCardBalance", "/hediye-karti-sorgula",
     new { controller = "GiftCard", action = "Balance" });
-app.MapControllerRoute("contact", "/iletisim",
+app.MapControllerRoute("contact", "/İletişim",
     new { controller = "Contact", action = "Index" });
 app.MapControllerRoute("wishlist", "/favorilerim",
     new { controller = "Wishlist", action = "Index" });

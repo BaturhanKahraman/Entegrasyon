@@ -6,7 +6,7 @@
 
 1. **Tek tek eslestirme:** `CategorySync.razor` sayfasinda kullanici her kategori icin ayri ayri "Eslestir" butonuna basiyor, `CategoryMappingDialog` aciliyor, marketplace seciyor, kategori ariyor, kaydediyor.
 2. **Attribute eslestirmesi kopuk:** Kategori eslestirmesinden sonra kullanici ayri bir sayfaya (`/marketplace/sync/attributes`) gidip attribute eslestirmesini yapmak zorunda. Otomatik yonlendirme yok.
-3. **Her marketplace icin tekrar:** Ayni kategori icin farkli marketplace'lerde tekrar tekrar ayni islemi yapmak gerekiyor.
+3. **Her marketplace icin tekrar:** Ayni kategori icin farkli marketplace'lerde tekrar tekrar ayni işlemi yapmak gerekiyor.
 4. **Sifirdan baslama:** `MatchedEntityImportManager` + `MatchedEntityPackage` altyapisi var ama sadece admin panelinden, kullanici tarafinda template olusturma/kullanma yok.
 5. **Dogrulama eksik:** Eslestirme sonrasi marketplace'in zorunlu attribute'larinin eslestirilip eslestirilmedigini kontrol eden bir uyari yok (`TrendyolMappingValidator` sadece urun publish asamasinda calisiyor).
 6. **Hardcoded marketplace:** `CategoryMatchService.GetCategoryMatchSummaryAsync()` hardcoded `TrendyolMarketPlaceId` kullaniyor.
@@ -102,7 +102,7 @@ Akis:
 3. Kullanici checkbox ile kategorileri secer (toplu sec/kaldir)
 4. Sag panelde secilen her kategori icin marketplace kategori autocomplete gosterilir
 5. "Toplu Eslestir" butonu ile tek seferde kaydedilir
-6. Sonuc dialog'u gosterilir (basarili/basarisiz/atlanan)
+6. Sonuc dialog'u gosterilir (basarili/başarısız/atlanan)
 
 `CategorySync.razor`'a "Toplu Eslestirme" butonu eklenir.
 
@@ -132,7 +132,7 @@ Akis:
 **Model:** `entegrasyon-coder` (Ollama, qwen3.5:9b, localhost:11434, RTX 4080 12GB)
 
 **Prompt Stratejisi:**
-- Dusuk temperature (0.1) -- deterministik sonuclar
+- Düşük temperature (0.1) -- deterministik sonuclar
 - JSON format zorunlulugu -- parse hatasi azaltir
 - Few-shot ornekler -- prompt'a 2-3 ornek eslestirme ekle
 - Hiyerarsi bilgisi -- sadece isim degil, parent path de gonder (ornegin "Elektronik > Telefon > Akilli Telefon")
@@ -186,10 +186,10 @@ Guven skoru gorsellestirmesi:
 
 ### 2.4 Fallback Stratejisi
 
-- Ollama cagrisi basarisiz: Hata mesaji, manuel akis calismaya devam eder
-- JSON parse hatasi: Retry 1x, hala basarisizsa hata
+- Ollama cagrisi başarısız: Hata mesaji, manuel akis calismaya devam eder
+- JSON parse hatasi: Retry 1x, hala başarısızsa hata
 - Timeout: "Model yanitlamiyor, lutfen tekrar deneyin"
-- Dusuk guven skorlu sonuclar: Gosterilir ama otomatik secilmez
+- Düşük guven skorlu sonuclar: Gosterilir ama otomatik secilmez
 
 ### 2.5 Test Stratejisi
 
@@ -323,7 +323,7 @@ Faz 1 (Bulk Matching) ──> Faz 2 (Auto-Match) ────┼┼──> Faz 6
                                                     └──> Final Test & QA
 ```
 
-**Onerilen baslangic sirasi:**
+**Onerilen Başlangıç sirasi:**
 1. Faz 1 + Faz 5 + Faz 3 paralel baslayabilir (bagimsiz)
 2. Faz 2 + Faz 4, Faz 1 tamamlandiktan sonra (birbirine paralel)
 3. Faz 6 tum fazlar tamamlandiktan sonra
@@ -334,10 +334,10 @@ Faz 1 (Bulk Matching) ──> Faz 2 (Auto-Match) ────┼┼──> Faz 6
 
 | Risk | Olasilik | Etki | Azaltma |
 |------|----------|------|---------|
-| Ollama yanlis eslestirme yapar | Yuksek | Dusuk | Guven skoru + kullanici onay, otomatik uygulama yok |
+| Ollama yanlis eslestirme yapar | Yuksek | Düşük | Guven skoru + kullanici onay, otomatik uygulama yok |
 | Ollama timeout (buyuk liste) | Orta | Orta | Batch (50/istek), 120s timeout, retry 1x |
-| Ollama cevrimdisi | Orta | Dusuk | Graceful degradation, manuel akis calismaya devam |
-| Bulk eslestirmede race condition | Dusuk | Yuksek | Transaction + unique constraint |
+| Ollama cevrimdisi | Orta | Düşük | Graceful degradation, manuel akis calismaya devam |
+| Bulk eslestirmede race condition | Düşük | Yuksek | Transaction + unique constraint |
 | Template cakisma | Orta | Orta | Onceden tespit + kullaniciya gosterme |
 | Performans (cok fazla kategori) | Orta | Orta | Pagination + MudDataGrid virtualization |
 | Multi-tenant izolasyonu | Yuksek | Yuksek | Tum query'lerde tenant filter, template'ler tenant-scoped |

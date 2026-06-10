@@ -11,6 +11,6 @@ public class TrackShipmentValidator : AbstractValidator<TrackShipmentDto>
             .NotEmpty().WithMessage("Takip numarasi bos olamaz");
 
         RuleFor(x => x.CargoCompanyId)
-            .GreaterThan(0).WithMessage("Gecerli bir kargo sirketi secilmelidir");
+            .GreaterThan(0).WithMessage("Gecerli bir kargo Şirketi secilmelidir");
     }
 }

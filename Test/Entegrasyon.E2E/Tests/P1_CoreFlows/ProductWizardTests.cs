@@ -213,7 +213,7 @@ public class ProductWizardTests : E2ETestBase
         }");
         await Page.WaitForTimeoutAsync(300);
 
-        // Filtrelenmis sonuc sayisini dogrula
+        // Filtrelenmis sonuc Sayısıni dogrula
         var visibleCount = await Page.EvaluateAsync<int>(@"() => {
             var sel = document.getElementById('brand-select');
             var ts = sel.tomselect;
@@ -266,7 +266,7 @@ public class ProductWizardTests : E2ETestBase
         await Page.ClickAsync("#btn-generate-variants");
         await Page.Locator("#variant-table-container table").WaitForAsync(new() { Timeout = 10000 });
 
-        // Varyant sayisini kontrol et
+        // Varyant Sayısıni kontrol et
         var initialCount = await Page.Locator("#variant-table-container tbody tr").CountAsync();
         Assert.That(initialCount, Is.GreaterThan(1), "Birden fazla varyant olmali");
 

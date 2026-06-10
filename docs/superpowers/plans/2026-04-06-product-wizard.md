@@ -948,7 +948,7 @@ git commit -m "feat(product-wizard): Step 3 variant generation with cartesian pr
 public async Task<IActionResult> UploadTempImage(IFormFile file)
 {
     if (file is null || file.Length == 0)
-        return Json(new { success = false, message = "Dosya bulunamadi." });
+        return Json(new { success = false, message = "Dosya bulunamadı." });
 
     var tempKey = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
     var tempDir = Path.Combine(Path.GetTempPath(), "product-wizard-images");
@@ -1375,7 +1375,7 @@ public class ProductWizardTests : E2ETestBase
         await Page.ClickAsync("input[name='Title']"); // Blur brand input
 
         await Expect(Page.Locator("#brand-add-modal")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("markasi bulunamadi")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("markasi bulunamadı")).ToBeVisibleAsync();
     }
 }
 ```

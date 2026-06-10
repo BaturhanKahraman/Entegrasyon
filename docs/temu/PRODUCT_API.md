@@ -112,7 +112,7 @@ Beklenen response:
 ### SKU & Varyant
 - Her urun birden fazla SKU'ya sahip olabilir
 - SKU'lar spec (ozellik) kombinasyonlari ile tanimlanir
-- `outer_id` ile dis sistem SKU eslesmesi saglanir
+- `outer_id` ile dis sistem SKU Eşleşmesi saglanir
 
 ---
 

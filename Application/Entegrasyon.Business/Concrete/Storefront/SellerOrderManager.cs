@@ -32,7 +32,7 @@ public class SellerOrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadı.");
 
         var hasSellerItems = order.OrderItems.Any(oi => oi.SellerId == sellerId);
         if (!hasSellerItems)
@@ -50,7 +50,7 @@ public class SellerOrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Sipariş bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadı.");
 
         var sellerItems = order.OrderItems.Where(oi => oi.SellerId == sellerId).ToList();
         if (!sellerItems.Any())

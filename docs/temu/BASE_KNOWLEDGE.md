@@ -34,7 +34,7 @@ Temu API, **App Key + App Secret + Access Token + MD5 Sign** mekanizmasi kullani
 
 1. Tum parametreleri key'e gore alfabetik sirala
 2. Her key-value ciftini birlestir: `key1value1key2value2...`
-3. Baslangic ve sona `app_secret` ekle: `{app_secret}key1value1key2value2{app_secret}`
+3. Başlangıç ve sona `app_secret` ekle: `{app_secret}key1value1key2value2{app_secret}`
 4. MD5 hash hesapla, **UPPERCASE hex** formatina cevir
 5. Sonuc `sign` parametresi olarak request'e eklenir
 

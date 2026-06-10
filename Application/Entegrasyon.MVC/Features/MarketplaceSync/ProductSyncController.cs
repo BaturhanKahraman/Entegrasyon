@@ -74,7 +74,7 @@ public class ProductSyncController(
         var result = await productSyncManager.GetProductSyncDetailAsync(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Urun bulunamadi.");
+            TempData.SetError(result.Message ?? "Urun bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -113,7 +113,7 @@ public class ProductSyncController(
             else
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = result.Message ?? "Senkronizasyon basarisiz.", type = "danger" });
+                    new { message = result.Message ?? "Senkronizasyon başarısız.", type = "danger" });
             }
 
             return Content("");
@@ -122,7 +122,7 @@ public class ProductSyncController(
         if (result.Success)
             TempData.SetSuccess("Senkronizasyon baslatildi.");
         else
-            TempData.SetError(result.Message ?? "Senkronizasyon basarisiz.");
+            TempData.SetError(result.Message ?? "Senkronizasyon başarısız.");
 
         return RedirectToAction(nameof(Detail), new { id });
     }
@@ -143,7 +143,7 @@ public class ProductSyncController(
             else
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = result.Message ?? "Toplu senkronizasyon basarisiz.", type = "danger" });
+                    new { message = result.Message ?? "Toplu senkronizasyon başarısız.", type = "danger" });
             }
 
             return Content("");
@@ -152,7 +152,7 @@ public class ProductSyncController(
         if (result.Success)
             TempData.SetSuccess("Toplu senkronizasyon baslatildi.");
         else
-            TempData.SetError(result.Message ?? "Toplu senkronizasyon basarisiz.");
+            TempData.SetError(result.Message ?? "Toplu senkronizasyon başarısız.");
 
         return RedirectToAction(nameof(Index), new { mp });
     }
@@ -167,22 +167,22 @@ public class ProductSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Hatali urunler yeniden deneniyor.", type = "success" });
+                    new { message = "Hatalı urunler yeniden deneniyor.", type = "success" });
                 Response.HtmxTrigger("refreshTable");
             }
             else
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = result.Message ?? "Yeniden deneme basarisiz.", type = "danger" });
+                    new { message = result.Message ?? "Yeniden deneme başarısız.", type = "danger" });
             }
 
             return Content("");
         }
 
         if (result.Success)
-            TempData.SetSuccess("Hatali urunler yeniden deneniyor.");
+            TempData.SetSuccess("Hatalı urunler yeniden deneniyor.");
         else
-            TempData.SetError(result.Message ?? "Yeniden deneme basarisiz.");
+            TempData.SetError(result.Message ?? "Yeniden deneme başarısız.");
 
         return RedirectToAction(nameof(Index), new { mp });
     }

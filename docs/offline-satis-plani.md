@@ -32,7 +32,7 @@
 - Satis DTO: `MakeSaleDto(SalePersonId, CustomerId, GeneralDiscount, BranchOfficeId, SaleItems)`
 
 ### Temel Problem
-Blazor Server **mimarigeregiinternet baglantisi olmadan calisamaz**. SignalR circuit koptuğunda UI tamamen erisIlemez hale gelir. Bu, fiziksel magaza ortaminda kabul edilemez bir kesinti olusturur.
+Blazor Server **mimarigeregiinternet baglantisi olmadan calisamaz**. SignalR circuit koptuğunda UI tamamen erisIlemez hale gelir. Bu, fiziksel Mağaza ortaminda kabul edilemez bir kesinti olusturur.
 
 ---
 
@@ -206,7 +206,7 @@ Bu agent'a SQLite veritabani, satis endpoint'leri ve senkronizasyon motoru eklen
 - **Yazici entegrasyonu hazir** — fis yazdirma icin ek is yok
 - **Linux + Windows** — Agent zaten her ikisinde calisIyor (Kestrel + CUPS/Windows transport)
 - **Blazor Server'dan bagimsiz** — internet olmasa bile Agent ayakta
-- **En dusuk risk** — mevcut sistemi bozmadan, Agent'a ek moduller eklenir
+- **En Düşük risk** — mevcut sistemi bozmadan, Agent'a ek moduller eklenir
 - **Incremental delivery** — her faz bagimsiz test edilebilir
 
 #### Dezavantajlar
@@ -215,7 +215,7 @@ Bu agent'a SQLite veritabani, satis endpoint'leri ve senkronizasyon motoru eklen
 - Agent guncellemesi kullanici makinesinde yapilmali
 - SQLite ile PostgreSQL arasinda schema uyumu saglanmali
 
-#### Gelistirme Maliyeti: DUSUK-ORTA
+#### Gelistirme Maliyeti: Düşük-ORTA
 - Mevcut Agent + SQLite + Sync + Minimal UI = ~6-8 hafta (4 faz)
 - Ancak her faz bagimsiz deploy edilebilir; Faz 1-2 ile temel offline satis ~4 haftada hazir
 
@@ -280,7 +280,7 @@ Blazor WASM uygulamasini Electron veya Tauri ile masaustu uygulamasina cevirme.
   1. Pending satislari siraya al (FIFO — CreatedAt'e gore)
   2. Her satis icin sunucu API'yi cagir
   3. Basariliysa → Status: Synced, SyncedAt = now
-  4. Basarisizsa → Status: Failed, RetryCount++, hata logu
+  4. başarısızsa → Status: Failed, RetryCount++, hata logu
   5. Conflict varsa → Status: Conflict, cozum icin isaretle
      |
      v
@@ -296,8 +296,8 @@ Blazor WASM uygulamasini Electron veya Tauri ile masaustu uygulamasina cevirme.
 ```
 Ornek:
   Sunucu stok: Urun X = 5 adet
-  Magaza A (offline): 3 adet satti
-  Magaza B (offline): 4 adet satti
+  Mağaza A (offline): 3 adet satti
+  Mağaza B (offline): 4 adet satti
   Toplam talep: 7 > 5 = CONFLICT
 ```
 
@@ -353,18 +353,18 @@ Ornek:
 
 | Kriter | PWA (WASM) | MAUI Hybrid | Agent Genisletme | Electron/Tauri |
 |--------|-----------|-------------|-----------------|----------------|
-| **Gelistirme maliyeti** | Yuksek (6-8 hf) | Orta-Yuksek (4-6 hf) | Dusuk-Orta (6-8 hf, fazli) | Yuksek (8-10 hf) |
-| **Mevcut kod yeniden kullanimi** | Dusuk (%20-30) | Orta-Yuksek (%60-80) | Orta (%40-50 logic) | Dusuk (%20-30) |
+| **Gelistirme maliyeti** | Yuksek (6-8 hf) | Orta-Yuksek (4-6 hf) | Düşük-Orta (6-8 hf, fazli) | Yuksek (8-10 hf) |
+| **Mevcut kod yeniden kullanimi** | Düşük (%20-30) | Orta-Yuksek (%60-80) | Orta (%40-50 logic) | Düşük (%20-30) |
 | **Kullanici deneyimi** | Iyi (tarayici) | Cok iyi (native) | Yeterli-Iyi | Iyi |
 | **Offline guvenilirlik** | Orta (tarayici limitleri) | Yuksek | Yuksek | Orta-Yuksek |
 | **Linux destegi** | Evet | Hayir (resmi degil) | Evet | Evet |
 | **Windows destegi** | Evet | Evet | Evet | Evet |
 | **Kurulum gereksinimi** | Hayir | Evet | Zaten kurulu | Evet |
 | **Yazici entegrasyonu** | Sorunlu (CORS) | Native | Hazir | Sorunlu |
-| **Bakim maliyeti** | Yuksek | Orta-Yuksek | Dusuk | Yuksek |
-| **Risk seviyesi** | Yuksek | Orta | Dusuk | Yuksek |
+| **Bakim maliyeti** | Yuksek | Orta-Yuksek | Düşük | Yuksek |
+| **Risk seviyesi** | Yuksek | Orta | Düşük | Yuksek |
 | **Incremental delivery** | Zor | Orta | Kolay (faz faz) | Zor |
-| **Mevcut sisteme etki** | Yuksek (API layer) | Orta | Dusuk | Yuksek |
+| **Mevcut sisteme etki** | Yuksek (API layer) | Orta | Düşük | Yuksek |
 | **Multi-tenant uyumu** | Orta | Orta | Iyi (tenant config) | Orta |
 
 ---
@@ -375,7 +375,7 @@ Ornek:
 
 **Gerekce:**
 
-1. **En dusuk risk:** Mevcut Blazor Server sistemi hic degismez. Agent bagimsiz bir uygulama olarak genisler.
+1. **En Düşük risk:** Mevcut Blazor Server sistemi hic degismez. Agent bagimsiz bir uygulama olarak genisler.
 
 2. **Altyapi hazir:** Agent zaten masaustunde calisIyor, .NET 8, Kestrel, yazici erisimi, API key guvenliği — tumu mevcut.
 
@@ -387,7 +387,7 @@ Ornek:
    - Faz 3 bitince: Otomatik senkronizasyon
    - Faz 4 bitince: Tam kullanici deneyimi
 
-5. **Fiziksel magaza gercekligi:** Satis noktasinda bir bilgisayar zaten var (agent oraya kurulu). Bu bilgisayara ek bir uygulama kurmak yerine, mevcut agent'i genisletmek en dogal yol.
+5. **Fiziksel Mağaza gercekligi:** Satis noktasinda bir bilgisayar zaten var (agent oraya kurulu). Bu bilgisayara ek bir uygulama kurmak yerine, mevcut agent'i genisletmek en dogal yol.
 
 6. **ForceDecreaseStockAsync zaten var:** Conflict resolution icin gerekli olan "negatif stoka izin ver" metodu mevcut code base'de implement edilmis.
 
@@ -458,7 +458,7 @@ POST /api/sync/sales
      Response: { synced: [...], conflicts: [...] }
 
 GET  /api/sync/status
-     → Son sync zamani, bekleyen islem sayisi
+     → Son sync zamani, bekleyen islem Sayısı
 ```
 
 Bu endpoint'ler Blazor Server projesine `Endpoints/SyncEndpoints.cs` olarak minimal API seklinde eklenebilir (mevcut `Entegrasyon.Blazor/Endpoints/` klasoru zaten var).
@@ -467,7 +467,7 @@ Bu endpoint'ler Blazor Server projesine `Endpoints/SyncEndpoints.cs` olarak mini
 
 ## 7. Guvenlik Hususlari
 
-1. **Agent-Sunucu iletisimi:** Mevcut API key mekanizmasi + HTTPS
+1. **Agent-Sunucu İletişimi:** Mevcut API key mekanizmasi + HTTPS
 2. **Local SQLite sifreleme:** `Microsoft.Data.Sqlite` ile `Password` connection string parametresi (SQLCipher)
 3. **Offline satis yetkilendirme:** Agent config'inde `AllowedSalePersonIds` — yalnizca yetkili kullanicilar offline satis yapabilir
 4. **Sync token:** JWT veya API key ile sunucu kimlik dogrulama
@@ -478,7 +478,7 @@ Bu endpoint'ler Blazor Server projesine `Endpoints/SyncEndpoints.cs` olarak mini
 ## 8. Izleme ve Gozlemlenebilirlik
 
 1. Agent loglarI: Serilog ile dosyaya + opsiyonel olarak sunucuya (online oldugunda)
-2. Sync metrikleri: Bekleyen satis sayisi, son sync zamani, basarisiz sync sayisi
+2. Sync metrikleri: Bekleyen satis Sayısı, son sync zamani, başarısız sync Sayısı
 3. Admin panelinde goruntuleme: "Offline Satislar" sayfasi — sync durumu, conflict'ler
 4. Bildirim: Conflict veya sync hatasi oldugunda admin'e SignalR + email bildirimi
 
@@ -486,4 +486,4 @@ Bu endpoint'ler Blazor Server projesine `Endpoints/SyncEndpoints.cs` olarak mini
 
 ## 9. Sonuc
 
-**Agent'i genisletme yaklasimi**, mevcut altyapinin uzerine en dusuk riskle ve en hizli sekilde offline satis yeteneği kazandirmanin yoludur. Mevcut Blazor Server sistemi degismez, Agent bagimsiz olarak evrilir. Sync stratejisi olarak queue-based outbox pattern ve "first-sync-wins + force decrease" conflict resolution, fiziksel perakende gercekligine en uygun yaklasimdir.
+**Agent'i genisletme yaklasimi**, mevcut altyapinin uzerine en Düşük riskle ve en hizli sekilde offline satis yeteneği kazandirmanin yoludur. Mevcut Blazor Server sistemi degismez, Agent bagimsiz olarak evrilir. Sync stratejisi olarak queue-based outbox pattern ve "first-sync-wins + force decrease" conflict resolution, fiziksel perakende gercekligine en uygun yaklasimdir.

@@ -12,7 +12,7 @@ PttAVM pazaryeri entegrasyonu, 3 faz halinde gerceklestirilecektir. REST + JSON 
 
 | Karar | Secim | Gerekce |
 |-------|-------|---------|
-| Faz sayisi | 3 | Granular ilerleme, Faz 1 ile satisa baslanir |
+| Faz Sayısı | 3 | Granular ilerleme, Faz 1 ile satisa baslanir |
 | API client yapisi | 2 ayri client | Farkli auth mekanizmalari, SRP, test kolayligi |
 | Tracking mekanizmasi | Dedicated background service | Async API, Amazon pattern'i kanitlanmis |
 | Kategori UI | Lazy-loading tree | Performansli, Trendyol pattern'iyle tutarli |
@@ -21,7 +21,7 @@ PttAVM pazaryeri entegrasyonu, 3 faz halinde gerceklestirilecektir. REST + JSON 
 
 ## API Genel Bakis
 
-| Modul | Endpoint Sayisi | Base URL | Auth |
+| Modul | Endpoint Sayısı | Base URL | Auth |
 |-------|----------------|----------|------|
 | Katalog | 9 | integration-api.pttavm.com | ApiKey + AccessToken |
 | Listeleme | 3 | integration-api.pttavm.com | ApiKey + AccessToken |
@@ -142,7 +142,7 @@ services.AddScoped<PttavmCategoryImporter>();
 - PttavmMappingValidator — publish oncesi dogrulama
 - PttavmProductTrackingPollingService (background) — trackingId polling
 - PttavmStockPriceSyncService (background) — periyodik fiyat-stok sync
-- Barkod kontrol, urun aktif/pasif, hatali gorseller
+- Barkod kontrol, urun aktif/pasif, Hatalı gorseller
 
 ### IPttavmProductService
 
@@ -177,7 +177,7 @@ UpsertProducts() → trackingId doner
         → Pending/InProgress kayitlari sorgula
         → GET /products/tracking-result/{trackingId}
         → Status guncelle (Completed/Cancelled)
-        → Hatali urunler → ApplicationLog'a yaz
+        → Hatalı urunler → ApplicationLog'a yaz
         → Multi-tenant: ConcurrentDictionary<int, List<TrackingRecord>>
 ```
 
@@ -193,7 +193,7 @@ Internal Product entity → PttavmProductRequest DTO donusumu:
 ### PttavmMappingValidator
 
 Publish oncesi kontroller:
-- Kategori eslesmesi var mi?
+- Kategori Eşleşmesi var mi?
 - Zorunlu alanlar dolu mu? (name, barcode, price, quantity, images)
 - KDV orani gecerli mi? (0, 1, 10, 20)
 - Stok 0-9999 araliginda mi?
@@ -456,7 +456,7 @@ TDD-first, her faz icin:
 | Stok araligi | 0-9999 |
 | Indirim araligi | 0-70 |
 | Sipariş arama tarih araligi | Maks 40 gun |
-| Hatali gorsel barkod/istek | Maks 10.000 |
-| Hatali gorsel pageSize | Maks 10.000 |
+| Hatalı gorsel barkod/istek | Maks 10.000 |
+| Hatalı gorsel pageSize | Maks 10.000 |
 | Garanti suresi | 0-24 ay |
 | Sepet max adet | 0-1000 |

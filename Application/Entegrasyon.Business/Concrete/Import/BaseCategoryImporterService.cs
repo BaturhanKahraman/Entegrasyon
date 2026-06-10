@@ -42,7 +42,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
     public abstract Task<IDataResult<IEnumerable<ExternalCategoryDto>>> GetExternalCategoriesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Toplu kategori import islemi
+    /// Toplu kategori import işlemi
     /// </summary>
     public virtual async Task<IResult> ImportCategoriesAsync(IEnumerable<ExternalCategoryImportRequest> categories, CancellationToken cancellationToken = default)
     {
@@ -70,7 +70,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
     }
 
     /// <summary>
-    /// Tekil kategori import islemi
+    /// Tekil kategori import işlemi
     /// </summary>
     public virtual async Task<IResult> ImportCategoryAsync(ExternalCategoryImportRequest category, CancellationToken cancellationToken = default)
     {
@@ -145,7 +145,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
             await dbContext.Categories.AddAsync(category, cancellationToken);
         }
 
-        // Marketplace eslesmesi olustur
+        // Marketplace Eşleşmesi olustur
         if (isNew && MarketPlace != null)
         {
             await CreateMarketplaceLinkAsync(dbContext, category, importRequest, cancellationToken);
@@ -167,7 +167,7 @@ public abstract class BaseCategoryImporterService : ICategoryImporterService
     }
 
     /// <summary>
-    /// Marketplace eslesmesi olusturur
+    /// Marketplace Eşleşmesi olusturur
     /// </summary>
     protected virtual async Task CreateMarketplaceLinkAsync(
         IntegrationDbContext dbContext,

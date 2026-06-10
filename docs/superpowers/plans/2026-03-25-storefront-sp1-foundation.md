@@ -187,7 +187,7 @@ public sealed class StorefrontSettings : BaseEntity
     public string? MersisNumber { get; set; }
     public string? KepAddress { get; set; }
 
-    // Iletisim
+    // İletişim
     public string ContactPhone { get; set; } = null!;
     public string? WhatsAppNumber { get; set; }
     public string ContactEmail { get; set; } = null!;

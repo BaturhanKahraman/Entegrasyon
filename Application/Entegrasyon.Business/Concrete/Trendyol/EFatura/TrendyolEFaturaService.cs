@@ -27,7 +27,7 @@ public sealed class TrendyolEFaturaService(
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning("Mukellef sorgulama basarisiz: {Status}", response.StatusCode);
+                logger.LogWarning("Mukellef sorgulama başarısız: {Status}", response.StatusCode);
                 return new SuccessDataResult<bool>(false, "Mukellef sorgulanamadi, e-arsiv kullanilacak.");
             }
 
@@ -54,7 +54,7 @@ public sealed class TrendyolEFaturaService(
             .FirstOrDefaultAsync(o => o.Id == orderId, ct);
 
         if (order is null)
-            return new ErrorDataResult<EFaturaRecord>(null!, "Sipariş bulunamadi.");
+            return new ErrorDataResult<EFaturaRecord>(null!, "Sipariş bulunamadı.");
 
         // Token cache'den companyId ve userId al
         var tokenInfo = TrendyolEFaturaApiClient.GetCachedTokenInfo(TrendyolMarketPlaceId);
@@ -62,7 +62,7 @@ public sealed class TrendyolEFaturaService(
             return new ErrorDataResult<EFaturaRecord>(null!, "e-Fatura oturumu acilmamis. Lutfen ayarlari kontrol edin.");
 
         // Mukellef kontrolu (BillingAddress'ten TaxId alinmali — su an null)
-        // TODO: Order entity'ye TaxId alani eklenmeli. Simdilik e-arsiv kullanilacak.
+        // TODO: Order entity'ye TaxId alanıeklenmeli. Simdilik e-arsiv kullanilacak.
         var isEInvoice = false;
 
         // Request body olustur
@@ -127,7 +127,7 @@ public sealed class TrendyolEFaturaService(
             .FirstOrDefaultAsync(r => r.Id == invoiceRecordId, ct);
 
         if (record is null)
-            return new ErrorDataResult<EFaturaRecord>(null!, "Fatura kaydi bulunamadi.");
+            return new ErrorDataResult<EFaturaRecord>(null!, "Fatura kaydi bulunamadı.");
 
         if (string.IsNullOrEmpty(record.InvoiceUuid))
             return new ErrorDataResult<EFaturaRecord>(null!, "Fatura UUID'si bos.");
@@ -141,7 +141,7 @@ public sealed class TrendyolEFaturaService(
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync(ct);
-            logger.LogWarning("Fatura durum sorgulama basarisiz: {Status} {Body}", response.StatusCode, errorBody);
+            logger.LogWarning("Fatura durum sorgulama başarısız: {Status} {Body}", response.StatusCode, errorBody);
             return new ErrorDataResult<EFaturaRecord>(record, $"Durum sorgulama hatasi: {response.StatusCode}");
         }
 
@@ -175,7 +175,7 @@ public sealed class TrendyolEFaturaService(
             .FirstOrDefaultAsync(r => r.Id == invoiceRecordId, ct);
 
         if (record is null)
-            return new ErrorResult("Fatura kaydi bulunamadi.");
+            return new ErrorResult("Fatura kaydi bulunamadı.");
 
         if (record.InvoiceType != EFaturaType.EArchive)
             return new ErrorResult("Sadece e-arsiv faturalar iptal edilebilir.");
@@ -193,7 +193,7 @@ public sealed class TrendyolEFaturaService(
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync(ct);
-            return new ErrorResult($"Fatura iptal basarisiz: {response.StatusCode} - {errorBody}");
+            return new ErrorResult($"Fatura iptal başarısız: {response.StatusCode} - {errorBody}");
         }
 
         record.Status = EFaturaStatus.Cancelled;
@@ -215,7 +215,7 @@ public sealed class TrendyolEFaturaService(
             .FirstOrDefaultAsync(r => r.Id == invoiceRecordId, ct);
 
         if (record is null)
-            return new ErrorDataResult<string>(null!, "Fatura kaydi bulunamadi.");
+            return new ErrorDataResult<string>(null!, "Fatura kaydi bulunamadı.");
 
         // Onceden indirilmis URL varsa dondur
         if (!string.IsNullOrEmpty(record.PdfDownloadUrl))

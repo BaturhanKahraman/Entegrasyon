@@ -73,7 +73,7 @@ public class PricingController(
     {
         var product = await productService.GetProductDetailById(productId);
         if (!product.Success)
-            return Content("<tr><td colspan='8' class='text-danger p-2'>Urun bulunamadi.</td></tr>", "text/html");
+            return Content("<tr><td colspan='8' class='text-danger p-2'>Urun bulunamadı.</td></tr>", "text/html");
 
         return PartialView("Partials/_PriceVariants", product.Data);
     }
@@ -85,7 +85,7 @@ public class PricingController(
         var variant = await variantManager.GetById(variantId);
         if (variant is null)
         {
-            Response.HtmxTriggerWithData("showToast", new { message = "Varyant bulunamadi.", type = "danger" });
+            Response.HtmxTriggerWithData("showToast", new { message = "Varyant bulunamadı.", type = "danger" });
             return StatusCode(404);
         }
 

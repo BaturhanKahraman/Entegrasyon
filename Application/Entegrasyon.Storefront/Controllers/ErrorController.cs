@@ -12,7 +12,7 @@ public class ErrorController(ICategoryService categoryService) : Controller
         ViewBag.StatusCode = statusCode;
         ViewBag.Message = statusCode switch
         {
-            404 => "Aradiginiz sayfa bulunamadi.",
+            404 => "Aradiginiz sayfa bulunamadı.",
             403 => "Bu sayfaya erisim izniniz yok.",
             500 => "Bir hata olustu. Lutfen daha sonra tekrar deneyin.",
             503 => "Servis gecici olarak kullanilamaz durumdadir.",

@@ -71,7 +71,7 @@ public class ApiKeyManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var key = await dbContext.ApiKeys.FindAsync(id);
         if (key is null)
-            return new ErrorResult("API anahtari bulunamadi.");
+            return new ErrorResult("API anahtari bulunamadı.");
 
         key.IsActive = false;
         await dbContext.SaveChangesAsync();

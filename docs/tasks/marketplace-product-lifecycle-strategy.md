@@ -66,7 +66,7 @@ Ayrica eslestirme sayfalarinda zaten eslestirilen platformlar tekrar gosteriliyo
 ```
 Attribute eklendi (yeni zorunlu attribute)
   → Mevcut urunlerde bu attribute yok
-    → Marketplace'e sonraki guncelleme denemesi basarisiz olur
+    → Marketplace'e sonraki guncelleme denemesi başarısız olur
       → Urun "guncelleme gerekli" durumuna duser
 
 Attribute kaldirildi
@@ -88,7 +88,7 @@ Kategori eslestirmesi kaldirildi
       → Fiyat/stok guncellemesi bile yapilamaz
 
 Attribute eslestirmesi kaldirildi
-  → Zorunlu attribute ise → yayinlama basarisiz
+  → Zorunlu attribute ise → yayinlama başarısız
   → Opsiyonel ise → sessizce atlanir, marketplace'te eski deger kalir
 
 Attribute value eslestirmesi kaldirildi
@@ -129,7 +129,7 @@ Attribute value eslestirmesi kaldirildi
 | Attribute marketplace eslestirmesi kaldirma | "Bu eslestirmeyi kaldirirseniz zorunlu attribute eslestirmesi kalkacak. X urun etkilenir." |
 
 **Teknik yaklasim:**
-- `ImpactAnalysisService` — degisiklik oncesi etkilenen urun sayisini hesaplar
+- `ImpactAnalysisService` — degisiklik oncesi etkilenen urun Sayısıni hesaplar
 - Business layer'daki ilgili metodlara entegre edilir (save oncesi)
 - UI'da uyari dialog'u gosterilir
 
@@ -189,7 +189,7 @@ ProductMarketplace tablosuna eklenmesi gerekenler:
   1. Kategori eslestirmesi var mi?
   2. Zorunlu attribute'lar eslestirili mi?
   3. Urun tum zorunlu attribute degerlerine sahip mi?
-- Basarisiz olanlar → `NeedsUpdate = true` + sebep
+- başarısız olanlar → `NeedsUpdate = true` + sebep
 
 **UI gosterim:**
 - Dashboard'da "Guncelleme gereken urunler" karti
@@ -220,4 +220,4 @@ Her parca bagimsiz olarak spec → plan → implementasyon dongusunden gecer. Pa
 2. **Hepsiburada ticket-api:** Urun bilgi guncelleme API'si implement edilmeli mi yoksa sadece listing operasyonlari yeterli mi?
 3. **Multi-tenant:** Compliance check service tenant bazinda mi calisacak?
 4. **Bildirim:** "Guncelleme gerekli" durumundaki urunler icin email/push bildirim gonderilmeli mi?
-5. **Otomatik retry:** Basarisiz guncelleme denemeleri otomatik tekrarlanmali mi?
+5. **Otomatik retry:** başarısız guncelleme denemeleri otomatik tekrarlanmali mi?

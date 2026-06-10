@@ -7,7 +7,7 @@ public interface IBrandAutoMatchService
 {
     /// <summary>
     /// Secilen marketplace icin eslenmemis markalari string matching + Ollama ile otomatik eslestirir.
-    /// confidence >= 0.8 olan eslesmeleri otomatik kaydeder, dusuk guvenli olanlar onay icin doner.
+    /// confidence >= 0.8 olan Eşleşmeleri otomatik kaydeder, Düşük guvenli olanlar onay icin doner.
     /// </summary>
     Task<IDataResult<BrandAutoMatchResultDto>> AutoMatchAsync(int marketPlaceId, CancellationToken ct = default);
 

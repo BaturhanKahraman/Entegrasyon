@@ -63,7 +63,7 @@ public class PosSettings
     public string ApiKey { get; set; } = string.Empty;
     public int SyncIntervalSeconds { get; set; } = 60;
     public int PrintAgentPort { get; set; } = 19100;
-    public string StoreName { get; set; } = "Magaza";
+    public string StoreName { get; set; } = "Mağaza";
     public string? BranchOfficeId { get; set; }
     public string? SalePersonId { get; set; }
 

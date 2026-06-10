@@ -60,7 +60,7 @@ public class BrandMasterImportPage(IPage page, string baseUrl)
     }
 
     /// <summary>
-    /// Secili marka sayisini doner.
+    /// Secili marka Sayısıni doner.
     /// </summary>
     public async Task<int> GetSelectedCountAsync()
     {

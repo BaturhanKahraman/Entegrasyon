@@ -107,7 +107,7 @@ public class TrendyolMappingValidatorTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("bulunamadi");
+        result.Message.Should().Contain("bulunamadı");
     }
 
     // ── Test 3: Category match missing ──

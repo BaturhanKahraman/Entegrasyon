@@ -32,7 +32,7 @@ public sealed class N11ProductMapper(
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
-            return new ErrorDataResult<XElement>(null!, "Urun bulunamadi.");
+            return new ErrorDataResult<XElement>(null!, "Urun bulunamadı.");
 
         if (product.ProductVariants.Count == 0)
             return new ErrorDataResult<XElement>(null!, "Urunun varyanti yok.");
@@ -53,7 +53,7 @@ public sealed class N11ProductMapper(
             .FirstOrDefaultAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId);
 
         if (categoryMatch is null)
-            return new ErrorDataResult<XElement>(null!, "Kategori N11 eslestirmesi bulunamadi.");
+            return new ErrorDataResult<XElement>(null!, "Kategori N11 eslestirmesi bulunamadı.");
 
         // 4. Özellik adı eşleştirmeleri (ID → humanized name için kullanılmaz — N11 string isim ister)
         var attributeIds = product.AttributeKeyValues.Select(a => a.CategoryAttributeId).Distinct().ToList();

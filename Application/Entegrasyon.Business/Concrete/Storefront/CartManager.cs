@@ -55,7 +55,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(c => c.Id == cartId);
 
         if (cart is null)
-            return new ErrorResult("Sepet bulunamadi.");
+            return new ErrorResult("Sepet bulunamadı.");
 
         var variant = await dbContext.ProductVariants
             .Include(v => v.BranchOfficeStocks)
@@ -63,7 +63,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(v => v.Id == productVariantId);
 
         if (variant is null)
-            return new ErrorResult("Urun varyanti bulunamadi.");
+            return new ErrorResult("Urun varyanti bulunamadı.");
 
         var availableStock = variant.BranchOfficeStocks.Sum(s => s.CurrentStock);
         var existingItem = cart.Items.FirstOrDefault(i => i.ProductVariantId == productVariantId);
@@ -110,7 +110,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(c => c.Id == cartId);
 
         if (cart is null)
-            return new ErrorDataResult<CartDto>(null!, "Sepet bulunamadi.");
+            return new ErrorDataResult<CartDto>(null!, "Sepet bulunamadı.");
 
         var items = cart.Items.Select(i =>
         {
@@ -160,7 +160,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(i => i.CartId == cartId && i.ProductVariantId == productVariantId);
 
         if (item is null)
-            return new ErrorResult("Sepet ogesi bulunamadi.");
+            return new ErrorResult("Sepet ogesi bulunamadı.");
 
         if (quantity <= 0)
             return new ErrorResult("Miktar sifirdan buyuk olmalidir.");
@@ -171,7 +171,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(v => v.Id == productVariantId);
 
         if (variant is null)
-            return new ErrorResult("Urun varyanti bulunamadi.");
+            return new ErrorResult("Urun varyanti bulunamadı.");
 
         var availableStock = variant.BranchOfficeStocks.Sum(s => s.CurrentStock);
         if (quantity > availableStock)
@@ -191,7 +191,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(i => i.CartId == cartId && i.ProductVariantId == productVariantId);
 
         if (item is null)
-            return new ErrorResult("Sepet ogesi bulunamadi.");
+            return new ErrorResult("Sepet ogesi bulunamadı.");
 
         dbContext.CartItems.Remove(item);
         await dbContext.SaveChangesAsync();
@@ -292,7 +292,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
 
         var cart = await dbContext.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
         if (cart is null)
-            return new ErrorResult("Sepet bulunamadi.");
+            return new ErrorResult("Sepet bulunamadı.");
 
         cart.CouponCode = couponCode;
         await dbContext.SaveChangesAsync();
@@ -306,7 +306,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
 
         var cart = await dbContext.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
         if (cart is null)
-            return new ErrorResult("Sepet bulunamadi.");
+            return new ErrorResult("Sepet bulunamadı.");
 
         cart.CouponCode = null;
         await dbContext.SaveChangesAsync();
@@ -322,7 +322,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(i => i.CartId == cartId && i.ProductVariantId == productVariantId);
 
         if (cartItem is null)
-            return new ErrorResult("Sepet ogesi bulunamadi.");
+            return new ErrorResult("Sepet ogesi bulunamadı.");
 
         // Check if already saved
         var alreadySaved = await dbContext.StorefrontSavedCartItems
@@ -387,7 +387,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.CustomerId == customerId && s.ProductVariantId == productVariantId);
 
         if (savedItem is null)
-            return new ErrorResult("Kaydedilmis urun bulunamadi.");
+            return new ErrorResult("Kaydedilmis urun bulunamadı.");
 
         // Get current price from variant
         var variant = await dbContext.ProductVariants
@@ -396,7 +396,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
             .FirstOrDefaultAsync(v => v.Id == productVariantId);
 
         if (variant is null)
-            return new ErrorResult("Urun varyanti bulunamadi.");
+            return new ErrorResult("Urun varyanti bulunamadı.");
 
         var availableStock = variant.BranchOfficeStocks.Sum(s => s.CurrentStock);
         if (availableStock <= 0)

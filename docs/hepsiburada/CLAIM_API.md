@@ -71,9 +71,9 @@ Test Claim Base URL: `https://claim-stub-external-sit.hepsiburada.com`
 
 | Parametre | Tip | Zorunlu | Default | Aciklama |
 |-----------|-----|---------|---------|----------|
-| beginDate | string | Hayir | — | Baslangic tarihi (`yyyy-MM-dd HH:mm`) |
-| endDate | string | Hayir | — | Bitis tarihi (`yyyy-MM-dd HH:mm`) |
-| offset | integer | Hayir | 0 | Baslangic noktasi |
+| beginDate | string | Hayir | — | Başlangıç tarihi (`yyyy-MM-dd HH:mm`) |
+| endDate | string | Hayir | — | Bitiş tarihi (`yyyy-MM-dd HH:mm`) |
+| offset | integer | Hayir | 0 | Başlangıç noktasi |
 | limit | integer | Hayir | — | Sayfa boyutu (1–100) |
 
 ### Response Headers
@@ -81,10 +81,10 @@ Test Claim Base URL: `https://claim-stub-external-sit.hepsiburada.com`
 | Header | Aciklama |
 |--------|----------|
 | X-Limit | Sayfa boyutu |
-| X-Offset | Baslangic noktasi |
+| X-Offset | Başlangıç noktasi |
 | X-Page | Mevcut sayfa |
-| X-Total-Count | Toplam kayit sayisi |
-| X-Total-Pages | Toplam sayfa sayisi |
+| X-Total-Count | Toplam kayit Sayısı |
+| X-Total-Pages | Toplam sayfa Sayısı |
 
 ### Response — `200 OK`
 
@@ -141,8 +141,8 @@ Bolum 2'deki parametrelere ek olarak:
 
 | Parametre | Tip | Zorunlu | Default | Aciklama |
 |-----------|-----|---------|---------|----------|
-| statusBeginDate | string | Hayir | — | Statu baslangic tarihi (`yyyy-MM-dd HH:mm`) |
-| statusEndDate | string | Hayir | — | Statu bitis tarihi (`yyyy-MM-dd HH:mm`) |
+| statusBeginDate | string | Hayir | — | Statu Başlangıç tarihi (`yyyy-MM-dd HH:mm`) |
+| statusEndDate | string | Hayir | — | Statu Bitiş tarihi (`yyyy-MM-dd HH:mm`) |
 
 ### Response
 

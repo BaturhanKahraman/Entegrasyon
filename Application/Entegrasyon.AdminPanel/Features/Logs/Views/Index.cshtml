@@ -32,11 +32,11 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Baslangic</label>
+                <label class="form-label">Başlangıç</label>
                 <input type="datetime-local" name="from" class="form-control" value="@(Model.Filter.From?.ToString("yyyy-MM-ddTHH:mm"))" />
             </div>
             <div class="col-md-2">
-                <label class="form-label">Bitis</label>
+                <label class="form-label">Bitiş</label>
                 <input type="datetime-local" name="to" class="form-control" value="@(Model.Filter.To?.ToString("yyyy-MM-ddTHH:mm"))" />
             </div>
             <div class="col-md-3">
@@ -80,7 +80,7 @@
                     @if (!Model.Logs.Any())
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">Filtrelere uygun log bulunamadi.</td>
+                            <td colspan="7" class="text-center text-muted py-4">Filtrelere uygun log bulunamadı.</td>
                         </tr>
                     }
                 </tbody>

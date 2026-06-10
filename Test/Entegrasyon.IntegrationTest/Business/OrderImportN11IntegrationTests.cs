@@ -225,7 +225,7 @@ public class OrderImportN11IntegrationTests : IntegrationTestBase
             // Act — lock alinmis durumda import dene
             var result = await orderManager.ImportN11OrdersAsync(orders);
 
-            // Assert — lock nedeniyle basarisiz olmali
+            // Assert — lock nedeniyle başarısız olmali
             result.Success.Should().BeFalse("Advisory lock should prevent concurrent import");
             result.Message.Should().Contain("zaten devam ediyor");
         }
@@ -242,7 +242,7 @@ public class OrderImportN11IntegrationTests : IntegrationTestBase
         var (orderManager, scope) = GetScopedService<IOrderManager>();
         using var _ = scope;
 
-        // Eslesmeyecek barkod
+        // Eşleşmeyecek barkod
         var orders = new List<N11OrderDto> { BuildN11Order(3040, "N11-NOMATCH-001", "UNKNOWN-BARCODE-999") };
 
         // Act

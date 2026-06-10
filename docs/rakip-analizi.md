@@ -1,7 +1,32 @@
 # Rakip Analizi: E-Ticaret Entegrasyon Yazilimlari
 
-**Tarih:** Mart 2026
+**Tarih:** Mart 2026 · **Güncelleme:** 2026-06-10 (PA kod-önce doğrulama)
 **Amac:** Turkiye ve yurtdisi e-ticaret entegrasyon yazilimlarinin karsilastirmali analizi, rekabet avantaji tespiti ve oncelikli gelistirme onerileri.
+
+---
+
+## ⚠️ 2026-06-10 GÜNCELLEME — Kod-Önce Doğrulama (PA)
+
+> Bu dokümanın §4 "Bizde Olmayan Özellikler" listesi **kısmen BAYAT** çıktı. Doküman projeyi "Blazor Server" sanıyor — **proje ASP.NET Core MVC'ye geçti.** Aşağıdaki teyit KODA dayanır (grep + dosya:satır), dokümana değil. §4 okunurken bu tabloyu esas al:
+
+| Rakip-eksik iddiası (§4) | KOD-ÖNCE GERÇEK DURUM (2026-06-10) | Task |
+|---|---|---|
+| Rekabet analizi / rakip fiyat takibi (repricing) | ❌ **GERÇEKTEN YOK** (grep boş) — rakiplerin en güçlü silahı | C1 [HIGH] |
+| Akıllı/dinamik fiyatlandırma | ⚠️ **KISMEN VAR** — `PricingRuleManager` (kategori/brand scope, %/sabit oran kuralı) + `CommissionCalculator` var; AMA maliyet/marj-bazlı otomatik + platform-strateji YOK | C2 [MEDIUM] |
+| E-Fatura / E-Arşiv | ⚠️ **KISMEN VAR** — Trendyol e-fatura API+polling çalışıyor; genel GİB gönderimi placeholder, otomatik tetik yok (bkz. Konu 3: F1/F3) | F1/F3 |
+| Depo yönetimi (temel) | ✅ **VAR** — BranchOffice tam CRUD + stok devri + transfer (tasks.json DONE). WMS/barkodlu-toplama ayrı eksik | — |
+| Raporlama / analitik dashboard | ✅ **GENİŞ VAR** — `ReportManager`: Sales/Inventory/ProfitLoss/Marketplace/Performance + Dashboard. Doküman "yok" diyor, YANLIŞ | — |
+| Otomatik sipariş yönlendirme (order routing) | ⚠️ **HARDCODED** — checkout `branchOfficeId:1` sabit, çoklu-depo seçimi yok (bkz. Konu 1: S2) | S2 |
+| Toplu işlem (bulk) | ⚠️ **KISMEN VAR** — Export + BulkOperationManager var; toplu fatura/etiket yok (F6) | F6 |
+| İade yönetimi | ⚠️ **KISMEN VAR** — SaleReturn + Pazarama refund polling var; iade faturası yok (F4) | F4 |
+| POS / omnichannel | ✅ **VAR** — SaleManager (POS), stok event'iyle omnichannel sync (Konu 1) | — |
+| Set/Paket (Bundle/Kit) | ❌ **GERÇEKTEN YOK** (grep boş) | C3 [MEDIUM] |
+| Satın Alma (Purchase Order) | ❌ **GERÇEKTEN YOK** (grep boş) — tedarikçi/min-stok uyarı yok | C4 [MEDIUM] |
+| AI içerik üretimi | ❌ **YOK** — Ollama sadece attribute/kategori eşleştirme + AiCredit accounting; ürün açıklaması/görsel AI üretimi yok | C5 [LOW] |
+| B2B portal / toptan | ❌ **GERÇEKTEN YOK** (grep boş) | C6 [LOW] |
+| Marketplace reklam yönetimi | ❌ **YOK** — sadece Storefront email kampanya (`StorefrontCampaignManager`); pazaryeri reklam yok | C7 [LOW] |
+
+**Özet:** Gerçek rakip boşlukları (bizde yok, rakipte var, değerli): **repricing (C1, en kritik)**, maliyet/marj-bazlı fiyatlandırma (C2), bundle/kit (C3), purchase-order (C4), AI içerik (C5), B2B (C6), pazaryeri reklam (C7). Diğer "eksik" sanılanlar (e-fatura, depo, rapor, bulk, iade, POS) kısmen/tamamen VAR — ilgili boşluklar S/F serisi task'larında. Repricing **rakiplerin (Entegra/Dopigo) en güçlü satış argümanı** — en yüksek öncelikli rekabet açığımız.
 
 ---
 
@@ -54,7 +79,7 @@
 
 #### Kullanici Yorumlari ve Sikayetler
 - **Olumlu:** Genis ozellik seti, AI ozellikleri, kargo anlasmasi avantajlari
-- **Olumsuz:** Destek taleplerine gec donus, kurulum surecinde sorunlar, altyapi gecislerinde uzun sureli problemler (25+ gun panel erisim sorunu gibi), lisans bitis tarihi bilgi eksikligi, satis sonrasi destek kalitesinde dusus
+- **Olumsuz:** Destek taleplerine gec donus, kurulum surecinde sorunlar, altyapi gecislerinde uzun sureli problemler (25+ gun panel erisim sorunu gibi), lisans Bitiş tarihi bilgi eksikligi, satis sonrasi destek kalitesinde dusus
 - **Sikayetvar'da aktif:** 10+ yildir pro uye, sikayetlere donus yapiyor
 
 #### Benzersiz Ozellikler
@@ -90,21 +115,21 @@
 - Paket farki gozetmeksizin tum pazaryerleri dahil
 
 #### Fiyatlandirma
-- Baslangic paketi ile basla, paketler arasi fiyat farkini odeyerek yukselt
+- Başlangıç paketi ile basla, paketler arasi fiyat farkini odeyerek yukselt
 - Tum paketlerde tum pazaryerleri dahil (ek ucret yok)
 - Yeni gelistirmeler ve platform entegrasyonlari ek ucret gerektirmez
 - Spesifik fiyatlar web sitesinde gizli (teklif bazli), ancak yillik yenileme ~20.000 TL civari (kullanici yorumlarina gore)
 
 #### Kullanici Yorumlari ve Sikayetler
 - **Olumlu:** Genis pazaryeri destegi, rekabet analizi modulu, cozum odakli destek
-- **Olumsuz:** Yillik yenileme fiyatinin ilk alis fiyatiyla neredeyse ayni olmasi (kiralama hissi), Trendyol urun guncelleme sorunlari (2+ ay cozumsuz), destek iletisiminde gecikmeler
+- **Olumsuz:** Yillik yenileme fiyatinin ilk alis fiyatiyla neredeyse ayni olmasi (kiralama hissi), Trendyol urun guncelleme sorunlari (2+ ay cozumsuz), destek İletişiminde gecikmeler
 - **Destek:** Haftanin 7 gunu 09:00-24:00
 
 #### Benzersiz Ozellikler
 - **Rekabet Analizi modulu** (pazarda en gelismis)
 - **Akilli Fiyatlandirma** (maliyet bazli otomatik)
 - **Mobil Depo Otomasyonu** (barkod okuyucu ile depo yonetimi)
-- **Fulfillment entegrasyonu** (3PL sirketleriyle)
+- **Fulfillment entegrasyonu** (3PL Şirketleriyle)
 
 ---
 
@@ -147,7 +172,7 @@
 #### Benzersiz Ozellikler
 - Turkiye'nin en yaygin on muhasebe yazilimi
 - Mali musavir portali (Parasut Atlas)
-- Cok dusuk fiyat noktasi
+- Cok Düşük fiyat noktasi
 - Logo Yazilim ekosistemi ile entegrasyon
 
 > **Not:** Parasut dogrudan bir rakip degil, tamamlayici bir urun. Ancak "tek panelden her sey" vizyonumuz icin muhasebe modulu olarak referans alinabilir.
@@ -251,7 +276,7 @@ Amazon, eBay, Shopify, TikTok Shop, Walmart, Etsy, BigCommerce, WooCommerce ve 1
 
 #### Fiyatlandirma
 - Sipariş hacmine gore fiyatlandirma (gelir yuzdesI YOK)
-- Baslangic: $449/ay
+- Başlangıç: $449/ay
 - Ek moduller: Sadece kullandigin icin ode
 - Her pakete ozel onboarding plani ve uzman dahil
 
@@ -288,8 +313,8 @@ Amazon, eBay, Shopify, TikTok Shop, Walmart, Etsy, BigCommerce, WooCommerce ve 1
 #### Fiyatlandirma
 - Abonelik bazli, yillik sozlesme
 - $12.000 - $50.000+/yil
-- Gelir belirli bir esigi astiktan sonra gelir yuzdesi de alinabilir
-- Entegrasyon sayisi, satis hacmi ve secilen ozelliklere gore degisir
+- Gelir belirli bir Eşiği astiktan sonra gelir yuzdesi de alinabilir
+- Entegrasyon Sayısı, satis hacmi ve secilen ozelliklere gore degisir
 
 #### Kullanici Yorumlari
 - **Olumlu:** En genis pazaryeri destegi, enterprise sinif, guclu repricing
@@ -336,7 +361,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce, WooCommerce
 
 #### Benzersiz Ozellikler
 - GoDaddy ekosistemi ile entegrasyon (domain + hosting + e-ticaret + pazaryeri)
-- En dusuk giris fiyati ($19/ay)
+- En Düşük giris fiyati ($19/ay)
 - %115 Sipariş artisi (GoDaddy entegrasyonu sonrasi ortalama)
 
 ---
@@ -355,7 +380,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce, WooCommerce
 - CRM
 - Satin alma Siparişi yonetimi
 - B2B Sipariş portali
-- POS entegrasyonu (fiziksel magaza)
+- POS entegrasyonu (fiziksel Mağaza)
 - Dropship otomasyonu
 - Gercek zamanli muhasebe guncellemeleri
 
@@ -389,7 +414,7 @@ Shopify, Magento, Amazon, eBay, BigCommerce + genis ucuncu taraf entegrasyon mar
 #### Temel Ozellikler
 - Envanter yonetimi (sinirsiz lokasyon)
 - Sipariş yonetimi (omnichannel)
-- Entegre POS (fiziksel magaza)
+- Entegre POS (fiziksel Mağaza)
 - Depo yonetimi
 - Satin alma Siparişi yonetimi
 - Uretim yonetimi (BOM - Bill of Materials)
@@ -421,7 +446,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce + POS + 3PL + kargo + 700+ ent
 - **EDI entegrasyonu** (buyuk perakendecilerle veri alisverisi)
 - **Workflow builder** (gorsel otomasyon olusturucu)
 - **700+ entegrasyon** (sektordeki en genis ekosistemlerden)
-- **Multi-entity** (holding yapisindaki sirketler icin)
+- **Multi-entity** (holding yapisindaki Şirketler icin)
 
 ---
 
@@ -446,7 +471,7 @@ Amazon, eBay, Walmart, Etsy, Shopify, BigCommerce + POS + 3PL + kargo + 700+ ent
 
 | Ozellik | Linnworks | ChannelAdvisor | Sellbrite | Brightpearl | Cin7 |
 |---------|-----------|----------------|-----------|-------------|------|
-| Pazaryeri sayisi | 100+ | 420+ | 7-8 | 10+ | 700+ entg. |
+| Pazaryeri Sayısı | 100+ | 420+ | 7-8 | 10+ | 700+ entg. |
 | Envanter yonetimi | Gelismis | Gelismis | Temel | Gelismis | Gelismis |
 | Sipariş yonlendirme | Var | Var | Yok | Var | Var |
 | Depo yonetimi (WMS) | Var | Yok | Yok | Var | Var |
@@ -500,7 +525,7 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
 ### Onemli Eksikler (Orta Oncelik)
 
 6. **Otomatik Sipariş Yonlendirme (Order Routing)**
-   - Birden fazla depo/magaza varsa en uygun noktadan gonderim
+   - Birden fazla depo/Mağaza varsa en uygun noktadan gonderim
    - Stok durumu + mesafe + maliyet bazli karar
    - Linnworks'un en guclu ozelligi
 
@@ -527,7 +552,7 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
     - Otomatik stok iadesi
     - Pazaryeri iade entegrasyonu
 
-### Gelecek Icin Degerli (Dusuk Oncelik - Ama Fark Yaratici)
+### Gelecek Icin Degerli (Düşük Oncelik - Ama Fark Yaratici)
 
 11. **AI Destekli Ozellikler**
     - Urun aciklamasi olusturma (ChatGPT/Claude entegrasyonu)
@@ -546,7 +571,7 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
     - Butce optimizasyonu
 
 14. **POS Entegrasyonu**
-    - Fiziksel magaza satislariyla entegrasyon
+    - Fiziksel Mağaza satislariyla entegrasyon
     - Omnichannel stok yonetimi
 
 ---
@@ -574,7 +599,7 @@ Turkiye pazarinda henuz yaygin olmayan, yurtdisi yazilimlardan alinabilecek fiki
 
 ### 5.4 Omnichannel / POS Birlestirme (Cin7, Brightpearl)
 - Online + offline satislari tek stok havuzunda yonetme
-- "Online Sipariş, magazadan teslim" (BOPIS)
+- "Online Sipariş, Mağazadan teslim" (BOPIS)
 - **Turkiye'de Nebim/Logo/Mikro ayri, pazaryeri ayri. Birlestiren yok.**
 
 ### 5.5 Dropship Otomasyon (ChannelAdvisor, Brightpearl)
@@ -620,7 +645,7 @@ Rakiplerin zayifligi: Yuksek fiyatlar + paket kisitlamalari + gizli ucretler.
 - **Tek paket, sinirsiz pazaryeri** (Entegra modeli)
 - **Sipariş hacmine gore fiyatlandirma** (Linnworks modeli)
 - **Gelir yuzdesi almama** garantisi
-- **Baslangic icin dusuK giris noktasi**, buyudukce yukseltme
+- **Başlangıç icin Düşük giris noktasi**, buyudukce yukseltme
 
 ### 6.3 Teknik Ustunlukler
 - **Multi-tenant mimari** (zaten hazirlaniyoruz): Rakiplerin cogu single-tenant

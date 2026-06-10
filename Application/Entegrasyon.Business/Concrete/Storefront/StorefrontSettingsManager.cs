@@ -18,7 +18,7 @@ public class StorefrontSettingsManager(
             .FirstOrDefaultAsync(s => s.TenantId == tenantId);
 
         if (settings is null)
-            return new ErrorDataResult<StorefrontSettings>(null!, "Storefront ayarlari bulunamadi.");
+            return new ErrorDataResult<StorefrontSettings>(null!, "Storefront ayarlari bulunamadı.");
 
         return new SuccessDataResult<StorefrontSettings>(settings);
     }
@@ -31,7 +31,7 @@ public class StorefrontSettingsManager(
             .FirstOrDefaultAsync(s => s.TenantId == tenantId);
 
         if (settings is null)
-            return new ErrorResult("Storefront ayarlari bulunamadi.");
+            return new ErrorResult("Storefront ayarlari bulunamadı.");
 
         settings.IsMaintenanceMode = enabled;
         settings.MaintenanceMessage = message;
@@ -112,7 +112,7 @@ public class StorefrontSettingsManager(
             .FirstOrDefaultAsync(s => s.TenantId == tenantId);
 
         if (settings is null)
-            return new ErrorResult("Storefront ayarlari bulunamadi.");
+            return new ErrorResult("Storefront ayarlari bulunamadı.");
 
         var property = typeof(StorefrontSettings).GetProperty(fieldName);
         if (property is null || property.PropertyType != typeof(string))

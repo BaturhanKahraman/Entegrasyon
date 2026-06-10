@@ -18,7 +18,7 @@ public sealed class WireMockSmokeTest(WireMockFixture wm)
     [Fact]
     public async Task Server_Starts_And_Responds_With_Header_And_Log_Verification()
     {
-        // Arrange: Fixture class'lar arasi paylasildigi icin, her test baslangicinda
+        // Arrange: Fixture class'lar arasi paylasildigi icin, her test Başlangıçinda
         // onceki class'larin stub'larini temizlemek gerekir.
         wm.ResetAll();
 
@@ -45,7 +45,7 @@ public sealed class WireMockSmokeTest(WireMockFixture wm)
         body.Should().Be("pong");
 
         // Assert 2: Log entries verification — Faz 1'de header/body assertion icin
-        // bu pattern kullanilacak. FindLogEntries + Single = tam olarak 1 eslesme
+        // bu pattern kullanilacak. FindLogEntries + Single = tam olarak 1 Eşleşme
         // beklentisi; 0 veya 2+ olursa test fail olur.
         var log = wm.Server.FindLogEntries(
             Request.Create().WithPath("/ping").UsingGet()).Single();

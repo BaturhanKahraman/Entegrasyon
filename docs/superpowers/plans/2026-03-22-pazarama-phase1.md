@@ -1162,7 +1162,7 @@ public partial class PazaramaCategoryTreeView
     @if (!Categories.Any())
     {
         <MudText Align="Align.Center" Color="Color.Secondary" Class="mt-4">
-            Kategori bulunamadi. "Kategorileri Yukle" butonuna tiklayin.
+            Kategori bulunamadı. "Kategorileri Yukle" butonuna tiklayin.
         </MudText>
     }
     else
@@ -1265,7 +1265,7 @@ private async Task ImportPazaramaCategoriesAsync()
         var importRequests = pazaramaSelectedNodes.Select(MapToImportRequest).ToList();
         var importEvent = new CategoryImportRequestedEvent("Pazarama", importRequests, userId);
         await ImportRequestedChannel.PublishAsync(importEvent);
-        Snackbar.Add("Pazarama kategori ice aktarma islemi baslatildi.", Severity.Info);
+        Snackbar.Add("Pazarama kategori ice aktarma işlemi baslatildi.", Severity.Info);
         pazaramaSelectedNodes = null;
         NavigationManager.NavigateTo("/categories");
     }
@@ -1496,7 +1496,7 @@ public sealed class PazaramaBrandService(
             .FirstOrDefaultAsync(m => m.Id == MarketPlaceConstants.PazaramaMarketPlaceId, cancellationToken);
 
         if (marketplace == null)
-            return new ErrorResult("Pazarama marketplace kaydi bulunamadi.");
+            return new ErrorResult("Pazarama marketplace kaydi bulunamadı.");
 
         int created = 0, matched = 0;
 

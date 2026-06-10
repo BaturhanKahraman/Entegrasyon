@@ -53,7 +53,7 @@ public class StorefrontPushManager(
             .FirstOrDefaultAsync(x => x.Endpoint == endpoint);
 
         if (subscription is null)
-            return new ErrorResult("Abonelik bulunamadi.");
+            return new ErrorResult("Abonelik bulunamadı.");
 
         dbContext.StorefrontPushSubscriptions.Remove(subscription);
         await dbContext.SaveChangesAsync();

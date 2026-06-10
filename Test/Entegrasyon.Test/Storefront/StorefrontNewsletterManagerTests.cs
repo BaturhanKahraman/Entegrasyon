@@ -107,7 +107,7 @@ public class StorefrontNewsletterManagerTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("bulunamadi");
+        result.Message.Should().Contain("bulunamadı");
     }
 
     [Fact]

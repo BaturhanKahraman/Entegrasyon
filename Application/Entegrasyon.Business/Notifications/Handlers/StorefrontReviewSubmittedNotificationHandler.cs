@@ -19,7 +19,7 @@ public sealed class StorefrontReviewSubmittedNotificationHandler(
             header: "Yeni ürün değerlendirmesi",
             content: $"{@event.Rating} yıldızlı değerlendirme geldi.",
             severity: NotificationSeverity.Info,
-            category: NotificationCategory.Magaza,
+            category: NotificationCategory.Mağaza,
             userIds: recipients,
             actionUrl: $"/storefront/reviews/{@event.ReviewId}");
     }

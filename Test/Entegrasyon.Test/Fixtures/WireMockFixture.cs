@@ -6,7 +6,7 @@ namespace Entegrasyon.Test.Fixtures;
 /// <summary>
 /// xUnit shared fixture — in-process WireMockServer.
 /// Collection fixture pattern ile test class'lari arasinda tek instance paylasilir.
-/// Her test class'i baslangicinda ResetAll() cagirip kendi stub'larini kurmali.
+/// Her test class'i Başlangıçinda ResetAll() cagirip kendi stub'larini kurmali.
 /// Port 0 → OS dinamik secer (CI paralel runner'larinda cakisma yok).
 /// </summary>
 public sealed class WireMockFixture : IAsyncLifetime

@@ -645,7 +645,7 @@ public class OrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadı.");
 
         if (order.CustomerId != customerId)
             return new ErrorDataResult<Order>(null!, "Bu Siparişe erisim yetkiniz yok.");
@@ -661,7 +661,7 @@ public class OrderManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Sipariş bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadı.");
 
         if (order.CustomerId != customerId)
             return new ErrorResult("Bu Siparişe erisim yetkiniz yok.");
@@ -697,7 +697,7 @@ public class OrderManager(
             .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
 
         if (order is null)
-            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadi.");
+            return new ErrorDataResult<Order>(null!, "Sipariş bulunamadı.");
 
         return new SuccessDataResult<Order>(order);
     }

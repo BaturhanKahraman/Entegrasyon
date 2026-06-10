@@ -69,7 +69,7 @@ public class StorefrontSizeGuideManager(
                 .FirstOrDefaultAsync(g => g.Id == guide.Id);
 
             if (existing is null)
-                return new ErrorResult("Beden rehberi bulunamadi.");
+                return new ErrorResult("Beden rehberi bulunamadı.");
 
             existing.Name = guide.Name;
             existing.CategoryIds = guide.CategoryIds;
@@ -97,7 +97,7 @@ public class StorefrontSizeGuideManager(
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (guide is null)
-            return new ErrorResult("Beden rehberi bulunamadi.");
+            return new ErrorResult("Beden rehberi bulunamadı.");
 
         guide.IsDeleted = true;
         guide.DeletedAt = DateTimeOffset.UtcNow;

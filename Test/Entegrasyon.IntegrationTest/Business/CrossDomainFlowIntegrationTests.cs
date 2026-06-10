@@ -201,7 +201,7 @@ public class CrossDomainFlowIntegrationTests : IntegrationTestBase
 
         var variantId = addResult.Data!.ProductVariants.First().Id;
 
-        // Act — Trendyol Sipariş import et (barkod eslesmeli)
+        // Act — Trendyol Sipariş import et (barkod Eşleşmeli)
         var (orderManager, scope2) = GetScopedService<IOrderManager>();
         using var _2 = scope2;
         var packages = new List<TrendyolShipmentPackage>

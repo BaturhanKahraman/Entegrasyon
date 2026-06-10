@@ -34,7 +34,7 @@ public class PickingController(IOrderManager orderManager) : HtmxController
     {
         var result = await orderManager.GetOrderByIdAsync(id);
         if (!result.Success || result.Data is null)
-            return Content("<div class='text-danger p-2'>Siparis bulunamadi.</div>", "text/html");
+            return Content("<div class='text-danger p-2'>Siparis bulunamadı.</div>", "text/html");
 
         return PartialView("~/Features/Picking/Views/Partials/_OrderItems.cshtml", result.Data);
     }

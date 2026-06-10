@@ -19,7 +19,7 @@ public sealed class StorefrontAbandonedCartNotificationHandler(
             header: "Terk edilmiş sepet",
             content: $"Müşteri sepeti bıraktı: {@event.ValueAmount:C}",
             severity: NotificationSeverity.Info,
-            category: NotificationCategory.Magaza,
+            category: NotificationCategory.Mağaza,
             userIds: recipients,
             actionUrl: $"/storefront/carts/{@event.CartId}");
     }

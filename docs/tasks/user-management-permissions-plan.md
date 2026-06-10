@@ -49,7 +49,7 @@ Permission kontrolu OLMAYAN menu ogerleri (toplam ~35 oge):
 - Tum Pazaryeri alt menuleri
 - Faturalar, E-Fatura
 - Tum Raporlar
-- Tum Magaza alt menuleri
+- Tum Mağaza alt menuleri
 - Tum Ayarlar alt menuleri
 
 ### Entity Modeli
@@ -173,7 +173,7 @@ Her sayfa icin uygun `AppPermissions` policy'si eklenecek:
 | Faturalar | Orders.View | `/invoices`, `/invoicing` |
 | Raporlar | Reports.View | `/reports/*` (6 sayfa) |
 | Pazaryeri | Marketplace.View | `/marketplace/sync/*`, `/marketplace/matching/*`, `/marketplace/commission-rates`, `/matched-entities` |
-| Magaza | Settings.View | `/settings/storefront/*`, `/storefront/*` (tum storefront sayfalari) |
+| Mağaza | Settings.View | `/settings/storefront/*`, `/storefront/*` (tum storefront sayfalari) |
 | Ayarlar | Settings.View | `/settings/general`, `/settings/notifications`, `/settings/printing`, `/settings/desktop` |
 | Bildirimler | Notifications.View | `/notifications` |
 | Dashboard | (herkese acik) | `/` |
@@ -246,7 +246,7 @@ Bu component NavMenu'deki tekrarlayan kodu ortadan kaldirir.
 #### Faz 2.6: Server-Side Endpoint Korumasi
 
 Blazor Server'da sayfalar server-side calistigi icin `[Authorize(Policy=...)]` yeterli. Ancak ek guvenlik icin:
-- Business layer'da kritik islemler icin permission kontrolu (opsiyonel, cunku Blazor Server'da client-side bypass riski dusuk)
+- Business layer'da kritik islemler icin permission kontrolu (opsiyonel, cunku Blazor Server'da client-side bypass riski Düşük)
 - API endpoint'leri varsa (SignalR Hub, minimal API) bunlara da `[Authorize]` eklenmeli
 
 ---
@@ -325,7 +325,7 @@ Blazor Server'da sayfalar server-side calistigi icin `[Authorize(Policy=...)]` y
 |---|---|---|
 | Login bug fix sonrasi Admin kullanicinin permission'lari bos | Admin rolu IsInRole("Admin") bypass ile calisiyor, ama diger roller kirilabilir | Admin rol icin tum permission'lari seed etmek veya "Admin" bypass'ini korumak |
 | RoleService permission kaydi fix'i mevcut rolleri etkiler | DB'deki roller permission'siz kalabilir | Migration ile mevcut Admin rolune tum permission'lari ekleyen seed |
-| FeatureService tenant check'i basarisiz olursa tum sayfalar kitlenir | `IsFeatureEnabledAsync` false donerse `TenantFeatureAuthorizationHandler` Fail donuyor | Default tenant icin tum feature'lari enabled yapan fallback |
+| FeatureService tenant check'i başarısız olursa tum sayfalar kitlenir | `IsFeatureEnabledAsync` false donerse `TenantFeatureAuthorizationHandler` Fail donuyor | Default tenant icin tum feature'lari enabled yapan fallback |
 
 ### Orta Risk
 
@@ -335,7 +335,7 @@ Blazor Server'da sayfalar server-side calistigi icin `[Authorize(Policy=...)]` y
 | _Imports.razor'daki `[Authorize]` + sayfa-level `[Authorize(Policy=...)]` cakismasi | Cift kontrol overhead | _Imports.razor'daki genel `[Authorize]` korunmali (giris kontrolu), sayfa-level policy ek katman |
 | Mevcut test admin kullanicisi (admin/123456789) permission'siz kalabilir | E2E testler kirilir | Test seed'inde admin kullaniciya tum permission'lari ver |
 
-### Dusuk Risk
+### Düşük Risk
 
 | Risk | Etki | Azaltma |
 |---|---|---|
@@ -371,12 +371,12 @@ Blazor Server'da sayfalar server-side calistigi icin `[Authorize(Policy=...)]` y
 
 | Adim | Karmasiklik | Tahmini Sure |
 |---|---|---|
-| Login Bug Fix + Test | Dusuk | 30 dk |
+| Login Bug Fix + Test | Düşük | 30 dk |
 | RoleService Permission Fix + Test | Orta | 1 saat |
 | PermissionGuardedNavLink Component | Orta | 1 saat |
 | NavMenu Tam Permission | Orta | 1 saat |
-| 53 Sayfa Permission Attribute | Dusuk (mekanik, Ollama'ya offload) | 30 dk |
-| UpgradePromptDialog | Dusuk | 30 dk |
-| Unauthorized Fallback | Dusuk | 15 dk |
+| 53 Sayfa Permission Attribute | Düşük (mekanik, Ollama'ya offload) | 30 dk |
+| UpgradePromptDialog | Düşük | 30 dk |
+| Unauthorized Fallback | Düşük | 15 dk |
 | User Management UX | Orta | 1.5 saat |
 | **TOPLAM** | | **~6.5 saat** |

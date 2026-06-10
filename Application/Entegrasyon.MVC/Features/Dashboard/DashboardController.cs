@@ -61,7 +61,7 @@ public class DashboardController(IDashboardManager dashboardManager, IReportMana
         return PartialView("Partials/_ProfitChart", report);
     }
 
-    /// <summary>Hizli islemler paneli (statik partial)</summary>
+    /// <summary>Hızlı İşlemler paneli (statik partial)</summary>
     [HttpGet("/dashboard/quick-actions")]
     public IActionResult QuickActions()
     {

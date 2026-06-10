@@ -19,7 +19,7 @@ public sealed class StorefrontProductQuestionNotificationHandler(
             header: "Mağaza sorusu",
             content: "Ürüne soru soruldu.",
             severity: NotificationSeverity.Warning,
-            category: NotificationCategory.Magaza,
+            category: NotificationCategory.Mağaza,
             userIds: recipients,
             actionUrl: $"/storefront/questions/{@event.QuestionId}");
     }

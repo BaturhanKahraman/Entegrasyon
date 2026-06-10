@@ -12,7 +12,7 @@ public class StorefrontNewsletterManager(
     public async Task<IResult> SubscribeAsync(int tenantId, string email, string? name)
     {
         if (string.IsNullOrWhiteSpace(email))
-            return new ErrorResult("E-posta alani zorunludur.");
+            return new ErrorResult("E-posta alanızorunludur.");
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
@@ -53,7 +53,7 @@ public class StorefrontNewsletterManager(
             .FirstOrDefaultAsync(n => n.TenantId == tenantId && n.Email == email);
 
         if (existing is null)
-            return new ErrorResult("Abone kaydi bulunamadi.");
+            return new ErrorResult("Abone kaydi bulunamadı.");
 
         existing.IsActive = false;
         dbContext.StorefrontNewsletters.Update(existing);

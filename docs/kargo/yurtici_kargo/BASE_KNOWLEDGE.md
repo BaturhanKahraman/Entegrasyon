@@ -52,13 +52,13 @@ Yurtici Kargo entegrasyon basvurusu yapilarak bu bilgiler elde edilir. Her muste
 ## Hata Yonetimi
 
 API response'lari `outFlag` ve `outResult` alanlari icerir:
-- `outFlag`: Islem sonucu (`0` = basarisiz, `1` = basarili)
+- `outFlag`: Islem sonucu (`0` = başarısız, `1` = basarili)
 - `outResult`: Hata veya basari mesaji
 
 ## Entegrasyon Basvurusu
 
 Yurtici Kargo web servis entegrasyonu icin:
-1. Yurtici Kargo pazarlama departmani ile iletisime gecilinir
+1. Yurtici Kargo pazarlama departmani ile İletişime gecilinir
 2. Entegrasyon basvurusu yapilir
 3. Test ortami credentials'lari alinir
 4. Test ortaminda gelistirme yapilir

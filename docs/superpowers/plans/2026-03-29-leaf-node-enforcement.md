@@ -597,7 +597,7 @@ In `Application/Entegrasyon.Business/Concrete/CategoryAutoMatchService.cs`, at t
     };
 
     if (request.Categories.Count == 0)
-        return new SuccessDataResult<List<CategoryAutoMatchSuggestionDto>>([], "Eslestirilebilecek yaprak kategori bulunamadi.");
+        return new SuccessDataResult<List<CategoryAutoMatchSuggestionDto>>([], "Eslestirilebilecek yaprak kategori bulunamadı.");
 ```
 
 Not: `CategoryAutoMatchRequestDto` record ise `with` kullanilir; class ise direkt property set edilir. Mevcut DTO tipine gore ayarla.

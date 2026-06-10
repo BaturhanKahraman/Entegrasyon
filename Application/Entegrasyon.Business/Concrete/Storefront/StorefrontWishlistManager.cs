@@ -55,7 +55,7 @@ public class StorefrontWishlistManager(
             .FirstOrDefaultAsync(w => w.TenantId == tenantId && w.CustomerId == customerId && w.ProductId == productId);
 
         if (item is null)
-            return new ErrorResult("Urun favorilerde bulunamadi.");
+            return new ErrorResult("Urun favorilerde bulunamadı.");
 
         dbContext.StorefrontWishlistItems.Remove(item);
         await dbContext.SaveChangesAsync();

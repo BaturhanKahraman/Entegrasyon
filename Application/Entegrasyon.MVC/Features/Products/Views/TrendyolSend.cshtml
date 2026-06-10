@@ -42,14 +42,14 @@
                                     "Kategori Eşleştirmesi",
                                     Model.Preflight.CategoryMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedCategoryName}"
-                                        : $"Trendyol kategori eslestirmesi bulunamadi ({Model.Preflight.ProductCategoryName})",
+                                        : $"Trendyol kategori eslestirmesi bulunamadı ({Model.Preflight.ProductCategoryName})",
                                     Model.Preflight.CategoryMatched ? null : categoryFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.BrandMatched,
                                     "Marka Eşleştirmesi",
                                     Model.Preflight.BrandMatched
                                         ? $"Eslesti: {Model.Preflight.MatchedBrandName}"
-                                        : $"Trendyol marka eslestirmesi bulunamadi ({Model.Preflight.ProductBrandName})",
+                                        : $"Trendyol marka eslestirmesi bulunamadı ({Model.Preflight.ProductBrandName})",
                                     Model.Preflight.BrandMatched ? null : brandFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
@@ -92,7 +92,7 @@
                                         <div>
                                             <i class="ti ti-alert-triangle icon alert-icon"></i>
                                         </div>
-                                        <div>Bazi kontroller basarisiz. Lutfen eksikleri tamamlayin.</div>
+                                        <div>Bazi kontroller başarısız. Lutfen eksikleri tamamlayin.</div>
                                     </div>
                                 </div>
                             }

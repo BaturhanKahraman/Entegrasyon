@@ -86,7 +86,7 @@ public static class DevWireMockSeeder
         {
             // DB baglantisi yoksa (bazi gelistiriciler DB container'i ayri calistirir)
             // seeder fail olmasin — log'la ve gec. MVC normal calismaya devam etsin.
-            logger.LogWarning(ex, "DevWireMockSeeder: DB update basarisiz, gecillenecek. Hata: {Message}", ex.Message);
+            logger.LogWarning(ex, "DevWireMockSeeder: DB update başarısız, gecillenecek. Hata: {Message}", ex.Message);
         }
     }
 }

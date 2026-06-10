@@ -71,7 +71,7 @@ public class BranchOfficeController(
         var result = await branchOfficeManager.GetBranchDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sube bulunamadi.");
+            TempData.SetError(result.Message ?? "Sube bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -123,7 +123,7 @@ public class BranchOfficeController(
         var result = await branchOfficeManager.GetBranchDetailById(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Sube bulunamadi.");
+            TempData.SetError(result.Message ?? "Sube bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -183,7 +183,7 @@ public class BranchOfficeController(
         if (!branchResult.Success)
         {
             Response.HtmxTriggerWithData("showToast",
-                new { message = "Sube bulunamadi.", type = "danger" });
+                new { message = "Sube bulunamadı.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -237,14 +237,14 @@ public class BranchOfficeController(
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Transfer basarisiz.", type = "danger" });
+                new { message = result.Message ?? "Transfer başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
         if (result.Success)
             TempData.SetSuccess($"Transfer tamamlandi. {result.Data?.TransferredCount ?? 0} urun aktarildi.");
         else
-            TempData.SetError(result.Message ?? "Transfer basarisiz.");
+            TempData.SetError(result.Message ?? "Transfer başarısız.");
 
         return RedirectToAction("Detail", new { id = model.SourceBranchId });
     }

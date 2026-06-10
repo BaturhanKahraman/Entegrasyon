@@ -62,7 +62,7 @@ public class RoleController(IRoleService roleService) : Controller
 
         if (role is null)
         {
-            TempData.SetError("Rol bulunamadi.");
+            TempData.SetError("Rol bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 

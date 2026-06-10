@@ -36,7 +36,7 @@ public class SellerCommissionManager(
             .FirstOrDefaultAsync(b => b.SellerId == sellerId);
 
         if (balance is null)
-            return new ErrorResult("Satici bakiyesi bulunamadi.");
+            return new ErrorResult("Satici bakiyesi bulunamadı.");
 
         var commissionAmount = saleAmount * (commissionRate / 100m);
         var netAmount = saleAmount - commissionAmount;
@@ -83,7 +83,7 @@ public class SellerCommissionManager(
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
-            return new ErrorResult("Sipariş bulunamadi.");
+            return new ErrorResult("Sipariş bulunamadı.");
 
         var sellerItems = order.OrderItems.Where(oi => oi.SellerId.HasValue).ToList();
         if (!sellerItems.Any())
@@ -173,7 +173,7 @@ public class SellerCommissionManager(
 
         var commission = await dbContext.SellerCommissions.FindAsync(commissionId);
         if (commission is null)
-            return new ErrorResult("Komisyon kaydi bulunamadi.");
+            return new ErrorResult("Komisyon kaydi bulunamadı.");
 
         commission.CommissionRate = newRate;
         dbContext.SellerCommissions.Update(commission);

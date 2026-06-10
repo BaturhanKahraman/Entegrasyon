@@ -51,7 +51,7 @@ public class BrandMasterImportTests : E2ETestBase
         await Expect(_importPage.ImportButton).ToBeDisabledAsync();
 
         var selectedCount = await _importPage.GetSelectedCountAsync();
-        Assert.That(selectedCount, Is.EqualTo(0), "Baslangicta secili marka olmamali");
+        Assert.That(selectedCount, Is.EqualTo(0), "Başlangıçta secili marka olmamali");
     }
 
     [Test, Order(4)]
@@ -138,7 +138,7 @@ public class BrandMasterImportTests : E2ETestBase
         var imported = int.Parse(importedText);
         var skipped = int.Parse(skippedText);
 
-        // Toplam islem sayisi > 0 olmali (ya eklendi ya atlandi)
+        // Toplam islem Sayısı > 0 olmali (ya eklendi ya atlandi)
         Assert.That(imported + skipped, Is.GreaterThan(0), "En az 1 marka islenmeli");
 
         // "Markalara Git" ve "Tekrar Import" linkleri gorunmeli
@@ -228,7 +228,7 @@ public class BrandMasterImportTests : E2ETestBase
         }
         else
         {
-            Assert.Warn("Under Armour master katalogda bulunamadi — test atlandi");
+            Assert.Warn("Under Armour master katalogda bulunamadı — test atlandi");
         }
     }
 

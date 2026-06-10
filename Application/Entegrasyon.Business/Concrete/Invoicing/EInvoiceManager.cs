@@ -111,7 +111,7 @@ public sealed class EInvoiceManager(
             .FirstOrDefaultAsync(x => x.Id == invoiceId);
 
         if (invoice is null)
-            return new ErrorDataResult<EInvoiceDetailDto>(null!, "Fatura bulunamadi.");
+            return new ErrorDataResult<EInvoiceDetailDto>(null!, "Fatura bulunamadı.");
 
         var detail = new EInvoiceDetailDto(
             invoice.Id,
@@ -146,7 +146,7 @@ public sealed class EInvoiceManager(
 
         var invoice = await dbContext.EInvoices.FindAsync(invoiceId);
         if (invoice is null)
-            return new ErrorResult("Fatura bulunamadi.");
+            return new ErrorResult("Fatura bulunamadı.");
 
         if (invoice.Status == EInvoiceStatus.Cancelled)
             return new ErrorResult("Fatura zaten iptal edilmis.");
@@ -178,7 +178,7 @@ public sealed class EInvoiceManager(
             .FirstOrDefaultAsync(x => x.Id == invoiceId);
 
         if (invoice is null)
-            return new ErrorResult("Fatura bulunamadi.");
+            return new ErrorResult("Fatura bulunamadı.");
 
         if (invoice.Status != EInvoiceStatus.Draft)
             return new ErrorResult("Sadece taslak durumundaki faturalar gonderilebilir.");
@@ -211,7 +211,7 @@ public sealed class EInvoiceManager(
 
         var invoice = await dbContext.EInvoices.FindAsync(invoiceId);
         if (invoice is null)
-            return new ErrorDataResult<byte[]>([], "Fatura bulunamadi.");
+            return new ErrorDataResult<byte[]>([], "Fatura bulunamadı.");
 
         if (string.IsNullOrEmpty(invoice.GibUuid))
             return new ErrorDataResult<byte[]>([], "Fatura henuz GIB'e gonderilmemis.");
@@ -229,7 +229,7 @@ public sealed class EInvoiceManager(
             .FirstOrDefaultAsync(s => s.Id == saleId);
 
         if (sale is null)
-            return new ErrorDataResult<CreateEInvoiceDto>(null!, "Satis bulunamadi.");
+            return new ErrorDataResult<CreateEInvoiceDto>(null!, "Satis bulunamadı.");
 
         var dto = new CreateEInvoiceDto
         {

@@ -59,7 +59,7 @@ public class StorefrontBannerManager(
             .FirstOrDefaultAsync(b => b.Id == banner.Id);
 
         if (existing is null)
-            return new ErrorResult("Banner bulunamadi.");
+            return new ErrorResult("Banner bulunamadı.");
 
         existing.Title = banner.Title;
         existing.ImageUrl = banner.ImageUrl;
@@ -85,7 +85,7 @@ public class StorefrontBannerManager(
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (banner is null)
-            return new ErrorResult("Banner bulunamadi.");
+            return new ErrorResult("Banner bulunamadı.");
 
         dbContext.StorefrontBanners.Remove(banner);
         await dbContext.SaveChangesAsync();

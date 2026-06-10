@@ -52,7 +52,7 @@
 > **DI Kayit:** `ApplicationDependencyExtension.cs`'ye IEInvoiceManager ve IEInvoiceIntegratorClient kayitlarini ekle.
 >
 > **Testler** (`Test/Entegrasyon.Test/`):
-> - `Invoicing/EInvoiceManagerTests.cs` — en az 8 test: fatura olusturma (basarili), validation hatasi, bos kalem hatasi, toplu fatura, iptal (basarili/basarisiz), durum sorgulama, satis'ten fatura olusturma
+> - `Invoicing/EInvoiceManagerTests.cs` — en az 8 test: fatura olusturma (basarili), validation hatasi, bos kalem hatasi, toplu fatura, iptal (basarili/başarısız), durum sorgulama, satis'ten fatura olusturma
 > - `Invoicing/UblTrXmlBuilderTests.cs` — en az 4 test: gecerli XML uretimi, zorunlu alan eksikligi, KDV hesaplama, yuvarlama
 >
 > **Kodlama Dili:** Turkce aciklama, Ingilizce kod. Degisken/method/class isimleri Ingilizce, yorum ve log mesajlari Turkce.
@@ -95,13 +95,13 @@
 >
 > **Blazor Katmani:**
 > - `Features/Reports/ProfitLossReport.razor` + `.razor.cs` — kar/zarar raporu, MudChart ile gorsellestirilmis, tarih araligi secimi, pazaryeri filtresi
-> - `Features/Reports/ProductPerformanceReport.razor` + `.razor.cs` — urun performansi, MudDataGrid, siralama/filtreleme
-> - `Features/Reports/StockAlertsReport.razor` + `.razor.cs` — stok uyarilari (kritik, dusuk, yeterli renk kodlari)
-> - `Features/Dashboard/Index.razor` guncelle — mevcut dashboard'a yeni kartlar ekle: bugunun kari, komisyon toplami, kritik stok sayisi
+> - `Features/Reports/ProductPerformanceReport.razor` + `.razor.cs` — Ürün Performansı, MudDataGrid, siralama/filtreleme
+> - `Features/Reports/StockAlertsReport.razor` + `.razor.cs` — stok uyarilari (kritik, Düşük, yeterli renk kodlari)
+> - `Features/Dashboard/Index.razor` guncelle — mevcut dashboard'a yeni kartlar ekle: bugunun kari, komisyon toplami, kritik stok Sayısı
 > - `Features/Dashboard/DashboardProfitChart.razor` + `.razor.cs` — son 30 gunluk kar grafigi (MudChart)
 >
 > **Testler:**
-> - `Reports/ReportManagerTests.cs` — en az 6 test: kar/zarar hesaplama, urun performansi siralama, stok uyarisi esik degerleri, bos veri durumu, tarih araligi filtresi, pazaryeri filtresi
+> - `Reports/ReportManagerTests.cs` — en az 6 test: kar/zarar hesaplama, Ürün Performansı siralama, stok uyarisi esik degerleri, bos veri durumu, tarih araligi filtresi, pazaryeri filtresi
 > - `Reports/CommissionCalculatorTests.cs` — en az 4 test: Trendyol komisyon, HB komisyon, N11 komisyon, bilinmeyen marketplace
 
 ### Beklenen Cikti
@@ -208,7 +208,7 @@
 > - Fis yazdirma: mevcut `PrintService` kullan
 >
 > **Testler:**
-> - Agent unit testleri: LocalSaleService satis olusturma (basarili, stok yetersiz, barkod bulunamadi)
+> - Agent unit testleri: LocalSaleService satis olusturma (basarili, stok yetersiz, barkod bulunamadı)
 > - SyncEndpoints integration testleri: catalog delta sync, stock sync, sales batch upload
 > - En az 10 test
 
@@ -254,7 +254,7 @@
 > - Validator'lar
 >
 > **Blazor Katmani:**
-> - `Features/Competition/CompetitionDashboard.razor` + `.razor.cs` — ozet kartlar (en dusuk fiyatli oldugumuz urunler, en yuksek fiyat farki, toplam takip edilen urun)
+> - `Features/Competition/CompetitionDashboard.razor` + `.razor.cs` — ozet kartlar (en Düşük fiyatli oldugumuz urunler, en yuksek fiyat farki, toplam takip edilen urun)
 > - `Features/Competition/PriceComparisonGrid.razor` + `.razor.cs` — MudDataGrid, urun bazli rakip fiyat karsilastirmasi, renk kodlari (yesil: biz en ucuz, kirmizi: biz pahali)
 > - `Features/Competition/PriceTrackingRules.razor` + `.razor.cs` — kural yonetimi (otomatik fiyat guncelleme kurallari)
 > - `Features/Competition/PriceHistoryChart.razor` + `.razor.cs` — urun bazli fiyat gecmisi grafigi (MudChart, bizim fiyat vs rakip fiyat)
@@ -353,7 +353,7 @@
 > **Blazor:**
 > - `Features/Warehouse/WarehouseOverview.razor` + `.razor.cs` — depo gorsel haritasi veya tablo gorunumu, doluluk oranlari
 > - `Features/Warehouse/LocationManager.razor` + `.razor.cs` — lokasyon CRUD (MudDataGrid)
-> - `Features/Warehouse/StockTransferDialog.razor` + `.razor.cs` — transfer islemi (from -> to lokasyon secimi, barkod okutma)
+> - `Features/Warehouse/StockTransferDialog.razor` + `.razor.cs` — transfer işlemi (from -> to lokasyon secimi, barkod okutma)
 > - `Features/Warehouse/StockCountPage.razor` + `.razor.cs` — stok sayim islemleri, farklari gosterme, duzeltme onay
 > - NavMenu guncelleme
 >
@@ -372,14 +372,14 @@
 ## 8. Barkod Okuyucu (Global Scanner)
 
 **Oncelik:** P1
-**Tahmini Karmasiklik:** Dusuk
+**Tahmini Karmasiklik:** Düşük
 **Bagimliliklar:** Yok
 
 ### Prompt
 
 > **Gorev:** Tum sayfalarda calisacak global bir barkod okuyucu alt sistemi ekle. Barkod okutuldugunda bulunulan sayfaya gore farkli aksiyonlar alsın (satis sayfasinda sepete ekle, depo sayfasinda stok goster, urun sayfasinda urun detay ac).
 >
-> **Proje Mimarisi:** .NET 8 Blazor Server, MudBlazor, code-behind zorunlu. Mevcut `Features/Sales/Sales.razor.cs` dosyasinda barkod input alani zaten var. Mevcut `ProductVariant` entity'sinde `Barcode` alani mevcut.
+> **Proje Mimarisi:** .NET 8 Blazor Server, MudBlazor, code-behind zorunlu. Mevcut `Features/Sales/Sales.razor.cs` dosyasinda barkod input alanızaten var. Mevcut `ProductVariant` entity'sinde `Barcode` alanımevcut.
 >
 > **Ne Yapilacak:**
 >
@@ -483,7 +483,7 @@
 > **Blazor:**
 > - `Features/BulkOperations/BulkOperationsPage.razor` + `.razor.cs` — ana sayfa: import/export sekmeleri, gecmis islemler listesi
 > - `Features/BulkOperations/ImportDialog.razor` + `.razor.cs` — dosya yukleme (MudFileUpload), onizleme, hata gosterimi, onay ve uygula
-> - `Features/BulkOperations/ImportResultDialog.razor` + `.razor.cs` — islem sonucu: basarili/basarisiz satir sayisi, hata detaylari (MudDataGrid)
+> - `Features/BulkOperations/ImportResultDialog.razor` + `.razor.cs` — islem sonucu: basarili/başarısız satir Sayısı, hata detaylari (MudDataGrid)
 > - `Features/BulkOperations/ExportDialog.razor` + `.razor.cs` — filtre secimi (kategori, marka, pazaryeri), dosya indirme
 > - NavMenu guncelleme
 >
@@ -493,7 +493,7 @@
 > - `wwwroot/templates/stock-import-template.xlsx`
 >
 > **Testler:**
-> - `BulkOperations/BulkOperationManagerTests.cs` — en az 8 test: basarili import, validation hatali satirlar, bos dosya, gecersiz format, fiyat import, stok import, export urun, export bos sonuc
+> - `BulkOperations/BulkOperationManagerTests.cs` — en az 8 test: basarili import, validation Hatalı satirlar, bos dosya, gecersiz format, fiyat import, stok import, export urun, export bos sonuc
 > - `BulkOperations/ExcelParserTests.cs` — en az 4 test: okuma, yazma, bos satirlari atlama, buyuk dosya performansi
 
 ### Beklenen Cikti
@@ -561,7 +561,7 @@
 
 > **Gorev:** Kullanicilarin gorsel olarak is kuralları olusturabilecegi bir workflow/otomasyon builder sistemi olustur. "Tetikleyici -> Kosul -> Aksiyon" yapisi.
 >
-> **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, MudBlazor, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `EventChannel<T>` pattern'i event-driven iletisim icin kullaniliyor.
+> **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, MudBlazor, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `EventChannel<T>` pattern'i event-driven İletişim icin kullaniliyor.
 >
 > **Ne Yapilacak:**
 >
@@ -603,7 +603,7 @@
 
 ---
 
-## 13. Omnichannel POS (Fiziksel Magaza + Online Birlestirme)
+## 13. Omnichannel POS (Fiziksel Mağaza + Online Birlestirme)
 
 **Oncelik:** P2
 **Tahmini Karmasiklik:** Orta
@@ -611,7 +611,7 @@
 
 ### Prompt
 
-> **Gorev:** Fiziksel magaza satislarini online satislarla ayni stok havuzunda yoneten bir omnichannel POS yapilandirmasi olustur. Mevcut `Sales.razor` sayfasini POS modu ile genislet.
+> **Gorev:** Fiziksel Mağaza satislarini online satislarla ayni stok havuzunda yoneten bir omnichannel POS yapilandirmasi olustur. Mevcut `Sales.razor` sayfasini POS modu ile genislet.
 >
 > **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, MudBlazor, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut satis altyapisi: `SaleManager.MakeSale()`, `OfficeStockManager.DecreaseStockAtomicAsync()`. Mevcut `BranchOffice` entity'si sube tanimlarini tutuyor.
 >
@@ -625,7 +625,7 @@
 >
 > **Business Katmani:**
 > - `Abstract/IPOSSessionManager.cs`: OpenSession, CloseSession, GetActiveSession(branchOfficeId), RecordTransaction, AddCashMovement, GetSessionSummary, GetDailySummary
-> - `Concrete/POS/POSSessionManager.cs` — pipeline pattern. Oturum acma: kasa baslangic tutari, kasiyer bilgisi. Oturum kapama: sayim, fark hesaplama, rapor. Mevcut `ISaleManager.MakeSale()` ile entegre — POS satisi = normal satis + odeme kaydı
+> - `Concrete/POS/POSSessionManager.cs` — pipeline pattern. Oturum acma: kasa Başlangıç tutari, kasiyer bilgisi. Oturum kapama: sayim, fark hesaplama, rapor. Mevcut `ISaleManager.MakeSale()` ile entegre — POS satisi = normal satis + odeme kaydı
 >
 > **Blazor:**
 > - `Features/POS/POSPage.razor` + `.razor.cs` — tam ekran POS arayuzu: barkod okutma alani, sepet, tutar, odeme secenekleri, hizli urun butonlari. Touch-friendly buyuk butonlar
@@ -674,7 +674,7 @@
 >
 > **Blazor:**
 > - `Features/Dropship/SuppliersPage.razor` + `.razor.cs` — tedarikci listesi ve CRUD
-> - `Features/Dropship/SupplierProductsPage.razor` + `.razor.cs` — tedarikci urun eslesmeleri (MudDataGrid)
+> - `Features/Dropship/SupplierProductsPage.razor` + `.razor.cs` — tedarikci urun Eşleşmeleri (MudDataGrid)
 > - `Features/Dropship/DropshipOrdersPage.razor` + `.razor.cs` — dropship Siparişleri ve durumlari
 > - NavMenu guncelleme
 >
@@ -698,7 +698,7 @@
 
 ### Prompt
 
-> **Gorev:** Uygulamaya coklu dil destegi (i18n) ekle. Baslangicta Turkce (varsayilan) ve Ingilizce destegi olacak. Ileride kolayca yeni dil eklenebilmeli.
+> **Gorev:** Uygulamaya coklu dil destegi (i18n) ekle. Başlangıçta Turkce (varsayilan) ve Ingilizce destegi olacak. Ileride kolayca yeni dil eklenebilmeli.
 >
 > **Proje Mimarisi:** .NET 8 Blazor Server, MudBlazor, code-behind zorunlu. Mevcut tum UI metinleri Turkce olarak hardcode edilmis durumda.
 >
@@ -709,7 +709,7 @@
 > - `Resources/` klasoru olustur: `Resources/Pages/`, `Resources/Shared/`, `Resources/Components/`
 > - Her Blazor component icin `.resx` dosyasi ciftleri: `ComponentName.tr.resx` (Turkce), `ComponentName.en.resx` (Ingilizce)
 > - `Program.cs`'de localization middleware ve supported cultures ayarla
-> - Kullanici dil tercihi: `ApplicationUser` entity'sine `PreferredLanguage` (string, default "tr") alani ekle
+> - Kullanici dil tercihi: `ApplicationUser` entity'sine `PreferredLanguage` (string, default "tr") alanıekle
 > - Dil degistirme: cookie-based culture switching (Blazor Server icin standart pattern)
 >
 > **Oncelikli Cevirilecek Sayfalar (ilk fazda):**
@@ -750,7 +750,7 @@
 
 > **Gorev:** Musteri sadakat programi modulu olustur. Alisverislerde puan kazanma, puan harcama ve musteri segmentasyonu ozellikleri ekle.
 >
-> **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `Customer` entity'si (RetailCustomer/CorporateCustomer kalitimi) var. Mevcut `SaleManager.MakeSale()` satis islemini yonetir.
+> **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `Customer` entity'si (RetailCustomer/CorporateCustomer kalitimi) var. Mevcut `SaleManager.MakeSale()` satis işlemini yonetir.
 >
 > **Ne Yapilacak:**
 >
@@ -767,7 +767,7 @@
 > - Validator'lar
 >
 > **Blazor:**
-> - `Features/Loyalty/LoyaltyDashboard.razor` + `.razor.cs` — sadakat programi ozeti: toplam uye, tier dagilimi, toplam kazanilan/harcanan puan
+> - `Features/Loyalty/LoyaltyDashboard.razor` + `.razor.cs` — sadakat programi ozeti: toplam uye, tier Dağılımı, toplam kazanilan/harcanan puan
 > - `Features/Loyalty/CustomerLoyaltyDetail.razor` + `.razor.cs` — musteri bazli sadakat detayi (puan gecmisi, tier bilgisi). Mevcut CustomerDialog icerisine tab olarak eklenebilir
 > - `Features/Loyalty/LoyaltySettings.razor` + `.razor.cs` — tier kurallari yonetimi (puan esikleri, carpanlar, avantajlar)
 > - NavMenu guncelleme
@@ -788,7 +788,7 @@
 ## 17. Sosyal Medya Entegrasyonu
 
 **Oncelik:** P3
-**Tahmini Karmasiklik:** Dusuk
+**Tahmini Karmasiklik:** Düşük
 **Bagimliliklar:** Yok
 
 ### Prompt
@@ -831,7 +831,7 @@
 ## 18. Gelismis SEO Araclari
 
 **Oncelik:** P3
-**Tahmini Karmasiklik:** Dusuk
+**Tahmini Karmasiklik:** Düşük
 **Bagimliliklar:** Yok
 
 ### Prompt
@@ -864,7 +864,7 @@
 
 ## Ozet Tablosu
 
-| # | Ozellik | Oncelik | Karmasiklik | Tahmini Test Sayisi |
+| # | Ozellik | Oncelik | Karmasiklik | Tahmini Test Sayısı |
 |---|---------|---------|-------------|---------------------|
 | 1 | E-Fatura Entegrasyonu | P0 | Yuksek | 12+ |
 | 2 | Raporlama Dashboard | P0 | Orta | 10+ |
@@ -873,7 +873,7 @@
 | 5 | Rekabet Analizi | P1 | Yuksek | 11+ |
 | 6 | Akilli Fiyatlandirma | P1 | Orta | 14+ |
 | 7 | Depo Yonetimi (WMS) | P1 | Yuksek | 10+ |
-| 8 | Barkod Okuyucu | P1 | Dusuk | 4+ |
+| 8 | Barkod Okuyucu | P1 | Düşük | 4+ |
 | 9 | Kargo Takip | P1 | Orta | 6+ |
 | 10 | Toplu Urun Guncelleme | P1 | Orta | 12+ |
 | 11 | ML Talep Tahmini | P2 | Yuksek | 10+ |
@@ -882,8 +882,8 @@
 | 14 | Dropship Otomasyonu | P2 | Orta | 6+ |
 | 15 | Coklu Dil (i18n) | P2 | Orta | 4+ |
 | 16 | Musteri Sadakat | P3 | Orta | 8+ |
-| 17 | Sosyal Medya | P3 | Dusuk | 5+ |
-| 18 | SEO Araclari | P3 | Dusuk | 6+ |
+| 17 | Sosyal Medya | P3 | Düşük | 5+ |
+| 18 | SEO Araclari | P3 | Düşük | 6+ |
 | | **TOPLAM** | | | **154+** |
 
 ---

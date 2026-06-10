@@ -1,6 +1,6 @@
 # N11 REST API Dokümantasyonu
 
-> Kaynak: https://magazadestek.n11.com (2026-03-30 tarihinde alınmıştır)
+> Kaynak: https://Mağazadestek.n11.com (2026-03-30 tarihinde alınmıştır)
 
 ## Auth
 
@@ -328,4 +328,4 @@ Yaygın hatalar:
 - "shipmentTemplate alanı geçersizdir" → kargo şablon hatası
 - "Ürün ekleme isteğinizde 15 karakter altında ürün adları tespit edilmiştir" → min 15 karakter
 
-Full hata listesi için bkz: magazadestek.n11.com RestAPI hata mesajları sayfası.
+Full hata listesi için bkz: Mağazadestek.n11.com RestAPI hata mesajları sayfası.

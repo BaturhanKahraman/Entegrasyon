@@ -62,7 +62,7 @@ public class VatRateManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var vatRate = await dbContext.VatRates.FindAsync(id);
         if (vatRate is null)
-            return new ErrorResult("KDV orani bulunamadi.");
+            return new ErrorResult("KDV orani bulunamadı.");
 
         if (await dbContext.VatRates.AnyAsync(v => v.Rate == rate && v.Id != id))
             return new ErrorResult($"%{rate} oraninda baska bir KDV zaten mevcut.");
@@ -81,7 +81,7 @@ public class VatRateManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var vatRate = await dbContext.VatRates.FindAsync(id);
         if (vatRate is null)
-            return new ErrorResult("KDV orani bulunamadi.");
+            return new ErrorResult("KDV orani bulunamadı.");
 
         if (vatRate.IsDefault)
             return new ErrorResult("Varsayilan KDV orani silinemez. Once baska bir orani varsayilan yapin.");
@@ -107,7 +107,7 @@ public class VatRateManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var vatRate = await dbContext.VatRates.FindAsync(id);
         if (vatRate is null)
-            return new ErrorResult("KDV orani bulunamadi.");
+            return new ErrorResult("KDV orani bulunamadı.");
 
         // Mevcut default'u kaldır
         await dbContext.VatRates

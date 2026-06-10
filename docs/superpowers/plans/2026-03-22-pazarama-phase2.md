@@ -205,7 +205,7 @@ public class PazaramaMappingValidatorTests : Entegrasyon.UnitTest.BaseTest
         var sut = CreateSut();
         var result = await sut.ValidateProductMappingsAsync(Guid.NewGuid());
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("bulunamadi");
+        result.Message.Should().Contain("bulunamadı");
     }
 
     // Additional tests the implementor should write:
@@ -251,7 +251,7 @@ public sealed class PazaramaMappingValidator(IDbContextFactory<IntegrationDbCont
             .FirstOrDefaultAsync();
 
         if (product is null)
-            return new ErrorResult("Urun bulunamadi.");
+            return new ErrorResult("Urun bulunamadı.");
 
         var errors = new List<string>();
 

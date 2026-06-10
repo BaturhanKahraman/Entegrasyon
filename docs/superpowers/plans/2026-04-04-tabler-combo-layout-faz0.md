@@ -53,7 +53,7 @@ public class ViewDataExtensionsTests
     [InlineData("customers", "musteriler")]
     [InlineData("invoicing", "musteriler")]
     [InlineData("reports", "raporlar")]
-    [InlineData("storefront", "magaza")]
+    [InlineData("storefront", "Mağaza")]
     [InlineData("settings", "ayarlar")]
     [InlineData("users", "ayarlar")]
     [InlineData("roles", "ayarlar")]
@@ -107,8 +107,8 @@ private static readonly Dictionary<string, string> NavGroupMap = new()
     ["invoicing"] = "musteriler",
     // Raporlar
     ["reports"] = "raporlar",
-    // Magaza
-    ["storefront"] = "magaza",
+    // Mağaza
+    ["storefront"] = "Mağaza",
     // Ayarlar
     ["settings"] = "ayarlar",
     ["users"] = "ayarlar",
@@ -214,9 +214,9 @@ git commit -m "feat(layout): add GetActiveNavGroup extension for combo layout na
 
                     @* ── Mağaza ── *@
                     <li class="nav-item">
-                        <a class="nav-link @(activeGroup == "magaza" ? "active" : "")" href="/settings/storefront">
+                        <a class="nav-link @(activeGroup == "Mağaza" ? "active" : "")" href="/settings/storefront">
                             <span class="nav-link-icon"><i class="ti ti-shopping-cart"></i></span>
-                            <span class="nav-link-title">Magaza</span>
+                            <span class="nav-link-title">Mağaza</span>
                         </a>
                     </li>
 
@@ -243,7 +243,7 @@ git commit -m "feat(layout): add GetActiveNavGroup extension for combo layout na
 
             @* ── Hızlı İşlemler ── *@
             <div class="nav-item dropdown me-2">
-                <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Hizli islemler">
+                <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Hızlı İşlemler">
                     <i class="ti ti-bolt"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
@@ -471,7 +471,7 @@ Replace the entire content of `_Sidebar.cshtml` with:
                     <li class="nav-item">
                         <a class="nav-link" require-permission="Permissions.Reports.View" href="/reports/product-performance">
                             <span class="nav-link-icon"><i class="ti ti-chart-dots"></i></span>
-                            <span class="nav-link-title">Urun Performansi</span>
+                            <span class="nav-link-title">Ürün Performansı</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -494,13 +494,13 @@ Replace the entire content of `_Sidebar.cshtml` with:
                     </li>
                 }
 
-                @if (activeGroup == "magaza")
+                @if (activeGroup == "Mağaza")
                 {
-                    <li class="nav-item"><span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Magaza</span></li>
+                    <li class="nav-item"><span class="nav-link nav-link-title text-uppercase fw-bold small text-secondary">Mağaza</span></li>
                     <li class="nav-item">
                         <a class="nav-link" require-permission="Permissions.Settings.View" href="/settings/storefront">
                             <span class="nav-link-icon"><i class="ti ti-settings"></i></span>
-                            <span class="nav-link-title">Magaza Ayarlari</span>
+                            <span class="nav-link-title">Mağaza Ayarlari</span>
                         </a>
                     </li>
                     <li class="nav-item">

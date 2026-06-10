@@ -30,7 +30,7 @@ public class StorefrontWalletWithdrawRequestNotificationHandlerTests
             "Cüzdan çekim talebi",
             It.Is<string>(s => s.Contains("çekim")),
             NotificationSeverity.Warning,
-            NotificationCategory.Magaza,
+            NotificationCategory.Mağaza,
             It.Is<IEnumerable<Guid>>(ids => ids.Single() == user),
             "/storefront/wallet/requests/30"), Times.Once);
     }

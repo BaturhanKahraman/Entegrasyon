@@ -59,7 +59,7 @@ Yeni konuşma açtığında [`../storefront-design-prompts.md`](../storefront-de
 | Sepet | Views/Cart/Index.cshtml |
 | Ödeme | Views/Checkout/Index.cshtml |
 | Sipariş Başarılı | Views/Checkout/Basarili.cshtml |
-| Sipariş Başarısız | Views/Checkout/Basarisiz.cshtml |
+| Sipariş Başarısız | Views/Checkout/başarısız.cshtml |
 | Giriş | Views/Auth/Login.cshtml |
 | Kayıt | Views/Auth/Register.cshtml |
 | Hesabım | Views/Account/Index.cshtml |

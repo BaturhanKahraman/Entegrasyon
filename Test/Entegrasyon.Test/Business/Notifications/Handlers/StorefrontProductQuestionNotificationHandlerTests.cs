@@ -30,7 +30,7 @@ public class StorefrontProductQuestionNotificationHandlerTests
             "Mağaza sorusu",
             It.Is<string>(s => s.Contains("soru")),
             NotificationSeverity.Warning,
-            NotificationCategory.Magaza,
+            NotificationCategory.Mağaza,
             It.Is<IEnumerable<Guid>>(ids => ids.Single() == user),
             "/storefront/questions/88"), Times.Once);
     }

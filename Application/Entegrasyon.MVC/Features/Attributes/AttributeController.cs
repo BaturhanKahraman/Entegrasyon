@@ -104,7 +104,7 @@ public class AttributeController(ICategoryAttributeManager categoryAttributeMana
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Guncelleme basarisiz.", type = "danger" });
+                new { message = result.Message ?? "Guncelleme başarısız.", type = "danger" });
             return StatusCode(422);
         }
 

@@ -80,7 +80,7 @@ http://ArasCargo.com/SetOrder
 | `SenderCityName` | string | Hayir | Gonderen sehir |
 | `SenderTownName` | string | Hayir | Gonderen ilce |
 | `SenderAddress` | string | Hayir | Gonderen adresi |
-| `PieceCount` | int | Evet | Parca sayisi |
+| `PieceCount` | int | Evet | Parca Sayısı |
 | `IsWorldWide` | int | Hayir | Yurtdisi mi? (0=Hayir, 1=Evet) |
 | `IsCOD` | int | Hayir | Kapida odeme? (0=Hayir, 1=Evet) |
 | `CodAmount` | decimal | Hayir | Kapida odeme tutari |
@@ -115,7 +115,7 @@ http://ArasCargo.com/SetOrder
 ```
 
 ### Ornek Hata Mesajlari
-- `"Sevk adresi bulunamadi"` - Gecersiz sehir/ilce kombinasyonu
+- `"Sevk adresi bulunamadı"` - Gecersiz sehir/ilce kombinasyonu
 - `"Entegrasyon kodu daha once kullanilmis"` - Tekrarlanan IntegrationCode
 
 ---
@@ -218,7 +218,7 @@ http://ArasCargo.com/GetQueryJSON
 | 9 | Tarih araliginda kargolar | Date1, Date2 |
 | 10 | Kapsamli kargo bilgisi | IntegrationCode |
 | 11 | Fatura sorgulama | IntegrationCode |
-| 12 | Bugunku teslim sayisi | - |
+| 12 | Bugunku teslim Sayısı | - |
 | 13 | Kampanya kodu | IntegrationCode |
 
 ### Response

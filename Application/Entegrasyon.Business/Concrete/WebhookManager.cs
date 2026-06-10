@@ -62,7 +62,7 @@ public class WebhookManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var sub = await dbContext.WebhookSubscriptions.FindAsync(id);
-        if (sub is null) return new ErrorResult("Webhook bulunamadi.");
+        if (sub is null) return new ErrorResult("Webhook bulunamadı.");
 
         sub.IsDeleted = true;
         sub.DeletedAt = DateTimeOffset.UtcNow;
@@ -76,7 +76,7 @@ public class WebhookManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var sub = await dbContext.WebhookSubscriptions.FindAsync(id);
-        if (sub is null) return new ErrorResult("Webhook bulunamadi.");
+        if (sub is null) return new ErrorResult("Webhook bulunamadı.");
 
         sub.IsActive = !sub.IsActive;
         if (sub.IsActive) sub.FailureCount = 0;

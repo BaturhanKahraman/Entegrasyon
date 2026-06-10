@@ -50,7 +50,7 @@ public sealed class PttavmCategoryImporter : BaseCategoryImporterService
             if (result is null || !result.Success)
             {
                 var errorMsg = result?.Error?.ErrorMessage ?? "Bilinmeyen hata";
-                Logger.LogError("PttAVM ana kategori yuklemesi basarisiz: {Error}", errorMsg);
+                Logger.LogError("PttAVM ana kategori yuklemesi başarısız: {Error}", errorMsg);
                 return new ErrorDataResult<IEnumerable<ExternalCategoryDto>>([], errorMsg);
             }
 

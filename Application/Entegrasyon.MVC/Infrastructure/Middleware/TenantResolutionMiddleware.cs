@@ -50,7 +50,7 @@ public class TenantResolutionMiddleware(RequestDelegate next)
             else
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Tenant bulunamadi.");
+                await context.Response.WriteAsync("Tenant bulunamadı.");
                 return;
             }
         }
@@ -86,7 +86,7 @@ public class TenantResolutionMiddleware(RequestDelegate next)
             else
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsync("Tenant bulunamadi veya pasif.");
+                await context.Response.WriteAsync("Tenant bulunamadı veya pasif.");
                 return;
             }
         }

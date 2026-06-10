@@ -34,7 +34,7 @@ public interface IOfficeStockManager
 
     /// <summary>
     /// Atomic stok artirma — SoldQuantity azaltilir, stok geri verilir.
-    /// Odeme basarisiz oldugunda veya iptal/iade senaryolarinda kullanilir.
+    /// Odeme başarısız oldugunda veya iptal/iade senaryolarinda kullanilir.
     /// </summary>
     Task<IDataResult<StockMovement>> IncreaseStockAtomicAsync(
         int branchOfficeId, Guid productVariantId, int quantity,

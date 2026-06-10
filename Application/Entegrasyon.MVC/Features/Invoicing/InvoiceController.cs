@@ -48,7 +48,7 @@ public class InvoiceController(IEInvoiceManager invoiceManager) : Controller
         var result = await invoiceManager.GetInvoiceDetail(id);
         if (!result.Success)
         {
-            TempData.SetError(result.Message ?? "Fatura bulunamadi.");
+            TempData.SetError(result.Message ?? "Fatura bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 

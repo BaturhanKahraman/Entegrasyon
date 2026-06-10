@@ -46,7 +46,7 @@ public sealed class TrendyolEFaturaApiClient(
 
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == TrendyolMarketPlaceId, ct)
-            ?? throw new InvalidOperationException("Trendyol marketplace kaydi bulunamadi (Id=1).");
+            ?? throw new InvalidOperationException("Trendyol marketplace kaydi bulunamadı (Id=1).");
 
         var settings = await dbContext.ApplicationSettings.AsNoTracking()
             .Where(s => s.Key!.StartsWith("TrendyolEFatura:"))

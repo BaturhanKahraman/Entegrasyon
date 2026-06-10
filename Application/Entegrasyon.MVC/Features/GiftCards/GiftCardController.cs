@@ -75,7 +75,7 @@ public class GiftCardController(
 
         if (!cardResult.Success)
         {
-            TempData.SetError(cardResult.Message ?? "Hediye karti bulunamadi.");
+            TempData.SetError(cardResult.Message ?? "Hediye karti bulunamadı.");
             return RedirectToAction(nameof(Index));
         }
 

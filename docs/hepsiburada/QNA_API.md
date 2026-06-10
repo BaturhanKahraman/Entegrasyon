@@ -28,7 +28,7 @@ SIT ortaminda test amacli soru olusturur.
 
 | Alan | Tip | Zorunlu | Aciklama |
 |------|-----|---------|----------|
-| issueCount | integer | Evet | Olusturulacak soru sayisi (min 1) |
+| issueCount | integer | Evet | Olusturulacak soru Sayısı (min 1) |
 
 ### Response — 201 Created
 
@@ -53,14 +53,14 @@ Olusturulan sorularin numaralarini icerir (array).
 | status | integer[] | Hayir | — | Durum filtresi (birden fazla gonderilebilir) |
 | page | integer | Hayir | 1 | Sayfa numarasi |
 | size | integer | Hayir | 25 | Sayfa boyutu |
-| sortBy | integer | Hayir | 0 | Siralama alani |
+| sortBy | integer | Hayir | 0 | Siralama alanı|
 | desc | boolean | Hayir | true | Azalan siralama |
 | source | integer | Hayir | — | Kaynak filtresi |
 | subject | string | Hayir | — | Konu filtresi |
-| minCreatedAt | datetime | Hayir | — | Olusturulma baslangic tarihi |
-| maxCreatedAt | datetime | Hayir | — | Olusturulma bitis tarihi |
-| minModifiedAt | datetime | Hayir | — | Guncelleme baslangic tarihi |
-| maxModifiedAt | datetime | Hayir | — | Guncelleme bitis tarihi |
+| minCreatedAt | datetime | Hayir | — | Olusturulma Başlangıç tarihi |
+| maxCreatedAt | datetime | Hayir | — | Olusturulma Bitiş tarihi |
+| minModifiedAt | datetime | Hayir | — | Guncelleme Başlangıç tarihi |
+| maxModifiedAt | datetime | Hayir | — | Guncelleme Bitiş tarihi |
 | issueNumber | string | Hayir | — | Soru numarasi filtresi |
 | search | string | Hayir | — | Serbest metin arama |
 
@@ -151,7 +151,7 @@ Belirli bir sorunun detayini getirir.
   ],
   "merchant": {
     "id": "merchant-uuid",
-    "name": "Magaza Adi"
+    "name": "Mağaza Adi"
   },
   "product": {
     "sku": "HBCV00001XXXXX",
@@ -260,11 +260,11 @@ Soruyu reddeder / sorun bildirir. Sorun bildirme metni Hepsiburada icin yazilir,
 
 ---
 
-## Statu Bazli Soru Sayisi
+## Statu Bazli Soru Sayısı
 
 **GET** `/api/v1.0/issues/count`
 
-Her statudeki soru sayisini doner.
+Her statudeki soru Sayısıni doner.
 
 ### Headers
 
@@ -291,7 +291,7 @@ Her statudeki soru sayisini doner.
 |-----------|----------|
 | 400 | Bad Request — Gecersiz istek |
 | 401 | Unauthorized — Kimlik dogrulama hatasi |
-| 404 | Not Found — Soru bulunamadi |
+| 404 | Not Found — Soru bulunamadı |
 | 415 | Unsupported Media Type — Desteklenmeyen dosya tipi |
-| 422 | Unprocessable Entity — Dosya tipi hatali |
+| 422 | Unprocessable Entity — Dosya tipi Hatalı |
 | 500 | Internal Server Error — Sunucu hatasi |

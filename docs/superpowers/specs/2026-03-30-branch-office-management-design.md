@@ -25,7 +25,7 @@ Depo yonetimi icin kapsamli bir sistem: CRUD UI, soft delete + silme kontrolleri
 | Sutun | Kaynak |
 |-------|--------|
 | Ad | BranchOffice.Name |
-| Kullanici Sayisi | Users.Count() |
+| Kullanici Sayısı | Users.Count() |
 | Toplam Stok | BranchOfficeStocks.Sum(CurrentStock) |
 | Bagli Marketplace'ler | MarketPlaceWarehouse join → marketplace adlari chip |
 | Olusturma Tarihi | CreatedAt |
@@ -85,7 +85,7 @@ Islem sirasi: stok transfer/sifirla → soft delete → marketplace event publis
 
 | Tab | Icerik |
 |-----|--------|
-| **Genel Bilgiler** | Ad (duzenlenebilir inline), IsDefaultMarketPlaceStock toggle, olusturma tarihi, kullanici sayisi |
+| **Genel Bilgiler** | Ad (duzenlenebilir inline), IsDefaultMarketPlaceStock toggle, olusturma tarihi, kullanici Sayısı |
 | **Stok Durumu** | MudDataGrid — Urun adi, Varyant, Ilk Stok, Satilan, Mevcut Stok. Filtre: stoklu/stoksuz. "Secilenleri Transfer Et" butonu |
 | **Stok Hareketleri** | MudDataGrid — Tarih, Urun, Hareket Tipi (chip renkleri: Sale=blue, Transfer=orange, Return=green, Adjustment=grey), Miktar (+/-), Onceki→Sonraki, Referans. Tarih araligi filtresi |
 | **Marketplace Baglantilari** | Bu deponun bagli oldugu marketplace'ler. Ekle (dropdown) / kaldir butonlari. MarketPlaceWarehouse tablosundan |

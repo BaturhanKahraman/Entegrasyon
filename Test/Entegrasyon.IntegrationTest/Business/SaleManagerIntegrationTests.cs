@@ -150,13 +150,13 @@ public class SaleManagerIntegrationTests : IntegrationTestBase
         result.Success.Should().BeFalse();
 
         // Not: SaleManager simdiki implementasyonda atomic stok dusmeyi sirayla yapiyor,
-        // ilk item basarili olur ama ikinci basarisiz olunca hata doner.
+        // ilk item basarili olur ama ikinci başarısız olunca hata doner.
         // Stok dusme ExecuteUpdate ile yapildigindan, ilk item'in stoku dusmis olabilir.
         // Bu davranisi dogrulamak yeterli: ikinci item'in stoku degismemeli
         using var dbContext = CreateDbContext();
         var stockFail = await dbContext.BranchOfficeStocks
             .FirstAsync(s => s.ProductVariantId == variantFail && s.BranchOfficeId == 1);
-        stockFail.SoldQuantity.Should().Be(0, "Basarisiz item'in stoku degismemeli");
+        stockFail.SoldQuantity.Should().Be(0, "başarısız item'in stoku degismemeli");
     }
 
     [Fact]

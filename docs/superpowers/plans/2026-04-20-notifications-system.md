@@ -1776,7 +1776,7 @@ git commit -m "feat(notifications): ProductAddedNotificationHandler + test (şab
 | `BranchOfficeApprovalApprovedNotificationHandler` | `BranchOfficeApprovalApprovedEvent` | `branchoffice.view` | "Şube onaylandı" | `"Şube onaylandı."` | Info | `$"/admin/branch-offices/{@event.BranchOfficeId}"` | `ApprovedByUserId` |
 | `BranchOfficeApprovalRejectedNotificationHandler` | `BranchOfficeApprovalRejectedEvent` | `branchoffice.view` | "Şube onayı reddedildi" | `$"Şube onayı reddedildi: {@event.Reason}"` | Warning | `$"/admin/branch-offices/{@event.BranchOfficeId}"` | `RejectedByUserId` |
 
-**Category kullanımı:** Product/Category/Brand → `NotificationCategory.Urun`; Marketplace → `NotificationCategory.Pazaryeri` (yoksa enum'a ekle); Storefront → `NotificationCategory.Magaza` (yoksa ekle); System → `NotificationCategory.Sistem`.
+**Category kullanımı:** Product/Category/Brand → `NotificationCategory.Urun`; Marketplace → `NotificationCategory.Pazaryeri` (yoksa enum'a ekle); Storefront → `NotificationCategory.Mağaza` (yoksa ekle); System → `NotificationCategory.Sistem`.
 
 - [ ] **Step 1: `NotificationCategory` enum'a eksik değerleri ekle**
 
@@ -1786,7 +1786,7 @@ public enum NotificationCategory
     Sistem = 0,
     Urun = 1,
     Pazaryeri = 2,
-    Magaza = 3
+    Mağaza = 3
 }
 ```
 

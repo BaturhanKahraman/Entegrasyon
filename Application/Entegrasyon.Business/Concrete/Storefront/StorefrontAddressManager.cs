@@ -33,7 +33,7 @@ public class StorefrontAddressManager(
             .FirstOrDefaultAsync(a => a.Id == addressId && a.TenantId == tenantId && a.CustomerId == customerId);
 
         if (address is null)
-            return new ErrorDataResult<StorefrontAddress>(null!, "Adres bulunamadi.");
+            return new ErrorDataResult<StorefrontAddress>(null!, "Adres bulunamadı.");
 
         return new SuccessDataResult<StorefrontAddress>(address);
     }
@@ -87,7 +87,7 @@ public class StorefrontAddressManager(
             .FirstOrDefaultAsync(a => a.Id == addressId && a.TenantId == tenantId && a.CustomerId == customerId);
 
         if (address is null)
-            return new ErrorResult("Adres bulunamadi.");
+            return new ErrorResult("Adres bulunamadı.");
 
         if (dto.IsDefault && !address.IsDefault)
             await ClearDefaultsAsync(dbContext, tenantId, customerId);
@@ -116,7 +116,7 @@ public class StorefrontAddressManager(
             .FirstOrDefaultAsync(a => a.Id == addressId && a.TenantId == tenantId && a.CustomerId == customerId);
 
         if (address is null)
-            return new ErrorResult("Adres bulunamadi.");
+            return new ErrorResult("Adres bulunamadı.");
 
         var wasDefault = address.IsDefault;
         dbContext.StorefrontAddresses.Remove(address);
@@ -148,7 +148,7 @@ public class StorefrontAddressManager(
             .FirstOrDefaultAsync(a => a.Id == addressId && a.TenantId == tenantId && a.CustomerId == customerId);
 
         if (address is null)
-            return new ErrorResult("Adres bulunamadi.");
+            return new ErrorResult("Adres bulunamadı.");
 
         await ClearDefaultsAsync(dbContext, tenantId, customerId);
         address.IsDefault = true;

@@ -114,8 +114,8 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         await applicationLogManager.AddLog("Marka silme istegi geldi.", LogType.Brand, LogAction.Delete, brand);
         if (brand == null)
         {
-            await applicationLogManager.AddLog("Marka silme basarisiz. Ilgili id bulunamadi:", LogType.Brand, LogAction.Delete, id);
-            return new ErrorResult("Boyle bir marka bulunamadi");
+            await applicationLogManager.AddLog("Marka silme başarısız. Ilgili id bulunamadı:", LogType.Brand, LogAction.Delete, id);
+            return new ErrorResult("Boyle bir marka bulunamadı");
         }
         var deletedName = brand.Name ?? string.Empty;
         brand.IsDeleted = true;

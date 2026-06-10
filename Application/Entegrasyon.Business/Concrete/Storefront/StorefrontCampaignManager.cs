@@ -15,10 +15,10 @@ public class StorefrontCampaignManager(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         if (string.IsNullOrWhiteSpace(subject))
-            return new ErrorDataResult<StorefrontEmailCampaign>(null!, "Konu alani zorunludur.");
+            return new ErrorDataResult<StorefrontEmailCampaign>(null!, "Konu alanı zorunludur.");
 
         if (string.IsNullOrWhiteSpace(htmlContent))
-            return new ErrorDataResult<StorefrontEmailCampaign>(null!, "Icerik alani zorunludur.");
+            return new ErrorDataResult<StorefrontEmailCampaign>(null!, "İçerik alanı zorunludur.");
 
         var campaign = new StorefrontEmailCampaign
         {
@@ -56,7 +56,7 @@ public class StorefrontCampaignManager(
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (campaign is null)
-            return new ErrorResult("Kampanya bulunamadi.");
+            return new ErrorResult("Kampanya bulunamadı.");
 
         if (campaign.Status != CampaignStatus.Draft)
             return new ErrorResult("Sadece taslak kampanyalar duzenlenebilir.");
@@ -79,7 +79,7 @@ public class StorefrontCampaignManager(
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (campaign is null)
-            return new ErrorResult("Kampanya bulunamadi.");
+            return new ErrorResult("Kampanya bulunamadı.");
 
         if (campaign.Status != CampaignStatus.Draft)
             return new ErrorResult("Sadece taslak kampanyalar zamanlanabilir.");
@@ -104,7 +104,7 @@ public class StorefrontCampaignManager(
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (campaign is null)
-            return new ErrorResult("Kampanya bulunamadi.");
+            return new ErrorResult("Kampanya bulunamadı.");
 
         if (campaign.Status is CampaignStatus.Sent or CampaignStatus.Sending)
             return new ErrorResult("Gonderilmis veya gonderiliyor olan kampanyalar iptal edilemez.");
@@ -125,7 +125,7 @@ public class StorefrontCampaignManager(
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (campaign is null)
-            return new ErrorResult("Kampanya bulunamadi.");
+            return new ErrorResult("Kampanya bulunamadı.");
 
         if (campaign.Status == CampaignStatus.Sending)
             return new ErrorResult("Gonderiliyor olan kampanyalar silinemez.");

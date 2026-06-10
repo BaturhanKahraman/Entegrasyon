@@ -433,7 +433,7 @@ ViewData["Title"] = "Siparişiniz Alındı".
 
 ---
 
-## 13. `Views/Checkout/Basarisiz.cshtml` — Başarısız Ödeme
+## 13. `Views/Checkout/başarısız.cshtml` — Başarısız Ödeme
 
 ```
 Yukarıdaki Tasarım Sistemi'ni kullan.
@@ -1861,12 +1861,12 @@ Ortalı tek card, max-w-3xl, py-16:
 ## G. Checkout Başarısız (Önerilen sıra: 5b)
 
 ```
-Şimdi Checkout/Basarisiz sayfasını tasarla. Aynı chrome'u koru.
+Şimdi Checkout/başarısız sayfasını tasarla. Aynı chrome'u koru.
 
 Sample data:
 - Hata kodu: PAYMENT_3D_FAILED
 - Hata mesajı: "Bankanız 3D Secure doğrulamasını reddetti"
-- İletişim: 0850 000 00 00, /iletisim, WhatsApp
+- İletişim: 0850 000 00 00, /İletişim, WhatsApp
 
 Ortalı card max-w-2xl py-16:
 1. Yumuşak warning ikonu (sarı pastel yuvarlak + ünlem işareti, hiç korkutucu değil).
@@ -2564,7 +2564,7 @@ Sample data: KVKK / Hakkımızda / İade Politikası gibi.
 - **Prose içerik** article class="prose prose-lg max-w-none":
   - @Html.Raw(Page.ContentHtml) — Tailwind typography ile p, h2, h3, ul, ol, blockquote, code stilleri
   - Renk overrides: prose-headings:text-charcoal prose-headings:font-heading prose-a:text-primary prose-strong:text-charcoal
-- Footer alt link kart: "Yardım gerekirse iletişim" → /iletisim
+- Footer alt link kart: "Yardım gerekirse iletişim" → /İletişim
 
 SSS özel görünüm (Page slug "sss" ise):
 - Soru-cevap accordion liste

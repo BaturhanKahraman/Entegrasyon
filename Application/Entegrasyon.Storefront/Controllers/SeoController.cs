@@ -46,7 +46,7 @@ public class SeoController(
         // Static pages
         AppendUrl(sb, $"{baseUrl}/", "daily", "1.0");
         AppendUrl(sb, $"{baseUrl}/hakkimizda", "monthly", "0.5");
-        AppendUrl(sb, $"{baseUrl}/iletisim", "monthly", "0.5");
+        AppendUrl(sb, $"{baseUrl}/İletişim", "monthly", "0.5");
         AppendUrl(sb, $"{baseUrl}/kategoriler", "weekly", "0.7");
 
         // Dynamic categories

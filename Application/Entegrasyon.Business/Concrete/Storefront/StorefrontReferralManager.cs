@@ -54,7 +54,7 @@ public class StorefrontReferralManager(
                 && r.ReferredCustomerId == null);
 
         if (referral is null)
-            return new ErrorResult("Gecerli referans kodu bulunamadi.");
+            return new ErrorResult("Gecerli referans kodu bulunamadı.");
 
         if (referral.ReferrerCustomerId == referredCustomerId)
             return new ErrorResult("Kendi referans kodunuzu kullanamazsiniz.");

@@ -75,7 +75,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
     }
 
     /// <summary>
-    /// Import isleminden once marketplace'i yukler
+    /// Import işleminden once marketplace'i yukler
     /// </summary>
     public override async Task<IResult> ImportCategoriesAsync(IEnumerable<ExternalCategoryImportRequest> categories, CancellationToken cancellationToken = default)
     {
@@ -106,7 +106,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
     }
 
     /// <summary>
-    /// Trendyol'a ozel kategori ozellikleri import islemi
+    /// Trendyol'a ozel kategori ozellikleri import işlemi
     /// </summary>
     protected override async Task ImportCategoryAttributesAsync(
         IntegrationDbContext dbContext,
@@ -187,7 +187,7 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        // Marketplace eslesmesi
+        // Marketplace Eşleşmesi
         if (MarketPlace != null)
         {
             var match = new CategoryAttributeMarketPlaceMatch
