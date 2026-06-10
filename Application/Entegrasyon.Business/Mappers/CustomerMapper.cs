@@ -7,9 +7,13 @@ namespace Entegrasyon.Business.Mappers;
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
 public partial class CustomerMapper
 {
-    // CustomerAddDto → polymorphic targets
+    // CustomerAddDto → polymorphic targets.
+    // Yeni create formu tip-toggle ile ilgili alanı kendi adıyla gönderir
+    // (bireysel → NationalIdentity, kurumsal → TaxNumber). Mapperly aynı-isimli
+    // scalar'ları otomatik eşler; TaxNumber → TaxNumber doğrudan map'lenir.
+    // (Eski form vergi no'yu NationalIdentity alanında gönderiyor + override ile
+    // TaxNumber'a taşıyordu; toggle form bu gereksiz dolayıyı kaldırdı.)
     public partial RetailCustomer MapToRetail(CustomerAddDto dto);
 
-    [MapProperty(nameof(CustomerAddDto.NationalIdentity), nameof(CorporateCustomer.TaxNumber))]
     public partial CorporateCustomer MapToCorporate(CustomerAddDto dto);
 }

@@ -164,12 +164,23 @@ public class MapperConversionTests
     }
 
     [Fact]
-    public void CustomerMapper_MapToCorporate_MapsNationalIdentityToTaxNumber()
+    public void CustomerMapper_MapToCorporate_MapsTaxNumberAndCorporateName()
     {
+        // Yeni create formu kurumsal müşteride vergi no'yu kendi TaxNumber alanında gönderir
+        // (eski form NationalIdentity alanına koyup mapper'da TaxNumber'a taşıyordu).
         var mapper = new CustomerMapper();
-        var dto = new CustomerAddDto("1234567890", "", "Acme", "", "Acme Ltd", "555", "Istanbul", "Corporate");
+        var dto = new CustomerAddDto(
+            NationalIdentity: "",
+            TaxNumber: "1234567890",
+            Name: "",
+            Surname: "",
+            CorporateName: "Acme Ltd",
+            PhoneNumber: "555",
+            FullAddress: "Istanbul",
+            CustomerType: "Corporate");
         var entity = mapper.MapToCorporate(dto);
         entity.TaxNumber.Should().Be("1234567890");
+        entity.CorporateName.Should().Be("Acme Ltd");
     }
 
     // ── Task 7: ProductMapper ────────────────────────────────────────────────
