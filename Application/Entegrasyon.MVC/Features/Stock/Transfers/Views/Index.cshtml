@@ -6,7 +6,7 @@
     <h2 class="page-title me-2 mb-0">Stok Transfer Talepleri</h2>
     @if (ViewBag.PendingCount is int pc && pc > 0)
     {
-        <span class="badge bg-warning text-dark">@pc beklemede</span>
+        <span class="badge bg-yellow-lt">@pc beklemede</span>
     }
     <div class="ms-auto">
         <a href="/stock-transfer-requests/create" class="btn btn-primary">

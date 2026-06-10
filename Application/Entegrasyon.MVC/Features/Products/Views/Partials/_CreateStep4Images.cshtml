@@ -295,7 +295,7 @@
         wrapper.appendChild(img);
 
         var badge = document.createElement('span');
-        badge.className = 'badge bg-dark position-absolute top-0 start-0';
+        badge.className = 'badge bg-dark text-dark-fg position-absolute top-0 start-0';
         badge.style.fontSize = '10px';
         badge.textContent = (index + 1).toString();
         wrapper.appendChild(badge);
@@ -384,7 +384,7 @@
             pickerItem.appendChild(pImg);
 
             var pBadge = document.createElement('span');
-            pBadge.className = 'badge bg-dark position-absolute top-0 start-0';
+            pBadge.className = 'badge bg-dark text-dark-fg position-absolute top-0 start-0';
             pBadge.style.fontSize = '10px';
             pBadge.textContent = (pi + 1).toString();
             pickerItem.appendChild(pBadge);
@@ -421,7 +421,7 @@
             if (existing) existing.remove();
             if (item.classList.contains('selected') && firstSelected) {
                 var star = document.createElement('span');
-                star.className = 'star-badge badge bg-warning position-absolute';
+                star.className = 'star-badge badge bg-yellow text-yellow-fg position-absolute';
                 star.style.fontSize = '10px';
                 star.style.top = '0';
                 star.style.right = '0';
