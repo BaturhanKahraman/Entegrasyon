@@ -120,7 +120,7 @@
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true
   },
-     {
+  {
     "task": "e2e category add full path",
     "description": "Kategori ekleme E2E testi — UI'dan DB'ye tam akış + marketplace sync.",
     "status": "deferred",
@@ -131,7 +131,7 @@
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true
   },
-   {
+  {
     "task": "e2e product add full path",
     "description": "Ürün ekleme E2E testi — UI'dan DB'ye tam akış + marketplace sync.",
     "status": "deferred",
@@ -227,7 +227,6 @@
     "task": "Brand matching needs a UX",
     "description": "Once the user presses the brand matching button, they are redirected to a page where they can match their brands with the marketplace's brands. However, there is no user experience design for this page, and it can be confusing for users to navigate and complete the matching process. We need to design a user-friendly interface for the brand matching page that guides users through the process and makes it easy for them to match their brands with the marketplace's brands. This could include clear instructions, visual cues, and an intuitive layout that allows users to easily select and match their brands. Additionally, we should consider implementing features such as search functionality and filters to help users quickly find the relevant brands and streamline the matching process. For one brand, there can be multiple marketplace brands. We need to find a way to allow users to match multiple marketplace brands for a single brand. This will help ensure that all relevant information is captured for each brand and improve the overall accuracy and completeness of the brand matching process.",
     "status": "done",
-    "notes": "SearchBrandsAsync (Trendyol API + DB fallback), BrandAutoMatchService (3-layer string match + Ollama), auto-match butonu + sonuç dialog, duplicate prevention chip'leri. 1467 test pass.",
     "notes": "",
     "priority": "medium",
     "plan": true,
@@ -294,5 +293,89 @@
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "production-audit.md'yi koda göre güncelle (stale-audit fix)",
+    "description": "SİSTEMİK: production-audit.md koddan bayat. Bu oturumda audit-türevi 3 'task' (Storefront Profil R3/R4, Adresler R6, placeholder view'lar) aslında ZATEN YAPILMIŞ çıktı (TL QC ile doğrulandı). Bayat haritayla PM/ekip tekrar tekrar yapılmış işe vakit harcıyor. Audit'i mevcut kodla satır satır karşılaştırıp her maddeyi done/partial/gerçekten-todo işaretle; bitmiş maddeleri kaldır.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "Kök neden: TL bu oturumda TASK1(Profil),TASK2(Adresler) zaten tam, TASK3 dolu buldu. Audit güncellenmeden yeni gap analizi güvenilmez.",
+    "manual_test_steps": [
+      "production-audit.md'deki her R-maddesini ilgili Controller/View/DTO ile karşılaştır",
+      "Her madde: done / partial / todo etiketle",
+      "Bitmiş maddeleri audit'ten temizle veya done işaretle",
+      "Kalan gerçek gap'leri tasks.json'a taşı"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Sipariş → Kargo Etiketi Oluşturma (merchant panel akışı)",
+    "description": "[DURUM TEYİDİ GEREKLİ] ArasKargoService/SuratKargoService/YurticiKargoService client'ları var ama sipariş detayında 'kargo şirketi seç → gönderi oluştur → takip no kaydet → label PDF indir' akışı görünmüyor. Hem storefront hem pazaryeri siparişleri kapsanmalı. Trendyol siparişinde takip no Trendyol'a iletilmeli. Implementasyon öncesi SWE mevcut OrderController/SaleController kargo durumunu teyit etsin.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "manual_test_steps": [
+      "Sipariş detayında 'Kargo Oluştur' butonu görünür",
+      "Firma seç (Aras/Sürat/Yurtiçi) → gönderi oluştur → takip no siparişe işlenir",
+      "Label PDF indirilebilir",
+      "Trendyol siparişinde takip no Trendyol'a gönderilir",
+      "Çift kargo oluşturma engellenir",
+      "Integration test: kargo servisi mock ile akış"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Trendyol E-Fatura: Toplu Gönderim UI + Durum Takibi",
+    "description": "[DURUM TEYİDİ GEREKLİ] TrendyolEFaturaInvoiceBuilder + InvoiceController /invoicing/bulk var. Eksik olabilir: sipariş bazlı manuel e-fatura tetikleme butonu, toplu seçim+gönderim UI, fatura durumu (beklemede/gönderildi/hata) görselleştirme. Türkiye'de yasal zorunluluk. SWE önce docs/trendyol_efatura/ + InvoiceController'ın gerçekte ne yaptığını teyit etsin.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "manual_test_steps": [
+      "Fatura listesinde çoklu sipariş seç → 'Toplu E-Fatura Gönder' → durum güncellenir",
+      "Tek sipariş → 'E-Fatura Oluştur' → fatura no atanır + Trendyol'a gider",
+      "Faturası kesilmiş siparişte tekrar gönderim engellenir",
+      "Durum 'Hata' olanlar kırmızı badge",
+      "Integration test mock ile"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Storefront E2E: Müşteri Yolculuğu (kayıt→ürün→sepet→ödeme→sipariş)",
+    "description": "Storefront'un müşteri-yolculuğu E2E'si yok (E2E projesinde storefront/checkout testi bulunamadı). Kayıt→giriş→arama→ürün detay→sepete ekle→checkout→ödeme(Iyzico sandbox)→sipariş başarılı akışı Playwright ile. Canlı öncesi regresyon güvencesi.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [
+      "Yeni kayıt+e-posta doğrula→giriş",
+      "Arama→sonuç listesi",
+      "Ürün detay→varyant→sepete ekle",
+      "Checkout→adres→Iyzico iframe yüklenir",
+      "Sandbox kart→'Sipariş Başarılı'",
+      "Hesabım>Siparişlerim'de görünür",
+      "CI'da geçer"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Dashboard: Kanal Bazlı Satış Özeti Widget'ları",
+    "description": "DashboardController+Views var ama kanal-bazlı breakdown yok (grep'te 'kanal/channel' bulunamadı). Ekle: bugün/bu hafta/bu ay sipariş+ciro (Trendyol/N11/Storefront/POS breakdown), en çok satan 5 ürün, bekleyen sipariş sayısı. IOrderManager/ISaleManager üzerinden; aggregate query DB Master review'undan geçsin (N+1 yok).",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "Aggregate query → Data-Access (C) hibrit gate: DB Master review şart.",
+    "manual_test_steps": [
+      "Dashboard'da Trendyol/N11/Storefront/POS sipariş+ciro widget'ları",
+      "Bugün/Hafta/Ay filtresi sayıları değiştirir",
+      "En çok satan 5 ürün doğru sıralı",
+      "Bekleyen sipariş sayısına tıkla→liste sayfası",
+      "Integration test: aggregation N+1 içermez"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
   }
 ]
