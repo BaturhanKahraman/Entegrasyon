@@ -15,7 +15,7 @@
                 <tbody>
                     @foreach (var brand in Model.Items)
                     {
-                        <tr style="cursor: pointer" onclick="window.location='/brands/@brand.Id'">
+                        <tr class="table-row-clickable" data-href="/brands/@brand.Id" role="link" tabindex="0">
                             <td>@brand.Name</td>
                             <td>
                                 <span class="badge bg-blue-lt">@brand.ProductNumber</span>

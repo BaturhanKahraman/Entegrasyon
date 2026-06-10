@@ -71,7 +71,7 @@
           }
           @foreach (var item in Model.Page.Items)
           {
-              <tr style="cursor:pointer;" onclick="window.location.href='@item.DetailUrl'">
+              <tr class="table-row-clickable" data-href="@item.DetailUrl" role="link" tabindex="0">
                   <td>
                       <div>@item.SaleDate.ToLocalTime().ToString("dd.MM HH:mm")</div>
                       <div class="text-muted small">@GetRelative(item.SaleDate)</div>

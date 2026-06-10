@@ -172,3 +172,10 @@
 .mp-card.is-active { box-shadow: 0 0 0 2px var(--tblr-primary); }
 .tl-detail { display: none; }
 .tl-detail.show { display: block; }
+
+/* ── Tıklanabilir tablo satırı (data-href) ──────────────────────────── */
+/* Satırın tamamı tıklanabilir; satır içindeki gerçek link/buton/checkbox  */
+/* kendi davranışını korur (site.js'deki delegated handler hariç tutar).   */
+tr.table-row-clickable {
+    cursor: pointer;
+}

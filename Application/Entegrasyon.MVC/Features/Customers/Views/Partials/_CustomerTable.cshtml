@@ -22,8 +22,7 @@
                         <tr data-href="/customers/@customer.Id"
                             role="link"
                             tabindex="0"
-                            style="cursor: pointer;"
-                            class="@(customer.IsActive ? "" : "text-muted")">
+                            class="table-row-clickable @(customer.IsActive ? "" : "text-muted")">
                             <td>
                                 @(string.IsNullOrEmpty(customer.CorporateName)
                                     ? customer.NameSurname
@@ -84,23 +83,3 @@
         </div>
     }
 </div>
-
-<script>
-    (function () {
-        const table = document.getElementById('customer-table');
-        if (!table || table.dataset.rowClickBound === '1') return;
-        table.dataset.rowClickBound = '1';
-
-        table.addEventListener('click', (e) => {
-            const row = e.target.closest('tr[data-href]');
-            if (!row) return;
-            window.location = row.dataset.href;
-        });
-        table.addEventListener('keydown', (e) => {
-            if (e.key !== 'Enter') return;
-            const row = e.target.closest('tr[data-href]');
-            if (!row) return;
-            window.location = row.dataset.href;
-        });
-    })();
-</script>

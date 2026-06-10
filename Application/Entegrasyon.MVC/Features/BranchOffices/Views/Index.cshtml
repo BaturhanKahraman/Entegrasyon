@@ -25,15 +25,13 @@
                         <tbody>
                             @foreach (var branch in Model)
                             {
-                                <tr>
+                                <tr class="table-row-clickable" data-href="/branch-offices/@branch.Id" role="link" tabindex="0">
                                     <td>
-                                        <a href="/branch-offices/@branch.Id" class="text-reset">
-                                            @branch.Name
-                                            @if (branch.IsDefaultMarketPlaceStock)
-                                            {
-                                                <span class="badge bg-green-lt ms-1">Varsayilan</span>
-                                            }
-                                        </a>
+                                        @branch.Name
+                                        @if (branch.IsDefaultMarketPlaceStock)
+                                        {
+                                            <span class="badge bg-green-lt ms-1">Varsayilan</span>
+                                        }
                                     </td>
                                     <td class="text-secondary">@branch.UserCount</td>
                                     <td>
@@ -45,7 +43,6 @@
                                     <td class="text-secondary">@branch.CreatedAt.ToString("dd.MM.yyyy")</td>
                                     <td>
                                         <div class="btn-list flex-nowrap">
-                                            <a href="/branch-offices/@branch.Id" class="btn btn-sm btn-outline-primary">Detay</a>
                                             @if (!branch.IsHeadquarters)
                                             {
                                                 <form method="post"

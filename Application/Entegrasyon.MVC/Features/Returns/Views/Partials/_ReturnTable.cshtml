@@ -56,13 +56,12 @@
                     <th>Kalem</th>
                     <th>Tutar</th>
                     <th>Durum</th>
-                    <th class="w-1"></th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach (var r in Model)
                 {
-                    <tr class="cursor-pointer" onclick="window.location='/returns/@r.Id'">
+                    <tr class="table-row-clickable" data-href="/returns/@r.Id" role="link" tabindex="0">
                         <td class="text-secondary">@r.Id</td>
                         <td class="text-secondary">@r.ReturnDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
                         <td><span class="badge bg-azure-lt">@SourceText(r.Source)</span></td>
@@ -79,11 +78,6 @@
                         <td>@r.Items.Count kalem</td>
                         <td class="fw-bold">@r.RefundAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
                         <td><span class="badge @StatusBadge(r.ReturnStatus)">@StatusText(r.ReturnStatus)</span></td>
-                        <td>
-                            <a href="/returns/@r.Id" class="btn btn-sm btn-ghost-primary" onclick="event.stopPropagation()">
-                                <i class="ti ti-eye icon"></i>
-                            </a>
-                        </td>
                     </tr>
                 }
                 </tbody>

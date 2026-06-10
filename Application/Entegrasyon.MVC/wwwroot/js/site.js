@@ -461,6 +461,57 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
+// ── Clickable Table Rows (tr.table-row-clickable[data-href]) ─────────
+
+// Tablo satırının tamamını tıklanabilir yapar; aksiyonlar/detay satıra devredilir.
+// Delegated handler → HTMX swap sonrası da çalışır (yeniden bağlama gerekmez).
+// Satır içindeki gerçek link/buton/checkbox/form/HTMX kontrolüne tıklama
+// yanlış navigasyona YOL AÇMAZ — bunlar kendi davranışını korur.
+(function () {
+    var INTERACTIVE = 'a, button, input, select, textarea, label, summary, ' +
+        '.dropdown, .form-check, [role="button"], [hx-get], [hx-post], ' +
+        '[hx-put], [hx-delete], [hx-patch], [data-bs-toggle], [onclick]';
+
+    function rowFor(target) {
+        if (!target || !target.closest) return null;
+        var row = target.closest('tr.table-row-clickable[data-href]');
+        if (!row) return null;
+        // Satır içindeki interaktif öğeye tıklandıysa navigasyonu engelle.
+        var interactive = target.closest(INTERACTIVE);
+        if (interactive && row.contains(interactive)) return null;
+        return row;
+    }
+
+    document.addEventListener('click', function (e) {
+        if (e.button !== 0) return; // yalnızca sol tık
+        var row = rowFor(e.target);
+        if (!row) return;
+        if (e.metaKey || e.ctrlKey) {
+            window.open(row.dataset.href, '_blank');
+        } else {
+            window.location = row.dataset.href;
+        }
+    });
+
+    // Orta tık (button === 1) → yeni sekme
+    document.addEventListener('auxclick', function (e) {
+        if (e.button !== 1) return;
+        var row = rowFor(e.target);
+        if (!row) return;
+        window.open(row.dataset.href, '_blank');
+    });
+
+    // Klavye erişilebilirliği: odaklı satırda Enter → git
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        var target = e.target;
+        if (!target.classList || !target.classList.contains('table-row-clickable')) return;
+        if (!target.dataset.href) return;
+        e.preventDefault();
+        window.location = target.dataset.href;
+    });
+})();
+
 // ── Notification Bell (Real-time via SSE — Server-Sent Events) ───────
 
 // TODO: SSE bildirim client'ı şimdilik devre dışı — backend endpoint kaldırıldı.

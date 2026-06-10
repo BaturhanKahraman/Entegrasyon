@@ -35,7 +35,7 @@ else
             <tbody>
                 @foreach (var o in Model)
                 {
-                    <tr style="cursor:pointer" onclick="window.location='/orders/@o.OrderId'">
+                    <tr class="table-row-clickable" data-href="/orders/@o.OrderId" role="link" tabindex="0">
                         <td><span class="text-reset fw-medium">@(string.IsNullOrWhiteSpace(o.OrderNumber) ? "—" : o.OrderNumber)</span></td>
                         <td class="text-secondary">@o.OrderDate.ToLocalTime().ToString("dd MMM yyyy")</td>
                         <td><span class="badge @PlatformBadge(o.Platform)">@o.Platform</span></td>

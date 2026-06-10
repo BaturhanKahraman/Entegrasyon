@@ -16,7 +16,7 @@
                 <tbody>
                     @foreach (var role in Model)
                     {
-                        <tr>
+                        <tr class="table-row-clickable" data-href="/roles/@role.Id/edit" role="link" tabindex="0">
                             <td>
                                 <span class="text-reset fw-medium">@role.Name</span>
                             </td>
@@ -28,9 +28,6 @@
                             </td>
                             <td>
                                 <div class="btn-list flex-nowrap">
-                                    <a href="/roles/@role.Id/edit" class="btn btn-sm btn-outline-primary">
-                                        Düzenle
-                                    </a>
                                     <button class="btn btn-sm btn-outline-danger"
                                             hx-post="/roles/@role.Id/delete"
                                             hx-target="closest tr"
