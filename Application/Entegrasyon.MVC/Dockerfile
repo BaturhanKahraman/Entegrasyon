@@ -6,6 +6,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
+# Central Package Management — versiyonlar Directory.Packages.props'ta; restore'dan
+# ONCE kopyalanmali yoksa NU1015 (PackageReference version yok).
+COPY ["Directory.Build.props", "Directory.Packages.props", "./"]
+
 # Copy project files first (layer caching)
 COPY ["Application/Entegrasyon.MVC/Entegrasyon.MVC.csproj", "Application/Entegrasyon.MVC/"]
 COPY ["Application/Entegrasyon.Business/Entegrasyon.Business.csproj", "Application/Entegrasyon.Business/"]
