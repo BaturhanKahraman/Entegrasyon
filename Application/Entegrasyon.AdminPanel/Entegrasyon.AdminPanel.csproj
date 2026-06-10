@@ -25,4 +25,15 @@
     <InternalsVisibleTo Include="Entegrasyon.AdminPanel.Test" />
   </ItemGroup>
 
+  <!-- AdminPanel, MVC tarafindan kutuphane olarak referans aliniyor. MVC publish edilirken
+       AdminPanel'in appsettings'leri ayni relative path'te cakisiyor (NETSDK1152).
+       AdminPanel kendi calismasinda `dotnet run` (publish degil) kullaniyor + hicbir yerde
+       publish/deploy edilmiyor → publish ciktisina kopyalamamak guvenli, MVC'nin kendi
+       appsettings'i korunur. -->
+  <ItemGroup>
+    <Content Update="appsettings.json;appsettings.Development.json">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
