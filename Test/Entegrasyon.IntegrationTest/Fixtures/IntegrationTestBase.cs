@@ -52,14 +52,19 @@ public abstract class IntegrationTestBase : IAsyncLifetime
 
         _factory = CreateFactory(_pgFixture.ConnectionString);
 
-        // Force the WebApplicationFactory to build the host
-        _ = _factory.Server;
+        // KRİTİK SIRA — host'u BAŞLATMADAN ÖNCE DB'yi migrate et.
+        // _factory.Server / _factory.Services erişimi host'u START eder (EnsureServer); bu da
+        // Program.cs'teki ApplicationStarted callback'ini tetikler. O callback
+        // AdminPermissionSeeder.EnsureAdminPermissionsAsync()'i KOŞULSUZ çağırıp "Roles" tablosunu
+        // sorgular. "IntegrationTest" ortamında app KENDİ migrate ETMEZ (ApplyStartActions yalnızca
+        // Development/Testing'de migrate eder) → tablo henüz yok → 42P01 "relation Roles does not exist".
+        // Bu, fire-and-forget async callback'te UNOBSERVED exception olarak fırlar ve test host'unu
+        // çökertip TÜM run'ı abort eder (55 test). Çözüm: migration'ı host-start'tan ÖNCE, DI/host
+        // DIŞINDA bağımsız bir context ile uygula. (DesignTimeDbContextFactory ile aynı desen.)
+        await MigrateDatabaseBeforeHostStartAsync(_pgFixture.ConnectionString);
 
-        // Apply migrations
-        using var scope = Services.CreateScope();
-        var contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
-        using var dbContext = contextFactory.CreateDbContext();
-        await dbContext.Database.MigrateAsync();
+        // Artık host başlatılabilir — ApplicationStarted seeder'ı migrated DB'de sorunsuz çalışır.
+        _ = _factory.Server;
 
         // Setup Respawn — skip seed tables
         _dbConnection = new NpgsqlConnection(_pgFixture.ConnectionString);
@@ -87,6 +92,22 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     /// Alt class'lar icin ek initialization hook'u.
     /// </summary>
     protected virtual Task OnInitializeAsync() => Task.CompletedTask;
+
+    /// <summary>
+    /// DB'yi WebApplicationFactory host'u BAŞLAMADAN önce migrate eder. Host start'ı, boş DB'de
+    /// "Roles" sorgulayan ApplicationStarted seeder'ını tetiklediğinden (42P01 → unobserved async →
+    /// run abort), migration host-start'tan önce ve DI dışında bağımsız bir context ile yapılır.
+    /// Migration assembly'si default olarak IntegrationDbContext'in assembly'sinden (Entegrasyon.DataAccess)
+    /// çözülür — DesignTimeDbContextFactory ile birebir aynı yaklaşım.
+    /// </summary>
+    private static async Task MigrateDatabaseBeforeHostStartAsync(string connectionString)
+    {
+        var options = new DbContextOptionsBuilder<IntegrationDbContext>()
+            .UseNpgsql(connectionString)
+            .Options;
+        await using var dbContext = new IntegrationDbContext(options);
+        await dbContext.Database.MigrateAsync();
+    }
 
     /// <summary>
     /// WebApplicationFactory'yi olusturur. Varsayilan: standart IntegrationTest host.

@@ -35,6 +35,14 @@ public abstract class Product360RenderHttpTestsBase : IntegrationTestBase
     protected Product360RenderHttpTestsBase(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
         : base(pgFixture, wireMock) { }
 
+    /// <summary>
+    /// HTML'i çekip entity-decode eder. Razor, Türkçe karakterleri (ş, ğ, ö, ı, İ) ve bazı sembolleri
+    /// numeric HTML entity'ye encode eder (ör. "Mağaza" → "Ma&amp;#x11F;aza"); tarayıcı bunları doğru
+    /// gösterir. Test'te insan-okunur Türkçe string'lerle assert edebilmek için decode ediyoruz.
+    /// </summary>
+    protected static async Task<string> GetHtmlAsync(HttpClient client, string url)
+        => System.Net.WebUtility.HtmlDecode(await client.GetStringAsync(url));
+
     protected override IntegrationTestWebAppFactory CreateFactory(string connectionString)
         => new Product360WebAppFactory(connectionString, EcommerceEnabled);
 
@@ -89,7 +97,7 @@ public sealed class Product360RenderEnabledTests : Product360RenderHttpTestsBase
     {
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}");
 
         html.Should().Contain("Aktivite");
         html.Should().Contain("Siparişler");
@@ -119,7 +127,7 @@ public sealed class Product360RenderEnabledTests : Product360RenderHttpTestsBase
         }
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}/marketplace-cards");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}/marketplace-cards");
 
         html.Should().Contain("Trendyol");
         html.Should().Contain("Pazaryeri Durumu");
@@ -144,10 +152,10 @@ public sealed class Product360RenderEnabledTests : Product360RenderHttpTestsBase
         }
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}/activity");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}/activity");
 
         html.Should().Contain("timeline");
-        html.Should().Contain("Trendyol&#x27;a gönderildi");
+        html.Should().Contain("Trendyol'a gönderildi");
     }
 
     [Fact]
@@ -174,7 +182,7 @@ public sealed class Product360RenderEnabledTests : Product360RenderHttpTestsBase
         }
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}/orders");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}/orders");
 
         html.Should().Contain("TY-987654321");
         html.Should().Contain("Krem / 6-9 Ay");
@@ -193,7 +201,7 @@ public sealed class Product360RenderEnabledTests : Product360RenderHttpTestsBase
         }
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}/stock-movements");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}/stock-movements");
 
         html.Should().Contain("Krem / 6-9 Ay");
         html.Should().Contain("İlk Stok");
@@ -217,7 +225,7 @@ public sealed class Product360RenderDisabledTests : Product360RenderHttpTestsBas
     {
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}/marketplace-cards");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}/marketplace-cards");
 
         html.Should().Contain("empty");
         html.Should().Contain("Pazaryerine Gönder");
@@ -229,7 +237,7 @@ public sealed class Product360RenderDisabledTests : Product360RenderHttpTestsBas
     {
         var client = CreateClient();
 
-        var html = await client.GetStringAsync($"/products/{ProductId}/activity");
+        var html = await GetHtmlAsync(client,$"/products/{ProductId}/activity");
 
         html.Should().Contain("empty");
         html.Should().NotContain("<ul class=\"timeline\">");
@@ -255,8 +263,8 @@ public sealed class Product360RenderDisabledTests : Product360RenderHttpTestsBas
         }
         var client = CreateClient();
 
-        var ordersHtml = await client.GetStringAsync($"/products/{ProductId}/orders");
-        var stockHtml = await client.GetStringAsync($"/products/{ProductId}/stock-movements");
+        var ordersHtml = await GetHtmlAsync(client,$"/products/{ProductId}/orders");
+        var stockHtml = await GetHtmlAsync(client,$"/products/{ProductId}/stock-movements");
 
         ordersHtml.Should().Contain("POS-00045");
         ordersHtml.Should().Contain("Mağaza");
