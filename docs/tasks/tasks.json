@@ -422,7 +422,7 @@
     "status": "todo",
     "priority": "medium",
     "plan": true,
-    "notes": "TL'nin DOCKER_HOST=ssh://server de-risk'i sadece CLI'ı test etmişti; .NET client desteklemiyor (QA yakaladı).",
+    "notes": "TL'nin DOCKER_HOST=ssh://server de-risk'i sadece CLI'ı test etmişti; .NET client desteklemiyor (QA yakaladı). | ÇÖZÜM (DB doğruladı 2026-06-10): ssh -nNT -L /tmp/docker-server.sock:/var/run/docker.sock server & ; DOCKER_HOST=unix:///tmp/docker-server.sock TESTCONTAINERS_HOST_OVERRIDE=192.168.1.78 TESTCONTAINERS_RYUK_DISABLED=true dotnet test",
     "manual_test_steps": [
       "Seçilen yöntemle dotnet test IntegrationTest yerel sudo gerektirmeden koşar",
       "Testcontainers Postgres ayağa kalkar",
@@ -430,5 +430,21 @@
     ],
     "addOrUpdateUnitTests": false,
     "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Multi-tenant provisioning: PostgresOptimizations migration fresh DB'de index üretmiyor",
+    "description": "DB Master EXPLAIN denetiminde buldu (2026-06-10). pg_indexes kanıtı: 20260315100000_PostgresOptimizations migration Up()'ı fresh-migrate DB'de IX_Orders_ShipmentPackageId_Active / IX_Orders_MarketPlaceId_OrderDate_Active / IX_Products_CreatedAt_Cover index'lerini ÜRETMİYOR (AddDatabaseIndexes/AddDashboardIndexes'inkiler var). Yeni tenant DB'leri bu optimizasyonları ALMIYOR → multi-tenant provisioning tutarsızlığı + sessiz perf kaybı. Araştır: Up() neden iz bırakmıyor (raw SQL hatası / conditional / yutulan exception?). DB Master'ın eklediği yeni Orders index'leri (5d954d7e) bu boşluğu idempotent kapatıyor ama kök neden ayrı.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "DB Master raw-SQL idempotent + EXPLAIN-kanıtlı yeni index'lerle Orders tarafını kalıcı kapattı; ama eski migration'ın iz bırakmaması araştırılmalı.",
+    "manual_test_steps": [
+      "Fresh DB migrate et",
+      "pg_indexes'te PostgresOptimizations'ın ürettiği index'leri ara — yoksa bug doğrulandı",
+      "Up() kök nedenini bul (raw SQL/exception)",
+      "Fix sonrası yeni tenant DB'sinde tüm optimizasyon index'leri var"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": true
   }
 ]
