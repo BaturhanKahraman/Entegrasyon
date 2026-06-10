@@ -3,8 +3,11 @@ WORKDIR /app
 EXPOSE 8080
 # Alpine runtime ICU icermez → globalization-invariant mode'da tr-TR gibi kulturler
 # patlar (CultureNotFoundException). ICU ekle + invariant mode'u kapat.
-RUN apk add --no-cache icu-libs icu-data-full
+# tzdata: Alpine zaman dilimi DB icermez → TimeZoneInfo "Europe/Istanbul" patlar
+# (TurkeyTime static initializer → onu kullanan TUM sayfalar 500). tzdata ekle.
+RUN apk add --no-cache icu-libs icu-data-full tzdata
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV TZ=Europe/Istanbul
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
