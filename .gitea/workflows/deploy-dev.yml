@@ -76,6 +76,15 @@ jobs:
           docker compose pull mvc-dev || true
           docker compose run --rm --no-deps mvc-dev dotnet Entegrasyon.MVC.dll --migrate
 
+      - name: Apply dev seed (admin login + demo data, idempotent)
+        run: |
+          set -e
+          # Migration'lardan SONRA, app ayağa kalkmadan ÖNCE. Idempotent (ON CONFLICT / PK-UPDATE).
+          # SADECE dev DB — IntegrationDb / IntegrationDb_Stage'e DOKUNMAZ.
+          docker exec -i postgres_db psql -U baturhan -d IntegrationDb_Dev -v ON_ERROR_STOP=1 \
+            < Database/seeds/integration_dev_seed.sql
+          echo "Dev seed applied (admin/123456789 + demo data)"
+
       - name: Deploy dev stack
         run: |
           set -e
