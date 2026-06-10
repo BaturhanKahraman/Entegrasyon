@@ -1,0 +1,124 @@
+@using Entegrasyon.Entity.Logs
+@* Bölüm C — HTMX lazy aktivite akışı. Endpoint: GET /products/{id}/activity?...
+   Model: ActivityTimelineVm (Entries CreatedAt DESC + NextCursor). Gün bazlı gruplanır. *@
+@model ActivityTimelineVm
+
+@functions {
+    // ProductActivityType → (ikon, satır-noktası bg rengi) — spec §3.1
+    static (string Icon, string Bg) Visual(ProductActivityType t) => t switch
+    {
+        ProductActivityType.Created          => ("ti-circle-plus",  "bg-blue"),
+        ProductActivityType.Updated          => ("ti-pencil",       "bg-blue"),
+        ProductActivityType.MappingValidated => ("ti-check",        "bg-green"),
+        ProductActivityType.PublishRequested => ("ti-send",         "bg-blue"),
+        ProductActivityType.PublishSent      => ("ti-upload",       "bg-azure"),
+        ProductActivityType.BatchCompleted   => ("ti-checks",       "bg-green"),
+        ProductActivityType.BatchFailed      => ("ti-circle-x",     "bg-red"),
+        ProductActivityType.Approved         => ("ti-shield-check", "bg-green"),
+        ProductActivityType.Rejected         => ("ti-shield-x",     "bg-red"),
+        ProductActivityType.Archived         => ("ti-archive",      "bg-secondary"),
+        ProductActivityType.StockUpdated     => ("ti-package",      "bg-blue"),
+        ProductActivityType.PriceUpdated     => ("ti-currency-lira","bg-blue"),
+        ProductActivityType.ContentUpdated   => ("ti-file-text",    "bg-blue"),
+        ProductActivityType.ImageUpdated     => ("ti-photo",        "bg-blue"),
+        ProductActivityType.Deleted          => ("ti-trash",        "bg-red"),
+        _                                    => ("ti-point",        "bg-blue")
+    };
+
+    static (string Badge, string Label) StatusBadge(ProductActivityStatus s) => s switch
+    {
+        ProductActivityStatus.Success => ("bg-green-lt",  "Başarılı"),
+        ProductActivityStatus.Warning => ("bg-yellow-lt", "Uyarı"),
+        ProductActivityStatus.Error   => ("bg-red-lt",    "Hata"),
+        _                             => ("bg-blue-lt",   "Bilgi")
+    };
+
+    static string DayLabel(DateTimeOffset d)
+    {
+        var today = DateTimeOffset.UtcNow.Date;
+        var day = d.ToLocalTime().Date;
+        if (day == today) return "Bugün";
+        if (day == today.AddDays(-1)) return "Dün";
+        return d.ToLocalTime().ToString("dd MMMM");
+    }
+}
+
+@if (Model.Entries.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-timeline-event-x" style="font-size:2.5rem;color:var(--tblr-secondary)"></i></div>
+        <p class="empty-title">Seçilen filtrelerde aktivite bulunamadı</p>
+        <p class="empty-subtitle text-secondary">Filtreleri temizleyerek tüm aktiviteleri görüntüleyebilirsiniz.</p>
+    </div>
+}
+else
+{
+    string? lastDay = null;
+    <ul class="timeline">
+        @foreach (var e in Model.Entries)
+        {
+            var day = DayLabel(e.CreatedAt);
+            if (day != lastDay)
+            {
+                lastDay = day;
+                <li class="timeline-event">
+                    <div class="timeline-event-icon bg-secondary-lt"></div>
+                    <div class="w-100"><div class="hr-text hr-text-left text-secondary my-0">@day</div></div>
+                </li>
+            }
+            var (icon, bg) = Visual(e.ActivityType);
+            var (badge, label) = StatusBadge(e.Status);
+            <li class="timeline-event">
+                <div class="timeline-event-icon @bg text-white"><i class="ti @icon"></i></div>
+                <div class="card timeline-event-card">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center mb-1 activity-meta flex-wrap gap-1">
+                            <strong class="me-2">@e.Message</strong>
+                            @if (!string.IsNullOrWhiteSpace(e.MarketplaceName))
+                            {
+                                <span class="badge bg-azure-lt">@e.MarketplaceName</span>
+                            }
+                            <span class="badge @badge">@label</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-secondary small">
+                                <i class="ti ti-clock me-1"></i>@e.CreatedAt.ToLocalTime().ToString("HH:mm:ss")
+                                @if (!string.IsNullOrWhiteSpace(e.ReferenceId))
+                                {
+                                    <span class="ms-2">Ref: <code>@e.ReferenceId</code></span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(e.Detail))
+                            {
+                                <button class="btn btn-sm btn-ghost-secondary"
+                                        hx-get="/products/@ViewContext.RouteData.Values["id"]/activity/@e.Id/detail"
+                                        hx-target="#detail-@e.Id" hx-swap="innerHTML"
+                                        onclick="this.closest('.card-body').querySelector('.tl-detail').classList.toggle('show')">
+                                    <i class="ti ti-chevron-down icon"></i>Detayı göster
+                                </button>
+                            }
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(e.Detail))
+                        {
+                            <div class="tl-detail mt-2" id="detail-@e.Id">
+                                <pre class="mb-0 p-2 bg-secondary-lt rounded small"><code>@e.Detail</code></pre>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+
+    @if (Model.NextCursor is not null)
+    {
+        <div class="text-center mt-3" id="load-more">
+            <button class="btn btn-outline-primary"
+                    hx-get="/products/@ViewContext.RouteData.Values["id"]/activity?cursor=@Model.NextCursor.Value.ToUnixTimeMilliseconds()"
+                    hx-target="#load-more" hx-swap="outerHTML"
+                    hx-include="[name='f-mp'],[name='f-type'],[name='f-status'],[name='f-date']">
+                <i class="ti ti-chevron-down icon"></i>Daha Fazla Yükle
+            </button>
+        </div>
+    }
+}

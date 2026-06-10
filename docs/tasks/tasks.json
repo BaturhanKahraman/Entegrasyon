@@ -464,5 +464,83 @@
     ],
     "addOrUpdateUnitTests": false,
     "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "M1 — Matview refresh ölçeklenmesi (multi-tenant DB-per-tenant): koşullu/idle-skip refresh",
+    "description": "DB Master perf denetimi (2026-06-10). KANIT/YER: DashboardRefreshService (Application/Entegrasyon.Business/BackgroundServices/DashboardRefreshService.cs) PollInterval=3dk, RequiredFeature=null → HER tenant için 3 dakikada bir 'REFRESH MATERIALIZED VIEW CONCURRENTLY mv_product_stock_summary' çalıştırıyor. CONCURRENTLY refresh, hiçbir stok/satış değişmese bile tüm matview'i baştan yazıyor (full rebuild) + tenant başına connection alıyor. SORUN: 50+ tenant'ta sabit arka plan yükü + connection baskısı + gereksiz WAL/IO; tek-tenant'ta görünmez, multi-tenant'ta patlar. ÖNERİLEN FIX: (a) TenantAwarePollingService'in lastPoll'unu kullan — son refresh'ten beri BranchOfficeStocks/StockMovements/ProductVariants değişmediyse refresh'i ATLA (örn. MAX(UpdatedAt) > lastPoll kontrolü, ucuz indexli sorgu); (b) alternatif: mv_category_summary gibi EVENT-DRIVEN refresh'e yaklaştır (stok hareketi event'inde debounce'lu tetikle); (c) idle tenant'ta interval'i geri çek (adaptif backoff). Cache ısıtma (GetStats/Weekly/Marketplace/RecentActivities) da aynı koşula bağlanmalı. BEKLENEN KAZANIM: değişmeyen tenant'larda matview rebuild + 4 cache-warming sorgusu tamamen elenir → N tenant × 20/saat gereksiz refresh ortadan kalkar.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "Yeni view/matview GEREKMİYOR (mevcut altyapı olgun); bu task var olan refresh'i ölçeklendiriyor. TL onaylı (2026-06-10). Uygulama TL onayına tabi.",
+    "manual_test_steps": [
+      "Tek tenant'ta hiç stok/satış değişikliği yokken DashboardRefreshService'in bir tur attığını ama REFRESH MATERIALIZED VIEW'i atladığını logla/doğrula",
+      "Stok hareketi sonrası bir sonraki turda refresh'in çalıştığını doğrula (mv_product_stock_summary güncel)",
+      "Çok-tenant simülasyonunda (≥10 tenant) refresh sayısının değişen tenant'larla orantılı düştüğünü ölç",
+      "pg_stat_activity / connection sayısının refresh penceresinde düştüğünü gözle"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "M2 — Connection pool / PgBouncer planı (DB-per-tenant ölçek)",
+    "description": "DB Master perf denetimi (2026-06-10). YER/KANIT: DB-per-tenant mimaride her tenant ayrı DB → ayrı Npgsql connection pool. Arka plan servisleri tenant başına context açıyor: DashboardRefreshService (3dk), Orders polling matcher'ları, product publish servisi. SORUN: N tenant × (pool size + background context) → Postgres varsayılan max_connections~100 sınırını hızla aşar; tek-tenant'ta görünmez. ÖNERİLEN FIX (analiz+plan ağırlıklı, kod minimal): (a) Npgsql MaxPoolSize'ı tenant-sayısı-farkında planla (per-tenant düşük MaxPoolSize, veya Minimum Pool Size=0 ile idle pool'ları söndür); (b) PgBouncer transaction-pooling katmanı değerlendir — DB-per-tenant'ta connection multiplexing; (c) Npgsql 'Multiplexing=true' yüksek eşzamanlılık için test et; (d) postgres max_connections + per-tenant pool çarpımını hesapla ve onboarding limiti belirle. ÇIKTI: çok-tenant onboarding ÖNCESİ bir kapasite planı dokümanı + uygulanabilir Npgsql ayarları. BEKLENEN KAZANIM: tenant sayısı arttıkça 'too many connections' hatası / pool starvation önlenir.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "Çoğunlukla analiz + config; şema değişikliği yok. postgres-performance skill bölüm 6. TL onaylı (2026-06-10). PgBouncer altyapı kararı TL onayına tabi.",
+    "manual_test_steps": [
+      "Mevcut connection string'lerdeki MaxPoolSize/MinPoolSize değerlerini envanterle",
+      "N tenant senaryosu için teorik max connection hesabını çıkar (pool × tenant × servis)",
+      "PgBouncer transaction pooling POC'u (dev) — connection sayısının düştüğünü ölç",
+      "Npgsql Multiplexing on/off karşılaştırması (dev)",
+      "Önerilen ayarlarla yük altında 'too many connections' alınmadığını doğrula"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "M3 — ReportManager.GetInventoryReportAsync: in-memory agregasyon → SQL (paginasyon)",
+    "description": "DB Master perf denetimi (2026-06-10). YER/KANIT: ReportManager.GetInventoryReportAsync (Application/Entegrasyon.Business/Concrete/ReportManager.cs ~140-195). BranchOfficeStocks × ProductVariants × MainProducts × BranchOffices 4-tablo join'i TÜM satırlarıyla '.ToListAsync()' ile belleğe çekiliyor; ardından StockFilter (LowStock/OutOfStock) ve summary (TotalStock SUM, LowStockCount, OutOfStockCount) TAMAMEN IN-MEMORY hesaplanıyor. TEYİT EDİLDİ: sorguda PAGINASYON YOK (Skip/Take yok) — büyük stok tablosunun tamamı app belleğine yükleniyor. SORUN: stok satır sayısı büyüdükçe (binlerce variant × depo) bellek + ağ + GC baskısı doğrusal artar. ÖNERİLEN FIX: (a) summary agregasyonunu SQL'e it (GROUP BY / SUM-COUNT tek sorgu) — ya da düşük-stok eşiği için mevcut mv_product_stock_summary'yi yeniden kullan; (b) StockFilter'ı SQL Where'e taşı (CurrentStock computed column zaten var, indexlenebilir); (c) liste tarafına pagination ekle (rapor satırları için Skip/Take). BEKLENEN KAZANIM: tam-tablo materialization elenir; bellek O(sayfa) olur, agregasyon DB'de index'le çalışır.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "DB Master paginasyonsuzluğu KODDA TEYİT ETTİ (şüphe giderildi). RawAttrs alt-Select gerçek N+1 değil (EF JOIN'e çeviriyor) — asıl sorun full-table memory load + in-memory SUM/COUNT. TL onaylı (2026-06-10).",
+    "manual_test_steps": [
+      "Çok satırlı stok seed'iyle (≥10k variant-stok) raporu çağır — önce/sonra bellek+süre ölç",
+      "EXPLAIN ANALYZE ile yeni summary sorgusunun index kullandığını doğrula (Seq Scan yok)",
+      "StockFilter=LowStock/OutOfStock SQL'de filtreleniyor, sonuçlar eski davranışla birebir",
+      "Pagination eklendiyse sayfa sayfa doğru satır geldiğini doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "M4 — OrderManager.GetPreviouslyPurchasedProductsAsync: SQL SUM projeksiyonu",
+    "description": "DB Master perf denetimi (2026-06-10). YER: OrderManager.GetPreviouslyPurchasedProductsAsync (~705-757). Include(BranchOfficeStocks) ile variant'ların tüm stok kayıtları belleğe çekilip 'Sum(v.BranchOfficeStocks.Sum(s => s.CurrentStock))' nested in-memory hesaplanıyor. ÖNERİLEN FIX: stok toplamını SQL'de Select projeksiyonuna çevir (variant başına SUM), Include yerine sadece gereken kolonu çek. BEKLENEN KAZANIM: müşteri profili sayfasında daha az veri transferi; Take(count) ile zaten sınırlı olduğundan etki DÜŞÜK. Nice-to-have.",
+    "status": "todo",
+    "priority": "low",
+    "plan": false,
+    "notes": "Düşük öncelik — Take(count) variant ile bounded. TL onaylı (2026-06-10).",
+    "manual_test_steps": [
+      "Müşteri profili 'önceden alınan ürünler' kartında toplam stok değerinin eski sonuçla aynı geldiğini doğrula",
+      "Üretilen SQL'de stok toplamının server-side SUM olduğunu (ToQueryString) doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "M5 — OrderManager marketplace import döngüsü: context/admin-id batch scope",
+    "description": "DB Master perf denetimi (2026-06-10). YER: OrderManager.ExecutePazaramaImportAsync / ExecuteN11ImportAsync → DecreaseStockForMarketplaceOrder (~759-800). Sipariş item'ı başına yeni DbContext (contextFactory.CreateDbContextAsync) açılıyor; ayrıca stok-yetersiz force-path'inde adminUserIds (Users.Select) sorgusu çalışıyor. ÖNERİLEN FIX: import batch'i boyunca tek context reuse + adminUserIds'i bir kez batch başında çek (force-path tetiklendiğinde cache'le). BEKLENEN KAZANIM: import sırasında context açma/kapama + tekrar eden admin sorgusu azalır. ETKİ DÜŞÜK: adminUserIds yalnızca istisnai 'stok yetersiz ama satış oldu' yolunda tetikleniyor; çoğu item normal yolda. Nice-to-have.",
+    "status": "todo",
+    "priority": "low",
+    "plan": false,
+    "notes": "Düşük öncelik — force-path nadir. Soft-delete/atomic stok semantiğini bozmadan. TL onaylı (2026-06-10).",
+    "manual_test_steps": [
+      "Pazarama/N11 import'u stok-yetersiz item içeren batch ile çalıştır",
+      "adminUserIds sorgusunun batch başına 1 kez (item başına değil) çalıştığını doğrula",
+      "Stok düşümü ve bildirimlerin eski davranışla birebir aynı olduğunu doğrula"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
   }
 ]

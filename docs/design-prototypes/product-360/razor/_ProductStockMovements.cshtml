@@ -1,0 +1,57 @@
+@using Entegrasyon.Entity.Products
+@* Bölüm E — Stok Hareketleri. Endpoint: GET /products/{id}/stock-movements.
+   Model: List<VariantStockMovementsVm> (variant bazlı gruplu). *@
+@model List<VariantStockMovementsVm>
+
+@functions {
+    static (string Badge, string Label) MoveVisual(StockMovementType t) => t switch
+    {
+        StockMovementType.InitialStock     => ("bg-blue-lt",   "İlk Stok"),
+        StockMovementType.Sale             => ("bg-green-lt",  "Satış"),
+        StockMovementType.MarketplaceSale  => ("bg-orange-lt", "Pazaryeri Satışı"),
+        StockMovementType.Return           => ("bg-purple-lt", "İade"),
+        StockMovementType.ManualAdjustment => ("bg-blue-lt",   "Manuel Düzeltme"),
+        StockMovementType.Transfer         => ("bg-secondary-lt", "Transfer"),
+        _                                  => ("bg-secondary-lt", "Hareket")
+    };
+}
+
+@if (Model.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-stack-pop" style="font-size:2.5rem;color:var(--tblr-secondary)"></i></div>
+        <p class="empty-title">Stok hareketi yok</p>
+        <p class="empty-subtitle text-secondary">Satış, iade veya düzeltme yapıldıkça stok hareketleri burada görünür.</p>
+    </div>
+}
+else
+{
+    @foreach (var v in Model)
+    {
+        <div class="mb-3">
+            <div class="d-flex align-items-center mb-2">
+                <span class="avatar avatar-xs bg-azure-lt text-azure me-2"><i class="ti ti-color-swatch"></i></span>
+                <strong>@v.VariantLabel</strong>
+                <span class="text-secondary ms-2 small">Mevcut: @v.CurrentStock</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-sm">
+                    <thead><tr><th>Tarih</th><th>Hareket</th><th class="text-center">Miktar</th><th class="text-center">Stok</th><th>Referans</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in v.Movements)
+                        {
+                            var (badge, label) = MoveVisual(m.Type);
+                            <tr>
+                                <td class="text-secondary">@m.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")</td>
+                                <td><span class="badge @badge">@label</span></td>
+                                <td class="text-center @(m.Quantity < 0 ? "text-red" : "text-green")">@(m.Quantity > 0 ? "+" : "")@m.Quantity</td>
+                                <td class="text-center">@m.StockBefore → @m.StockAfter</td>
+                                <td>@if (!string.IsNullOrWhiteSpace(m.Reference)) { <code>@m.Reference</code> }</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

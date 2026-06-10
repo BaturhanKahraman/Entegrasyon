@@ -1,0 +1,62 @@
+@* Aktivite filtre barı. /products/{id}/activity ilk yüklemede (click once) bu bar + timeline birlikte
+   döner; filtre değişince aynı endpoint #activity-results'ı hedefler (hx-push-url ile paylaşılabilir URL).
+   Model: ActivityFilterOptionsVm (pazaryeri seçenekleri). Tom Select + Flatpickr _Layout'ta global yüklü. *@
+@model ActivityFilterOptionsVm
+@{
+    var id = ViewContext.RouteData.Values["id"];
+    var actUrl = $"/products/{id}/activity";
+}
+
+<form hx-get="@actUrl" hx-target="#activity-results" hx-swap="innerHTML"
+      hx-trigger="change from:(select,input[name='f-status'],#f-date)" hx-push-url="true">
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-md">
+            <select id="f-mp" name="marketplace" multiple placeholder="Pazaryeri (tümü)" autocomplete="off" data-tomselect data-remove-button>
+                @foreach (var (val, label) in Model.Marketplaces)
+                {
+                    <option value="@val">@label</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-md">
+            <select id="f-type" name="activityType" multiple placeholder="Aktivite tipi (tümü)" autocomplete="off" data-tomselect data-remove-button>
+                <option value="BatchCompleted">Batch tamamlandı</option>
+                <option value="BatchFailed">Batch başarısız</option>
+                <option value="Approved">Onaylandı</option>
+                <option value="Rejected">Reddedildi</option>
+                <option value="StockUpdated">Stok güncellendi</option>
+                <option value="PriceUpdated">Fiyat güncellendi</option>
+                <option value="ContentUpdated">İçerik güncellendi</option>
+                <option value="PublishSent">Pazaryerine iletildi</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-auto">
+            <input id="f-date" name="dateRange" class="form-control" placeholder="📅 Tarih aralığı" autocomplete="off" data-flatpickr-range />
+        </div>
+    </div>
+    <div class="row g-2 mb-3 align-items-center">
+        <div class="col-auto">
+            <div class="btn-group" role="group" aria-label="Durum filtresi">
+                <input type="radio" class="btn-check" name="f-status" id="st-all" value="" checked>
+                <label class="btn btn-sm" for="st-all">Tümü</label>
+                <input type="radio" class="btn-check" name="f-status" id="st-info" value="Info">
+                <label class="btn btn-sm" for="st-info"><span class="status-dot bg-blue me-1"></span>Bilgi</label>
+                <input type="radio" class="btn-check" name="f-status" id="st-ok" value="Success">
+                <label class="btn btn-sm" for="st-ok"><span class="status-dot bg-green me-1"></span>Başarılı</label>
+                <input type="radio" class="btn-check" name="f-status" id="st-warn" value="Warning">
+                <label class="btn btn-sm" for="st-warn"><span class="status-dot bg-yellow me-1"></span>Uyarı</label>
+                <input type="radio" class="btn-check" name="f-status" id="st-err" value="Error">
+                <label class="btn btn-sm" for="st-err"><span class="status-dot bg-red me-1"></span>Hata</label>
+            </div>
+        </div>
+        <div class="col-auto ms-auto">
+            <a class="btn btn-sm btn-ghost-secondary" href="@actUrl" hx-get="@actUrl" hx-target="#activity-results" hx-push-url="true">
+                <i class="ti ti-filter-off icon"></i>Filtreyi temizle
+            </a>
+        </div>
+    </div>
+</form>
+
+<div id="activity-results">
+    <partial name="Partials/_ActivityTimeline" model="@(new ActivityTimelineVm())" />
+</div>

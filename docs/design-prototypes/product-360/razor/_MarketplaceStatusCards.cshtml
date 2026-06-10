@@ -1,0 +1,90 @@
+@using Entegrasyon.Entity.Dtos.Product
+@* Bölüm A — Pazaryeri Durum Kartları. Detail.cshtml içinde, ürün başlığının altında render edilir.
+   Model: List<MarketplaceStatusVm> (bkz. VIEWMODEL-CONTRACT.md). Boşsa hiç render edilMEZ — boş durum
+   _Product360.cshtml'de ele alınır. *@
+@model List<MarketplaceStatusVm>
+
+@functions {
+    // MarketplaceSyncState → (status-dot/card-status rengi, badge-light, etiket)
+    static (string Dot, string Text, bool Animated) StatusVisual(MarketplaceSyncState s) => s switch
+    {
+        MarketplaceSyncState.Synced     => ("bg-green",  "Senkronize",   false),
+        MarketplaceSyncState.Processing => ("bg-azure",  "İşleniyor",    true),
+        MarketplaceSyncState.Waiting    => ("bg-yellow", "Onay Bekliyor", true),
+        MarketplaceSyncState.OutOfSync  => ("bg-orange", "Güncellenmemiş", false),
+        MarketplaceSyncState.Failed     => ("bg-red",    "Hata",         false),
+        MarketplaceSyncState.Rejected   => ("bg-red",    "Reddedildi",   false),
+        MarketplaceSyncState.Removed    => ("bg-secondary", "Kaldırıldı", false),
+        _                               => ("bg-secondary", "Gönderilmedi", false)
+    };
+
+    static string TextColor(string dot) => dot.Replace("bg-", "text-");
+
+    // Basit "X önce" — gerçek projede mevcut bir TimeAgo helper varsa onu kullan.
+    static string Ago(DateTimeOffset? t)
+    {
+        if (t is null) return "—";
+        var d = DateTimeOffset.UtcNow - t.Value;
+        if (d.TotalMinutes < 1) return "Anlık";
+        if (d.TotalMinutes < 60) return $"{(int)d.TotalMinutes} dk önce";
+        if (d.TotalHours < 24) return $"{(int)d.TotalHours} saat önce";
+        return $"{(int)d.TotalDays} gün önce";
+    }
+}
+
+<div class="d-flex align-items-center mb-2">
+    <h3 class="mb-0">Pazaryeri Durumu</h3>
+    <span class="text-secondary ms-2 small">@Model.Count pazaryerinde aktif</span>
+    <div class="ms-auto text-secondary small d-none d-md-flex align-items-center">
+        <span class="status-dot bg-green me-1"></span>Senkronize
+        <span class="status-dot bg-yellow ms-3 me-1"></span>Bekliyor
+        <span class="status-dot bg-red ms-3 me-1"></span>Hata
+    </div>
+</div>
+
+<div class="row row-cards mb-4">
+    @foreach (var mp in Model)
+    {
+        var (dot, text, animated) = StatusVisual(mp.State);
+        <div class="col-sm-6 col-lg-3">
+            <div class="card mp-card"
+                 hx-get="/products/@ViewContext.RouteData.Values["id"]/activity?marketplace=@mp.MarketPlaceId"
+                 hx-target="#activity-panel"
+                 hx-on::click="document.querySelector('#tab-aktivite-link').click()"
+                 role="button">
+                <div class="card-status-start @dot"></div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-sm bg-azure-lt text-azure me-2"><i class="ti ti-building-store"></i></span>
+                        <div class="me-auto">
+                            <div class="font-weight-medium">@mp.Name</div>
+                            <div class="@TextColor(dot) d-flex align-items-center small">
+                                <span class="status-dot @dot @(animated ? "status-dot-animated" : "") me-1"></span>@text
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 d-flex align-items-center justify-content-between small">
+                        <span class="text-secondary"><i class="ti ti-refresh me-1"></i>@Ago(mp.LastSyncedAt)</span>
+                        @if (mp.State is MarketplaceSyncState.Failed or MarketplaceSyncState.Rejected
+                             && !string.IsNullOrWhiteSpace(mp.StatusMessage))
+                        {
+                            <span class="text-red" data-bs-toggle="tooltip" data-bs-placement="top" title="@mp.StatusMessage">
+                                <i class="ti ti-alert-triangle me-1"></i>Detay
+                            </span>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(mp.StorefrontUrl))
+                        {
+                            <a href="@mp.StorefrontUrl" target="_blank" class="text-azure" onclick="event.stopPropagation()">
+                                Mağazada gör <i class="ti ti-external-link"></i>
+                            </a>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(mp.ExternalRef))
+                        {
+                            <span class="text-muted">@mp.ExternalRef</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
