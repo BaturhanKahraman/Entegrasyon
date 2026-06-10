@@ -18,7 +18,7 @@
        title="Bildirimler">
         <i class="ti ti-bell fs-2"></i>
         <span data-notification-badge
-              class="badge bg-red @(unreadCount == 0 ? "d-none" : "")">
+              class="badge bg-red text-red-fg @(unreadCount == 0 ? "d-none" : "")">
             @(unreadCount > 99 ? "99+" : unreadCount.ToString())
         </span>
     </a>

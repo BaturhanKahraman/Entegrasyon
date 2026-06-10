@@ -9,7 +9,7 @@
                             İletişim Mesajlari
                             @if (Model.ContactMessages.Count(m => !m.IsRead) > 0)
                             {
-                                <span class="badge bg-red ms-1">@Model.ContactMessages.Count(m => !m.IsRead)</span>
+                                <span class="badge bg-red text-red-fg ms-1">@Model.ContactMessages.Count(m => !m.IsRead)</span>
                             }
                         </a>
                     </li>
