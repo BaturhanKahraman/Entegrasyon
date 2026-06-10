@@ -1,11 +1,14 @@
 @model string
+@using Entegrasyon.Storefront.Infrastructure
 @*
-    Hesap sayfaları sidebar partial.
-    @Model = aktif menü key (dashboard|orders|returns|buyagain|wishlist|wallet|loyalty|referral|profile|addresses|security|password|twofa).
-    Kullanım: <partial name="_AccountSidebar" model="@("dashboard")" />
+    Hesap sayfaları sidebar partial ("sol menü").
+    Aktif öğe öncelikle istek path'inden türetilir (her route kendi öğesini aktif gösterir);
+    @Model verilirse override olur. Böylece bir sayfa key'i unutsa/yanlış verse bile
+    menü "dashboard"a (ilk öğe) düşüp asılı kalmaz.
+    Kullanım: <partial name="_AccountSidebar" /> (key otomatik) ya da model="@("orders")" (zorla).
 *@
 @{
-    var active = Model ?? "dashboard";
+    var active = AccountNav.ResolveActiveKey(Context.Request.Path.Value, Model);
     // CustomerName / CustomerTier AccountController.OnActionExecuting'de claim'lerden doldurulur.
     // Buradaki fallback yalnızca güvenlik amaçlı nötr değer (demo "Ayşe Yılmaz" KULLANILMAZ).
     var customerName = ViewBag.CustomerName as string ?? "Üye";
