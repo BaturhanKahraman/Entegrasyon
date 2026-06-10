@@ -63,14 +63,19 @@ public sealed class PaymentMethodManager(
 
     public async Task<IResult> ReorderPaymentMethodsAsync(List<int> orderedIds)
     {
+        // Gonderim ayni id'yi birden cok kez icerebilir (frontend DOM'unda data-id
+        // birden fazla yerde bulundugunda) — yinelenenleri ilk-gorulen sirasi
+        // korunarak ele; aksi halde SortOrder seyrekleşir/bozulur.
+        var distinctIds = orderedIds.Distinct().ToList();
+
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var methods = await dbContext.PaymentMethodDefinitions
-            .Where(x => orderedIds.Contains(x.Id))
+            .Where(x => distinctIds.Contains(x.Id))
             .ToListAsync();
 
-        for (int i = 0; i < orderedIds.Count; i++)
+        for (int i = 0; i < distinctIds.Count; i++)
         {
-            var method = methods.FirstOrDefault(x => x.Id == orderedIds[i]);
+            var method = methods.FirstOrDefault(x => x.Id == distinctIds[i]);
             if (method is null)
                 continue;
 

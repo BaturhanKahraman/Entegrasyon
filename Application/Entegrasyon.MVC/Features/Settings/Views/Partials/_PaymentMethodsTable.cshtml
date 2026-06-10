@@ -79,7 +79,10 @@
             handle: '.drag-handle',
             animation: 150,
             onEnd: async function () {
-                var ids = Array.from(list.querySelectorAll('[data-id]')).map(function (el) {
+                // Yalnizca satir ogelerini topla — duzenle butonunda da data-id
+                // bulundugu icin genel [data-id] her id'yi iki kez verir ve bu da
+                // sunucuda SortOrder'i bozar. Dogrudan cocuk satirlarla sinirla.
+                var ids = Array.from(list.querySelectorAll(':scope > .list-group-item[data-id]')).map(function (el) {
                     return parseInt(el.dataset.id);
                 });
                 await fetch(list.dataset.sortableUrl, {

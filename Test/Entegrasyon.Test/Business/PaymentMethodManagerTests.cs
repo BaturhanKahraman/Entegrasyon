@@ -244,4 +244,25 @@ public class PaymentMethodManagerTests : BaseTest
         method2.SortOrder.Should().Be(3);
         mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task ReorderPaymentMethodsAsync_WithDuplicateIds_DedupesAndAssignsContiguousSortOrder()
+    {
+        // Arrange — sürükle-bırak gönderiminde aynı id iki kez gelebilir (data-id hem
+        // satırda hem düzenle butonunda bulunduğunda). Manager bu tekrarı yok sayıp
+        // sıralı (1..N) SortOrder atamalı; aksi halde SortOrder seyrekleşir/bozulur.
+        var method1 = new PaymentMethodDefinition { Id = 1, Name = "Nakit", SystemCode = "CASH", IsActive = true, SortOrder = 1, TenantId = 1 };
+        var method2 = new PaymentMethodDefinition { Id = 2, Name = "Kredi", SystemCode = "CREDIT", IsActive = true, SortOrder = 2, TenantId = 1 };
+        var method3 = new PaymentMethodDefinition { Id = 3, Name = "Havale", SystemCode = "BANK", IsActive = true, SortOrder = 3, TenantId = 1 };
+        SetupPaymentMethods([method1, method2, method3]);
+
+        // Act — her id ardışık tekrarlı (çift data-id deseni)
+        var result = await _sut.ReorderPaymentMethodsAsync([3, 3, 1, 1, 2, 2]);
+
+        // Assert — yinelenenler yok sayılır, SortOrder 1..N ardışık olur
+        result.Success.Should().BeTrue();
+        method3.SortOrder.Should().Be(1);
+        method1.SortOrder.Should().Be(2);
+        method2.SortOrder.Should().Be(3);
+    }
 }
