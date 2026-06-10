@@ -399,5 +399,36 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Integration test altyapısı: ApplicationStarted Roles race (42P01) — tüm integration testleri kırıyor",
+    "description": "PRE-EXISTING, QA teşhis etti. Program.cs ApplicationStarted.Register fire-and-forget callback'i adminPermissionSeeder.EnsureAdminPermissionsAsync() çağırıyor; WebApplicationFactory app'i başlatınca bu callback migration'dan ÖNCE Roles tablosuna erişiyor → 42P01 relation Roles does not exist → process crash. MigrationTests dahil TÜM integration testlerini etkiliyor. Yerel Docker açıkken de timing ile tetiklenebilir. Çözüm seçenekleri: (a) Testing/IntegrationTest ortamında seeder'ı ApplicationStarted'da çalıştırma, (b) migration tamamlanmasını bekle, (c) son çare 42P01 yakalama. ROOT-CAUSE tercih edilmeli (suppress değil). Mimari karar — sabah kullanıcı ile.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "notes": "QA DoD raporu 2026-06-10. BulkExportHttpTests bu yüzden koşulamadı (feature kodu doğru).",
+    "manual_test_steps": [
+      "Fix sonrası dotnet test IntegrationTest çalışıyor (42P01 yok)",
+      "MigrationTests yeşil",
+      "BulkExportHttpTests 3/3 yeşil",
+      "Seeder yine de admin izinlerini doğru kuruyor"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Testcontainers uzak Docker: Docker.DotNet ssh:// desteklemiyor → tcp/socat proxy",
+    "description": "PRE-EXISTING/altyapı. Integration testleri Testcontainers (Docker.DotNet .NET client) kullanıyor; DOCKER_HOST=ssh://server Docker CLI'da çalışıyor ama Docker.DotNet 'Unknown URL scheme ssh' veriyor. Unix socket forward Ryuk bind-mount'ta patlıyor. Seçenekler: (a) yerel Docker daemon (sudo), (b) sunucuya socat ile tcp://192.168.1.78:2375 proxy + TESTCONTAINERS, (c) PostgreSqlFixture .WithDockerEndpoint(tcp://...). Kullanıcı ile yöntem seç. Bu olmadan integration/E2E uzaktan koşulamıyor.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "notes": "TL'nin DOCKER_HOST=ssh://server de-risk'i sadece CLI'ı test etmişti; .NET client desteklemiyor (QA yakaladı).",
+    "manual_test_steps": [
+      "Seçilen yöntemle dotnet test IntegrationTest yerel sudo gerektirmeden koşar",
+      "Testcontainers Postgres ayağa kalkar",
+      "BulkExportHttpTests yeşil"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
   }
 ]
