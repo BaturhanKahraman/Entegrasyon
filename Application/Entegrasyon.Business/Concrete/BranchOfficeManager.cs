@@ -92,9 +92,13 @@ public class BranchOfficeManager(
     public async Task<IDataResult<BranchDetailDto>> GetBranchDetailById(int branchId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var data = await dbContext.BranchOffices.Select(b =>
-            new BranchDetailDto(b.Id, b.Name!, b.Users.Count(), b.CreatedAt))
-            .FirstOrDefaultAsync(b=>b.Id==branchId);
+        // Önce PK ile filtrele, sonra projeksiyon — Count() scalar sub-query'si projeksiyon
+        // içinde çevrilebiliyor; projeksiyon-sonrası Where ise çevrilemiyordu (EF Core).
+        var data = await dbContext.BranchOffices
+            .AsNoTracking()
+            .Where(b => b.Id == branchId)
+            .Select(b => new BranchDetailDto(b.Id, b.Name!, b.Users.Count(), b.CreatedAt))
+            .FirstOrDefaultAsync();
         return new SuccessDataResult<BranchDetailDto>(data!);
     }
 
