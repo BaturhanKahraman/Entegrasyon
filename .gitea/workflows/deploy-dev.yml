@@ -1,0 +1,94 @@
+name: Deploy to Dev
+
+# develop push → build → registry → entegrasyon-dev stack (server-side)
+# Gitea act_runner (server-runner) — job node:20-bookworm container icinde kosar.
+# docker.sock + /opt/stacks runner valid_volumes whitelist'inde → mount edilir.
+# Secret YOK: tum baglanti string'leri /opt/stacks/entegrasyon-dev/.env'den gelir
+# (gitignore, sadece server'da). Gercek pazaryeri API key'i YOK — WireMock mock.
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: 192.168.1.78:5252
+  IMAGE: 192.168.1.78:5252/entegrasyon-mvc
+  STACK_DIR: /opt/stacks/entegrasyon-dev
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20-bookworm           # checkout (Node) + git hazir
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock   # whitelist
+        - /opt/stacks:/opt/stacks                      # whitelist
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install docker CLI + compose plugin
+        run: |
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            apt-get update -qq
+            apt-get install -y -qq ca-certificates curl gnupg
+            install -m0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg \
+              | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
+              > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq
+            apt-get install -y -qq docker-ce-cli docker-compose-plugin
+          fi
+          docker version
+          docker compose version
+
+      - name: Build & push dev image
+        run: |
+          set -e
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-12)
+          docker build \
+            -t ${IMAGE}:dev-${SHORT_SHA} \
+            -t ${IMAGE}:dev \
+            -f Application/Entegrasyon.MVC/Dockerfile .
+          docker push ${IMAGE}:dev-${SHORT_SHA}
+          docker push ${IMAGE}:dev
+          echo "Pushed ${IMAGE}:dev (dev-${SHORT_SHA})"
+
+      - name: Sync WireMock stubs to stack
+        run: |
+          set -e
+          mkdir -p ${STACK_DIR}/wiremock
+          rm -rf ${STACK_DIR}/wiremock/mappings ${STACK_DIR}/wiremock/__files
+          cp -r docs/wiremock/mappings ${STACK_DIR}/wiremock/mappings
+          cp -r docs/wiremock/__files  ${STACK_DIR}/wiremock/__files
+          echo "WireMock stubs synced"
+
+      - name: Run EF Core migrations (IntegrationDb_Dev)
+        run: |
+          set -e
+          cd ${STACK_DIR}
+          docker compose pull mvc-dev || true
+          docker compose run --rm --no-deps mvc-dev dotnet Entegrasyon.MVC.dll --migrate
+
+      - name: Deploy dev stack
+        run: |
+          set -e
+          cd ${STACK_DIR}
+          docker compose pull
+          docker compose up -d --wait
+          echo "Dev deploy completed"
+
+      - name: Health check
+        run: |
+          set -e
+          for i in $(seq 1 30); do
+            if docker run --rm --network integration_app_default curlimages/curl:latest \
+                 -sf http://entegrasyon-mvc-dev:8080/health/live >/dev/null 2>&1; then
+              echo "Dev app healthy"; exit 0
+            fi
+            echo "waiting for app... ($i/30)"; sleep 5
+          done
+          echo "Health check failed"; docker logs --tail 50 entegrasyon-mvc-dev || true; exit 1
