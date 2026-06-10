@@ -18,7 +18,7 @@ public class CommissionRatesController(
     public async Task<IActionResult> Index(int mp = 1)
     {
         ViewData.SetPageTitle("Komisyon Oranlari");
-        ViewData.SetActiveNav("marketplace-sync");
+        ViewData.SetActiveNav("commission-rates");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyonu", "/marketplace/sync"),
             ("Komisyon Oranlari", null));
