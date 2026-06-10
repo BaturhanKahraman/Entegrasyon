@@ -81,7 +81,7 @@ jobs:
           set -e
           cd ${STACK_DIR}
           docker compose pull
-          docker compose up -d --wait
+          docker compose up -d --wait --wait-timeout 180
           echo "Dev deploy completed"
 
       - name: Health check
