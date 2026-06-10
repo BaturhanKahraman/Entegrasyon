@@ -20,6 +20,7 @@ public enum LogType
     Settings,
     StockTransfer = 17,
     BranchDeletion = 18,
+    Help = 19,
 
     Error = 999
 }

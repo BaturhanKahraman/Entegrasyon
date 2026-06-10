@@ -31,6 +31,7 @@ using Entegrasyon.Entity.Templates;
 using Entegrasyon.Entity.User;
 using Entegrasyon.Entity.BulkOperations;
 using Entegrasyon.Entity.Storefront;
+using Entegrasyon.Entity.Help;
 
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 
@@ -304,6 +305,9 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
     public virtual DbSet<StorefrontReferral> StorefrontReferrals { get; set; }
     public virtual DbSet<StorefrontPushSubscription> StorefrontPushSubscriptions { get; set; }
     public virtual DbSet<StorefrontEmailCampaign> StorefrontEmailCampaigns { get; set; }
+
+    // Yardım Merkezi — kullanıcı destek/hata talepleri
+    public virtual DbSet<HelpRequest> HelpRequests { get; set; }
 
     // Storefront F5: Abandoned Cart, Q&A, Wallet, 2FA
     public virtual DbSet<StorefrontAbandonedCartEmail> StorefrontAbandonedCartEmails { get; set; }

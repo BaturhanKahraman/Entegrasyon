@@ -1,0 +1,59 @@
+@using Entegrasyon.Entity.Help
+@using Entegrasyon.MVC.Features.Help
+@model Entegrasyon.Entity.Dtos.Help.HelpRequestDetailDto
+@{
+    ViewData.SetPageTitle("Yardım Talebi Detayı");
+
+    var cat = HelpBadges.Category(Model.Category);
+    var st = HelpBadges.Status(Model.Status);
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title mb-1">@Model.Subject</h3>
+                    <div>
+                        <span class="@cat.Css">@cat.Text</span>
+                        <span class="@st.Css ms-1">@st.Text</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <a href="/help" class="btn btn-outline-secondary">Listeye Dön</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="datagrid mb-3">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Gönderen</div>
+                        <div class="datagrid-content">@(string.IsNullOrWhiteSpace(Model.SenderName) ? "—" : Model.SenderName)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">E-posta</div>
+                        <div class="datagrid-content">@(string.IsNullOrWhiteSpace(Model.SenderEmail) ? "—" : Model.SenderEmail)</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Tarih</div>
+                        <div class="datagrid-content">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                </div>
+
+                <label class="form-label">Mesaj</label>
+                <div class="border rounded p-3 bg-muted-lt" style="white-space: pre-wrap;">@Model.Message</div>
+            </div>
+            @if (Model.Status == HelpRequestStatus.Open)
+            {
+                <div class="card-footer d-flex justify-content-end">
+                    <form method="post" action="/help/@Model.Id/resolve" require-permission="Permissions.Settings.Edit">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success">
+                            <i class="ti ti-check me-1"></i>
+                            Çözüldü Olarak İşaretle
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+</div>

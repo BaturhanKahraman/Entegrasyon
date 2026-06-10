@@ -1,19 +1,62 @@
+@using Entegrasyon.MVC.Features.Help
+@model List<Entegrasyon.Entity.Dtos.Help.HelpRequestListDto>
 @{
-    ViewData.SetPageTitle("Yardım");
+    ViewData.SetPageTitle("Yardım Talepleri");
 }
 
-@* TODO: Yardım formu backend (ayrı task) — şimdilik basit placeholder sayfa. *@
 <div class="card">
-    <div class="card-body">
-        <div class="empty py-5">
-            <div class="empty-icon">
-                <i class="ti ti-help-circle" style="font-size:2.5rem;"></i>
-            </div>
-            <p class="empty-title">Yardım ve Destek</p>
-            <p class="empty-subtitle text-secondary">
-                Yardım merkezi yakında burada olacak. Sorularınız için destek ekibimizle
-                iletişime geçebilirsiniz.
-            </p>
+    <div class="card-header">
+        <h3 class="card-title">Gelen Yardım Talepleri</h3>
+        <div class="card-actions text-secondary">
+            Toplam @Model.Count talep
         </div>
     </div>
+    @if (Model.Count == 0)
+    {
+        <div class="card-body">
+            <div class="empty py-5">
+                <div class="empty-icon">
+                    <i class="ti ti-inbox" style="font-size:2.5rem;"></i>
+                </div>
+                <p class="empty-title">Henüz yardım talebi yok</p>
+                <p class="empty-subtitle text-secondary">
+                    Kullanıcılar yardım formundan talep gönderdikçe burada listelenecek.
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+                <thead>
+                    <tr>
+                        <th>Konu</th>
+                        <th>Gönderen</th>
+                        <th>Kategori</th>
+                        <th>Durum</th>
+                        <th>Tarih</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        var cat = HelpBadges.Category(r.Category);
+                        var st = HelpBadges.Status(r.Status);
+                        <tr>
+                            <td><a href="/help/@r.Id" class="text-reset">@r.Subject</a></td>
+                            <td class="text-secondary">@(string.IsNullOrWhiteSpace(r.SenderName) ? "—" : r.SenderName)</td>
+                            <td><span class="@cat.Css">@cat.Text</span></td>
+                            <td><span class="@st.Css">@st.Text</span></td>
+                            <td class="text-secondary">@r.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <a href="/help/@r.Id" class="btn btn-sm">Detay</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>

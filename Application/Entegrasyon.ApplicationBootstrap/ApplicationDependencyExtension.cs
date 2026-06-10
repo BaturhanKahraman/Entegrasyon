@@ -126,6 +126,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddSingleton<BranchOfficeMapper>();
             services.AddSingleton<BrandMapper>();
             services.AddSingleton<SaleMapper>();
+            services.AddSingleton<HelpRequestMapper>();
 
             // Brand auto-match (explicit — IBrandAutoMatchService naming exception vs Scrutor)
             services.AddScoped<IBrandAutoMatchService, BrandAutoMatchService>();
