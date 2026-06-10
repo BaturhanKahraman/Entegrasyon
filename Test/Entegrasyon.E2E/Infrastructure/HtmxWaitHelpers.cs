@@ -32,15 +32,26 @@ public static class HtmxWaitHelpers
 
     /// <summary>
     /// Sayfada hata olup olmadigini kontrol et.
-    /// MVC'de .alert-danger veya hata sayfasi kontrolu.
+    /// MVC'de .alert-danger, ozel hata sayfasi veya ASP.NET developer exception page kontrolu.
     /// </summary>
     public static async Task<bool> HasNoErrorAsync(this IPage page)
     {
-        // Check for error page (500, etc.)
-        var errorPage = page.Locator("h1:text('Bir hata olustu'), h1:text('500')");
-        var hasErrorPage = await errorPage.CountAsync() > 0;
+        // Ozel MVC hata sayfasi (ErrorController)
+        var customErrorPage = page.Locator("h1:text('Bir hata olustu'), h1:text('500')");
+        if (await customErrorPage.CountAsync() > 0)
+            return false;
 
-        return !hasErrorPage;
+        // ASP.NET Core developer exception page — "An unhandled exception occurred"
+        var devExceptionPage = page.Locator("h1:text-is('An unhandled exception occurred while processing the request.')");
+        if (await devExceptionPage.CountAsync() > 0)
+            return false;
+
+        // HTTP 500 status metni iceren sayfa basligi
+        var statusTitle = page.Locator("title:text-is('500')");
+        if (await statusTitle.CountAsync() > 0)
+            return false;
+
+        return true;
     }
 
     /// <summary>

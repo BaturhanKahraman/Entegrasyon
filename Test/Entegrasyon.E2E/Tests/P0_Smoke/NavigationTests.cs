@@ -26,6 +26,8 @@ public class NavigationTests : E2ETestBase
         "/orders",
         "/customers",
         "/invoices",
+        // Satislar — daha once 500 veren rota (P0 kritik)
+        "/sales",
         "/marketplace/sync",
         "/marketplace/sync/categories",
         "/marketplace/sync/attributes",
@@ -47,6 +49,8 @@ public class NavigationTests : E2ETestBase
         "/settings/integrations",
         "/settings/printing",
         "/settings/tax",
+        // Odeme yontemleri — kritik ayar sayfasi
+        "/settings/payment-methods",
         "/settings/shipping",
         "/settings/webhooks",
         "/settings/api-keys",
@@ -76,7 +80,11 @@ public class NavigationTests : E2ETestBase
         "/pricing",
         "/pricing/rules",
         "/loyalty",
-        "/help"
+        "/help",
+        // Sube ofisleri — daha once 500 veren rota ailesi (P0 kritik)
+        // Id=1 TestDataSeeder tarafindan seed edilir (Merkez Sube)
+        "/branch-offices",
+        "/branch-offices/1"
     ];
 
     [SetUp]
