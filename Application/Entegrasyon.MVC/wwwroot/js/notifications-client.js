@@ -108,8 +108,22 @@
         }
     }
 
+    // Tek aktif EventSource referansı — çift bağlantıyı önler.
+    let activeSource = null;
+
+    function closeConnection() {
+        if (activeSource) {
+            activeSource.close();
+            activeSource = null;
+        }
+    }
+
     function connect() {
+        // Zaten açık bir bağlantı varsa yenisini açma (HTTP/1.1 bağlantı havuzunu koru).
+        if (activeSource) return;
+
         const es = new EventSource('/events/notifications');
+        activeSource = es;
         es.addEventListener('notification', function (e) {
             try {
                 const data = JSON.parse(e.data);
@@ -132,8 +146,15 @@
             } catch (err) { /* swallow */ }
         });
         // heartbeat events: ignore (just keep-alive)
-        // browser auto-reconnects on error
+        // browser auto-reconnects on error; referansımızı kaybetmemek için temizleme
+        // pagehide/closeConnection üzerinden yapılır (activeSource hep geçerli kalır).
     }
+
+    // Sayfadan ayrılırken (navigasyon, sekme kapanışı) bağlantıyı HEMEN serbest bırak.
+    // HTTP/1.1'de host başına ~6 bağlantı sınırı var; kalıcı SSE kapanmazsa hızlı
+    // gezinmede bağlantılar birikir, havuz tükenir ve sonraki istekler takılır.
+    // pagehide bfcache-safe ve mobil dahil güvenilir tetiklenir.
+    window.addEventListener('pagehide', closeConnection);
 
     async function registerPush() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -190,8 +211,26 @@
         return btoa(binary);
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        connect();
+    // SSE bağlantısını sayfa boşa çıktıktan SONRA aç.
+    // Neden: kalıcı SSE bağlantısı açıkken tarayıcı ağı asla "idle" olmaz; bu da
+    // hem otomasyon (Playwright NetworkIdle) hem de ilk-yükleme önceliği için sorun.
+    // İlk paint/asset yüklemesini bloklamadan, kısa bir idle penceresinden sonra bağlanırız.
+    function connectWhenIdle() {
+        if (window.requestIdleCallback) {
+            requestIdleCallback(connect, { timeout: 2000 });
+        } else {
+            setTimeout(connect, 1000);
+        }
+    }
+
+    function init() {
+        connectWhenIdle();
         registerPush();
-    });
+    }
+
+    if (document.readyState === 'complete') {
+        init();
+    } else {
+        window.addEventListener('load', init, { once: true });
+    }
 })();
