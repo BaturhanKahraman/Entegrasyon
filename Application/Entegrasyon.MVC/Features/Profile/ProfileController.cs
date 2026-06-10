@@ -56,9 +56,9 @@ public class ProfileController(
     [HttpGet("/profile/change-password")]
     public IActionResult ChangePassword()
     {
-        ViewData.SetPageTitle("Sifre Degistir");
+        ViewData.SetPageTitle("Şifre Değiştir");
         ViewData.SetActiveNav("profile");
-        ViewData.SetBreadcrumb(("Profil", "/profile"), ("Sifre Degistir", null));
+        ViewData.SetBreadcrumb(("Profil", "/profile"), ("Şifre Değiştir", null));
 
         return View(new ChangePasswordVm());
     }
@@ -67,9 +67,9 @@ public class ProfileController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(ChangePasswordVm vm)
     {
-        ViewData.SetPageTitle("Sifre Degistir");
+        ViewData.SetPageTitle("Şifre Değiştir");
         ViewData.SetActiveNav("profile");
-        ViewData.SetBreadcrumb(("Profil", "/profile"), ("Sifre Degistir", null));
+        ViewData.SetBreadcrumb(("Profil", "/profile"), ("Şifre Değiştir", null));
 
         if (!ModelState.IsValid)
             return View(vm);
@@ -92,11 +92,11 @@ public class ProfileController(
 
         if (result.Success)
         {
-            TempData.SetSuccess("Sifreniz basariyla degistirildi.");
+            TempData.SetSuccess("Şifreniz basariyla Değiştirildi.");
             return RedirectToAction(nameof(ChangePassword));
         }
 
-        TempData.SetError(result.Message ?? "Sifre degistirilemedi.");
+        TempData.SetError(result.Message ?? "Şifre Değiştirilemedi.");
         return View(vm);
     }
 

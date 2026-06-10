@@ -7,7 +7,7 @@ public class LoginVm
     [Required(ErrorMessage = "Kullanici adi zorunludur.")]
     public string Username { get; set; } = "";
 
-    [Required(ErrorMessage = "Sifre zorunludur.")]
+    [Required(ErrorMessage = "Şifre zorunludur.")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = "";
 

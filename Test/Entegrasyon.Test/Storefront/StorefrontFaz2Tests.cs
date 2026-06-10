@@ -227,7 +227,7 @@ public class StorefrontFaz2Tests
             {
                 Id = 2, AuthId = 1, IpAddress = "10.0.0.1",
                 DeviceType = "Mobil", LoginAt = DateTimeOffset.UtcNow.AddHours(-1),
-                IsSuccessful = false, FailureReason = "Hatalı sifre"
+                IsSuccessful = false, FailureReason = "Hatalı Şifre"
             }
         };
 

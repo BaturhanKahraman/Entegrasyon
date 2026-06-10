@@ -17,7 +17,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 type: "timestamp with time zone",
                 nullable: true);
 
-            // Entity initializer'i = true; mevcut kullanicilar da giris bildirimlerini acik devralsin.
+            // Entity initializer'i = true; mevcut Kullanıcılar da giris bildirimlerini acik devralsin.
             migrationBuilder.AddColumn<bool>(
                 name: "LoginAlertsEnabled",
                 table: "StorefrontCustomerAuths",

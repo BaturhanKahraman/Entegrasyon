@@ -61,7 +61,7 @@ Ayrica eslestirme sayfalarinda zaten eslestirilen platformlar tekrar gosteriliyo
 
 ## Degisiklik Etki Zinciri (Blast Radius)
 
-### Kategori Attribute Degistirme
+### Kategori Attribute Değiştirme
 
 ```
 Attribute eklendi (yeni zorunlu attribute)
@@ -79,7 +79,7 @@ Attribute zorunluluk degisti (optional → required)
     → Marketplace'e gonderilemez
 ```
 
-### Marketplace Eslestirme Degistirme
+### Marketplace Eslestirme Değiştirme
 
 ```
 Kategori eslestirmesi kaldirildi

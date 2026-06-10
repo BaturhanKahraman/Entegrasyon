@@ -89,7 +89,7 @@ Islem sirasi: stok transfer/sifirla → soft delete → marketplace event publis
 | **Stok Durumu** | MudDataGrid — Urun adi, Varyant, Ilk Stok, Satilan, Mevcut Stok. Filtre: stoklu/stoksuz. "Secilenleri Transfer Et" butonu |
 | **Stok Hareketleri** | MudDataGrid — Tarih, Urun, Hareket Tipi (chip renkleri: Sale=blue, Transfer=orange, Return=green, Adjustment=grey), Miktar (+/-), Onceki→Sonraki, Referans. Tarih araligi filtresi |
 | **Marketplace Baglantilari** | Bu deponun bagli oldugu marketplace'ler. Ekle (dropdown) / kaldir butonlari. MarketPlaceWarehouse tablosundan |
-| **Kullanicilar** | DefaultBranchOfficeId = bu depo olan kullanicilar. Read-only liste |
+| **Kullanıcılar** | DefaultBranchOfficeId = bu depo olan Kullanıcılar. Read-only liste |
 
 ---
 

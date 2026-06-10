@@ -533,7 +533,7 @@ Mevcut projemiz: Blazor Server + PostgreSQL, Trendyol/N11/HB/Pazarama/Amazon/Ptt
    - Excel import/export (urun, fiyat, stok)
    - Toplu fiyat guncelleme (yuzde/sabit artirim)
    - Toplu urun aktarma (kanallar arasi)
-   - Toplu gorsel yukleme/degistirme
+   - Toplu gorsel yukleme/Değiştirme
 
 8. **Set/Paket (Bundle/Kit) Yonetimi**
    - Birden fazla urunu tek SKU olarak satma

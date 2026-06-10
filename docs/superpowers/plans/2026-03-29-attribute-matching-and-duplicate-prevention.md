@@ -32,13 +32,13 @@
 | `Blazor/Features/MarketplaceSync/AttributeSync/AttributeMatchPanel.razor.cs` | Olustur | Eslestirme logic |
 | `Blazor/Features/MarketplaceSync/AttributeSync/ValueMatchSection.razor` | Olustur | Genisletilir value eslestirme |
 | `Blazor/Features/MarketplaceSync/AttributeSync/ValueMatchSection.razor.cs` | Olustur | Value eslestirme logic |
-| `Blazor/Features/MarketplaceSync/CategorySync.razor` | Degistir | Duplicate prevention + "Attribute Eslestir" butonu |
-| `Blazor/Features/MarketplaceSync/CategorySync.razor.cs` | Degistir | Buton handler |
-| `Blazor/Features/MarketplaceSync/BulkCategoryMatch/BulkCategoryMatchPage.razor` | Degistir | Marketplace sayac |
-| `Blazor/Features/MarketplaceSync/BulkCategoryMatch/BulkCategoryMatchPage.razor.cs` | Degistir | Sayac hesaplama |
+| `Blazor/Features/MarketplaceSync/CategorySync.razor` | Değiştir | Duplicate prevention + "Attribute Eslestir" butonu |
+| `Blazor/Features/MarketplaceSync/CategorySync.razor.cs` | Değiştir | Buton handler |
+| `Blazor/Features/MarketplaceSync/BulkCategoryMatch/BulkCategoryMatchPage.razor` | Değiştir | Marketplace sayac |
+| `Blazor/Features/MarketplaceSync/BulkCategoryMatch/BulkCategoryMatchPage.razor.cs` | Değiştir | Sayac hesaplama |
 | `Test/Entegrasyon.Test/Business/AttributeMatchManagerTests.cs` | Olustur | Match CRUD testleri |
 | `Test/Entegrasyon.Test/Business/AttributeAutoMatchServiceTests.cs` | Olustur | Ollama oneri testleri |
-| `ApplicationBootstrap/ApplicationDependencyExtension.cs` | Degistir | Yeni servisleri DI'a kaydet |
+| `ApplicationBootstrap/ApplicationDependencyExtension.cs` | Değiştir | Yeni servisleri DI'a kaydet |
 
 Not: Tum Blazor dosya yollari `Application/Entegrasyon.Blazor/` prefix'i, Business dosyalari `Application/Entegrasyon.Business/` prefix'i iledir.
 

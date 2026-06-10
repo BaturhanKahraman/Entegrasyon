@@ -189,7 +189,7 @@ Task<IDataResult<List<BranchOfficePageListDto>>> GetPageBranchListAsync();
 - Ekle: MarketPlace dropdown → AddMarketPlaceWarehouseAsync
 - Kaldir: onay dialog'u → RemoveMarketPlaceWarehouseAsync
 
-**Tab 5 — Kullanicilar:**
+**Tab 5 — Kullanıcılar:**
 - ApplicationUser listesi (DefaultBranchOfficeId == Id)
 - Read-only MudDataGrid
 

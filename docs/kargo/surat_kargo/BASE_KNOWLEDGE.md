@@ -21,7 +21,7 @@ Her SOAP isteginde asagidaki bilgiler parametre olarak gonderilir:
 | Parametre | Aciklama |
 |-----------|----------|
 | `userName` | Surat Kargo musteri numarasi veya API kullanici adi |
-| `password` | API sifresi |
+| `password` | API Şifresi |
 | `customerCode` | Musteri kodu (bazi operasyonlarda ek olarak gerekir) |
 
 **NOT:** OAuth veya token tabanli bir auth yoktur. Her istekte credential'lar SOAP body icinde gonderilir.
@@ -44,7 +44,7 @@ Her SOAP isteginde asagidaki bilgiler parametre olarak gonderilir:
   <soap:Body>
     <tem:OperasyonAdi>
       <tem:userName>KULLANICI_ADI</tem:userName>
-      <tem:password>SIFRE</tem:password>
+      <tem:password>Şifre</tem:password>
       <!-- Diger parametreler -->
     </tem:OperasyonAdi>
   </soap:Body>

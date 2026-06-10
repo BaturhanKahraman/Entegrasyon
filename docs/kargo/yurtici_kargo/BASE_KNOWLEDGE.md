@@ -20,7 +20,7 @@ Her SOAP istegi icinde asagidaki alanlar gonderilir (header degil, request body 
 | Alan | Tip | Aciklama |
 |---|---|---|
 | `wsUserName` | string | Web servis kullanici adi (Yurtici Kargo tarafindan verilir) |
-| `wsPassword` | string | Web servis sifresi |
+| `wsPassword` | string | Web servis Şifresi |
 | `userLanguage` | string | Dil kodu, genellikle `"TR"` |
 
 Yurtici Kargo entegrasyon basvurusu yapilarak bu bilgiler elde edilir. Her musteri (tenant) icin ayri credential verilir.

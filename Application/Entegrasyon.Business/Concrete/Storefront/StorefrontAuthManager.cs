@@ -25,7 +25,7 @@ public class StorefrontAuthManager(
 
         // Validation
         if (dto.Password != dto.ConfirmPassword)
-            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "Sifreler eslesmiyor.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "Şifreler eslesmiyor.");
 
         if (!dto.KvkkConsent)
             return new ErrorDataResult<StorefrontCustomerAuth>(null!, "KVKK onayi zorunludur.");
@@ -87,7 +87,7 @@ public class StorefrontAuthManager(
             .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Email == email);
 
         if (auth is null)
-            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "E-posta veya sifre Hatalı.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(null!, "E-posta veya Şifre Hatalı.");
 
         // Check lock
         if (auth.LockedUntil.HasValue && auth.LockedUntil.Value > DateTimeOffset.UtcNow)
@@ -104,7 +104,7 @@ public class StorefrontAuthManager(
             dbContext.StorefrontCustomerAuths.Update(auth);
             await dbContext.SaveChangesAsync();
 
-            return new ErrorDataResult<StorefrontCustomerAuth>(auth, "E-posta veya sifre Hatalı.");
+            return new ErrorDataResult<StorefrontCustomerAuth>(auth, "E-posta veya Şifre Hatalı.");
         }
 
         // Success: reset counters
@@ -209,7 +209,7 @@ public class StorefrontAuthManager(
         dbContext.StorefrontCustomerAuths.Update(auth);
         await dbContext.SaveChangesAsync();
 
-        return new SuccessDataResult<string>(token, "Sifre sifirlama tokeni olusturuldu.");
+        return new SuccessDataResult<string>(token, "Şifre sifirlama tokeni olusturuldu.");
     }
 
     public async Task<IResult> ResetPasswordAsync(int tenantId, string token, string newPassword)
@@ -221,11 +221,11 @@ public class StorefrontAuthManager(
                                       && x.PasswordResetToken == token);
 
         if (auth is null)
-            return new ErrorResult("Gecersiz sifre sifirlama tokeni.");
+            return new ErrorResult("Gecersiz Şifre sifirlama tokeni.");
 
         if (auth.PasswordResetTokenExpiresAt.HasValue &&
             auth.PasswordResetTokenExpiresAt.Value < DateTimeOffset.UtcNow)
-            return new ErrorResult("Sifre sifirlama tokeninin suresi dolmus.");
+            return new ErrorResult("Şifre sifirlama tokeninin suresi dolmus.");
 
         HashingHelper.CreatePasswordHash(newPassword, out var hash, out var salt);
         auth.PasswordHash = hash;
@@ -239,7 +239,7 @@ public class StorefrontAuthManager(
         dbContext.StorefrontCustomerAuths.Update(auth);
         await dbContext.SaveChangesAsync();
 
-        return new SuccessResult("Sifre basariyla sifirlandi.");
+        return new SuccessResult("Şifre basariyla sifirlandi.");
     }
 
     public async Task<IResult> ChangePasswordAsync(int authId, string currentPassword, string newPassword)
@@ -253,7 +253,7 @@ public class StorefrontAuthManager(
             return new ErrorResult("Kullanici bulunamadı.");
 
         if (!HashingHelper.VerifyPasswordHash(currentPassword, auth.PasswordHash, auth.PasswordSalt))
-            return new ErrorResult("Mevcut sifre Hatalı.");
+            return new ErrorResult("Mevcut Şifre Hatalı.");
 
         HashingHelper.CreatePasswordHash(newPassword, out var hash, out var salt);
         auth.PasswordHash = hash;
@@ -263,7 +263,7 @@ public class StorefrontAuthManager(
         dbContext.StorefrontCustomerAuths.Update(auth);
         await dbContext.SaveChangesAsync();
 
-        return new SuccessResult("Sifre basariyla degistirildi.");
+        return new SuccessResult("Şifre basariyla Değiştirildi.");
     }
 
     // KVKK uyumlu hesap kapatma: soft-delete + PII anonimlestirme + acik siparis kontrolu.
@@ -277,9 +277,9 @@ public class StorefrontAuthManager(
         if (auth is null)
             return new ErrorResult("Kullanici bulunamadı.");
 
-        // Business Rule: sifre dogrulamasi
+        // Business Rule: Şifre dogrulamasi
         if (!HashingHelper.VerifyPasswordHash(password, auth.PasswordHash, auth.PasswordSalt))
-            return new ErrorResult("Sifre Hatalı.");
+            return new ErrorResult("Şifre Hatalı.");
 
         // Business Rule: devam eden siparis varken hesap kapatilamaz
         var openStatuses = new[]
@@ -401,7 +401,7 @@ public class StorefrontAuthManager(
         return new SuccessResult("Profil guncellendi.");
     }
 
-    // V1 basit akis: sifre dogrulanir, e-posta benzersizligi kontrol edilir, yeni adres dogrudan
+    // V1 basit akis: Şifre dogrulanir, e-posta benzersizligi kontrol edilir, yeni adres dogrudan
     // yazilir + EmailConfirmed=false + yeni token uretilir, dogrulama maili yeni adrese gonderilir.
     // Kullanici yeni adresteki linke tiklayinca mevcut ConfirmEmail akisi onaylar.
     public async Task<IResult> RequestEmailChangeAsync(int tenantId, int authId, string newEmail, string currentPassword)
@@ -421,7 +421,7 @@ public class StorefrontAuthManager(
 
         // 2. Business Rules
         if (!HashingHelper.VerifyPasswordHash(currentPassword, auth.PasswordHash, auth.PasswordSalt))
-            return new ErrorResult("Mevcut sifre Hatalı.");
+            return new ErrorResult("Mevcut Şifre Hatalı.");
 
         if (string.Equals(auth.Email, newEmail, StringComparison.OrdinalIgnoreCase))
             return new ErrorResult("Yeni e-posta adresi mevcut adresinizle ayni.");

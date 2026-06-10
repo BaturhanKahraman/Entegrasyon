@@ -40,7 +40,7 @@ Mevcut permission kontrolleri:
 - Urunler: `AuthorizeView Policy=AppPermissions.Products.View`
 - Musteriler: `AuthorizeView Policy=AppPermissions.Customers.View`
 - Kullanici Yonetimi grubu: `AuthorizeView Policy=AppPermissions.Users.View`
-  - Kullanicilar: `AuthorizeView Policy=AppPermissions.Users.View`
+  - Kullanıcılar: `AuthorizeView Policy=AppPermissions.Users.View`
   - Roller: `AuthorizeView Policy=AppPermissions.Roles.View`
 
 Permission kontrolu OLMAYAN menu ogerleri (toplam ~35 oge):
@@ -103,7 +103,7 @@ Kullanici yonetimi sayfasi **mevcuttur** ve calisir durumdadir:
 - `/users/edit/{Id:guid}` - Kullanici duzenleme (detayli sayfa)
 - `/roles` - Rol yonetimi
 
-NavMenu'de "Kullanici Yonetimi" grubu `AuthorizeView Policy=AppPermissions.Users.View` ile korunuyor. **Kritik bug nedeniyle** Admin olmayan kullanicilar icin bu grup gorunmuyor (cunku permission'lar session'a yuklenmiyor).
+NavMenu'de "Kullanici Yonetimi" grubu `AuthorizeView Policy=AppPermissions.Users.View` ile korunuyor. **Kritik bug nedeniyle** Admin olmayan Kullanıcılar icin bu grup gorunmuyor (cunku permission'lar session'a yuklenmiyor).
 
 ### Adimlar
 
@@ -119,7 +119,7 @@ NavMenu'de "Kullanici Yonetimi" grubu `AuthorizeView Policy=AppPermissions.Users
 - **Ayni sorun `UpdateRole` icin de gecerli:** Mevcut RoleClaims guncellenmesi yapilmiyor.
 
 #### Adim 1.3: User Management UX Iyilestirmeleri
-- **Mevcut durum:** Temel CRUD islemleri var (listeleme, ekleme, duzenleme, silme, sifre sifirlama)
+- **Mevcut durum:** Temel CRUD islemleri var (listeleme, ekleme, duzenleme, silme, Şifre sifirlama)
 - **Eksikler:**
   - Kullanici listesinde rol bilgisi gorunmuyor
   - Filtreleme sadece client-side (QuickFilter yok, MudDataGrid'de FilterFunc bagli degil)
@@ -346,7 +346,7 @@ Blazor Server'da sayfalar server-side calistigi icin `[Authorize(Policy=...)]` y
 
 ## Dosya Degisiklik Ozeti
 
-### Degistirilecek Dosyalar
+### Değiştirilecek Dosyalar
 
 1. `Application/Entegrasyon.Business/Concrete/Auth/AuthService.cs` - ThenInclude(RoleClaims)
 2. `Application/Entegrasyon.Business/Concrete/Auth/RoleService.cs` - AddRole/UpdateRole permission kaydi

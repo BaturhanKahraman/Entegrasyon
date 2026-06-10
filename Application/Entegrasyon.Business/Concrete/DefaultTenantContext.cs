@@ -7,7 +7,7 @@ namespace Entegrasyon.Business.Concrete;
 /// <summary>
 /// Single-tenant varsayilan implementasyon.
 /// Sadece gelistirme/test ortaminda kullanilir.
-/// Uretimde HttpTenantContext ile degistirilir.
+/// Uretimde HttpTenantContext ile Değiştirilir.
 /// </summary>
 public sealed class DefaultTenantContext : ITenantContext
 {

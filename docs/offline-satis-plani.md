@@ -468,8 +468,8 @@ Bu endpoint'ler Blazor Server projesine `Endpoints/SyncEndpoints.cs` olarak mini
 ## 7. Guvenlik Hususlari
 
 1. **Agent-Sunucu İletişimi:** Mevcut API key mekanizmasi + HTTPS
-2. **Local SQLite sifreleme:** `Microsoft.Data.Sqlite` ile `Password` connection string parametresi (SQLCipher)
-3. **Offline satis yetkilendirme:** Agent config'inde `AllowedSalePersonIds` — yalnizca yetkili kullanicilar offline satis yapabilir
+2. **Local SQLite Şifreleme:** `Microsoft.Data.Sqlite` ile `Password` connection string parametresi (SQLCipher)
+3. **Offline satis yetkilendirme:** Agent config'inde `AllowedSalePersonIds` — yalnizca yetkili Kullanıcılar offline satis yapabilir
 4. **Sync token:** JWT veya API key ile sunucu kimlik dogrulama
 5. **Veri butunlugu:** Her offline satis icin UUID + timestamp + checksum
 

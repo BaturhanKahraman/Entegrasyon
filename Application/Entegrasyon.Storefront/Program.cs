@@ -221,9 +221,9 @@ app.MapControllerRoute("register", "/kayit",
     new { controller = "Auth", action = "Register" });
 app.MapControllerRoute("logout", "/cikis",
     new { controller = "Auth", action = "Logout" });
-app.MapControllerRoute("forgotPassword", "/sifremi-unuttum",
+app.MapControllerRoute("forgotPassword", "/Şifremi-unuttum",
     new { controller = "Auth", action = "ForgotPassword" });
-app.MapControllerRoute("resetPassword", "/sifre-sifirla",
+app.MapControllerRoute("resetPassword", "/Şifre-sifirla",
     new { controller = "Auth", action = "ResetPassword" });
 app.MapControllerRoute("confirmEmail", "/email-dogrula",
     new { controller = "Auth", action = "ConfirmEmail" });

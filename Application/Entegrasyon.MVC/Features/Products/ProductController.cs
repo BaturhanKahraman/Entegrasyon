@@ -562,7 +562,7 @@ public class ProductController(
 
         // Error path — wizard'i tamamen cokertmek yerine Step 5 review'a geri don
         // ve ustte hata banner'i goster. Session'daki veri korunur, kullanici
-        // sorunu duzeltip (genelde baska bir tab'de stok kodunu degistirip) tekrar
+        // sorunu duzeltip (genelde baska bir tab'de stok kodunu Değiştirip) tekrar
         // deneyebilir.
         var errorMessage = result.Message ?? "Ürün eklenemedi. Lütfen bilgileri kontrol edin.";
         ViewBag.WizardError = errorMessage;

@@ -73,7 +73,7 @@ public class ApplicationUserManager(
         if (dbUser == null)
             return new ErrorResult(Messages.UserNotFound);
 
-        // Kullanici adi degistiriliyorsa, baska kullanicida ayni isim var mi kontrol et
+        // Kullanici adi Değiştiriliyorsa, baska kullanicida ayni isim var mi kontrol et
         var newNormalizedUserName = dto.UserName.ToUpperInvariant();
         if (dbUser.NormalizedUserName != newNormalizedUserName)
         {

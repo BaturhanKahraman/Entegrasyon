@@ -11,7 +11,7 @@ Aras Kargo API'si her SOAP request'inde su credential'lari ister:
 | Alan | Aciklama |
 |------|----------|
 | `UserName` | XML servis kullanici adi (Aras Kargo tarafindan verilir) |
-| `Password` | XML servis sifresi |
+| `Password` | XML servis Şifresi |
 | `CustomerCode` | Musteri kodu (Aras Kargo sozlesmesindeki musteri numarasi) |
 
 Credential'lar `https://esasweb.araskargo.com.tr/` uzerinden "Entegrasyon Uyelikleri" sayfasindan olusturulur. Kayit sirasinda servis metodu olarak `GetQueryJSON` secilmelidir.

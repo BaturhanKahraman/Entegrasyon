@@ -87,7 +87,7 @@ public class AccountController(
         return RedirectToAction(nameof(Profile));
     }
 
-    [HttpGet("/hesabim/e-posta-degistir")]
+    [HttpGet("/hesabim/e-posta-Değiştir")]
     public async Task<IActionResult> ChangeEmail()
     {
         var authResult = await authManager.GetAuthByCustomerIdAsync(tenant.TenantId, GetCustomerId());
@@ -95,7 +95,7 @@ public class AccountController(
         return View();
     }
 
-    [HttpPost("/hesabim/e-posta-degistir")]
+    [HttpPost("/hesabim/e-posta-Değiştir")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangeEmail(string newEmail, string currentPassword)
     {
@@ -114,16 +114,16 @@ public class AccountController(
         return View();
     }
 
-    [HttpGet("/hesabim/sifre")]
+    [HttpGet("/hesabim/Şifre")]
     public IActionResult ChangePassword() => View();
 
-    [HttpPost("/hesabim/sifre")]
+    [HttpPost("/hesabim/Şifre")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
     {
         if (newPassword != confirmPassword)
         {
-            ViewBag.Error = "Yeni sifreler uyusmuyor.";
+            ViewBag.Error = "Yeni Şifreler uyusmuyor.";
             return View();
         }
         var result = await authManager.ChangePasswordAsync(GetAuthId(), currentPassword, newPassword);

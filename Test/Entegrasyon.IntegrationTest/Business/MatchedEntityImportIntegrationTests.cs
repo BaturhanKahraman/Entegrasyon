@@ -425,6 +425,6 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
         var existingCategory = await verifyContext.Categories.FindAsync(existingCategoryId);
         existingCategory.Should().NotBeNull();
         existingCategory!.ImportSource.Should().Be(Entity.Categories.ImportSource.Manual,
-            "UseExisting stratejisi mevcut entity'yi degistirmemeli");
+            "UseExisting stratejisi mevcut entity'yi Değiştirmemeli");
     }
 }

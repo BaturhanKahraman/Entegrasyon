@@ -26,13 +26,13 @@ public class StorefrontEmailService(
 
     public async Task<IResult> SendPasswordResetAsync(string toEmail, string customerName, string resetToken, string storeName, string domain)
     {
-        var resetUrl = $"https://{domain}/sifre-sifirla?token={Uri.EscapeDataString(resetToken)}";
-        var subject = $"Sifre Sifirlama - {storeName}";
+        var resetUrl = $"https://{domain}/Şifre-sifirla?token={Uri.EscapeDataString(resetToken)}";
+        var subject = $"Şifre Sifirlama - {storeName}";
         var body = BuildTemplate(storeName, $@"
             <h2>Merhaba {Encode(customerName)},</h2>
-            <p>Sifrenizi sifirlamak icin asagidaki butona tiklayin:</p>
+            <p>Şifrenizi sifirlamak icin asagidaki butona tiklayin:</p>
             <p style='text-align:center;margin:30px 0;'>
-                <a href='{resetUrl}' style='background-color:#2563EB;color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-weight:bold;'>Sifremi Sifirla</a>
+                <a href='{resetUrl}' style='background-color:#2563EB;color:white;padding:12px 32px;text-decoration:none;border-radius:8px;font-weight:bold;'>Şifremi Sifirla</a>
             </p>
             <p style='color:#666;font-size:14px;'>Bu link 1 saat gecerlidir. Eger bu istegi siz yapmadiysiniz, bu emaili gormezden gelebilirsiniz.</p>");
         return await SendAsync(toEmail, subject, body);

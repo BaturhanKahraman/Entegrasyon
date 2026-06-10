@@ -523,7 +523,7 @@ dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj
 ```
 
 - **Araclar:** NUnit + Playwright
-- **Varsayilan URL:** `http://localhost:5099` (`E2E_BASE_URL` environment variable ile degistirilebilir)
+- **Varsayilan URL:** `http://localhost:5099` (`E2E_BASE_URL` environment variable ile Değiştirilebilir)
 - **Playwright Kurulumu:**
   ```bash
   pwsh Test/Entegrasyon.E2E/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
@@ -618,7 +618,7 @@ EventChannel<CategoryUpdatedEvent>
 
 | Controller | Sorumluluk |
 |---|---|
-| `AuthController` | Giris, kayit, sifre sifirlama |
+| `AuthController` | Giris, kayit, Şifre sifirlama |
 | `AccountController` | Profil, adres, Sipariş gecmisi, KVKK export |
 | `CatalogController` | Kategori listeleme, filtreleme |
 | `ProductController` | Urun detay, varyant secimi |
@@ -642,10 +642,10 @@ EventChannel<CategoryUpdatedEvent>
 ### Storefront Ozellikleri (Detayli)
 
 **Kimlik Dogrulama ve Hesap**
-- E-posta/sifre ile kayit ve giris
+- E-posta/Şifre ile kayit ve giris
 - Google ve Facebook ile sosyal giris
 - 2FA (TOTP) destegi, recovery code'lar
-- Sifre sifirlama (e-posta ile)
+- Şifre sifirlama (e-posta ile)
 - E-posta dogrulama
 - Giris gecmisi takibi
 - Push notification aboneligi
@@ -659,7 +659,7 @@ EventChannel<CategoryUpdatedEvent>
 - Urun soru-cevap (Q&A)
 
 **Sepet ve Satin Alma**
-- Sepet yonetimi (ekleme, cikarma, adet degistirme)
+- Sepet yonetimi (ekleme, cikarma, adet Değiştirme)
 - Kupon/indirim kodu uygulama
 - Hediye karti kullanimi
 - Dijital cuzdan (wallet) ile odeme
@@ -709,7 +709,7 @@ EventChannel<CategoryUpdatedEvent>
 **E-posta Servisi**
 - SMTP transactional e-postalar
 - E-posta dogrulama
-- Sifre sifirlama e-postasi
+- Şifre sifirlama e-postasi
 - Sipariş onay e-postasi
 - Terk edilmis sepet hatirlatma e-postasi
 - Kampanya e-postalari

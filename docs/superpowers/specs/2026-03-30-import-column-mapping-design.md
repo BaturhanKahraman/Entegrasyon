@@ -5,7 +5,7 @@
 
 ## Amac
 
-Kullanicilarin farkli ERP/sistemlerden gelen Excel/CSV dosyalarindaki kolon adlarini sistem field'larina eslestirebilmesi. Otomatik oneri (fuzzy matching), veri onizleme, ve yeniden kullanilabilir profiller.
+Kullanıcılarin farkli ERP/sistemlerden gelen Excel/CSV dosyalarindaki kolon adlarini sistem field'larina eslestirebilmesi. Otomatik oneri (fuzzy matching), veri onizleme, ve yeniden kullanilabilir profiller.
 
 ## Tasarim
 

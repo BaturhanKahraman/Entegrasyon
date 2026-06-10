@@ -2,11 +2,11 @@
 
 ## Ozet
 
-Storefront musteri uyelik sistemi: kayit, giris, email dogrulama, sifre sifirlama, Google OAuth, hesap paneli. Cookie-based authentication. Mevcut Customer entity'sine bagli StorefrontCustomerAuth entity.
+Storefront musteri uyelik sistemi: kayit, giris, email dogrulama, Şifre sifirlama, Google OAuth, hesap paneli. Cookie-based authentication. Mevcut Customer entity'sine bagli StorefrontCustomerAuth entity.
 
 ## Kapsam
 
-**Dahil:** StorefrontCustomerAuth entity + migration, kayit (RetailCustomer + auth), giris (email+sifre cookie-based), sifre sifirlama (token), email dogrulama (token + endpoint), hesap paneli (/hesabim profil/sifre), brute force korumasi, KVKK onay, Google OAuth 2.0
+**Dahil:** StorefrontCustomerAuth entity + migration, kayit (RetailCustomer + auth), giris (email+Şifre cookie-based), Şifre sifirlama (token), email dogrulama (token + endpoint), hesap paneli (/hesabim profil/Şifre), brute force korumasi, KVKK onay, Google OAuth 2.0
 
 **Haric:** Gercek email gonderimi (SP-5), Sipariş gecmisi icerigi (SP-4 sonrasi), 2FA (Faz 2), adres CRUD detayi (SP-4)
 
@@ -52,7 +52,7 @@ AccountController [Authorize]: Index, Profile(GET/POST), ChangePassword(GET/POST
 
 ## 6. Routes
 
-/giris, /kayit, /cikis, /sifremi-unuttum, /sifre-sifirla, /email-dogrula, /signin-google, /hesabim, /hesabim/profil, /hesabim/sifre-degistir, /hesabim/Siparişlerim, /hesabim/adreslerim
+/giris, /kayit, /cikis, /Şifremi-unuttum, /Şifre-sifirla, /email-dogrula, /signin-google, /hesabim, /hesabim/profil, /hesabim/Şifre-Değiştir, /hesabim/Siparişlerim, /hesabim/adreslerim
 
 ## 7. Views
 
@@ -62,7 +62,7 @@ Shared/_AccountLayout.cshtml: sidebar + content
 
 ## 8. Security
 
-HashingHelper (HMACSHA512), brute force (5 fail -> 15 min lock), token (RandomNumberGenerator 32 bytes Base64Url), email dogrulama 24h, sifre sifirlama 1h, CSRF (ValidateAntiForgeryToken), cookie HttpOnly+SameSite
+HashingHelper (HMACSHA512), brute force (5 fail -> 15 min lock), token (RandomNumberGenerator 32 bytes Base64Url), email dogrulama 24h, Şifre sifirlama 1h, CSRF (ValidateAntiForgeryToken), cookie HttpOnly+SameSite
 
 ## 9. Tests
 

@@ -195,7 +195,7 @@ public class AuthController(
     {
         if (password != confirmPassword)
         {
-            ViewBag.Error = "Sifreler uyusmuyor.";
+            ViewBag.Error = "Şifreler uyusmuyor.";
             ViewBag.Token = token;
             return View();
         }

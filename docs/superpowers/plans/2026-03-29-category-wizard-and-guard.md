@@ -31,10 +31,10 @@
 | `Features/Categories/CategoryDialog.razor.cs` | Sil | Modal kaldirilacak |
 | `Features/Categories/CategoryEdit.razor` | Sil | Wizard yerine gecti |
 | `Features/Categories/CategoryEdit.razor.cs` | Sil | Wizard yerine gecti |
-| `Features/Categories/Categories.razor` | Degistir | Add butonu NavigateTo olacak |
-| `Features/Categories/Categories.razor.cs` | Degistir | Dialog metodu kaldirilacak |
-| `Features/Attributes/AttributesPage.razor.cs` | Degistir | Query param desteyi |
-| `Features/Attributes/AttributeDetailPanel.razor.cs` | Degistir | MarketplaceId ile tab secimi |
+| `Features/Categories/Categories.razor` | Değiştir | Add butonu NavigateTo olacak |
+| `Features/Categories/Categories.razor.cs` | Değiştir | Dialog metodu kaldirilacak |
+| `Features/Attributes/AttributesPage.razor.cs` | Değiştir | Query param desteyi |
+| `Features/Attributes/AttributeDetailPanel.razor.cs` | Değiştir | MarketplaceId ile tab secimi |
 
 Not: Tum dosya yollari `Application/Entegrasyon.Blazor/` prefix'i iledir.
 

@@ -10,7 +10,7 @@
 #   - Request headers:    Authorization, x-api-key, X-API-Key, Cookie, Set-Cookie
 #   - Response headers:   Set-Cookie
 #   - Response body:      "access_token", "refreshToken", "apiSecret", "password"
-#                         field'larinin degerleri "REDACTED" olarak degistirilir
+#                         field'larinin degerleri "REDACTED" olarak Değiştirilir
 #
 # Not: Body sanitize regex-based, mukemmel degil. Recorded JSON'u commit etmeden
 # once manuel goz gezdirmek sart.

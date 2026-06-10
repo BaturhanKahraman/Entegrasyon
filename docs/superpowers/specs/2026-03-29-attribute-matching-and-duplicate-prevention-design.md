@@ -163,7 +163,7 @@ Pazar Yeri Sync
 
 Tum eslestirme degisiklikleri (kategori, attribute, value) ayni etki analizi pipeline'indan gececek. Bu, strateji dokumanindaki Parca 2 (Etki Analizi + Uyari) kapsaminda implement edilecek.
 
-Eslestirme kaldirildiginda veya degistirildiginde:
+Eslestirme kaldirildiginda veya Değiştirildiginde:
 - Etkilenen yayindaki urun Sayısı hesaplanir
 - Kullaniciya uyari gosterilir: "Bu eslestirmeyi kaldirirseniz X urun etkilenir"
 - Kullanici onaylarsa islem yapilir

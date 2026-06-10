@@ -4,17 +4,17 @@ namespace Entegrasyon.MVC.Features.Profile.ViewModels;
 
 public class ChangePasswordVm
 {
-    [Required(ErrorMessage = "Mevcut sifre zorunludur.")]
+    [Required(ErrorMessage = "Mevcut Şifre zorunludur.")]
     [DataType(DataType.Password)]
     public string OldPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Yeni sifre zorunludur.")]
+    [Required(ErrorMessage = "Yeni Şifre zorunludur.")]
     [DataType(DataType.Password)]
-    [MinLength(4, ErrorMessage = "Yeni sifre en az 4 karakter olmalidir.")]
+    [MinLength(4, ErrorMessage = "Yeni Şifre en az 4 karakter olmalidir.")]
     public string NewPassword { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Sifre tekrar zorunludur.")]
+    [Required(ErrorMessage = "Şifre tekrar zorunludur.")]
     [DataType(DataType.Password)]
-    [Compare(nameof(NewPassword), ErrorMessage = "Sifreler eslesmiyor.")]
+    [Compare(nameof(NewPassword), ErrorMessage = "Şifreler eslesmiyor.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }

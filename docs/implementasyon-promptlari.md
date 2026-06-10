@@ -559,7 +559,7 @@
 
 ### Prompt
 
-> **Gorev:** Kullanicilarin gorsel olarak is kuralları olusturabilecegi bir workflow/otomasyon builder sistemi olustur. "Tetikleyici -> Kosul -> Aksiyon" yapisi.
+> **Gorev:** Kullanıcılarin gorsel olarak is kuralları olusturabilecegi bir workflow/otomasyon builder sistemi olustur. "Tetikleyici -> Kosul -> Aksiyon" yapisi.
 >
 > **Proje Mimarisi:** .NET 8 Blazor Server, EF Core + PostgreSQL, MudBlazor, Primary constructor DI, 3 adimli pipeline, code-behind zorunlu, multi-tenant uyumlu. Mevcut `EventChannel<T>` pattern'i event-driven İletişim icin kullaniliyor.
 >
@@ -710,7 +710,7 @@
 > - Her Blazor component icin `.resx` dosyasi ciftleri: `ComponentName.tr.resx` (Turkce), `ComponentName.en.resx` (Ingilizce)
 > - `Program.cs`'de localization middleware ve supported cultures ayarla
 > - Kullanici dil tercihi: `ApplicationUser` entity'sine `PreferredLanguage` (string, default "tr") alanıekle
-> - Dil degistirme: cookie-based culture switching (Blazor Server icin standart pattern)
+> - Dil Değiştirme: cookie-based culture switching (Blazor Server icin standart pattern)
 >
 > **Oncelikli Cevirilecek Sayfalar (ilk fazda):**
 > - NavMenu (tum menu isimleri)
@@ -721,7 +721,7 @@
 >
 > **Blazor:**
 > - `Components/Shared/LanguageSwitcher.razor` + `.razor.cs` — navbar'a dil secim dropdown'u ekle (bayrak ikonu + dil adi)
-> - NavMenu.razor guncelle — tum hardcode Turkce metinleri `@Localizer["MenuItemName"]` ile degistir
+> - NavMenu.razor guncelle — tum hardcode Turkce metinleri `@Localizer["MenuItemName"]` ile Değiştir
 >
 > **Business Katmani:**
 > - FluentValidation hata mesajlari icin `WithMessage()` cagrilarinda localization kullan

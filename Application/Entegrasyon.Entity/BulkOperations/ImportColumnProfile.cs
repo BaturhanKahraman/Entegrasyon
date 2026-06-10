@@ -1,7 +1,7 @@
 namespace Entegrasyon.Entity.BulkOperations;
 
 /// <summary>
-/// Kullanicilarin import sirasinda kolon eslestirme profillerini saklar.
+/// Kullanıcılarin import sirasinda kolon eslestirme profillerini saklar.
 /// MappingsJson: {"SystemField": "ExcelColumnName"} formati.
 /// </summary>
 public sealed class ImportColumnProfile : BaseEntity

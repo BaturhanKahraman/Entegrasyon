@@ -15,7 +15,7 @@ public class UserController(
     [HttpGet("/users")]
     public async Task<IActionResult> Index(int page = 1)
     {
-        ViewData.SetPageTitle("Kullanicilar");
+        ViewData.SetPageTitle("Kullanıcılar");
         ViewData.SetActiveNav("users");
 
         var result = await userManager.GetPaginatedUserDetails(page - 1, 20);
@@ -31,7 +31,7 @@ public class UserController(
     {
         ViewData.SetPageTitle("Yeni Kullanici");
         ViewData.SetActiveNav("users");
-        ViewData.SetBreadcrumb(("Kullanicilar", "/users"), ("Yeni Kullanici", null));
+        ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Yeni Kullanici", null));
 
         var roles = await roleService.GetRolesSelectList();
         ViewBag.Roles = roles;
@@ -45,7 +45,7 @@ public class UserController(
         {
             ViewData.SetPageTitle("Yeni Kullanici");
             ViewData.SetActiveNav("users");
-            ViewData.SetBreadcrumb(("Kullanicilar", "/users"), ("Yeni Kullanici", null));
+            ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Yeni Kullanici", null));
 
             var roles = await roleService.GetRolesSelectList();
             ViewBag.Roles = roles;

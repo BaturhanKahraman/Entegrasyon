@@ -35,7 +35,7 @@ public class LoginTests : E2ETestBase
         var loginPage = new LoginPage(Page, BaseUrl);
         await loginPage.NavigateAsync();
 
-        await loginPage.LoginAsync("yanlis_kullanici", "yanlis_sifre");
+        await loginPage.LoginAsync("yanlis_kullanici", "yanlis_Şifre");
 
         // .alert-danger hata mesajı gösterilmeli (PRG: sayfa yeniden gösterilir)
         await Expect(loginPage.ErrorAlert).ToBeVisibleAsync(new() { Timeout = 10000 });

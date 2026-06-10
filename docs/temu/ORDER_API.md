@@ -11,7 +11,7 @@ Temu API uzerinden Sipariş listeleme, Sipariş detayi sorgulama ve Sipariş dur
 | Method (type) | Aciklama | Durum |
 |----------------|----------|-------|
 | `bg.order.list.v2.get` | Sipariş listesi sorgulama | Dogrulanmis (web arastirmasi) |
-| `bg.order.decryptshippinginfo.get` | Sifrelenmis kargo bilgisi cozme | Dogrulanmis (web arastirmasi) |
+| `bg.order.decryptshippinginfo.get` | Şifrelenmis kargo bilgisi cozme | Dogrulanmis (web arastirmasi) |
 | TBD | Sipariş detayi | TBD - API dokumanlarindan incelenecek |
 | TBD | Sipariş durumu guncelleme | TBD |
 
@@ -69,7 +69,7 @@ POST /openapi/router
 type: bg.order.decryptshippinginfo.get
 ```
 
-Temu, musteri kisisel verilerini (adres, telefon) sifrelenmis olarak saklar. Bu endpoint ile gercek kargo bilgilerine erisilir.
+Temu, musteri kisisel verilerini (adres, telefon) Şifrelenmis olarak saklar. Bu endpoint ile gercek kargo bilgilerine erisilir.
 
 ---
 
@@ -92,6 +92,6 @@ Beklenen durumlar (marketplace genel pattern):
 1. Sipariş listeleme tarih araligi siniri nedir? (ornek: Ciceksepeti max 2 hafta)
 2. Sayfalama 0-based mi, 1-based mi?
 3. Sipariş icindeki alt kalemlerin (sub-order) yapisi nasil?
-4. Kargo bilgisi her zaman sifreli mi donuyor?
+4. Kargo bilgisi her zaman Şifreli mi donuyor?
 5. Sipariş durumu webhook/callback ile bildirilir mi?
 6. Fatura bilgileri Sipariş icerisinde mi ayri endpoint'te mi?

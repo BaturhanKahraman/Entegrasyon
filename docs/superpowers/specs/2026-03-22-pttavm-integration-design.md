@@ -422,7 +422,7 @@ TDD-first, her faz icin:
 - PttavmCategoryImporterTests — tree parsing, lazy-load, mapping, empty response
 
 **Faz 2:**
-- PttavmProductServiceTests — upsert, tracking, barcode kontrol, status degistirme
+- PttavmProductServiceTests — upsert, tracking, barcode kontrol, status Değiştirme
 - PttavmStockPriceServiceTests — fiyat-stok guncelleme, batch limitleri
 - PttavmProductMapperTests — entity → DTO donusumu, varyant, gorsel
 - PttavmMappingValidatorTests — zorunlu alan, KDV, stok araligi, batch limiti

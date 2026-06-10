@@ -4,7 +4,7 @@ namespace Entegrasyon.E2E.TestData;
 /// E2E testleri için test kullanıcı bilgileri.
 /// Docker ortamında TestDataSeeder tarafından DB'ye yazılır.
 /// Local debug'da environment variable ile override edilebilir:
-///   E2E_ADMIN_USERNAME=Admin E2E_ADMIN_PASSWORD=SifreXyz dotnet test ...
+///   E2E_ADMIN_USERNAME=Admin E2E_ADMIN_PASSWORD=ŞifreXyz dotnet test ...
 /// </summary>
 public static class TestUsers
 {

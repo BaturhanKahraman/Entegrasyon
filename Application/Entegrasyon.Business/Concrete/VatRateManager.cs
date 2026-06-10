@@ -92,7 +92,7 @@ public class VatRateManager(
             .AnyAsync(v => v.VatRate == rateValue);
 
         if (usedInVariants)
-            return new ErrorResult($"Bu oran urunlerde kullanilmakta. Silmeden once urun KDV oranlarini degistirin.");
+            return new ErrorResult($"Bu oran urunlerde kullanilmakta. Silmeden once urun KDV oranlarini Değiştirin.");
 
         vatRate.IsDeleted = true;
         vatRate.DeletedAt = DateTimeOffset.UtcNow;
@@ -121,7 +121,7 @@ public class VatRateManager(
         vatRate.IsDefault = true;
         await dbContext.SaveChangesAsync();
 
-        await applicationLogManager.AddLog($"Varsayilan KDV orani degistirildi: {vatRate.Name} (%{vatRate.Rate})", LogType.Settings, LogAction.Update);
+        await applicationLogManager.AddLog($"Varsayilan KDV orani Değiştirildi: {vatRate.Name} (%{vatRate.Rate})", LogType.Settings, LogAction.Update);
         logger.LogInformation("VatRate default set: {Id} {Name} {Rate}%", vatRate.Id, vatRate.Name, vatRate.Rate);
         return new SuccessResult($"%{vatRate.Rate} varsayilan KDV orani olarak ayarlandi.");
     }

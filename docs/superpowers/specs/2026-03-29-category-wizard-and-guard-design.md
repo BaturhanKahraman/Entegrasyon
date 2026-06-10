@@ -31,7 +31,7 @@
 - Kullanici "Evet" derse navigasyon devam eder, "Hayir" derse iptal
 
 **Tarayici seviyesi:**
-- `NavigationLock ConfirmExternalNavigation="IsDirty"` — tab kapatma, URL degistirme, F5 icin native dialog
+- `NavigationLock ConfirmExternalNavigation="IsDirty"` — tab kapatma, URL Değiştirme, F5 icin native dialog
 - Ek olarak JS interop ile `window.beforeunload` event kaydedilir/kaldirilir
 - `OnParametersSetAsync` — `IsDirty` degistiginde JS listener gunceller
 
@@ -157,7 +157,7 @@ Kaydet'e basildiginda:
 
 ### Sorun
 
-`AllowCustom` entity'de global (`CategoryAttribute.AllowCustom`) ama UI'da kategori bazinda `MudSwitch` ile degistirilebiliyor. Bu, ayni attribute'in bir kategoride "serbest deger" digerinde "sadece liste" olmasina yol aciyor.
+`AllowCustom` entity'de global (`CategoryAttribute.AllowCustom`) ama UI'da kategori bazinda `MudSwitch` ile Değiştirilebiliyor. Bu, ayni attribute'in bir kategoride "serbest deger" digerinde "sadece liste" olmasina yol aciyor.
 
 ### Cozum
 
@@ -177,7 +177,7 @@ Kaydet'e basildiginda:
 
 **Kaydetme:**
 - DTO'da `AllowCustom` alanıattribute'in mevcut degerinden okunacak
-- Kullanici tarafindan degistirilmeyecek
+- Kullanici tarafindan Değiştirilmeyecek
 
 **Mevcut CategoryDialog ve CategoryEdit'teki switch'ler:**
 - Ayni sekilde yorum satirina alinacak (wizard'a tasinmadan once)
@@ -190,7 +190,7 @@ Kaydet'e basildiginda:
 | `CategoryDialog.razor:132` | MudSwitch yorum satiri + aciklama |
 | `CategoryEdit.razor:175` | MudSwitch yorum satiri + aciklama |
 | Wizard `CategoryWizardAttributesStep.razor` | AllowCustom read-only chip |
-| `CategoryEdit.razor.cs` | AllowCustom'i attribute'dan oku, degistirme |
+| `CategoryEdit.razor.cs` | AllowCustom'i attribute'dan oku, Değiştirme |
 | `CategoryDialog.razor.cs` | Ayni |
 
 ---
@@ -230,7 +230,7 @@ Kaydet'e basildiginda:
 ### Unit testler
 - `UnsavedChangesGuard` — `IsDirty` true/false state degisimleri
 - Kategori wizard validasyon — adim gecis kurallari
-- AllowCustom read-only davranisi — DTO'da degistirilmedigini dogrula
+- AllowCustom read-only davranisi — DTO'da Değiştirilmedigini dogrula
 
 ### bUnit testler
 - `UnsavedChangesGuard` component rendering — NavigationLock mevcudiyeti

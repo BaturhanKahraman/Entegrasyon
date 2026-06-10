@@ -2,7 +2,7 @@
 
 ## Problem
 
-N11 pazaryerine urun publish etmek icin urun verilerini N11 SaveProduct SOAP formatina donusturecek bir mapper, eslestirme dogrulayici (validator) ve gercek SOAP cagrilarini yapacak bir service gerekiyor. Sprint 1'de olusturulan MockN11ProductService gercek implementasyonla degistirilecek.
+N11 pazaryerine urun publish etmek icin urun verilerini N11 SaveProduct SOAP formatina donusturecek bir mapper, eslestirme dogrulayici (validator) ve gercek SOAP cagrilarini yapacak bir service gerekiyor. Sprint 1'de olusturulan MockN11ProductService gercek implementasyonla Değiştirilecek.
 
 ## Scope
 
@@ -270,7 +270,7 @@ Bu helper tum SOAP islemlerinde (Save/Delete/Update/Start/Stop) ortaktir.
 services.AddScoped<N11MappingValidator>();
 services.AddScoped<IN11ProductMapper, N11ProductMapper>();
 
-// Mevcut mock kaydi degistir:
+// Mevcut mock kaydi Değiştir:
 // REMOVE: services.AddScoped<IN11ProductService, MockN11ProductService>();
 // ADD:
 var useN11Mock = configuration.GetValue<bool>("N11:UseMock", true);

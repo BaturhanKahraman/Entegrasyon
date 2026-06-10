@@ -261,7 +261,7 @@ git commit -m "feat(layout): add GetActiveNavGroup extension for combo layout na
 
             @* ── Tema Toggle ── *@
             <div class="nav-item me-2">
-                <a href="#" class="nav-link px-0" id="theme-toggle" title="Tema degistir">
+                <a href="#" class="nav-link px-0" id="theme-toggle" title="Tema Değiştir">
                     <i class="ti ti-moon" id="theme-icon"></i>
                 </a>
             </div>
@@ -591,7 +591,7 @@ Replace the entire content of `_Sidebar.cshtml` with:
                     <li class="nav-item">
                         <a class="nav-link @(activeNav == "users" ? "active" : "")" require-permission="Permissions.Users.View" href="/users">
                             <span class="nav-link-icon"><i class="ti ti-users"></i></span>
-                            <span class="nav-link-title">Kullanicilar</span>
+                            <span class="nav-link-title">Kullanıcılar</span>
                         </a>
                     </li>
                     <li class="nav-item">

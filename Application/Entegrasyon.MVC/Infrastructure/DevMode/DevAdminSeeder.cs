@@ -19,7 +19,7 @@ namespace Entegrasyon.MVC.Infrastructure.DevMode;
 ///
 /// IDEMPOTENT: Admin zaten kullanilabilir parolayla provision edilmisse (bcrypt set +
 /// PasswordHashVersion=1 + NeedsTakeNewPassword=false) hicbir sey yazmaz — boylece
-/// gelistiricinin app uzerinden manuel degistirdigi parolayi da EZMEZ.
+/// gelistiricinin app uzerinden manuel Değiştirdigi parolayi da EZMEZ.
 /// </summary>
 public static class DevAdminSeeder
 {

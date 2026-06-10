@@ -10,7 +10,7 @@ Temu API uzerinden kargo bilgisi guncelleme, teslimat takibi ve lojistik islemle
 
 | Method (type) | Aciklama | Durum |
 |----------------|----------|-------|
-| `bg.order.decryptshippinginfo.get` | Sifrelenmis kargo bilgisi cozme | Dogrulanmis |
+| `bg.order.decryptshippinginfo.get` | Şifrelenmis kargo bilgisi cozme | Dogrulanmis |
 | `bg.logistics.*` | Kargo/lojistik islemleri | TBD - Tam liste incelenecek |
 | TBD | Kargo firmasi bilgisi guncelleme | TBD |
 | TBD | Takip numarasi ekleme | TBD |
@@ -51,7 +51,7 @@ POST /openapi/router
 type: bg.order.decryptshippinginfo.get
 ```
 
-Musteri adres ve telefon bilgileri sifrelenmis olarak saklanir. Kargo etiketi olusturmak veya gonderim yapmak icin bu endpoint ile cozumleme gereklidir.
+Musteri adres ve telefon bilgileri Şifrelenmis olarak saklanir. Kargo etiketi olusturmak veya gonderim yapmak icin bu endpoint ile cozumleme gereklidir.
 
 ---
 

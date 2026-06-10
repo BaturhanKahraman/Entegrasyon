@@ -129,7 +129,7 @@ public class AuthService(
         if (dto.NewPassword != dto.ConfirmPassword)
             return new ErrorResult(Messages.PasswordsDoNotMatch);
 
-        // 2. Business Rules — kullanici ve mevcut sifre kontrolu
+        // 2. Business Rules — kullanici ve mevcut Şifre kontrolu
         await using var context = await contextFactory.CreateDbContextAsync();
         var user = await context.Users.FindAsync([userId], cancellationToken: token);
         if (user is null)
@@ -152,13 +152,13 @@ public class AuthService(
         context.Update(user);
         await context.SaveChangesAsync(token);
 
-        await applicationLogger.AddLog("Kullanici kendi sifresini degistirdi.", LogType.Auth, LogAction.Update, token: token);
+        await applicationLogger.AddLog("Kullanici kendi Şifresini Değiştirdi.", LogType.Auth, LogAction.Update, token: token);
         return new SuccessResult(Messages.PasswordChanged);
     }
 
     public async Task<IResult> CreatePassword(string password, Guid userId, CancellationToken token = default)
     {
-        await applicationLogger.AddLog("Sifre olusturma istegi geldi.", LogType.Auth, LogAction.Update);
+        await applicationLogger.AddLog("Şifre olusturma istegi geldi.", LogType.Auth, LogAction.Update);
         if (string.IsNullOrEmpty(password))
             return new ErrorResult(Messages.ProcessFailed);
         await using var context = await contextFactory.CreateDbContextAsync();
@@ -197,7 +197,7 @@ public class AuthService(
         user.PasswordResetTokenExpiresAt = DateTimeOffset.UtcNow.AddHours(1);
         await context.SaveChangesAsync(token);
 
-        await applicationLogger.AddLog("Sifre sifirlama talep edildi.", LogType.Auth, LogAction.Update, token: token);
+        await applicationLogger.AddLog("Şifre sifirlama talep edildi.", LogType.Auth, LogAction.Update, token: token);
         return new SuccessResult(Messages.PasswordResetRequested);
     }
 
@@ -231,7 +231,7 @@ public class AuthService(
         context.Update(user);
 
         await context.SaveChangesAsync(token);
-        await applicationLogger.AddLog("Sifre sifirlama tamamlandi.", LogType.Auth, LogAction.Update, token: token);
+        await applicationLogger.AddLog("Şifre sifirlama tamamlandi.", LogType.Auth, LogAction.Update, token: token);
         return new SuccessResult(Messages.PasswordResetSuccess);
     }
 

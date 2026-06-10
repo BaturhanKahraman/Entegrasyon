@@ -11,7 +11,7 @@ namespace Entegrasyon.IntegrationTest.Fixtures;
 /// Her istegi ayni kullanici (sabit NameIdentifier) ile dogrular — boylece
 /// [Authorize] gecer ve antiforgery token GET (uretim) ile POST (dogrulama)
 /// arasinda ayni kimlige baglanir. Antiforgery KAPATILMAZ; sadece login akisi
-/// (gecici sifre/reset) bypass edilir, gercek antiforgery + binding + manager
+/// (gecici Şifre/reset) bypass edilir, gercek antiforgery + binding + manager
 /// zinciri korunur.
 /// </summary>
 public sealed class TestAuthHandler(

@@ -127,7 +127,7 @@ public class AuthController(
     [HttpGet("/auth/reset-password")]
     public IActionResult ResetPassword(string? userId = null)
     {
-        ViewData.SetPageTitle("Sifre Sifirla");
+        ViewData.SetPageTitle("Şifre Sifirla");
         return View(new PasswordResetVm { UserId = userId });
     }
 }

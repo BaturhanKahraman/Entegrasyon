@@ -19,7 +19,7 @@ Temu API, **App Key + App Secret + Access Token + MD5 Sign** mekanizmasi kullani
 | Alan | Aciklama |
 |------|----------|
 | `app_key` | Uygulama anahtari (Temu Seller Center'dan alinir) |
-| `app_secret` | Uygulama sifresi (imza hesaplamasinda kullanilir) |
+| `app_secret` | Uygulama Şifresi (imza hesaplamasinda kullanilir) |
 | `access_token` | Satici yetkilendirmesi sonrasi alinan erisim tokeni |
 
 ### Access Token Alma Akisi (OAuth-benzeri)

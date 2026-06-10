@@ -26,7 +26,7 @@ Yeni bir kargo gonderisi olusturur ve takip numarasi doner.
 | Parametre | Tip | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
-| `password` | string | Evet | API sifresi |
+| `password` | string | Evet | API Şifresi |
 | `customerCode` | string | Evet | Musteri kodu |
 | `invoiceKey` | string | Hayir | Fatura anahtari |
 | `receiverName` | string | Evet | Alici adi |
@@ -95,7 +95,7 @@ Tracking number veya referans numarasi ile gonderi durumunu sorgular.
 | Parametre | Tip | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
-| `password` | string | Evet | API sifresi |
+| `password` | string | Evet | API Şifresi |
 | `shippingOrderNo` | string | Kosullu | Kargo Sipariş no (tracking) |
 | `referenceNo` | string | Kosullu | Referans numarasi |
 
@@ -135,7 +135,7 @@ Henuz kargoya verilmemis bir gonderiyi iptal eder.
 | Parametre | Tip | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
-| `password` | string | Evet | API sifresi |
+| `password` | string | Evet | API Şifresi |
 | `shippingOrderNo` | string | Evet | Kargo Sipariş numarasi |
 
 ### Response
@@ -173,7 +173,7 @@ Referans numarasi uzerinden barkod bilgisi doner.
 | Parametre | Tip | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
-| `password` | string | Evet | API sifresi |
+| `password` | string | Evet | API Şifresi |
 | `referenceNo` | string | Evet | Referans numarasi |
 
 ### Response
@@ -197,7 +197,7 @@ Gonderi etiketi alir (yazici icin formatlari destekler).
 | Parametre | Tip | Zorunlu | Aciklama |
 |-----------|-----|---------|----------|
 | `userName` | string | Evet | API kullanici adi |
-| `password` | string | Evet | API sifresi |
+| `password` | string | Evet | API Şifresi |
 | `shippingOrderNo` | string | Evet | Kargo Sipariş numarasi |
 | `labelFormat` | string | Hayir | Etiket formati (ZPL, PDF, vb.) |
 

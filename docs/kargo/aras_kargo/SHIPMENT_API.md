@@ -66,7 +66,7 @@ http://ArasCargo.com/SetOrder
 | Alan | Tip | Zorunlu | Aciklama |
 |------|-----|---------|----------|
 | `UserName` | string | Evet | XML servis kullanici adi |
-| `Password` | string | Evet | XML servis sifresi |
+| `Password` | string | Evet | XML servis Şifresi |
 | `TradingWaybillNumber` | string | Hayir | Ticari irsaliye numarasi |
 | `InvoiceNumber` | string | Hayir | Fatura numarasi |
 | `IntegrationCode` | string | Evet | Entegrasyon kodu (benzersiz gonderi referansi) |
@@ -146,7 +146,7 @@ http://ArasCargo.com/CancelDispatch
 | Alan | Tip | Zorunlu | Aciklama |
 |------|-----|---------|----------|
 | `userName` | string | Evet | XML servis kullanici adi |
-| `password` | string | Evet | XML servis sifresi |
+| `password` | string | Evet | XML servis Şifresi |
 | `integrationCode` | string | Evet | Iptal edilecek gonderinin entegrasyon kodu |
 
 ---

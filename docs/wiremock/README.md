@@ -184,7 +184,7 @@ UI'dan (`http://localhost:8080/__admin/mappings`) eslestirilemeyen request'i gor
 mapping ekle.
 
 **WireMock container baslamiyor:** Port 8080 cakismasi olabilir.
-`docker-compose.dev.yml`'deki port mapping'i degistir.
+`docker-compose.dev.yml`'deki port mapping'i Değiştir.
 
 **Gelistirici gercek API'ye gitmek istiyor:** `RealApiMarketplaces` listesine
 marketplace adini ekle, MVC'yi restart et.
