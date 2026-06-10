@@ -64,6 +64,11 @@ public static class DevAdminSeeder
 
             // Parolayi app'in kendi helper'iyla seed-time'da uret (BCrypt workFactor 12).
             admin.BcryptPasswordHash = HashingHelper.CreateBcryptHash(DevPassword);
+            // Fresh dev DB'de SecurityStamp NULL kalmasin → SecurityStampCookieEvents
+            // login sonrasi oturumu reddetmesin (auto-logout loop). Login backfill bunu zaten
+            // garanti eder; burada seed-time'da da set ederek dev'i tutarli baslat.
+            if (string.IsNullOrEmpty(admin.SecurityStamp))
+                admin.SecurityStamp = Guid.NewGuid().ToString("N");
             admin.PasswordHashVersion = 1;
             admin.NeedsTakeNewPassword = false;
             admin.PasswordHash = null;       // legacy HMACSHA512 alanlarini temizle

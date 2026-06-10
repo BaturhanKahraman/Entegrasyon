@@ -60,6 +60,10 @@ public class AuthService(
             user.FailedLoginCount++;
             if (user.FailedLoginCount >= MaxFailedAttempts)
                 user.LockoutEnd = DateTimeOffset.UtcNow.AddMinutes(LockoutMinutes);
+            // No-tracking + Include'lu graph → lockout sayacının persist olması için Update şart
+            // (bkz. 0ad50995). Roles/RoleClaims navigation'ını ayrıştır ki Update onları taramasın.
+            user.Roles = [];
+            context.Update(user);
             await context.SaveChangesAsync();
             return new ErrorResult(Messages.LoginFailedWrongPassword);
         }
@@ -79,6 +83,17 @@ public class AuthService(
         // Legacy/eski kullanıcılarda damga yoksa ilk başarılı girişte ata (cookie'ye yazılacak).
         if (string.IsNullOrEmpty(user.SecurityStamp))
             user.SecurityStamp = Guid.NewGuid().ToString("N");
+
+        // Roller claim/permission üretimi için DTO'ya taşınır; persist'ten ÖNCE yakala.
+        var roles = user.Roles;
+
+        // KRİTİK: context global no-tracking → yukarıdaki mutasyonların (hash/lockout/stamp)
+        // DB'ye yazılması için kök user Modified işaretlenmeli; aksi halde SaveChanges no-op olur
+        // (bkz. 0ad50995) ve stamp NULL kalır → her authenticated istekte logout loop.
+        // Include ile gelen reference-data navigation'ı (Roles/RoleClaims) ayrıştır ki Update
+        // graph'i taramasın ve onları gereksiz/zararlı şekilde Modified işaretlemesin.
+        user.Roles = [];
+        context.Update(user);
         await context.SaveChangesAsync();
 
         // If 2FA is active, require second factor
@@ -86,7 +101,7 @@ public class AuthService(
             return new SuccessDataResult<TwoFactorRequiredDto>(new TwoFactorRequiredDto(user.Id),
                 Messages.TwoFactorRequired);
 
-        return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id, user.Name!, user.Surname!, user.UserName!, user.Roles, user.SecurityStamp));
+        return new SuccessDataResult<UserLoginSuccessDto>(new(user.Id, user.Name!, user.Surname!, user.UserName!, roles, user.SecurityStamp));
     }
 
     public async Task<IResult> AssignTempPassword(string password, string userId, CancellationToken token = default)
