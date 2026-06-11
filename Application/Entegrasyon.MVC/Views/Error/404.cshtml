@@ -1,16 +1,11 @@
 @{
     Layout = "~/Shared/Views/_AuthLayout.cshtml";
+    ViewData["ErrorCode"] = 404;
+    ViewData["ErrorIcon"] = "ti-map-search";
+    ViewData["ErrorColor"] = "azure";
+    ViewData["ErrorTitle"] = "Bu sayfayı bulamadık";
+    ViewData["ErrorMessage"] = "Aradığınız sayfa taşınmış, adı değişmiş ya da hiç var olmamış olabilir.";
+    ViewData["ErrorHint"] = "Adresi yanlış yazmadığınızdan emin olun ya da ana sayfadan devam edin.";
 }
 
-<div class="empty">
-    <div class="empty-header">404</div>
-    <p class="empty-title">Sayfa bulunamadı</p>
-    <p class="empty-subtitle text-secondary">
-        Aradiginiz sayfa bulunamadı. Adres dogru yazildigindan emin olun.
-    </p>
-    <div class="empty-action">
-        <a href="/" class="btn btn-primary">
-            Ana Sayfaya Don
-        </a>
-    </div>
-</div>
+@await Html.PartialAsync("_ErrorContent")

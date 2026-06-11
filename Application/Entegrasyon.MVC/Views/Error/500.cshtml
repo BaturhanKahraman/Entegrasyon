@@ -1,21 +1,13 @@
 @{
     Layout = "~/Shared/Views/_AuthLayout.cshtml";
-    var traceId = ViewData["TraceId"] as string;
+    ViewData["ErrorCode"] = 500;
+    ViewData["ErrorIcon"] = "ti-server-bolt";
+    ViewData["ErrorColor"] = "red";
+    ViewData["ErrorTitle"] = "Bizden kaynaklı bir hata oluştu";
+    ViewData["ErrorMessage"] = "Beklenmeyen bir sorun yaşandı ve isteğinizi tamamlayamadık. Bu bizim hatamız, özür dileriz.";
+    ViewData["ErrorHint"] = "Ekibimiz durumdan haberdar oldu. Lütfen biraz sonra tekrar deneyin.";
+    ViewData["ShowRetry"] = true;
+    // TraceId controller/exception handler tarafından doldurulur; teknik detay/stack trace ASLA gösterilmez.
 }
 
-<div class="empty">
-    <div class="empty-header">500</div>
-    <p class="empty-title">Sunucu Hatasi</p>
-    <p class="empty-subtitle text-secondary">
-        Bir hata olustu. Lutfen daha sonra tekrar deneyin.
-    </p>
-    @if (!string.IsNullOrEmpty(traceId))
-    {
-        <p class="text-secondary small">Trace ID: @traceId</p>
-    }
-    <div class="empty-action">
-        <a href="/" class="btn btn-primary">
-            Tekrar Deneyin
-        </a>
-    </div>
-</div>
+@await Html.PartialAsync("_ErrorContent")
