@@ -40,6 +40,10 @@ else
                     if (string.IsNullOrWhiteSpace(autoName)) autoName = Model.Title;
                     <tr data-variant-index="@i">
                         <td>
+                            @if (variant.VariantAttributes.Count == 0)
+                            {
+                                <span class="badge bg-secondary-lt me-1">Varsayılan</span>
+                            }
                             @for (int j = 0; j < variant.VariantAttributes.Count; j++)
                             {
                                 var attr = variant.VariantAttributes[j];

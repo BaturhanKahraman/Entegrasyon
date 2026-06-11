@@ -35,7 +35,26 @@ public class CreateProductVm
         DefaultVariantValuesVm defaults)
     {
         var nonEmpty = selections.Where(s => s.SelectedValues.Count > 0).ToList();
-        if (nonEmpty.Count == 0) return [];
+        if (nonEmpty.Count == 0)
+        {
+            // Kategoride hiç varyant özelliği yoksa (selections boş) tek varsayılan varyant üret —
+            // kullanıcı barkod/fiyat/stok girip devam edebilsin. Özellik VAR ama seçilmemişse boş dön.
+            if (selections.Count == 0)
+            {
+                return
+                [
+                    new CreateVariantVm
+                    {
+                        VariantAttributes = [],
+                        ListPrice = defaults.ListPrice,
+                        SalePrice = defaults.SalePrice,
+                        CostPrice = defaults.CostPrice,
+                        VatRate = defaults.VatRate
+                    }
+                ];
+            }
+            return [];
+        }
 
         IEnumerable<List<VariantAttributeValueVm>> combos = nonEmpty[0].SelectedValues
             .Select(v => new List<VariantAttributeValueVm>

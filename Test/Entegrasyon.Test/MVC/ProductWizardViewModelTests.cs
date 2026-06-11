@@ -75,9 +75,39 @@ public class ProductWizardViewModelTests
     }
 
     [Fact]
-    public void GenerateVariants_NoSelections_ReturnsEmpty()
+    public void GenerateVariants_NoVariantAttributesInCategory_ReturnsSingleDefaultVariant()
     {
-        var variants = CreateProductVm.GenerateVariants([], new DefaultVariantValuesVm());
+        // Kategoride hiç varyant özelliği yok (selections boş) → Option A:
+        // tek varsayılan varyant üretilir, kullanıcı barkod/fiyat/stok girip devam eder.
+        var defaults = new DefaultVariantValuesVm
+        { ListPrice = 199.90m, SalePrice = 149.90m, CostPrice = 80m, VatRate = 18 };
+
+        var variants = CreateProductVm.GenerateVariants([], defaults);
+
+        variants.Should().ContainSingle();
+        variants[0].VariantAttributes.Should().BeEmpty();
+        variants[0].ListPrice.Should().Be(199.90m);
+        variants[0].SalePrice.Should().Be(149.90m);
+        variants[0].CostPrice.Should().Be(80m);
+        variants[0].VatRate.Should().Be(18);
+    }
+
+    [Fact]
+    public void GenerateVariants_AttributesExistButNoValuesSelected_ReturnsEmpty()
+    {
+        // Kategoride varyant özelliği VAR ama hiçbir değer seçilmedi → boş dön (seçim zorunlu).
+        var selections = new List<VariantAttributeSelectionVm>
+        {
+            new()
+            {
+                CategoryAttributeId = 1, AttributeName = "Beden",
+                IsVarianter = true, IsSlicer = false, AllowCustom = false,
+                SelectedValues = []
+            }
+        };
+
+        var variants = CreateProductVm.GenerateVariants(selections, new DefaultVariantValuesVm());
+
         variants.Should().BeEmpty();
     }
 }
