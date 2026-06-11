@@ -1,117 +1,174 @@
 @using Entegrasyon.MVC.Features.Categories.ViewModels
 @model CategoryDetailPageVm
 @{
+    // ── Page header: başlık (kategori adı) + subtitle + İşlemler dropdown layout'un
+    // page-header'ında render edilir (Ürünler sayfası deseni). Pretitle bilinçli boş:
+    // breadcrumb zaten "Kategoriler > {ad}" bağlamını veriyor, üst kategoriyi subtitle'da
+    // gösteriyoruz; pretitle'da grup adını tekrar etmek gürültü olur.
+    var subtitleText = !string.IsNullOrEmpty(Model.SuperCategoryName)
+        ? $"{Model.SuperCategoryName} · Kategori detayları ve performans"
+        : "Ana kategori · Kategori detayları ve performans";
+    ViewData.SetPageSubtitle(subtitleText);
+
     decimal totalRevenue = Model.Performance.TotalRevenue;
     string Pct(decimal part) => totalRevenue > 0
         ? ((double)(part / totalRevenue) * 100).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)
         : "0";
+
+    // Pazaryeri çubuklarına tutarlı, ayırt edici renkler ata (palet döngüsü).
+    var barColors = new[] { "bg-primary", "bg-azure", "bg-purple", "bg-teal", "bg-pink", "bg-orange" };
+
+    // Top ürün sıra rozeti renkleri (altın/gümüş/bronz hissi).
+    string RankBadge(int i) => i switch
+    {
+        0 => "bg-yellow-lt text-yellow-lt-fg",
+        1 => "bg-secondary-lt",
+        2 => "bg-orange-lt text-orange-lt-fg",
+        _ => "bg-secondary-lt"
+    };
 }
 
-<!-- Page header: meta + actions (Düzenle / Sil header'a taşındı) -->
-<div class="page-header page-header-border mb-3">
-    <div class="row g-2 align-items-center">
-        <div class="col">
-            <div class="page-pretitle">
-                @if (!string.IsNullOrEmpty(Model.SuperCategoryName))
-                {
-                    <span>@Model.SuperCategoryName</span>
-                }
-                else
-                {
-                    <span>Ana Kategori</span>
-                }
-            </div>
-            <h2 class="page-title">
-                @Model.CategoryName
-                @if (Model.IsFavorite)
-                {
-                    <span class="badge bg-yellow-lt ms-2">Favori</span>
-                }
-            </h2>
+@section PageActions {
+    @if (Model.IsFavorite)
+    {
+        <span class="badge bg-yellow-lt text-yellow-lt-fg me-1">
+            <i class="ti ti-star-filled me-1"></i> Favori
+        </span>
+    }
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="ti ti-settings icon"></i> İşlemler
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="/categories/@Model.CategoryId/edit">
+                <i class="ti ti-edit dropdown-item-icon"></i> Düzenle
+            </a>
+            <a class="dropdown-item" href="/categories/@Model.CategoryId/attributes">
+                <i class="ti ti-list-details dropdown-item-icon"></i> Özellikleri Düzenle
+            </a>
+            <span class="dropdown-item disabled" aria-disabled="true">
+                <i class="ti ti-building-store dropdown-item-icon"></i>
+                Pazaryeri Ayarları
+                <span class="badge bg-secondary-lt ms-auto">Yakında</span>
+            </span>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item text-danger"
+                    hx-post="/categories/@Model.CategoryId/delete"
+                    hx-confirm="'@Model.CategoryName' kategorisini silmek istediğinize emin misiniz?"
+                    hx-swap="none">
+                <i class="ti ti-trash dropdown-item-icon"></i> Sil
+            </button>
         </div>
-        <div class="col-auto ms-auto">
-            <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="ti ti-settings me-1"></i> İşlemler
-                </button>
-                <div class="dropdown-menu dropdown-menu-end">
-                    <a class="dropdown-item" href="/categories/@Model.CategoryId/edit">
-                        <i class="ti ti-edit dropdown-item-icon"></i> Düzenle
-                    </a>
-                    <a class="dropdown-item" href="/categories/@Model.CategoryId/attributes">
-                        <i class="ti ti-list-details dropdown-item-icon"></i> Özellikleri Düzenle
-                    </a>
-                    <span class="dropdown-item disabled" aria-disabled="true">
-                        <i class="ti ti-building-store dropdown-item-icon"></i>
-                        Pazaryeri Ayarları
-                        <span class="badge bg-secondary-lt ms-auto">Yakında</span>
-                    </span>
-                    <div class="dropdown-divider"></div>
-                    <button type="button" class="dropdown-item text-danger"
-                            hx-post="/categories/@Model.CategoryId/delete"
-                            hx-confirm="'@Model.CategoryName' kategorisini silmek istediğinize emin misiniz?"
-                            hx-swap="none">
-                        <i class="ti ti-trash dropdown-item-icon"></i> Sil
-                    </button>
+    </div>
+}
+
+@* ── KPI kartları (son @Model.DaysPast gün) — ikon + sayı + bağlam ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar avatar-lg rounded">
+                            <i class="ti ti-shopping-cart fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="fs-1 fw-bold lh-1">@Model.Performance.TotalSoldQuantity</div>
+                        <div class="text-secondary text-truncate">Satış Adedi</div>
+                        <div class="text-secondary small">son @Model.DaysPast gün</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- KPI cards (son @Model.DaysPast gün) -->
-<div class="row row-deck row-cards mb-3">
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Satış Adedi</div>
-                <div class="h1 mb-0">@Model.Performance.TotalSoldQuantity</div>
-                <div class="text-secondary small">son @Model.DaysPast gün</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-cash fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="fs-1 fw-bold lh-1">@Model.Performance.TotalRevenue.ToString("N0") ₺</div>
+                        <div class="text-secondary text-truncate">Ciro</div>
+                        <div class="text-secondary small">son @Model.DaysPast gün</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Ciro</div>
-                <div class="h1 mb-0">@Model.Performance.TotalRevenue.ToString("N2") ₺</div>
-                <div class="text-secondary small">son @Model.DaysPast gün</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-azure-lt avatar avatar-lg rounded">
+                            <i class="ti ti-receipt fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="fs-1 fw-bold lh-1">@Model.Performance.TotalOrderCount</div>
+                        <div class="text-secondary text-truncate">Sipariş</div>
+                        <div class="text-secondary small">adet</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Sipariş</div>
-                <div class="h1 mb-0">@Model.Performance.TotalOrderCount</div>
-                <div class="text-secondary small">adet</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-red-lt avatar avatar-lg rounded">
+                            <i class="ti ti-arrow-back-up fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="fs-1 fw-bold lh-1">@Model.Performance.TotalReturnedQuantity</div>
+                        <div class="text-secondary text-truncate">İade Adedi</div>
+                        <div class="text-secondary small">oran %@Model.Performance.ReturnRate.ToString("0.#")</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">İade Adedi</div>
-                <div class="h1 mb-0">@Model.Performance.TotalReturnedQuantity</div>
-                <div class="text-secondary small">oran %@Model.Performance.ReturnRate.ToString("0.#")</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-purple-lt avatar avatar-lg rounded">
+                            <i class="ti ti-tag fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="fs-1 fw-bold lh-1">@Model.Performance.AverageUnitPrice.ToString("N0") ₺</div>
+                        <div class="text-secondary text-truncate">Ortalama Fiyat</div>
+                        <div class="text-secondary small">ağırlıklı</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="card">
+    <div class="col-6 col-sm-4 col-xl-2">
+        <div class="card card-sm">
             <div class="card-body">
-                <div class="subheader">Ortalama Fiyat</div>
-                <div class="h1 mb-0">@Model.Performance.AverageUnitPrice.ToString("N2") ₺</div>
-                <div class="text-secondary small">ağırlıklı</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="card">
-            <div class="card-body">
-                <div class="subheader">Ürün Sayısı</div>
-                <div class="h1 mb-0">@Model.ProductCount</div>
-                <div class="text-secondary small">bu kategoride</div>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-teal-lt avatar avatar-lg rounded">
+                            <i class="ti ti-package fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="fs-1 fw-bold lh-1">@Model.ProductCount</div>
+                        <div class="text-secondary text-truncate">Ürün Sayısı</div>
+                        <div class="text-secondary small">bu kategoride</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -125,9 +182,13 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="empty">
+                        <div class="empty-icon">
+                            <i class="ti ti-chart-bar-off" style="font-size: 2.5rem;"></i>
+                        </div>
                         <p class="empty-title">Henüz satış yok</p>
                         <p class="empty-subtitle text-secondary">
                             Bu kategoride son @Model.DaysPast günde satış kaydı bulunmuyor.
+                            Satışlar geldikçe en çok satan ürünler ve pazaryeri kırılımı burada görünecek.
                         </p>
                     </div>
                 </div>
@@ -138,25 +199,36 @@
             <!-- En çok satan ürünler -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">En Çok Satan Ürünler</h3>
+                    <h3 class="card-title">
+                        <i class="ti ti-trophy text-yellow me-2"></i> En Çok Satan Ürünler
+                    </h3>
+                    <span class="card-subtitle ms-2">son @Model.DaysPast gün</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-vcenter card-table">
                         <thead>
                             <tr>
+                                <th class="w-1">#</th>
                                 <th>Ürün</th>
                                 <th class="text-end">Satış Adedi</th>
                                 <th class="text-end">Ciro</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @{ var rank = 0; }
                             @foreach (var p in Model.Performance.TopProducts)
                             {
                                 <tr>
-                                    <td><a href="/products/@p.MainProductId">@p.ProductName</a></td>
+                                    <td>
+                                        <span class="badge @RankBadge(rank)">@(rank + 1)</span>
+                                    </td>
+                                    <td>
+                                        <a href="/products/@p.MainProductId" class="text-reset fw-medium">@p.ProductName</a>
+                                    </td>
                                     <td class="text-end">@p.SoldQuantity</td>
-                                    <td class="text-end">@p.Revenue.ToString("N2") ₺</td>
+                                    <td class="text-end fw-medium">@p.Revenue.ToString("N2") ₺</td>
                                 </tr>
+                                rank++;
                             }
                         </tbody>
                     </table>
@@ -166,26 +238,32 @@
             <!-- Pazaryeri kırılımı -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">Pazaryeri Kırılımı</h3>
+                    <h3 class="card-title">
+                        <i class="ti ti-building-store text-azure me-2"></i> Pazaryeri Kırılımı
+                    </h3>
                 </div>
                 <div class="card-body">
+                    @{ var mIdx = 0; }
                     @foreach (var m in Model.Performance.MarketplaceBreakdown)
                     {
                         var pct = Pct(m.Revenue);
+                        var color = barColors[mIdx % barColors.Length];
+                        var name = m.MarketplaceName ?? "Direkt / Storefront";
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>@(m.MarketplaceName ?? "Direkt/Storefront")</span>
-                                <span class="text-secondary">
-                                    @m.Revenue.ToString("N2") ₺ &middot; @m.OrderCount sipariş
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="fw-medium">@name</span>
+                                <span class="ms-auto text-secondary small">
+                                    @m.Revenue.ToString("N2") ₺ · @m.OrderCount sipariş · %@pct
                                 </span>
                             </div>
                             <div class="progress progress-sm">
-                                <div class="progress-bar bg-primary" style="width: @pct%"
+                                <div class="progress-bar @color" style="width: @pct%"
                                      role="progressbar" aria-valuenow="@pct" aria-valuemin="0" aria-valuemax="100"
-                                     aria-label="@(m.MarketplaceName ?? "Direkt/Storefront") %@pct">
+                                     aria-label="@name %@pct">
                                 </div>
                             </div>
                         </div>
+                        mIdx++;
                     }
                 </div>
             </div>
@@ -231,7 +309,7 @@
             </div>
         </div>
 
-        <!-- Özellikler tablosu (salt-okunur) + Özellikleri Düzenle linki -->
+        <!-- Özellikler tablosu (salt-okunur) + bağlamsal "Özellikleri Düzenle" butonu -->
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Özellikler</h3>
@@ -245,8 +323,16 @@
             {
                 <div class="card-body">
                     <div class="empty">
+                        <div class="empty-icon">
+                            <i class="ti ti-list-details" style="font-size: 2.5rem;"></i>
+                        </div>
                         <p class="empty-title">Özellik yok</p>
                         <p class="empty-subtitle text-secondary">Bu kategoriye henüz özellik bağlanmamış.</p>
+                        <div class="empty-action">
+                            <a href="/categories/@Model.CategoryId/attributes" class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i> Özellik Ekle
+                            </a>
+                        </div>
                     </div>
                 </div>
             }
@@ -272,7 +358,7 @@
                                         }
                                         @if (a.IsVarianter)
                                         {
-                                            <span class="badge bg-blue-lt">Varyant</span>
+                                            <span class="badge bg-blue-lt">Varyanter</span>
                                         }
                                         @if (a.IsSlicer)
                                         {

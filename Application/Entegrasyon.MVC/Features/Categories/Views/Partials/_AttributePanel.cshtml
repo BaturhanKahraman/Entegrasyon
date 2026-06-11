@@ -10,15 +10,20 @@
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Bağlı Özellikler</h3>
-                <span class="card-subtitle text-secondary ms-2">@Model.Attached.Count adet</span>
+                <h3 class="card-title">
+                    <i class="ti ti-link text-primary me-2"></i> Bağlı Özellikler
+                </h3>
+                <span class="badge bg-primary-lt ms-2">@Model.Attached.Count adet</span>
             </div>
             @if (Model.Attached.Count == 0)
             {
                 <div class="card-body">
                     <div class="empty">
+                        <div class="empty-icon">
+                            <i class="ti ti-link-off" style="font-size: 2.5rem;"></i>
+                        </div>
                         <p class="empty-title">Henüz özellik yok</p>
-                        <p class="empty-subtitle text-secondary">Sağdaki havuzdan özellik ekleyin.</p>
+                        <p class="empty-subtitle text-secondary">Sağdaki havuzdan bu kategoriye özellik ekleyin.</p>
                     </div>
                 </div>
             }
@@ -37,31 +42,38 @@
                             @foreach (var a in Model.Attached)
                             {
                                 <tr>
-                                    <td>@a.CategoriyAttributeHumanized</td>
+                                    <td class="fw-medium">@a.CategoriyAttributeHumanized</td>
                                     <td>
-                                        @if (a.IsRequired)
-                                        {
-                                            <span class="badge bg-red-lt">Zorunlu</span>
-                                        }
-                                        @if (a.IsVarianter)
-                                        {
-                                            <span class="badge bg-blue-lt">Varyant</span>
-                                        }
-                                        @if (a.IsSlicer)
-                                        {
-                                            <span class="badge bg-purple-lt">Dilimleyici</span>
-                                        }
-                                        @if (a.AllowCustom)
-                                        {
-                                            <span class="badge bg-cyan-lt">Özel Değer</span>
-                                        }
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @if (a.IsRequired)
+                                            {
+                                                <span class="badge bg-red-lt">Zorunlu</span>
+                                            }
+                                            @if (a.IsVarianter)
+                                            {
+                                                <span class="badge bg-blue-lt">Varyanter</span>
+                                            }
+                                            @if (a.IsSlicer)
+                                            {
+                                                <span class="badge bg-purple-lt">Dilimleyici</span>
+                                            }
+                                            @if (a.AllowCustom)
+                                            {
+                                                <span class="badge bg-cyan-lt">Özel Değer</span>
+                                            }
+                                            @if (!a.IsRequired && !a.IsVarianter && !a.IsSlicer && !a.AllowCustom)
+                                            {
+                                                <span class="text-secondary small">—</span>
+                                            }
+                                        </div>
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-ghost-danger btn-icon"
                                                 hx-post="/categories/@Model.CategoryId/attributes/@a.Id/remove"
                                                 hx-target="#attribute-panel"
                                                 hx-confirm="'@a.CategoriyAttributeHumanized' özelliğini kategoriden kaldırmak istediğinize emin misiniz?"
-                                                aria-label="Kaldır">
+                                                aria-label="@a.CategoriyAttributeHumanized özelliğini kaldır"
+                                                title="Kaldır">
                                             <i class="ti ti-trash"></i>
                                         </button>
                                     </td>
@@ -78,12 +90,24 @@
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Özellik Ekle</h3>
+                <h3 class="card-title">
+                    <i class="ti ti-plus text-green me-2"></i> Özellik Ekle
+                </h3>
+                @if (addable.Count > 0)
+                {
+                    <span class="badge bg-green-lt ms-2">@addable.Count uygun</span>
+                }
             </div>
             @if (addable.Count == 0)
             {
                 <div class="card-body">
-                    <p class="text-secondary mb-0">Eklenebilecek başka özellik yok.</p>
+                    <div class="empty">
+                        <div class="empty-icon">
+                            <i class="ti ti-circle-check" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <p class="empty-title">Tümü eklendi</p>
+                        <p class="empty-subtitle text-secondary">Eklenebilecek başka özellik yok.</p>
+                    </div>
                 </div>
             }
             else
@@ -100,19 +124,19 @@
                                     </span>
                                 </label>
                                 <div class="ms-4 d-flex flex-wrap gap-3">
-                                    <label class="form-check form-check-inline">
+                                    <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="radio" name="requiredId" value="@p.Id">
                                         <span class="form-check-label small">Zorunlu</span>
                                     </label>
-                                    <label class="form-check form-check-inline">
+                                    <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="radio" name="varianterId" value="@p.Id">
-                                        <span class="form-check-label small">Varyant</span>
+                                        <span class="form-check-label small">Varyanter</span>
                                     </label>
-                                    <label class="form-check form-check-inline">
+                                    <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="radio" name="slicerId" value="@p.Id">
                                         <span class="form-check-label small">Dilimleyici</span>
                                     </label>
-                                    <label class="form-check form-check-inline">
+                                    <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="checkbox" name="allowCustomIds" value="@p.Id">
                                         <span class="form-check-label small">Özel Değer</span>
                                     </label>
