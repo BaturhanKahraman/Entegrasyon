@@ -5,6 +5,8 @@ namespace Entegrasyon.MVC.Infrastructure.Extensions;
 public static class ViewDataExtensions
 {
     private const string titleKey = "Title";
+    private const string pretitleKey = "PagePretitle";
+    private const string subtitleKey = "PageSubtitle";
     private const string activeNavKey = "ActiveNav";
     private const string activeNavGroupKey = "ActiveNavGroup";
     private const string breadcrumbKey = "Breadcrumb";
@@ -17,6 +19,32 @@ public static class ViewDataExtensions
     /// <param name="title">Sayfa başlığı olarak gösterilecek metin.</param>
     public static void SetPageTitle(this ViewDataDictionary viewData, string title)
         => viewData[titleKey] = title;
+
+    /// <summary>
+    /// Sayfa başlığının üstünde gösterilen küçük üst-başlık (pretitle) metnini ayarlar.
+    /// Tabler <c>page-pretitle</c> olarak render edilir (otomatik küçük/uppercase/muted).
+    /// </summary>
+    /// <param name="viewData"></param>
+    /// <param name="pretitle">Üst-başlık metni (ör. "Katalog").</param>
+    public static void SetPagePretitle(this ViewDataDictionary viewData, string pretitle)
+        => viewData[pretitleKey] = pretitle;
+
+    /// <summary>ViewData'dan sayfa üst-başlığını (pretitle) alır; ayarlanmamışsa boş string döner.</summary>
+    public static string GetPagePretitle(this ViewDataDictionary viewData)
+        => viewData[pretitleKey] as string ?? "";
+
+    /// <summary>
+    /// Sayfa başlığının altında gösterilen açıklama (subtitle) metnini ayarlar.
+    /// Layout'ta başlığın altında muted satır olarak render edilir.
+    /// </summary>
+    /// <param name="viewData"></param>
+    /// <param name="subtitle">Kısa açıklama metni.</param>
+    public static void SetPageSubtitle(this ViewDataDictionary viewData, string subtitle)
+        => viewData[subtitleKey] = subtitle;
+
+    /// <summary>ViewData'dan sayfa açıklamasını (subtitle) alır; ayarlanmamışsa boş string döner.</summary>
+    public static string GetPageSubtitle(this ViewDataDictionary viewData)
+        => viewData[subtitleKey] as string ?? "";
 
     /// <summary>
     /// Aktif navigasyon öğesini ViewData'ya ekler. Layout sayfasında bu değer kullanılarak aktif navigasyon öğesi dinamik olarak gösterilir.
