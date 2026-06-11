@@ -2,12 +2,46 @@
 @{
     ViewData.SetPageTitle("Kategoriler");
     ViewData.SetActiveNav("categories");
-    ViewData.SetBreadcrumb(("Kategoriler", null));
+    // Pretitle bilinçli boş: üst-seviye liste sayfasında grup adını tekrar etmek gürültü
+    // (Products sayfasıyla aynı karar). Subtitle + sağ aksiyonlar layout page-header'ında render edilir.
+    ViewData.SetPageSubtitle("Kategori ağacını yönet, özellik ve pazaryeri eşleştirmelerini düzenle.");
+
+    // ── KPI'lar — hepsi YÜKLENMİŞ veriden türetilir (Model = tüm hiyerarşi düz liste).
+    //    Hiçbir sayı hardcode değil; backend aggregate gerekmez.
+    var totalCount = Model.Count;
+    var rootCount = Model.Count(c => c.SuperCategoryId == null);
+    // Yaprak = alt kategorisi olmayan (ürünlerin gerçekten bağlandığı kategoriler)
+    var leafCount = Model.Count(c => c.SubCategories is null || !c.SubCategories.Any());
+    var favoriteCount = Model.Count(c => c.IsFavorite);
 
     var hasCategories = Model.Any(c => c.SuperCategoryId == null);
 }
 
-<div class="d-flex justify-content-end mb-3 gap-2">
+@* Sayfa-scoped stil — layout'ta ayrı "Styles" section'ı yok; view gövdesinde tutulur. *@
+<style>
+    /* Ağaç kartı: ekran yüksekliğine yapışık, içi kaydırılabilir — uzun ağaçta sayfa şişmez */
+    .category-tree-scroll {
+        max-height: calc(100vh - 24rem);
+        overflow-y: auto;
+    }
+
+    @@media (max-width: 991.98px) {
+        .category-tree-scroll { max-height: 22rem; }
+    }
+
+    /* Düğüm: hover + seçili vurgu (Tabler list-group-item-action üstüne ince katman) */
+    .category-node { transition: background-color .12s ease; }
+    .category-node:hover { background-color: rgba(var(--tblr-primary-rgb), .06); }
+    .category-node.is-selected {
+        background-color: rgba(var(--tblr-primary-rgb), .12);
+        box-shadow: inset 3px 0 0 var(--tblr-primary);
+        font-weight: var(--tblr-font-weight-medium, 600);
+    }
+
+    .category-node .chevron-icon { transition: transform .15s ease; }
+</style>
+
+@section PageActions {
     <a href="/categories/master-import" class="btn btn-outline-primary">
         <i class="ti ti-database-import icon"></i>
         Master Katalogdan İçeri Aktar
@@ -16,51 +50,208 @@
         <i class="ti ti-plus icon"></i>
         Yeni Kategori
     </a>
-</div>
+}
 
-        <div class="row">
-            <!-- Tree Panel -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Kategori ağacı</h3>
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-category fs-2"></i>
+                        </span>
                     </div>
-                    <div class="card-body p-0">
-                        @if (hasCategories)
-                        {
-                            <div class="list-group list-group-flush">
-                                @await Html.PartialAsync("Partials/_CategoryTree", Model)
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="empty py-4">
-                                <p class="empty-title">Henüz kategori yok</p>
-                                <p class="empty-subtitle text-secondary">
-                                    Yeni bir kategori ekleyerek başlayabilirsiniz.
-                                </p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detail Panel -->
-            <div class="col-lg-8">
-                <div id="detail-panel">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="empty py-5">
-                                <div class="empty-icon">
-                                    <i class="ti ti-category" style="font-size:2.5rem;"></i>
-                                </div>
-                                <p class="empty-title">Bir kategori seçin</p>
-                                <p class="empty-subtitle text-secondary">
-                                    Soldaki ağaçtan bir kategori seçtiğinizde detayları burada görüntülenecektir.
-                                </p>
-                            </div>
-                        </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@totalCount.ToString("N0")</div>
+                        <div class="text-secondary">Toplam Kategori</div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-azure-lt avatar avatar-lg rounded">
+                            <i class="ti ti-folders fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@rootCount.ToString("N0")</div>
+                        <div class="text-secondary">Ana Kategori</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-stack-2 fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@leafCount.ToString("N0")</div>
+                        <div class="text-secondary">Alt (Yaprak) Kategori</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-star fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@favoriteCount.ToString("N0")</div>
+                        <div class="text-secondary">Favori Kategori</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cards">
+    @* ── Sol: Kategori ağacı ── *@
+    <div class="col-lg-4">
+        <div class="card category-tree-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-sitemap me-2 text-secondary"></i>Kategoriler
+                </h3>
+                <span class="badge bg-secondary-lt ms-2">@totalCount</span>
+            </div>
+            @if (hasCategories)
+            {
+                <div class="card-body border-bottom py-2">
+                    <div class="input-icon">
+                        <span class="input-icon-addon">
+                            <i class="ti ti-search"></i>
+                        </span>
+                        <input type="text"
+                               id="category-tree-filter"
+                               class="form-control"
+                               placeholder="Kategori ara…"
+                               autocomplete="off"
+                               aria-label="Kategori ağacında ara"/>
+                    </div>
+                </div>
+                <div class="card-body p-0 category-tree-scroll">
+                    @await Html.PartialAsync("Partials/_CategoryTree", Model)
+                    <div id="category-tree-empty-search" class="empty py-4" style="display:none;">
+                        <div class="empty-icon">
+                            <i class="ti ti-search-off"></i>
+                        </div>
+                        <p class="empty-title">Sonuç bulunamadı</p>
+                        <p class="empty-subtitle text-secondary">
+                            Aramanızla eşleşen kategori yok.
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="empty py-4">
+                        <div class="empty-icon">
+                            <i class="ti ti-folder-off"></i>
+                        </div>
+                        <p class="empty-title">Henüz Kategori Yok</p>
+                        <p class="empty-subtitle text-secondary">
+                            Yeni bir kategori ekleyerek ya da master katalogdan içeri aktararak başlayabilirsiniz.
+                        </p>
+                        <div class="empty-action">
+                            <a href="/categories/add" class="btn btn-primary">
+                                <i class="ti ti-plus icon"></i>
+                                Yeni Kategori
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ── Sağ: Detay paneli (HTMX ile dolar) ── *@
+    <div class="col-lg-8">
+        <div id="detail-panel">
+            <div class="card category-detail-placeholder">
+                <div class="card-body">
+                    <div class="empty py-5">
+                        <div class="empty-icon">
+                            <i class="ti ti-pointer"></i>
+                        </div>
+                        <p class="empty-title">Henüz Kategori Seçilmedi</p>
+                        <p class="empty-subtitle text-secondary">
+                            Soldaki ağaçtan bir kategori seçtiğinizde özellikleri, pazaryeri
+                            eşleştirmeleri ve performansı burada görüntülenir.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // ── Ağaç içi canlı filtre (client-side, mevcut HTMX davranışını bozmaz) ──
+            var filter = document.getElementById('category-tree-filter');
+            if (filter) {
+                var emptyMsg = document.getElementById('category-tree-empty-search');
+                filter.addEventListener('input', function () {
+                    var q = this.value.trim().toLocaleLowerCase('tr');
+                    var nodes = document.querySelectorAll('.category-node-wrapper');
+                    if (!q) {
+                        nodes.forEach(function (n) { n.style.display = ''; });
+                        if (emptyMsg) emptyMsg.style.display = 'none';
+                        return;
+                    }
+                    var anyMatch = false;
+                    nodes.forEach(function (n) {
+                        var name = (n.getAttribute('data-category-name') || '').toLocaleLowerCase('tr');
+                        var match = name.indexOf(q) !== -1;
+                        // Eşleşen düğümün atalarını da görünür tut
+                        n.style.display = match ? '' : 'none';
+                        if (match) {
+                            anyMatch = true;
+                            var p = n.parentElement.closest('.category-node-wrapper');
+                            while (p) {
+                                p.style.display = '';
+                                var kids = p.querySelector('.category-children');
+                                if (kids) kids.style.display = 'block';
+                                p = p.parentElement.closest('.category-node-wrapper');
+                            }
+                        }
+                    });
+                    if (emptyMsg) emptyMsg.style.display = anyMatch ? 'none' : '';
+                });
+            }
+
+            // ── Seçili düğüm vurgusu: bir düğüme tıklanınca işaretle (HTMX detay yüklemeyi engellemez) ──
+            document.addEventListener('click', function (e) {
+                var node = e.target.closest('.category-node');
+                if (!node) return;
+                // Chevron tıklaması seçim sayılmaz (yalnız aç/kapa)
+                if (e.target.closest('.toggle-children')) return;
+                document.querySelectorAll('.category-node.is-selected')
+                    .forEach(function (n) { n.classList.remove('is-selected'); });
+                node.classList.add('is-selected');
+            });
+        })();
+    </script>
+}

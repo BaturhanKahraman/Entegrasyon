@@ -6,7 +6,7 @@
     var nodeId = $"cat-children-{Model.Id}";
 }
 
-<div class="category-node-wrapper" data-category-id="@Model.Id">
+<div class="category-node-wrapper" data-category-id="@Model.Id" data-category-name="@Model.Name">
     <div class="d-flex align-items-center py-2 category-node list-group-item list-group-item-action border-0"
          style="padding-left: @(depth * 20 + 12)px; padding-right: 12px; cursor: pointer;"
          hx-get="/categories/@Model.Id/detail"
@@ -16,26 +16,34 @@
         {
             <span class="me-1 text-secondary toggle-children"
                   data-target="#@nodeId"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Alt kategorileri aç/kapa"
                   onclick="event.stopPropagation(); event.preventDefault(); toggleCategoryChildren(this);"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.stopPropagation();event.preventDefault();toggleCategoryChildren(this);}"
                   style="cursor: pointer; display: inline-flex; transition: transform 0.15s;">
                 <i class="ti ti-chevron-right chevron-icon" style="font-size:1rem;"></i>
             </span>
         }
         else
         {
-            <span class="me-1" style="width: 16px; display: inline-block;"></span>
+            <span class="me-1 text-secondary" style="width: 16px; display: inline-flex; justify-content:center;">
+                <i class="ti ti-point" style="font-size:0.5rem;"></i>
+            </span>
         }
+
+        <i class="ti @(hasChildren ? "ti-folder" : "ti-tag") text-secondary me-2" style="font-size:1rem;"></i>
 
         <span class="flex-fill text-truncate">@Model.Name</span>
 
         @if (Model.IsFavorite)
         {
-            <i class="ti ti-star-filled text-warning ms-1" style="font-size:0.875rem;"></i>
+            <i class="ti ti-star-filled text-yellow ms-1" style="font-size:0.875rem;" title="Favori kategori"></i>
         }
 
         @if (hasChildren)
         {
-            <span class="badge bg-secondary-lt ms-1">@children.Count</span>
+            <span class="badge bg-secondary-lt ms-2" title="@children.Count alt kategori">@children.Count</span>
         }
     </div>
 
