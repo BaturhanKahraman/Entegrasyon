@@ -277,4 +277,120 @@ public class ProductWizardTests : E2ETestBase
         var afterCount = await Page.Locator("#variant-table-container tbody tr").CountAsync();
         Assert.That(afterCount, Is.EqualTo(initialCount - 1), "Bir varyant kaldirilmali");
     }
+
+    // ── Regresyon testleri (geri-navigasyon #1 + stoksuz kayit #3) ────────
+
+    /// <summary>
+    /// Step 1+2+3'u doldurup varyantlari uretir, Step 3'te birakir (varyant
+    /// tablosu hazir). Geri-navigasyon ve stoksuz-kayit testleri bunu kullanir.
+    /// </summary>
+    private async Task ReachStep3WithVariantsAsync(string title)
+    {
+        await Page.GotoAsync($"{BaseUrl}/products/add");
+        await Expect(Page.Locator("[data-wizard-step='1']")).ToBeVisibleAsync();
+
+        await Page.FillAsync("input[name='Title']", title);
+        await Page.EvaluateAsync(@"() => {
+            var brand = document.getElementById('brand-select');
+            if (brand?.tomselect) {
+                var o = Object.values(brand.tomselect.options).find(x => x.text === 'Nike') || Object.values(brand.tomselect.options)[1];
+                if (o) brand.tomselect.setValue(o.value);
+            }
+            var cat = document.getElementById('category-select');
+            if (cat?.tomselect) {
+                var o = Object.values(cat.tomselect.options).find(x => x.text === 'T-Shirt') || Object.values(cat.tomselect.options)[1];
+                if (o) cat.tomselect.setValue(o.value);
+            }
+        }");
+        await Page.Locator("[data-wizard-step='1'] button[type='submit']").ClickAndWaitForHtmxAsync(Page, 10000);
+
+        await Expect(Page.Locator("[data-wizard-step='2']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.EvaluateAsync(@"() => {
+            document.querySelectorAll('[data-wizard-step=""2""] select[required]').forEach(function(sel) {
+                if (sel.options.length > 1) { sel.selectedIndex = 1; sel.dispatchEvent(new Event('change')); }
+            });
+            document.querySelectorAll('[data-wizard-step=""2""] input[type=""text""][required]').forEach(function(inp) {
+                if (!inp.value) inp.value = 'E2E Deger';
+            });
+        }");
+        await Page.Locator("[data-wizard-step='2'] button[type='submit']").ClickAndWaitForHtmxAsync(Page, 10000);
+
+        await Expect(Page.Locator("[data-wizard-step='3']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.EvaluateAsync(@"() => {
+            document.querySelectorAll('.variant-tomselect').forEach(function(sel) {
+                if (!sel.tomselect) return;
+                var opts = Object.values(sel.tomselect.options);
+                if (opts.length >= 2) { sel.tomselect.addItem(opts[0].value); sel.tomselect.addItem(opts[1].value); }
+                else if (opts.length >= 1) { sel.tomselect.addItem(opts[0].value); }
+            });
+        }");
+        await Page.FillAsync("input[name='DefaultValues.ListPrice']", "199.90");
+        await Page.FillAsync("input[name='DefaultValues.SalePrice']", "149.90");
+        await Page.FillAsync("input[name='DefaultValues.CostPrice']", "80");
+
+        await Page.ClickAsync("#btn-generate-variants");
+        await Page.Locator("#variant-table-container table").WaitForAsync(new() { Timeout = 10000 });
+    }
+
+    [Test, Order(5)]
+    public async Task BackButton_FromStep4AndStep5_GoesToPreviousStep_NotStart()
+    {
+        // Bug #1 regresyonu: Step 4/Step 5 "Geri" butonu eskiden /products/add'e
+        // tam-sayfa reload yapip session'i sifirliyor → kullaniciyi en basa (Step 1)
+        // atiyordu. Artik HTMX ile bir onceki adima gitmeli.
+        await ReachStep3WithVariantsAsync("Geri Nav Test " + DateTime.Now.Ticks);
+
+        // Step 3 → Step 4
+        var step3Next = Page.Locator("#btn-step3-next");
+        await Expect(step3Next).ToBeEnabledAsync(new() { Timeout = 5000 });
+        await step3Next.ClickAndWaitForHtmxAsync(Page, 10000);
+        await Expect(Page.Locator("[data-wizard-step='4']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+
+        // Step 4 → "Geri" → Step 3 (en basa DEGIL)
+        await Page.Locator("[data-wizard-step='4'] a[href*='back-to-step3']").ClickAndWaitForHtmxAsync(Page, 10000);
+        await Expect(Page.Locator("[data-wizard-step='3']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        Assert.That(await Page.Locator("[data-wizard-step='1']").CountAsync(), Is.EqualTo(0),
+            "Step 4 'Geri' kullaniciyi en basa (Step 1) atmamali");
+
+        // Step 3 → Step 4 → Step 5
+        await Page.Locator("#btn-step3-next").ClickAndWaitForHtmxAsync(Page, 10000);
+        await Expect(Page.Locator("[data-wizard-step='4']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.Locator("[data-wizard-step='4'] button[type='submit']").ClickAndWaitForHtmxAsync(Page, 10000);
+        await Expect(Page.Locator("[data-wizard-step='5']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+
+        // Step 5 → "Geri" → Step 4 (en basa DEGIL)
+        await Page.Locator("[data-wizard-step='5'] a[href*='back-to-step4']").ClickAndWaitForHtmxAsync(Page, 10000);
+        await Expect(Page.Locator("[data-wizard-step='4']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        Assert.That(await Page.Locator("[data-wizard-step='1']").CountAsync(), Is.EqualTo(0),
+            "Step 5 'Geri' kullaniciyi en basa (Step 1) atmamali");
+    }
+
+    [Test, Order(6)]
+    public async Task Product_WithoutStock_SavesSuccessfully()
+    {
+        // Bug #3 regresyonu: "en az bir stok gir" kurali kaldirildi — stoksuz urun
+        // (on siparis / yolda / tukenmis) kaydedilebilmeli. Stok GIRMEDEN Step 7'ye ulasmali.
+        await ReachStep3WithVariantsAsync("Stoksuz Urun " + DateTime.Now.Ticks);
+
+        // Stok GIRME — dogrudan ilerle
+        var step3Next = Page.Locator("#btn-step3-next");
+        await Expect(step3Next).ToBeEnabledAsync(new() { Timeout = 5000 });
+        await step3Next.ClickAndWaitForHtmxAsync(Page, 10000);
+
+        // Step 4 (gorseller — atla)
+        await Expect(Page.Locator("[data-wizard-step='4']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.Locator("[data-wizard-step='4'] button[type='submit']").ClickAndWaitForHtmxAsync(Page, 10000);
+
+        // Step 5 (onay) → kaydet/devam
+        await Expect(Page.Locator("[data-wizard-step='5']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.Locator("[data-wizard-step='5'] button[type='submit']").ClickAndWaitForHtmxAsync(Page, 10000);
+
+        // Step 6 (yayinla) → "Atla, Kaydet"
+        await Expect(Page.Locator("[data-wizard-step='6']")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Page.Locator("[data-wizard-step='6'] button[type='submit']").First.ClickAndWaitForHtmxAsync(Page, 15000);
+
+        // Step 7 (basari) — STOKSUZ oldugu halde kayit basarili olmali
+        await Expect(Page.Locator("[data-wizard-step='7']")).ToBeVisibleAsync(new() { Timeout = 15000 });
+        await Expect(Page.GetByText("basariyla eklendi")).ToBeVisibleAsync();
+    }
 }
