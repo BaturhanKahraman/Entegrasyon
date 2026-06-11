@@ -85,13 +85,22 @@
         <div class="table-responsive mb-4">
             <table class="table table-vcenter">
                 <thead>
+                    @{
+                        // Bug #2: Ozelliksiz varyantta attribute sutunu olmuyor → satirda isim
+                        // gozukmuyordu. Attribute yoksa "Varyant" basligi altinda urun basligini goster.
+                        var hasVariantAttrs = Model.Variants.Count > 0 && Model.Variants[0].VariantAttributes.Count > 0;
+                    }
                     <tr>
-                        @if (Model.Variants.Count > 0 && Model.Variants[0].VariantAttributes.Count > 0)
+                        @if (hasVariantAttrs)
                         {
                             @foreach (var attr in Model.Variants[0].VariantAttributes)
                             {
                                 <th>@attr.AttributeName</th>
                             }
+                        }
+                        else
+                        {
+                            <th>Varyant</th>
                         }
                         <th>Fiyat</th>
                         <th>KDV</th>
@@ -106,9 +115,17 @@
                         var assignment = Model.ImageAssignments.FirstOrDefault(a => a.VariantIndex == i);
                         var imgCount = assignment?.TempImageKeys.Count ?? 0;
                         <tr>
-                            @foreach (var attr in variant.VariantAttributes)
+                            @if (hasVariantAttrs)
                             {
-                                <td><span class="badge bg-azure-lt">@attr.ValueName</span></td>
+                                @foreach (var attr in variant.VariantAttributes)
+                                {
+                                    <td><span class="badge bg-azure-lt">@attr.ValueName</span></td>
+                                }
+                            }
+                            else
+                            {
+                                var vlabel = string.IsNullOrWhiteSpace(variant.Name) ? Model.Title : variant.Name;
+                                <td><span class="fw-bold">@vlabel</span></td>
                             }
                             <td>
                                 <span class="text-secondary">@(variant.ListPrice.HasValue ? variant.ListPrice.Value.ToString("N2") + " TL" : "—")</span>
@@ -130,7 +147,10 @@
         </div>
     </div>
     <div class="card-footer d-flex justify-content-between">
-        <a href="/products/add" class="btn btn-outline-secondary">Bastan Baslat</a>
+        <div class="d-flex gap-2">
+            <a href="/products/add/back-to-step4" hx-get="/products/add/back-to-step4" hx-target="#wizard-content" hx-swap="innerHTML" class="btn btn-ghost-secondary">&larr; Geri</a>
+            <a href="/products/add" class="btn btn-outline-secondary">Bastan Baslat</a>
+        </div>
         <form hx-post="/products/add/step5" hx-target="#wizard-content" hx-swap="innerHTML">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success" id="btn-save-product">

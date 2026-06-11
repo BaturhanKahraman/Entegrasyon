@@ -54,10 +54,15 @@
                             @for (int i = 0; i < Model.Variants.Count; i++)
                             {
                                 var v = Model.Variants[i];
+                                // Bug #2: Ozelliksiz varsayilan varyantta attribute yok → label bos
+                                // kaliyor ve "Varyant N" gorunuyordu. _VariantTable referans deseni
+                                // gibi: attribute label → elle girilen Name → urun basligi (Model.Title).
                                 var label = string.Join(" - ", v.VariantAttributes.Select(a => a.ValueName));
+                                if (string.IsNullOrWhiteSpace(label)) label = v.Name;
+                                if (string.IsNullOrWhiteSpace(label)) label = Model.Title;
                                 <tr>
                                     <td>
-                                        <span class="fw-bold">@(string.IsNullOrEmpty(label) ? "Varyant " + (i + 1) : label)</span>
+                                        <span class="fw-bold">@label</span>
                                     </td>
                                     <td class="text-muted">@v.SalePrice.ToString("N2") TL</td>
                                     <td>

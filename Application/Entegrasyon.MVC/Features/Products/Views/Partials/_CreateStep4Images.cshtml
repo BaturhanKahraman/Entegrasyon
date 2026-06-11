@@ -112,10 +112,14 @@
                         @for (int i = 0; i < Model.Variants.Count; i++)
                         {
                             var variant = Model.Variants[i];
+                            // Bug #2: attribute yoksa "(Varyant N)" yerine elle girilen Name,
+                            // o da yoksa urun basligi (Model.Title) goster — diger adimlarla tutarli.
                             var label = string.Join(" - ", variant.VariantAttributes.Select(a => a.ValueName));
+                            if (string.IsNullOrWhiteSpace(label)) label = variant.Name;
+                            if (string.IsNullOrWhiteSpace(label)) label = Model.Title;
                             <tr data-variant-index="@i">
                                 <td>
-                                    <span class="fw-bold">@(string.IsNullOrEmpty(label) ? "(Varyant " + (i + 1) + ")" : label)</span>
+                                    <span class="fw-bold">@label</span>
                                     @if (!string.IsNullOrEmpty(variant.Barcode))
                                     {
                                         <br /><small class="text-muted">@variant.Barcode</small>
@@ -160,7 +164,7 @@
 
     <!-- Footer -->
     <div class="d-flex justify-content-between">
-        <a href="/products/add" class="btn btn-ghost-secondary">&larr; Geri</a>
+        <a href="/products/add/back-to-step3" hx-get="/products/add/back-to-step3" hx-target="#wizard-content" hx-swap="innerHTML" class="btn btn-ghost-secondary">&larr; Geri</a>
         <button type="submit" class="btn btn-primary">
             Devam: Onay &rarr;
         </button>
