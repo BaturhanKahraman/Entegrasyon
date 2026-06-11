@@ -19,9 +19,10 @@ namespace Entegrasyon.UnitTest.Business;
 public class ProductActivityControllerTests
 {
     private readonly Mock<IProductActivityPageManager> _pageManager = new();
+    private readonly Mock<IProductPerformanceManager> _performanceManager = new();
     private readonly Guid _productId = Guid.NewGuid();
 
-    private ProductActivityController CreateSut() => new(_pageManager.Object);
+    private ProductActivityController CreateSut() => new(_pageManager.Object, _performanceManager.Object);
 
     [Fact]
     public async Task Activity_when_ecommerce_disabled_returns_passive_empty_vm()

@@ -1,0 +1,127 @@
+@model Entegrasyon.Entity.Dtos.Product.ProductPerformanceDetailDto
+@using System.Globalization
+
+@*
+    Ürün detay performans özeti (PA #76) — lazy-load partial.
+    FONKSİYONEL iskelet: KPI değerleri + varyant/pazaryeri kırılımı. Designer kategori detay
+    KPI desenini reuse ederek cilalayacak. KÖK MARKER `id="product-performance"` KORUNMALI
+    (integration test + hx-get hedefi buna bağlı).
+*@
+
+@{
+    string Tl(decimal v) => v.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) + " ₺";
+}
+
+<div id="product-performance" data-days-past="@Model.DaysPast">
+    <div class="row row-cards mb-3">
+        <div class="col-6 col-sm-4 col-md-2">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="subheader">Satış Adedi</div>
+                    <div class="h2 mb-0">@Model.TotalSoldQuantity</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-4 col-md-2">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="subheader">Ciro</div>
+                    <div class="h2 mb-0">@Tl(Model.TotalRevenue)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-4 col-md-2">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="subheader">Sipariş</div>
+                    <div class="h2 mb-0">@Model.TotalOrderCount</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-4 col-md-2">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="subheader">İade Adedi</div>
+                    <div class="h2 mb-0">@Model.TotalReturnedQuantity</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-4 col-md-2">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="subheader">İade Oranı</div>
+                    <div class="h2 mb-0">%@Model.ReturnRate.ToString("0.##", CultureInfo.InvariantCulture)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-4 col-md-2">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="subheader">Ort. Birim Fiyat</div>
+                    <div class="h2 mb-0">@Tl(Model.AverageUnitPrice)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title">Varyant Kırılımı</h3></div>
+                <div class="card-body">
+                    @if (Model.VariantBreakdown.Count == 0)
+                    {
+                        <div class="text-secondary">Son @Model.DaysPast günde satış yok.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter table-sm">
+                                <thead><tr><th>Varyant</th><th class="text-end">Adet</th><th class="text-end">Ciro</th></tr></thead>
+                                <tbody>
+                                @foreach (var v in Model.VariantBreakdown)
+                                {
+                                    <tr>
+                                        <td>@v.VariantName</td>
+                                        <td class="text-end">@v.SoldQuantity</td>
+                                        <td class="text-end">@Tl(v.Revenue)</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title">Pazaryeri Kırılımı</h3></div>
+                <div class="card-body">
+                    @if (Model.MarketplaceBreakdown.Count == 0)
+                    {
+                        <div class="text-secondary">Son @Model.DaysPast günde satış yok.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter table-sm">
+                                <thead><tr><th>Pazaryeri</th><th class="text-end">Sipariş</th><th class="text-end">Ciro</th></tr></thead>
+                                <tbody>
+                                @foreach (var m in Model.MarketplaceBreakdown)
+                                {
+                                    <tr>
+                                        <td>@m.MarketplaceName</td>
+                                        <td class="text-end">@m.OrderCount</td>
+                                        <td class="text-end">@Tl(m.Revenue)</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

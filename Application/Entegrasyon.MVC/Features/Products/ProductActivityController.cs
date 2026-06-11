@@ -16,8 +16,24 @@ namespace Entegrasyon.MVC.Features.Products;
 /// Sipariş/stok sekmeleri fiziksel mağaza için de çalışır.
 /// </summary>
 [Authorize]
-public sealed class ProductActivityController(IProductActivityPageManager pageManager) : Controller
+public sealed class ProductActivityController(
+    IProductActivityPageManager pageManager,
+    IProductPerformanceManager performanceManager) : Controller
 {
+    /// <summary>
+    /// Ürün detay performans özeti (son <c>daysPast</c> gün satış/ciro/iade aggregate'i).
+    /// Lazy-load partial — detay sayfası hx-get ile çeker; ağır aggregate sayfa açılışını bloklamaz.
+    /// </summary>
+    [HttpGet("/products/{id:guid}/performance-summary")]
+    public async Task<IActionResult> PerformanceSummary(Guid id, [FromQuery] int daysPast = 30)
+    {
+        // Querystring savunması: geçersiz/uçuk değerleri varsayılana çek.
+        if (daysPast is < 1 or > 365) daysPast = 30;
+
+        var perf = await performanceManager.GetProductPerformanceAsync(id, daysPast, HttpContext.RequestAborted);
+        return PartialView("Partials/Activity/_PerformanceSummary", perf);
+    }
+
     [HttpGet("/products/{id:guid}/activity")]
     public async Task<IActionResult> Activity(
         Guid id,

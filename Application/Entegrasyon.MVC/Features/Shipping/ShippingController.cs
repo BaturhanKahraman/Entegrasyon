@@ -41,6 +41,12 @@ public class ShippingController(
         if (Request.IsHtmx())
             return PartialView("Partials/_ShipmentTable", result.Data);
 
+        // KPI snapshot (global, tablo filtresinden bağımsız) yalnız tam-sayfa render'da.
+        var kpis = await shipmentTrackingManager.GetShipmentKpisAsync();
+        ViewBag.ShipmentInTransitCount = kpis.InTransitCount;
+        ViewBag.ShipmentDeliveredCount = kpis.DeliveredCount;
+        ViewBag.ShipmentProblemCount = kpis.ProblemCount;
+
         return View(result.Data);
     }
 

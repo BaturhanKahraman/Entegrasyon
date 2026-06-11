@@ -283,4 +283,26 @@ public class ShipmentTrackingManager(
             return new ErrorDataResult<CargoSummaryDto>(null!, $"Kargo ozet bilgisi hatasi: {ex.Message}");
         }
     }
+
+    public async Task<ShipmentKpiDto> GetShipmentKpisAsync(CancellationToken ct = default)
+    {
+        // Kargo liste sayfası üst KPI snapshot'ı — tablo filtresinden bağımsız, tüm
+        // (silinmemiş, query filter) sevkiyatlar. Tek server-side GroupBy(CurrentStatus) →
+        // sunucuda count; kovalara bellekte pivot (grup sayısı enum kadar ≤8).
+        // NOT: GetCargoSummaryAsync'in aksine tüm satırları BELLEĞE ÇEKMEZ (full-load yok).
+        await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
+
+        var byStatus = await dbContext.ShipmentTrackings
+            .GroupBy(s => s.CurrentStatus)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        int CountFor(params ShipmentStatus[] statuses)
+            => byStatus.Where(x => statuses.Contains(x.Status)).Sum(x => x.Count);
+
+        return new ShipmentKpiDto(
+            InTransitCount: CountFor(ShipmentStatus.InTransit, ShipmentStatus.OutForDelivery),
+            DeliveredCount: CountFor(ShipmentStatus.Delivered),
+            ProblemCount: CountFor(ShipmentStatus.Failed, ShipmentStatus.ReturnedToSender));
+    }
 }

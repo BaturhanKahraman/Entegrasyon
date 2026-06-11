@@ -12,4 +12,10 @@ public interface IShipmentTrackingManager
     Task<IDataResult<List<ShipmentStatusHistoryDto>>> GetShipmentHistoryAsync(long shipmentTrackingId);
     Task<IResult> RefreshTrackingStatusAsync(long shipmentTrackingId);
     Task<IDataResult<CargoSummaryDto>> GetCargoSummaryAsync();
+
+    /// <summary>
+    /// Kargo liste sayfası üst KPI kartları için global snapshot (Yolda / Teslim / Sorunlu
+    /// kovaları). Tek server-side GroupBy(CurrentStatus), N+1/full-load yok.
+    /// </summary>
+    Task<ShipmentKpiDto> GetShipmentKpisAsync(CancellationToken ct = default);
 }
