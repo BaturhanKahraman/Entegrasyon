@@ -1,5 +1,36 @@
 # Multi-Tenant Local Development Setup
 
+> ⚠️ **Bazı bölümler bayat** (Blazor/SQLite dönemi). Güncel mimari: ASP.NET Core MVC + PostgreSQL `AdminPanelDb`. Tenant çözümleme mantığı geçerli ama uygulama/DB adları değişti.
+
+## ⚠️ Yaygın Tuzak — AdminPanelDb_Dev & Tenant Connection String (2026-06-11)
+
+**Belirti:** Dev (8085) her **authenticated** istekte 500 / `TimeoutException: Failed to connect to 192.168.1.78:5432` (`SecurityStampValidator` → cookie doğrulama). Anonim sayfalar (login) çalışır.
+
+**Kök neden:** Dev MVC container'ı tenant'ı `AdminPanelDb_Dev.Tenants` tablosundan çözer. `IDbContextFactory<IntegrationDbContext>` = `TenantDbContextFactory` → `tenantContext.ConnectionString`. Bu satırdaki connection string `Host=192.168.1.78` ise **container içinden host loopback'ine (127.0.0.1-bound postgres) ulaşılamaz** → timeout. Doğrusu `Host=postgres_db` (docker servis adı) olmalı.
+
+**Nasıl bulaşır:** `AdminPanelDb` → `AdminPanelDb_Dev` veri kopyalarken (master katalog doldurma) operasyonel `Tenants` tablosu da kopyalanır; `SeedData.cs` onu `Host=192.168.1.78;Database=IntegrationDb` ile seed'lemiştir. `Tenants` boşken middleware `ConnectionStrings:Main` (postgres_db) fallback'ine gider — o yüzden kopyadan önce çalışır.
+
+**Önleme — master katalog doldururken SADECE master tablolarını kopyala:**
+```bash
+# pg_dump'a sadece master + paket tablolarını ver; operasyonel Tenants/AdminUsers/TenantSubscriptions'ı DIŞARIDA bırak
+docker exec postgres_db sh -c 'pg_dump -U baturhan -d AdminPanelDb --data-only --disable-triggers \
+  -t "\"Master*\"" -t "\"SectorPackage*\"" -t "\"MarketplaceReferences\"" \
+  | psql -U baturhan -d AdminPanelDb_Dev -v ON_ERROR_STOP=1'
+```
+
+**Bulaştıysa düzeltme (dev tenant'ı container-içi host'a çevir + app restart):**
+```sql
+UPDATE "Tenants" SET "ConnectionString" =
+  replace(replace("ConnectionString",'Host=192.168.1.78','Host=postgres_db'),
+          'Database=IntegrationDb;','Database=IntegrationDb_Dev;')
+WHERE "Id" = 1;   -- stage tenant (Id=2): yalnız Host=postgres_db swap
+```
+```bash
+docker restart entegrasyon-mvc-dev
+```
+
+**Sistemik açık iş (DevOps):** dev/stage/prod fresh kurulumda `AdminPanelDb_*` seed'i pipeline'da YOK (yalnız `IntegrationDb_*` seed'leniyor). Kalıcı çözüm: ya AdminPanel'i stack olarak ekleyip startup seed'ini çalıştır, ya da yukarıdaki master-only dump'ı bir deploy adımı yap.
+
 ## Prerequisites
 
 - Docker running (PostgreSQL container)
