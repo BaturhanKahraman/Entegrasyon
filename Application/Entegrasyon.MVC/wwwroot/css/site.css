@@ -169,6 +169,12 @@
     border-bottom-left-radius: 0;
 }
 
+/* Kart başlığı ile alt-başlığı yan yana render edildiğinde yapışık kalıyordu
+   (ör. "Mağaza YayınlamaÜrünü kendi mağazanızda..."). Alt-başlığa sol boşluk. */
+.card-title + .card-subtitle {
+    margin-inline-start: 0.5rem;
+}
+
 /* Currency input — tarayıcı spinner'larını gizle (WebKit + Firefox) */
 .currency-input::-webkit-outer-spin-button,
 .currency-input::-webkit-inner-spin-button {
