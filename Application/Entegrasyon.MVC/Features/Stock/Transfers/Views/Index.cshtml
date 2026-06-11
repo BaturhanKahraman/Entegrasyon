@@ -2,84 +2,143 @@
 @using Entegrasyon.Entity.Dtos.Branches
 @model Pageable<StockTransferRequestListItemDto>
 
-<div class="d-flex align-items-center mb-3">
-    <h2 class="page-title me-2 mb-0">Stok Transfer Talepleri</h2>
-    @if (ViewBag.PendingCount is int pc && pc > 0)
-    {
-        <span class="badge bg-yellow-lt">@pc beklemede</span>
-    }
-    <div class="ms-auto">
-        <a href="/stock-transfer-requests/create" class="btn btn-primary">
-            Yeni Transfer Talebi
-        </a>
+@{
+    // Başlık layout'un page-header'ında render edilir; subtitle + sağ aksiyonlar orada.
+    ViewData.SetPageSubtitle("Şubeler arası stok transfer taleplerini oluştur, onayla ve izle.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // "Toplam Talep" ve "Beklemede" GERÇEK veriden gelir (Pageable.TotalItemCount,
+    // ViewBag.PendingCount = manager.GetPendingCountAsync). Onaylanan/Reddedilen
+    // sayfa-geneli aggregate gerektirir — şu an mevcut DEĞİL; ViewBag'den null-safe
+    // okunur, backend aggregate eklenince otomatik dolar. Hiçbir sayı hardcode edilmez.
+    int pendingCount = ViewBag.PendingCount is int pc ? pc : 0;
+    int? approvedCount = ViewBag.ApprovedCount as int?;
+    int? rejectedCount = ViewBag.RejectedCount as int?;
+
+    var statusFilter = ViewBag.Status as StockTransferRequestStatus?;
+}
+
+@section PageActions {
+    <a href="/stock-transfer-requests/create" class="btn btn-primary">
+        <i class="ti ti-plus icon"></i>
+        Yeni Transfer Talebi
+    </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-arrows-exchange fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@Model.TotalItemCount</div>
+                        <div class="text-secondary">Toplam Talep</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-clock fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@pendingCount.ToString("N0")</div>
+                        <div class="text-secondary">Beklemede</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-checks fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(approvedCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Onaylanan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-red-lt avatar avatar-lg rounded">
+                            <i class="ti ti-x fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(rejectedCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Reddedilen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+@* ── Transfer talepleri listesi kartı ── *@
 <div class="card">
     <div class="card-header">
-        <form method="get" class="d-flex gap-2">
-            <select name="status" class="form-select" style="max-width: 200px;" onchange="this.form.submit()">
-                <option value="">Tüm Durumlar</option>
-                <option value="@((int)StockTransferRequestStatus.Pending)"
-                        selected="@(ViewBag.Status is StockTransferRequestStatus.Pending)">Beklemede</option>
-                <option value="@((int)StockTransferRequestStatus.Approved)"
-                        selected="@(ViewBag.Status is StockTransferRequestStatus.Approved)">Onaylandı</option>
-                <option value="@((int)StockTransferRequestStatus.Rejected)"
-                        selected="@(ViewBag.Status is StockTransferRequestStatus.Rejected)">Reddedildi</option>
-            </select>
-        </form>
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Transfer Talepleri</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount</strong> talep
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <form method="get" class="d-flex">
+                    <div class="input-icon">
+                        <span class="input-icon-addon">
+                            <i class="ti ti-filter"></i>
+                        </span>
+                        <select name="status"
+                                class="form-select ps-5"
+                                aria-label="Duruma göre filtrele"
+                                onchange="this.form.submit()">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="@((int)StockTransferRequestStatus.Pending)"
+                                    selected="@(statusFilter is StockTransferRequestStatus.Pending)">
+                                Beklemede
+                            </option>
+                            <option value="@((int)StockTransferRequestStatus.Approved)"
+                                    selected="@(statusFilter is StockTransferRequestStatus.Approved)">
+                                Onaylandı
+                            </option>
+                            <option value="@((int)StockTransferRequestStatus.Rejected)"
+                                    selected="@(statusFilter is StockTransferRequestStatus.Rejected)">
+                                Reddedildi
+                            </option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-vcenter card-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Kaynak Şube</th>
-                    <th>Hedef Şube</th>
-                    <th class="text-end">Ürün</th>
-                    <th class="text-end">Toplam Adet</th>
-                    <th>Durum</th>
-                    <th>Talep Eden</th>
-                    <th>Tarih</th>
-                    <th class="text-end">İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model is null || Model.Items.Count == 0)
-                {
-                    <tr><td colspan="9" class="text-center text-muted">Kayıt bulunamadı.</td></tr>
-                }
-                else
-                {
-                    @foreach (var item in Model.Items)
-                    {
-                        <tr>
-                            <td>@item.Id</td>
-                            <td>@item.SourceBranchOfficeName</td>
-                            <td>@item.TargetBranchOfficeName</td>
-                            <td class="text-end">@item.TotalItemCount</td>
-                            <td class="text-end">@item.TotalQuantity</td>
-                            <td>
-                                @{
-                                    var badgeClass = item.Status switch
-                                    {
-                                        0 => "bg-warning",
-                                        1 => "bg-success",
-                                        2 => "bg-danger",
-                                        _ => "bg-secondary"
-                                    };
-                                }
-                                <span class="badge @badgeClass">@item.StatusText</span>
-                            </td>
-                            <td>@item.RequestedByUserName</td>
-                            <td>@item.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                            <td class="text-end">
-                                <a href="/stock-transfer-requests/@item.Id" class="btn btn-sm btn-outline-primary">Detay</a>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
+    <partial name="Partials/_StockTransferTable" model="Model"/>
 </div>

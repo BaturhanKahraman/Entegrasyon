@@ -1,31 +1,136 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.DiscountVouchers.DiscountVoucherDto>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="col">
+@{
+    // Başlıksız header deseni (Ürünler dili): grup adını tekrar etmemek için
+    // subtitle + sağ aksiyonlar layout'un page-header'ında render edilir.
+    ViewData.SetPageSubtitle("Yüzde ve tutar bazlı indirim kodlarını oluştur, kullanımını takip et.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // "Toplam Kod" GERÇEK veriden gelir (Pageable.TotalItemCount, arama filtresi
+    // uygulandığında o sonucun toplamı). Aktif / pasif / toplam kullanım KPI'ları
+    // tüm veri kümesinde aggregate gerektirir — şu an mevcut DEĞİL. ViewBag'den
+    // null-safe okunur; backend aggregate eklenince otomatik dolar. Hiçbir sayı
+    // hardcode edilmez (null → "—").
+    int? activeCount = ViewBag.ActiveCount as int?;
+    int? inactiveCount = ViewBag.InactiveCount as int?;
+    int? totalUsage = ViewBag.TotalUsageCount as int?;
+}
+
+@section PageActions {
+    <a href="/discounts/create" class="btn btn-primary">
+        <i class="ti ti-plus icon"></i>
+        Yeni Kod
+    </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-ticket fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@Model.TotalItemCount</div>
+                        <div class="text-secondary">Toplam Kod</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-discount-check fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(activeCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Aktif Kod</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-clock-x fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(inactiveCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Pasif / Süresi Dolmuş</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-purple-lt avatar avatar-lg rounded">
+                            <i class="ti ti-shopping-cart fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(totalUsage?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Toplam Kullanım</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── İndirim kodu listesi kartı ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">İndirim Kodları</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount</strong> kod
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <div class="input-icon">
+                    <span class="input-icon-addon">
+                        <i class="ti ti-search"></i>
+                    </span>
                     <input type="text"
                            class="form-control"
                            name="code"
-                           placeholder="Kod ara..."
+                           placeholder="Kod ara…"
+                           autocomplete="off"
+                           aria-label="İndirim kodu ara"
                            value="@ViewBag.Code"
                            hx-get="/discounts"
-                           hx-trigger="keyup changed delay:300ms"
+                           hx-trigger="keyup changed delay:300ms, search"
                            hx-target="#voucher-table"
                            hx-swap="outerHTML"
                            hx-include="this"/>
                 </div>
-                <div class="col-auto">
-                    <a href="/discounts/create" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                             stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M12 5l0 14"/>
-                            <path d="M5 12l14 0"/>
-                        </svg>
-                        Yeni Kod
-                    </a>
-                </div>
             </div>
-            <partial name="Partials/_VoucherTable" model="Model"/>
         </div>
+    </div>
+    <partial name="Partials/_VoucherTable" model="Model"/>
+</div>

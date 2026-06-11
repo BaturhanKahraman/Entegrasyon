@@ -1,6 +1,9 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.DiscountVouchers.DiscountVoucherDto>
+@{
+    var tr = new System.Globalization.CultureInfo("tr-TR");
+}
 
-<div id="voucher-table" hx-trigger="voucherToggled from:body" hx-get="/discounts" hx-target="#voucher-table" hx-swap="innerHTML">
+<div id="voucher-table" hx-trigger="voucherToggled from:body" hx-get="/discounts" hx-target="#voucher-table" hx-swap="outerHTML">
     @if (Model != null && Model.HasItem)
     {
         <div class="table-responsive">
@@ -9,8 +12,8 @@
                     <tr>
                         <th>Kod</th>
                         <th>Tip / Değer</th>
-                        <th>Son Kullanim</th>
-                        <th>Kullanim</th>
+                        <th>Son Kullanım</th>
+                        <th class="text-center">Kullanım</th>
                         <th>Müşteri</th>
                         <th>Durum</th>
                         <th class="w-1"></th>
@@ -26,26 +29,31 @@
                                 <span class="fw-bold font-monospace">@voucher.Code</span>
                                 @if (voucher.MinimumCartAmount.HasValue)
                                 {
-                                    <br/><small class="text-secondary">Min. @voucher.MinimumCartAmount.Value.ToString("C0", new System.Globalization.CultureInfo("tr-TR"))</small>
+                                    <div class="text-secondary small">
+                                        <i class="ti ti-shopping-cart-plus" aria-hidden="true"></i>
+                                        Min. @voucher.MinimumCartAmount.Value.ToString("C0", tr)
+                                    </div>
                                 }
                             </td>
                             <td>
                                 @if (voucher.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.Percentage)
                                 {
-                                    <span class="badge bg-purple-lt">%@voucher.Percentage.ToString("F0")</span>
+                                    <span class="badge bg-purple-lt text-purple-lt-fg">%@voucher.Percentage.ToString("F0")</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-blue-lt">@voucher.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                    <span class="badge bg-blue-lt text-blue-lt-fg">@voucher.Amount.ToString("C2", tr)</span>
                                 }
                             </td>
                             <td class="text-secondary">
                                 @(voucher.ExpiringDate.HasValue
                                     ? voucher.ExpiringDate.Value.ToString("dd.MM.yyyy")
-                                    : "Suressiz")
+                                    : "Süresiz")
                             </td>
-                            <td class="text-secondary">
-                                @voucher.CurrentUsageCount / @(voucher.MaxUsageCount.HasValue ? voucher.MaxUsageCount.Value.ToString() : "∞")
+                            <td class="text-center">
+                                <span class="text-secondary">
+                                    @voucher.CurrentUsageCount / @(voucher.MaxUsageCount.HasValue ? voucher.MaxUsageCount.Value.ToString() : "∞")
+                                </span>
                             </td>
                             <td class="text-secondary">
                                 @(string.IsNullOrEmpty(voucher.CustomerFullName) ? "Herkes" : voucher.CustomerFullName)
@@ -53,7 +61,7 @@
                             <td>
                                 @if (isExpired)
                                 {
-                                    <span class="badge bg-red-lt">Suresi Doldu</span>
+                                    <span class="badge bg-red-lt">Süresi Doldu</span>
                                 }
                                 else if (!voucher.IsActive)
                                 {
@@ -69,32 +77,47 @@
                                 }
                             </td>
                             <td>
-                                <div class="btn-list flex-nowrap">
-                                    @if (voucher.IsActive && !isExpired)
-                                    {
-                                        <button class="btn btn-sm btn-outline-warning"
-                                                hx-post="/discounts/@voucher.Id/toggle"
-                                                hx-vals='{"activate":"false"}'
-                                                hx-swap="none"
-                                                hx-confirm="Bu kodu pasife almak istediginize emin misiniz?">
-                                            Pasife Al
-                                        </button>
-                                    }
-                                    else if (!voucher.IsActive)
-                                    {
-                                        <button class="btn btn-sm btn-outline-success"
-                                                hx-post="/discounts/@voucher.Id/toggle"
-                                                hx-vals='{"activate":"true"}'
-                                                hx-swap="none">
-                                            Aktif Et
-                                        </button>
-                                    }
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            hx-post="/discounts/@voucher.Id/delete"
-                                            hx-swap="none"
-                                            hx-confirm="Bu indirim kodunu silmek istediginize emin misiniz?">
-                                        <i class="ti ti-trash"></i>
+                                <div class="dropdown">
+                                    <button class="btn btn-icon btn-ghost-secondary"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="İndirim kodu işlemleri">
+                                        <i class="ti ti-dots-vertical"></i>
                                     </button>
+                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                        @if (voucher.IsActive && !isExpired)
+                                        {
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               hx-post="/discounts/@voucher.Id/toggle"
+                                               hx-vals='{"activate":"false"}'
+                                               hx-swap="none"
+                                               hx-confirm="Bu kodu pasife almak istediğinize emin misiniz?">
+                                                <i class="ti ti-circle-pause dropdown-item-icon"></i>
+                                                Pasife Al
+                                            </a>
+                                        }
+                                        else if (!voucher.IsActive)
+                                        {
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               hx-post="/discounts/@voucher.Id/toggle"
+                                               hx-vals='{"activate":"true"}'
+                                               hx-swap="none">
+                                                <i class="ti ti-circle-check dropdown-item-icon"></i>
+                                                Aktif Et
+                                            </a>
+                                        }
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item text-danger"
+                                           href="#"
+                                           hx-post="/discounts/@voucher.Id/delete"
+                                           hx-swap="none"
+                                           hx-confirm="Bu indirim kodunu silmek istediğinize emin misiniz?">
+                                            <i class="ti ti-trash dropdown-item-icon"></i>
+                                            Sil
+                                        </a>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -123,9 +146,9 @@
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
                          Title = "İndirim kodu bulunamadı",
-                         Subtitle = "Henüz indirim kodu olusturulmamis veya arama kriterinize uygun kod yok.",
+                         Subtitle = "Henüz indirim kodu oluşturulmamış veya arama kriterinize uygun kod yok.",
                          ActionUrl = "/discounts/create",
-                         ActionText = "Yeni Kod Olustur"
+                         ActionText = "Yeni Kod Oluştur"
                      }'/>
         </div>
     }

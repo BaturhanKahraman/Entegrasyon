@@ -502,4 +502,30 @@ public class CustomerManager(
         LogAction.Delete => "red",
         _ => "secondary"
     };
+
+    public async Task<CustomerKpiDto> GetCustomerKpisAsync(CancellationToken ct = default)
+    {
+        // Müşteriler liste sayfası üst KPI snapshot'ı — tablo filtresinden bağımsız, tüm
+        // (silinmemiş, query filter) müşteriler. Tek server-side GroupBy(CustomerType=TPH
+        // discriminator) → sunucuda count + IsActive sayımı; kovalara bellekte pivot
+        // (grup sayısı 2: Retail/Corporate). AsNoTracking (DbContext default), N+1 yok.
+        await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
+
+        var byType = await dbContext.Customers
+            .GroupBy(c => c.CustomerType)
+            .Select(g => new
+            {
+                Type = g.Key,
+                Total = g.Count(),
+                Active = g.Count(c => c.IsActive)
+            })
+            .ToListAsync(ct);
+
+        int TotalFor(string type) => byType.FirstOrDefault(x => x.Type == type)?.Total ?? 0;
+
+        return new CustomerKpiDto(
+            IndividualCount: TotalFor("Retail"),
+            CorporateCount: TotalFor("Corporate"),
+            ActiveCount: byType.Sum(x => x.Active));   // tüm tiplerde aktif
+    }
 }

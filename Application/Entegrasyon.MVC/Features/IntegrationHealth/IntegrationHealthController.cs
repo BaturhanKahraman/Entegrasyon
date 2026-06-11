@@ -9,7 +9,9 @@ using Entegrasyon.MVC.Infrastructure.Extensions;
 namespace Entegrasyon.MVC.Features.IntegrationHealth;
 
 [Authorize]
-public class IntegrationHealthController(IApplicationLogManager logManager) : HtmxController
+public class IntegrationHealthController(
+    IApplicationLogManager logManager,
+    IMarketPlaceManager marketPlaceManager) : HtmxController
 {
     [HttpGet("/integrations/health")]
     public async Task<IActionResult> Index()
@@ -48,12 +50,19 @@ public class IntegrationHealthController(IApplicationLogManager logManager) : Ht
 
         var recentErrorCount = recentErrors.Count(l => l.CreatedAt >= cutoff);
 
+        // Per-marketplace credential durumu (#81 ile tutarlı). Hata olursa boş liste — sayfa yine açılır.
+        var marketplacesResult = await marketPlaceManager.GetAllAsync();
+        var marketplaceRows = marketplacesResult.Success && marketplacesResult.Data is not null
+            ? IntegrationHealthMapper.BuildMarketplaceRows(marketplacesResult.Data)
+            : [];
+
         var vm = new IntegrationHealthVm
         {
             RecentSyncCount = recentSyncCount,
             RecentErrorCount = recentErrorCount,
             LastSyncTime = lastSyncTime,
-            RecentErrors = recentErrors
+            RecentErrors = recentErrors,
+            Marketplaces = marketplaceRows
         };
 
         return HtmxView("~/Features/IntegrationHealth/Views/Index.cshtml", vm);

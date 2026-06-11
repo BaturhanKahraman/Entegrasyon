@@ -88,6 +88,55 @@
             </div>
         </div>
 
+        <!-- Per-Marketplace Credential Durumu (#81 ile tutarlı) -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Pazaryeri Bağlantı Durumu</h3>
+            </div>
+            @if (Model.Marketplaces.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Pazaryeri</th>
+                                <th>Durum</th>
+                                <th class="w-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mp in Model.Marketplaces)
+                            {
+                                <tr>
+                                    <td>@mp.Name</td>
+                                    <td>
+                                        @if (mp.HasCredentials)
+                                        {
+                                            <span class="badge bg-success-lt">Hazır</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-lt">Yapılandırılmamış</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!mp.HasCredentials)
+                                        {
+                                            <a href="/settings/integrations" class="btn btn-sm btn-outline-primary">Anahtarları Gir</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-secondary">Tanımlı pazaryeri bulunamadı.</div>
+            }
+        </div>
+
         <!-- Recent Error Logs Table -->
         <div class="card">
             <div class="card-header">

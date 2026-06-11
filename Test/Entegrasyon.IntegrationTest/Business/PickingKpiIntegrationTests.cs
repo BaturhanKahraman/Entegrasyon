@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.IntegrationTest.Fixtures;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Entegrasyon.IntegrationTest.Business;
@@ -8,7 +9,7 @@ namespace Entegrasyon.IntegrationTest.Business;
 /// <summary>
 /// OrderManager.GetPickingKpisAsync — Sipariş Hazırlama (Picking) sayfası KPI aggregate'leri.
 ///
-/// 3 read-path sayım (Status="Created" filtresi):
+/// 3 read-path sayım (MarketplaceOrderStatus="Created" filtresi):
 ///  - PendingItemCount  = Σ TotalQuantity (bekleyen siparişlerin ürün adedi)
 ///  - TodayOrderCount   = bugün (UTC) gelen sipariş sayısı
 ///  - StaleOrderCount   = 24 saatten uzun bekleyen sipariş sayısı
@@ -20,19 +21,33 @@ public class PickingKpiIntegrationTests : IntegrationTestBase
     public PickingKpiIntegrationTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
         : base(pgFixture, wireMock) { }
 
+    /// <summary>
+    /// Order seed eder. NOT: <c>Order.TotalQuantity</c> EF Core'da <c>HasDefaultValue(0)</c> ile
+    /// yapılandırıldığından INSERT sırasında verilen değer 0'a düşüyor; bu yüzden gerçek değer
+    /// INSERT'ten sonra raw UPDATE (ExecuteUpdate) ile yazılır — prod'da bu alan OrderItems'tan
+    /// hesaplanır, test gerçekçi bir adet üretir.
+    /// </summary>
     private async Task SeedOrderAsync(string status, DateTimeOffset orderDate, int totalQuantity)
     {
-        using var db = CreateDbContext();
-        db.Orders.Add(new Order
+        var id = Guid.NewGuid();
+        using (var db = CreateDbContext())
         {
-            Id = Guid.NewGuid(),
-            OrderNumber = $"ORD-{Guid.NewGuid():N}".Substring(0, 12),
-            MarketplaceOrderStatus = status,
-            OrderDate = orderDate,
-            TotalQuantity = totalQuantity,
-            CreatedAt = DateTimeOffset.UtcNow
-        });
-        await db.SaveChangesAsync();
+            db.Orders.Add(new Order
+            {
+                Id = id,
+                OrderNumber = $"ORD-{Guid.NewGuid():N}".Substring(0, 12),
+                MarketplaceOrderStatus = status,
+                OrderDate = orderDate,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using (var db = CreateDbContext())
+        {
+            await db.Orders.Where(o => o.Id == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(o => o.TotalQuantity, totalQuantity));
+        }
     }
 
     [Fact]
@@ -46,13 +61,6 @@ public class PickingKpiIntegrationTests : IntegrationTestBase
         await SeedOrderAsync("Created", now.AddHours(-25), 1);
         // Farklı statü — KPI'a dahil olmamalı
         await SeedOrderAsync("Picking", now, 10);
-
-        // DIAGNOSTIK — ham DB durumu
-        using (var diag = CreateDbContext())
-        {
-            var rows = diag.Orders.Select(o => new { o.MarketplaceOrderStatus, o.TotalQuantity }).ToList();
-            Assert.Fail("DIAG: " + string.Join(" | ", rows.Select(r => $"{r.MarketplaceOrderStatus}:{r.TotalQuantity}")));
-        }
 
         var sut = GetService<IOrderManager>();
         var kpi = await sut.GetPickingKpisAsync();

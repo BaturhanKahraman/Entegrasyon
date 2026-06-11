@@ -1,0 +1,138 @@
+@using Entegrasyon.Entity
+@using Entegrasyon.Entity.Dtos.Branches
+@model Pageable<StockTransferRequestListItemDto>
+
+@{
+    // Aktif durum filtresini sayfalama linklerinde koru (full-page GET; bu controller
+    // HTMX partial dönüşü yapmadığı için paginasyon href tabanlı — tıklamada tam sayfa
+    // navigasyonu, kırılmaz).
+    var statusFilter = ViewBag.Status as StockTransferRequestStatus?;
+    string PageUrl(int page)
+    {
+        var url = $"/stock-transfer-requests?page={page}";
+        if (statusFilter is not null)
+            url += $"&status={(int)statusFilter}";
+        return url;
+    }
+
+    // Durum → Tabler light badge eşlemesi (referans _ProductTable'daki doğrulanmış
+    // light-badge kombinasyonları; tahmin yok).
+    string StatusBadge(int status) => status switch
+    {
+        0 => "bg-yellow-lt",
+        1 => "bg-green-lt",
+        2 => "bg-red-lt",
+        _ => "bg-secondary-lt"
+    };
+}
+
+<div id="stock-transfer-table">
+    @if (Model is not null && Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-1">#</th>
+                        <th>Transfer</th>
+                        <th class="text-center">Ürün</th>
+                        <th class="text-center">Toplam Adet</th>
+                        <th>Durum</th>
+                        <th>Talep Eden</th>
+                        <th>Tarih</th>
+                        <th class="w-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="table-row-clickable" data-href="/stock-transfer-requests/@item.Id" role="link" tabindex="0">
+                            <td class="text-secondary">@item.Id</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="font-weight-medium text-truncate">@item.SourceBranchOfficeName</span>
+                                    <i class="ti ti-arrow-narrow-right text-secondary" aria-label="aktarılır"></i>
+                                    <span class="font-weight-medium text-truncate">@item.TargetBranchOfficeName</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary-lt">@item.TotalItemCount</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-weight-medium">@item.TotalQuantity</span>
+                            </td>
+                            <td>
+                                <span class="badge @StatusBadge(item.Status)">@item.StatusText</span>
+                            </td>
+                            <td class="text-truncate">@item.RequestedByUserName</td>
+                            <td class="text-nowrap text-secondary">
+                                @item.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-icon btn-ghost-secondary"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="Transfer işlemleri">
+                                        <i class="ti ti-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                        <a class="dropdown-item" href="/stock-transfer-requests/@item.Id">
+                                            <i class="ti ti-eye dropdown-item-icon"></i>
+                                            Görüntüle
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPageCount > 1)
+        {
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <span class="text-secondary">Toplam @Model.TotalItemCount kayıt</span>
+                <ul class="pagination m-0">
+                    <li class="page-item @(Model.CurrentPageIndex <= 0 ? "disabled" : "")">
+                        <a class="page-link" href="@PageUrl(Model.CurrentPageIndex - 1)" tabindex="-1" aria-label="Önceki">
+                            <i class="ti ti-chevron-left"></i>
+                        </a>
+                    </li>
+                    @{
+                        var current = Model.CurrentPageIndex; // 0-based
+                        var last = Model.TotalPageCount - 1;
+                        var start = Math.Max(0, current - 2);
+                        var end = Math.Min(last, start + 4);
+                        if (end - start < 4) start = Math.Max(0, end - 4);
+                    }
+                    @for (var i = start; i <= end; i++)
+                    {
+                        <li class="page-item @(i == current ? "active" : "")">
+                            <a class="page-link" href="@PageUrl(i)">@(i + 1)</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.CurrentPageIndex >= last ? "disabled" : "")">
+                        <a class="page-link" href="@PageUrl(Model.CurrentPageIndex + 1)" aria-label="Sonraki">
+                            <i class="ti ti-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Transfer talebi bulunamadı",
+                         Subtitle = "Seçili duruma uygun stok transfer talebi yok. Yeni bir talep oluşturabilirsin.",
+                         ActionUrl = "/stock-transfer-requests/create",
+                         ActionText = "Yeni Transfer Talebi"
+                     }'/>
+        </div>
+    }
+</div>

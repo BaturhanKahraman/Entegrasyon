@@ -17,4 +17,10 @@ public interface ICustomerManager
     Task<IResult> SoftDelete(int id);
     Task<IResult> SetActive(int id, bool active, string? reason = null);
     Task<IDataResult<List<CustomerActivityDto>>> GetCustomerActivity(int id, int maxItems = 200);
+
+    /// <summary>
+    /// Müşteriler liste sayfası üst KPI kartları için global snapshot (bireysel/kurumsal/aktif
+    /// sayıları). Tek server-side GroupBy(CustomerType), N+1 yok.
+    /// </summary>
+    Task<CustomerKpiDto> GetCustomerKpisAsync(CancellationToken ct = default);
 }
