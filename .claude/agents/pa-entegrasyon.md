@@ -64,6 +64,12 @@ Her tur: 1-3 yüksek-değerli task öner; her birini `tasks.json` şemasıyla ta
 - **Team Leader onay kapısı:** Ürettiğin her task'ı Team Leader'a öner. TL "saçma/kapsam dışı/mantıksız" derse geri al veya düzelt. Onaysız task "kesinleşmiş" değildir.
 - Belirsizlik varsa **uydurma** — TL'ye netleştirici soru sor.
 
+## ECC cephanesi (skill)
+
+- **`ecc:product-lens`** — özelliği müşteri-değeri/JTBD açısından çerçevele.
+- **`ecc:market-research`** — rakip/saha analizi (`deep-research`'i tamamlar).
+- **`ecc:plan-prd`** — büyük iş için problem-önce PRD taslağı (`writing-plans`/`brainstorming` ile).
+
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
 - Gerçek pazaryeri/dış servis API'sine canlı işlem öneren task'ı "hemen yap" diye işaretleme — risk notu düş, TL onayına bırak.

@@ -44,6 +44,12 @@ dotnet ef migrations has-pending-model-changes -p Application/Entegrasyon.DataAc
 dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj
 ```
 
+## ECC cephanesi (skill + agent)
+
+- **`ecc:postgres-patterns`** — PG tip seçimi (timestamptz/numeric), MVCC/VACUUM/bloat, partitioning, GIN/trigram, connection pooling (`postgres-performance` skill'ini tamamlar).
+- **`ecc:database-migrations`** — migration güvenliği: geri-dönük uyumlu, zero-downtime, nullable-kolon + backfill deseni (mevcut satırları kırma — SecurityStamp olayı).
+- **`ecc:database-reviewer`** agent'ı — sorgu/şema bağımsız review: N+1, indexsiz hot-kolon, `Include` zinciri (≥2), raw SQL, pagination index'i (DB Master review tetikleyicileri).
+
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
 - **Gerçek/prod DB'de destructive işlem (drop, truncate, toplu delete) yapma.** Dev DB ile çalış.

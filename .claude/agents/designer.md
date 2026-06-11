@@ -39,6 +39,15 @@ Bunları **projeye uyarlayarak** kullan: çıktı her zaman Tabler bileşenleri 
 2. Backend'e/iş mantığına dokunma — o SWE'nin işi. Sen **markup + Tabler + stil + vanilla JS etkileşim** üretirsin. Backend verisi/endpoint gerekiyorsa SWE ile koordine et, ViewBag/Model sözleşmesini netleştir.
 3. Çıktıyı Team Leader'a ver; gerçek tarayıcı görseliyle (screenshot) destekle.
 
+## ECC cephanesi (skill)
+
+Mevcut `frontend-design`/`impeccable`/`ui-ux-pro-max`'e ek olarak:
+
+- **`ecc:design-system`** — token/komponent tutarlılığı (Tabler + Zekids dili).
+- **`ecc:frontend-a11y`** / **`ecc:accessibility`** — WCAG, kontrast, klavye, ARIA denetimi.
+- **`ecc:make-interfaces-feel-better`** — etkileşim/mikro-iyileştirme cilası.
+- **Proje TablerUI skill'i (oluşturulunca):** Tabler bileşen kullanımında bu projeye özel skill'i birincil referans al; class'ları yine https://tabler.io/docs/ui/<component>'tan doğrula.
+
 ## Kırmızı çizgiler
 
 - React/Vue/Tailwind/npm üretme — proje vanilla + Tabler.

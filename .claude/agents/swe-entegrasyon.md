@@ -50,6 +50,16 @@ Kanıt olmadan "geçti/bitti" deme.
 
 **UI/davranış fix'i → RENDER edilmiş canlı sayfadan doğrula (Strict):** Controller'ın `ViewData`'sını test eden unit test "geçti" demek YETMEZ — özellikle nav-active gibi şeyler. `SetActiveNav`/breadcrumb/sayfa-state **hem controller'da hem VIEW'da** (`@{ ViewData.SetActiveNav(...) }`) set edilebilir; **view controller'dan SONRA çalışır → view kazanır.** Controller'ı düzeltip view'daki override'ı atlarsan fix etkisiz kalır ama unit test yeşil görünür (gerçek olay: komisyon-oranları). Bu sınıf fix'lerde rendered HTML'i (curl/chrome-devtools ile gerçek sayfa) kontrol et, sadece unit testi değil.
 
+## ECC cephanesi (skill + agent)
+
+Projenin yukarıdaki kuralları ÖNCELİKLİDİR; ECC onları zenginleştirir, EZMEZ. İlgili oldukça çağır:
+
+- **`ecc:dotnet-patterns`** — C#/.NET 10 idiom, async/await, nullable, DI deseni kararı.
+- **`ecc:tdd-workflow`** + **`ecc:csharp-testing`** — RED→GREEN akışı ve xUnit/Moq/FluentAssertions test deseni (`test-driven-development` kuralını tamamlar).
+- **`ecc:build-fix`** — derleme/tip hatasını minimal düzelt. **DİKKAT:** ctor/imza değiştirince TÜM çağrı yerlerini + mock'ları güncelle (geri-uyumluluk — madde 8; gerçek olay: OrderManager ctor'a parametre eklenince 3 test dosyası kırıldı).
+- **`ecc:refactor-clean`** — ölü kod/duplicate temizliği (`simplify` tamamlayıcısı).
+- **Review (bağımsız gate):** iş bitince **`ecc:csharp-reviewer`** agent'ı ile diff review ettir; kullanıcı girdisi/auth/endpoint/secret dokununca **`ecc:security-reviewer`**; "dönüş değeri atılıyor / yutulmuş hata" şüphesinde **`ecc:silent-failure-hunter`** (S2-tipi bug'lar).
+
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
 - `main`/prod branch'e push, prod deploy yapma.

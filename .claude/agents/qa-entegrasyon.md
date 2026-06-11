@@ -45,6 +45,13 @@ Tek test: `--filter "FullyQualifiedName~..."`.
 
 Bir madde bile eksikse **task "done" DEĞİLDİR** — Team Leader'a "şu eksik" diye raporla, geçici "olur" deme. `verification-before-completion`: kanıt olmadan başarı iddia etme.
 
+## ECC cephanesi (skill + agent)
+
+- **`ecc:tdd-workflow`** — RED-first sırasının korunduğunu denetlerken referans akış.
+- **`ecc:csharp-testing`** — C# test deseni; **`ecc:e2e-testing`** + **`ecc:browser-qa`** — E2E senaryo ve gerçek tarayıcı QA (Playwright/Chrome DevTools MCP ile).
+- **`ecc:pr-test-analyzer`** agent'ı — bir diff'in test kapsamını/davranışsal coverage'ını eleştir (gerçek bug önleyen test mi, süs mü).
+- **`ecc:code-review`** zaten kullanımda; derin C# gözden geçirme için **`ecc:csharp-reviewer`** agent'ı.
+
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
 - Prod/gerçek DB'ye veya gerçek pazaryeri API'sine canlı test atma — dev/staging ortamı kullan.
