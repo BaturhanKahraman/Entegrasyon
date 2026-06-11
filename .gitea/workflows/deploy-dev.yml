@@ -1,17 +1,18 @@
 name: Deploy to Dev
 
-# develop push → build-test (gate) → deploy-dev (build → registry → entegrasyon-dev stack)
-# Gitea act_runner (server-runner). İki job'a bölündü: testler kırmızıysa deploy OLMAZ.
-# Secret YOK: tüm bağlantı string'leri /opt/stacks/entegrasyon-dev/.env'den gelir
-# (gitignore, sadece server'da). Gerçek pazaryeri API key'i YOK — WireMock mock.
+# develop push → test (gate) → build-push (image→registry) → deploy (stack→health)
+# Gitea act_runner (server-runner). Çoklu job: her aşama ayrı görünür ve `needs` ile
+# zincirlenir; bir önceki kırmızıysa sonraki çalışmaz.
+# Secret YOK: bağlantı string'leri /opt/stacks/entegrasyon-dev/.env'den (server-only).
+# Gerçek pazaryeri API key'i YOK — WireMock mock.
 
 on:
   push:
     branches: [ develop ]
   workflow_dispatch:
 
-# Hızlı ardışık push'larda deploy kuyruğu birikmesin: yeni push, çalışan/bekleyen
-# eski deploy'u iptal etsin → sadece EN GÜNCEL commit deploy olur.
+# Hızlı ardışık push'larda kuyruk birikmesin: yeni push eski çalışan/bekleyeni iptal
+# etsin → sadece EN GÜNCEL commit deploy olur.
 concurrency:
   group: deploy-dev
   cancel-in-progress: true
@@ -20,41 +21,71 @@ env:
   REGISTRY: 192.168.1.78:5252
   IMAGE: 192.168.1.78:5252/entegrasyon-mvc
   STACK_DIR: /opt/stacks/entegrasyon-dev
+  DOTNET_VERSION: "10.0"
 
 jobs:
-  # ── STAGE 1: Test gate ──────────────────────────────────────────────
+  # ── JOB 1: Test gate ────────────────────────────────────────────────
   # Hızlı tutuldu: restore + build + UNIT testler. Integration/E2E stage/prod
-  # pipeline'ında koşar (dev hızlı iterasyon ortamı). Kırmızıysa deploy bloklanır.
-  build-test:
+  # pipeline'larında koşar (dev = hızlı iterasyon). Kırmızıysa zincir durur.
+  test:
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/dotnet/sdk:10.0
+    # container: KULLANMA — dotnet/sdk image'ında node yok, Gitea actions/checkout
+    # node ister → exit 127. node:20 runner'da kal, .NET SDK'yı script ile kur.
     steps:
       - uses: actions/checkout@v4
-
+      - name: Install .NET SDK ${{ env.DOTNET_VERSION }}
+        run: |
+          set -e
+          apt-get update -qq && apt-get install -y -qq curl ca-certificates
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          chmod +x /tmp/dotnet-install.sh
+          /tmp/dotnet-install.sh --channel ${DOTNET_VERSION} --install-dir /usr/share/dotnet
+          ln -sf /usr/share/dotnet/dotnet /usr/local/bin/dotnet
+          dotnet --info
       - name: Restore
         run: dotnet restore Entegrasyon.sln
-
       - name: Build (Release)
         run: dotnet build Entegrasyon.sln --no-restore -c Release
-
       - name: Unit tests
         run: dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj --no-build -c Release --verbosity minimal
 
-  # ── STAGE 2: Build image + deploy (sadece testler geçince) ──────────
-  deploy-dev:
-    needs: build-test
+  # ── JOB 2: Image build + registry push ──────────────────────────────
+  build-push:
+    needs: test
     runs-on: ubuntu-latest
-    # NOT: docker.sock + /opt/stacks runner-config tarafından job'a zaten mount
-    # ediliyor — container.volumes ile TEKRAR mount edilirse 'Duplicate mount point'
-    # hatası verir. Bu yüzden override yok (default node:20-bookworm runner container).
     steps:
       - uses: actions/checkout@v4
-
-      - name: Diagnose runner (docker.sock + /opt/stacks)
+      - name: Install docker CLI
         run: |
-          echo "--- docker.sock ---"; ls -la /var/run/docker.sock 2>&1 || echo "NO docker.sock"
-          echo "--- /opt/stacks ---"; ls /opt/stacks 2>&1 | head || echo "NO /opt/stacks"
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            apt-get update -qq
+            apt-get install -y -qq ca-certificates curl gnupg
+            install -m0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq
+            apt-get install -y -qq docker-ce-cli docker-compose-plugin
+          fi
+          docker version
+      - name: Build & push dev image
+        run: |
+          set -e
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-12)
+          docker build -t ${IMAGE}:dev-${SHORT_SHA} -t ${IMAGE}:dev -f Application/Entegrasyon.MVC/Dockerfile .
+          docker push ${IMAGE}:dev-${SHORT_SHA}
+          docker push ${IMAGE}:dev
+          echo "Pushed ${IMAGE}:dev (dev-${SHORT_SHA})"
 
+  # ── JOB 3: Deploy stack + health ────────────────────────────────────
+  # NOT: docker.sock + /opt/stacks runner-config ile job'a zaten mount'lu —
+  # container.volumes ile TEKRAR mount 'Duplicate mount point' verir → override yok.
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Install docker CLI + compose plugin
         run: |
           set -e
@@ -62,36 +93,19 @@ jobs:
             apt-get update -qq
             apt-get install -y -qq ca-certificates curl gnupg
             install -m0755 -d /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/debian/gpg \
-              | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
             chmod a+r /etc/apt/keyrings/docker.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
-              > /etc/apt/sources.list.d/docker.list
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" > /etc/apt/sources.list.d/docker.list
             apt-get update -qq
             apt-get install -y -qq docker-ce-cli docker-compose-plugin
           fi
-          docker version
           docker compose version
-
-      - name: Build & push dev image
-        run: |
-          set -e
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-12)
-          docker build \
-            -t ${IMAGE}:dev-${SHORT_SHA} \
-            -t ${IMAGE}:dev \
-            -f Application/Entegrasyon.MVC/Dockerfile .
-          docker push ${IMAGE}:dev-${SHORT_SHA}
-          docker push ${IMAGE}:dev
-          echo "Pushed ${IMAGE}:dev (dev-${SHORT_SHA})"
 
       - name: Sync WireMock stubs to stack
         run: |
           set -e
-          # ÖNEMLİ: dizini 'rm -rf' ile SİLME — wiremock o dizini bind-mount ediyor;
-          # silmek inode'u koparır → container eski (boş) inode'a bakar → her stub 500.
-          # İçeriği temizle (dizin inode'unu KORU), sonra kopyala. Deploy'da wiremock
-          # --force-recreate ile yeni içeriği yeniden yükler.
+          # 'rm -rf' ile SİLME — wiremock dizini bind-mount; silmek inode'u koparır →
+          # her stub 500. İçeriği temizle (inode KORU), kopyala; deploy --force-recreate yükler.
           mkdir -p ${STACK_DIR}/wiremock/mappings ${STACK_DIR}/wiremock/__files
           find ${STACK_DIR}/wiremock/mappings -mindepth 1 -delete
           find ${STACK_DIR}/wiremock/__files  -mindepth 1 -delete
@@ -106,11 +120,10 @@ jobs:
           docker compose pull mvc-dev || true
           docker compose run --rm --no-deps mvc-dev dotnet Entegrasyon.MVC.dll --migrate
 
-      - name: Apply dev seed (admin login + demo data, idempotent)
+      - name: Apply dev seed (idempotent)
         run: |
           set -e
-          # Migration'lardan SONRA, app ayağa kalkmadan ÖNCE. Idempotent (ON CONFLICT / PK-UPDATE).
-          # SADECE dev DB — IntegrationDb / IntegrationDb_Stage'e DOKUNMAZ.
+          # Migration'lardan SONRA, app ayağa kalkmadan ÖNCE. Idempotent. SADECE dev DB.
           docker exec -i postgres_db psql -U baturhan -d IntegrationDb_Dev -v ON_ERROR_STOP=1 \
             < Database/seeds/integration_dev_seed.sql
           echo "Dev seed applied (admin/123456789 + demo data)"
@@ -120,8 +133,6 @@ jobs:
           set -e
           cd ${STACK_DIR}
           docker compose pull
-          # --force-recreate: wiremock güncel stub içeriğini yeniden mount+yükler (inode-safe),
-          # mvc-dev yeni image'ı alır.
           docker compose up -d --force-recreate --wait --wait-timeout 180
           echo "Dev deploy completed"
 
