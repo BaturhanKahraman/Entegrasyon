@@ -144,8 +144,10 @@ public class ProductManagerIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task AddProduct_ShouldReturnError_WhenAllStocksAreZero()
+    public async Task AddProduct_ShouldSucceed_WhenAllStocksAreZero()
     {
+        // Bug #3: Esnaf stoksuz ürün ekleyebilmeli (ön sipariş / yolda / tükenmiş).
+        // "En az bir stok gir" iş kuralı kaldırıldı → stok 0 ile ürün kaydedilebilmeli.
         // Arrange
         var (brandId, categoryId) = await GetSeedIdsAsync();
         var (productService, scope) = GetScopedService<IProductService>();
@@ -176,7 +178,7 @@ public class ProductManagerIntegrationTests : IntegrationTestBase
         var result = await productService.AddProduct(dto);
 
         // Assert
-        result.Success.Should().BeFalse("Product with zero stock should be rejected");
+        result.Success.Should().BeTrue("Stoksuz ürün artık kaydedilebilmeli (Bug #3)");
     }
 
     [Fact]

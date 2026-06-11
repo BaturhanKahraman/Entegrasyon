@@ -16,7 +16,6 @@ public class ProductManagerTests : BaseTest
 {
     private readonly IProductService _productManager;
     private readonly ProductMapper _productMapper = new();
-    private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
     private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
@@ -48,7 +47,6 @@ public class ProductManagerTests : BaseTest
             mockApplicationLogger.Object,
             _productMapper,
             MockValidator.Object,
-            _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,
             _mockBarcodeService.Object,
             _mockMinioFileStorage.Object,
@@ -79,20 +77,39 @@ public class ProductManagerTests : BaseTest
     };
 
     [Fact]
-    public async Task AddProduct_ShouldReturnError_WhenAllStocksAreZero()
+    public async Task AddProduct_ShouldSucceed_WhenAllStocksAreZero()
     {
+        // Bug #3: Esnaf stoksuz ürün ekleyebilmeli (ön sipariş / yolda / tükenmiş).
+        // "En az bir stok gir" iş kuralı kaldırıldı → stoksuz ürün başarıyla kaydedilmeli.
         // Arrange
         var dto = BuildValidDto();
-        _mockOfficeStockManager
-            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
-            .Returns(new ErrorResult("Lütfen en az bir stok girin."));
+        foreach (var variant in dto.ProductVariants)
+            variant.BranchOfficeStocks =
+                [new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = 0 }];
 
         // Act
         var result = await _productManager.AddProduct(dto);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Be("Lütfen en az bir stok girin.");
+        result.Success.Should().BeTrue();
+        result.Message.Should().Be(Messages.ProductAdded);
+    }
+
+    [Fact]
+    public async Task AddProduct_ShouldSucceed_WhenNoStockRowsProvided()
+    {
+        // Bug #3: Hiç stok satırı girilmeden de ürün kaydedilebilmeli (stok sonra girilir).
+        // Arrange
+        var dto = BuildValidDto();
+        foreach (var variant in dto.ProductVariants)
+            variant.BranchOfficeStocks = [];
+
+        // Act
+        var result = await _productManager.AddProduct(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Message.Should().Be(Messages.ProductAdded);
     }
 
     [Fact]
@@ -101,10 +118,6 @@ public class ProductManagerTests : BaseTest
         // Arrange
         var dto = BuildValidDto();
         var mappedProduct = new Product { AttributeKeyValues = [] };
-
-        _mockOfficeStockManager
-            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
-            .Returns(new SuccessResult());
 
         // Act
         var result = await _productManager.AddProduct(dto);
@@ -121,9 +134,6 @@ public class ProductManagerTests : BaseTest
         // Arrange
         var dto = BuildValidDto(barcode: string.Empty);
 
-        _mockOfficeStockManager
-            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
-            .Returns(new SuccessResult());
         _mockBarcodeService
             .Setup(b => b.GenerateAsync())
             .ReturnsAsync("9780000000001");
@@ -140,9 +150,6 @@ public class ProductManagerTests : BaseTest
     {
         // Arrange
         var dto = BuildValidDto(barcode: "9780000000001");
-        _mockOfficeStockManager
-            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
-            .Returns(new SuccessResult());
 
         // Act
         await _productManager.AddProduct(dto);
@@ -156,10 +163,6 @@ public class ProductManagerTests : BaseTest
     {
         // Arrange
         var dto = BuildValidDto();
-
-        _mockOfficeStockManager
-            .Setup(s => s.CheckIfProductCountZero(It.IsAny<AddBranchOfficeStockDto[]>()))
-            .Returns(new SuccessResult());
 
         // Act
         await _productManager.AddProduct(dto);

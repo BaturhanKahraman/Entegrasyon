@@ -64,13 +64,14 @@ public class AddProductVariantValidatorTests
     }
 
     [Fact]
-    public async Task Should_Fail_WhenBranchOfficeStocksIsEmpty()
+    public async Task Should_Pass_WhenBranchOfficeStocksIsEmpty()
     {
+        // Bug #3: Esnaf stoksuz ürün ekleyebilmeli (ön sipariş / yolda / tükenmiş).
+        // Stok zorunluluğu kaldırıldı — boş stok listesi geçerli olmalı.
         var variant = ValidVariant();
         variant.BranchOfficeStocks = [];
         var result = await _validator.ValidateAsync(variant);
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Lütfen stok değerlerini girin.");
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]

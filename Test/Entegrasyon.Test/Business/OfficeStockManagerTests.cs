@@ -2,7 +2,6 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
-using Entegrasyon.Entity.Dtos.Product;
 using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.UnitTest.Business;
@@ -28,48 +27,6 @@ public class OfficeStockManagerTests : BaseTest
         );
     }
 
-    [Fact]
-    public void CheckIfProductCountZero_ShouldReturnError_WhenAllStocksAreZero()
-    {
-        // Arrange
-        var stocks = new[]
-        {
-            new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = 0 },
-            new AddBranchOfficeStockDto { BranchOfficeId = 2, FirstTotalStock = 0 },
-        };
-
-        // Act
-        var result = _manager.CheckIfProductCountZero(stocks);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Be("Lütfen en az bir stok girin.");
-    }
-
-    [Fact]
-    public void CheckIfProductCountZero_ShouldReturnSuccess_WhenAtLeastOneStockIsNonZero()
-    {
-        // Arrange
-        var stocks = new[]
-        {
-            new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = 0 },
-            new AddBranchOfficeStockDto { BranchOfficeId = 2, FirstTotalStock = 10 },
-        };
-
-        // Act
-        var result = _manager.CheckIfProductCountZero(stocks);
-
-        // Assert
-        result.Success.Should().BeTrue();
-    }
-
-    [Fact]
-    public void CheckIfProductCountZero_ShouldReturnSuccess_WhenInputIsNull()
-    {
-        // Act
-        var result = _manager.CheckIfProductCountZero(null!);
-
-        // Assert
-        result.Success.Should().BeTrue();
-    }
+    // Bug #3: CheckIfProductCountZero ("en az bir stok gir" iş kuralı) kaldırıldı —
+    // esnaf artık stoksuz ürün ekleyebiliyor. İlgili testler silindi.
 }

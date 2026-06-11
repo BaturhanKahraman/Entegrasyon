@@ -32,7 +32,6 @@ public class ProductManager(
     IApplicationLogManager applicationLogManager,
     Entegrasyon.Business.Mappers.ProductMapper mapper,
     IFluentValidator validator,
-    IOfficeStockManager officeStockManager,
     IAttributeKeyValueManager attributeKeyValueManager,
     IBarcodeService barcodeService,
     IMinioFileStorage minioFileStorage,
@@ -58,11 +57,8 @@ public class ProductManager(
         if (hasChildren)
             return new ErrorDataResult<Product>(null!, "Sadece alt kategorisi olmayan (yaprak) kategoriler secilebilir.");
 
-        var check = LogicRunner.Run(
-            officeStockManager.CheckIfProductCountZero(dto.ProductVariants.SelectMany(x => x.BranchOfficeStocks).ToArray())
-        );
-        if (check != null)
-            return new ErrorDataResult<Product>(null!, check.Message!);
+        // Bug #3: "En az bir stok gir" iş kuralı kaldırıldı — esnaf stoksuz ürün
+        // ekleyebilmeli (ön sipariş / yolda / tükenmiş). Stok, ürün oluştuktan sonra girilir.
 
         foreach (var productVariantDto in dto.ProductVariants.Where(pv => string.IsNullOrEmpty(pv.Barcode)))
             productVariantDto.Barcode = await barcodeService.GenerateAsync();

@@ -16,7 +16,6 @@ public class UpdateProductTests : BaseTest
 {
     private readonly IProductService _productManager;
     private readonly ProductMapper _productMapper = new();
-    private readonly Mock<IOfficeStockManager> _mockOfficeStockManager = new();
     private readonly Mock<IAttributeKeyValueManager> _mockAttributeKeyValueManager = new();
     private readonly Mock<IBarcodeService> _mockBarcodeService = new();
     private readonly Mock<IMinioFileStorage> _mockMinioFileStorage = new();
@@ -45,7 +44,6 @@ public class UpdateProductTests : BaseTest
             mockApplicationLogger.Object,
             _productMapper,
             MockValidator.Object,
-            _mockOfficeStockManager.Object,
             _mockAttributeKeyValueManager.Object,
             _mockBarcodeService.Object,
             _mockMinioFileStorage.Object,

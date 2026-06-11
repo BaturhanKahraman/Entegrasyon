@@ -173,26 +173,6 @@ public class OfficeStockManagerIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task CheckIfProductCountZero_ShouldReturnError_WhenAllZero()
-    {
-        // Arrange
-        var (service, scope) = GetScopedService<IOfficeStockManager>();
-        using var _ = scope;
-
-        var stocks = new[]
-        {
-            new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = 0 },
-            new AddBranchOfficeStockDto { BranchOfficeId = 1, FirstTotalStock = 0 }
-        };
-
-        // Act
-        var result = service.CheckIfProductCountZero(stocks);
-
-        // Assert
-        result.Success.Should().BeFalse();
-    }
-
-    [Fact]
     public async Task AddOfficeStocks_ShouldFail_WhenOfficeNotFound()
     {
         // Arrange

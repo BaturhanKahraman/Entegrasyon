@@ -52,16 +52,6 @@ public class OfficeStockManager(
         await dbContext.SaveChangesAsync();
     }
 
-    public IResult CheckIfProductCountZero(params AddBranchOfficeStockDto[] stocks)
-    {
-        if (stocks == null)
-            return new SuccessResult();
-        var stocksList = stocks.ToList();
-        if (stocksList.All(x => x.FirstTotalStock == 0))
-            return new ErrorResult("Lütfen en az bir stok girin.");
-        return new SuccessResult();
-    }
-
     public async Task<IResult> DecreaseProductStock(Guid id, int stockNumber, int branchId, bool overrideStockStatus = false)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();

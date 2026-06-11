@@ -12,7 +12,9 @@ public class AddProductVariantValidator : AbstractValidator<AddProductVariantDto
             .WithMessage("Liste fiyatı negatif olamaz.");
 
         RuleFor(x => x.SalePrice).Must(v => v.HasValue && v.Value > 0).WithMessage("Satış Fiyatı boş geçilemez");
-        RuleFor(x => x.BranchOfficeStocks).NotEmpty().WithMessage("Lütfen stok değerlerini girin.");
+        // Bug #3: Stok zorunluluğu kaldırıldı — esnaf stoksuz ürün ekleyebilmeli
+        // (ön sipariş / yolda / henüz gelmemiş / tükenmiş). BranchOfficeStocks boş olabilir;
+        // girilen stok satırları (varsa) yine de kendi içinde doğrulanır.
         RuleForEach(x => x.BranchOfficeStocks).SetValidator(new AddBranchOfficeStockValidator());
 
         RuleFor(x => x.VatRate)
