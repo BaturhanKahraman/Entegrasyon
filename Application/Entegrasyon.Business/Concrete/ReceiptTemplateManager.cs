@@ -52,7 +52,7 @@ public sealed class ReceiptTemplateManager(
             return new ErrorResult("Logo genişliği 80-200px aralığında olmalı.");
 
         await using var db = await contextFactory.CreateDbContextAsync();
-        var row = await db.ReceiptTemplates.FirstOrDefaultAsync(x => x.Id == SingletonId);
+        var row = await db.ReceiptTemplates.AsTracking().FirstOrDefaultAsync(x => x.Id == SingletonId);
         if (row is null) return new ErrorResult("Şablon bulunamadı.");
 
         row.ThermalJson = dto.ThermalJson;
@@ -90,7 +90,7 @@ public sealed class ReceiptTemplateManager(
         var url = await fileStorage.UploadAsync(stream, objectName, file.ContentType);
 
         await using var db = await contextFactory.CreateDbContextAsync();
-        var row = await db.ReceiptTemplates.FirstOrDefaultAsync(x => x.Id == SingletonId);
+        var row = await db.ReceiptTemplates.AsTracking().FirstOrDefaultAsync(x => x.Id == SingletonId);
         if (row is null) return new ErrorDataResult<string>("", "Şablon bulunamadı.");
 
         var oldObjectName = ExtractObjectNameFromUrl(row.LogoUrl);
@@ -109,7 +109,7 @@ public sealed class ReceiptTemplateManager(
     public async Task<Entegrasyon.Entity.Results.IResult> DeleteLogoAsync()
     {
         await using var db = await contextFactory.CreateDbContextAsync();
-        var row = await db.ReceiptTemplates.FirstOrDefaultAsync(x => x.Id == SingletonId);
+        var row = await db.ReceiptTemplates.AsTracking().FirstOrDefaultAsync(x => x.Id == SingletonId);
         if (row is null || string.IsNullOrEmpty(row.LogoUrl))
             return new SuccessResult("Silinecek logo yok.");
 

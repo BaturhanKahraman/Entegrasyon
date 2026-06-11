@@ -290,7 +290,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
-        var cart = await dbContext.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+        var cart = await dbContext.Carts.AsTracking().FirstOrDefaultAsync(c => c.Id == cartId);
         if (cart is null)
             return new ErrorResult("Sepet bulunamadı.");
 
@@ -304,7 +304,7 @@ public class CartManager(IDbContextFactory<IntegrationDbContext> contextFactory)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
-        var cart = await dbContext.Carts.FirstOrDefaultAsync(c => c.Id == cartId);
+        var cart = await dbContext.Carts.AsTracking().FirstOrDefaultAsync(c => c.Id == cartId);
         if (cart is null)
             return new ErrorResult("Sepet bulunamadı.");
 
