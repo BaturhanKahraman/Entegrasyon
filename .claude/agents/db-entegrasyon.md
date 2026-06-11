@@ -28,8 +28,8 @@ Entity veya DbContext'te değişiklik yapıldığında:
 - Entity configuration'lar `Entegrasyon.DataAccess` altında. Yeni entity → IEntityTypeConfiguration ekle.
 - DI: Scrutor convention-based auto-scan (`IXxxManager`→`XxxManager`). Özel durumlar manuel.
 - Domain modeli (kategori/özellik): `CategoryAttribute`, `CategoryAttributeCategory` (IsRequired/IsVarianter/IsSlicer), `CategoryAttributeValue`, `AttributeKeyValue`; marketplace eşleştirmeleri `CategoryAttributeMarketPlaceMatch` (MarketPlaceId=1=Trendyol). Müşteri kalıtımı `Customer`→`RetailCustomer`/`CorporateCustomer`. `BarcodeSequence` arka planda temizlenir.
-- Şüphede `entegrasyon-db` ve `microsoft-docs` skill'leri (EF Core resmi ref); EF kod desenleri için `aspnet-mvc-htmx`.
-- **Performans/şema için `postgres-performance` skill'i** (index stratejisi, EXPLAIN okuma, N+1, partial index, connection pooling, pg_stat_statements, GIN/trigram).
+- Şüphede `microsoft-docs` skill'i (EF Core resmi ref); EF kod desenleri için `aspnet-mvc-htmx` skill'i.
+- **Performans/şema için `ecc:postgres-patterns` skill'ini AÇIKÇA çağır** (index stratejisi, EXPLAIN okuma, N+1, partial index, connection pooling, GIN/trigram, MVCC). Bkz aşağıdaki ECC cephanesi.
 
 ## Performans & sorgu
 
@@ -46,7 +46,7 @@ dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj
 
 ## ECC cephanesi (skill + agent)
 
-- **`ecc:postgres-patterns`** — PG tip seçimi (timestamptz/numeric), MVCC/VACUUM/bloat, partitioning, GIN/trigram, connection pooling (`postgres-performance` skill'ini tamamlar).
+- **`ecc:postgres-patterns`** — PG tip seçimi (timestamptz/numeric), MVCC/VACUUM/bloat, partitioning, GIN/trigram, connection pooling, index stratejisi, EXPLAIN okuma. **Perf-kritik sorgu/şema/aggregate işinde AÇIKÇA çağır** (bu projenin gerçek + kurulu ECC postgres skill'i).
 - **`ecc:database-migrations`** — migration güvenliği: geri-dönük uyumlu, zero-downtime, nullable-kolon + backfill deseni (mevcut satırları kırma — SecurityStamp olayı).
 - **`ecc:database-reviewer`** agent'ı — sorgu/şema bağımsız review: N+1, indexsiz hot-kolon, `Include` zinciri (≥2), raw SQL, pagination index'i (DB Master review tetikleyicileri).
 
