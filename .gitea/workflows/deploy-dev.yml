@@ -36,7 +36,9 @@ jobs:
       - name: Install .NET SDK ${{ env.DOTNET_VERSION }}
         run: |
           set -e
-          apt-get update -qq && apt-get install -y -qq curl ca-certificates
+          # libicu: .NET globalization (ICU) — Debian node:20 image'ında yok, eksikse
+          # dotnet restore/build "valid ICU package" hatası verir.
+          apt-get update -qq && apt-get install -y -qq curl ca-certificates libicu-dev
           curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
           chmod +x /tmp/dotnet-install.sh
           /tmp/dotnet-install.sh --channel ${DOTNET_VERSION} --install-dir /usr/share/dotnet
