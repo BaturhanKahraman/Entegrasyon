@@ -63,6 +63,14 @@ public class Messages
     public const string PasswordsDoNotMatch = "Yeni şifre ve onay şifresi eşleşmiyor.";
     public const string CurrentPasswordWrong = "Mevcut şifreniz hatalı.";
     public const string PasswordChanged = "Şifreniz başarıyla değiştirildi.";
+
+    // İlk-giriş şifre belirleme (knowledge-proof)
+    public const string TemporaryPasswordRequired = "Lütfen size verilen geçici şifreyi girin.";
+    public const string NewPasswordRequired = "Lütfen yeni şifrenizi girin.";
+    public const string PasswordTooShort = "Şifre en az 8 karakter olmalıdır.";
+    public const string PasswordNeedsLetterAndDigit = "Şifre en az bir harf ve bir rakam içermelidir.";
+    public const string InitialPasswordNotRequired = "Bu hesap için şifre belirleme adımı gerekli değil.";
+    public const string InitialPasswordSet = "Şifreniz oluşturuldu, giriş yapabilirsiniz.";
     public const string ProfileUpdated = "Profil bilgileriniz başarıyla güncellendi.";
 
     // Account Lockout

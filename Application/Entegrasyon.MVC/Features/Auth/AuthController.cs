@@ -133,4 +133,33 @@ public class AuthController(
         ViewData.SetPageTitle("Şifre Sifirla");
         return View(new PasswordResetVm { UserId = userId });
     }
+
+    [HttpPost("/auth/reset-password")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(PasswordResetVm vm)
+    {
+        ViewData.SetPageTitle("Şifre Sifirla");
+
+        if (!ModelState.IsValid)
+            return View(vm);
+
+        if (!Guid.TryParse(vm.UserId, out var userId))
+        {
+            ModelState.AddModelError("", Messages.LoginFailedWrongPassword);
+            return View(vm);
+        }
+
+        var dto = new SetInitialPasswordDto(userId, vm.TemporaryPassword, vm.NewPassword, vm.ConfirmPassword);
+        var result = await authService.SetInitialPasswordAsync(dto);
+
+        if (!result.Success)
+        {
+            ModelState.AddModelError("", result.Message ?? Messages.ProcessFailed);
+            return View(vm);
+        }
+
+        // PRG — başarı sonrası GET'e yönlendir (geri tuşu güvenli).
+        TempData.SetSuccess(result.Message ?? Messages.InitialPasswordSet);
+        return RedirectToAction(nameof(Login));
+    }
 }

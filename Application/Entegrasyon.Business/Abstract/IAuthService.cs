@@ -9,6 +9,14 @@ namespace Entegrasyon.Business.Abstract
         Task<IResult> AssignTempPassword(string password, string userId, CancellationToken token = default);
         Task<IResult> ChangeOwnPassword(Guid userId, ChangePasswordDto dto, CancellationToken token = default);
         Task<IResult> CreatePassword(string password, Guid userId, CancellationToken token = default);
+
+        /// <summary>
+        /// İlk-giriş zorunlu şifre belirleme. Knowledge-proof: kullanıcı geçici şifresini
+        /// yeniden girer; sunucu NeedsTakeNewPassword==true VE TemporaryPassword eşleşmesini
+        /// doğrular (IDOR koruması), ancak o zaman yeni şifreyi kalıcılaştırır.
+        /// </summary>
+        Task<IResult> SetInitialPasswordAsync(SetInitialPasswordDto dto, CancellationToken token = default);
+
         Task<IResult> LoginAsync(string userName, string password);
 
         // Password Reset

@@ -10,6 +10,7 @@ using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Business.Utilities;
+using Entegrasyon.Business.Validation.FluentValidation;
 
 namespace Entegrasyon.Business.Concrete.Auth;
 
@@ -176,6 +177,47 @@ public class AuthService(
         context.Update(user);
         await context.SaveChangesAsync(token);
         return new SuccessResult(Messages.FirstPasswordAssigned);
+    }
+
+    public async Task<IResult> SetInitialPasswordAsync(SetInitialPasswordDto dto, CancellationToken token = default)
+    {
+        // 1. Validation — alan-düzeyi (güçlü yeni şifre + onay eşleşmesi). DB'ye gitmeden önce.
+        var validation = await new SetInitialPasswordDtoValidator().ValidateAsync(dto, token);
+        if (!validation.IsValid)
+            return new ErrorResult(validation.Errors[0].ErrorMessage);
+
+        // 2. Business rules
+        await using var context = await contextFactory.CreateDbContextAsync(token);
+        var user = await context.Users.FindAsync([dto.UserId], cancellationToken: token);
+        if (user is null)
+            return new ErrorResult(Messages.UserNotFound);
+
+        if (!user.NeedsTakeNewPassword)
+            return new ErrorResult(Messages.InitialPasswordNotRequired);
+
+        // Knowledge-proof (IDOR koruması): kullanıcı geçici şifresini bilmek ZORUNDA.
+        // Eşleşmezse generic hata + HİÇBİR mutasyon yok. Ordinal: tam bayt eşleşmesi.
+        if (!string.Equals(user.TemporaryPassword, dto.TemporaryPassword, StringComparison.Ordinal))
+            return new ErrorResult(Messages.LoginFailedWrongPassword);
+
+        // 3. Execution
+        await applicationLogger.AddLog("İlk giriş şifresi belirleniyor.", LogType.Auth, LogAction.Update, token: token);
+
+        user.BcryptPasswordHash = HashingHelper.CreateBcryptHash(dto.NewPassword);
+        user.PasswordHashVersion = 1;
+        user.PasswordHash = null;
+        user.PasswordSalt = null;
+        user.NeedsTakeNewPassword = false;
+        user.TemporaryPassword = null;
+        // Geçici şifreyle açılan oturum dahil tüm eski oturumları düşür.
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+        // Context global no-tracking → mutasyon persist olması için Update şart.
+        context.Update(user);
+        await context.SaveChangesAsync(token);
+
+        await applicationLogger.AddLog("İlk giriş şifresi belirlendi.", LogType.Auth, LogAction.Update, token: token);
+        return new SuccessResult(Messages.InitialPasswordSet);
     }
 
     // ──────────────────────────────────────────────────────────────

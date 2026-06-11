@@ -548,6 +548,138 @@ namespace Entegrasyon.UnitTest.Business
         }
 
         // ──────────────────────────────────────────────────────────────
+        // SetInitialPasswordAsync — İlk-giriş zorunlu şifre (knowledge-proof / IDOR)
+        // ──────────────────────────────────────────────────────────────
+
+        [Fact]
+        public async Task SetInitialPasswordAsync_CorrectTempPasswordAndValidNewPassword_Succeeds()
+        {
+            // Arrange — kullanıcı geçici şifresini doğru girer
+            const string tempPassword = "Temp123x";
+            var user = CreateUser("user", "irrelevant", tempPassword, needsToTakePassword: true);
+            var oldStamp = user.SecurityStamp;
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(new object[] { user.Id }, default))
+                .ReturnsAsync(user);
+            var dto = new SetInitialPasswordDto(user.Id, tempPassword, "NewPass123", "NewPass123");
+
+            // Act
+            var result = await authService.SetInitialPasswordAsync(dto);
+
+            // Assert
+            result.Should().BeOfType<SuccessResult>();
+            result.Success.Should().BeTrue();
+            user.NeedsTakeNewPassword.Should().BeFalse();
+            user.TemporaryPassword.Should().BeNull();
+            user.BcryptPasswordHash.Should().NotBeNullOrEmpty();
+            user.PasswordHashVersion.Should().Be(1);
+            user.PasswordHash.Should().BeNull();
+            user.PasswordSalt.Should().BeNull();
+            HashingHelper.VerifyBcryptHash("NewPass123", user.BcryptPasswordHash!).Should().BeTrue();
+            user.SecurityStamp.Should().NotBe(oldStamp); // eski oturumlar düşürülmeli
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetInitialPasswordAsync_WrongTempPassword_ReturnsErrorAndNoMutation()
+        {
+            // Arrange — IDOR senaryosu: saldırgan başkasının userId'siyle gelir ama geçici şifreyi bilmez
+            const string realTempPassword = "RealTemp9";
+            var user = CreateUser("victim", "irrelevant", realTempPassword, needsToTakePassword: true);
+            var originalStamp = user.SecurityStamp;
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(new object[] { user.Id }, default))
+                .ReturnsAsync(user);
+            var dto = new SetInitialPasswordDto(user.Id, "GuessedWrong1", "Attacker123", "Attacker123");
+
+            // Act
+            var result = await authService.SetInitialPasswordAsync(dto);
+
+            // Assert — generic hata, HİÇBİR mutasyon yok, kayıt edilmedi
+            result.Should().BeOfType<ErrorResult>();
+            result.Message.Should().Be(Messages.LoginFailedWrongPassword);
+            user.NeedsTakeNewPassword.Should().BeTrue();
+            user.TemporaryPassword.Should().Be(realTempPassword);
+            user.BcryptPasswordHash.Should().BeNullOrEmpty();
+            user.SecurityStamp.Should().Be(originalStamp);
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetInitialPasswordAsync_UserNotFound_ReturnsError()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(new object[] { userId }, default))
+                .ReturnsAsync((ApplicationUser?)null);
+            var dto = new SetInitialPasswordDto(userId, "Temp123x", "NewPass123", "NewPass123");
+
+            // Act
+            var result = await authService.SetInitialPasswordAsync(dto);
+
+            // Assert
+            result.Should().BeOfType<ErrorResult>();
+            result.Message.Should().Be(Messages.UserNotFound);
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetInitialPasswordAsync_NeedsTakeNewPasswordAlreadyFalse_ReturnsError()
+        {
+            // Arrange — hesap zaten şifre belirlemiş; bu akış tekrar kullanılamaz
+            const string tempPassword = "Temp123x";
+            var user = CreateUser("user", "irrelevant", tempPassword, needsToTakePassword: false);
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(new object[] { user.Id }, default))
+                .ReturnsAsync(user);
+            var dto = new SetInitialPasswordDto(user.Id, tempPassword, "NewPass123", "NewPass123");
+
+            // Act
+            var result = await authService.SetInitialPasswordAsync(dto);
+
+            // Assert
+            result.Should().BeOfType<ErrorResult>();
+            result.Message.Should().Be(Messages.InitialPasswordNotRequired);
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetInitialPasswordAsync_NewPasswordDoesNotMatchConfirm_ReturnsValidationError()
+        {
+            // Arrange
+            const string tempPassword = "Temp123x";
+            var user = CreateUser("user", "irrelevant", tempPassword, needsToTakePassword: true);
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(new object[] { user.Id }, default))
+                .ReturnsAsync(user);
+            var dto = new SetInitialPasswordDto(user.Id, tempPassword, "NewPass123", "Different123");
+
+            // Act
+            var result = await authService.SetInitialPasswordAsync(dto);
+
+            // Assert — validation, DB'ye hiç gidilmeden döner
+            result.Should().BeOfType<ErrorResult>();
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("short1")]      // < 8 karakter
+        [InlineData("onlyletters")] // rakam yok
+        [InlineData("12345678")]    // harf yok
+        public async Task SetInitialPasswordAsync_WeakNewPassword_ReturnsValidationError(string weakPassword)
+        {
+            // Arrange
+            const string tempPassword = "Temp123x";
+            var user = CreateUser("user", "irrelevant", tempPassword, needsToTakePassword: true);
+            mockIntegrationDbContext.Setup(c => c.Users.FindAsync(new object[] { user.Id }, default))
+                .ReturnsAsync(user);
+            var dto = new SetInitialPasswordDto(user.Id, tempPassword, weakPassword, weakPassword);
+
+            // Act
+            var result = await authService.SetInitialPasswordAsync(dto);
+
+            // Assert
+            result.Should().BeOfType<ErrorResult>();
+            mockIntegrationDbContext.Verify(c => c.SaveChangesAsync(default), Times.Never);
+        }
+
+        // ──────────────────────────────────────────────────────────────
         // Helper methods
         // ──────────────────────────────────────────────────────────────
 

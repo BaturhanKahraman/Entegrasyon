@@ -75,6 +75,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<CreateEInvoiceDto>, CreateEInvoiceValidator>();
         services.AddScoped<IValidator<BulkCategoryMatchDto>, BulkCategoryMatchDtoValidator>();
         services.AddScoped<IValidator<Entegrasyon.Entity.Dtos.Help.CreateHelpRequestDto>, CreateHelpRequestDtoValidator>();
+        services.AddScoped<IValidator<Entegrasyon.Entity.Dtos.Auth.SetInitialPasswordDto>, SetInitialPasswordDtoValidator>();
         //services.AddScoped<IValidator<string>,PasswordValidator>();
         services.AddScoped<IFluentValidator,FluentValidator>();
         return services;
