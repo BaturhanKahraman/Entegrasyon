@@ -1,0 +1,175 @@
+name: Deploy to Production
+
+# main branch push → build-test (unit + integration GATE) → build/push :prod+:latest →
+# IntegrationDb prod backup (ZORUNLU) → migrate (dikkatli) → prod stack deploy →
+# smoke/health.
+#
+# Branch stratejisi: develop → stage → main(prod). main'e ancak stage dogrulamasi
+# gecmis kod gelir (stage pipeline'i E2E dahil yesil).
+#
+# Eski GitHub deploy-prod.yml SSH+git-pull (appleboy/ssh-action) kullaniyordu — bu
+# GitHub-hosted runner deseni. Gitea runner zaten SERVER'da kosuyor → registry-tabanli
+# compose pull deseni (stage ile ayni) kullanilir; SSH gereksiz.
+#
+# ⚠️ SERVER HAZIRLIK ON-KOSULU (bu workflow calismadan ONCE server'da olmali):
+#   - /opt/stacks/entegrasyon-prod/ dizini + compose.yaml + .env (gitignore) + backups/
+#   - IntegrationDb (prod) + AdminPanelDb DB'leri (HER IKISI DE VAR)
+#   - .env: PROD_DB_CONNECTION=Host=postgres_db;...IntegrationDb (LAN IP DEGIL)
+#   - prod'da WireMock YOK — gercek pazaryeri API key'leri .env'de (ileride).
+#   Detay: TL raporuna bak. Dizin yoksa deploy adimlari fail eder (build-test yine kosar).
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Prod ASLA iptal edilmez (cancel-in-progress YOK) — yarim deploy riski. Sirala.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  REGISTRY: 192.168.1.78:5252
+  IMAGE: 192.168.1.78:5252/entegrasyon-mvc
+  STACK_DIR: /opt/stacks/entegrasyon-prod
+  PROD_URL: http://192.168.1.78:8087
+  DOTNET_VERSION: "10.0"
+
+jobs:
+  # ── GATE: unit + integration. Prod'a kirmizi kod GIRMEZ. ─────────────────────
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET SDK ${{ env.DOTNET_VERSION }}
+        run: |
+          set -e
+          apt-get update -qq && apt-get install -y -qq curl ca-certificates
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          chmod +x /tmp/dotnet-install.sh
+          /tmp/dotnet-install.sh --channel ${DOTNET_VERSION} --install-dir /usr/share/dotnet
+          ln -sf /usr/share/dotnet/dotnet /usr/local/bin/dotnet
+          dotnet --info
+
+      - name: Restore
+        run: dotnet restore Entegrasyon.sln
+
+      - name: Build (Release)
+        run: dotnet build Entegrasyon.sln --no-restore -c Release
+
+      - name: Unit tests
+        run: |
+          dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj \
+            --no-build -c Release --verbosity minimal
+
+      - name: Integration tests (Testcontainers → host docker.sock)
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
+          TESTCONTAINERS_HOST_OVERRIDE: 192.168.1.78
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+        run: |
+          dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj \
+            --no-build -c Release --verbosity minimal
+
+  # ── BUILD + PUSH :prod + :latest ─────────────────────────────────────────────
+  build-push:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install docker CLI + compose plugin
+        run: |
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            apt-get update -qq
+            apt-get install -y -qq ca-certificates curl gnupg
+            install -m0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg \
+              | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
+              > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq
+            apt-get install -y -qq docker-ce-cli docker-compose-plugin
+          fi
+          docker version
+
+      - name: Build & push prod image
+        run: |
+          set -e
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-12)
+          docker build \
+            -t ${IMAGE}:prod-${SHORT_SHA} \
+            -t ${IMAGE}:prod \
+            -t ${IMAGE}:latest \
+            -f Application/Entegrasyon.MVC/Dockerfile .
+          docker push ${IMAGE}:prod-${SHORT_SHA}
+          docker push ${IMAGE}:prod
+          docker push ${IMAGE}:latest
+          echo "Pushed ${IMAGE}:prod (prod-${SHORT_SHA}) + :latest"
+
+  # ── DEPLOY: backup (ZORUNLU) → migrate → compose up → smoke. ─────────────────
+  deploy-prod:
+    needs: build-push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install docker CLI + compose plugin
+        run: |
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            apt-get update -qq
+            apt-get install -y -qq ca-certificates curl gnupg
+            install -m0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg \
+              | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
+              > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq
+            apt-get install -y -qq docker-ce-cli docker-compose-plugin
+          fi
+
+      - name: Backup IntegrationDb prod (ZORUNLU — migrate oncesi, fail→dur)
+        run: |
+          set -e
+          # PROD destructive migrate ONCESI yedek MUTLAK SART. continue-on-error YOK:
+          # backup basarisizsa migrate ETME, pipeline dursun.
+          TS=$(date +%Y%m%d-%H%M%S)
+          docker exec postgres_db pg_dump -U baturhan IntegrationDb \
+            | gzip > /opt/stacks/entegrasyon-prod/backups/prod-${TS}.sql.gz
+          SIZE=$(stat -c%s /opt/stacks/entegrasyon-prod/backups/prod-${TS}.sql.gz)
+          echo "Backup: prod-${TS}.sql.gz (${SIZE} bytes)"
+          test "${SIZE}" -gt 1000   # bos/bozuk yedek erken yakala
+          ls -lh /opt/stacks/entegrasyon-prod/backups/ | tail -3
+
+      - name: Run EF Core migrations (IntegrationDb prod)
+        run: |
+          set -e
+          cd ${STACK_DIR}
+          docker compose pull mvc-prod || true
+          docker compose run --rm --no-deps mvc-prod dotnet Entegrasyon.MVC.dll --migrate
+
+      - name: Deploy prod stack
+        run: |
+          set -e
+          cd ${STACK_DIR}
+          docker compose pull
+          docker compose up -d --force-recreate --wait --wait-timeout 240
+          echo "Prod deploy completed"
+
+      - name: Smoke / health check
+        run: |
+          set -e
+          for i in $(seq 1 40); do
+            if docker run --rm --network integration_app_default curlimages/curl:latest \
+                 -sf http://entegrasyon-mvc-prod:8080/health/live >/dev/null 2>&1; then
+              echo "Prod app healthy"; exit 0
+            fi
+            echo "waiting for app... ($i/40)"; sleep 5
+          done
+          echo "Prod health check FAILED"; docker logs --tail 80 entegrasyon-mvc-prod || true; exit 1

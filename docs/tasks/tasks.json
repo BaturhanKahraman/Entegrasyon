@@ -1079,5 +1079,27 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kategori Detay Sayfası (`/categories/{id}`)",
+    "description": "Esnaf şu an bir kategorinin ticari performansını göremıyor — satış adedi, ciro, iade oranı, hangi pazaryerinden satış geldiği gibi temel bilgiler için ayrı rapor ekranlarına gidip elle filtre yapmak zorunda. Bu task /categories/{id} adresine tam sayfa (bookmark'lanabilir, layout dahil) bir detay sayfası ekliyor. Sayfa mevcut _CategoryDetail.cshtml'deki meta bilgileri absorbe edip üzerine son 30 günün satış KPI'larını (satılan adet, ciro, sipariş sayısı, iade adedi/oranı, ort. birim fiyat), Top 5 ürün tablosunu ve pazaryeri kırılımı tablosunu ekliyor. Veri zinciri: OrderItem → ProductVariant → MainProduct → Category. Spec: docs/superpowers/specs/2026-06-11-category-detail-page.md",
+    "status": "done",
+    "notes": "TAMAMLANDI (2026-06-11): CategoryController.DetailPage(id, daysPast) + CategoryDetailPageVm + Detail.cshtml develop'a merged (commit 67631478). Build yeşil. DB Master review ŞART (GroupBy + çok-tablo join). Alt kategori kararı: sadece doğrudan bu kategoriye bağlı ürünler (alt ağaç dahil değil). Grafik V2'ye bırakıldı — V1'de sadece KPI card + tablo. Roller: SWE (controller + servis + view), DB Master (query review + index onayı), Designer (_CategoryDetail.cshtml'deki 'Detaya Git' butonu — ayrı task), QA.",
+    "priority": "high",
+    "plan": false,
+    "manual_test_steps": [
+      "1. Tarayıcıda http://localhost:8085 adresine git, admin / 123456789 ile giriş yap",
+      "2. Sol menüden Kategoriler'e git (/categories), ağaçtan içinde ürün bulunan bir alt kategori seç",
+      "3. Doğrudan URL ile /categories/{id} adresine git (id = ürünleri olan bir kategori) — sayfa tam layout ile açılmalı, breadcrumb 'Kategoriler → {CategoryName}' şeklinde görünmeli",
+      "4. KPI kartlarını kontrol et: Toplam Satılan Adet, Toplam Ciro, Sipariş Sayısı, İade Adedi, İade Oranı, Ortalama Birim Fiyat değerlerinin gösterildiğini doğrula",
+      "5. Sipariş varsa Top 5 ürün tablosunun ciro azalan sırada listelendiğini doğrula; her ürün adının /products/{productId} bağlantısını açtığını doğrula",
+      "6. Pazaryeri kırılımı tablosunda Trendyol / Storefront / diğer pazaryerlerinin ayrı satırlar olarak göründüğünü ve progress barların oransal olduğunu doğrula",
+      "7. Hiç sipariş olmayan bir kategoriyi aç — KPI kartlarında tüm değerler 0, Top 5 alanında Tabler empty state görünmeli",
+      "8. /categories/999999 adresine git — HTTP 404 sayfası dönmeli",
+      "9. 'Düzenle' butonuna tıkla — /categories/{id}/edit sayfası açılmalı",
+      "10. 'Sil' butonuna tıkla, onay dialog'unu onayla — kategori silinmeli ve /categories'e redirect olunmalı"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
   }
 ]

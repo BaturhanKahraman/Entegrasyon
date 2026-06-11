@@ -1,0 +1,227 @@
+name: Deploy to Stage
+
+# stage branch push → build-test (unit + integration GATE) → build/push :stage →
+# IntegrationDb_Stage backup → migrate → stage stack deploy → E2E (Playwright,
+# stage URL'sine karsi) → health.
+#
+# Branch stratejisi: develop → stage → main(prod). Stage, prod-benzeri dogrulama
+# ortami: integration + E2E burada kosar (develop'ta degil).
+#
+# Gitea act_runner: node:20-bookworm job container; docker.sock + /opt/stacks mount'lu
+# (runner-config valid_volumes + container.options). .NET SDK runtime'da kurulur.
+#
+# ⚠️ SERVER HAZIRLIK ON-KOSULU (bu workflow calismadan ONCE server'da olmali):
+#   - /opt/stacks/entegrasyon-stage/ dizini + compose.yaml + .env (gitignore)
+#   - IntegrationDb_Stage + AdminPanelDb_Stage DB'leri (IntegrationDb_Stage VAR)
+#   - .env: STAGE_DB_CONNECTION=Host=postgres_db;...IntegrationDb_Stage (LAN IP DEGIL)
+#   Detay: TL raporuna bak. Dizin yoksa deploy adimlari fail eder (build-test yine kosar).
+
+on:
+  push:
+    branches: [ stage ]
+  workflow_dispatch:
+
+# Stage tek-sirali: ardisik push'larda eskiyi iptal et, en guncel commit deploy olsun.
+concurrency:
+  group: deploy-stage
+  cancel-in-progress: true
+
+env:
+  REGISTRY: 192.168.1.78:5252
+  IMAGE: 192.168.1.78:5252/entegrasyon-mvc
+  STACK_DIR: /opt/stacks/entegrasyon-stage
+  STAGE_URL: http://192.168.1.78:8086
+  DOTNET_VERSION: "10.0"
+
+jobs:
+  # ── GATE: unit + integration (Testcontainers, host docker.sock). ─────────────
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET SDK ${{ env.DOTNET_VERSION }}
+        run: |
+          set -e
+          apt-get update -qq && apt-get install -y -qq curl ca-certificates
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          chmod +x /tmp/dotnet-install.sh
+          /tmp/dotnet-install.sh --channel ${DOTNET_VERSION} --install-dir /usr/share/dotnet
+          ln -sf /usr/share/dotnet/dotnet /usr/local/bin/dotnet
+          dotnet --info
+
+      - name: Restore
+        run: dotnet restore Entegrasyon.sln
+
+      - name: Build (Release)
+        run: dotnet build Entegrasyon.sln --no-restore -c Release
+
+      - name: Unit tests
+        run: |
+          dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj \
+            --no-build -c Release --verbosity minimal
+
+      - name: Integration tests (Testcontainers → host docker.sock)
+        # Testcontainers, runner'a mount'lu /var/run/docker.sock uzerinden HOST docker
+        # daemon'unda postgres container'i kaldirir. Test process'i job container'inda
+        # kostugu icin mapped port host'ta (192.168.1.78) yayinlanir → HOST_OVERRIDE
+        # ile dogru adresi gormeli. Ryuk nested-docker'da flaky → kapali (CLAUDE.md).
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
+          TESTCONTAINERS_HOST_OVERRIDE: 192.168.1.78
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+        run: |
+          dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj \
+            --no-build -c Release --verbosity minimal
+
+  # ── BUILD + PUSH :stage ──────────────────────────────────────────────────────
+  build-push:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install docker CLI + compose plugin
+        run: |
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            apt-get update -qq
+            apt-get install -y -qq ca-certificates curl gnupg
+            install -m0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg \
+              | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
+              > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq
+            apt-get install -y -qq docker-ce-cli docker-compose-plugin
+          fi
+          docker version
+
+      - name: Build & push stage image
+        run: |
+          set -e
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-12)
+          docker build \
+            -t ${IMAGE}:stage-${SHORT_SHA} \
+            -t ${IMAGE}:stage \
+            -f Application/Entegrasyon.MVC/Dockerfile .
+          docker push ${IMAGE}:stage-${SHORT_SHA}
+          docker push ${IMAGE}:stage
+          echo "Pushed ${IMAGE}:stage (stage-${SHORT_SHA})"
+
+  # ── DEPLOY: backup → migrate → compose up. ───────────────────────────────────
+  deploy-stage:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install docker CLI + compose plugin
+        run: |
+          set -e
+          if ! command -v docker >/dev/null 2>&1; then
+            apt-get update -qq
+            apt-get install -y -qq ca-certificates curl gnupg
+            install -m0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg \
+              | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
+              > /etc/apt/sources.list.d/docker.list
+            apt-get update -qq
+            apt-get install -y -qq docker-ce-cli docker-compose-plugin
+          fi
+
+      - name: Backup IntegrationDb_Stage (ZORUNLU — migrate oncesi)
+        run: |
+          set -e
+          # Destructive migrate ONCESI yedek SART. Backup'lar /opt/stacks disinda
+          # host-tmp'de (job container'dan host docker exec ile). Basarisiz olursa
+          # migrate ETME → pipeline durur (continue-on-error YOK, bilincli).
+          TS=$(date +%Y%m%d-%H%M%S)
+          docker exec postgres_db pg_dump -U baturhan IntegrationDb_Stage \
+            | gzip > /opt/stacks/entegrasyon-stage/backups/stage-${TS}.sql.gz
+          echo "Backup: stage-${TS}.sql.gz"
+          ls -lh /opt/stacks/entegrasyon-stage/backups/ | tail -3
+
+      - name: Sync WireMock stubs to stage stack
+        run: |
+          set -e
+          mkdir -p ${STACK_DIR}/wiremock/mappings ${STACK_DIR}/wiremock/__files
+          find ${STACK_DIR}/wiremock/mappings -mindepth 1 -delete
+          find ${STACK_DIR}/wiremock/__files  -mindepth 1 -delete
+          cp -r docs/wiremock/mappings/. ${STACK_DIR}/wiremock/mappings/
+          cp -r docs/wiremock/__files/.  ${STACK_DIR}/wiremock/__files/
+          echo "WireMock stubs synced"
+
+      - name: Run EF Core migrations (IntegrationDb_Stage)
+        run: |
+          set -e
+          cd ${STACK_DIR}
+          docker compose pull mvc-stage || true
+          docker compose run --rm --no-deps mvc-stage dotnet Entegrasyon.MVC.dll --migrate
+
+      - name: Deploy stage stack
+        run: |
+          set -e
+          cd ${STACK_DIR}
+          docker compose pull
+          docker compose up -d --force-recreate --wait --wait-timeout 180
+          echo "Stage deploy completed"
+
+      - name: Health check
+        run: |
+          set -e
+          for i in $(seq 1 30); do
+            if docker run --rm --network integration_app_default curlimages/curl:latest \
+                 -sf http://entegrasyon-mvc-stage:8080/health/live >/dev/null 2>&1; then
+              echo "Stage app healthy"; exit 0
+            fi
+            echo "waiting for app... ($i/30)"; sleep 5
+          done
+          echo "Health check failed"; docker logs --tail 50 entegrasyon-mvc-stage || true; exit 1
+
+  # ── E2E: Playwright, deploy edilmis stage URL'sine karsi (develop'ta YOK). ────
+  e2e:
+    needs: deploy-stage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET SDK ${{ env.DOTNET_VERSION }}
+        run: |
+          set -e
+          apt-get update -qq && apt-get install -y -qq curl ca-certificates
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          chmod +x /tmp/dotnet-install.sh
+          /tmp/dotnet-install.sh --channel ${DOTNET_VERSION} --install-dir /usr/share/dotnet
+          ln -sf /usr/share/dotnet/dotnet /usr/local/bin/dotnet
+
+      - name: Build E2E project
+        run: dotnet build Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj -c Release
+
+      - name: Install Playwright browsers (chromium + deps)
+        run: |
+          set -e
+          # net10.0 publish output altinda playwright.ps1; pwsh yoksa dotnet-tool kullan.
+          pwsh Test/Entegrasyon.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium \
+            || dotnet Test/Entegrasyon.E2E/bin/Release/net10.0/playwright.dll install --with-deps chromium
+
+      - name: Run E2E tests (→ STAGE_URL)
+        env:
+          E2E_BASE_URL: ${{ env.STAGE_URL }}
+        run: |
+          dotnet test Test/Entegrasyon.E2E/Entegrasyon.E2E.csproj \
+            --no-build -c Release --verbosity normal
+
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-stage-results
+          path: |
+            Test/Entegrasyon.E2E/bin/Release/net10.0/playwright-artifacts/
+            Test/Entegrasyon.E2E/TestResults/
+          retention-days: 14
