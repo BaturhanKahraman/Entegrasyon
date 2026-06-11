@@ -1,9 +1,9 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Product.ProductsDetailDto>
 
 @{
-    // Sayfa başlığını zenginleştir: pretitle + subtitle + sağ aksiyonlar layout'un
-    // page-header'ında render edilir (çıplak başlık yerine flagship başlık).
-    ViewData.SetPagePretitle("Katalog");
+    // Sayfa başlığını zenginleştir: subtitle + sağ aksiyonlar layout'un page-header'ında
+    // render edilir. Pretitle bilinçli boş: üst-seviye liste sayfasında grup adını
+    // (Yönetim) tekrar etmek gürültü; slot derin/alt sayfalar için layout'ta duruyor.
     ViewData.SetPageSubtitle("Tüm ürünlerini yönet, stok ve varyantları tek ekranda gör.");
 
     // ── KPI'lar ──────────────────────────────────────────────────────────────
