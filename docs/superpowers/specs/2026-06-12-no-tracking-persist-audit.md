@@ -4,25 +4,23 @@
 
 98 dosya tarandı → 30 marker'sız şüpheli → aşağıdakiler **doğrulandı**.
 
-## ✅ FİX EDİLDİ (commit c45b3b0d)
-- 🔴 `MarketPlaceManager.UpdateCredentialsAsync` — pazaryeri ApiKey/ApiSecret/SellerId/BaseUrl kaydı (#5 credential feature'ın yazma yolu).
-- 🔴 `OrderManager.UpdateOrderStatusAsync` + `UpdateOrderByShipmentPackageAsync` — sipariş durumu + kargo takip no.
-- Regression guard: `Test/Entegrasyon.IntegrationTest/Business/NoTrackingPersistRegressionTests.cs`.
+## ✅ FİX EDİLDİ (8 metod — commit c45b3b0d + 2d387d5e)
+- 🔴 `MarketPlaceManager.UpdateCredentialsAsync` — pazaryeri ApiKey/ApiSecret/SellerId/BaseUrl kaydı (#5 credential feature'ın yazma yolu). [c45b3b0d]
+- 🔴 `OrderManager.UpdateOrderStatusAsync` + `UpdateOrderByShipmentPackageAsync` — sipariş durumu + kargo takip no. [c45b3b0d]
+- 🟠 `ReceiptTemplateManager.UpdateAsync` / `UploadLogoAsync` / `DeleteLogoAsync` (fiş şablonu + logo). [2d387d5e]
+- 🟠 `CartManager.ApplyCouponAsync` / `RemoveCouponAsync` (storefront kupon). [2d387d5e]
+- Regression guard: `Test/Entegrasyon.IntegrationTest/Business/NoTrackingPersistRegressionTests.cs` (temsilci: credentials + order-status, RED→GREEN 2/2).
 
-## 🔴🟠 KALAN — FİX GEREK (solo/ayrı oturum, hepsi tek-satır `.AsTracking()`)
+## 🔴 KALAN — FİX GEREK (solo/ayrı oturum; SABAH İLK İŞ)
 
-### 🔴 Marketplace sync servisleri — `ProductMarketplace` Status/ExternalProductId/LastSyncedAt persist etmiyor → her sync "hiç gönderilmemiş" gibi davranır (CORE entegrasyon bug'ı)
-- `N11RestProductService` (Delete ~satır 246 `pm.Status=Pending` + publish yolları)
-- `N11ProductService`
-- `TrendyolProductService`
-- `AmazonProductService`
-- `HepsiburadaProductService`
-- `N11RestStockPriceService`
-(Her serviste 2–4 metod; `ProductMarketplace` FirstOrDefault ile yüklenip mutate ediliyor.)
-
-### 🟠 Orta
-- `ReceiptTemplateManager` — `UpdateAsync` / `UploadLogoAsync` / `DeleteLogoAsync` (fiş şablonu + logo)
-- `CartManager.ApplyCouponAsync` / `RemoveCouponAsync` (storefront kupon)
+### Marketplace sync servisleri — `ProductMarketplace` Status/ExternalProductId/LastSyncedAt persist etmiyor → her sync "hiç gönderilmemiş" gibi davranır (CORE entegrasyon bug'ı). API-coupled → WireMock-başarı-senaryosu persist testi gerek.
+- `N11RestProductService` (~214 Delete `pm.Status=Pending`, ~86, ~276)
+- `N11ProductService` (~111,152,212,283,331)
+- `TrendyolProductService` (~122,256,276)
+- `AmazonProductService` (~41,121)
+- `HepsiburadaProductService` (~117)
+- `N11RestStockPriceService` (~38,99)
+(Fix yine tek-satır `.AsTracking()`; her metodun mutated-mı doğrulanmalı.)
 
 ## ✅ TEMİZ (doğrulandı, dokunma)
 ProductManager (#75'te AsTracking ile düzeltildi), PricingRuleManager, ReturnReasonManager, ProductSyncManager (`FindAsync`), LabelTemplateManager (`Entry().State=Modified`), AttributeMatch/BrandMatch + import'lar (Add-only/read).

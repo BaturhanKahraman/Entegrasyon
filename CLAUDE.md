@@ -97,6 +97,8 @@ Tüm Business Manager (`XxxManager.cs`) metodları KESİNLİKLE aşağıdaki 3 a
 
 **EF Core:** Default olarak no-tracking. `SaveChangesAsync()` otomatik UTC dönüşümü yapar. Tüm entity'ler `BaseEntity`'den türer (`IsDeleted`, `DeletedAt`, `CreatedAt`, `UpdatedAt`).
 
+**EF Mutasyon Persist (Strict Rule — sessiz no-op footgun):** Global no-tracking yüzünden bir entity LINQ ile yüklenip (`FirstOrDefault`/`Single`/`Where...First`, **`AsTracking` YOK**) mutate edilip `SaveChanges` çağrılırsa değişiklik **SESSİZCE kaydolmaz** (`Update`/`Attach`/`ExecuteUpdate` da yoksa). Bu gerçek üretim bug'ı oldu (credential save + order sync sessizce kayboluyordu — bkz `docs/superpowers/specs/2026-06-12-no-tracking-persist-audit.md`). KURAL: mutasyon metodunda entity LINQ ile yükleniyorsa **`.AsTracking()` ŞART** (veya `context.Update()`/`ExecuteUpdate`). `FindAsync` track eder → istisna. Her mutasyon metoduna **RED-first integration persist testi** (fix öncesi gerçekten kaydetmiyor mu kanıtla).
+
 **EF Core Migration (Strict Rule):** Entity veya DbContext'te değişiklik yapıldığında KESİNLİKLE migration oluşturulmalı ve dev DB'ye uygulanmalıdır. Adımlar:
 1. `dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess --startup-project Application/Entegrasyon.MVC --context IntegrationDbContext`
 2. Oluşan migration dosyasını gözden geçir (gereksiz/duplicate değişiklik var mı?)
