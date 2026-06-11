@@ -200,6 +200,16 @@ Claude sadece karar verme, doğrulama ve karmaşık reasoning için kullanılmal
 curl -s http://localhost:11434/api/generate -d '{"model":"entegrasyon-coder","prompt":"...","stream":false}'
 ```
 
+## ECC Skill Kullanımı — Verimli Delegasyon (Strict Rule)
+
+ECC skill/agent'ları (`ecc:*`) projenin kendi kurallarını EZMEZ, zenginleştirir. Tüm proje agent'ları (swe/db/qa/designer/devops/pa) bu ilkeyi izler:
+
+- **Açık + dar delegasyon:** Skill'ler otomatik aktive OLMAZ. İhtiyaç anında, kapsamlı işe **ilgili skill'i açıkça çağır** — hepsini birden yükleme. "Doğru skill, doğru anda" (gereksiz skill yükü = bağlam erozyonu).
+- **Önce araştır (research-first):** Bilinmeyen API/desende koda başlamadan `search-first` / `documentation-lookup` / `microsoft-docs` (sürüme-özel) ile doğrula — halüsinasyonu kaynağında engelle.
+- **Sıra (plan→test→kod→gate):** `ecc:plan` (gerekirse) → `tdd-workflow` (RED→GREEN) → implementasyon → bağımsız review gate (`ecc:csharp-reviewer` / `ecc:database-reviewer` / `ecc:security-reviewer`). Review'u atlamak yok.
+- **Token yönlendirme:** Opus-düzeyi derin düşünmeyi yalnız **mimari/şema kararı** için harca; mekanik/tekrarlı işi yerel Ollama'ya (`entegrasyon-coder`) offload et; uzun oturumda **mantıksal kırılımda** (araştırma sonrası, implementasyondan önce) compact.
+- **Bağlamı koru:** Aynı anda <10 MCP / <80 tool aktif; ham `grep`/büyük dosya okuma yerine `graphify query`. Doğru ECC kurulumu plugin **veya** manuel — ikisini üst üste bindirme.
+
 ## Data-Access İş Bölümü (Strict Rule)
 
 Veritabanı bu işin kalbi; **"yavaşlığa tahammül yok"**. Sorgu yazımı ile index/şema kararı AYRI disiplinlerdir (denetimde görüldü: Orders matcher'ları yazıldı ama index'leri unutuldu). **(C) Hibrit model** geçerlidir:
