@@ -1269,16 +1269,24 @@
   },
   {
     "task": "POS Terminal — UX Spec + Redesign",
-    "description": "POS Terminal (/pos) özel 2-panel satış akışı (ürün arama + sepet + ödeme dialog) içeriyor. Genel sidebar redesign kapsamı dışında, kendi UX mantığı olan işlevsel bir ekran. Kullanıcının açık listesi bittikten sonra detaylı UX spec hazırlanacak: mevcut akış haritalanacak, hangi ekranların yenileneceği, hangi işlevlerin korunacağı, mobil/tablet uyumu belgelenecek. Acele redeskin değil, dikkatli UX spec gerekiyor.",
-    "status": "todo",
-    "notes": "Kullanıcının açık listesi (74-81) tamamlandıktan sonra başlanacak. Dikkatli UX spec gerekiyor — POS 2-panel işlevsel UI, basit reskin DEĞİL. Sorumlu: PA (UX spec) + Designer (uygulama). Spec hazır olmadan Designer'a verilmeyecek.",
+    "description": "POS Terminal (/pos) özel 2-panel satış akışı (ürün arama + sepet + ödeme dialog) içeriyor. Genel sidebar redesign kapsamı dışında, kendi UX mantığı olan işlevsel bir ekran. UX spec hazırlandı: mevcut akış haritalandı, HTMX hedefleri + JS davranışları belgelendi, Faz 1 (görsel cila) ve Faz 2 (layout yeniden düzenleme) ayrıldı.",
+    "status": "in_progress",
+    "notes": "PA spec tamamlandı: docs/superpowers/specs/2026-06-11-pos-terminal-redesign.md. Faz 1 = görsel cila (güvenli, Designer'a verilebilir). Faz 2 = layout yeniden düzenleme (ayrı task, yüksek risk). TL onayı bekleniyor.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [
-      "UX spec hazırlandıktan sonra: /pos açılır, ürün arama çalışır, sepete ekle çalışır.",
-      "Ödeme dialog tüm ödeme türleri (nakit/kart/karma) için çalışır.",
-      "Satış tamamlanır, POS receipt yazdırılabilir.",
-      "Yeni tasarımda mevcut tüm POS fonksiyonları korunuyor olmalı."
+      "A. Kasa Açma: /pos aç → Kasa Aç form görünmeli; 500 TL gir → aktif POS paneli açılmalı.",
+      "B. Barkod ekleme: arama inputuna barkod yaz → 300ms sonra otomatik sepete eklenmeli (HTMX, sayfa yenilemesi yok).",
+      "C. Arama ile ekleme: 3 harf yaz → dropdown açılmalı, varyant seç → sepete eklenmeli.",
+      "D. Adet +/-: + butonu adet artırmalı; adet 1'de - butonu ürünü kaldırmalı.",
+      "E. Satır indirimi: % butonu → modal açılmalı, %10 gir → üstü çizili fiyat + yeni fiyat görünmeli.",
+      "F. Sepet indirimi: tfoot İndirim butonu → %5 genel indirim → TOPLAM güncellenmeli; X ile kaldır → eski değere dönmeli.",
+      "G. Müşteri seç → badge görünmeli; kaldır → anonim.",
+      "H. Satışı Tamamla: ödeme modalı; nakit seç, 200 TL gir, toplam 150 ise para üstü 50 TL görünmeli; Kalan 0 olunca buton aktif.",
+      "I. Çoklu ödeme: nakit + kart ekle → toplamlar senkronize; kart → Provizyon Kodu alanı.",
+      "J. Satış tamamla → spinner → modal kapan → sepet temizlen.",
+      "K. Kasayı Kapat → dialog → kapanış kasası gir → /pos Kasa Aç ekranı.",
+      "L. Mobil 768px: paneller dikey, barkod input tam genişlik, Satışı Tamamla erişilebilir."
     ],
     "addOrUpdateUnitTests": false,
     "addOrUpdateIntegrationTests": false

@@ -1,26 +1,133 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
 
-<div class="d-flex justify-content-end mb-3">
+@{
+    // Başlıksız modern header: subtitle + sağ aksiyonlar layout page-header'ında render edilir.
+    ViewData.SetPageSubtitle("Bireysel ve kurumsal müşterilerini yönet, satış geçmişini gör.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // "Toplam Müşteri" GERÇEK veriden gelir (Pageable.TotalItemCount). Diğerleri
+    // tenant-geneli aggregate ister — şu an mevcut DEĞİL; ViewBag'den null-safe okunur,
+    // backend aggregate eklenince otomatik dolar. Hiçbir sayı hardcode edilmez.
+    int? individualCount = ViewBag.IndividualCount as int?;
+    int? corporateCount = ViewBag.CorporateCount as int?;
+    int? activeCount = ViewBag.ActiveCount as int?;
+}
+
+@section PageActions {
     <a href="/customers/create" class="btn btn-primary">
         <i class="ti ti-plus icon"></i>
         Müşteri Ekle
     </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-users fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@Model.TotalItemCount.ToString("N0")</div>
+                        <div class="text-secondary">Toplam Müşteri</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar avatar-lg rounded">
+                            <i class="ti ti-user fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(individualCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Bireysel</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-purple-lt avatar avatar-lg rounded">
+                            <i class="ti ti-building fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(corporateCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Kurumsal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-user-check fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(activeCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Aktif</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="col-auto">
+@* ── Müşteri listesi kartı ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Müşteri Listesi</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount.ToString("N0")</strong> müşteri
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <div class="input-icon">
+                    <span class="input-icon-addon">
+                        <i class="ti ti-search"></i>
+                    </span>
                     <input type="text"
                            class="form-control"
                            name="search"
-                           placeholder="Müşteri ara..."
+                           placeholder="Ad, firma, telefon, TC/Vergi no ara…"
+                           autocomplete="off"
+                           aria-label="Müşteri ara"
                            value="@ViewBag.Search"
                            hx-get="/customers"
-                           hx-trigger="keyup changed delay:300ms"
+                           hx-trigger="keyup changed delay:300ms, search"
                            hx-target="#customer-table"
                            hx-swap="outerHTML"
                            hx-include="this"/>
                 </div>
             </div>
-            <partial name="Partials/_CustomerTable" model="Model"/>
         </div>
+    </div>
+    <partial name="Partials/_CustomerTable" model="Model"/>
+</div>

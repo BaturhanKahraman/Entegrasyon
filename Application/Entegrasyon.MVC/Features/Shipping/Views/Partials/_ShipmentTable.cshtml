@@ -8,10 +8,10 @@
                 <thead>
                     <tr>
                         <th>Takip No</th>
-                        <th>Kargo Firmasi</th>
-                        <th>Alici</th>
+                        <th>Kargo Firması</th>
+                        <th>Alıcı</th>
                         <th>Durum</th>
-                        <th>Son Guncelleme</th>
+                        <th>Son Güncelleme</th>
                         <th>Tahmini Teslim</th>
                         <th class="w-1"></th>
                     </tr>
@@ -19,34 +19,49 @@
                 <tbody>
                     @foreach (var shipment in Model.Items)
                     {
-                        <tr>
+                        <tr class="table-row-clickable" data-href="/shipping/@shipment.Id" role="link" tabindex="0">
                             <td><code>@shipment.TrackingNumber</code></td>
                             <td class="text-secondary">@shipment.CargoCompanyName</td>
-                            <td class="text-secondary">@(shipment.RecipientName ?? "-")</td>
+                            <td class="text-secondary">@(shipment.RecipientName ?? "—")</td>
                             <td>
                                 @{
                                     var (badgeClass, label) = shipment.CurrentStatus switch
                                     {
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.Delivered => ("bg-green-lt", "Teslim Edildi"),
                                         Entegrasyon.Entity.Shipping.ShipmentStatus.InTransit => ("bg-blue-lt", "Yolda"),
-                                        Entegrasyon.Entity.Shipping.ShipmentStatus.OutForDelivery => ("bg-cyan-lt", "Dagitimda"),
-                                        Entegrasyon.Entity.Shipping.ShipmentStatus.PickedUp => ("bg-yellow-lt", "Teslim Alindi"),
-                                        Entegrasyon.Entity.Shipping.ShipmentStatus.Failed => ("bg-red-lt", "başarısız"),
-                                        Entegrasyon.Entity.Shipping.ShipmentStatus.Cancelled => ("bg-secondary-lt", "Iptal"),
-                                        Entegrasyon.Entity.Shipping.ShipmentStatus.ReturnedToSender => ("bg-orange-lt", "İade"),
-                                        _ => ("bg-secondary-lt", "Olusturuldu")
+                                        Entegrasyon.Entity.Shipping.ShipmentStatus.OutForDelivery => ("bg-cyan-lt", "Dağıtımda"),
+                                        Entegrasyon.Entity.Shipping.ShipmentStatus.PickedUp => ("bg-yellow-lt", "Teslim Alındı"),
+                                        Entegrasyon.Entity.Shipping.ShipmentStatus.Failed => ("bg-red-lt", "Başarısız"),
+                                        Entegrasyon.Entity.Shipping.ShipmentStatus.Cancelled => ("bg-secondary-lt", "İptal"),
+                                        Entegrasyon.Entity.Shipping.ShipmentStatus.ReturnedToSender => ("bg-orange-lt", "Göndericiye İade"),
+                                        _ => ("bg-secondary-lt", "Oluşturuldu")
                                     };
                                 }
                                 <span class="badge @badgeClass">@label</span>
                             </td>
-                            <td class="text-secondary">@(shipment.LastStatusUpdate?.ToString("dd.MM.yyyy HH:mm") ?? "-")</td>
-                            <td class="text-secondary">@(shipment.EstimatedDeliveryDate?.ToString("dd.MM.yyyy") ?? "-")</td>
+                            <td class="text-secondary">@(shipment.LastStatusUpdate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</td>
+                            <td class="text-secondary">@(shipment.EstimatedDeliveryDate?.ToString("dd.MM.yyyy") ?? "—")</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary"
-                                        hx-post="/shipping/@shipment.Id/refresh"
-                                        hx-swap="none">
-                                    Guncelle
-                                </button>
+                                <div class="dropdown">
+                                    <button class="btn btn-icon btn-ghost-secondary"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="Kargo işlemleri">
+                                        <i class="ti ti-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                        <a class="dropdown-item" href="/shipping/@shipment.Id">
+                                            <i class="ti ti-eye dropdown-item-icon"></i>
+                                            Detayı Gör
+                                        </a>
+                                        <button type="button" class="dropdown-item"
+                                                hx-post="/shipping/@shipment.Id/refresh"
+                                                hx-swap="none">
+                                            <i class="ti ti-refresh dropdown-item-icon"></i>
+                                            Takibi Güncelle
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -74,8 +89,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Kargo kaydi bulunamadı",
-                         Subtitle = "Henüz kargo takibi eklenmemis."
+                         Title = "Kargo kaydı bulunamadı",
+                         Subtitle = "Henüz kargo takibi eklenmemiş veya seçili filtrede kayıt yok."
                      }'/>
         </div>
     }

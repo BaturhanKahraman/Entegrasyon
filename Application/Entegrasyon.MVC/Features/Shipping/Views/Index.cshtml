@@ -1,25 +1,127 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Shipping.ShipmentTrackingDto>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="col-auto">
-                    <select class="form-select"
-                            hx-get="/shipping"
-                            hx-trigger="change"
-                            hx-target="#shipment-table"
-                            hx-swap="outerHTML"
-                            name="status">
-                        <option value="">Tum Durumlar</option>
-                        <option value="Created">Olusturuldu</option>
-                        <option value="PickedUp">Teslim Alindi</option>
-                        <option value="InTransit">Yolda</option>
-                        <option value="OutForDelivery">Dagitimda</option>
-                        <option value="Delivered">Teslim Edildi</option>
-                        <option value="ReturnedToSender">Göndericiye İade</option>
-                        <option value="Failed">başarısız</option>
-                        <option value="Cancelled">Iptal</option>
-                    </select>
+@{
+    // ── Header: başlıksız modern (subtitle + sağ aksiyon) — "Ürünler" deseni.
+    ViewData.SetPageSubtitle("Tüm gönderilerini takip et, kargo durumlarını tek ekranda izle.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // "Toplam Kargo" GERÇEK (Pageable.TotalItemCount). Diğerleri sayfa genelinde
+    // aggregate gerektirir → ViewBag'den null-safe okunur, backend eklenince dolar,
+    // yoksa "—". Hardcode sayı YOK (Ürünler sayfası deseni).
+    int? inTransit = ViewBag.ShipmentInTransitCount as int?;
+    int? delivered = ViewBag.ShipmentDeliveredCount as int?;
+    int? problem   = ViewBag.ShipmentProblemCount as int?;
+}
+
+@section PageActions {
+    <a href="/shipping/companies" class="btn btn-outline-secondary">
+        <i class="ti ti-building-warehouse icon"></i>
+        Kargo Firmaları
+    </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar avatar-lg rounded">
+                            <i class="ti ti-truck-delivery fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@Model.TotalItemCount.ToString("N0")</div>
+                        <div class="text-secondary">Toplam Kargo</div>
+                    </div>
                 </div>
             </div>
-            <partial name="Partials/_ShipmentTable" model="Model"/>
         </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-cyan-lt avatar avatar-lg rounded">
+                            <i class="ti ti-truck fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(inTransit?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Yolda</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-package-import fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(delivered?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Teslim Edildi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-red-lt avatar avatar-lg rounded">
+                            <i class="ti ti-alert-triangle fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(problem?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Sorunlu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Gönderi listesi ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Gönderiler</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount</strong> gönderi
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <select class="form-select"
+                        aria-label="Duruma göre filtrele"
+                        hx-get="/shipping"
+                        hx-trigger="change"
+                        hx-target="#shipment-table"
+                        hx-swap="outerHTML"
+                        name="status">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="Created" selected="@(ViewBag.Status as string == "Created")">Oluşturuldu</option>
+                    <option value="PickedUp" selected="@(ViewBag.Status as string == "PickedUp")">Teslim Alındı</option>
+                    <option value="InTransit" selected="@(ViewBag.Status as string == "InTransit")">Yolda</option>
+                    <option value="OutForDelivery" selected="@(ViewBag.Status as string == "OutForDelivery")">Dağıtımda</option>
+                    <option value="Delivered" selected="@(ViewBag.Status as string == "Delivered")">Teslim Edildi</option>
+                    <option value="ReturnedToSender" selected="@(ViewBag.Status as string == "ReturnedToSender")">Göndericiye İade</option>
+                    <option value="Failed" selected="@(ViewBag.Status as string == "Failed")">Başarısız</option>
+                    <option value="Cancelled" selected="@(ViewBag.Status as string == "Cancelled")">İptal</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <partial name="Partials/_ShipmentTable" model="Model"/>
+</div>

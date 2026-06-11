@@ -1,5 +1,9 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
 
+@{
+    string[] avatarTints = { "bg-primary-lt", "bg-azure-lt", "bg-green-lt", "bg-purple-lt", "bg-orange-lt", "bg-teal-lt", "bg-pink-lt" };
+}
+
 <div id="customer-table">
     @if (Model.HasItem)
     {
@@ -11,22 +15,29 @@
                         <th>Tür</th>
                         <th>Telefon</th>
                         <th>TC / Vergi No</th>
-                        <th>Satış Sayısı</th>
+                        <th class="text-center">Satış Sayısı</th>
                         <th>Durum</th>
+                        <th class="w-1"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var customer in Model.Items)
                     {
                         var isCorporate = customer.CustomerType == "Kurumsal" || customer.CustomerType == "Corporate";
+                        var displayName = string.IsNullOrEmpty(customer.CorporateName)
+                            ? customer.NameSurname
+                            : customer.CorporateName;
+                        var initial = string.IsNullOrWhiteSpace(displayName) ? "?" : displayName.Trim().Substring(0, 1).ToUpperInvariant();
+                        var tint = avatarTints[customer.Id % avatarTints.Length];
                         <tr data-href="/customers/@customer.Id"
                             role="link"
                             tabindex="0"
                             class="table-row-clickable @(customer.IsActive ? "" : "text-muted")">
                             <td>
-                                @(string.IsNullOrEmpty(customer.CorporateName)
-                                    ? customer.NameSurname
-                                    : customer.CorporateName)
+                                <div class="d-flex align-items-center">
+                                    <span class="avatar @tint rounded me-2">@initial</span>
+                                    <span class="fw-medium text-truncate">@displayName</span>
+                                </div>
                             </td>
                             <td>
                                 <span class="badge @(isCorporate ? "bg-purple-lt" : "bg-blue-lt")">
@@ -35,7 +46,7 @@
                             </td>
                             <td class="text-secondary">@customer.PhoneNumber</td>
                             <td class="text-secondary">@customer.NationalIdentityOrTaxNumber</td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge bg-green-lt">@customer.SalesCount</span>
                             </td>
                             <td>
@@ -51,6 +62,9 @@
                                         <span class="status-dot bg-secondary me-2"></span>Deaktif
                                     </span>
                                 }
+                            </td>
+                            <td class="text-end">
+                                <i class="ti ti-chevron-right text-secondary"></i>
                             </td>
                         </tr>
                     }
