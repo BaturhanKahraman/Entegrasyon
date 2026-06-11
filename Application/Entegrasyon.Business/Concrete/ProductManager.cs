@@ -65,6 +65,11 @@ public class ProductManager(
             productVariantDto.Barcode = await barcodeService.GenerateAsync();
         var product = mapper.MapToEntity(dto);
 
+        // SEO slug: verilmişse Türkçe→ASCII normalize, boşsa başlıktan üret (storefront URL'i için)
+        product.SeoSlug = string.IsNullOrWhiteSpace(product.SeoSlug)
+            ? SlugHelper.GenerateSlug(product.Title ?? string.Empty)
+            : SlugHelper.GenerateSlug(product.SeoSlug);
+
         // Kategori default VatRate doldurma: variant VatRate == 0 ise kategoriden al
         if (dto.CategoryId > 0)
         {
@@ -1024,6 +1029,9 @@ public class ProductManager(
         if (product is null)
             return new ErrorResult("Ürün bulunamadı.");
 
+        // SEO slug Türkçe→ASCII normalize (ş→s, ı→i, ğ→g, lowercase, tire)
+        seoSlug = string.IsNullOrWhiteSpace(seoSlug) ? seoSlug : SlugHelper.GenerateSlug(seoSlug);
+
         // Slug unique kontrolü
         if (!string.IsNullOrWhiteSpace(seoSlug))
         {
@@ -1064,6 +1072,9 @@ public class ProductManager(
 
         if (product is null)
             return new ErrorResult("Ürün bulunamadı.");
+
+        // SEO slug Türkçe→ASCII normalize (ş→s, ı→i, ğ→g, lowercase, tire)
+        seoSlug = string.IsNullOrWhiteSpace(seoSlug) ? seoSlug : SlugHelper.GenerateSlug(seoSlug);
 
         // Slug unique kontrolü
         if (!string.IsNullOrWhiteSpace(seoSlug))
