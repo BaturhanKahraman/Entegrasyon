@@ -1,0 +1,78 @@
+@*
+    Ortak hata sayfası gövdesi — 403/404/429/500 view'ları bunu çağırır.
+    Tüm hata sayfalarının görsel dili buradan gelir; tek kaynak = tek tutarlılık.
+
+    Beklenen ViewData anahtarları (çağıran view set eder):
+      ErrorCode      : int    — HTTP durum kodu (404, 403, 429, 500)
+      ErrorIcon      : string — Tabler ikon adı (örn. "ti-map-search")
+      ErrorColor     : string — Tabler palet rengi (örn. "azure", "orange", "yellow", "red")
+      ErrorTitle     : string — net başlık
+      ErrorMessage   : string — yardımsever açıklama
+      ErrorHint      : string? — opsiyonel ikincil ipucu (alt satır)
+      ShowRetry      : bool?  — true ise birincil CTA "Tekrar dene" (sayfayı yenile) olur
+      TraceId        : string? — yalnızca 500'de gösterilir (teknik detay DEĞİL, sadece referans no)
+*@
+@{
+    var code = (int)(ViewData["ErrorCode"] ?? 500);
+    var icon = ViewData["ErrorIcon"] as string ?? "ti-alert-triangle";
+    var color = ViewData["ErrorColor"] as string ?? "red";
+    var title = ViewData["ErrorTitle"] as string ?? "Bir şeyler ters gitti";
+    var message = ViewData["ErrorMessage"] as string ?? "Beklenmeyen bir hata oluştu.";
+    var hint = ViewData["ErrorHint"] as string;
+    var showRetry = (bool)(ViewData["ShowRetry"] ?? false);
+    var traceId = ViewData["TraceId"] as string;
+}
+
+<div class="empty">
+    <div class="empty-icon avatar avatar-2xl rounded-circle bg-@(color)-lt text-@color mb-4">
+        <i class="ti @icon" style="font-size: 2.75rem;" aria-hidden="true"></i>
+    </div>
+
+    <div class="empty-subtitle text-secondary fw-bold text-uppercase mb-1" style="letter-spacing:.08em;">
+        Hata @code
+    </div>
+
+    <h1 class="empty-title mb-2">@title</h1>
+
+    <p class="empty-subtitle text-secondary mb-0">
+        @message
+    </p>
+    @if (!string.IsNullOrEmpty(hint))
+    {
+        <p class="empty-subtitle text-secondary mt-1 mb-0">@hint</p>
+    }
+
+    <div class="empty-action">
+        <div class="btn-list justify-content-center">
+            @if (showRetry)
+            {
+                <button type="button" class="btn btn-primary" onclick="location.reload()">
+                    <i class="ti ti-refresh me-1" aria-hidden="true"></i>
+                    Tekrar dene
+                </button>
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="ti ti-home me-1" aria-hidden="true"></i>
+                    Ana sayfaya dön
+                </a>
+            }
+            else
+            {
+                <a href="/" class="btn btn-primary">
+                    <i class="ti ti-home me-1" aria-hidden="true"></i>
+                    Ana sayfaya dön
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="ti ti-arrow-left me-1" aria-hidden="true"></i>
+                    Geri dön
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (code == 500 && !string.IsNullOrEmpty(traceId))
+    {
+        <p class="text-secondary small mt-4 mb-0">
+            Referans no: <code class="text-secondary">@traceId</code>
+        </p>
+    }
+</div>

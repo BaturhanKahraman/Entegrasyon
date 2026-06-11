@@ -1,16 +1,12 @@
 @{
     Layout = "~/Shared/Views/_AuthLayout.cshtml";
+    ViewData["ErrorCode"] = 429;
+    ViewData["ErrorIcon"] = "ti-hourglass-high";
+    ViewData["ErrorColor"] = "yellow";
+    ViewData["ErrorTitle"] = "Biraz hızlı gidiyoruz";
+    ViewData["ErrorMessage"] = "Kısa sürede çok fazla istek gönderildi. Sistemi rahat tutmak için bir an duraklatıyoruz.";
+    ViewData["ErrorHint"] = "Lütfen birkaç saniye bekleyip tekrar deneyin.";
+    ViewData["ShowRetry"] = true;
 }
 
-<div class="empty">
-    <div class="empty-header">429</div>
-    <p class="empty-title">Cok Fazla Istek</p>
-    <p class="empty-subtitle text-secondary">
-        Lutfen biraz bekleyip tekrar deneyin.
-    </p>
-    <div class="empty-action">
-        <a href="/" class="btn btn-primary">
-            Ana Sayfaya Don
-        </a>
-    </div>
-</div>
+@await Html.PartialAsync("_ErrorContent")

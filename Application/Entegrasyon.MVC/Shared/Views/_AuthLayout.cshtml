@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>@ViewData.GetPageTitle() - Entegrasyon</title>
+    @* FOUC Prevention: tema CSS'den önce uygulanır (admin shell ile aynı tercih) *@
+    <script>
+        (function () {
+            var theme = localStorage.getItem('tabler-theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
     <link rel="stylesheet" href="~/lib/tabler/css/tabler.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/tabler/css/tabler-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="d-flex flex-column">

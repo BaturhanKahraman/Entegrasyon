@@ -1,16 +1,11 @@
 @{
     Layout = "~/Shared/Views/_AuthLayout.cshtml";
+    ViewData["ErrorCode"] = 403;
+    ViewData["ErrorIcon"] = "ti-lock";
+    ViewData["ErrorColor"] = "orange";
+    ViewData["ErrorTitle"] = "Bu sayfaya erişim yetkiniz yok";
+    ViewData["ErrorMessage"] = "Görüntülemek istediğiniz alana erişim izniniz bulunmuyor.";
+    ViewData["ErrorHint"] = "Yanlışlık olduğunu düşünüyorsanız hesabınıza tekrar giriş yapın ya da yöneticinizle iletişime geçin.";
 }
 
-<div class="empty">
-    <div class="empty-header">403</div>
-    <p class="empty-title">Erisim Engellendi</p>
-    <p class="empty-subtitle text-secondary">
-        Bu sayfaya erisim yetkiniz bulunmamaktadir.
-    </p>
-    <div class="empty-action">
-        <a href="/" class="btn btn-primary">
-            Ana Sayfaya Don
-        </a>
-    </div>
-</div>
+@await Html.PartialAsync("_ErrorContent")
