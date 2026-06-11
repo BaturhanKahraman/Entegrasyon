@@ -49,8 +49,19 @@ public class UpdateProductTests : BaseTest
             _mockMinioFileStorage.Object,
             new VariantNamingService(),
             _mockNotificationFlags.Object,
-            _mockCurrentUser.Object
+            _mockCurrentUser.Object,
+            BuildTenantMemoryCache()
         );
+    }
+
+    private static Entegrasyon.Business.Tenants.TenantMemoryCache BuildTenantMemoryCache()
+    {
+        var tenant = new Mock<ITenantContext>();
+        tenant.Setup(x => x.TenantId).Returns(1);
+        return new Entegrasyon.Business.Tenants.TenantMemoryCache(
+            new Microsoft.Extensions.Caching.Memory.MemoryCache(
+                new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()),
+            tenant.Object);
     }
 
     private static EditProductDto BuildValidEditDto(Guid? id = null) => new(

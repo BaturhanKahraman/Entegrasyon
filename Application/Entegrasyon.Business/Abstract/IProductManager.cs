@@ -31,6 +31,13 @@ public interface IProductService
     Task<DataResult<Pageable<ProductsDetailDto>>> GetProductsDetailsPageable(SearchablePageDto dto);
 
     /// <summary>
+    /// Ürünler liste sayfası header KPI'larını (toplam stok, düşük stok adedi, toplam varyant)
+    /// TEK round-trip aggregate ile hesaplar. Tenant-başına kısa-TTL cache'lenir; salt-okuma,
+    /// kilit almaz. Stok kaynağı liste tablosu (TotalCurrentStock) ile birebir tutarlıdır.
+    /// </summary>
+    Task<ProductListKpiDto> GetProductListKpiAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// POS ürün arama — fuzzy (pg_trgm similarity) + barkod exact + tsquery.
     /// Varyantları tek seferde getirir; kullanıcı hangi varyantı seçtiğini görebilir.
     /// </summary>
