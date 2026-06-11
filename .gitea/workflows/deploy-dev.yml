@@ -1,19 +1,17 @@
 name: Deploy to Dev
 
-# develop push → build → registry → entegrasyon-dev stack (server-side)
-# Gitea act_runner (server-runner) — job node:20-bookworm container icinde kosar.
-# docker.sock + /opt/stacks runner valid_volumes whitelist'inde → mount edilir.
-# Secret YOK: tum baglanti string'leri /opt/stacks/entegrasyon-dev/.env'den gelir
-# (gitignore, sadece server'da). Gercek pazaryeri API key'i YOK — WireMock mock.
+# develop push → build-test (gate) → deploy-dev (build → registry → entegrasyon-dev stack)
+# Gitea act_runner (server-runner). İki job'a bölündü: testler kırmızıysa deploy OLMAZ.
+# Secret YOK: tüm bağlantı string'leri /opt/stacks/entegrasyon-dev/.env'den gelir
+# (gitignore, sadece server'da). Gerçek pazaryeri API key'i YOK — WireMock mock.
 
 on:
   push:
     branches: [ develop ]
   workflow_dispatch:
 
-# Hizli ardisik push'larda deploy kuyrugu birikmesin: yeni push, calisan/bekleyen
-# eski deploy'u iptal etsin → sadece EN GUNCEL commit deploy olur. Dev ortami icin
-# dogru davranis (ara surumler gereksiz; tek sirali runner'i tikamaz).
+# Hızlı ardışık push'larda deploy kuyruğu birikmesin: yeni push, çalışan/bekleyen
+# eski deploy'u iptal etsin → sadece EN GÜNCEL commit deploy olur.
 concurrency:
   group: deploy-dev
   cancel-in-progress: true
@@ -24,11 +22,31 @@ env:
   STACK_DIR: /opt/stacks/entegrasyon-dev
 
 jobs:
-  build-deploy:
+  # ── STAGE 1: Test gate ──────────────────────────────────────────────
+  # Hızlı tutuldu: restore + build + UNIT testler. Integration/E2E stage/prod
+  # pipeline'ında koşar (dev hızlı iterasyon ortamı). Kırmızıysa deploy bloklanır.
+  build-test:
     runs-on: ubuntu-latest
-    # NOT: docker.sock + /opt/stacks runner-config (options + auto) tarafindan job'a
-    # zaten mount ediliyor — burada container.volumes ile TEKRAR mount edilirse
-    # 'Duplicate mount point' hatasi verir (run #4'te yakalandi). Bu yuzden override yok.
+    container: mcr.microsoft.com/dotnet/sdk:10.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore
+        run: dotnet restore Entegrasyon.sln
+
+      - name: Build (Release)
+        run: dotnet build Entegrasyon.sln --no-restore -c Release
+
+      - name: Unit tests
+        run: dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj --no-build -c Release --verbosity minimal
+
+  # ── STAGE 2: Build image + deploy (sadece testler geçince) ──────────
+  deploy-dev:
+    needs: build-test
+    runs-on: ubuntu-latest
+    # NOT: docker.sock + /opt/stacks runner-config tarafından job'a zaten mount
+    # ediliyor — container.volumes ile TEKRAR mount edilirse 'Duplicate mount point'
+    # hatası verir. Bu yüzden override yok (default node:20-bookworm runner container).
     steps:
       - uses: actions/checkout@v4
 
