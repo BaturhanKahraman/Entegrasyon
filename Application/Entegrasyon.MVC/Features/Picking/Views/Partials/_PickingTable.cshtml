@@ -1,14 +1,27 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Orders.Order>
 
-<div id="picking-table" hx-trigger="pickingChanged from:body" hx-get="/picking" hx-target="#picking-table" hx-swap="innerHTML">
+@{
+    string[] avatarTints = { "bg-primary-lt", "bg-azure-lt", "bg-green-lt", "bg-purple-lt", "bg-orange-lt", "bg-teal-lt", "bg-pink-lt" };
+}
+
+@* pickingChanged: paketle/toplu-paketle sonrası listeyi otomatik tazele. outerHTML →
+   dönen partial'ın kökü yine #picking-table olduğu için 1:1 yer değiştirir (iç içe ID yok). *@
+<div id="picking-table"
+     hx-trigger="pickingChanged from:body"
+     hx-get="/picking"
+     hx-target="#picking-table"
+     hx-swap="outerHTML">
     @if (Model.HasItem)
     {
-        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-            <span class="text-secondary">@Model.TotalItemCount siparis bekliyor</span>
-            <button class="btn btn-sm btn-primary" id="batchPackBtn" style="display:none;"
-                    onclick="batchPack()">
-                <i class="ti ti-packages icon"></i> Secilenleri Paketle
-            </button>
+        <div class="card-body border-bottom py-2">
+            <div class="d-flex align-items-center">
+                <span class="text-secondary" id="picking-selected-label">Paketlemek için sipariş seçin</span>
+                <button class="btn btn-sm btn-primary ms-auto" id="batchPackBtn" style="display:none;"
+                        onclick="batchPack()">
+                    <i class="ti ti-packages icon"></i>
+                    Seçilenleri Paketle
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -16,14 +29,14 @@
                 <thead>
                     <tr>
                         <th class="w-1">
-                            <input type="checkbox" class="form-check-input"
-                                   onchange="toggleAllCheckboxes(this)"/>
+                            <input type="checkbox" class="form-check-input m-0 align-middle"
+                                   aria-label="Tümünü seç" onchange="toggleAllCheckboxes(this)"/>
                         </th>
-                        <th>Siparis No</th>
+                        <th>Sipariş No</th>
                         <th>Müşteri</th>
-                        <th>Siparis Tarihi</th>
-                        <th>Ürün Adedi</th>
-                        <th>Toplam</th>
+                        <th>Sipariş Tarihi</th>
+                        <th class="text-center">Ürün Adedi</th>
+                        <th class="text-end">Toplam</th>
                         <th>Pazaryeri</th>
                         <th class="w-1"></th>
                     </tr>
@@ -31,46 +44,70 @@
                 <tbody>
                     @foreach (var order in Model.Items)
                     {
+                        var fullName = $"{order.CustomerFirstName} {order.CustomerLastName}".Trim();
+                        var displayName = string.IsNullOrWhiteSpace(fullName) ? "—" : fullName;
+                        var initial = string.IsNullOrWhiteSpace(fullName) ? "?" : fullName.Substring(0, 1).ToUpperInvariant();
+                        var tint = avatarTints[Math.Abs(order.Id.GetHashCode()) % avatarTints.Length];
+                        var marketplace = order.MarketPlace?.Name ?? (order.MarketPlaceId.HasValue ? $"MP #{order.MarketPlaceId}" : "Mağaza");
                         <tr id="picking-row-@order.Id">
                             <td>
-                                <input type="checkbox" class="form-check-input picking-check"
+                                <input type="checkbox" class="form-check-input m-0 align-middle picking-check"
+                                       aria-label="Siparişi seç"
                                        value="@order.Id" onchange="updateBatchBtn()"/>
                             </td>
                             <td>
-                                <a href="/marketplace/orders/@order.Id" class="text-reset fw-bold" target="_blank">
+                                <a href="/marketplace/orders/@order.Id" class="text-reset fw-bold" target="_blank" rel="noopener">
                                     @(order.OrderNumber ?? order.Id.ToString()[..8])
                                 </a>
-                                <button class="btn btn-ghost-secondary btn-sm ms-1"
-                                        hx-get="/picking/@order.Id/items"
-                                        hx-target="#picking-row-@order.Id"
-                                        hx-swap="afterend"
-                                        title="Kalemleri goster">
-                                    <i class="ti ti-list-details"></i>
-                                </button>
-                            </td>
-                            <td class="text-secondary">
-                                @order.CustomerFirstName @order.CustomerLastName
-                            </td>
-                            <td class="text-secondary">
-                                @(order.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "-")
                             </td>
                             <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="avatar avatar-sm @tint rounded-circle me-2">@initial</span>
+                                    <span class="text-truncate">@displayName</span>
+                                </div>
+                            </td>
+                            <td class="text-secondary">
+                                @(order.OrderDate?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "—")
+                            </td>
+                            <td class="text-center">
                                 <span class="badge bg-secondary-lt">@order.TotalQuantity adet</span>
                             </td>
-                            <td class="fw-bold">
-                                @(order.TotalPrice.ToString("N2")) TL
-                            </td>
-                            <td class="text-secondary">
-                                @(order.MarketPlace?.Name ?? (order.MarketPlaceId.HasValue ? $"MP #{order.MarketPlaceId}" : "Mağaza"))
+                            <td class="text-end fw-bold">
+                                @(order.TotalPrice.ToString("N2")) ₺
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-primary"
-                                        hx-post="/picking/@order.Id/pack"
-                                        hx-swap="none"
-                                        hx-confirm="Bu siparis hazirlaniyor olarak isaretlensin mi?">
-                                    <i class="ti ti-package icon"></i>
-                                    Paketle
-                                </button>
+                                <span class="badge bg-blue-lt">@marketplace</span>
+                            </td>
+                            <td>
+                                <div class="btn-list flex-nowrap justify-content-end">
+                                    <button class="btn btn-sm btn-primary"
+                                            hx-post="/picking/@order.Id/pack"
+                                            hx-swap="none"
+                                            hx-confirm="Bu sipariş hazırlanıyor olarak işaretlensin mi?">
+                                        <i class="ti ti-package icon"></i>
+                                        Paketle
+                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-icon btn-ghost-secondary btn-sm dropdown-toggle"
+                                                data-bs-toggle="dropdown" aria-expanded="false" aria-label="Diğer işlemler">
+                                            <i class="ti ti-dots-vertical"></i>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                            <a class="dropdown-item"
+                                               hx-get="/picking/@order.Id/items"
+                                               hx-target="#picking-row-@order.Id"
+                                               hx-swap="afterend"
+                                               role="button">
+                                                <i class="ti ti-list-details me-2"></i>
+                                                Kalemleri Göster
+                                            </a>
+                                            <a class="dropdown-item" href="/marketplace/orders/@order.Id" target="_blank" rel="noopener">
+                                                <i class="ti ti-external-link me-2"></i>
+                                                Siparişi Aç
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -95,8 +132,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Hazirlama bekleyen siparis yok",
-                         Subtitle = "Tum siparisler isleme alindi veya henüz yeni siparis gelmedi."
+                         Title = "Hazırlama bekleyen sipariş yok",
+                         Subtitle = "Tüm siparişler işleme alındı veya henüz yeni sipariş gelmedi."
                      }'/>
         </div>
     }
@@ -110,12 +147,16 @@ function toggleAllCheckboxes(el) {
 function updateBatchBtn() {
     var checked = document.querySelectorAll('.picking-check:checked').length;
     var btn = document.getElementById('batchPackBtn');
+    var label = document.getElementById('picking-selected-label');
     if (btn) btn.style.display = checked > 0 ? '' : 'none';
+    if (label) label.textContent = checked > 0
+        ? checked + ' sipariş seçildi'
+        : 'Paketlemek için sipariş seçin';
 }
 function batchPack() {
     var ids = Array.from(document.querySelectorAll('.picking-check:checked')).map(cb => cb.value);
     if (ids.length === 0) return;
-    if (!confirm(ids.length + ' siparisi paketlemek istediginize emin misiniz?')) return;
+    if (!confirm(ids.length + ' siparişi paketlemek istediğinize emin misiniz?')) return;
 
     var formData = new FormData();
     ids.forEach(id => formData.append('orderIds', id));

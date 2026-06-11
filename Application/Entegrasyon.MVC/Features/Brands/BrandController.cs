@@ -29,6 +29,12 @@ public class BrandController(
         if (Request.IsHtmx())
             return PartialView("Partials/_BrandTable", result.Data);
 
+        // KPI kartları yalnız tam-sayfa render'da (HTMX tablo refresh'inde gereksiz sorgu yok).
+        var kpis = await brandService.GetBrandKpisAsync();
+        ViewBag.TotalProductCount = kpis.TotalProductCount;
+        ViewBag.MatchedBrandCount = kpis.MatchedBrandCount;
+        ViewBag.BrandsWithoutProductCount = kpis.BrandsWithoutProductCount;
+
         ViewBag.Search = search;
         return View(result.Data);
     }

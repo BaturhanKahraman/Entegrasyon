@@ -1,9 +1,9 @@
 @model Entegrasyon.Entity.Orders.Order
 
 <tr class="bg-light">
-    <td colspan="7" class="p-3">
+    <td colspan="8" class="p-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong>Siparis Kalemleri — @(Model.OrderNumber ?? Model.Id.ToString()[..8])</strong>
+            <strong>Sipariş Kalemleri — @(Model.OrderNumber ?? Model.Id.ToString()[..8])</strong>
             <span class="badge bg-secondary-lt">@Model.OrderItems.Count kalem</span>
         </div>
         <table class="table table-sm table-borderless mb-0">

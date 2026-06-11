@@ -56,6 +56,7 @@
                     <th>Kalem</th>
                     <th>Tutar</th>
                     <th>Durum</th>
+                    <th class="w-1"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -78,6 +79,22 @@
                         <td>@r.Items.Count kalem</td>
                         <td class="fw-bold">@r.RefundAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</td>
                         <td><span class="badge @StatusBadge(r.ReturnStatus)">@StatusText(r.ReturnStatus)</span></td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-icon btn-ghost-secondary"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        aria-label="İade işlemleri">
+                                    <i class="ti ti-dots-vertical"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                    <a class="dropdown-item" href="/returns/@r.Id">
+                                        <i class="ti ti-eye dropdown-item-icon"></i>
+                                        Görüntüle
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 }
                 </tbody>

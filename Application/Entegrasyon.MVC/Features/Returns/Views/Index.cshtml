@@ -1,16 +1,140 @@
 @model List<Entegrasyon.Entity.Sales.SaleReturn>
 @using Entegrasyon.Entity.Sales
 
+@{
+    // ── Header: başlıksız modern (subtitle + sağ aksiyon) — "Ürünler" deseni.
+    // Pretitle bilinçli boş: liste/yönetim sayfasında grup adını tekrar etmek gürültü.
+    ViewData.SetPageSubtitle("İade taleplerini takip et, onayla ve ürünleri stoğa geri al.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // Gerçek aggregate sayfa genelinde gerekir (Model yalnız ilk 200 + filtreli).
+    // Bu yüzden KPI'lar ViewBag'den null-safe okunur; backend aggregate eklenince
+    // otomatik dolar, yoksa "—" gösterir (Ürünler sayfası deseni). Hardcode sayı YOK.
+    int? totalCount    = ViewBag.ReturnTotalCount as int?;
+    int? pendingCount  = ViewBag.ReturnPendingCount as int?;
+    int? approvedCount = ViewBag.ReturnApprovedCount as int?;
+    decimal? refundTotal = ViewBag.ReturnCompletedRefundTotal as decimal?;
+    var tr = new System.Globalization.CultureInfo("tr-TR");
+}
+
+@section PageActions {
+    <a href="#new-return" class="btn btn-primary"
+       onclick="document.querySelector('#new-return input[name=code]')?.focus()">
+        <i class="ti ti-plus icon"></i>
+        Yeni İade Başlat
+    </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar avatar-lg rounded">
+                            <i class="ti ti-arrow-back-up fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(totalCount?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Toplam İade</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-clock fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(pendingCount?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Beklemede</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-cyan-lt avatar avatar-lg rounded">
+                            <i class="ti ti-checks fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(approvedCount?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Onaylandı</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-cash fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(refundTotal?.ToString("C0", tr) ?? "—")</div>
+                        <div class="text-secondary">Tamamlanan İade Tutarı</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Yeni iade başlat (fiş/iade kodu ile) ── *@
 <partial name="~/Features/Returns/Views/Partials/_ReturnSearchCards.cshtml" />
 
+@* ── İade talepleri listesi ── *@
 <div class="card">
     <div class="card-header">
-        <div class="row w-100 g-2 align-items-center">
-            <div class="col-auto">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">İade Talepleri</h3>
+                <div class="text-secondary mt-1 small">
+                    Gösterilen <strong>@Model.Count</strong> kayıt
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <div class="input-icon">
+                    <span class="input-icon-addon">
+                        <i class="ti ti-search"></i>
+                    </span>
+                    <input type="search"
+                           class="form-control"
+                           name="search"
+                           placeholder="Fiş no, iade kodu veya müşteri adı"
+                           autocomplete="off"
+                           aria-label="İadelerde ara"
+                           value="@(ViewBag.Search as string)"
+                           hx-get="/returns"
+                           hx-trigger="keyup changed delay:300ms, search"
+                           hx-target="#return-table"
+                           hx-swap="outerHTML"
+                           hx-include="[name='status'],[name='source']" />
+                </div>
+            </div>
+            <div class="col-6 col-md-auto">
                 <select class="form-select" name="status"
+                        aria-label="Duruma göre filtrele"
                         hx-get="/returns" hx-trigger="change"
                         hx-target="#return-table" hx-swap="outerHTML"
-                        hx-include="[name='source']">
+                        hx-include="[name='source'],[name='search']">
                     <option value="">Tüm Durumlar</option>
                     <option value="@((int)ReturnStatus.Draft)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Draft.ToString())">Taslak</option>
                     <option value="@((int)ReturnStatus.Pending)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Pending.ToString())">Beklemede</option>
@@ -20,18 +144,19 @@
                     <option value="@((int)ReturnStatus.Cancelled)" selected="@(ViewBag.Status?.ToString() == ReturnStatus.Cancelled.ToString())">İptal</option>
                 </select>
             </div>
-            <div class="col-auto">
+            <div class="col-6 col-md-auto">
                 <select class="form-select" name="source"
+                        aria-label="Kaynağa göre filtrele"
                         hx-get="/returns" hx-trigger="change"
                         hx-target="#return-table" hx-swap="outerHTML"
-                        hx-include="[name='status']">
+                        hx-include="[name='status'],[name='search']">
                     <option value="">Tüm Kaynaklar</option>
-                    <option value="@((int)ReturnSource.InPerson)">Elden / POS</option>
-                    <option value="@((int)ReturnSource.Storefront)">Mağaza Sitesi</option>
-                    <option value="@((int)ReturnSource.Trendyol)">Trendyol</option>
-                    <option value="@((int)ReturnSource.N11)">N11</option>
-                    <option value="@((int)ReturnSource.Hepsiburada)">Hepsiburada</option>
-                    <option value="@((int)ReturnSource.Manual)">Manuel</option>
+                    <option value="@((int)ReturnSource.InPerson)" selected="@(ViewBag.Source?.ToString() == ReturnSource.InPerson.ToString())">Elden / POS</option>
+                    <option value="@((int)ReturnSource.Storefront)" selected="@(ViewBag.Source?.ToString() == ReturnSource.Storefront.ToString())">Mağaza Sitesi</option>
+                    <option value="@((int)ReturnSource.Trendyol)" selected="@(ViewBag.Source?.ToString() == ReturnSource.Trendyol.ToString())">Trendyol</option>
+                    <option value="@((int)ReturnSource.N11)" selected="@(ViewBag.Source?.ToString() == ReturnSource.N11.ToString())">N11</option>
+                    <option value="@((int)ReturnSource.Hepsiburada)" selected="@(ViewBag.Source?.ToString() == ReturnSource.Hepsiburada.ToString())">Hepsiburada</option>
+                    <option value="@((int)ReturnSource.Manual)" selected="@(ViewBag.Source?.ToString() == ReturnSource.Manual.ToString())">Manuel</option>
                 </select>
             </div>
         </div>

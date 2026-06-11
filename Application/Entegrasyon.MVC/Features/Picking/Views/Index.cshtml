@@ -1,14 +1,119 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Orders.Order>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <i class="ti ti-barcode icon me-2 text-primary"></i>
-                    Hazirlama Bekleyen Siparişler
-                </div>
-                <div class="card-options">
-                    <span class="badge bg-blue-lt">@Model.TotalItemCount Sipariş</span>
+@{
+    // Başlık controller'da diakritiksiz ("Siparis Hazirlama") set ediliyor; view @{} bloğu
+    // layout header'ından ÖNCE çalıştığı için burada düzgün Türkçe ile override ediyoruz.
+    ViewData.SetPageTitle("Sipariş Hazırlama");
+    ViewData.SetPageSubtitle("Hazırlama bekleyen siparişleri tek tek ya da toplu paketle.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // "Bekleyen Sipariş" GERÇEK veriden gelir (Pageable.TotalItemCount). Diğerleri
+    // tenant-geneli aggregate ister — şu an mevcut DEĞİL; ViewBag'den null-safe okunur,
+    // backend aggregate eklenince otomatik dolar. Hiçbir sayı hardcode edilmez.
+    int? pendingItems = ViewBag.PendingItemCount as int?;
+    int? todayOrders = ViewBag.TodayOrderCount as int?;
+    int? staleOrders = ViewBag.StaleOrderCount as int?;
+}
+
+@section PageActions {
+    <button type="button" class="btn btn-outline-primary"
+            hx-get="/picking"
+            hx-target="#picking-table"
+            hx-swap="outerHTML">
+        <i class="ti ti-refresh icon"></i>
+        Yenile
+    </button>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-clock-hour-4 fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@Model.TotalItemCount.ToString("N0")</div>
+                        <div class="text-secondary">Bekleyen Sipariş</div>
+                    </div>
                 </div>
             </div>
-            <partial name="~/Features/Picking/Views/Partials/_PickingTable.cshtml" model="Model"/>
         </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-stack-2 fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(pendingItems?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Bekleyen Ürün Adedi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-azure-lt avatar avatar-lg rounded">
+                            <i class="ti ti-calendar-event fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(todayOrders?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Bugün Gelen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-alarm fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(staleOrders?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">24s+ Bekleyen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Hazırlama listesi kartı ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Hazırlama Bekleyen Siparişler</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount.ToString("N0")</strong> sipariş bekliyor
+                </div>
+            </div>
+        </div>
+    </div>
+    <partial name="~/Features/Picking/Views/Partials/_PickingTable.cshtml" model="Model"/>
+</div>

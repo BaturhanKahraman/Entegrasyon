@@ -177,6 +177,32 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         return new SuccessDataResult<Brand>(brand);
     }
 
+    public async Task<BrandKpiDto> GetBrandKpisAsync(CancellationToken ct = default)
+    {
+        // Markalar liste sayfası üst KPI kartları. 3 bağımsız index-backed skaler sayım;
+        // hepsi DbContext default no-tracking + soft-delete query filter (!IsDeleted) altında.
+        // Tek-tablo aggregate'ler (N+1 yok). Tablolar farklı olduğundan ayrı sorgular —
+        // her biri tek round-trip, sunucuda COUNT.
+        await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
+
+        // 1) Bir markaya bağlı (BrandId != null) toplam ürün — IX(BrandId, IsDeleted) kapsar.
+        var totalProductCount = await dbContext.MainProducts
+            .CountAsync(p => p.BrandId != null, ct);
+
+        // 2) En az bir pazaryeri eşleşmesi olan DISTINCT marka — IX(ApplicationBrandId).
+        var matchedBrandCount = await dbContext.BrandMarketPlaceMatches
+            .Select(m => m.ApplicationBrandId)
+            .Distinct()
+            .CountAsync(ct);
+
+        // 3) Hiç (görünür) ürünü olmayan marka — NOT EXISTS, MainProducts.BrandId indexli.
+        //    Products navigation'ı query filter altında → soft-deleted ürün "yok" sayılır.
+        var brandsWithoutProductCount = await dbContext.Brands
+            .CountAsync(b => !b.Products.Any(), ct);
+
+        return new BrandKpiDto(totalProductCount, matchedBrandCount, brandsWithoutProductCount);
+    }
+
     private static async Task<IResult> CheckIfTheSameNameExits(IntegrationDbContext dbContext, string name)
     {
         if (await dbContext.Brands.AnyAsync(x => x.Name == name))

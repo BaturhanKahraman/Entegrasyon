@@ -16,6 +16,12 @@ public interface IBrandService
     Task<IDataResult<Brand>> GetBrandById(int id);
     Task<IDataResult<BrandDetailDto>> GetBrandDetail(int id);
 
+    /// <summary>
+    /// Markalar liste sayfası üst KPI kartları için aggregate özet (toplam ürün,
+    /// eşleşmiş marka, ürünsüz marka). Read-path, index-backed, N+1 yok.
+    /// </summary>
+    Task<BrandKpiDto> GetBrandKpisAsync(CancellationToken ct = default);
+
     // Storefront
     Task<IDataResult<Brand>> GetBrandBySeoSlugAsync(string slug);
 }
