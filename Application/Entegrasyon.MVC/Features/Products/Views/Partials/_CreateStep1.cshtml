@@ -176,7 +176,10 @@ function initStep1() {
         var name = brandAddInput.value.trim();
         if (!name) { brandAddInput.focus(); return; }
 
+        // Çift-submit önleme + loading state (raw fetch — global htmx hook değmez):
+        // disabled + Tabler .btn-loading (spinner, label gizli, genişlik sabit).
         brandAddConfirm.disabled = true;
+        brandAddConfirm.classList.add('btn-loading');
         brandAddError.classList.add('d-none');
         brandAddSuccess.classList.add('d-none');
 
@@ -190,16 +193,26 @@ function initStep1() {
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
+            brandAddConfirm.classList.remove('btn-loading');
             if (data.success) {
                 brandTs.addOption({ value: data.id.toString(), text: data.name });
                 brandTs.setValue(data.id.toString());
                 brandAddSuccess.classList.remove('d-none');
                 brandAddInput.value = '';
+                // Başarıda buton kilitli kalır (aynı markayı tekrar eklemeyi önler);
+                // modal kapanıp yeniden açıldığında brand-add-btn handler'ı sıfırlar.
             } else {
                 brandAddError.textContent = data.message || 'Marka eklenemedi.';
                 brandAddError.classList.remove('d-none');
                 brandAddConfirm.disabled = false;
             }
+        })
+        .catch(function() {
+            // Ağ/parse hatası: butonu yeniden aç, kullanıcı tekrar deneyebilsin.
+            brandAddConfirm.classList.remove('btn-loading');
+            brandAddConfirm.disabled = false;
+            brandAddError.textContent = 'Marka eklenemedi. Lütfen tekrar deneyin.';
+            brandAddError.classList.remove('d-none');
         });
     });
 

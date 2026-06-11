@@ -277,6 +277,114 @@ document.addEventListener('click', function (event) {
     });
 })();
 
+// ── Loading State / Çift-Submit Önleme (GLOBAL — alışkanlık) ─────────
+//
+// Amaç: Her async HTMX isteğinde, isteği tetikleyen form/element içindeki
+// submit buton(lar)ı otomatik kilitlensin + Tabler spinner göstersin.
+// Böylece kullanıcı 3-4 sn süren bir kayıtta butona ikinci kez basıp
+// çift-submit YAPAMAZ. Per-buton iş gerekmez — global hook her formda çalışır.
+//
+// Tabler deseni (doğrulandı, docs.tabler.io/ui/components/buttons):
+//   .btn-loading  → pure CSS; spinner gösterir, label'ı gizler ama markup'ta
+//                   label kaldığı için buton genişliği sabit kalar.
+//   disabled      → tıklamayı tamamen engeller (çift-submit guard).
+//
+// Top progress bar (#htmx-progress) ayrı çalışır — buna DOKUNMUYORUZ.
+//
+// NOT: Raw fetch() kullanan yerler bu hook'un DIŞINDADIR (htmx eventi yok).
+//      Oralarda elle disable+spinner gerekir (bkz. _CreateStep3Variants).
+(function () {
+    'use strict';
+
+    // İsteği tetikleyen butona (submitter) işaret koy ki o butonda spinner
+    // gösterelim; diğer submit butonları sadece disabled olsun.
+    // Form-level hx-post'ta htmx:beforeRequest.elt = form olur, hangi butona
+    // basıldığı kaybolur → submit event'inden submitter'ı forma iliştiriyoruz.
+    document.addEventListener('submit', function (evt) {
+        var form = evt.target;
+        if (!form || form.nodeName !== 'FORM') return;
+        form._submitter = evt.submitter || null;
+    }, true);
+
+    // Verilen kök (form veya buton) için kilitlenecek submit buton(lar)ını bul.
+    function collectButtons(elt) {
+        if (!elt) return [];
+        // Element bir form ise → içindeki tüm submit butonları (+ submit input).
+        if (elt.nodeName === 'FORM') {
+            return Array.prototype.slice.call(
+                elt.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]')
+            );
+        }
+        // İsteği doğrudan bir buton/link tetiklediyse → yalnızca o element.
+        if (elt.matches && elt.matches('button, input[type="submit"], a.btn, .btn')) {
+            return [elt];
+        }
+        return [];
+    }
+
+    function lockButtons(elt) {
+        var buttons = collectButtons(elt);
+        if (buttons.length === 0) return;
+
+        // Spinner gösterilecek buton: form'a basılan submitter; yoksa ilk buton.
+        var spinnerTarget;
+        if (elt.nodeName === 'FORM' && elt._submitter && buttons.indexOf(elt._submitter) !== -1) {
+            spinnerTarget = elt._submitter;
+        } else if (elt.nodeName !== 'FORM') {
+            spinnerTarget = elt;
+        } else {
+            spinnerTarget = buttons[0];
+        }
+
+        buttons.forEach(function (btn) {
+            if (btn.dataset.loadingLocked === '1') return;
+            btn.dataset.loadingLocked = '1';
+            // <a> kullanılıyorsa disabled attribute işe yaramaz → .disabled class.
+            if (btn.nodeName === 'A') {
+                btn.classList.add('disabled');
+                btn.setAttribute('aria-disabled', 'true');
+            } else {
+                btn.disabled = true;
+            }
+            if (btn === spinnerTarget) {
+                btn.classList.add('btn-loading');
+                btn.dataset.loadingSpinner = '1';
+            }
+        });
+    }
+
+    function unlockButtons() {
+        // afterRequest.elt aynı olsa da garanti için global tarama: kilitli
+        // her butonu eski haline döndür (yarış/iptal durumlarında da temiz).
+        var locked = document.querySelectorAll('[data-loading-locked="1"]');
+        Array.prototype.forEach.call(locked, function (btn) {
+            delete btn.dataset.loadingLocked;
+            if (btn.nodeName === 'A') {
+                btn.classList.remove('disabled');
+                btn.removeAttribute('aria-disabled');
+            } else {
+                btn.disabled = false;
+            }
+            if (btn.dataset.loadingSpinner === '1') {
+                btn.classList.remove('btn-loading');
+                delete btn.dataset.loadingSpinner;
+            }
+        });
+    }
+
+    document.body.addEventListener('htmx:beforeRequest', function (evt) {
+        lockButtons(evt.detail.elt);
+    });
+
+    // afterRequest hem başarı hem hata (4xx/5xx) durumunda atılır.
+    document.body.addEventListener('htmx:afterRequest', function () { unlockButtons(); });
+    // Ağ hatası / timeout / iptal — afterRequest atılmayabilir, garanti için.
+    document.body.addEventListener('htmx:sendError', function () { unlockButtons(); });
+    document.body.addEventListener('htmx:timeout', function () { unlockButtons(); });
+    document.body.addEventListener('htmx:responseError', function () { unlockButtons(); });
+    document.body.addEventListener('htmx:abort', function () { unlockButtons(); });
+})();
+
 // ── HTMX Error Handling ───────────────────────────────────────────────
 
 // Network hatalarını kullanıcıya göster

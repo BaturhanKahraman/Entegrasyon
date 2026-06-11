@@ -274,6 +274,19 @@
     var generateBtn = document.getElementById('btn-generate-variants');
     if (generateBtn) {
         generateBtn.addEventListener('click', function () {
+            // Çift-submit önleme: bu buton RAW fetch kullanıyor (htmx değil),
+            // bu yüzden site.js'deki global htmx loading-hook'u BURAYA değmez.
+            // Loading state'i elle uyguluyoruz — aynı görsel desen: Tabler
+            // .btn-loading (spinner, label gizli ama genişlik sabit) + disabled.
+            if (generateBtn.disabled) return; // çoklu tıklamaya karşı erken çık
+            generateBtn.disabled = true;
+            generateBtn.classList.add('btn-loading');
+
+            function resetButton() {
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('btn-loading');
+            }
+
             var form = document.getElementById('step3-form');
             // Currency input'larini normalize et ("1.234,56" -> "1234.56")
             // Normal submit akisi disinda calistigimiz icin manuel yapiyoruz
@@ -303,7 +316,13 @@
                 var nextBtn = document.getElementById('btn-step3-next');
                 var hasVariants = container.querySelector('table') !== null;
                 nextBtn.disabled = !hasVariants;
-            });
+            })
+            .catch(function () {
+                if (typeof window.showNotify === 'function') {
+                    window.showNotify('Varyantlar oluşturulamadı. Lütfen tekrar deneyin.', 'error');
+                }
+            })
+            .finally(resetButton);
         });
     }
 })();
