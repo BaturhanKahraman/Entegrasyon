@@ -271,4 +271,124 @@ public class AmazonProductMapperTests : Entegrasyon.UnitTest.BaseTest
         result.Success.Should().BeTrue();
         result.Data!.Attributes.Should().ContainKey("fulfillment_availability");
     }
+
+    // ── Test 8 ──────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task MapProductAsync_WhenVariantOverrideExists_UsesSalePriceOverride()
+    {
+        // Arrange
+        var productId = Guid.NewGuid();
+        var product = BuildFullProduct(productId);
+        var firstVariant = product.ProductVariants.First();
+        var variantId = firstVariant.Id;
+
+        const decimal originalSalePrice = 199.90m;
+        const decimal overrideSalePrice = 149.50m;
+
+        // Sanity: original price is set correctly in BuildFullProduct
+        firstVariant.SalePrice.Should().Be(originalSalePrice);
+
+        var productMarketplaceId = 42;
+        var variantOverride = new ProductVariantMarketplaceOverride
+        {
+            Id = 1,
+            ProductMarketplaceId = productMarketplaceId,
+            ProductVariantId = variantId,
+            ListPriceOverride = 199.90m,
+            SalePriceOverride = overrideSalePrice
+        };
+
+        var productMarketplace = new ProductMarketplace
+        {
+            Id = productMarketplaceId,
+            ProductId = productId,
+            MarketPlaceId = AmazonMarketPlaceId,
+            VariantOverrides = new List<ProductVariantMarketplaceOverride> { variantOverride }
+        };
+
+        mockIntegrationDbContext.Setup(x => x.MainProducts)
+            .ReturnsDbSet(new List<Product> { product });
+
+        mockIntegrationDbContext.Setup(x => x.ProductMarketplaces)
+            .ReturnsDbSet(new List<ProductMarketplace> { productMarketplace });
+
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeMarketPlaceMatches)
+            .ReturnsDbSet(new List<CategoryAttributeMarketPlaceMatch>());
+
+        _mockFileStorage.Setup(f => f.GetPublicUrl(It.IsAny<string>()))
+            .Returns<string>(key => $"https://cdn.example.com/{key}");
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.MapProductAsync(productId, "PRODUCT");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var offer = result.Data!.Attributes["purchasable_offer"];
+        // Extract the sale price value from the nested anonymous-type structure via JSON round-trip
+        var json = System.Text.Json.JsonSerializer.Serialize(offer);
+        json.Should().Contain(overrideSalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            because: "Amazon mapper must use SalePriceOverride when a variant override exists");
+        json.Should().NotContain(originalSalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            because: "original SalePrice must NOT be used when an override is present");
+    }
+
+    // ── Test 9 ──────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task MapProductAsync_WhenListPriceOverrideOnly_UsesListPriceOverride()
+    {
+        // Arrange
+        var productId = Guid.NewGuid();
+        var product = BuildFullProduct(productId);
+        var variantId = product.ProductVariants.First().Id;
+
+        const decimal originalSalePrice = 199.90m;
+        const decimal overrideListPrice = 299.00m;
+
+        var productMarketplaceId = 43;
+        var variantOverride = new ProductVariantMarketplaceOverride
+        {
+            Id = 2,
+            ProductMarketplaceId = productMarketplaceId,
+            ProductVariantId = variantId,
+            ListPriceOverride = overrideListPrice,
+            SalePriceOverride = null   // only list price overridden
+        };
+
+        var productMarketplace = new ProductMarketplace
+        {
+            Id = productMarketplaceId,
+            ProductId = productId,
+            MarketPlaceId = AmazonMarketPlaceId,
+            VariantOverrides = new List<ProductVariantMarketplaceOverride> { variantOverride }
+        };
+
+        mockIntegrationDbContext.Setup(x => x.MainProducts)
+            .ReturnsDbSet(new List<Product> { product });
+
+        mockIntegrationDbContext.Setup(x => x.ProductMarketplaces)
+            .ReturnsDbSet(new List<ProductMarketplace> { productMarketplace });
+
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeMarketPlaceMatches)
+            .ReturnsDbSet(new List<CategoryAttributeMarketPlaceMatch>());
+
+        _mockFileStorage.Setup(f => f.GetPublicUrl(It.IsAny<string>()))
+            .Returns<string>(key => $"https://cdn.example.com/{key}");
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.MapProductAsync(productId, "PRODUCT");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var offer = result.Data!.Attributes["purchasable_offer"];
+        var json = System.Text.Json.JsonSerializer.Serialize(offer);
+        // SalePriceOverride is null => falls back to variant.SalePrice
+        json.Should().Contain(originalSalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            because: "When SalePriceOverride is null, original SalePrice must be used");
+    }
 }

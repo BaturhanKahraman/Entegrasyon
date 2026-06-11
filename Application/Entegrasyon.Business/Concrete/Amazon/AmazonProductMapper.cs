@@ -40,6 +40,7 @@ public sealed class AmazonProductMapper(
             return new ErrorDataResult<AmazonListingItem>(null!, "Ürünün varyantı yok.");
 
         var productMarketplace = await dbContext.ProductMarketplaces
+            .Include(pm => pm.VariantOverrides)
             .FirstOrDefaultAsync(pm => pm.ProductId == productId && pm.MarketPlaceId == AmazonMpId, ct);
 
         // Attribute eşleşmeleri
@@ -70,8 +71,10 @@ public sealed class AmazonProductMapper(
         for (var i = 1; i < imageUrls.Count; i++)
             attributes[$"other_product_image_locator_{i}"] = new[] { new { media_location = imageUrls[i] } };
 
-        // Fiyat
-        var salePrice = variant.SalePrice;
+        // Fiyat — override varsa override fiyatını kullan, yoksa orijinal (diğer mapper'larla aynı desen)
+        var variantOverride = productMarketplace?.VariantOverrides
+            ?.FirstOrDefault(vo => vo.ProductVariantId == variant.Id);
+        var salePrice = variantOverride?.SalePriceOverride ?? variant.SalePrice;
         attributes["purchasable_offer"] = new[] { new {
             currency = "TRY",
             our_price = new[] { new { schedule = new[] { new { value_with_tax = salePrice } } } },
