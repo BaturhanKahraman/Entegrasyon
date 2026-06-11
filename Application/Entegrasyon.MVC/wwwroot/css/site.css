@@ -151,6 +151,24 @@
     border-color: var(--tblr-border-color, #2c3e50);
 }
 
+/* Tom Select bir .input-group içindeyken (ör. yanında "+" hızlı-ekle butonu):
+   .ts-wrapper Bootstrap'ın .form-control/.form-select'i olmadığı için kendiliğinden
+   esnemez ve köşe yarıçapı butonla birleşmez. Bu kuralla wrapper esner ve
+   bitişik butonla aynı yükseklik/köşe hizasını yakalar. */
+.input-group > .ts-wrapper {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+}
+.input-group > .ts-wrapper:not(:last-child) .ts-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.input-group > .ts-wrapper:not(:first-child) .ts-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 /* Currency input — tarayıcı spinner'larını gizle (WebKit + Firefox) */
 .currency-input::-webkit-outer-spin-button,
 .currency-input::-webkit-inner-spin-button {
