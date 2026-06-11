@@ -3,32 +3,63 @@
     var productCount = (int)(ViewBag.ProductCount ?? 0);
     var attributes = Model.CategoryAttributes?.ToList() ?? new List<Entegrasyon.Entity.Categories.CategoryAttributeCategory>();
     var subCount = Model.SubCategories?.Count() ?? 0;
+    var parentName = Model.SuperCategory?.Name;
 }
 
 <div class="card">
+    <div class="card-status-top bg-primary"></div>
     <div class="card-header">
-        <h3 class="card-title">@Model.Name</h3>
+        <div class="d-flex align-items-center">
+            <span class="avatar avatar-md bg-primary-lt me-3">
+                <i class="ti ti-category-2 icon"></i>
+            </span>
+            <div>
+                <h3 class="card-title mb-0">@Model.Name</h3>
+                <div class="text-secondary small">
+                    @if (!string.IsNullOrEmpty(parentName))
+                    {
+                        <span><i class="ti ti-corner-down-right"></i> @parentName</span>
+                    }
+                    else
+                    {
+                        <span>Üst kategori (kök)</span>
+                    }
+                </div>
+            </div>
+        </div>
         <div class="card-actions">
-            <a href="/categories/@Model.Id/edit" class="btn btn-outline-primary btn-sm">
-                <i class="ti ti-pencil icon"></i>
-                Düzenle
+            <a href="/categories/@Model.Id" class="btn btn-primary">
+                <i class="ti ti-arrow-right icon"></i>
+                Detaya Git
             </a>
-            <button class="btn btn-outline-danger btn-sm ms-1"
-                    hx-post="/categories/@Model.Id/delete"
-                    hx-confirm="'@Model.Name' kategorisini silmek istediginize emin misiniz?"
-                    hx-swap="none">
-                <i class="ti ti-trash icon"></i>
-                Sil
-            </button>
         </div>
     </div>
+
+    <div class="card-body border-bottom py-3">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge bg-blue-lt text-blue-lt-fg">
+                <i class="ti ti-folder me-1"></i>@subCount alt kategori
+            </span>
+            <span class="badge bg-teal-lt text-teal-lt-fg">
+                <i class="ti ti-package me-1"></i>@productCount ürün
+            </span>
+            <span class="badge bg-purple-lt text-purple-lt-fg">
+                <i class="ti ti-list-details me-1"></i>@attributes.Count özellik
+            </span>
+            @if (Model.IsFavorite)
+            {
+                <span class="badge bg-yellow-lt text-yellow-lt-fg">
+                    <i class="ti ti-star me-1"></i>Favori
+                </span>
+            }
+        </div>
+    </div>
+
     <div class="card-body">
         <div class="datagrid">
             <div class="datagrid-item">
                 <div class="datagrid-title">Üst Kategori</div>
-                <div class="datagrid-content">
-                    @(Model.SuperCategory?.Name ?? "—")
-                </div>
+                <div class="datagrid-content">@(parentName ?? "—")</div>
             </div>
             <div class="datagrid-item">
                 <div class="datagrid-title">Alt Kategoriler</div>
@@ -47,7 +78,10 @@
                 <div class="datagrid-content">
                     @if (Model.IsFavorite)
                     {
-                        <span class="badge bg-yellow-lt">Favori</span>
+                        <span class="status status-yellow">
+                            <span class="status-dot"></span>
+                            Evet
+                        </span>
                     }
                     else
                     {
@@ -62,48 +96,64 @@
                 </div>
             </div>
         </div>
-
-        @if (attributes.Any())
-        {
-            <h4 class="mt-4 mb-2">Özellikler</h4>
-            <div class="table-responsive">
-                <table class="table table-vcenter card-table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Özellik</th>
-                            <th>Zorunlu</th>
-                            <th>Varyanter</th>
-                            <th>Dilimleyici</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var attr in attributes)
-                        {
-                            <tr>
-                                <td>@(attr.CategoryAttribute?.CategoryAttributeHumanized ?? attr.CategoryAttribute?.CategoryAttributeKey ?? "—")</td>
-                                <td>
-                                    @if (attr.IsRequired)
-                                    {
-                                        <span class="badge bg-blue-lt">Zorunlu</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (attr.IsVarianter)
-                                    {
-                                        <span class="badge bg-purple-lt">Varyanter</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (attr.IsSlicer)
-                                    {
-                                        <span class="badge bg-green-lt">Dilimleyici</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
     </div>
+
+    @if (attributes.Any())
+    {
+        <div class="card-header border-top">
+            <h4 class="card-title mb-0">
+                <i class="ti ti-list-details me-1 text-secondary"></i>Özellikler
+            </h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Özellik</th>
+                        <th class="text-center w-1">Zorunlu</th>
+                        <th class="text-center w-1">Varyanter</th>
+                        <th class="text-center w-1">Dilimleyici</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var attr in attributes)
+                    {
+                        <tr>
+                            <td class="fw-medium">@(attr.CategoryAttribute?.CategoryAttributeHumanized ?? attr.CategoryAttribute?.CategoryAttributeKey ?? "—")</td>
+                            <td class="text-center">
+                                @if (attr.IsRequired)
+                                {
+                                    <span class="badge bg-blue-lt text-blue-lt-fg">Zorunlu</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (attr.IsVarianter)
+                                {
+                                    <span class="badge bg-purple-lt text-purple-lt-fg">Varyanter</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (attr.IsSlicer)
+                                {
+                                    <span class="badge bg-green-lt text-green-lt-fg">Dilimleyici</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>

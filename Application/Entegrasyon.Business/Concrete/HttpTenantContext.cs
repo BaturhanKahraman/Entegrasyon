@@ -23,8 +23,16 @@ public sealed class HttpTenantContext : ITenantContext
     {
         ArgumentNullException.ThrowIfNull(entry);
         if (_entry is not null)
+        {
+            // Idempotent: aynı tenant ile re-init no-op. UseStatusCodePagesWithReExecute (404/500
+            // error sayfası) TenantResolutionMiddleware'i aynı scoped context'te ikinci kez koşturur;
+            // bu güvenli olmalı, aksi halde her NotFound() 500'e dönüşür.
+            if (_entry.TenantId == entry.TenantId)
+                return;
+
             throw new InvalidOperationException(
                 $"Tenant context already initialized with TenantId={_entry.TenantId}. Cannot re-initialize with TenantId={entry.TenantId}.");
+        }
         _entry = entry;
     }
 
