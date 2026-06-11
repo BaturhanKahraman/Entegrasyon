@@ -6,6 +6,7 @@ using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Entegrasyon.UnitTest.Storefront;
 
@@ -14,6 +15,8 @@ public class CheckoutManagerTests
     private readonly Mock<IDbContextFactory<IntegrationDbContext>> _mockContextFactory;
     private readonly Mock<IntegrationDbContext> _mockDbContext;
     private readonly Mock<IOfficeStockManager> _mockStockManager;
+    private readonly Mock<IApplicationLogManager> _mockAppLogManager;
+    private readonly Mock<ILogger<CheckoutManager>> _mockLogger;
     private readonly CheckoutManager _sut;
 
     public CheckoutManagerTests()
@@ -26,8 +29,14 @@ public class CheckoutManagerTests
             .ReturnsAsync(_mockDbContext.Object);
 
         _mockStockManager = new Mock<IOfficeStockManager>();
+        _mockAppLogManager = new Mock<IApplicationLogManager>();
+        _mockLogger = new Mock<ILogger<CheckoutManager>>();
 
-        _sut = new CheckoutManager(_mockContextFactory.Object, _mockStockManager.Object);
+        _sut = new CheckoutManager(
+            _mockContextFactory.Object,
+            _mockStockManager.Object,
+            _mockAppLogManager.Object,
+            _mockLogger.Object);
     }
 
     private void SetupNoPaymentConfig()

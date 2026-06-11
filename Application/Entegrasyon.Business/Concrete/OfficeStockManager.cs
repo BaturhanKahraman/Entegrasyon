@@ -384,16 +384,31 @@ public class OfficeStockManager(
             .Select(v => v.ProductId)
             .FirstOrDefaultAsync();
 
-        // Stok değişti → marketplace sync event yayınla
-        stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId)
+        // Stok değişti → marketplace sync event yayınla.
+        // Tenant context HTTP request dışında (background servis, integration test, storefront checkout)
+        // initialize edilmemiş olabilir — IsInitialized guard ile güvenli yayınla.
+        if (tenantContext.IsInitialized)
         {
-            TenantId = tenantContext.TenantId
-        });
+            stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId)
+            {
+                TenantId = tenantContext.TenantId
+            });
+        }
+        else
+        {
+            logger.LogDebug(
+                "CheckStockLevels: tenant context başlatılmamış, marketplace sync event atlandı. " +
+                "variant={VariantId}", productVariantId);
+        }
 
-        // Admin kullanıcılarının ID'lerini al (bildirimleri onlara gönder)
+        // Admin kullanıcılarının ID'lerini al (bildirimleri onlara gönder).
+        // Boş liste SendNotification validator'ını patlatır — guard ile sadece kullanıcı varsa gönder.
         var adminUserIds = await dbContext.Users.AsNoTracking()
             .Select(u => u.Id)
             .ToListAsync();
+
+        if (adminUserIds.Count == 0)
+            return;
 
         if (currentStock < 0)
         {
