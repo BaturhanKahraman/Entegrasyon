@@ -1,4 +1,22 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Product.ProductsDetailDto>
+@{
+    // Stok düşük eşiği — bu eşiğin altındaki (ama 0'dan büyük) stok "Düşük" sayılır.
+    // Makul varsayılan; ileride mağaza ayarından okunabilir.
+    const int lowStockThreshold = 5;
+
+    // Görseli olmayan ürünler için baş harf avatar'ına stabil renk üretir
+    // (aynı ürün her zaman aynı rengi alır → liste sakin görünür).
+    string[] avatarTints =
+    {
+        "bg-blue-lt", "bg-azure-lt", "bg-indigo-lt", "bg-purple-lt", "bg-pink-lt",
+        "bg-red-lt", "bg-orange-lt", "bg-yellow-lt", "bg-lime-lt", "bg-green-lt",
+        "bg-teal-lt", "bg-cyan-lt"
+    };
+    Func<string?, string> tintFor = title =>
+        avatarTints[Math.Abs((title ?? "").GetHashCode()) % avatarTints.Length];
+    Func<string?, string> initialOf = title =>
+        string.IsNullOrWhiteSpace(title) ? "?" : title.Trim()[..1].ToUpperInvariant();
+}
 
 <div id="product-table">
     @if (Model.HasItem)
@@ -7,28 +25,122 @@
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Ürün Adı</th>
-                        <th>Stok Kodu</th>
+                        <th>Ürün</th>
                         <th>Marka</th>
                         <th>Kategori</th>
-                        <th>Stok</th>
-                        <th>Varyant</th>
+                        <th class="text-center">Stok</th>
+                        <th class="text-center">Varyant</th>
+                        <th class="w-1"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var product in Model.Items)
                     {
+                        var stock = product.TotalCurrentStock;
+                        string stockBadge;
+                        string stockLabel;
+                        if (stock <= 0)
+                        {
+                            stockBadge = "bg-red-lt";
+                            stockLabel = "Tükendi";
+                        }
+                        else if (stock < lowStockThreshold)
+                        {
+                            stockBadge = "bg-yellow-lt";
+                            stockLabel = "Düşük";
+                        }
+                        else
+                        {
+                            stockBadge = "bg-green-lt";
+                            stockLabel = "Yeterli";
+                        }
+
                         <tr class="table-row-clickable" data-href="/products/@product.Id" role="link" tabindex="0">
-                            <td>@product.Title</td>
-                            <td class="text-secondary">@product.StockCode</td>
-                            <td class="text-secondary">@product.BrandName</td>
-                            <td class="text-secondary">@product.CategoryName</td>
                             <td>
-                                <span class="badge @(product.TotalCurrentStock > 0 ? "bg-green-lt" : "bg-red-lt")">
-                                    @product.TotalCurrentStock
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(product.FeaturedImageUrl))
+                                    {
+                                        <span class="avatar rounded me-2"
+                                              style="background-image: url('@product.FeaturedImageUrl')"
+                                              aria-hidden="true"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="avatar rounded me-2 @tintFor(product.Title)" aria-hidden="true">
+                                            @initialOf(product.Title)
+                                        </span>
+                                    }
+                                    <div class="text-truncate">
+                                        <div class="font-weight-medium text-truncate">@product.Title</div>
+                                        @if (!string.IsNullOrEmpty(product.StockCode))
+                                        {
+                                            <div class="text-secondary text-truncate small">
+                                                <i class="ti ti-barcode" aria-hidden="true"></i>
+                                                @product.StockCode
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(product.BrandName))
+                                {
+                                    <span class="badge bg-blue-lt text-blue-lt-fg">@product.BrandName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(product.CategoryName))
+                                {
+                                    <span class="badge bg-purple-lt text-purple-lt-fg">@product.CategoryName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">—</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @stockBadge" title="@stockLabel">
+                                    @stock
+                                    <span class="text-secondary ms-1">@stockLabel</span>
                                 </span>
                             </td>
-                            <td class="text-secondary">@product.VariantCount</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary-lt">@product.VariantCount</span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-icon btn-ghost-secondary"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="Ürün işlemleri">
+                                        <i class="ti ti-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                        <a class="dropdown-item" href="/products/@product.Id">
+                                            <i class="ti ti-eye dropdown-item-icon"></i>
+                                            Görüntüle
+                                        </a>
+                                        <a class="dropdown-item" href="/products/@product.Id/edit">
+                                            <i class="ti ti-edit dropdown-item-icon"></i>
+                                            Düzenle
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item text-danger"
+                                           href="#"
+                                           hx-post="/products/@product.Id/delete"
+                                           hx-confirm="Bu ürünü silmek istediğinize emin misiniz?"
+                                           hx-target="#product-table"
+                                           hx-swap="outerHTML">
+                                            <i class="ti ti-trash dropdown-item-icon"></i>
+                                            Sil
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>

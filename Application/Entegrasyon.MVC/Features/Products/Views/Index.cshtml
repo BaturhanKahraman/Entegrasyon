@@ -1,32 +1,140 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Product.ProductsDetailDto>
 
-<div class="d-flex justify-content-end mb-3">
-    <div class="d-flex gap-2">
-        <a href="/products/export" class="btn btn-outline-success">
-            <i class="ti ti-download icon"></i>
-            Excel'e Aktar
-        </a>
-        <a href="/products/add" class="btn btn-primary">
-            <i class="ti ti-plus icon"></i>
-            Yeni Ürün
-        </a>
+@{
+    // Sayfa başlığını zenginleştir: pretitle + subtitle + sağ aksiyonlar layout'un
+    // page-header'ında render edilir (çıplak başlık yerine flagship başlık).
+    ViewData.SetPagePretitle("Katalog");
+    ViewData.SetPageSubtitle("Tüm ürünlerini yönet, stok ve varyantları tek ekranda gör.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // "Toplam Ürün" GERÇEK veriden gelir (Pageable.TotalItemCount).
+    // Diğer KPI'lar (toplam stok / düşük stok / toplam varyant) sayfa genelinde
+    // aggregate gerektirir — şu an mevcut DEĞİL. ViewBag'den null-safe okunur;
+    // backend aggregate eklenince otomatik dolar. Hiçbir sayı hardcode edilmez.
+    int? totalStock = ViewBag.TotalStock as int?;
+    int? lowStockCount = ViewBag.LowStockCount as int?;
+    int? totalVariants = ViewBag.TotalVariantCount as int?;
+}
+
+@section PageActions {
+    <a href="/products/export" class="btn btn-outline-success">
+        <i class="ti ti-file-spreadsheet icon"></i>
+        Excel'e Aktar
+    </a>
+    <a href="/products/add" class="btn btn-primary">
+        <i class="ti ti-plus icon"></i>
+        Yeni Ürün
+    </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-package fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@Model.TotalItemCount</div>
+                        <div class="text-secondary">Toplam Ürün</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-stack-2 fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(totalStock?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Toplam Stok</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-alert-triangle fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(lowStockCount?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Düşük Stok</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-purple-lt avatar avatar-lg rounded">
+                            <i class="ti ti-versions fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">
+                            @(totalVariants?.ToString("N0") ?? "—")
+                        </div>
+                        <div class="text-secondary">Toplam Varyant</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="col-auto">
+@* ── Ürün listesi kartı ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Ürün Listesi</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount</strong> ürün
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <div class="input-icon">
+                    <span class="input-icon-addon">
+                        <i class="ti ti-search"></i>
+                    </span>
                     <input type="text"
                            class="form-control"
                            name="search"
-                           placeholder="Ürün ara..."
+                           placeholder="Ürün adı, stok kodu, marka ara…"
+                           autocomplete="off"
+                           aria-label="Ürün ara"
                            value="@ViewBag.Search"
                            hx-get="/products"
-                           hx-trigger="keyup changed delay:300ms"
+                           hx-trigger="keyup changed delay:300ms, search"
                            hx-target="#product-table"
                            hx-swap="outerHTML"
                            hx-include="this"/>
                 </div>
             </div>
-            <partial name="Partials/_ProductTable" model="Model"/>
         </div>
+    </div>
+    <partial name="Partials/_ProductTable" model="Model"/>
+</div>

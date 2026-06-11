@@ -37,17 +37,20 @@
 
             <div class="page-body">
                 <div class="container-xl">
-                    @* ── Sayfa Başlığı + Breadcrumb ── *@
+                    @* ── Sayfa Başlığı + Breadcrumb + (opsiyonel) pretitle/subtitle/aksiyonlar ── *@
+                    @{
+                        var crumbs = ViewData.GetBreadcrumb();
+                        var pretitle = ViewData.GetPagePretitle();
+                        var subtitle = ViewData.GetPageSubtitle();
+                        // Aksiyonlar opsiyonel @section PageActions ile gelir; tanımlıysa sağa yaslarız.
+                        var hasActions = IsSectionDefined("PageActions");
+                    }
                     <div class="page-header d-print-none mb-3">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <h2 class="page-title">@ViewData.GetPageTitle()</h2>
-                                @{
-                                    var crumbs = ViewData.GetBreadcrumb();
-                                }
+                        <div class="row g-2 align-items-center">
+                            <div class="col">
                                 @if (crumbs.Length > 0)
                                 {
-                                    <ol class="breadcrumb breadcrumb-arrows" aria-label="breadcrumbs">
+                                    <ol class="breadcrumb breadcrumb-arrows mb-1" aria-label="breadcrumbs">
                                         @foreach (var (text, url) in crumbs)
                                         {
                                             @if (url is not null)
@@ -61,7 +64,24 @@
                                         }
                                     </ol>
                                 }
+                                @if (!string.IsNullOrEmpty(pretitle))
+                                {
+                                    <div class="page-pretitle">@pretitle</div>
+                                }
+                                <h2 class="page-title">@ViewData.GetPageTitle()</h2>
+                                @if (!string.IsNullOrEmpty(subtitle))
+                                {
+                                    <div class="text-secondary mt-1">@subtitle</div>
+                                }
                             </div>
+                            @if (hasActions)
+                            {
+                                <div class="col-auto ms-auto d-print-none">
+                                    <div class="btn-list">
+                                        @await RenderSectionAsync("PageActions", required: false)
+                                    </div>
+                                </div>
+                            }
                         </div>
                     </div>
 
