@@ -70,6 +70,7 @@ public class StorefrontFaz2Tests
             _mockContextFactory.Object,
             Mock.Of<IOfficeStockManager>(),
             Mock.Of<INotificationManager>(),
+            Mock.Of<IApplicationLogManager>(),
             Mock.Of<ILogger<OrderManager>>(),
             Options.Create(new NotificationFeatureFlags { PublishEnabled = false }));
 

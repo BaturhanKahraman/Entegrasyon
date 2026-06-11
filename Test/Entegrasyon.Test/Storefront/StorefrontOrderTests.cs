@@ -2,8 +2,10 @@ using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
+using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Products;
+using Entegrasyon.Entity.Results;
 using Entegrasyon.Entity.Storefront;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,6 +19,7 @@ public class StorefrontOrderTests
     private readonly Mock<IntegrationDbContext> _mockDbContext;
     private readonly Mock<IOfficeStockManager> _mockStockManager;
     private readonly Mock<INotificationManager> _mockNotificationManager;
+    private readonly Mock<IApplicationLogManager> _mockApplicationLogManager;
     private readonly OrderManager _sut;
 
     public StorefrontOrderTests()
@@ -33,11 +36,23 @@ public class StorefrontOrderTests
 
         _mockStockManager = new Mock<IOfficeStockManager>();
         _mockNotificationManager = new Mock<INotificationManager>();
+        _mockApplicationLogManager = new Mock<IApplicationLogManager>();
+        _mockApplicationLogManager
+            .Setup(x => x.AddLog(It.IsAny<string>(), It.IsAny<LogType>(), It.IsAny<LogAction>(), It.IsAny<object?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Default: atomik stok artışı başarılı dönsün (testler ayrıca özelleştirebilir)
+        _mockStockManager
+            .Setup(s => s.IncreaseStockAtomicAsync(
+                It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<int>(),
+                It.IsAny<StockMovementType>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .ReturnsAsync(new SuccessDataResult<StockMovement>(new StockMovement()));
 
         _sut = new OrderManager(
             _mockContextFactory.Object,
             _mockStockManager.Object,
             _mockNotificationManager.Object,
+            _mockApplicationLogManager.Object,
             Mock.Of<ILogger<OrderManager>>(),
             Options.Create(new NotificationFeatureFlags { PublishEnabled = false }));
     }
@@ -132,6 +147,61 @@ public class StorefrontOrderTests
 
         // Assert
         result.Success.Should().BeFalse();
+    }
+
+    // ── RED: storefront iptal yolu IncreaseStockAtomicAsync'i çağırmalı ──
+    [Fact]
+    public async Task CancelOrderAsync_WithItems_CallsIncreaseStockAtomicAsync_NotDirectMutation()
+    {
+        // Arrange
+        var orderId = Guid.NewGuid();
+        var customerId = 5;
+        var variantId = Guid.NewGuid();
+        var order = new Order
+        {
+            Id = orderId,
+            CustomerId = customerId,
+            StorefrontOrderStatus = OrderStatus.Received,
+            StorefrontPaymentStatus = PaymentStatus.Paid,
+            OrderItems = new List<OrderItem>
+            {
+                new() { ProductId = variantId, Quantity = 3 }
+            }
+        };
+
+        _mockDbContext.Setup(x => x.Orders).ReturnsDbSet(new List<Order> { order });
+        _mockDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        _mockStockManager
+            .Setup(s => s.IncreaseStockAtomicAsync(
+                It.IsAny<int>(), variantId, 3,
+                It.IsAny<StockMovementType>(),
+                It.IsAny<string?>(), It.IsAny<string?>()))
+            .ReturnsAsync(new SuccessDataResult<StockMovement>(new StockMovement()));
+
+        // Act
+        var result = await _sut.CancelOrderAsync(orderId, customerId);
+
+        // Assert — hem başarılı hem de atomik stok manager'ı tetiklemeli
+        result.Success.Should().BeTrue();
+
+        _mockStockManager.Verify(
+            s => s.IncreaseStockAtomicAsync(
+                It.IsAny<int>(),
+                variantId,
+                3,
+                StockMovementType.Return,
+                "StorefrontOrderCancellation",
+                orderId.ToString()),
+            Times.Once,
+            "Storefront sipariş iptali stok artışını IncreaseStockAtomicAsync üzerinden yapmalı");
+
+        // BranchOfficeStocks direkt okunmamalı/mutasyon edilmemeli
+        _mockDbContext.Verify(
+            x => x.BranchOfficeStocks,
+            Times.Never,
+            "Storefront iptal yolu BranchOfficeStocks'u doğrudan erişmemeli");
     }
 
     [Fact]

@@ -6,6 +6,7 @@ using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.N11;
+using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Notifications;
 using Entegrasyon.Entity.Orders;
@@ -30,6 +31,7 @@ public class OrderManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IOfficeStockManager officeStockManager,
     INotificationManager notificationManager,
+    IApplicationLogManager applicationLogManager,
     ILogger<OrderManager> logger,
     IOptions<NotificationFeatureFlags> notificationFlags) : IOrderManager
 {
@@ -672,19 +674,30 @@ public class OrderManager(
         order.StorefrontOrderStatus = Entity.Storefront.OrderStatus.Cancelled;
         order.StorefrontPaymentStatus = Entity.Storefront.PaymentStatus.Refunded;
 
-        // Restore stock for each order item (decrease SoldQuantity to increase CurrentStock)
+        await dbContext.SaveChangesAsync();
+
+        // Stok geri yükle — her kalem için atomik artış (CheckStockLevelsAsync → pazaryeri sync tetikler)
         foreach (var item in order.OrderItems)
         {
-            if (item.ProductId.HasValue && item.Quantity > 0)
-            {
-                var stock = await dbContext.BranchOfficeStocks.AsTracking()
-                    .FirstOrDefaultAsync(s => s.BranchOfficeId == 1 && s.ProductVariantId == item.ProductId);
-                if (stock is not null)
-                    stock.SoldQuantity -= item.Quantity;
-            }
+            if (!item.ProductId.HasValue || item.Quantity <= 0) continue;
+
+            var stockResult = await officeStockManager.IncreaseStockAtomicAsync(
+                branchOfficeId: 1,
+                productVariantId: item.ProductId.Value,
+                quantity: item.Quantity,
+                type: StockMovementType.Return,
+                referenceType: "StorefrontOrderCancellation",
+                referenceId: orderId.ToString());
+
+            if (!stockResult.Success)
+                logger.LogWarning(
+                    "Storefront order {OrderId} cancelled but stock restore failed for variant {VariantId}: {Message}",
+                    orderId, item.ProductId.Value, stockResult.Message);
         }
 
-        await dbContext.SaveChangesAsync();
+        await applicationLogManager.AddLog(
+            $"Storefront sipariş iptal edildi: #{orderId}",
+            LogType.Order, LogAction.Update);
         logger.LogInformation("Storefront order cancelled: {OrderId} by customer {CustomerId}", orderId, customerId);
         return new SuccessResult("Sipariş basariyla iptal edildi.");
     }

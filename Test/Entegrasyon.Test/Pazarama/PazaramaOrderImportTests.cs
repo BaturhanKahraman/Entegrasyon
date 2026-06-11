@@ -28,6 +28,7 @@ public class PazaramaOrderImportTests : Entegrasyon.UnitTest.BaseTest
         mockContextFactory.Object,
         _mockOfficeStockManager.Object,
         _mockNotificationManager.Object,
+        Mock.Of<IApplicationLogManager>(),
         _mockLogger.Object,
         _disabledFlags);
 
