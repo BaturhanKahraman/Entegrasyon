@@ -26,6 +26,24 @@ public class PickingController(IOrderManager orderManager) : HtmxController
         if (Request.IsHtmx())
             return PartialView("~/Features/Picking/Views/Partials/_PickingTable.cshtml", result.Data);
 
+        // Header KPI'ları (bekleyen ürün adedi / bugünkü sipariş / 24s+ bekleyen) — tek aggregate,
+        // sadece full sayfada. Hata olursa ViewBag set ETME → view null-safe "—" gösterir (500 vermez).
+        try
+        {
+            var kpi = await orderManager.GetPickingKpisAsync(HttpContext.RequestAborted);
+            ViewBag.PendingItemCount = kpi.PendingItemCount;
+            ViewBag.TodayOrderCount = kpi.TodayOrderCount;
+            ViewBag.StaleOrderCount = kpi.StaleOrderCount;
+        }
+        catch (OperationCanceledException)
+        {
+            // İstek iptal edildi — sessizce geç.
+        }
+        catch
+        {
+            // KPI hesaplanamadı: liste sayfası KPI olmadan da çalışmalı (graceful degrade).
+        }
+
         return View("~/Features/Picking/Views/Index.cshtml", result.Data);
     }
 

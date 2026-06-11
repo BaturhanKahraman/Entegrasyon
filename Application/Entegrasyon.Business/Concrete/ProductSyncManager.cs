@@ -179,6 +179,26 @@ public sealed class ProductSyncManager(
         return new SuccessDataResult<ProductSyncDetailDto>(dto);
     }
 
+    /// <summary>
+    /// Credential guard: pazaryeri API anahtarları eksikse sync reddedilir.
+    /// UI disable'ı bypass eden doğrudan POST'lara karşı backend koruması (spec #81).
+    /// Tek kaynak: <see cref="MarketPlaceCredentialExtensions.IsCredentialComplete"/>.
+    /// </summary>
+    private async Task<IResult?> RejectIfCredentialsMissingAsync(
+        IntegrationDbContext dbContext, int marketPlaceId, string marketplaceName)
+    {
+        var mp = await dbContext.MarketPlaces.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == marketPlaceId);
+        if (mp is not null && mp.IsCredentialComplete())
+            return null;
+
+        await applicationLogManager.AddLog(
+            $"{marketplaceName} senkronizasyonu reddedildi: API anahtarları eksik.",
+            LogType.Marketplace, LogAction.Sync, new { marketPlaceId });
+        return new ErrorResult(
+            "Bu pazaryeri için API anahtarları eksik. Önce Ayarlar → Entegrasyonlar'dan tamamlayın.");
+    }
+
     public async Task<IResult> SyncProductAsync(Guid productId, int marketPlaceId)
     {
         var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
@@ -186,6 +206,14 @@ public sealed class ProductSyncManager(
         activity?.SetTag("product.id", productId.ToString());
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var credentialGuard = await RejectIfCredentialsMissingAsync(dbContext, marketPlaceId, marketplaceName);
+        if (credentialGuard is not null)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "API anahtarları eksik");
+            return credentialGuard;
+        }
+
         var product = await dbContext.MainProducts.FindAsync(productId);
         if (product is null)
         {
@@ -265,6 +293,11 @@ public sealed class ProductSyncManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
+        var credentialGuard = await RejectIfCredentialsMissingAsync(
+            dbContext, marketPlaceId, marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}");
+        if (credentialGuard is not null)
+            return credentialGuard;
+
         // Advisory lock: Eşzamanlı toplu sync'i engelle
         var lockAcquired = await dbContext.Database
             .SqlQuery<bool>($"""SELECT pg_try_advisory_lock({AdvisoryLockKeySyncAll}) AS "Value" """)
@@ -326,6 +359,11 @@ public sealed class ProductSyncManager(
     public async Task<IResult> RetryAllFailedAsync(int marketPlaceId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var credentialGuard = await RejectIfCredentialsMissingAsync(
+            dbContext, marketPlaceId, marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}");
+        if (credentialGuard is not null)
+            return credentialGuard;
 
         // Advisory lock: Eşzamanlı toplu retry'ı engelle
         var lockAcquired = await dbContext.Database

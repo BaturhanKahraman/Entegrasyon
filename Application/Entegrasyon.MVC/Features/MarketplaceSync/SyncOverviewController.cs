@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity;
 using Entegrasyon.MVC.Features.MarketplaceSync.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
@@ -34,6 +35,7 @@ public class SyncOverviewController(
                 MarketPlaceId = mp.Id,
                 Name = mp.Name,
                 IsActive = !mp.IsDeleted,
+                HasCredentials = mp.IsCredentialComplete(),
                 SyncSummary = syncSummary
             });
         }

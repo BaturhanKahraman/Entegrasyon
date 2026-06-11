@@ -17,6 +17,10 @@ public class MarketplaceSyncCardVm
     public int MarketPlaceId { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+
+    /// <summary>API anahtarları tam yapılandırılmış mı? false ise kart disabled gösterilir.</summary>
+    public bool HasCredentials { get; set; }
+
     public ProductSyncSummaryDto SyncSummary { get; set; } = new(0, 0, 0, 0, 0);
     public int MappedCategoryCount { get; set; }
 }

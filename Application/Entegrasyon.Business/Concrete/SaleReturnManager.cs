@@ -529,4 +529,30 @@ public sealed class SaleReturnManager(
             : hasAnyReturn ? SaleStatus.PartialReturn
             : SaleStatus.Completed;
     }
+
+    public async Task<ReturnKpiDto> GetReturnKpisAsync(CancellationToken ct = default)
+    {
+        // İade liste sayfası üst KPI snapshot'ı — tablo filtresinden bağımsız, tüm
+        // (silinmemiş, query filter) iadeler. Tek round-trip: status bazlı GroupBy →
+        // sunucuda count + RefundAmount sum. Grup sayısı enum kadar (≤6) → bellekte
+        // pivot ucuz. AsNoTracking (DbContext default), N+1 yok.
+        await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
+
+        var byStatus = await dbContext.SaleReturns
+            .GroupBy(r => r.ReturnStatus)
+            .Select(g => new
+            {
+                Status = g.Key,
+                Count = g.Count(),
+                RefundSum = g.Sum(r => r.RefundAmount)
+            })
+            .ToListAsync(ct);
+
+        var totalCount = byStatus.Sum(x => x.Count);
+        var pendingCount = byStatus.FirstOrDefault(x => x.Status == ReturnStatus.Pending)?.Count ?? 0;
+        var approvedCount = byStatus.FirstOrDefault(x => x.Status == ReturnStatus.Approved)?.Count ?? 0;
+        var completedRefundTotal = byStatus.FirstOrDefault(x => x.Status == ReturnStatus.Completed)?.RefundSum ?? 0m;
+
+        return new ReturnKpiDto(totalCount, pendingCount, approvedCount, completedRefundTotal);
+    }
 }

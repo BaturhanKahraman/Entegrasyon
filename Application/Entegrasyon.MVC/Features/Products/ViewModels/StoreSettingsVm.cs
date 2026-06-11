@@ -5,6 +5,13 @@ public class StoreSettingsVm
     public Guid ProductId { get; set; }
     public string ProductTitle { get; set; } = "";
     public bool IsPublished { get; set; }
+
+    /// <summary>
+    /// E-ticaret (storefront) modülü aktif mi? Kapalıysa view "Yayınla" aksiyonunu
+    /// disable eder + uyarı bandı gösterir; controller publish POST'unu sunucu tarafında engeller.
+    /// </summary>
+    public bool EcommerceEnabled { get; set; }
+
     public string? SeoTitle { get; set; }
     public string? SeoSlug { get; set; }
     public string? SeoDescription { get; set; }

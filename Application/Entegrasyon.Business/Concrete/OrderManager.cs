@@ -6,6 +6,7 @@ using Entegrasyon.Business.FeatureFlags;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.N11;
+using Entegrasyon.Entity.Dtos.Order;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Notifications;
@@ -64,6 +65,30 @@ public class OrderManager(
         var result = await query.ToPageableAsync(request);
 
         return new SuccessDataResult<Pageable<Order>>(result);
+    }
+
+    /// <summary>
+    /// Sipariş Hazırlama (Picking) KPI aggregate'leri — bekleyen (MarketplaceOrderStatus="Created")
+    /// siparişler üzerinden tek round-trip: Σ ürün adedi, bugün gelen, 24s+ bekleyen.
+    /// Read-path: AsNoTracking, tek GroupBy sorgusu (N+1 yok). Boş set → 0/0/0.
+    /// </summary>
+    public async Task<PickingKpiDto> GetPickingKpisAsync(CancellationToken ct = default)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
+
+        var now = DateTimeOffset.UtcNow;
+        var todayStart = new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
+        var staleThreshold = now.AddHours(-24);
+
+        var pending = dbContext.Orders.AsNoTracking()
+            .Where(o => o.MarketplaceOrderStatus == "Created");
+
+        // 3 indexli scalar aggregate (Σ adet, bugünkü, 24s+ bekleyen). Boş set → Sum null → 0.
+        var pendingItemCount = await pending.SumAsync(o => (int?)o.TotalQuantity, ct) ?? 0;
+        var todayOrderCount = await pending.CountAsync(o => o.OrderDate >= todayStart, ct);
+        var staleOrderCount = await pending.CountAsync(o => o.OrderDate < staleThreshold, ct);
+
+        return new PickingKpiDto(pendingItemCount, todayOrderCount, staleOrderCount);
     }
 
     public async Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId)

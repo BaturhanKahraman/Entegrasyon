@@ -1014,7 +1014,10 @@ public class ProductManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
+        // AsTracking ŞART: context default no-tracking (TenantDbContextFactory). Tracking olmadan
+        // entity mutasyonu SaveChanges'te SESSIZCE yok sayılır (hiçbir şey persist olmaz).
         var product = await dbContext.MainProducts
+            .AsTracking()
             .Include(p => p.ProductVariants)
             .FirstOrDefaultAsync(p => p.Id == productId);
 
@@ -1053,7 +1056,9 @@ public class ProductManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
+        // AsTracking ŞART: context default no-tracking; tracking olmadan mutasyon persist olmaz.
         var product = await dbContext.MainProducts
+            .AsTracking()
             .Include(p => p.ProductVariants)
             .FirstOrDefaultAsync(p => p.Id == productId);
 

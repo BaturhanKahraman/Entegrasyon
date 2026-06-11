@@ -31,7 +31,8 @@ public class ProductController(
     IMarketplaceOverrideManager marketplaceOverrideManager,
     IProductVariantManager productVariantManager,
     ICategoryAttributeManager categoryAttributeManager,
-    IBranchOfficeManager branchOfficeManager) : Controller
+    IBranchOfficeManager branchOfficeManager,
+    IProductActivityPageManager productActivityPageManager) : Controller
 {
     [HttpGet("/products")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
@@ -1145,23 +1146,90 @@ public class ProductController(
         )).ToList();
     }
 
-    // ── Store Settings ────────────────────────────────────────────────
+    // ── Storefront (Mağaza) Ayarları ──────────────────────────────────
+    // PA #75: Eski ürün-detay-içi lazy-load "store-settings" partial'ı ayrı tam sayfaya taşındı.
+    // E-ticaret modülü kapalıyken sayfa açılır ama "Yayınla" hem view'da disable edilir hem de
+    // burada sunucu tarafında engellenir (sessizce başarı simüle EDİLMEZ).
 
+    [HttpGet("/products/{id:guid}/storefront")]
+    public async Task<IActionResult> StorefrontSettings(Guid id)
+    {
+        var vm = await BuildStorefrontVmAsync(id);
+        if (vm is null) return NotFound();
+
+        ViewData.SetPageTitle("Storefront Ayarları");
+        ViewData.SetActiveNav("products");
+        ViewData.SetBreadcrumb(
+            ("Ürünler", "/products"),
+            (vm.ProductTitle, $"/products/{id}"),
+            ("Storefront Ayarları", null));
+
+        return View("~/Features/Products/Views/StorefrontSettings.cshtml", vm);
+    }
+
+    // SkipAutoValidation: VM'in salt-görüntü alanları (ProductTitle vb. non-nullable string)
+    // POST'ta gönderilmediği için model binder onları "implicitly required" sayıp ModelState'i
+    // geçersiz kılıyordu → AutoValidationFilter action'a girmeden Referer'a redirect ediyordu
+    // (kayıt hiç çalışmıyordu). Kaydetme doğrulaması zaten manager'da yapılıyor.
+    [SkipAutoValidation]
+    [HttpPost("/products/{id:guid}/storefront")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveStorefront(Guid id, StoreSettingsVm vm)
+    {
+        var prices = vm.VariantPrices.ToDictionary(v => v.VariantId, v => v.ECommercePrice);
+        var result = await productService.UpdateStoreSettings(id, vm.SeoTitle, vm.SeoDescription, vm.SeoSlug, vm.SeoKeywords, prices);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message!);
+        else
+            TempData.SetError(result.Message!);
+
+        return RedirectToAction(nameof(StorefrontSettings), new { id });
+    }
+
+    [SkipAutoValidation]
+    [HttpPost("/products/{id:guid}/storefront/publish")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublishStorefront(Guid id, StoreSettingsVm vm)
+    {
+        // Fail-closed: e-ticaret modülü kapalıyken yayınlama yapılamaz.
+        if (!await productActivityPageManager.IsEcommerceEnabledAsync())
+        {
+            TempData.SetError("E-ticaret modülü aktif olmadığı için ürün mağazada yayınlanamaz.");
+            return RedirectToAction(nameof(StorefrontSettings), new { id });
+        }
+
+        var prices = vm.VariantPrices.ToDictionary(v => v.VariantId, v => v.ECommercePrice);
+        var result = await productService.PublishProduct(id, vm.SeoTitle, vm.SeoDescription, vm.SeoSlug, vm.SeoKeywords, prices);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message!);
+        else
+            TempData.SetError(result.Message!);
+
+        return RedirectToAction(nameof(StorefrontSettings), new { id });
+    }
+
+    // Geri uyumluluk: eski lazy-load endpoint'i kalıcı olarak yeni sayfaya yönlendir.
     [HttpGet("/products/{id:guid}/store-settings")]
-    public async Task<IActionResult> StoreSettings(Guid id)
+    public IActionResult StoreSettingsRedirect(Guid id)
+        => RedirectToActionPermanent(nameof(StorefrontSettings), new { id });
+
+    private async Task<StoreSettingsVm?> BuildStorefrontVmAsync(Guid id)
     {
         var result = await productService.GetProductDetailById(id);
         if (!result.Success || result.Data is null)
-            return NotFound();
+            return null;
 
         var detail = result.Data;
         var variantAttrNames = await productService.GetVariantAttributeNamesAsync(id);
 
-        var vm = new StoreSettingsVm
+        return new StoreSettingsVm
         {
             ProductId = detail.Id,
             ProductTitle = detail.Title,
             IsPublished = detail.IsPublished,
+            EcommerceEnabled = await productActivityPageManager.IsEcommerceEnabledAsync(),
             SeoTitle = detail.SeoTitle,
             SeoSlug = detail.SeoSlug,
             SeoDescription = detail.SeoDescription,
@@ -1178,37 +1246,5 @@ public class ProductController(
                 };
             }).ToList()
         };
-
-        return PartialView("Partials/_StoreSettings", vm);
-    }
-
-    [HttpPost("/products/{id:guid}/store-settings")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SaveStoreSettings(Guid id, StoreSettingsVm vm)
-    {
-        var prices = vm.VariantPrices.ToDictionary(v => v.VariantId, v => v.ECommercePrice);
-        var result = await productService.UpdateStoreSettings(id, vm.SeoTitle, vm.SeoDescription, vm.SeoSlug, vm.SeoKeywords, prices);
-
-        if (result.Success)
-            TempData.SetSuccess(result.Message!);
-        else
-            TempData.SetError(result.Message!);
-
-        return await StoreSettings(id);
-    }
-
-    [HttpPost("/products/{id:guid}/store-settings/publish")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> PublishToStore(Guid id, StoreSettingsVm vm)
-    {
-        var prices = vm.VariantPrices.ToDictionary(v => v.VariantId, v => v.ECommercePrice);
-        var result = await productService.PublishProduct(id, vm.SeoTitle, vm.SeoDescription, vm.SeoSlug, vm.SeoKeywords, prices);
-
-        if (result.Success)
-            TempData.SetSuccess(result.Message!);
-        else
-            TempData.SetError(result.Message!);
-
-        return await StoreSettings(id);
     }
 }

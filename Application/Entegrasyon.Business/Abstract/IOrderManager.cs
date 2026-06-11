@@ -1,6 +1,7 @@
 using Entegrasyon.Business.Concrete.Pazarama;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.N11;
+using Entegrasyon.Entity.Dtos.Order;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Requests;
@@ -11,6 +12,7 @@ namespace Entegrasyon.Business.Abstract;
 public interface IOrderManager
 {
     Task<IDataResult<Pageable<Order>>> GetOrdersAsync(OrderPaginatedRequest request);
+    Task<PickingKpiDto> GetPickingKpisAsync(CancellationToken ct = default);
     Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId);
     Task<IResult> ImportTrendyolOrdersAsync(List<TrendyolShipmentPackage> packages);
     Task<IResult> ImportN11OrdersAsync(List<N11OrderDto> orders);

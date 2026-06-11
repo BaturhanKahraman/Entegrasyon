@@ -67,6 +67,13 @@ public class ReturnController(
         if (Request.IsHtmx())
             return PartialView("~/Features/Returns/Views/Partials/_ReturnTable.cshtml", returns);
 
+        // KPI snapshot (global, tablo filtresinden bağımsız) yalnız tam-sayfa render'da.
+        var kpis = await saleReturnManager.GetReturnKpisAsync();
+        ViewBag.ReturnTotalCount = kpis.TotalCount;
+        ViewBag.ReturnPendingCount = kpis.PendingCount;
+        ViewBag.ReturnApprovedCount = kpis.ApprovedCount;
+        ViewBag.ReturnCompletedRefundTotal = kpis.CompletedRefundTotal;
+
         return View("~/Features/Returns/Views/Index.cshtml", returns);
     }
 
