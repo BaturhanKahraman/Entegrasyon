@@ -655,7 +655,7 @@
   {
     "task": "E6 — Amazon variant fiyat override bug-fix (override sessizce yok sayılıyor)",
     "description": "Kaynak: per-marketplace-customization spec (PA, kod-önce teyit). BUG: AmazonProductMapper.cs:74 doğrudan 'variant.SalePrice' okuyor, ProductVariantMarketplaceOverride.ListPriceOverride/SalePriceOverride'ı YOK SAYIYOR. Diğer 4 pazaryeri override'ı okuyor (TrendyolProductMapper.cs:120-121, PazaramaProductMapper.cs:129-130, HepsiburadaProductMapper.cs:111-112, N11ProductMapper.cs:114-115). SONUÇ: Esnaf Amazon için ayrı fiyat girse bile orijinal fiyat gidiyor. FIX: Amazon mapper'da diğer 4'ün desenini uygula — override varsa onu kullan (override ?? variant.SalePrice). Düşük risk, küçük değişiklik.",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "plan": false,
     "notes": "Hızlı bug-fix, düşük risk. TL onaylı (2026-06-10). Roller: SWE (tek-nokta fix), QA (RED test: override set → Amazon request'inde override fiyat). TDD: önce override'ın yok sayıldığını gösteren RED test, sonra fix.",
@@ -702,7 +702,7 @@
   {
     "task": "S1 — Storefront sipariş iptali stok event'i KOPUK (pazaryerlerine yansımıyor)",
     "description": "Kaynak: docs/superpowers/specs/2026-06-10-multi-platform-sync-design.md (PA, kod-önce teyit, R1). PROBLEM: Storefront müşterisi siparişini iptal edince stok geri yükleniyor AMA pazaryerlerine yansımıyor. KOD-ÖNCE TEYİT: OrderManager.cs:676-683 storefront sipariş iptalinde doğrudan 'stock.SoldQuantity -= item.Quantity' yazıyor; OfficeStockManager.CheckStockLevelsAsync() ÇAĞRILMIYOR → StockPriceChangedEvent yayılmıyor → TrendyolStockPriceSyncService vb. tetiklenmiyor. SONUÇ: Müşteri iptal eder, stok DB'de artar ama Trendyol/N11/Hepsiburada'da eski (düşük) stok kalır → eksik satış fırsatı/yanlış stok. FIX: Storefront iptal yolunu diğer tüm tetikleyiciler gibi OfficeStockManager.IncreaseStockAtomicAsync()'e bağla (StockMovementType.Return/Cancellation, referenceType='StorefrontOrderCancellation') — bu metod CheckStockLevelsAsync → event yayar → tüm pazaryeri sync'i otomatik tetiklenir.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "plan": false,
     "notes": "Çekirdek değer (çok-platform sync) kopuk ucu. TL onayı bekliyor (PA önerisi 2026-06-10). Düşük risk — mevcut atomik API'ye bağlama. Roller: SWE (OrderManager storefront-cancel düzelt), QA (TDD: iptal → event yayıldı + stok arttı assert). Diğer 9 tetikleyici zaten event yayıyor; bu tek kopuk uç.",
@@ -719,7 +719,7 @@
   {
     "task": "S2 — Storefront checkout overselling/stoksuz-sipariş bug'ı (atomik sonuç yok sayılıyor + depo hardcoded)",
     "description": "Kaynak: multi-platform-sync spec (PA, kod-önce teyit, R2). 🔴 BUG: CheckoutManager.cs:40 stok kontrolü TÜM depoların toplamına bakıyor (item.ProductVariant.BranchOfficeStocks.Sum(s => s.CurrentStock)), AMA CheckoutManager.cs:120 atomik düşme 'branchOfficeId: 1' HARDCODED + DÖNÜŞ DEĞERİ KONTROL EDİLMİYOR (await stockManager.DecreaseStockAtomicAsync(...); — result atılıyor). SONUÇLAR: (a) Depo-1'de stok yok ama depo-2'de varsa: memory kontrol geçer (toplam>0), atomik düşme depo-1'den affected==0 olur, SESSİZCE başarısız → SİPARİŞ STOKSUZ OLUŞUR (order zaten Add edilmiş). (b) Kontrol-düşme arası yarış penceresi. FIX: (1) Atomik düşme sonucunu kontrol et — başarısızsa siparişi oluşturma/rollback; (2) hardcoded branchOfficeId:1 yerine doğru depo seçimi (storefront-deposu config veya çoklu-depo dağıtım); (3) memory pre-check ile atomik düşmeyi tutarlı depoya hizala. Overselling kapanır.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "plan": true,
     "notes": "Çok-platform sync'in en kritik tutarlılık bug'ı — gerçek overselling/stoksuz sipariş üretebilir. TL onayı bekliyor (PA önerisi 2026-06-10). Roller: SWE (checkout akışı), DB Master (atomiklik + çoklu-depo dağıtım deseni), QA (concurrent race testi — mevcut OfficeStockManagerIntegrationTests deseni). AÇIK SORU (TL): storefront hangi depodan düşmeli (sabit storefront-deposu mu, öncelik sırası mı)?",
