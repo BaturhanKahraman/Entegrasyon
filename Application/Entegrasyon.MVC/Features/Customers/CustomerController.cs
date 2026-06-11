@@ -22,6 +22,12 @@ public class CustomerController(ICustomerManager customerManager, IOrderManager 
         if (Request.IsHtmx())
             return PartialView("Partials/_CustomerTable", result.Data);
 
+        // KPI snapshot (global, tablo filtresinden bağımsız) yalnız tam-sayfa render'da.
+        var kpis = await customerManager.GetCustomerKpisAsync();
+        ViewBag.IndividualCount = kpis.IndividualCount;
+        ViewBag.CorporateCount = kpis.CorporateCount;
+        ViewBag.ActiveCount = kpis.ActiveCount;
+
         ViewBag.Search = search;
         return View(result.Data);
     }

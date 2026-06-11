@@ -31,7 +31,8 @@ public sealed class MarketPlaceManager(
     public async Task<IResult> UpdateCredentialsAsync(int id, string apiKey, string apiSecret, string sellerId, string? baseUrl)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var mp = await dbContext.MarketPlaces.FirstOrDefaultAsync(m => m.Id == id);
+        // AsTracking ŞART: context default no-tracking → tracking olmadan mutasyon SaveChanges'te yok sayılır.
+        var mp = await dbContext.MarketPlaces.AsTracking().FirstOrDefaultAsync(m => m.Id == id);
         if (mp is null)
             return new ErrorResult("Marketplace bulunamadı.");
 

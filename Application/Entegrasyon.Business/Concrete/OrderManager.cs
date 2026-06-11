@@ -621,7 +621,8 @@ public class OrderManager(
     public async Task<IResult> UpdateOrderStatusAsync(Guid orderId, string newStatus)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var order = await dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+        // AsTracking ŞART: context default no-tracking → tracking olmadan mutasyon persist olmaz.
+        var order = await dbContext.Orders.AsTracking().FirstOrDefaultAsync(o => o.Id == orderId);
         if (order is null)
             return new ErrorResult("Sipariş bulunamadı.");
 
@@ -634,6 +635,7 @@ public class OrderManager(
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var order = await dbContext.Orders
+            .AsTracking()
             .FirstOrDefaultAsync(o => o.ShipmentPackageId == shipmentPackageId);
 
         if (order is null)
