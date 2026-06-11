@@ -1101,5 +1101,186 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Kategori Detay Sayfası — Header/Layout Polish (Ürünler Tarzı Hizalama)",
+    "description": "Kategori detay sayfasının backend'i ve KPI kartları zaten tamamlandı (task #73 done). Ancak sayfa header'ı (başlık, İşlemler dropdown butonu, breadcrumb) ve genel layout henüz Ürünler sayfasının referans tasarımıyla tam hizalanmadı. Designer: Detail.cshtml'deki page-actions bölümünü, kart düzenini ve genel görsel hiyerarşiyi Ürünler tarzıyla hizalar.",
+    "status": "in_progress",
+    "notes": "Backend DONE (commit 67631478). KPI kartları, top-products tablosu ve pazaryeri kırılımı mevcut. Yapılacak: header pattern (page-actions section), badge yerleşimi, buton hiyerarşisi. Redesign-only — controller/view-model değişmez. Sorumlu: Designer. Designer-1'e atandı (TL, 2026-06-11). in_progress.",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "1. http://localhost:8085/categories/{id} aç (içinde ürün olan bir kategori) — sayfa yüklensin.",
+      "2. Header bölümünde: kategori adı başlık olarak, üst kategori adı subtitle/pretitle olarak görünmeli.",
+      "3. 'İşlemler' dropdown butonu sağ üstte, Tabler page-actions stilinde olmalı.",
+      "4. İşlemler menüsü açıldığında: Düzenle, Özellikleri Düzenle, Pazaryeri Ayarları (disabled/Yakında), Sil seçenekleri görünmeli.",
+      "5. Mobilde header responsive görünmeli, butonlar overflow'a düşmemeli.",
+      "6. KPI kartları (6 adet) grid halinde düzgün hizalanmış olmalı.",
+      "7. Sayfa tasarımını Products/Views/Index.cshtml referans alarak karşılaştır — genel stil tutarlı olmalı."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Ürün Detay — Storefront Ayarlarını Ayrı Sayfaya Taşı (/products/{id}/storefront)",
+    "description": "Şu an /products/{id} altında HTMX lazy-load ile gelen 'Mağaza Ayarları' kartı (SEO alanları + varyant mağaza fiyatları + Yayınla) ürün detay sayfasından ayrılacak ve /products/{id}/storefront adresinde bağımsız bir sayfaya taşınacak. Spec: docs/superpowers/specs/2026-06-11-urun-detay-storefront-split.md",
+    "status": "todo",
+    "notes": "Storefront alanları tespit edildi (_StoreSettings.cshtml): SeoTitle, SeoSlug, SeoDescription, SeoKeywords (SEO grubu) + ECommercePrice per-variant (mağaza fiyatı). Mevcut endpoint'ler: GET/POST /products/{id}/store-settings ve /store-settings/publish → yeni URL'e taşınacak. Migration/entity değişikliği YOK — alanlar zaten mevcut. Roller: SWE (yeni controller action + StorefrontSettings.cshtml + endpoint taşıma), Designer (yeni sayfa tasarımı + Detail.cshtml HTMX bloğu kaldırma).",
+    "priority": "high",
+    "plan": true,
+    "manual_test_steps": [
+      "1. http://localhost:8085/products/{herhangi-bir-id} aç — sayfa altına scroll et: 'Mağaza Ayarları' kartı GÖRÜNMEMELI.",
+      "2. Header'daki buton/dropdown'da 'Storefront Ayarları' linkini bul, tıkla → /products/{id}/storefront açılmalı.",
+      "3. Storefront sayfasında SEO başlığı, slug, açıklama, anahtar kelime alanları görünmeli.",
+      "4. Slug = 'test-slug-{kısa-id}' gir, Kaydet → başarı toast gösterilmeli.",
+      "5. Doğrudan /products/{id}/storefront URL'ine tarayıcıdan git (bookmark testi) — sayfa açılmalı.",
+      "6. 'Kaydet ve Yayınla' butonuna bas → IsPublished badge 'Mağazada Yayında' olmalı.",
+      "7. Varyantlı ürün: storefront sayfasında her varyant için ECommercePrice alanı görünmeli; bir fiyat gir, kaydet, ürün detaydaki bilgide yansımalı.",
+      "8. Storefront sayfasından breadcrumb ile /products/{id} sayfasına dönülmeli.",
+      "9. SEO slug alanına 'Türkçe Karakter Testi' gir → kayıt sonrası 'turkce-karakter-testi' normalize edilmeli."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Ürün Detay — Performans KPI Kartları + Header Redesign",
+    "description": "Storefront ayarları ayrıldıktan sonra /products/{id} sayfası performans odaklı hale getirilecek. Üste Tabler page-header (ürün adı + badge + page-actions dropdown), altında son 30 günün performans KPI kartları (satış adedi, ciro, sipariş sayısı, iade adedi, toplam stok, aktif varyant sayısı) eklenecek. Kategori detay sayfasındaki KPI card-sm düzeni referans alınacak.",
+    "status": "todo",
+    "notes": "Tasarım referansı: Features/Categories/Views/Detail.cshtml (6× card-sm, ikon + sayı + label). KPI verisi HTMX lazy-load endpoint'ten çekilebilir (GET /products/{id}/performance-summary). DB Master hot-path query onayı gerekebilir (OrderItem → ProductVariant → Product join). Storefront split task tamamlandıktan sonra başlanmalı. Sorumlu: Designer (view tasarımı) + SWE (KPI endpoint + view-model wiring).",
+    "priority": "high",
+    "plan": false,
+    "manual_test_steps": [
+      "1. http://localhost:8085/products/{id} aç — sayfanın üstünde 6 adet KPI kartı görünmeli (Satış Adedi, Ciro, Sipariş, İade, Toplam Stok, Aktif Varyant).",
+      "2. KPI kartları 'son 30 gün' notunu içermeli.",
+      "3. Hiç satışı olmayan ürün için KPI kartları 0 değerlerini göstermeli (hata değil).",
+      "4. Header bölümü: ürün adı büyük başlık, yayın durumu badge (Mağazada Yayında / Taslak), sağda page-actions dropdown.",
+      "5. page-actions dropdown: Düzenle, Storefront Ayarları, Varyantları Yönet, İndirim Uygula, Barkod Yazdır, ZPL İndir, Sil seçenekleri.",
+      "6. Mobilde KPI kartları grid responsive olmalı (en az 2 sütun).",
+      "7. _Product360 partial sekmeleri hâlâ çalışıyor olmalı (Aktivite, Siparişler, Stok Hareketleri sekmelerine tıkla)."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Markalar Sayfası — Ürünler Tarzında Redesign",
+    "description": "Markalar (/brands) liste sayfası şu an eski tarz: basit başlıksız header (sadece butonlar), tek kart içinde arama + tablo. Ürünler sayfasıyla tutarlı tasarıma getirilecek: page-header (Markalar başlığı + toplam sayı), KPI/özet kartları (toplam marka, eşleştirilmiş/eşleşmemiş sayıları), filtrelenebilir tablo. Backend değişmez — sadece view redesign.",
+    "status": "in_progress",
+    "notes": "Mevcut durum: Brands/Views/Index.cshtml — basit inline buton header + tek card + arama input + _BrandTable partial. KPI veri kaynağı: BrandController.Index() ViewBag veya BrandListDetailDto Pageable — toplam marka sayısı zaten var. Pazaryeri eşleşme sayısı için opsiyonel ayrı çağrı gerekebilir (SWE değerlendirir). Redesign-only öncelik — KPI veri wire opsiyonel. Sorumlu: Designer. Designer-2'e atandı (TL, 2026-06-11). in_progress.",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "1. http://localhost:8085/brands aç — sayfanın üstünde 'Markalar' başlıklı page-header görünmeli.",
+      "2. Header'da toplam marka sayısı veya KPI özeti gösterilmeli.",
+      "3. 'Yeni Marka' ve 'İçe Aktar' butonları sağ üstte page-actions bölümünde olmalı.",
+      "4. Marka arama input'u çalışmaya devam etmeli (HTMX table refresh).",
+      "5. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı.",
+      "6. Marka ekle modal'ı hâlâ açılıyor olmalı, form gönderimi çalışmalı."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "İade Yönetimi Sayfası — KPI Kartları + Ürünler Tarzında Redesign",
+    "description": "İade Yönetimi (/returns) sayfası şu an 2 arama kartı + tablo içeriyor. KPI özet kartları (toplam iade, onay bekleyen, tamamlanan, reddedilen sayıları) ve Ürünler tarzı page-header eklenecek. Backend değişmez — view redesign + opsiyonel özet veri endpoint.",
+    "status": "todo",
+    "notes": "Mevcut durum: Returns/Views/Index.cshtml — _ReturnSearchCards partial (2 arama kartı: 'Mevcut iadelerde ara' + 'Yeni iade başlat') + status/source filtreli tablo. KPI veri için ReturnController'a özet aggregate endpoint eklenebilir (pending/completed/rejected sayıları). Sorumlu: Designer (view) + SWE (opsiyonel KPI veri endpoint).",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "1. http://localhost:8085/returns aç — sayfanın üstünde 'İade Yönetimi' başlıklı page-header görünmeli.",
+      "2. KPI kartları (en az: Toplam İade, Beklemede, Tamamlandı, Reddedildi) gösterilmeli.",
+      "3. 'Yeni iade başlat' kart functionality çalışmaya devam etmeli (iade kodu ile satış getirme).",
+      "4. 'Mevcut iadelerde ara' input'u hâlâ çalışmalı.",
+      "5. Status ve kaynak filtrelerinden dropdown'lar çalışmalı.",
+      "6. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Sipariş Hazırlama Sayfası — KPI Kartları + Ürünler Tarzında Redesign",
+    "description": "Sipariş Hazırlama (/picking) sayfası şu an tek kart + basit tablo içeriyor. Ürünler tarzı page-header (başlık + hazırlama bekleyen sipariş sayısı KPI) ve görsel düzen getirilecek. Backend değişmez — view redesign.",
+    "status": "todo",
+    "notes": "Mevcut durum: Picking/Views/Index.cshtml — tek card (başlığında badge sayısı) + _PickingTable partial. Toplam sipariş sayısı zaten ViewBag veya Model.TotalItemCount olarak mevcut. Sorumlu: Designer.",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "1. http://localhost:8085/picking aç — sayfanın üstünde 'Sipariş Hazırlama' başlıklı page-header görünmeli.",
+      "2. Hazırlama bekleyen sipariş sayısı KPI kartı veya header'da özet görünmeli.",
+      "3. Sipariş tablosu hâlâ yüklenmeli ve scroll/pagination çalışmalı.",
+      "4. Sipariş satırına tıklanınca ilgili sipariş detay/picking akışı açılmalı.",
+      "5. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kargo Takip Sayfası — KPI Kartları + Ürünler Tarzında Redesign",
+    "description": "Kargo Takip (/shipping) sayfası şu an sadece durum filtresi + tablo içeriyor. Ürünler tarzı page-header ve kargo durumu özet KPI kartları (Toplam Kargo, Yolda, Teslim Edildi, İade vb.) eklenecek. Backend değişmez — view redesign + opsiyonel özet veri.",
+    "status": "todo",
+    "notes": "Mevcut durum: Shipping/Views/Index.cshtml — tek card (status filter select + _ShipmentTable partial). KPI verisi için ShippingController'a özet aggregate endpoint eklenebilir (durum bazlı sayılar). Sorumlu: Designer (view) + SWE (opsiyonel KPI endpoint).",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "1. http://localhost:8085/shipping aç — sayfanın üstünde 'Kargo Takip' başlıklı page-header görünmeli.",
+      "2. KPI kartları (en az: Toplam, Yolda, Teslim Edildi, Başarısız) gösterilmeli.",
+      "3. Durum filtresi dropdown'ı hâlâ çalışmalı (HTMX table refresh).",
+      "4. Kargo detay sayfasına tıklama çalışmalı.",
+      "5. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Marketplace Sync — Eksik API Credential Durumunda Disabled Kart + Popover",
+    "description": "Senkronizasyon (/marketplace/sync) overview sayfasında API credential'ı eksik olan pazaryerleri için kart disabled (butonlar tıklanamaz) + 'Yapılandırılmamış' badge + tooltip/popover gösterilecek. Spec: docs/superpowers/specs/2026-06-11-marketplace-sync-credential-disabled.md",
+    "status": "todo",
+    "notes": "Credential tespit mantığı: Trendyol=ApiKey+ApiSecret+SellerId, Amazon/Pazarama (mp.Id 4 veya 5)=TokenUrl+RefreshToken, diğerleri=ApiKey+ApiSecret. MarketplaceSyncCardVm'e HasCredentials (bool) alanı eklenecek; SyncOverviewController/Manager'da mapping güncellenecek. Overview/Index.cshtml'de HasCredentials=false ise butonlar disabled + Tabler tooltip/popover ile '/settings/integrations' linki. Sorumlu: SWE (vm + controller) + Designer (disabled kart UI).",
+    "priority": "high",
+    "plan": true,
+    "manual_test_steps": [
+      "1. Settings → Entegrasyonlar: Trendyol ApiKey'i boşalt → Kaydet.",
+      "2. /marketplace/sync aç — Trendyol kartında 'Yapılandırılmamış' badge görünmeli.",
+      "3. 'Ürünleri Gör' butonuna tıklamayı dene — disabled (tıklanamaz) olmalı.",
+      "4. Butona hover/focus yap — tooltip/popover 'Bu pazaryeri için API anahtarları yapılandırılmamış. Ayarlar → Entegrasyonlar sayfasından tamamlayın.' mesajını göstermeli.",
+      "5. Tooltip içindeki link ile /settings/integrations açılmalı.",
+      "6. Trendyol: ApiKey+ApiSecret doldurup SellerId boş bırak → kaydet → Sync Overview hâlâ disabled olmalı.",
+      "7. Trendyol: ApiKey+ApiSecret+SellerId'yi doldur → kaydet → butonlar aktif, badge 'Aktif' olmalı.",
+      "8. Credential dolu başka bir pazaryeri kartı etkilenmemeli — normal görünmeli.",
+      "9. Unit test: IsCredentialComplete helper — trendyol-tam, trendyol-sellerId-eksik, oauth-tam, oauth-refreshToken-eksik, diger-tam senaryoları."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Sidebar Kapsamlı Audit — Tüm Menü Sayfalarının Tasarım Durumu",
+    "description": "Sol menüdeki kontrol edilmemiş ~35 sayfanın (Stok Hareketleri, Kuponlar, Fiyat Yönetimi, Pazaryeri grubu, Müşteriler, Raporlar 11 sayfa, Mağaza 16 sayfa, Ayarlar grubu) her birinin mevcut durumunu belgele: (a) dolu mu / stub mu, (b) Ürünler tarzından ne kadar uzak, (c) backend var mı yok mu. Çıktı: her sayfa için 1 satır tablo + 'redesign' / 'stub-backend-gerek' / 'done' sınıflandırması. Bu audit sonucu bir sonraki tasarım batch'inin öncelik sırası oluşturulacak.",
+    "status": "todo",
+    "notes": "Kullanıcının açık listesi (74-81 arası) tamamlandıktan sonra başlanacak. Backlog girdisi — şimdi detaylı spec'leme yok. Sorumlu: PA araştırma + TL onay.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [
+      "PA her sayfayı controller + view dosyaları okuyarak teyit eder (dokümana güvenmez).",
+      "Çıktı tablosu: Sayfa / URL / Dosya var mı / KPI kartları var mı / Ürünler tarzı uyumu / Durum (redesign/stub/done).",
+      "TL tabloyu inceleyip öncelik sırası belirler."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "POS Terminal — UX Spec + Redesign",
+    "description": "POS Terminal (/pos) özel 2-panel satış akışı (ürün arama + sepet + ödeme dialog) içeriyor. Genel sidebar redesign kapsamı dışında, kendi UX mantığı olan işlevsel bir ekran. Kullanıcının açık listesi bittikten sonra detaylı UX spec hazırlanacak: mevcut akış haritalanacak, hangi ekranların yenileneceği, hangi işlevlerin korunacağı, mobil/tablet uyumu belgelenecek. Acele redeskin değil, dikkatli UX spec gerekiyor.",
+    "status": "todo",
+    "notes": "Kullanıcının açık listesi (74-81) tamamlandıktan sonra başlanacak. Dikkatli UX spec gerekiyor — POS 2-panel işlevsel UI, basit reskin DEĞİL. Sorumlu: PA (UX spec) + Designer (uygulama). Spec hazır olmadan Designer'a verilmeyecek.",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [
+      "UX spec hazırlandıktan sonra: /pos açılır, ürün arama çalışır, sepete ekle çalışır.",
+      "Ödeme dialog tüm ödeme türleri (nakit/kart/karma) için çalışır.",
+      "Satış tamamlanır, POS receipt yazdırılabilir.",
+      "Yeni tasarımda mevcut tüm POS fonksiyonları korunuyor olmalı."
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
   }
 ]
