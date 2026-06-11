@@ -27,5 +27,16 @@ public class OrderEntityConfiguration : IEntityTypeConfiguration<Order>
         // her sürümde predicate-implication tereddütü olmadan seçer.
         builder.HasIndex(x => x.OrderDate)
             .HasFilter("\"OrderDate\" IS NOT NULL AND NOT \"IsDeleted\"");
+
+        // Hot-path: Sipariş Hazırlama (Picking) KPI + sipariş listesi pazaryeri statüsüne göre
+        // filtreler (MarketplaceOrderStatus == "Created" / dinamik @status) ve OrderDate ile
+        // bugünkü/24s+ bekleyen kovalarını sayar. Composite (eşitlik kolonu önce, sonra range):
+        // status eşitliği prefix'i + OrderDate range/sıralama tek index'le karşılanır.
+        // Partial: storefront siparişlerinde MarketplaceOrderStatus NULL'dur (ayrı
+        // StorefrontOrderStatus kolonu kullanılır) ve "== 'Created'"/"== @status" NULL'la asla
+        // eşleşmez → NULL satırları index dışında bırakmak index'i küçük ve seçici tutar.
+        // NOT "IsDeleted" formu query filter'ın ürettiği SQL ile birebir → planner partial'ı seçer.
+        builder.HasIndex(x => new { x.MarketplaceOrderStatus, x.OrderDate })
+            .HasFilter("\"MarketplaceOrderStatus\" IS NOT NULL AND NOT \"IsDeleted\"");
     }
 }
