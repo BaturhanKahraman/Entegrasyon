@@ -1,19 +1,16 @@
 @using Entegrasyon.MVC.Features.Categories.ViewModels
 @model CategoryAttributePanelVm
+@{
+    // Page header: başlık (kategori adı) + subtitle + "Kategoriye Dön" aksiyonu layout'ta
+    // render edilir. Breadcrumb (Kategoriler > {ad} > Özellikler) controller'da set ediliyor.
+    ViewData.SetPageSubtitle("Bu kategoriye bağlı özellikleri yönet — zorunlu, varyanter ve dilimleyici ayarları.");
+}
 
-<div class="page-header page-header-border mb-3">
-    <div class="row g-2 align-items-center">
-        <div class="col">
-            <div class="page-pretitle">Kategori Özellikleri</div>
-            <h2 class="page-title">@Model.CategoryName</h2>
-        </div>
-        <div class="col-auto ms-auto">
-            <a href="/categories/@Model.CategoryId" class="btn btn-outline-secondary">
-                <i class="ti ti-arrow-left me-1"></i> Kategoriye Dön
-            </a>
-        </div>
-    </div>
-</div>
+@section PageActions {
+    <a href="/categories/@Model.CategoryId" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i> Kategoriye Dön
+    </a>
+}
 
 <!-- HTMX swap hedefi: ekle/kaldır sonrası bu blok güncellenir -->
 <div id="attribute-panel">

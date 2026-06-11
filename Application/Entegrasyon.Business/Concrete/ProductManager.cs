@@ -37,7 +37,8 @@ public class ProductManager(
     IMinioFileStorage minioFileStorage,
     IVariantNamingService namingService,
     IOptions<NotificationFeatureFlags> notificationFlags,
-    ICurrentUserContext currentUser) : IProductService
+    ICurrentUserContext currentUser,
+    Entegrasyon.Business.Tenants.TenantMemoryCache kpiCache) : IProductService
 {
     public async Task<IDataResult<Product>> AddProduct(AddProductDto dto)
     {
@@ -432,6 +433,64 @@ public class ProductManager(
                 items[i].FeaturedImageUrl = minioFileStorage.GetPublicUrl(items[i].FeaturedImageUrl!);
 
         return new SuccessDataResult<Pageable<ProductsDetailDto>>(new Pageable<ProductsDetailDto>(items, dto.PageIndex, dto.PageSize, total));
+    }
+
+    // Ürünler liste header KPI'ları için kısa-TTL cache (tenant-izole: TenantMemoryCache key prefix'i).
+    // KPI'lar dashboard verisi — anlık doğruluk şart değil; her sayfa yüklemesinde yeniden hesaplamak
+    // yerine 60 sn cache ile DB yükü minimuma iner. Cache key tenant'a TenantMemoryCache tarafından bağlanır.
+    private const string ProductListKpiCacheKey = "products:list:kpi";
+    private static readonly TimeSpan ProductListKpiTtl = TimeSpan.FromSeconds(60);
+
+    // Liste tablosu "Düşük stok" eşiği ile BİREBİR aynı: mevcut stok 1..(eşik-1) arası "Düşük".
+    // _ProductTable.cshtml: lowStockThreshold=5 → stok>0 && stok<5 → 1..4.
+    private const int LowStockThresholdExclusive = 5;
+
+    // TEK round-trip aggregate. Per-product mevcut stok = SUM(BranchOfficeStocks.CurrentStock)
+    // (computed = FirstTotalStock - SoldQuantity) — liste tablosundaki TotalCurrentStock ile aynı kaynak.
+    // Silinmiş ürün/varyant hariç (liste query-filter ile tutarlı). Salt-okuma aggregate; MVCC'de kilit almaz.
+    private const string ProductListKpiQuery = """
+        WITH product_stock AS (
+            SELECT
+                p."Id" AS product_id,
+                COALESCE(SUM(bos."CurrentStock"), 0)::int AS current_stock
+            FROM "MainProducts" p
+            LEFT JOIN "ProductVariants" pv
+                ON pv."ProductId" = p."Id" AND NOT pv."IsDeleted"
+            LEFT JOIN "BranchOfficeStocks" bos
+                ON bos."ProductVariantId" = pv."Id"
+            WHERE NOT p."IsDeleted"
+            GROUP BY p."Id"
+        )
+        SELECT json_build_object(
+            'total_stock', (SELECT COALESCE(SUM(current_stock), 0)::int FROM product_stock),
+            'low_stock_count', (SELECT COUNT(*)::int FROM product_stock
+                WHERE current_stock > 0 AND current_stock < @p0),
+            'total_variant_count', (SELECT COUNT(*)::int FROM "ProductVariants" WHERE NOT "IsDeleted")
+        )::text AS "Value"
+        """;
+
+    public async Task<ProductListKpiDto> GetProductListKpiAsync(CancellationToken cancellationToken = default)
+    {
+        if (kpiCache.TryGetValue(ProductListKpiCacheKey, out ProductListKpiDto? cached) && cached.HasValue)
+            return cached.Value;
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var json = await dbContext.Database
+            .SqlQueryRaw<string>(ProductListKpiQuery, LowStockThresholdExclusive)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (string.IsNullOrEmpty(json))
+            return new ProductListKpiDto(0, 0, 0);
+
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        var el = doc.RootElement;
+        var result = new ProductListKpiDto(
+            TotalStock: el.GetProperty("total_stock").GetInt32(),
+            LowStockCount: el.GetProperty("low_stock_count").GetInt32(),
+            TotalVariantCount: el.GetProperty("total_variant_count").GetInt32());
+
+        kpiCache.Set(ProductListKpiCacheKey, result, ProductListKpiTtl);
+        return result;
     }
 
     public async Task<IDataResult<POSProductSearchResultDto>> SearchPOSProductsAsync(int branchOfficeId, string query, int limit = 10)

@@ -46,6 +46,26 @@ public class ProductController(
             return PartialView("Partials/_ProductTable", result.Data);
 
         ViewBag.Search = search;
+
+        // Header KPI'ları (toplam stok / düşük stok / toplam varyant) — kısa-TTL cache'li,
+        // tek round-trip aggregate. Hata/sorun olursa ViewBag set ETME → view null-safe "—" gösterir
+        // (sayfa 500 vermez). "Toplam Ürün" zaten Pageable.TotalItemCount'tan gelir.
+        try
+        {
+            var kpi = await productService.GetProductListKpiAsync(HttpContext.RequestAborted);
+            ViewBag.TotalStock = kpi.TotalStock;
+            ViewBag.LowStockCount = kpi.LowStockCount;
+            ViewBag.TotalVariantCount = kpi.TotalVariantCount;
+        }
+        catch (OperationCanceledException)
+        {
+            // İstek iptal edildi — sessizce geç.
+        }
+        catch
+        {
+            // KPI hesaplanamadı: liste sayfası KPI olmadan da çalışmalı (graceful degrade).
+        }
+
         return View(result.Data);
     }
 
