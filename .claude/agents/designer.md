@@ -24,7 +24,7 @@ Bunları **projeye uyarlayarak** kullan: çıktı her zaman Tabler bileşenleri 
 
 - **Yüzey → tasarım dili (ÖNCE bunu belirle):** **Storefront** (müşteri e-ticaret sitesi) → **Zekids Bebe design system**. **Merchant paneli (`Entegrasyon.MVC`) ve Admin** → **Tabler admin dili** (Zekids storefront dili DEĞİL). TL/prompt yanlışlıkla "storefront/Zekids" dese bile, sayfa merchant panelindeyse Tabler admin dilini kullan — hedef yüzeye göre doğrusunu seç, prompt'un imlasına körü körüne uyma.
 - **`aspnet-mvc-htmx` skill'ini takip et** — feature folder, partial, Tag Helper (`form-group`, `nav-active`), PRG, HTMX swap desenleri.
-- **Tabler Strict Rule:** Herhangi bir Tabler bileşeni (badge/card/alert/ribbon/status/button…) kullanmadan ÖNCE https://tabler.io/docs/ui/<component> doğrula. Class'ları tahmin etme (`badge bg-green` değil → `badge bg-green-lt` veya `badge bg-green text-green-fg`). Global CSS override yerine Tabler'ın önerdiği kombinasyonu kullan.
+- **Tabler Strict Rule:** Herhangi bir Tabler bileşeni (badge/card/alert/ribbon/status/button…) kullanmadan ÖNCE **`tabler-ui` skill'ini** (birincil) ve gerekirse https://tabler.io/docs/ui/<component>'ı doğrula. Class'ları tahmin etme (`badge bg-green` değil → `badge bg-green-lt` veya `badge bg-green text-green-fg`). Global CSS override yerine Tabler'ın önerdiği kombinasyonu kullan.
 - **Mevcut frontend lib'leri:** Tom Select (aranabilir dropdown), Flatpickr (TR tarih), IMask (maskeleme), Notyf (toast), SortableJS (sürükle-bırak), GLightbox (lightbox). Yeni lib ekleme — bunları kullan.
 - **Storefront design system:** Zekids Bebe tasarım dili mevcut (renk/tipografi/komponent). Yeni storefront sayfası önce bu dile uymalı; `docs/zekids-pages/`, `docs/storefront-design-prompts.md` ve mevcut storefront view'larını referans al.
 
@@ -46,7 +46,7 @@ Mevcut `frontend-design`/`impeccable`/`ui-ux-pro-max`'e ek olarak:
 - **`ecc:design-system`** — token/komponent tutarlılığı (Tabler + Zekids dili).
 - **`ecc:frontend-a11y`** / **`ecc:accessibility`** — WCAG, kontrast, klavye, ARIA denetimi.
 - **`ecc:make-interfaces-feel-better`** — etkileşim/mikro-iyileştirme cilası.
-- **Proje TablerUI skill'i (oluşturulunca):** Tabler bileşen kullanımında bu projeye özel skill'i birincil referans al; class'ları yine https://tabler.io/docs/ui/<component>'tan doğrula.
+- **`tabler-ui` skill'i (ZORUNLU — birincil referans):** Herhangi bir Tabler bileşeni/class'ı kullanmadan önce bu projeye özel `tabler-ui` skill'ini aç; class isimlerini ASLA tahmin etme/halüsinasyon görme — skill'deki doğrulanmış kombinasyonları kullan.
 
 ## Kırmızı çizgiler
 
