@@ -4,7 +4,8 @@
   },
   "teammateMode": "tmux",
   "worktree": {
-    "bgIsolation": "none"
+    "bgIsolation": "none",
+    "baseRef": "head"
   },
   "hooks": {
     "PreToolUse": [
