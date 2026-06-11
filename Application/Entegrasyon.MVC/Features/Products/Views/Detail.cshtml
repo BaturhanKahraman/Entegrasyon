@@ -20,7 +20,7 @@
             Düzenle
         </a>
         <a href="/products/@Model.Id/variants" class="btn btn-outline-primary">
-            Varyantlari Yonet
+            Varyantları Yönet
         </a>
         <button class="btn btn-outline-danger"
                 hx-post="/products/@Model.Id/delete"
@@ -33,7 +33,7 @@
            hx-target="#modal-container"
            hx-swap="innerHTML">
             <i class="ti ti-discount-2 icon"></i>
-            Indirim Uygula
+            İndirim Uygula
         </a>
         <button type="button" class="btn btn-outline-info"
                 onclick="window.printAgent && window.printAgent.printVariants(@Json.Serialize(Model.ProductVariantsDetails?.Select(v => v.Id).ToList() ?? new List<Guid>()), 1)">
@@ -46,7 +46,7 @@
             ZPL İndir
         </a>
         <a href="/products" class="btn btn-outline-secondary">
-            Listeye Don
+            Listeye Dön
         </a>
     </div>
 </div>

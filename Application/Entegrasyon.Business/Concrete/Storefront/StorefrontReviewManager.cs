@@ -68,7 +68,7 @@ public class StorefrontReviewManager(
             await dbContext.SaveChangesAsync(); // Second save: outbox row with correct review.Id
         }
 
-        return new SuccessDataResult<StorefrontReview>(review, "Yorumunuz basariyla gonderildi. Onaylandiktan sonra yayinlanacaktir.");
+        return new SuccessDataResult<StorefrontReview>(review, "Yorumunuz başarıyla gonderildi. Onaylandıktan sonra yayınlanacaktır.");
     }
 
     public async Task<IDataResult<(double AverageRating, int ReviewCount)>> GetProductRatingAsync(int tenantId, Guid productId)
