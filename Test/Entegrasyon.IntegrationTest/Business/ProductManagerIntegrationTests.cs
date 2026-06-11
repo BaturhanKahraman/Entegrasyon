@@ -144,6 +144,37 @@ public class ProductManagerIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task AddProduct_ShouldSucceed_WhenStockCodeIsBlank_Twice()
+    {
+        // PROD-engelleyici bug: StockCode opsiyonel; boş bırakılınca "" yazılıyor.
+        // Eski partial unique index ("WHERE NOT IsDeleted") boş string'i değer
+        // sayıyordu → İKİNCİ stok-kodsuz ürün 23505 duplicate-key ile patlıyordu (500).
+        // Fix sonrası (WHERE ... AND StockCode <> '') iki stok-kodsuz ürün de kaydedilmeli.
+        // Arrange
+        var (brandId, categoryId) = await GetSeedIdsAsync();
+
+        // İlk stok-kodsuz ürün (StockCode = "" → DoSave'de boş string yazılır)
+        var (productService1, scope1) = GetScopedService<IProductService>();
+        using var _1 = scope1;
+        var dto1 = BuildValidDto(brandId, categoryId, stockCode: "", barcode: "9990000000050");
+        var result1 = await productService1.AddProduct(dto1);
+        result1.Success.Should().BeTrue(result1.Message);
+
+        // Act — İKİNCİ stok-kodsuz ürün (eskiden burada 23505 patlıyordu)
+        var (productService2, scope2) = GetScopedService<IProductService>();
+        using var _2 = scope2;
+        var dto2 = BuildValidDto(brandId, categoryId, stockCode: "", barcode: "9990000000051");
+        var result2 = await productService2.AddProduct(dto2);
+
+        // Assert — ikisi de başarılı; boş StockCode benzersizlik dayatmamalı
+        result2.Success.Should().BeTrue("İkinci stok-kodsuz ürün de kaydedilebilmeli (boş StockCode unique olmamalı)");
+
+        using var dbContext = CreateDbContext();
+        var blankCount = await dbContext.MainProducts.CountAsync(p => p.StockCode == "");
+        blankCount.Should().Be(2, "her iki stok-kodsuz ürün de DB'de bulunmalı");
+    }
+
+    [Fact]
     public async Task AddProduct_ShouldSucceed_WhenAllStocksAreZero()
     {
         // Bug #3: Esnaf stoksuz ürün ekleyebilmeli (ön sipariş / yolda / tükenmiş).
