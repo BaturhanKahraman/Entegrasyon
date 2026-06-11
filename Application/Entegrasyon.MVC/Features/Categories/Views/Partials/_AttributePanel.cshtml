@@ -1,0 +1,132 @@
+@using Entegrasyon.MVC.Features.Categories.ViewModels
+@model CategoryAttributePanelVm
+@{
+    var attachedIds = Model.Attached.Select(a => a.Id).ToHashSet();
+    var addable = Model.Pool.Where(p => !attachedIds.Contains(p.Id)).ToList();
+}
+
+<div class="row row-cards">
+    <!-- Bağlı özellikler -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Bağlı Özellikler</h3>
+                <span class="card-subtitle text-secondary ms-2">@Model.Attached.Count adet</span>
+            </div>
+            @if (Model.Attached.Count == 0)
+            {
+                <div class="card-body">
+                    <div class="empty">
+                        <p class="empty-title">Henüz özellik yok</p>
+                        <p class="empty-subtitle text-secondary">Sağdaki havuzdan özellik ekleyin.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Özellik</th>
+                                <th>Tip</th>
+                                <th class="w-1"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Attached)
+                            {
+                                <tr>
+                                    <td>@a.CategoriyAttributeHumanized</td>
+                                    <td>
+                                        @if (a.IsRequired)
+                                        {
+                                            <span class="badge bg-red-lt">Zorunlu</span>
+                                        }
+                                        @if (a.IsVarianter)
+                                        {
+                                            <span class="badge bg-blue-lt">Varyant</span>
+                                        }
+                                        @if (a.IsSlicer)
+                                        {
+                                            <span class="badge bg-purple-lt">Dilimleyici</span>
+                                        }
+                                        @if (a.AllowCustom)
+                                        {
+                                            <span class="badge bg-cyan-lt">Özel Değer</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-ghost-danger btn-icon"
+                                                hx-post="/categories/@Model.CategoryId/attributes/@a.Id/remove"
+                                                hx-target="#attribute-panel"
+                                                hx-confirm="'@a.CategoriyAttributeHumanized' özelliğini kategoriden kaldırmak istediğinize emin misiniz?"
+                                                aria-label="Kaldır">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Havuzdan ekle -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Özellik Ekle</h3>
+            </div>
+            @if (addable.Count == 0)
+            {
+                <div class="card-body">
+                    <p class="text-secondary mb-0">Eklenebilecek başka özellik yok.</p>
+                </div>
+            }
+            else
+            {
+                <form hx-post="/categories/@Model.CategoryId/attributes" hx-target="#attribute-panel">
+                    <div class="list-group list-group-flush">
+                        @foreach (var p in addable)
+                        {
+                            <div class="list-group-item">
+                                <label class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="attributeIds" value="@p.Id">
+                                    <span class="form-check-label fw-bold">
+                                        @(p.CategoryAttributeHumanized ?? p.CategoryAttributeKey)
+                                    </span>
+                                </label>
+                                <div class="ms-4 d-flex flex-wrap gap-3">
+                                    <label class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="requiredId" value="@p.Id">
+                                        <span class="form-check-label small">Zorunlu</span>
+                                    </label>
+                                    <label class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="varianterId" value="@p.Id">
+                                        <span class="form-check-label small">Varyant</span>
+                                    </label>
+                                    <label class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="slicerId" value="@p.Id">
+                                        <span class="form-check-label small">Dilimleyici</span>
+                                    </label>
+                                    <label class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="allowCustomIds" value="@p.Id">
+                                        <span class="form-check-label small">Özel Değer</span>
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="ti ti-plus me-1"></i> Seçilenleri Ekle
+                        </button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

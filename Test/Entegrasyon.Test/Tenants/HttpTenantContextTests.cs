@@ -72,6 +72,23 @@ public class HttpTenantContextTests
     }
 
     [Fact]
+    public void Initialize_WhenReInitializedWithSameTenant_IsIdempotent()
+    {
+        // UseStatusCodePagesWithReExecute (404/500 error sayfası) aynı scoped HttpTenantContext'te
+        // TenantResolutionMiddleware'i İKİNCİ kez çalıştırır → aynı tenant ile Initialize tekrar çağrılır.
+        // Bu re-execute güvenli olmalı (no-op), aksi halde HER NotFound() 500'e dönüşür.
+        var context = new HttpTenantContext();
+        var entry = new TenantRegistryEntry(1, "t1", "T1", "c1", true, null);
+
+        context.Initialize(entry);
+        var act = () => context.Initialize(entry);
+
+        act.Should().NotThrow();
+        context.TenantId.Should().Be(1);
+        context.ConnectionString.Should().Be("c1");
+    }
+
+    [Fact]
     public void GetMarketPlaceId_ThrowsInvalidOperationException()
     {
         var context = new HttpTenantContext();

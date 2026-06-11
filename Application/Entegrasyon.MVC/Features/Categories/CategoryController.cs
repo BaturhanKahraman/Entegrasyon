@@ -12,6 +12,8 @@ namespace Entegrasyon.MVC.Features.Categories;
 public class CategoryController(
     ICategoryService categoryService,
     ICategoryAttributeManager categoryAttributeManager,
+    ICategoryAttributeCategoryManager categoryAttributeCategoryManager,
+    ICategoryPerformanceManager categoryPerformanceManager,
     IProductService productService,
     IMasterCatalogImportService masterCatalogImportService,
     ITenantContext tenantContext) : Controller
@@ -37,6 +39,147 @@ public class CategoryController(
         var productCount = await productService.GetProductCountByCategoryId(id);
         ViewBag.ProductCount = productCount;
         return PartialView("Partials/_CategoryDetail", category);
+    }
+
+    // ── Detail Page (full page) ───────────────────────────────────────
+
+    /// <summary>Kategori detay sayfası — tam sayfa (meta + performans + özellikler).</summary>
+    [HttpGet("/categories/{id:int}")]
+    public async Task<IActionResult> DetailPage(int id, int daysPast = 30, CancellationToken ct = default)
+    {
+        var category = await categoryService.GetCategoryDetailById(id);
+        if (category is null) return NotFound();
+
+        var productCount = await productService.GetProductCountByCategoryId(id);
+        var attrsResult = await categoryAttributeManager.GetCategoryAttributesByCategory(id);
+        var attributes = attrsResult.Success ? attrsResult.Data! : [];
+        var performance = await categoryPerformanceManager.GetCategoryPerformanceAsync(id, daysPast, ct);
+
+        var vm = new CategoryDetailPageVm
+        {
+            CategoryId = category.Id,
+            CategoryName = category.Name,
+            SuperCategoryName = category.SuperCategory?.Name,
+            SubCategoryCount = category.SubCategories.Count(),
+            ProductCount = productCount,
+            AttributeCount = attributes.Count,
+            IsFavorite = category.IsFavorite,
+            DefaultVatRate = category.DefaultVatRate,
+            Attributes = attributes,
+            Performance = performance
+        };
+
+        ViewData.SetPageTitle(category.Name);
+        ViewData.SetActiveNav("categories");
+        ViewData.SetBreadcrumb(("Kategoriler", "/categories"), (category.Name, null));
+        return View("Detail", vm);
+    }
+
+    // ── Attribute Management Page (ayrı tam sayfa) ────────────────────
+
+    /// <summary>Kategori özellik düzenleme sayfası — tam sayfa (bağlı özellikler + havuzdan ekle).</summary>
+    [HttpGet("/categories/{id:int}/attributes")]
+    public async Task<IActionResult> AttributesPage(int id)
+    {
+        var category = await categoryService.GetCategoryDetailById(id);
+        if (category is null) return NotFound();
+
+        var vm = await BuildAttributePanelVm(id, category.Name);
+
+        ViewData.SetPageTitle($"{category.Name} — Özellikler");
+        ViewData.SetActiveNav("categories");
+        ViewData.SetBreadcrumb(
+            ("Kategoriler", "/categories"),
+            (category.Name, $"/categories/{id}"),
+            ("Özellikler", null));
+        return View("Attributes", vm);
+    }
+
+    /// <summary>HTMX: kategoriye yeni özellik(ler) ekle → güncel özellik panelini döndür.</summary>
+    [HttpPost("/categories/{id:int}/attributes")]
+    public async Task<IActionResult> AddAttribute(int id, [FromForm] int[] attributeIds,
+        [FromForm] int? requiredId, [FromForm] int? varianterId, [FromForm] int? slicerId,
+        [FromForm] int[]? allowCustomIds)
+    {
+        var category = await categoryService.GetCategoryDetailById(id);
+        if (category is null) return NotFound();
+
+        // Eklenecek yeni özellik yoksa erken çık — gereksiz full-replace + pool fetch yapma.
+        var newIds = (attributeIds ?? []).Where(x => x > 0).Distinct().ToArray();
+        if (newIds.Length == 0)
+        {
+            Response.HtmxTriggerWithData("showToast",
+                new { message = "Eklenecek özellik seçilmedi.", type = "danger" });
+            return PartialView("Partials/_AttributePanel", await BuildAttributePanelVm(id, category.Name));
+        }
+
+        // Mevcut bağlı özellikleri koru (manager full-replace yapar → hepsini yeniden gönder).
+        // SÖZLEŞME: bu form yalnızca YENİ eklenen özelliklerin bayraklarını (requiredId/varianterId/
+        // slicerId tekil) set eder; mevcut bağlı özelliklerin bayrakları olduğu gibi taşınır.
+        var existing = (await categoryAttributeManager.GetCategoryAttributesByCategory(id)).Data ?? [];
+        var merged = existing.Select(a => new AddCategoryAttributeDto
+        {
+            Id = a.Id,
+            IsRequired = a.IsRequired,
+            IsVarianter = a.IsVarianter,
+            IsSlicer = a.IsSlicer,
+            AllowCustom = a.AllowCustom,
+            CategoryAttributeKey = a.CategoryAttributeKey,
+            CategoryAttributeHumanized = a.CategoriyAttributeHumanized
+        }).ToList();
+
+        var toAdd = newIds.Where(x => merged.All(m => m.Id != x)).ToArray();
+        if (toAdd.Length > 0)
+        {
+            var pool = await categoryAttributeManager.GetCategoryAttributesByIds(toAdd);
+            var custom = (allowCustomIds ?? []).ToHashSet();
+            foreach (var src in pool)
+            {
+                merged.Add(new AddCategoryAttributeDto
+                {
+                    Id = src.Id,
+                    IsRequired = requiredId == src.Id,
+                    IsVarianter = varianterId == src.Id,
+                    IsSlicer = slicerId == src.Id,
+                    AllowCustom = custom.Contains(src.Id),
+                    CategoryAttributeKey = src.CategoryAttributeKey ?? $"Attr#{src.Id}",
+                    CategoryAttributeHumanized = src.CategoryAttributeHumanized ?? $"Attr#{src.Id}"
+                });
+            }
+        }
+
+        var result = await categoryAttributeCategoryManager.AddCategoryAttributeForCategory(id, merged);
+        Response.HtmxTriggerWithData("showToast", result.Success
+            ? new { message = "Özellik eklendi.", type = "success" }
+            : new { message = result.Message ?? "Özellik eklenemedi.", type = "danger" });
+        return PartialView("Partials/_AttributePanel", await BuildAttributePanelVm(id, category.Name));
+    }
+
+    /// <summary>HTMX: kategoriden bir özelliği kaldır → güncel özellik panelini döndür.</summary>
+    [HttpPost("/categories/{id:int}/attributes/{attrId:int}/remove")]
+    public async Task<IActionResult> RemoveAttribute(int id, int attrId)
+    {
+        var category = await categoryService.GetCategoryDetailById(id);
+        if (category is null) return NotFound();
+
+        var result = await categoryAttributeCategoryManager.RemoveCategoryAttributeFromCategory(id, attrId);
+        Response.HtmxTriggerWithData("showToast", result.Success
+            ? new { message = "Özellik kaldırıldı.", type = "success" }
+            : new { message = result.Message ?? "Özellik kaldırılamadı.", type = "danger" });
+        return PartialView("Partials/_AttributePanel", await BuildAttributePanelVm(id, category.Name));
+    }
+
+    private async Task<CategoryAttributePanelVm> BuildAttributePanelVm(int id, string categoryName)
+    {
+        var poolResult = await categoryAttributeManager.GetCategoryAttributes();
+        var attachedResult = await categoryAttributeManager.GetCategoryAttributesByCategory(id);
+        return new CategoryAttributePanelVm
+        {
+            CategoryId = id,
+            CategoryName = categoryName,
+            Pool = poolResult.Success ? poolResult.Data! : [],
+            Attached = attachedResult.Success ? attachedResult.Data! : []
+        };
     }
 
     // ── Create Wizard ─────────────────────────────────────────────────
