@@ -98,8 +98,7 @@ public class CategoryController(
     /// <summary>HTMX: kategoriye yeni özellik(ler) ekle → güncel özellik panelini döndür.</summary>
     [HttpPost("/categories/{id:int}/attributes")]
     public async Task<IActionResult> AddAttribute(int id, [FromForm] int[] attributeIds,
-        [FromForm] int? requiredId, [FromForm] int? varianterId, [FromForm] int? slicerId,
-        [FromForm] int[]? allowCustomIds)
+        [FromForm] int? requiredId, [FromForm] int? varianterId, [FromForm] int? slicerId)
     {
         var category = await categoryService.GetCategoryDetailById(id);
         if (category is null) return NotFound();
@@ -123,7 +122,6 @@ public class CategoryController(
             IsRequired = a.IsRequired,
             IsVarianter = a.IsVarianter,
             IsSlicer = a.IsSlicer,
-            AllowCustom = a.AllowCustom,
             CategoryAttributeKey = a.CategoryAttributeKey,
             CategoryAttributeHumanized = a.CategoriyAttributeHumanized
         }).ToList();
@@ -132,7 +130,6 @@ public class CategoryController(
         if (toAdd.Length > 0)
         {
             var pool = await categoryAttributeManager.GetCategoryAttributesByIds(toAdd);
-            var custom = (allowCustomIds ?? []).ToHashSet();
             foreach (var src in pool)
             {
                 merged.Add(new AddCategoryAttributeDto
@@ -141,7 +138,6 @@ public class CategoryController(
                     IsRequired = requiredId == src.Id,
                     IsVarianter = varianterId == src.Id,
                     IsSlicer = slicerId == src.Id,
-                    AllowCustom = custom.Contains(src.Id),
                     CategoryAttributeKey = src.CategoryAttributeKey ?? $"Attr#{src.Id}",
                     CategoryAttributeHumanized = src.CategoryAttributeHumanized ?? $"Attr#{src.Id}"
                 });
@@ -244,8 +240,7 @@ public class CategoryController(
         vm.Attributes = allAttrs.Select(a => new CategoryAttributeSelectionVm
         {
             AttributeId = a.Id,
-            AttributeName = a.CategoryAttributeHumanized ?? a.CategoryAttributeKey ?? $"Attr#{a.Id}",
-            AllowCustom = a.AllowCustom
+            AttributeName = a.CategoryAttributeHumanized ?? a.CategoryAttributeKey ?? $"Attr#{a.Id}"
         }).ToList();
 
         if (Request.IsHtmx())
@@ -302,7 +297,6 @@ public class CategoryController(
                 IsRequired = a.IsRequired,
                 IsVarianter = a.IsVarianter,
                 IsSlicer = a.IsSlicer,
-                AllowCustom = a.AllowCustom,
                 CategoryAttributeKey = a.AttributeName,
                 CategoryAttributeHumanized = a.AttributeName
             }),

@@ -302,7 +302,6 @@ public class ProductSendIntegrationTests : IntegrationTestBase
         {
             CategoryAttributeKey = attributeName.ToLower(),
             CategoryAttributeHumanized = attributeName,
-            AllowCustom = false,
             ImportId = 0,
             CreatedAt = DateTimeOffset.UtcNow
         };

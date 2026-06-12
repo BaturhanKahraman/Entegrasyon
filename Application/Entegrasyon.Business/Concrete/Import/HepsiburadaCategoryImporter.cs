@@ -240,7 +240,6 @@ public class HepsiburadaCategoryImporter : BaseCategoryImporterService
         {
             CategoryAttributeKey = attr.Id,
             CategoryAttributeHumanized = attr.Name,
-            AllowCustom = attr.Type == "string",
             CategoryAttributeValues = new List<CategoryAttributeValue>(),
             CreatedAt = DateTimeOffset.UtcNow
         };

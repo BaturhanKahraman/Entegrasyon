@@ -57,11 +57,7 @@
                                             {
                                                 <span class="badge bg-purple-lt">Dilimleyici</span>
                                             }
-                                            @if (a.AllowCustom)
-                                            {
-                                                <span class="badge bg-cyan-lt">Özel Değer</span>
-                                            }
-                                            @if (!a.IsRequired && !a.IsVarianter && !a.IsSlicer && !a.AllowCustom)
+                                            @if (!a.IsRequired && !a.IsVarianter && !a.IsSlicer)
                                             {
                                                 <span class="text-secondary small">—</span>
                                             }

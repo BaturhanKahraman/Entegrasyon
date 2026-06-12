@@ -22,8 +22,7 @@ public partial class CategoryAttributeMapper
             Id = dto.Id,
             CategoryAttributeKey = dto.CategoryAttributeKey,
             CategoryAttributeHumanized = dto.CategoryAttributeHumanized,
-            CategoryAttributeValues = dto.CategoryAttributeValues,
-            AllowCustom = dto.AllowCustom
+            CategoryAttributeValues = dto.CategoryAttributeValues
         }
     };
 }

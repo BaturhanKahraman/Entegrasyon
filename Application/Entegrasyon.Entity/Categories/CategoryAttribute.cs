@@ -7,7 +7,6 @@ public sealed class CategoryAttribute : BaseEntity
     public string? CategoryAttributeKey { get; set; }
     public string? CategoryAttributeHumanized { get; set; }
 
-    public bool AllowCustom { get; set; }
     public int ImportId { get; set; }
     public List<CategoryAttributeValue> CategoryAttributeValues { get; set; } = new();
     public IEnumerable<CategoryAttributeCategory> Categories { get; set; } = new List<CategoryAttributeCategory>();

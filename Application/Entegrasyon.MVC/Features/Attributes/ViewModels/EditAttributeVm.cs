@@ -5,7 +5,6 @@ public class EditAttributeVm
     public int Id { get; set; }
     public string CategoryAttributeKey { get; set; } = null!;
     public string CategoryAttributeHumanized { get; set; } = null!;
-    public bool AllowCustom { get; set; }
 
     /// <summary>
     /// Existing value IDs and names (for editing/removing).

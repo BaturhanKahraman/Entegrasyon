@@ -442,7 +442,6 @@ namespace Entegrasyon.Business.Concrete
                     .Select(x => new CategoryAttributeDto(
                         x.Id,
                         x.Categories.First(z => z.CategoryId == categoryId).IsRequired,
-                        x.AllowCustom,
                         x.Categories.First(z => z.CategoryId == categoryId).IsVarianter,
                         x.Categories.First(z => z.CategoryId == categoryId).IsSlicer,
                         x.CreatedAt,

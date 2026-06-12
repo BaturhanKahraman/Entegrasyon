@@ -14,7 +14,7 @@ public class ProductWizardViewModelTests
             new()
             {
                 CategoryAttributeId = 1, AttributeName = "Beden",
-                IsVarianter = true, IsSlicer = false, AllowCustom = false,
+                IsVarianter = true, IsSlicer = false,
                 SelectedValues =
                 [
                     new SelectedAttributeValueVm { ValueId = 10, ValueName = "S" },
@@ -25,7 +25,7 @@ public class ProductWizardViewModelTests
             new()
             {
                 CategoryAttributeId = 2, AttributeName = "Renk",
-                IsVarianter = false, IsSlicer = true, AllowCustom = true,
+                IsVarianter = false, IsSlicer = true,
                 SelectedValues =
                 [
                     new SelectedAttributeValueVm { ValueId = null, ValueName = "Kirmizi", IsCustom = true },
@@ -57,7 +57,7 @@ public class ProductWizardViewModelTests
             new()
             {
                 CategoryAttributeId = 1, AttributeName = "Beden",
-                IsVarianter = true, IsSlicer = false, AllowCustom = false,
+                IsVarianter = true, IsSlicer = false,
                 SelectedValues =
                 [
                     new SelectedAttributeValueVm { ValueId = 10, ValueName = "S" },
@@ -101,7 +101,7 @@ public class ProductWizardViewModelTests
             new()
             {
                 CategoryAttributeId = 1, AttributeName = "Beden",
-                IsVarianter = true, IsSlicer = false, AllowCustom = false,
+                IsVarianter = true, IsSlicer = false,
                 SelectedValues = []
             }
         };

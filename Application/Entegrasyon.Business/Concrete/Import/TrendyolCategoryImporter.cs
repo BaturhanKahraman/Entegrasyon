@@ -182,7 +182,6 @@ public class TrendyolCategoryImporter : BaseCategoryImporterService
             CategoryAttributeKey = attr.Attribute.Name,
             CategoryAttributeHumanized = attr.Attribute.Name,
             ImportId = attr.Attribute.Id,
-            AllowCustom = attr.AllowCustom,
             CategoryAttributeValues = new List<CategoryAttributeValue>(),
             CreatedAt = DateTimeOffset.UtcNow
         };

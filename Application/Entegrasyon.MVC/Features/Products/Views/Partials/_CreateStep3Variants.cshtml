@@ -28,7 +28,6 @@
         <input type="hidden" name="CategoryAttributes[@i].ValueId" value="@Model.CategoryAttributes[i].ValueId" />
         <input type="hidden" name="CategoryAttributes[@i].CustomValue" value="@Model.CategoryAttributes[i].CustomValue" />
         <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired" />
-        <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@Model.CategoryAttributes[i].AllowCustom" />
     }
 
     <!-- Variant Attribute Selectors -->
@@ -64,30 +63,16 @@
                             <input type="hidden" name="VariantAttributeSelections[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
                             <input type="hidden" name="VariantAttributeSelections[@i].IsVarianter" value="@attr.IsVarianter" />
                             <input type="hidden" name="VariantAttributeSelections[@i].IsSlicer" value="@attr.IsSlicer" />
-                            <input type="hidden" name="VariantAttributeSelections[@i].AllowCustom" value="@attr.AllowCustom" />
 
-                            @if (attr.AllowCustom)
-                            {
-                                <!-- Tag input for custom values -->
-                                <div class="variant-tag-input" data-attr-index="@i">
-                                    <div class="d-flex flex-wrap gap-1 p-2 border rounded tags-container" style="min-height:38px; cursor:text;">
-                                    </div>
-                                    <input type="text" class="form-control mt-1 tag-text-input"
-                                           placeholder="Değer yazin, Enter veya virgul ile ekleyin" />
-                                </div>
-                            }
-                            else
-                            {
-                                <!-- Searchable multi-select (Tom Select) -->
-                                <select multiple class="form-select variant-tomselect" data-attr-index="@i"
-                                        data-placeholder="Ara ve sec...">
-                                    @foreach (var val in attr.CategoryAttributeValues)
-                                    {
-                                        <option value="@val.Id" data-name="@val.Name">@val.Name</option>
-                                    }
-                                </select>
-                                <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
-                            }
+                            <!-- Searchable multi-select (Tom Select) -->
+                            <select multiple class="form-select variant-tomselect" data-attr-index="@i"
+                                    data-placeholder="Ara ve sec...">
+                                @foreach (var val in attr.CategoryAttributeValues)
+                                {
+                                    <option value="@val.Id" data-name="@val.Name">@val.Name</option>
+                                }
+                            </select>
+                            <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
                         </div>
                     }
                 </div>

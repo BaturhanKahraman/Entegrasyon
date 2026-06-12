@@ -40,19 +40,6 @@
                 <div class="datagrid-content">@(Model.CategoryAttributeHumanized ?? "\u2014")</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Özel Değer İzni</div>
-                <div class="datagrid-content">
-                    @if (Model.AllowCustom)
-                    {
-                        <span class="badge bg-green-lt">Evet</span>
-                    }
-                    else
-                    {
-                        <span class="text-secondary">Hayır</span>
-                    }
-                </div>
-            </div>
-            <div class="datagrid-item">
                 <div class="datagrid-title">Tanımlı Değer Sayısı</div>
                 <div class="datagrid-content">@values.Count</div>
             </div>

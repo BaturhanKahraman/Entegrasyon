@@ -194,7 +194,6 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
                     CategoryAttributeKey = categoryAttribute.Attribute.Name,
                     CategoryAttributeHumanized = categoryAttribute.Attribute.Name,
                     ImportId = categoryAttribute.Attribute.Id,
-                    AllowCustom = categoryAttribute.AllowCustom,
                     CategoryAttributeValues = new List<CategoryAttributeValue>()
                 };
             if (!await dbContext.CategoryAttributes.AnyAsync(x =>

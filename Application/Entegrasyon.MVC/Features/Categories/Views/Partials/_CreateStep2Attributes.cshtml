@@ -38,18 +38,12 @@
                                                value="@Model.Attributes[i].AttributeId" />
                                         <input type="hidden" name="Attributes[@i].AttributeName"
                                                value="@Model.Attributes[i].AttributeName" />
-                                        <input type="hidden" name="Attributes[@i].AllowCustom"
-                                               value="@Model.Attributes[i].AllowCustom" />
                                         <input type="hidden" name="Attributes[@i].Selected" value="false" />
                                         <input type="checkbox" class="form-check-input"
                                                name="Attributes[@i].Selected" value="true" />
                                     </td>
                                     <td>
                                         @Model.Attributes[i].AttributeName
-                                        @if (Model.Attributes[i].AllowCustom)
-                                        {
-                                            <span class="badge bg-cyan-lt ms-1">Özel değer</span>
-                                        }
                                     </td>
                                     <td class="text-center">
                                         <input type="hidden" name="Attributes[@i].IsRequired" value="false" />

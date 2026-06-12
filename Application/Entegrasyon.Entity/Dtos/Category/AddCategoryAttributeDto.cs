@@ -6,7 +6,6 @@ public sealed record AddCategoryAttributeDto
 {
     public int Id { get; set; }
     public bool IsRequired { get; set; }
-    public bool AllowCustom { get; set; }
     public bool IsVarianter { get; set; }
     public string CategoryAttributeKey { get; set; } = null!;
     public bool IsSlicer { get; set; }
@@ -19,7 +18,6 @@ public sealed record AddCategoryAttributeDto
 
     public AddCategoryAttributeDto(int id,
                                    bool isRequired,
-                                   bool allowCustom,
                                    bool isVarianter,
                                    string categoryAttributeKey,
                                    bool isSlicer,
@@ -28,7 +26,6 @@ public sealed record AddCategoryAttributeDto
     {
         Id = id;
         IsRequired = isRequired;
-        AllowCustom = allowCustom;
         IsVarianter = isVarianter;
         CategoryAttributeKey = categoryAttributeKey;
         IsSlicer = isSlicer;

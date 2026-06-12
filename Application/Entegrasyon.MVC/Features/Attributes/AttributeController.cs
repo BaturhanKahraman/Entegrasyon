@@ -50,7 +50,6 @@ public class AttributeController(ICategoryAttributeManager categoryAttributeMana
             Id = attr.Id,
             CategoryAttributeKey = attr.CategoryAttributeKey ?? "",
             CategoryAttributeHumanized = attr.CategoryAttributeHumanized ?? "",
-            AllowCustom = attr.AllowCustom,
             ExistingValues = attr.CategoryAttributeValues
                 .OrderBy(v => v.Name)
                 .Select(v => new AttributeValueVm { Id = v.Id, Name = v.Name ?? "" })
@@ -82,7 +81,6 @@ public class AttributeController(ICategoryAttributeManager categoryAttributeMana
         var dto = new EditCategoryAttributeDto(
             Id: id,
             IsRequired: false,
-            AllowCustom: model.AllowCustom,
             IsVarianter: false,
             CategoryAttributeKey: model.CategoryAttributeKey,
             IsSlicer: false,

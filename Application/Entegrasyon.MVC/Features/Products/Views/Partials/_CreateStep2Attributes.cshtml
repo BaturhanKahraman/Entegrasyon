@@ -44,33 +44,22 @@
                             <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@attr.Id" />
                             <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
                             <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@attr.IsRequired" />
-                            <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@attr.AllowCustom" />
 
-                            @if (attr.AllowCustom)
-                            {
-                                <input type="text" name="CategoryAttributes[@i].CustomValue"
-                                       class="form-control" placeholder="Değer girin..."
-                                       value="@(saved?.CustomValue)"
-                                       @(attr.IsRequired ? "required" : "") />
-                            }
-                            else
-                            {
-                                <select name="CategoryAttributes[@i].ValueId" class="form-select"
-                                        @(attr.IsRequired ? "required" : "")>
-                                    <option value="">Seçin...</option>
-                                    @foreach (var val in attr.CategoryAttributeValues)
+                            <select name="CategoryAttributes[@i].ValueId" class="form-select"
+                                    @(attr.IsRequired ? "required" : "")>
+                                <option value="">Seçin...</option>
+                                @foreach (var val in attr.CategoryAttributeValues)
+                                {
+                                    if (saved?.ValueId == val.Id)
                                     {
-                                        if (saved?.ValueId == val.Id)
-                                        {
-                                            <option value="@val.Id" selected>@val.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@val.Id">@val.Name</option>
-                                        }
+                                        <option value="@val.Id" selected>@val.Name</option>
                                     }
-                                </select>
-                            }
+                                    else
+                                    {
+                                        <option value="@val.Id">@val.Name</option>
+                                    }
+                                }
+                            </select>
                         </div>
                     }
                 </div>

@@ -183,7 +183,6 @@ public class N11RestCategoryImporter : BaseCategoryImporterService
             CategoryAttributeKey = attr.AttributeName,
             CategoryAttributeHumanized = attr.AttributeName,
             ImportId = (int)attr.AttributeId,
-            AllowCustom = attr.IsCustomValue,
             CategoryAttributeValues = [],
             CreatedAt = DateTimeOffset.UtcNow
         };

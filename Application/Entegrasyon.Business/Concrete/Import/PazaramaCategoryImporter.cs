@@ -234,7 +234,6 @@ public class PazaramaCategoryImporter : BaseCategoryImporterService
         {
             CategoryAttributeKey = attr.Name,
             CategoryAttributeHumanized = attr.DisplayName ?? attr.Name,
-            AllowCustom = false,
             CategoryAttributeValues = new List<CategoryAttributeValue>(),
             CreatedAt = DateTimeOffset.UtcNow
         };

@@ -139,7 +139,6 @@ public class MapperConversionTests
         var dto = new EditCategoryAttributeDto(
             Id: 7,
             IsRequired: false,
-            AllowCustom: true,
             IsVarianter: false,
             CategoryAttributeKey: "color",
             IsSlicer: false,
@@ -150,7 +149,6 @@ public class MapperConversionTests
         junction.CategoryAttributeId.Should().Be(7);
         junction.CategoryAttribute.Id.Should().Be(7);
         junction.CategoryAttribute.CategoryAttributeHumanized.Should().Be("Renk");
-        junction.CategoryAttribute.AllowCustom.Should().BeTrue();
     }
 
     // ── Task 13: CustomerMapper ──────────────────────────────────────────────

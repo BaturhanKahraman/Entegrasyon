@@ -188,7 +188,6 @@ public class MasterCatalogImportService(
                                 {
                                     CategoryAttributeKey = masterAttr.Key,
                                     CategoryAttributeHumanized = masterAttr.HumanizedName,
-                                    AllowCustom = masterAttr.AllowCustom,
                                     ImportId = masterAttr.Id
                                 };
 
