@@ -219,6 +219,47 @@ public class TrendyolProductMapperTests : Entegrasyon.UnitTest.BaseTest
         item.SalePrice.Should().Be(150m);
     }
 
+    // ── Eşleşmesiz attribute değeri → değer adı CustomAttributeValue olarak basılır ──
+
+    [Fact]
+    public async Task MapProductAsync_UnmatchedAttributeValue_SendsValueNameAsCustomAttribute()
+    {
+        // Arrange: attribute'un MP eşleşmesi VAR; değerin MP value-match'i YOK.
+        var variant = CreateTestVariant(barcode: "BC777");
+        var product = CreateTestProduct(
+            variants: new List<ProductVariant> { variant },
+            attrs: new List<AttributeKeyValue>
+            {
+                new() { CategoryAttributeId = 7, AttributeValueId = 55 }
+            });
+
+        SetupDbForMapping(product);
+        // attribute eşleşmesi: app attr 7 → trendyol attr 777
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeMarketPlaceMatches)
+            .ReturnsDbSet(new List<CategoryAttributeMarketPlaceMatch>
+            {
+                new() { ApplicationCategoryAttributeId = 7, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryAttributeId = 777 }
+            });
+        // değerin Trendyol value-match'i YOK; değer adı "Limon Sarısı"
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeValues)
+            .ReturnsDbSet(new List<CategoryAttributeValue>
+            {
+                new() { Id = 55, CategoryAttributeId = 7, Name = "Limon Sarısı", NormalizedName = "LİMON SARISI" }
+            });
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.MapProductAsync(TestProductId);
+
+        // Assert: eşleşme yok → değer adı string basılır, AttributeValueId null
+        result.Success.Should().BeTrue();
+        var attrs = result.Data!.Items[0].Attributes;
+        attrs.Should().ContainSingle(a => a.AttributeId == 777
+            && a.AttributeValueId == null
+            && a.CustomAttributeValue == "Limon Sarısı");
+    }
+
     // ── Test 6: Variant without images is skipped ──
 
     [Fact]
