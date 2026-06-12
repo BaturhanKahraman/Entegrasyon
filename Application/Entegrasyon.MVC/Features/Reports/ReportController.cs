@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.ApplicationBootstrap.Security;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Helpers;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Reports;
@@ -286,6 +287,15 @@ public class ReportController(
 
         var report = await reportManager.GetSalesReportAsync(new SalesReportFilterDto(start, end));
         var vatDeclaration = await reportManager.GetVatDeclarationAsync(start, end);
+
+        // Dönem karşılaştırma: bu çeyrek vs geçen çeyrek (bugün referanslı, filtreden bağımsız)
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var (cqStart, cqEnd) = QuarterHelper.GetQuarterRange(today);
+        var (pqStart, pqEnd) = QuarterHelper.GetPreviousQuarterRange(today);
+        ViewBag.CurrentQuarterVat = await reportManager.GetVatDeclarationAsync(cqStart, cqEnd);
+        ViewBag.PreviousQuarterVat = await reportManager.GetVatDeclarationAsync(pqStart, pqEnd);
+        ViewBag.CurrentQuarterLabel = $"{cqStart.Year} Ç{(cqStart.Month - 1) / 3 + 1}";
+        ViewBag.PreviousQuarterLabel = $"{pqStart.Year} Ç{(pqStart.Month - 1) / 3 + 1}";
 
         ViewBag.StartDate = start;
         ViewBag.EndDate = end;

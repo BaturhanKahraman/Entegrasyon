@@ -1,6 +1,12 @@
 @model Entegrasyon.Entity.Dtos.Reports.SalesReportDto
 @{
     var vat = ViewBag.VatDeclaration as Entegrasyon.Entity.Dtos.Reports.VatDeclarationDto;
+    var cq = ViewBag.CurrentQuarterVat as Entegrasyon.Entity.Dtos.Reports.VatDeclarationDto;
+    var pq = ViewBag.PreviousQuarterVat as Entegrasyon.Entity.Dtos.Reports.VatDeclarationDto;
+    decimal cqVat = cq?.TotalVat ?? 0m;
+    decimal pqVat = pq?.TotalVat ?? 0m;
+    decimal vatDeltaPct = pqVat == 0m ? 0m : Math.Round((cqVat - pqVat) / pqVat * 100m, 1);
+    bool vatUp = cqVat >= pqVat;
 }
 
         <div class="card mb-3">
@@ -51,6 +57,33 @@
                     <div class="card-body">
                         <div class="subheader">Satış Sayısı</div>
                         <div class="h1 mb-0">@Model.Summary.TotalSales</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Dönem Karşılaştırması</h3>
+                <div class="card-subtitle">Kesilen fatura KDV'si — bu çeyrek vs geçen çeyrek</div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                    <div class="col-sm-4">
+                        <div class="subheader">@(ViewBag.PreviousQuarterLabel) (Geçen)</div>
+                        <div class="h2 mb-0">@pqVat.ToString("N2") TL</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="subheader">@(ViewBag.CurrentQuarterLabel) (Bu Çeyrek)</div>
+                        <div class="h2 mb-0">@cqVat.ToString("N2") TL</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="subheader">Değişim</div>
+                        <div class="h2 mb-0 @(vatUp ? "text-green" : "text-red")">
+                            <span class="badge @(vatUp ? "bg-green-lt" : "bg-red-lt")">
+                                @(vatUp ? "▲" : "▼") %@Math.Abs(vatDeltaPct)
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1425,8 +1425,8 @@
   {
     "task": "Vergi Raporu - Donem Karsilastirmasi (Bu Ceyrek vs Gecen Ceyrek)",
     "description": "Vergi raporuna ceyreklik donem karsilastirmasi ekle. Matrah ve KDV tutarlarinda onceki doneme gore yuzde degisim goster. Muhasebeciye donem trendi icin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "PA onerisi - 2026-06-12. QuarterHelper (5 unit test) + GetVatDeclarationAsync 2 ceyrek; bu vs gecen KDV + yuzde degisim karti. 2026-06-12.",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],
