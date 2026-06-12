@@ -8,7 +8,11 @@ public sealed record StockAlertDto(
     int CurrentStock,
     int MinimumStock,
     int DaysUntilStockout,
-    int SuggestedOrderQuantity);
+    int SuggestedOrderQuantity,
+    StockAlertLevel AlertLevel,
+    int BranchOfficeId,
+    string BranchOfficeName,
+    DateTime? LastStockEntryDate);
 
 public enum StockAlertLevel
 {
@@ -16,3 +20,20 @@ public enum StockAlertLevel
     Low,
     Critical
 }
+
+/// <summary>
+/// KPI özet — TÜM filtrelenmiş küme üzerinden hesaplanır (sayfa değil).
+/// View'daki "Kritik / Düşük / Tükendi" satırı bunları gösterir.
+/// </summary>
+public sealed record StockAlertSummaryDto(
+    int CriticalCount,
+    int LowCount,
+    int OutOfStockCount,
+    int TotalAlerts);
+
+/// <summary>
+/// Stok alert rapor zarfı: backend-aggregate özet + sayfalı satırlar.
+/// </summary>
+public sealed record StockAlertReportDto(
+    StockAlertSummaryDto Summary,
+    Pageable<StockAlertDto> Items);

@@ -132,10 +132,13 @@ public class ReportManagerTests : BaseTest
         var alert = new StockAlertDto(
             Guid.NewGuid(), "ABC123", "Test Product", "Sarı XL",
             CurrentStock: 2, MinimumStock: 10,
-            DaysUntilStockout: 3, SuggestedOrderQuantity: 30);
+            DaysUntilStockout: 3, SuggestedOrderQuantity: 30,
+            AlertLevel: StockAlertLevel.Critical, BranchOfficeId: 1,
+            BranchOfficeName: "Ana Depo", LastStockEntryDate: null);
 
         alert.SuggestedOrderQuantity.Should().BePositive();
         alert.DaysUntilStockout.Should().Be(3);
+        alert.AlertLevel.Should().Be(StockAlertLevel.Critical);
     }
 
     [Fact]
@@ -144,7 +147,9 @@ public class ReportManagerTests : BaseTest
         var alert = new StockAlertDto(
             Guid.NewGuid(), null, "Test Product", "Test Product",
             CurrentStock: 0, MinimumStock: 10,
-            DaysUntilStockout: 0, SuggestedOrderQuantity: 30);
+            DaysUntilStockout: 0, SuggestedOrderQuantity: 30,
+            AlertLevel: StockAlertLevel.Critical, BranchOfficeId: 1,
+            BranchOfficeName: "Ana Depo", LastStockEntryDate: null);
 
         alert.Barcode.Should().BeNull();
         alert.CurrentStock.Should().Be(0);

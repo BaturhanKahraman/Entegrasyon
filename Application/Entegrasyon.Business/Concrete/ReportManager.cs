@@ -419,58 +419,136 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
 
     #region Stock Alerts
 
-    public async Task<Pageable<StockAlertDto>> GetStockAlertsAsync(StockAlertPaginatedRequest request)
+    // Seviye türetimi (DB-translatable arithmetic ile aynı mantık):
+    //   CurrentStock <= 0                     → Critical (Tükendi de bu sınıfa girer)
+    //   DaysUntilStockout <= 3                → Critical
+    //   CurrentStock <= MinimumStockThreshold → Low
+    // DaysUntilStockout = CurrentStock / max(1, SoldQuantity/30).
+    // Sorgu zaten CurrentStock <= threshold filtrelediği için dönen tüm satırlar Low/Critical olur.
+
+    public async Task<StockAlertReportDto> GetStockAlertReportAsync(StockAlertPaginatedRequest request)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        var threshold = request.MinimumStockThreshold;
 
-        var query = from bos in dbContext.BranchOfficeStocks
-                    join pv in dbContext.ProductVariants on bos.ProductVariantId equals pv.Id
-                    join p in dbContext.MainProducts on pv.ProductId equals p.Id
-                    where !pv.IsDeleted && !p.IsDeleted
-                          && bos.CurrentStock <= request.MinimumStockThreshold
-                    orderby bos.CurrentStock
-                    select new
-                    {
-                        bos,
-                        pv,
-                        p,
-                        RawAttrs = pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
-                    };
+        // Eşik altı + branch filtresi. Branch join (BranchOffice) şube adı + filtre için.
+        var baseQuery = from bos in dbContext.BranchOfficeStocks
+                        join pv in dbContext.ProductVariants on bos.ProductVariantId equals pv.Id
+                        join p in dbContext.MainProducts on pv.ProductId equals p.Id
+                        join bo in dbContext.BranchOffices on bos.BranchOfficeId equals bo.Id
+                        where !pv.IsDeleted && !p.IsDeleted
+                              && bos.CurrentStock <= threshold
+                        select new { bos, pv, p, bo };
 
-        var totalCount = await query.CountAsync();
+        if (request.BranchOfficeId.HasValue)
+            baseQuery = baseQuery.Where(x => x.bos.BranchOfficeId == request.BranchOfficeId.Value);
 
-        var data = await query
+        // DB-side seviye ordinali (0=Sufficient,1=Low,2=Critical) — filtre + KPI özet için.
+        // daysUntilStockout = CurrentStock / max(1, SoldQuantity/30) (integer aritmetiği).
+        var leveled = baseQuery.Select(x => new
+        {
+            x.bos,
+            x.pv,
+            x.bo,
+            ProductTitle = x.p.Title ?? "",
+            RawAttrs = x.pv.ProductVariantAttributes
+                .Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList(),
+            DaysUntilStockout = x.bos.CurrentStock > 0
+                ? x.bos.CurrentStock / (x.bos.SoldQuantity / 30 > 1 ? x.bos.SoldQuantity / 30 : 1)
+                : 0
+        });
+
+        // LevelOrdinal: 2=Critical, 1=Low. (Filtre öncesi CurrentStock<=threshold garanti edildiği için Sufficient gelmez.)
+        var withLevel = leveled.Select(x => new
+        {
+            x.bos,
+            x.pv,
+            x.bo,
+            x.ProductTitle,
+            x.RawAttrs,
+            x.DaysUntilStockout,
+            LevelOrdinal = (x.bos.CurrentStock <= 0 || x.DaysUntilStockout <= 3) ? 2 : 1
+        });
+
+        if (request.AlertLevel.HasValue)
+        {
+            var wanted = (int)request.AlertLevel.Value;
+            withLevel = withLevel.Where(x => x.LevelOrdinal == wanted);
+        }
+
+        var totalCount = await withLevel.CountAsync();
+
+        // KPI özet — TÜM filtrelenmiş küme üzerinden (sayfa değil), tek round-trip aggregate.
+        var summaryRaw = await withLevel
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Critical = g.Count(x => x.LevelOrdinal == 2),
+                Low = g.Count(x => x.LevelOrdinal == 1),
+                OutOfStock = g.Count(x => x.bos.CurrentStock <= 0),
+                Total = g.Count()
+            })
+            .FirstOrDefaultAsync();
+
+        var summary = summaryRaw is null
+            ? new StockAlertSummaryDto(0, 0, 0, 0)
+            : new StockAlertSummaryDto(summaryRaw.Critical, summaryRaw.Low, summaryRaw.OutOfStock, summaryRaw.Total);
+
+        // Sayfa: indexli OrderBy (CurrentStock) — en kritik önce.
+        var page = await withLevel
+            .OrderBy(x => x.bos.CurrentStock)
+            .ThenBy(x => x.pv.Id)
             .Skip(request.PageIndex * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync();
 
-        var items = data.Select(x =>
+        // LastStockEntryDate — sadece sayfadaki varyantlar için batched (pozitif/initial hareket max CreatedAt).
+        var pageVariantIds = page.Where(x => x.bos.ProductVariantId.HasValue)
+            .Select(x => x.bos.ProductVariantId!.Value).Distinct().ToList();
+
+        var lastEntries = pageVariantIds.Count == 0
+            ? new Dictionary<(int, Guid), DateTime>()
+            : (await dbContext.Set<Entity.Products.StockMovement>()
+                .Where(m => !m.IsDeleted
+                            && m.Quantity > 0
+                            && pageVariantIds.Contains(m.ProductVariantId))
+                .GroupBy(m => new { m.BranchOfficeId, m.ProductVariantId })
+                .Select(g => new { g.Key.BranchOfficeId, g.Key.ProductVariantId, LastAt = g.Max(m => m.CreatedAt) })
+                .ToListAsync())
+              .ToDictionary(x => (x.BranchOfficeId, x.ProductVariantId), x => x.LastAt.UtcDateTime);
+
+        var items = page.Select(x =>
         {
-            var dailySales = x.bos.SoldQuantity > 0 && x.bos.CurrentStock >= 0
-                ? Math.Max(1, x.bos.SoldQuantity / 30) // Tahmini gunluk satis
-                : 1;
-            var daysUntilStockout = x.bos.CurrentStock > 0
-                ? x.bos.CurrentStock / dailySales
-                : 0;
-            var suggestedOrder = Math.Max(request.MinimumStockThreshold * 3 - x.bos.CurrentStock, 0);
+            var suggestedOrder = Math.Max(threshold * 3 - x.bos.CurrentStock, 0);
+            var level = x.LevelOrdinal == 2 ? StockAlertLevel.Critical : StockAlertLevel.Low;
 
             var displayName = VariantNameExtensions.ResolveDisplayName(
                 x.pv.Name,
                 x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
-                x.p.Title ?? "");
+                x.ProductTitle);
+
+            DateTime? lastEntry = x.bos.ProductVariantId.HasValue
+                && lastEntries.TryGetValue((x.bos.BranchOfficeId, x.bos.ProductVariantId.Value), out var d)
+                ? d : null;
 
             return new StockAlertDto(
                 x.pv.Id,
                 x.pv.Barcode,
-                x.p.Title ?? "",
+                x.ProductTitle,
                 displayName,
                 x.bos.CurrentStock,
-                request.MinimumStockThreshold,
-                daysUntilStockout,
-                suggestedOrder);
+                threshold,
+                x.DaysUntilStockout,
+                suggestedOrder,
+                level,
+                x.bo.Id,
+                x.bo.Name ?? "",
+                lastEntry);
         }).ToList();
 
-        return new Pageable<StockAlertDto>(items, request.PageIndex, request.PageSize, totalCount);
+        return new StockAlertReportDto(
+            summary,
+            new Pageable<StockAlertDto>(items, request.PageIndex, request.PageSize, totalCount));
     }
 
     #endregion

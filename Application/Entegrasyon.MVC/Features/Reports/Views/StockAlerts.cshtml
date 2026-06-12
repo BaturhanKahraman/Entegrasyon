@@ -1,24 +1,135 @@
-@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Reports.StockAlertDto>
+@model Entegrasyon.Entity.Dtos.Reports.StockAlertReportDto
+@{
+    int threshold = ViewBag.Threshold ?? 10;
+    // KPI özet — backend aggregate (TÜM filtrelenmiş küme, sayfa değil).
+    var summary = Model.Summary;
+    int outCount = summary.OutOfStockCount;
+    int criticalCount = summary.CriticalCount;
+    int lowCount = summary.LowCount;
+}
 
-        <!-- Filter -->
-        <div class="card mb-3">
+<!-- Özet satırı (mevcut sayfa) -->
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
             <div class="card-body">
-                <form method="get" action="/reports/stock-alerts" class="row g-3 align-items-end">
+                <div class="row align-items-center">
                     <div class="col-auto">
-                        <label class="form-label">Minimum Stok Eşiği</label>
-                        <input type="number" class="form-control" name="threshold" value="@ViewBag.Threshold" min="1" />
+                        <span class="avatar bg-red text-red-fg"><i class="ti ti-alert-octagon"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Tükendi</div>
+                        <div class="text-secondary">Stok sıfır veya altında</div>
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                        <span class="h1 mb-0 text-red">@outCount</span>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-orange text-orange-fg"><i class="ti ti-flame"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Kritik</div>
+                        <div class="text-secondary">3 gün içinde tükeniyor</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0 text-orange">@criticalCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-yellow text-yellow-fg"><i class="ti ti-trending-down"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Düşük</div>
+                        <div class="text-secondary">Eşiğin altında</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0 text-yellow">@lowCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar"><i class="ti ti-list-check"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Uyarı</div>
+                        <div class="text-secondary">Eşik: @threshold adet</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0">@Model.Items.TotalItemCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <!-- Table -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Düşük Stoklu Ürünler</h3>
+<!-- Filtre -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" action="/reports/stock-alerts" class="row g-2 align-items-end">
+            <div class="col-12 col-sm-auto">
+                <label class="form-label">Minimum stok eşiği</label>
+                <input type="number" class="form-control" name="threshold" value="@threshold" min="1" style="max-width: 12rem;" />
             </div>
-            <partial name="Partials/_StockAlertTable" model="Model"/>
+            <div class="col-12 col-sm-auto">
+                <label class="form-label">Şube</label>
+                <select name="branchOfficeId" class="form-select" style="min-width: 14rem;">
+                    <option value="">Tüm şubeler</option>
+                    @foreach (var branch in (ViewBag.Branches as IEnumerable<Entegrasyon.Entity.BranchOffice>) ?? Enumerable.Empty<Entegrasyon.Entity.BranchOffice>())
+                    {
+                        var selected = ViewBag.BranchOfficeId != null && (int)ViewBag.BranchOfficeId == branch.Id;
+                        <option value="@branch.Id" selected="@selected">@branch.Name</option>
+                    }
+                </select>
+            </div>
+            @{
+                string? selectedLevel = ViewBag.AlertLevel?.ToString();
+            }
+            <div class="col-12 col-sm-auto">
+                <label class="form-label">Uyarı seviyesi</label>
+                <select name="alertLevel" class="form-select" style="min-width: 12rem;">
+                    <option value="" selected="@string.IsNullOrEmpty(selectedLevel)">Tümü</option>
+                    <option value="Critical" selected="@(selectedLevel == "Critical")">Kritik</option>
+                    <option value="Low" selected="@(selectedLevel == "Low")">Düşük</option>
+                </select>
+            </div>
+            <div class="col-12 col-sm-auto">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="ti ti-filter me-1"></i>Filtrele
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tablo -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Düşük stoklu ürünler</h3>
+            <p class="text-secondary m-0">Stok seviyesi eşiğin altına düşen varyantlar</p>
         </div>
+    </div>
+    <partial name="Partials/_StockAlertTable" model="Model.Items" />
+</div>

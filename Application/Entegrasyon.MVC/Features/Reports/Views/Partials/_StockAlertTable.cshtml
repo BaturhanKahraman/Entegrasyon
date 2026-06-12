@@ -1,49 +1,105 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Reports.StockAlertDto>
+@{
+    var branches = ViewBag.Branches as List<Entegrasyon.Entity.BranchOffice> ?? new();
+    var paginationParams = new Dictionary<string, string>();
+    if (ViewBag.Threshold != null) paginationParams["threshold"] = ViewBag.Threshold.ToString();
+    if (ViewBag.BranchOfficeId != null) paginationParams["branchOfficeId"] = ViewBag.BranchOfficeId.ToString();
+    if (ViewBag.AlertLevel != null) paginationParams["alertLevel"] = ViewBag.AlertLevel.ToString();
+}
 
 <div id="stock-alert-table">
     @if (Model.HasItem)
     {
+        <form action="/reports/stock-alerts/bulk-transfer" method="post">
+            @Html.AntiForgeryToken()
+            <div class="d-flex align-items-end gap-2 flex-wrap p-3">
+                <div>
+                    <label class="form-label" for="bulk-transfer-target">Hedef Şube</label>
+                    <select id="bulk-transfer-target" name="TargetBranchOfficeId" class="form-select" required>
+                        <option value="">Hedef şube seçin…</option>
+                        @foreach (var b in branches)
+                        {
+                            <option value="@b.Id">@b.Name</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Seçilenleri Transfer Et</button>
+            </div>
         <div class="table-responsive">
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
+                        <th class="w-1"></th>
                         <th>Ürün</th>
                         <th>Barkod</th>
-                        <th>Mevcut Stok</th>
-                        <th>Min. Stok</th>
-                        <th>Tukeniyor (Gun)</th>
-                        <th>Onerilen Sipariş</th>
+                        <th class="text-center">Seviye</th>
+                        <th class="text-end">Mevcut Stok</th>
+                        <th class="text-end">Min. Stok</th>
+                        <th class="text-end">Tükeniyor</th>
+                        <th class="text-end">Önerilen Sipariş</th>
+                        <th class="text-end">Transfer Miktarı</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @{ var rowIndex = 0; }
                     @foreach (var item in Model.Items)
                     {
+                        var i = rowIndex++;
+                        // Seviye backend'den (item.AlertLevel) geliyor. Tükendi = stok sıfır/altı (Critical alt-durum).
+                        var isOut = item.CurrentStock <= 0;
+                        var isCritical = item.AlertLevel == Entegrasyon.Entity.Dtos.Reports.StockAlertLevel.Critical;
+                        var levelClass = isOut ? "status-red" : isCritical ? "status-orange" : "status-yellow";
+                        var levelText = isOut ? "Tükendi" : isCritical ? "Kritik" : "Düşük";
+                        var stockBadge = isOut ? "bg-red-lt" : isCritical ? "bg-orange-lt" : "bg-yellow-lt";
+
                         <tr>
                             <td>
-                                <div>@item.ProductName</div>
+                                <input type="checkbox" class="form-check-input m-0 align-middle js-bulk-select"
+                                       data-target="bulk-qty-@i" aria-label="Satır seç"
+                                       onchange="var q=document.getElementById(this.dataset.target);if(q){q.disabled=!this.checked;}" />
+                                <input type="hidden" name="Lines[@i].ProductVariantId" value="@item.ProductVariantId" />
+                                <input type="hidden" name="Lines[@i].SourceBranchOfficeId" value="@item.BranchOfficeId" />
+                            </td>
+                            <td>
+                                <div class="fw-medium">@item.ProductName</div>
                                 @if (!string.IsNullOrEmpty(item.VariantDisplayName) && item.VariantDisplayName != item.ProductName)
                                 {
                                     <div class="text-secondary small">@item.VariantDisplayName</div>
                                 }
                             </td>
                             <td class="text-secondary"><code>@(item.Barcode ?? "-")</code></td>
-                            <td>
-                                <span class="badge @(item.CurrentStock <= 0 ? "bg-red-lt" : item.CurrentStock <= item.MinimumStock ? "bg-yellow-lt" : "bg-green-lt")">
-                                    @item.CurrentStock
+                            <td class="text-center">
+                                <span class="status @levelClass">
+                                    <span class="status-dot"></span>@levelText
                                 </span>
                             </td>
-                            <td>@item.MinimumStock</td>
-                            <td>
-                                <span class="badge @(item.DaysUntilStockout <= 3 ? "bg-red" : item.DaysUntilStockout <= 7 ? "bg-yellow" : "bg-green-lt")">
-                                    @item.DaysUntilStockout gun
-                                </span>
+                            <td class="text-end">
+                                <span class="badge @stockBadge">@item.CurrentStock</span>
                             </td>
-                            <td>@item.SuggestedOrderQuantity</td>
+                            <td class="text-end text-secondary">@item.MinimumStock</td>
+                            <td class="text-end">
+                                @if (item.CurrentStock <= 0)
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                                else
+                                {
+                                    <text>@item.DaysUntilStockout gün</text>
+                                }
+                            </td>
+                            <td class="text-end fw-medium">@item.SuggestedOrderQuantity</td>
+                            <td class="text-end">
+                                <input type="number" min="1" class="form-control form-control-sm text-end ms-auto"
+                                       style="max-width: 7rem;" id="bulk-qty-@i"
+                                       name="Lines[@i].Quantity" value="@item.SuggestedOrderQuantity"
+                                       aria-label="Transfer miktarı" disabled />
+                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+        </form>
 
         <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
                  model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
@@ -53,9 +109,7 @@
                      TotalCount = Model.TotalItemCount,
                      BaseUrl = "/reports/stock-alerts",
                      TargetId = "#stock-alert-table",
-                     QueryParams = ViewBag.Threshold != null
-                         ? new Dictionary<string, string> { ["threshold"] = ViewBag.Threshold.ToString() }
-                         : new()
+                     QueryParams = paginationParams
                  }'/>
     }
     else
@@ -64,8 +118,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Stok uyarisi yok",
-                         Subtitle = "Tum urunlerin stok seviyesi yeterli gorunuyor."
+                         Title = "Stok uyarısı yok",
+                         Subtitle = "Tüm ürünlerin stok seviyesi yeterli görünüyor."
                      }'/>
         </div>
     }

@@ -1,9 +1,13 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Entegrasyon.ApplicationBootstrap.Security;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity;
+using Entegrasyon.Entity.Dtos.Branches;
 using Entegrasyon.Entity.Dtos.Reports;
 using Entegrasyon.Entity.Requests;
+using Entegrasyon.MVC.Features.Reports.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Reports;
@@ -13,7 +17,9 @@ public class ReportController(
     IReportManager reportManager,
     ICustomerManager customerManager,
     IStorefrontReturnManager storefrontReturnManager,
-    IShipmentTrackingManager shipmentTrackingManager) : Controller
+    IShipmentTrackingManager shipmentTrackingManager,
+    IBranchOfficeManager branchOfficeManager,
+    IStockTransferRequestManager stockTransferRequestManager) : Controller
 {
     [HttpGet("/reports/sales")]
     public async Task<IActionResult> Sales(DateOnly? startDate = null, DateOnly? endDate = null)
@@ -69,25 +75,103 @@ public class ReportController(
     }
 
     [HttpGet("/reports/stock-alerts")]
-    public async Task<IActionResult> StockAlerts(int threshold = 10, int page = 1)
+    public async Task<IActionResult> StockAlerts(
+        int threshold = 10, int page = 1, int? branchOfficeId = null, StockAlertLevel? alertLevel = null)
     {
         ViewData.SetPageTitle("Stok Uyarilari");
         ViewData.SetActiveNav("reports-stock-alerts");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Stok Uyarilari", null));
 
-        var data = await reportManager.GetStockAlertsAsync(new StockAlertPaginatedRequest
+        var data = await reportManager.GetStockAlertReportAsync(new StockAlertPaginatedRequest
         {
             MinimumStockThreshold = threshold,
+            BranchOfficeId = branchOfficeId,
+            AlertLevel = alertLevel,
             PageIndex = page - 1,
             PageSize = 20
         });
 
         ViewBag.Threshold = threshold;
+        ViewBag.BranchOfficeId = branchOfficeId;
+        ViewBag.AlertLevel = alertLevel;
+
+        // Şube filtresi dropdown'u (Tom Select) için şube listesi.
+        var branches = await branchOfficeManager.GetBranchList();
+        ViewBag.Branches = branches.Data ?? [];
 
         if (Request.IsHtmx())
-            return PartialView("Partials/_StockAlertTable", data);
+            return PartialView("Partials/_StockAlertTable", data.Items);
 
         return View(data);
+    }
+
+    /// <summary>
+    /// Stok uyarı sayfasından seçili satırlardan toplu stok transfer talebi oluşturur.
+    /// Her satır kendi kaynak şubesini taşır; hedef şube tektir (formdan).
+    /// Bir StockTransferRequest tek source/target alır → satırlar kaynak şube başına
+    /// gruplanıp her grup için ayrı talep açılır. Asıl validation + iş kuralları + çift
+    /// loglama mutasyon katmanında (StockTransferRequestManager.CreateAsync) yapılır.
+    /// PRG: TempData + RedirectToAction(StockAlerts).
+    /// </summary>
+    [HttpPost("/reports/stock-alerts/bulk-transfer")]
+    [Authorize(Policy = AppPermissions.Stock.Transfer)]
+    public async Task<IActionResult> BulkTransfer(StockAlertBulkTransferVm vm, CancellationToken ct = default)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+        {
+            TempData.SetError("Oturum bilgisi okunamadı.");
+            return RedirectToAction(nameof(StockAlerts));
+        }
+
+        // Geçerli satırlar: varyant dolu + miktar pozitif.
+        var validLines = (vm.Lines ?? [])
+            .Where(l => l.ProductVariantId != Guid.Empty && l.Quantity > 0)
+            .ToList();
+
+        if (validLines.Count == 0)
+        {
+            TempData.SetError("Transfer için geçerli ürün seçilmedi.");
+            return RedirectToAction(nameof(StockAlerts));
+        }
+
+        // Kaynak şube başına grupla — her grup tek talep. Hedef=kaynak olan grup atlanır.
+        var groups = validLines
+            .Where(l => l.SourceBranchOfficeId != vm.TargetBranchOfficeId)
+            .GroupBy(l => l.SourceBranchOfficeId)
+            .ToList();
+
+        if (groups.Count == 0)
+        {
+            TempData.SetError("Kaynak ve hedef şube aynı olamaz.");
+            return RedirectToAction(nameof(StockAlerts));
+        }
+
+        var created = 0;
+        var errors = new List<string>();
+        foreach (var group in groups)
+        {
+            var items = group
+                .Select(l => new TransferItemDto(l.ProductVariantId, l.Quantity))
+                .ToList();
+
+            var result = await stockTransferRequestManager.CreateAsync(
+                group.Key, vm.TargetBranchOfficeId, items, userId.Value, ct);
+
+            if (result.Success)
+                created++;
+            else
+                errors.Add(result.Message ?? "Talep oluşturulamadı.");
+        }
+
+        if (created == 0)
+            TempData.SetError(errors.Count > 0 ? string.Join(" ", errors) : "Transfer talebi oluşturulamadı.");
+        else if (errors.Count > 0)
+            TempData.SetSuccess($"{created} transfer talebi oluşturuldu. {errors.Count} grup başarısız: {string.Join(" ", errors)}");
+        else
+            TempData.SetSuccess($"{created} stok transfer talebi başarıyla oluşturuldu.");
+
+        return RedirectToAction(nameof(StockAlerts));
     }
 
     [HttpGet("/reports/inventory")]
@@ -187,5 +271,11 @@ public class ReportController(
 
         var summary = await shipmentTrackingManager.GetCargoSummaryAsync();
         return View(summary.Data);
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(claim, out var id) ? id : null;
     }
 }

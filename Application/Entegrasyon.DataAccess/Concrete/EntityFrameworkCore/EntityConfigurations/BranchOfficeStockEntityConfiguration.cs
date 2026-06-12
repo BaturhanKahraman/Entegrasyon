@@ -15,6 +15,13 @@ public class BranchOfficeStockEntityConfiguration: IEntityTypeConfiguration<Bran
         builder.Property(x => x.FirstTotalStock).IsRequired();
         builder.Property(x => x.CurrentStock)
             .HasComputedColumnSql(@"""FirstTotalStock""-""SoldQuantity""",stored:true);
+
+        // Stok-alert hot-path: WHERE CurrentStock <= threshold (+ opsiyonel BranchOfficeId)
+        // ORDER BY CurrentStock + Skip/Take pagination. CurrentStock STORED computed → indexlenebilir.
+        // Branch-filtreli sorguda (çok-şubeli esnaf ana senaryo) equality(BranchOfficeId)+range(CurrentStock)
+        // tek index ile karşılanır; indexli OrderBy pagination'ı seq-scan/sort'tan kurtarır.
+        builder.HasIndex(x => new { x.BranchOfficeId, x.CurrentStock })
+            .HasDatabaseName("IX_BranchOfficeStocks_BranchOfficeId_CurrentStock");
         //.HasComputedColumnSql(@"""Name"" || ' ' || ""Surname""",stored: true);
         //var bof = new List<BranchOfficeStock>()
         //{
