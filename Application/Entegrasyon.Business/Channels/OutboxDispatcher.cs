@@ -51,7 +51,7 @@ public sealed class OutboxDispatcher(
             var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
             await using var db = await factory.CreateDbContextAsync(ct);
 
-            var stuckCutoff = DateTimeOffset.UtcNow.AddMinutes(-10);
+            var stuckCutoff = DateTimeOffset.UtcNow - _opts.StuckProcessingCutoff;
             var stuckRows = await db.NotificationOutbox
                 .AsTracking()
                 .Where(x => x.Status == OutboxStatus.Processing && x.UpdatedAt < stuckCutoff)

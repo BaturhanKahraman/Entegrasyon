@@ -7,7 +7,6 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Products;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static Entegrasyon.Business.Utility.Constants.MarketPlaceConstants;
@@ -34,12 +33,25 @@ public sealed class StockPriceChangedSyncHandler(
         }
         tenantContext.Initialize(tenant);
 
+        await using var db = await dbContextFactory.CreateDbContextAsync(ct);
+
+        var variant = await db.ProductVariants.AsNoTracking()
+            .Include(v => v.BranchOfficeStocks)
+            .FirstOrDefaultAsync(v => v.Id == @event.ProductVariantId, ct);
+
+        if (variant is null) return;
+
         var flags = notificationFlags.Value;
-        await HandleTrendyolAsync(@event, flags, ct);
-        await HandlePazaramaAsync(@event, flags, ct);
+        await Task.WhenAll(
+            HandleTrendyolAsync(@event, variant, flags, ct),
+            HandlePazaramaAsync(@event, variant, flags, ct));
     }
 
-    private async Task HandleTrendyolAsync(StockPriceChangedEvent @event, NotificationFeatureFlags flags, CancellationToken ct)
+    private async Task HandleTrendyolAsync(
+        StockPriceChangedEvent @event,
+        ProductVariant variant,
+        NotificationFeatureFlags flags,
+        CancellationToken ct)
     {
         await using var db = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -53,12 +65,6 @@ public sealed class StockPriceChangedSyncHandler(
             logger.LogDebug("Product {ProductId} not published on Trendyol, skipping stock/price sync", @event.ProductId);
             return;
         }
-
-        var variant = await db.ProductVariants.AsNoTracking()
-            .Include(v => v.BranchOfficeStocks)
-            .FirstOrDefaultAsync(v => v.Id == @event.ProductVariantId, ct);
-
-        if (variant is null) return;
 
         var warehouseIds = await db.MarketPlaceWarehouses.AsNoTracking()
             .Where(w => w.MarketPlaceId == TrendyolMarketPlaceId)
@@ -100,7 +106,11 @@ public sealed class StockPriceChangedSyncHandler(
         }
     }
 
-    private async Task HandlePazaramaAsync(StockPriceChangedEvent @event, NotificationFeatureFlags flags, CancellationToken ct)
+    private async Task HandlePazaramaAsync(
+        StockPriceChangedEvent @event,
+        ProductVariant variant,
+        NotificationFeatureFlags flags,
+        CancellationToken ct)
     {
         await using var db = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -114,12 +124,6 @@ public sealed class StockPriceChangedSyncHandler(
             logger.LogDebug("Product {ProductId} not published on Pazarama, skipping stock/price sync", @event.ProductId);
             return;
         }
-
-        var variant = await db.ProductVariants.AsNoTracking()
-            .Include(v => v.BranchOfficeStocks)
-            .FirstOrDefaultAsync(v => v.Id == @event.ProductVariantId, ct);
-
-        if (variant is null) return;
 
         var warehouseIds = await db.MarketPlaceWarehouses.AsNoTracking()
             .Where(w => w.MarketPlaceId == PazaramaMarketPlaceId)
@@ -146,7 +150,7 @@ public sealed class StockPriceChangedSyncHandler(
             logger.LogWarning("Stock update failed for Pazarama variant {Barcode}: {Message}", variant.Barcode, stockResult.Message);
             if (flags.PublishEnabled)
             {
-                db.AddDomainEvent(new Channels.Events.Marketplace.MarketplaceStockSyncFailedEvent(
+                db.AddDomainEvent(new MarketplaceStockSyncFailedEvent(
                     marketPlaceId: PazaramaMarketPlaceId,
                     productId: @event.ProductId,
                     error: stockResult.Message ?? string.Empty));
@@ -166,7 +170,7 @@ public sealed class StockPriceChangedSyncHandler(
             logger.LogWarning("Price update failed for Pazarama variant {Barcode}: {Message}", variant.Barcode, priceResult.Message);
             if (flags.PublishEnabled)
             {
-                db.AddDomainEvent(new Channels.Events.Marketplace.MarketplacePriceUpdateFailedEvent(
+                db.AddDomainEvent(new MarketplacePriceUpdateFailedEvent(
                     marketPlaceId: PazaramaMarketPlaceId,
                     productId: @event.ProductId,
                     error: priceResult.Message ?? string.Empty));

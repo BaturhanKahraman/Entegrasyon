@@ -267,21 +267,23 @@ public class OfficeStockManager(
             targetMovements.Add(increaseResult.Data!);
         }
 
-        // Publish stock changed events for both branches
+        // Publish stock changed events — batch lookup to avoid N round-trips
+        await using var evtCtx = await contextFactory.CreateDbContextAsync();
+        var variantIds = items.Select(i => i.ProductVariantId).ToList();
+        var productIdMap = await evtCtx.ProductVariants.AsNoTracking()
+            .Where(v => variantIds.Contains(v.Id))
+            .Select(v => new { v.Id, v.ProductId })
+            .ToDictionaryAsync(v => v.Id, v => v.ProductId);
+
         foreach (var item in items)
         {
-            await using var ctx = await contextFactory.CreateDbContextAsync();
-            var productId = await ctx.ProductVariants.AsNoTracking()
-                .Where(v => v.Id == item.ProductVariantId)
-                .Select(v => v.ProductId)
-                .FirstOrDefaultAsync();
-
-            ctx.AddDomainEvent(new StockPriceChangedEvent(item.ProductVariantId, productId)
+            productIdMap.TryGetValue(item.ProductVariantId, out var productId);
+            evtCtx.AddDomainEvent(new StockPriceChangedEvent(item.ProductVariantId, productId)
             {
                 TenantId = tenantContext.TenantId
             });
-            await ctx.SaveChangesAsync();
         }
+        await evtCtx.SaveChangesAsync();
 
         var transferResult = new StockTransferResultDto(items.Count, sourceMovements, targetMovements);
         return new SuccessDataResult<StockTransferResultDto>(transferResult,
